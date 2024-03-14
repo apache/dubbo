@@ -17,8 +17,10 @@
 package org.apache.dubbo.remoting.utils;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 
@@ -36,7 +38,8 @@ public class UrlUtils {
     private static final String ALLOWED_SERIALIZATION_KEY = "allowedSerialization";
 
     public static int getCloseTimeout(URL url) {
-        String configuredCloseTimeout = System.getProperty(Constants.CLOSE_TIMEOUT_CONFIG_KEY);
+        String configuredCloseTimeout = SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLOSE_TIMEOUT_CONFIG_KEY);
         int defaultCloseTimeout = -1;
         if (StringUtils.isNotEmpty(configuredCloseTimeout)) {
             try {
@@ -67,7 +70,8 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        String configuredHeartbeat = System.getProperty(Constants.HEARTBEAT_CONFIG_KEY);
+        String configuredHeartbeat =
+                SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_HEARTBEAT_CONFIG_KEY);
         int defaultHeartbeat = Constants.DEFAULT_HEARTBEAT;
         if (StringUtils.isNotEmpty(configuredHeartbeat)) {
             try {
@@ -111,7 +115,7 @@ public class UrlUtils {
      * @return {@link String}
      */
     public static String serializationOrDefault(URL url) {
-        //noinspection OptionalGetWithoutIsPresent
+        // noinspection OptionalGetWithoutIsPresent
         Optional<String> serializations = allSerializations(url).stream().findFirst();
         return serializations.orElseGet(DefaultSerializationSelector::getDefaultRemotingSerialization);
     }

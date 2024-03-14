@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.aot.generate;
 
+import org.apache.dubbo.aot.api.ExecutableDescriber;
 import org.apache.dubbo.aot.api.ExecutableMode;
 import org.apache.dubbo.aot.api.FieldDescriber;
 import org.apache.dubbo.aot.api.MemberCategory;

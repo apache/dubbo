@@ -436,7 +436,7 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertEquals(response.getStatus(), obj.getStatus());
         Assertions.assertEquals(response.isHeartbeat(), obj.isHeartbeat());
         Assertions.assertEquals(person, obj.getResult());
-        // encode response verson ??
+        // encode response version ??
         //        Assertions.assertEquals(response.getProtocolVersion(), obj.getVersion());
 
         future.cancel();

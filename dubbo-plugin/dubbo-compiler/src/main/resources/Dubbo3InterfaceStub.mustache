@@ -23,22 +23,27 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 {{#deprecated}}
-    @java.lang.Deprecated
+@java.lang.Deprecated
 {{/deprecated}}
 public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
 
     static final String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+{{#commonPackageName}}
     static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
+{{/commonPackageName}}
+{{^commonPackageName}}
+    static final String SERVICE_NAME = "{{serviceName}}";
+{{/commonPackageName}}
 
     // FIXME, initialize Dubbo3 stub when interface loaded, thinking of new ways doing this.
     static final boolean inited = {{className}}.init();
 
 {{#unaryMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
     {{#deprecated}}
-        @java.lang.Deprecated
+    @java.lang.Deprecated
     {{/deprecated}}
     {{outputType}} {{methodName}}({{inputType}} request);
 
@@ -50,20 +55,20 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
 
 {{#serverStreamingMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
     {{#deprecated}}
-        @java.lang.Deprecated
+    @java.lang.Deprecated
     {{/deprecated}}
     void {{methodName}}({{inputType}} request, org.apache.dubbo.common.stream.StreamObserver<{{outputType}}> responseObserver);
 {{/serverStreamingMethods}}
 
 {{#biStreamingMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
     {{#deprecated}}
-        @java.lang.Deprecated
+    @java.lang.Deprecated
     {{/deprecated}}
     org.apache.dubbo.common.stream.StreamObserver<{{inputType}}> {{methodName}}(org.apache.dubbo.common.stream.StreamObserver<{{outputType}}> responseObserver);
 {{/biStreamingMethods}}

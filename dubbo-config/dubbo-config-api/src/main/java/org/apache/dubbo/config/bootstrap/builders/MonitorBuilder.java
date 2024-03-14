@@ -63,6 +63,10 @@ public class MonitorBuilder extends AbstractBuilder<MonitorConfig, MonitorBuilde
      */
     private Boolean isDefault;
 
+    public static MonitorBuilder newBuilder() {
+        return new MonitorBuilder();
+    }
+
     public MonitorBuilder protocol(String protocol) {
         this.protocol = protocol;
         return getThis();
@@ -113,6 +117,7 @@ public class MonitorBuilder extends AbstractBuilder<MonitorConfig, MonitorBuilde
         return getThis();
     }
 
+    @Override
     public MonitorConfig build() {
         MonitorConfig monitorConfig = new MonitorConfig();
         super.build(monitorConfig);

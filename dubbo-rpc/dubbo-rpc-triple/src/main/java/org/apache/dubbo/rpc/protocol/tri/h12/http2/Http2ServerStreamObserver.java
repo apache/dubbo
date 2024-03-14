@@ -20,13 +20,12 @@ import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.h12.AttachmentHolder;
-import org.apache.dubbo.rpc.protocol.tri.h12.CompressibleCodec;
+import org.apache.dubbo.rpc.protocol.tri.h12.CompressibleEncoder;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.Map;
@@ -35,8 +34,6 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
         implements ServerStreamObserver<Object>, AttachmentHolder {
 
     private final FrameworkModel frameworkModel;
-
-    private HttpMessageCodec httpMessageCodec;
 
     private Map<String, Object> attachments;
 
@@ -47,15 +44,9 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
 
     @Override
     public void setCompression(String compression) {
-        CompressibleCodec compressibleCodec = new CompressibleCodec(httpMessageCodec);
-        compressibleCodec.setCompressor(Compressor.getCompressor(frameworkModel, compression));
-        super.setHttpMessageCodec(compressibleCodec);
-    }
-
-    @Override
-    public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
-        super.setHttpMessageCodec(httpMessageCodec);
-        this.httpMessageCodec = httpMessageCodec;
+        CompressibleEncoder compressibleEncoder = new CompressibleEncoder(getResponseEncoder());
+        compressibleEncoder.setCompressor(Compressor.getCompressor(frameworkModel, compression));
+        super.setResponseEncoder(compressibleEncoder);
     }
 
     @Override
@@ -72,7 +63,7 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
     protected HttpMetadata encodeTrailers(Throwable throwable) {
         HttpMetadata httpMetadata = super.encodeTrailers(throwable);
         HttpHeaders headers = httpMetadata.headers();
-        StreamUtils.convertAttachment(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
+        StreamUtils.putHeaders(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         return httpMetadata;
     }
 }

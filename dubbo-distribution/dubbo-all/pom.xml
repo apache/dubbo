@@ -104,22 +104,6 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- container -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-container-api</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-container-spring</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
     <!-- filter -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -131,15 +115,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-filter-validation</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- kubernetes -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-kubernetes</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -256,29 +231,6 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- monitor -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-api</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-common</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-default</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
     <!-- plugin -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -326,119 +278,21 @@
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-cluster-mergeable</artifactId>
+      <artifactId>dubbo-rest-jaxrs</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-mock</artifactId>
+      <artifactId>dubbo-rest-servlet</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-script</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-mesh</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-condition</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-tag</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-loadbalance-adaptive</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-access-log</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-tps</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-token</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-generic-invoke</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-context</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-classloader-filter</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-proxy-bytebuddy</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-qos-trace</artifactId>
+      <artifactId>dubbo-rest-spring</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -607,16 +461,15 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- xds -->
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-xds</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-
     <!-- Transitive dependencies -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
@@ -672,8 +525,6 @@
                   <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                   <include>org.apache.dubbo:dubbo-configcenter-nacos</include>
                   <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
-                  <include>org.apache.dubbo:dubbo-container-api</include>
-                  <include>org.apache.dubbo:dubbo-container-spring</include>
                   <include>org.apache.dubbo:dubbo-filter-cache</include>
                   <include>org.apache.dubbo:dubbo-filter-validation</include>
                   <include>org.apache.dubbo:dubbo-metadata-api</include>
@@ -691,29 +542,11 @@
                   <include>org.apache.dubbo:dubbo-metrics-netty</include>
                   <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                   <include>org.apache.dubbo:dubbo-tracing</include>
-                  <include>org.apache.dubbo:dubbo-monitor-api</include>
-                  <include>org.apache.dubbo:dubbo-monitor-common</include>
-                  <include>org.apache.dubbo:dubbo-monitor-default</include>
                   <include>org.apache.dubbo:dubbo-qos</include>
                   <include>org.apache.dubbo:dubbo-qos-api</include>
                   <include>org.apache.dubbo:dubbo-security</include>
                   <include>org.apache.dubbo:dubbo-reactive</include>
                   <include>org.apache.dubbo:dubbo-spring-security</include>
-                  <include>org.apache.dubbo:dubbo-plugin-cluster-mergeable</include>
-                  <include>org.apache.dubbo:dubbo-plugin-mock</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-script</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-mesh</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-condition</include>
-                  <include>org.apache.dubbo:dubbo-plugin-router-tag</include>
-                  <include>org.apache.dubbo:dubbo-plugin-loadbalance-adaptive</include>
-                  <include>org.apache.dubbo:dubbo-plugin-access-log</include>
-                  <include>org.apache.dubbo:dubbo-plugin-tps</include>
-                  <include>org.apache.dubbo:dubbo-plugin-token</include>
-                  <include>org.apache.dubbo:dubbo-plugin-generic-invoke</include>
-                  <include>org.apache.dubbo:dubbo-plugin-context</include>
-                  <include>org.apache.dubbo:dubbo-plugin-classloader-filter</include>
-                  <include>org.apache.dubbo:dubbo-plugin-proxy-bytebuddy</include>
-                  <include>org.apache.dubbo:dubbo-plugin-qos-trace</include>
                   <include>org.apache.dubbo:dubbo-registry-api</include>
                   <include>org.apache.dubbo:dubbo-registry-multicast</include>
                   <include>org.apache.dubbo:dubbo-registry-multiple</include>
@@ -732,12 +565,13 @@
                   <include>org.apache.dubbo:dubbo-rpc-injvm</include>
                   <include>org.apache.dubbo:dubbo-rpc-rest</include>
                   <include>org.apache.dubbo:dubbo-rpc-triple</include>
+                  <include>org.apache.dubbo:dubbo-rest-jaxrs</include>
+                  <include>org.apache.dubbo:dubbo-rest-servlet</include>
+                  <include>org.apache.dubbo:dubbo-rest-spring</include>
                   <include>org.apache.dubbo:dubbo-serialization-api</include>
                   <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                   <include>org.apache.dubbo:dubbo-serialization-fastjson2</include>
                   <include>org.apache.dubbo:dubbo-serialization-jdk</include>
-                  <include>org.apache.dubbo:dubbo-kubernetes</include>
-                  <include>org.apache.dubbo:dubbo-xds</include>
                 </includes>
               </artifactSet>
               <transformers>
@@ -844,9 +678,6 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.config.spring.extension.SpringExtensionInjector</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.container.Container</resource>
-                </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataParamsFilter</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -933,9 +764,6 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.registry.integration.RegistryProtocolListener</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.registry.xds.XdsCertificateSigner</resource>
-                </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.rest.filter.RestResponseInterceptor</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -993,10 +821,10 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http.HttpBinder</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageCodec</resource>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory</resource>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory</resource>
@@ -1110,6 +938,27 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtension</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtensionAdapter</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageAdapterFactory</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.metrics.service.MetricsService</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -1167,12 +1016,16 @@
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.config.CommonConfigPostProcessor</resource>
                 </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.registry.integration.ServiceURLCustomizer</resource>
+                </transformer>
               </transformers>
               <filters>
                 <filter>
                   <artifact>org.apache.dubbo:dubbo</artifact>
                   <excludes>
-                    <!-- These following two line is optional, it can remove some warn log -->
+                    <!-- These following two line are optional, it can remove some warning log -->
                     <exclude>com/**</exclude>
                     <exclude>org/**</exclude>
                     <!-- This one is required -->

@@ -1,0 +1,5 @@
+jaxrs-request-filter=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter.ContainerRequestFilterAdapter
+jaxrs-response-filter=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter.ContainerResponseFilterAdapter
+jaxrs-read-interceptor=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter.ReadInterceptorAdapter
+jaxrs-writer-interceptor=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter.WriterInterceptorAdapter
+jaxrs-exception-mapper=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter.ExceptionMapperAdapter

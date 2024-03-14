@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 public class WrapperHttpMessageCodec implements HttpMessageCodec {
 
@@ -69,7 +70,7 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(OutputStream outputStream, Object data) throws EncodeException {
+    public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             serialization.serialize(url, serializeType, encodeTypes[0], data, bos);
@@ -87,13 +88,13 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(OutputStream outputStream, Object[] data) throws EncodeException {
+    public void encode(OutputStream outputStream, Object[] data, Charset charset) throws EncodeException {
         // TODO
     }
 
     @Override
-    public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
-        Object[] decode = this.decode(inputStream, new Class[] {targetType});
+    public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
+        Object[] decode = this.decode(inputStream, new Class[] {targetType}, charset);
         if (decode == null || decode.length == 0) {
             return null;
         }
@@ -101,7 +102,7 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     }
 
     @Override
-    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
+    public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try {
             int len;
             byte[] data = new byte[4096];
@@ -129,7 +130,7 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
     }
 
     @Override
-    public MediaType contentType() {
+    public MediaType mediaType() {
         return MEDIA_TYPE;
     }
 

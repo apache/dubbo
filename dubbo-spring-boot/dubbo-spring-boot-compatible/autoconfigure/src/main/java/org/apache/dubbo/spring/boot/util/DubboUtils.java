@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.util;
 
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
@@ -25,6 +26,8 @@ import java.util.Set;
 
 import org.springframework.boot.context.ContextIdApplicationContextInitializer;
 import org.springframework.core.env.PropertyResolver;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_LINE_SEPARATOR;
 
 /**
  * The utilities class for Dubbo
@@ -36,7 +39,7 @@ public abstract class DubboUtils {
     /**
      * line separator
      */
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String LINE_SEPARATOR = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_LINE_SEPARATOR);
 
     /**
      * The separator of property name

@@ -48,8 +48,6 @@ import java.util.regex.PatternSyntaxException;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PREFERRED_NETWORK_INTERFACE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.utils.CollectionUtils.first;
@@ -138,6 +136,7 @@ public final class NetUtils {
 
     /**
      * Check the port whether is in use in os
+     *
      * @param port port to check
      * @return true if it's occupied
      */
@@ -153,9 +152,9 @@ public final class NetUtils {
     /**
      * Tells whether the port to test is an invalid port.
      *
-     * @implNote Numeric comparison only.
      * @param port port to test
      * @return true if invalid
+     * @implNote Numeric comparison only.
      */
     public static boolean isInvalidPort(int port) {
         return port < MIN_PORT || port > MAX_PORT;
@@ -164,9 +163,9 @@ public final class NetUtils {
     /**
      * Tells whether the address to test is an invalid address.
      *
-     * @implNote Pattern matching only.
      * @param address address to test
      * @return true if invalid
+     * @implNote Pattern matching only.
      */
     public static boolean isValidAddress(String address) {
         return ADDRESS_PATTERN.matcher(address).matches();
@@ -452,7 +451,8 @@ public final class NetUtils {
                 || !networkInterface.isUp()) {
             return true;
         }
-        String ignoredInterfaces = System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
+        String ignoredInterfaces = SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
         String networkInterfaceDisplayName;
         if (StringUtils.isNotEmpty(ignoredInterfaces)
                 && StringUtils.isNotEmpty(networkInterfaceDisplayName = networkInterface.getDisplayName())) {
@@ -505,11 +505,12 @@ public final class NetUtils {
      *
      * @param networkInterface {@link NetworkInterface}
      * @return if the name of the specified {@link NetworkInterface} matches
-     * the property value from {@link CommonConstants#DUBBO_PREFERRED_NETWORK_INTERFACE}, return <code>true</code>,
+     * the property value from {@link CommonConstants.DubboProperty#DUBBO_PREFERRED_NETWORK_INTERFACE}, return <code>true</code>,
      * or <code>false</code>
      */
     public static boolean isPreferredNetworkInterface(NetworkInterface networkInterface) {
-        String preferredNetworkInterface = System.getProperty(DUBBO_PREFERRED_NETWORK_INTERFACE);
+        String preferredNetworkInterface = SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFERRED_NETWORK_INTERFACE);
         return Objects.equals(networkInterface.getDisplayName(), preferredNetworkInterface);
     }
 

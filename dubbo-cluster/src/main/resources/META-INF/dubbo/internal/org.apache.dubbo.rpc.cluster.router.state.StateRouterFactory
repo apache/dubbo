@@ -1,0 +1,8 @@
+mock=org.apache.dubbo.rpc.cluster.router.mock.MockStateRouterFactory
+condition=org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouterFactory
+service=org.apache.dubbo.rpc.cluster.router.condition.config.ServiceStateRouterFactory
+app=org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouterFactory
+provider-app=org.apache.dubbo.rpc.cluster.router.condition.config.ProviderAppStateRouterFactory
+standard-mesh-rule=org.apache.dubbo.rpc.cluster.router.mesh.route.StandardMeshRuleRouterFactory
+script-app=org.apache.dubbo.rpc.cluster.router.script.config.AppScriptRouterFactory
+tag=org.apache.dubbo.rpc.cluster.router.tag.TagStateRouterFactory

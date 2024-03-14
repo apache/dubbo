@@ -20,10 +20,7 @@ import io.netty.util.AsciiString;
 
 public class TripleConstant {
 
-    public static final String CONTENT_PROTO = "application/grpc+proto";
-    public static final String APPLICATION_GRPC = "application/grpc";
-    public static final String TEXT_PLAIN_UTF8 = "text/plain; encoding=utf-8";
-    public static final String TRI_VERSION = "3.0-TRI";
+    public static final String DEFAULT_VERSION = "1.0.0";
 
     public static final String SERIALIZATION_KEY = "serialization";
     public static final String TE_KEY = "te";
@@ -35,4 +32,13 @@ public class TripleConstant {
 
     public static final AsciiString HTTPS_SCHEME = AsciiString.of("https");
     public static final AsciiString HTTP_SCHEME = AsciiString.of("http");
+
+    public static final String REMOTE_ADDRESS_KEY = "tri.remote.address";
+    public static final String HANDLER_TYPE_KEY = "tri.handler.type";
+    public static final String HTTP_REQUEST_KEY = "tri.http.request";
+    public static final String HTTP_RESPONSE_KEY = "tri.http.response";
+
+    public static final String TRIPLE_HANDLER_TYPE_REST = "rest";
+    public static final String TRIPLE_HANDLER_TYPE_HTTP = "http";
+    public static final String TRIPLE_HANDLER_TYPE_GRPC = "grpc";
 }

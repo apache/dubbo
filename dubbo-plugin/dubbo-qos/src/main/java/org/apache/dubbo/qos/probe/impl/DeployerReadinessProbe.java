@@ -40,7 +40,7 @@ public class DeployerReadinessProbe implements ReadinessProbe {
         List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
         for (ApplicationModel applicationModel : applicationModels) {
             for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-                if (!moduleModel.getDeployer().isStarted()) {
+                if (!moduleModel.getDeployer().isCompletion()) {
                     return false;
                 }
             }

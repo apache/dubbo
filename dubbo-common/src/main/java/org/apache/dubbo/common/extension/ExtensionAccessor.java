@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.extension;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Uniform accessor for extension
  */
@@ -24,7 +27,7 @@ public interface ExtensionAccessor {
     ExtensionDirector getExtensionDirector();
 
     default <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
-        return this.getExtensionDirector().getExtensionLoader(type);
+        return getExtensionDirector().getExtensionLoader(type);
     }
 
     default <T> T getExtension(Class<T> type, String name) {
@@ -40,5 +43,22 @@ public interface ExtensionAccessor {
     default <T> T getDefaultExtension(Class<T> type) {
         ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
         return extensionLoader != null ? extensionLoader.getDefaultExtension() : null;
+    }
+
+    default <T> List<T> getActivateExtensions(Class<T> type) {
+        ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
+        return extensionLoader != null ? extensionLoader.getActivateExtensions() : Collections.emptyList();
+    }
+
+    default <T> T getFirstActivateExtension(Class<T> type) {
+        ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
+        if (extensionLoader == null) {
+            throw new IllegalArgumentException("ExtensionLoader for [" + type + "] is not found");
+        }
+        List<T> extensions = extensionLoader.getActivateExtensions();
+        if (extensions.isEmpty()) {
+            throw new IllegalArgumentException("No activate extensions for [" + type + "] found");
+        }
+        return extensions.get(0);
     }
 }

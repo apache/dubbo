@@ -16,20 +16,23 @@
  */
 package org.apache.dubbo.common.serialize.support;
 
-public class DefaultSerializationSelector {
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
-    private static final String DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY = "DUBBO_DEFAULT_SERIALIZATION";
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY;
+
+public class DefaultSerializationSelector {
 
     private static final String DEFAULT_REMOTING_SERIALIZATION_PROPERTY = "hessian2";
 
     private static final String DEFAULT_REMOTING_SERIALIZATION;
 
     static {
-        String fromProperty = System.getProperty(DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY);
+        String fromProperty =
+                SystemPropertyConfigUtils.getSystemProperty(DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY);
         if (fromProperty != null) {
             DEFAULT_REMOTING_SERIALIZATION = fromProperty;
         } else {
-            String fromEnv = System.getenv(DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY);
+            String fromEnv = System.getenv(DUBBO_DEFAULT_REMOTING_SERIALIZATION_PROPERTY);
             if (fromEnv != null) {
                 DEFAULT_REMOTING_SERIALIZATION = fromEnv;
             } else {

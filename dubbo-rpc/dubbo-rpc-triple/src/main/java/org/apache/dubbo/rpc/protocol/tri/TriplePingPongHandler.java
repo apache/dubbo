@@ -70,7 +70,9 @@ public class TriplePingPongHandler extends ChannelDuplexHandler {
 
         @Override
         public void run() {
-            ctx.close();
+            if (ctx.channel().isActive()) {
+                ctx.close();
+            }
         }
     }
 }

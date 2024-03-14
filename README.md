@@ -1,20 +1,17 @@
 # Apache Dubbo Project
 
 [![Build and Test For PR](https://github.com/apache/dubbo/actions/workflows/build-and-test-pr.yml/badge.svg)](https://github.com/apache/dubbo/actions/workflows/build-and-test-pr.yml)
-[![Codecov](https://codecov.io/gh/apache/dubbo/branch/3.2/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
+[![Codecov](https://codecov.io/gh/apache/dubbo/branch/3.3/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
 ![Maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
 ![License](https://img.shields.io/github/license/alibaba/dubbo.svg)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo "Percentage of issues still open")
-[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Apache%20Dubbo%20is%20a%20high-performance%2C%20java%20based%2C%20open%20source%20RPC%20framework.&url=http://dubbo.apache.org/&via=ApacheDubbo&hashtags=rpc,java,dubbo,micro-service)
-[![Twitter Follow](https://img.shields.io/twitter/follow/ApacheDubbo.svg?label=Follow&style=social&logoWidth=0)](https://twitter.com/intent/follow?screen_name=ApacheDubbo)
-[![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Apache Dubbo is an easy-to-use Web and RPC framework that provides multiple
 language implementations(Java, [Go](https://github.com/apache/dubbo-go), [Rust](https://github.com/apache/dubbo-rust), [Node.js](https://github.com/apache/dubbo-js), [Web](https://github.com/apache/dubbo-js)) for communication, service discovery, traffic management,
 observability, security, tools, and best practices for building enterprise-ready microservices.
 
-Visit [the official website](https://dubbo.apache.org/) for more information.
+We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [Wanted: who's using dubbo](https://github.com/apache/dubbo/discussions/13842), thanks :)
 
 ## Architecture
 ![Architecture](https://dubbo.apache.org/imgs/architecture.png)
@@ -67,12 +64,115 @@ Get more details by visiting the links below to get your hands dirty with some w
 ## Contributing
 See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
+### How does the Dubbo Community collaborate?
+
+The Dubbo Community primarily communicates on GitHub through issues, discussions, and pull requests.
+
+- Issues: We use issues to track bugs and tasks. Any **work-related** item is associated with an issue.
+- Discussions: We use discussions for questions, early proposals, and announcements. Any **idea-related** item is associated with a discussion.
+- Pull Requests: We use pull requests to merge a set of changes from contributors into Dubbo.
+
+We have also implemented [a project board](https://github.com/orgs/apache/projects/337) to monitor all the items.
+
+Any essential changes should be discussed on the mailing list before they happen.
+
+### Seeking for help
+
+If you have questions such as:
+
+- What is Dubbo?
+- How do I use Dubbo?
+- Why did an unexpected result occur?
+
+Please start a discussion at https://github.com/apache/dubbo/discussions.
+
+However, if you encounter the following situations:
+
+- You're certain there's a bug that Dubbo needs to fix,
+- You believe a feature could be enhanced,
+- You have a detailed proposal for improving Dubbo,
+
+Please open an issue at https://github.com/apache/dubbo/issues.
+
+To ask effective questions, we recommend reading **[How To Ask Questions The Smart Way](https://github.com/selfteaching/How-To-Ask-Questions-The-Smart-Way/blob/master/How-To-Ask-Questions-The-Smart-Way.md)** first.
+
+### Contribution
+
+- Browse the "help wanted" tasks in the [Dubbo project board](https://github.com/orgs/apache/projects/337).
+- Participate in discussions on the mailing list. See the subscription [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide).
+- Respond to queries in the [discussions](https://github.com/apache/dubbo/issues).
+- Resolve bugs reported in [issues](https://github.com/apache/dubbo/issues) and send us a pull request.
+- Review existing [pull requests](https://github.com/apache/dubbo/pulls).
+- Enhance the [website](https://github.com/apache/dubbo-website). We typically need:
+    - Blog posts
+    - Translations for documentation
+    - Use cases showcasing Dubbo integration in enterprise systems.
+- Improve the [dubbo-admin](https://github.com/apache/dubbo-admin).
+- Contribute to the projects listed in the [ecosystem](https://github.com/apache/?q=dubbo&type=all&language=&sort=).
+- Any other forms of contribution not listed above are also welcome.
+- If you're interested in contributing, please send an email to [dev@dubbo.apache.org](mailto:dev@dubbo.apache.org) to let us know!
+
+For further details, please refer our [guide](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) about how to contribute Dubbo.
+
+## Reporting bugs
+
+Please follow the [template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
+
+## Reporting a security vulnerability
+
+Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org) privately.
+
 ## Contact
 * WeChat: apachedubbo
 * DingTalk group: 37290003945
 * Mailing list: [guide](https://dubbo.apache.org/zh-cn/contact/)
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
 * Security issues: please mail to [us](mailto:security@dubbo.apache.org) privately.
+
+## Contributing
+
+See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
+
+### How can I contribute?
+
+* Take a look at issues with tags marked [`Good first issue`](https://github.com/apache/dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) or [`Help wanted`](https://github.com/apache/dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+* Join the discussion on the mailing list, subscription [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide).
+* Answer questions on [issues](https://github.com/apache/dubbo/issues).
+* Fix bugs reported on [issues](https://github.com/apache/dubbo/issues), and send us a pull request.
+* Review the existing [pull request](https://github.com/apache/dubbo/pulls).
+* Improve the [website](https://github.com/apache/dubbo-website), typically we need
+  * blog post
+  * translation on documentation
+  * use cases around the integration of Dubbo in enterprise systems.
+* Improve the [dubbo-admin/dubbo-monitor](https://github.com/apache/dubbo-admin).
+* Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
+* Other forms of contribution not explicitly enumerated above.
+* If you would like to contribute, please send an email to dev@dubbo.apache.org to let us know!
+
+## Reporting bugs
+
+Please follow the [template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
+
+## Reporting a security vulnerability
+
+Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org) privately.
+
+## Dubbo ecosystem
+
+* [Dubbo Ecosystem Entry](https://github.com/apache?utf8=%E2%9C%93&q=dubbo&type=&language=) - A GitHub group `dubbo` to gather all Dubbo relevant projects not appropriate in [apache](https://github.com/apache) group yet
+* [Dubbo Website](https://github.com/apache/dubbo-website) - Apache Dubbo official website
+* [Dubbo Samples](https://github.com/apache/dubbo-samples) - samples for Apache Dubbo
+* [Dubbo Admin](https://github.com/apache/dubbo-admin) - The reference implementation for Dubbo admin
+* [Dubbo Awesome](https://github.com/apache/dubbo-awesome) - Dubbo's slides and video links in Meetup
+
+#### Language
+
+* [Go](https://github.com/apache/dubbo-go) (recommended)
+* [Rust](https://github.com/apache/dubbo-rust)
+* [Node.js](https://github.com/apache/dubbo-js)
+* [Python](https://github.com/dubbo/py-client-for-apache-dubbo)
+* [PHP](https://github.com/apache/dubbo-php-framework)
+* [Erlang](https://github.com/apache/dubbo-erlang)
 
 ## License
 Apache Dubbo is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/master/LICENSE) file for details.

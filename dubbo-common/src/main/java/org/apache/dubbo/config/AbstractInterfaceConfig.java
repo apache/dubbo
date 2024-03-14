@@ -23,10 +23,10 @@ import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
-import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -55,7 +55,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.config.Constants.DEFAULT_NATIVE_PROXY;
 
 /**
@@ -280,23 +279,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
-        }
-    }
-
-    /**
-     * @deprecated After metrics config is refactored.
-     * This method should no longer use and will be deleted in the future.
-     */
-    @Deprecated
-    protected void appendMetricsCompatible(Map<String, String> map) {
-        MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
-        if (metricsConfig != null) {
-            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
-            if (!StringUtils.isEquals(protocol, PROTOCOL_PROMETHEUS)) {
-                Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
-                map.put("metrics.protocol", protocol);
-                map.put("metrics.port", metricsConfig.getPort());
-            }
         }
     }
 
@@ -756,6 +738,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setMethods(List<? extends MethodConfig> methods) {
         this.methods = (methods != null) ? new ArrayList<>(methods) : null;
+    }
+
+    /**
+     * It is only used in native scenarios to get methodConfigs.
+     * @param methodsJson
+     */
+    public void setMethodsJson(List<String> methodsJson) {
+        if (methodsJson != null) {
+            this.methods = new ArrayList<>();
+            methodsJson.forEach(
+                    (methodConfigJson) -> methods.add(JsonUtils.toJavaObject(methodConfigJson, MethodConfig.class)));
+        } else {
+            this.methods = null;
+        }
     }
 
     public void addMethod(MethodConfig methodConfig) {

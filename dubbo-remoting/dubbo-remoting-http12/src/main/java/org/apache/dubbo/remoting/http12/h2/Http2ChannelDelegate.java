@@ -50,6 +50,11 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     }
 
     @Override
+    public SocketAddress localAddress() {
+        return h2StreamChannel.localAddress();
+    }
+
+    @Override
     public void flush() {
         h2StreamChannel.flush();
     }

@@ -79,6 +79,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
@@ -104,7 +105,6 @@ import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
@@ -336,7 +336,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     doDelayExport();
                 } else if (Integer.valueOf(-1).equals(getDelay())
                         && Boolean.parseBoolean(ConfigurationUtils.getProperty(
-                                getScopeModel(), CommonConstants.DUBBO_MANUAL_REGISTER_KEY, "false"))) {
+                                getScopeModel(), CommonConstants.DubboProperty.DUBBO_MANUAL_REGISTER_KEY, "false"))) {
                     // should not register by default
                     doExport(RegisterTypeEnum.MANUAL_REGISTER);
                 } else {
@@ -563,6 +563,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         final boolean serverService = ref instanceof ServerService;
         if (serverService) {
             serviceDescriptor = ((ServerService) ref).getServiceDescriptor();
+            if (!this.provider.getUseJavaPackageAsPath()) {
+                // for stub service, path always interface name or IDL package name
+                this.path = serviceDescriptor.getInterfaceName();
+            }
             repository.registerService(serviceDescriptor);
         } else {
             serviceDescriptor = repository.registerService(getInterfaceClass());
@@ -679,7 +683,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
-        appendMetricsCompatible(map);
 
         // append params with method configs,
         if (CollectionUtils.isNotEmpty(getMethods())) {

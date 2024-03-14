@@ -22,7 +22,6 @@ import org.apache.dubbo.aot.api.TypeDescriber;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
@@ -35,7 +34,6 @@ public class TripleReflectionTypeDescriberRegistrar implements ReflectionTypeDes
     @Override
     public List<TypeDescriber> getTypeDescribers() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
-        typeDescribers.add(buildTypeDescriberWithPublicMethod(TripleHttp2FrameServerHandler.class));
         typeDescribers.add(buildTypeDescriberWithPublicMethod(TripleCommandOutBoundHandler.class));
         typeDescribers.add(buildTypeDescriberWithPublicMethod(TripleTailHandler.class));
         typeDescribers.add(buildTypeDescriberWithPublicMethod(TripleServerConnectionHandler.class));

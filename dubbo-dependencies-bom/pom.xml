@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>27</version>
+    <version>31</version>
     <relativePath />
   </parent>
 
@@ -91,95 +91,74 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.25</spring_version>
-    <spring_security_version>5.8.8</spring_security_version>
-    <javassist_version>3.29.2-GA</javassist_version>
-    <bytebuddy.version>1.14.9</bytebuddy.version>
+    <spring_security_version>5.8.10</spring_security_version>
+    <javassist_version>3.30.2-GA</javassist_version>
+    <byte-buddy_version>1.14.12</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.1.101.Final</netty4_version>
-    <mina_version>2.2.1</mina_version>
-    <grizzly_version>2.4.4</grizzly_version>
+    <netty4_version>4.1.107.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
-    <fastjson2_version>2.0.42</fastjson2_version>
-    <zookeeper_version>3.7.0</zookeeper_version>
+    <fastjson2_version>2.0.47</fastjson2_version>
+    <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.1.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
     <jedis_version>3.10.0</jedis_version>
-    <consul_version>1.4.5</consul_version>
-    <consul_process_version>2.2.1</consul_process_version>
-    <consul_client_version>1.5.3</consul_client_version>
-    <xmemcached_version>1.4.3</xmemcached_version>
-    <cxf_version>3.5.5</cxf_version>
-    <thrift_version>0.19.0</thrift_version>
     <hessian_version>4.0.66</hessian_version>
-    <protobuf-java_version>3.25.0</protobuf-java_version>
+    <protobuf-java_version>3.25.3</protobuf-java_version>
     <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
     <servlet_version>3.1.0</servlet_version>
-    <jetty_version>9.4.53.v20231009</jetty_version>
+    <jetty_version>9.4.54.v20240208</jetty_version>
     <validation_new_version>3.0.2</validation_new_version>
     <validation_version>1.1.0.Final</validation_version>
     <hibernate_validator_version>5.4.3.Final</hibernate_validator_version>
     <hibernate_validator_new_version>7.0.5.Final</hibernate_validator_new_version>
     <jel_version>3.0.1-b12</jel_version>
     <jcache_version>1.1.1</jcache_version>
-    <kryo_version>4.0.3</kryo_version>
-    <kryo_serializers_version>0.45</kryo_serializers_version>
-    <fst_version>2.57</fst_version>
-    <avro_version>1.11.1</avro_version>
-    <apollo_client_version>2.1.0</apollo_client_version>
+    <apollo_client_version>2.2.0</apollo_client_version>
     <snakeyaml_version>2.2</snakeyaml_version>
-    <commons_lang3_version>3.12.0</commons_lang3_version>
-    <protostuff_version>1.8.0</protostuff_version>
+    <commons_lang3_version>3.14.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.11.5</micrometer.version>
+    <micrometer.version>1.12.3</micrometer.version>
     <opentelemetry.version>1.26.0</opentelemetry.version>
     <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
-    <micrometer-tracing.version>1.1.6</micrometer-tracing.version>
+    <micrometer-tracing.version>1.2.3</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
-    <reactor.version>3.5.11</reactor.version>
+    <reactor.version>3.6.2</reactor.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>3.14.9</okhttp_version>
 
     <rs_api_version>2.1.1</rs_api_version>
     <resteasy_version>3.15.6.Final</resteasy_version>
     <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
-    <tomcat_embed_version>8.5.87</tomcat_embed_version>
-    <jetcd_version>0.7.6</jetcd_version>
-    <nacos_version>2.2.4</nacos_version>
+    <tomcat_embed_version>8.5.99</tomcat_embed_version>
+    <nacos_version>2.3.1</nacos_version>
     <sentinel.version>1.8.6</sentinel.version>
     <seata.version>1.6.1</seata.version>
-    <grpc.version>1.59.0</grpc.version>
+    <grpc.version>1.62.2</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
     <mustache_version>0.9.10</mustache_version>
     <!-- Log libs -->
     <slf4j_version>1.7.36</slf4j_version>
-    <!-- Do not upgrade the log4j12 version, or else reload4j and log4j will coexist -->
-    <slf4j-log4j12_version>1.7.33</slf4j-log4j12_version>
-    <jcl_version>1.2</jcl_version>
+    <jcl_version>1.3.0</jcl_version>
     <log4j_version>1.2.17</log4j_version>
-    <logback_version>1.2.11</logback_version>
+    <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-    <log4j2_version>2.20.0</log4j2_version>
-    <commons_io_version>2.11.0</commons_io_version>
+    <log4j2_version>2.23.1</log4j2_version>
+    <commons_io_version>2.15.1</commons_io_version>
     <commons-codec_version>1.16.0</commons-codec_version>
 
     <embedded_redis_version>0.13.0</embedded_redis_version>
-
-    <!-- Eureka -->
-    <eureka.version>1.10.18</eureka.version>
-
-    <!-- Fabric8 for Kubernetes -->
-    <fabric8_kubernetes_version>6.9.2</fabric8_kubernetes_version>
 
     <!-- Alibaba -->
     <alibaba_spring_context_support_version>1.0.11</alibaba_spring_context_support_version>
 
     <!-- Test libs -->
     <junit_jupiter_version>5.9.3</junit_jupiter_version>
+    <junit_version>4.13.2</junit_version>
     <awaitility_version>4.2.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
@@ -187,27 +166,28 @@
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
-    <test_container_version>1.19.1</test_container_version>
-    <etcd_launcher_version>0.7.6</etcd_launcher_version>
+    <test_container_version>1.19.7</test_container_version>
     <hessian_lite_version>3.2.13</hessian_lite_version>
-    <swagger_version>1.6.12</swagger_version>
+    <swagger_version>1.6.13</swagger_version>
 
     <snappy_java_version>1.1.10.5</snappy_java_version>
     <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
-    <metrics_version>2.0.6</metrics_version>
     <sofa_registry_version>5.4.3</sofa_registry_version>
+    <metrics_version>2.0.6</metrics_version>
     <gson_version>2.10.1</gson_version>
-    <jackson_version>2.15.3</jackson_version>
+    <jackson_version>2.16.2</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
-    <maven_flatten_version>1.5.0</maven_flatten_version>
-    <commons_compress_version>1.23.0</commons_compress_version>
-    <spotless-maven-plugin.version>2.40.0</spotless-maven-plugin.version>
+    <maven_flatten_version>1.6.0</maven_flatten_version>
+    <commons_compress_version>1.26.1</commons_compress_version>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
     <revision>3.3.0-beta.2</revision>
     <open_feign_version>3.1.5</open_feign_version>
+    <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
+    <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>
   </properties>
 
   <dependencyManagement>
@@ -275,22 +255,18 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>${bytebuddy.version}</version>
+        <version>${byte-buddy_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy-agent</artifactId>
+        <version>${byte-buddy_version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.netty</groupId>
         <artifactId>netty</artifactId>
         <version>${netty_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.mina</groupId>
-        <artifactId>mina-core</artifactId>
-        <version>${mina_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.grizzly</groupId>
-        <artifactId>grizzly-core</artifactId>
-        <version>${grizzly_version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -319,7 +295,7 @@
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <artifactId>log4j-slf4j-impl</artifactId>
           </exclusion>
           <exclusion>
             <groupId>log4j</groupId>
@@ -332,6 +308,10 @@
           <exclusion>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
             <groupId>org.apache.yetus</groupId>
@@ -370,33 +350,6 @@
         <artifactId>jedis</artifactId>
         <version>${jedis_version}</version>
       </dependency>
-      <dependency>
-        <groupId>com.ecwid.consul</groupId>
-        <artifactId>consul-api</artifactId>
-        <version>${consul_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.pszymczyk.consul</groupId>
-        <artifactId>embedded-consul</artifactId>
-        <version>${consul_process_version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.orbitz.consul</groupId>
-        <artifactId>consul-client</artifactId>
-        <version>${consul_client_version}</version>
-      </dependency>
-      <!-- Eureka -->
-      <dependency>
-        <groupId>com.netflix.eureka</groupId>
-        <artifactId>eureka-client</artifactId>
-        <version>${eureka.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.netflix.eureka</groupId>
-        <artifactId>eureka-core</artifactId>
-        <version>${eureka.version}</version>
-      </dependency>
 
       <!-- Alibaba -->
       <dependency>
@@ -405,26 +358,6 @@
         <version>${alibaba_spring_context_support_version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>com.googlecode.xmemcached</groupId>
-        <artifactId>xmemcached</artifactId>
-        <version>${xmemcached_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-frontend-simple</artifactId>
-        <version>${cxf_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-transports-http</artifactId>
-        <version>${cxf_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.thrift</groupId>
-        <artifactId>libthrift</artifactId>
-        <version>${thrift_version}</version>
-      </dependency>
       <dependency>
         <groupId>com.caucho</groupId>
         <artifactId>hessian</artifactId>
@@ -532,36 +465,6 @@
         <version>${jcache_version}</version>
       </dependency>
       <dependency>
-        <groupId>com.esotericsoftware</groupId>
-        <artifactId>kryo</artifactId>
-        <version>${kryo_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>de.javakaffee</groupId>
-        <artifactId>kryo-serializers</artifactId>
-        <version>${kryo_serializers_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>de.ruedigermoeller</groupId>
-        <artifactId>fst</artifactId>
-        <version>${fst_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro</artifactId>
-        <version>${avro_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.protostuff</groupId>
-        <artifactId>protostuff-core</artifactId>
-        <version>${protostuff_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.protostuff</groupId>
-        <artifactId>protostuff-runtime</artifactId>
-        <version>${protostuff_version}</version>
-      </dependency>
-      <dependency>
         <groupId>javax.ws.rs</groupId>
         <artifactId>javax.ws.rs-api</artifactId>
         <version>${rs_api_version}</version>
@@ -627,31 +530,11 @@
         <artifactId>tomcat-embed-core</artifactId>
         <version>${tomcat_embed_version}</version>
       </dependency>
-      <dependency>
-        <groupId>io.etcd</groupId>
-        <artifactId>jetcd-core</artifactId>
-        <version>${jetcd_version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-codec-http2</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-handler-proxy</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
       <!-- Log libs -->
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${slf4j-log4j12_version}</version>
       </dependency>
       <dependency>
         <groupId>commons-logging</groupId>
@@ -686,6 +569,16 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
+        <version>${log4j2_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>${log4j2_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j2-impl</artifactId>
         <version>${log4j2_version}</version>
       </dependency>
       <dependency>
@@ -759,28 +652,6 @@
         <version>${swagger_version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-core-api</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-core-impl</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-common</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-rest</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-
       <!-- for dubbo-registry-sofa -->
       <dependency>
         <groupId>com.alipay.sofa</groupId>
@@ -817,6 +688,12 @@
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
         <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit_version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -891,18 +768,6 @@
         <groupId>javax.portlet</groupId>
         <artifactId>portlet-api</artifactId>
         <version>${portlet_version}</version>
-      </dependency>
-      <!-- for dubbo-configcenter-etcd -->
-      <dependency>
-        <groupId>io.etcd</groupId>
-        <artifactId>jetcd-launcher</artifactId>
-        <version>${etcd_launcher_version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
@@ -993,17 +858,6 @@
         <artifactId>compiler</artifactId>
         <version>${mustache_version}</version>
       </dependency>
-      <dependency>
-        <groupId>io.fabric8</groupId>
-        <artifactId>kubernetes-client</artifactId>
-        <version>${fabric8_kubernetes_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.fabric8</groupId>
-        <artifactId>kubernetes-server-mock</artifactId>
-        <version>${fabric8_kubernetes_version}</version>
-        <scope>test</scope>
-      </dependency>
       <!-- tri compress support-->
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -1052,6 +906,16 @@
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-openfeign-core</artifactId>
         <version>${open_feign_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jakarta.xml.bind-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb-runtime.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallToObserverAdapter;
 
 public class Http2ServerCallToObserverAdapter extends Http2ServerStreamObserver
@@ -27,9 +28,9 @@ public class Http2ServerCallToObserverAdapter extends Http2ServerStreamObserver
 
     public Http2ServerCallToObserverAdapter(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
         super(frameworkModel, h2StreamChannel);
-        setHeadersCustomizer((headers) -> {
+        setHeadersCustomizer(headers -> {
             if (exceptionCode != 0) {
-                headers.set("tri-exception-code", String.valueOf(exceptionCode));
+                headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
             }
         });
     }

@@ -85,7 +85,7 @@ public class DubboProcessAotMojo extends AbstractAotMojo {
 
     private String[] getAotArguments(String applicationClass) {
         List<String> aotArguments = new ArrayList<>();
-        aotArguments.add(applicationClass);
+        aotArguments.add(applicationClass != null ? applicationClass : "");
         aotArguments.add(this.generatedSources.toString());
         aotArguments.add(this.generatedResources.toString());
         aotArguments.add(this.generatedClasses.toString());

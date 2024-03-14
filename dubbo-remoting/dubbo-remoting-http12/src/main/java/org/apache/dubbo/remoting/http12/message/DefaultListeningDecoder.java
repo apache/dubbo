@@ -20,14 +20,14 @@ import java.io.InputStream;
 
 public class DefaultListeningDecoder implements ListeningDecoder {
 
-    private final HttpMessageCodec httpMessageCodec;
+    private final HttpMessageDecoder httpMessageDecoder;
 
     private final Class<?>[] targetTypes;
 
     private Listener listener;
 
-    public DefaultListeningDecoder(HttpMessageCodec httpMessageCodec, Class<?>[] targetTypes) {
-        this.httpMessageCodec = httpMessageCodec;
+    public DefaultListeningDecoder(HttpMessageDecoder httpMessageDecoder, Class<?>[] targetTypes) {
+        this.httpMessageDecoder = httpMessageDecoder;
         this.targetTypes = targetTypes;
     }
 
@@ -38,7 +38,7 @@ public class DefaultListeningDecoder implements ListeningDecoder {
 
     @Override
     public void decode(InputStream inputStream) {
-        Object[] decode = this.httpMessageCodec.decode(inputStream, targetTypes);
+        Object[] decode = this.httpMessageDecoder.decode(inputStream, targetTypes);
         this.listener.onMessage(decode);
     }
 

@@ -28,7 +28,7 @@
   <packaging>pom</packaging>
 
   <name>dubbo-plugin</name>
-  <description>The registry module of dubbo project</description>
+  <description>The plugins of dubbo project</description>
   <modules>
     <module>dubbo-qos</module>
     <module>dubbo-auth</module>
@@ -36,25 +36,13 @@
     <module>dubbo-security</module>
     <module>dubbo-spring-security</module>
     <module>dubbo-qos-api</module>
-    <module>dubbo-plugin-cluster-mergeable</module>
     <module>dubbo-native</module>
     <module>dubbo-compiler</module>
-    <module>dubbo-plugin-mock</module>
-    <module>dubbo-plugin-router-script</module>
-    <module>dubbo-plugin-router-mesh</module>
-    <module>dubbo-plugin-router-condition</module>
-    <module>dubbo-plugin-router-tag</module>
-    <module>dubbo-plugin-loadbalance-adaptive</module>
-    <module>dubbo-plugin-access-log</module>
-    <module>dubbo-plugin-tps</module>
-    <module>dubbo-plugin-token</module>
-    <module>dubbo-plugin-generic-invoke</module>
-    <module>dubbo-plugin-context</module>
-    <module>dubbo-plugin-classloader-filter</module>
-    <module>dubbo-plugin-proxy-bytebuddy</module>
-    <module>dubbo-plugin-qos-trace</module>
     <module>dubbo-filter-cache</module>
     <module>dubbo-filter-validation</module>
+    <module>dubbo-rest-jaxrs</module>
+    <module>dubbo-rest-servlet</module>
+    <module>dubbo-rest-spring</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
@@ -68,8 +56,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

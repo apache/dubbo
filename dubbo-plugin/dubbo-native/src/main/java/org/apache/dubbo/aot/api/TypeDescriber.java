@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.aot.api;
 
-import org.apache.dubbo.aot.generate.ExecutableDescriber;
-
 import java.util.Set;
 
 /**

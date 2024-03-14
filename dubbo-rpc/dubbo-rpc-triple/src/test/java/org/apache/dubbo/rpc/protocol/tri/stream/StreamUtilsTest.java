@@ -55,7 +55,7 @@ class StreamUtilsTest {
         attachments.put("Upper", "Upper");
         attachments.put("obj", new Object());
 
-        StreamUtils.convertAttachment(headers, attachments, false);
+        StreamUtils.putHeaders(headers, attachments, false);
         Assertions.assertNull(headers.get(TripleHeaderEnum.PATH_KEY.getHeader()));
         Assertions.assertNull(headers.get("Upper"));
         Assertions.assertNull(headers.get("obj"));
@@ -63,7 +63,7 @@ class StreamUtilsTest {
         headers = new DefaultHttp2Headers();
         headers.add("key", "value");
 
-        StreamUtils.convertAttachment(headers, attachments, true);
+        StreamUtils.putHeaders(headers, attachments, true);
         Assertions.assertNull(headers.get(TripleHeaderEnum.PATH_KEY.getHeader()));
         Assertions.assertNull(headers.get("Upper"));
         Assertions.assertNull(headers.get("obj"));
@@ -89,7 +89,7 @@ class StreamUtilsTest {
             executorService.execute(() -> {
                 DefaultHttp2Headers headers2 = new DefaultHttp2Headers();
                 headers2.add("key", "value");
-                StreamUtils.convertAttachment(headers2, attachments2, true);
+                StreamUtils.putHeaders(headers2, attachments2, true);
 
                 if (headers2.get(TripleHeaderEnum.PATH_KEY.getHeader()) != null) {
                     return;

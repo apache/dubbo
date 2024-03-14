@@ -56,7 +56,8 @@ public class JVMUtil {
         int i = 0;
         // default is 32, means only print up to 32 lines
         int jstackMaxLine = 32;
-        String jstackMaxLineStr = System.getProperty(CommonConstants.DUBBO_JSTACK_MAXLINE);
+        String jstackMaxLineStr =
+                SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_JSTACK_MAXLINE);
         if (StringUtils.isNotEmpty(jstackMaxLineStr)) {
             try {
                 jstackMaxLine = Integer.parseInt(jstackMaxLineStr);

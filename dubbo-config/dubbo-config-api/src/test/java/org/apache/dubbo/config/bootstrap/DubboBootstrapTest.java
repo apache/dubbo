@@ -22,6 +22,7 @@ import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -84,13 +85,15 @@ class DubboBootstrapTest {
     public static void setUp(@TempDir Path folder) {
         DubboBootstrap.reset();
         zkServerAddress = System.getProperty("zookeeper.connection.address.1");
-        dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
-        System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
+        dubboProperties = folder.resolve(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY)
+                .toFile();
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
     public static void tearDown() {
-        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
     }
 
     @AfterEach
@@ -261,7 +264,7 @@ class DubboBootstrapTest {
                 .start();
 
         Assertions.assertTrue(bootstrap.isInitialized());
-        Assertions.assertTrue(bootstrap.isStarted());
+        Assertions.assertTrue(bootstrap.isCompletion());
         Assertions.assertFalse(bootstrap.isStopped());
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();
@@ -316,21 +319,6 @@ class DubboBootstrapTest {
         registryConfig.setUseAsMetadataCenter(false);
         registryConfig.setUseAsConfigCenter(false);
 
-        Exception exception = null;
-        try {
-            DubboBootstrap.getInstance()
-                    .application(applicationConfig)
-                    .registry(registryConfig)
-                    .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-                    .service(service)
-                    .start();
-        } catch (Exception e) {
-            exception = e;
-            DubboBootstrap.reset();
-        }
-
-        Assertions.assertNotNull(exception);
-
         DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 .registry(registryConfig)
@@ -340,6 +328,33 @@ class DubboBootstrapTest {
                 .start();
 
         assertMetadataService(DubboBootstrap.getInstance(), availablePort, false);
+    }
+
+    @Test
+    void testRemoteMetadataServiceExporterCheckMetadataType() {
+
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
+            ServiceConfig<DemoService> service = new ServiceConfig<>();
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+
+            int availablePort = NetUtils.getAvailablePort();
+
+            ApplicationConfig applicationConfig = new ApplicationConfig("bootstrap-test");
+            applicationConfig.setMetadataServicePort(availablePort);
+            applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
+
+            RegistryConfig registryConfig = new RegistryConfig(zkServerAddress);
+            registryConfig.setUseAsMetadataCenter(false);
+            registryConfig.setUseAsConfigCenter(false);
+
+            DubboBootstrap.getInstance()
+                    .application(applicationConfig)
+                    .registry(registryConfig)
+                    .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+                    .service(service)
+                    .start();
+        });
     }
 
     private ExporterDeployListener getListener(ApplicationModel model) {

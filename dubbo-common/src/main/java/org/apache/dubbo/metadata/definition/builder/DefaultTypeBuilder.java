@@ -32,15 +32,18 @@ import java.util.Map;
 public final class DefaultTypeBuilder {
 
     public static TypeDefinition build(Class<?> clazz, Map<String, TypeDefinition> typeCache) {
-        final String canonicalName = clazz.getCanonicalName();
+        String className = clazz.getCanonicalName();
+        if (className == null) {
+            className = clazz.getName();
+        }
 
         // Try to get a cached definition
-        TypeDefinition td = typeCache.get(canonicalName);
+        TypeDefinition td = typeCache.get(className);
         if (td != null) {
             return td;
         }
-        td = new TypeDefinition(canonicalName);
-        typeCache.put(canonicalName, td);
+        td = new TypeDefinition(className);
+        typeCache.put(className, td);
 
         // Primitive type
         if (!JaketConfigurationUtils.needAnalyzing(clazz)) {

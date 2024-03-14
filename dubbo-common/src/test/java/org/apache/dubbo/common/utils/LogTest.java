@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.Level;
+import org.apache.dubbo.common.logger.Level;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

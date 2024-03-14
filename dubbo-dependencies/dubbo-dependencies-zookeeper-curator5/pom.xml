@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>27</version>
+    <version>31</version>
     <relativePath />
   </parent>
 
@@ -32,27 +32,15 @@
 
   <properties>
     <revision>3.3.0-beta.2</revision>
-    <maven_flatten_version>1.5.0</maven_flatten_version>
+    <maven_flatten_version>1.6.0</maven_flatten_version>
     <slf4j_version>1.7.36</slf4j_version>
     <curator5_version>5.1.0</curator5_version>
-    <zookeeper_version>3.8.1</zookeeper_version>
-    <spotless-maven-plugin.version>2.40.0</spotless-maven-plugin.version>
+    <zookeeper_version>3.8.3</zookeeper_version>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.apache.zookeeper</groupId>
-        <artifactId>parent</artifactId>
-        <version>${zookeeper_version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <dependency>

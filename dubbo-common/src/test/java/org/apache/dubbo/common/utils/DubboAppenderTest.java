@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.Category;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.message.SimpleMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,15 +33,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class DubboAppenderTest {
-    private LoggingEvent event;
+    private Log4jLogEvent event;
 
     @BeforeEach
     public void setUp() throws Exception {
-        event = mock(LoggingEvent.class);
-        when(event.getLogger()).thenReturn(mock(Category.class));
-        when(event.getLevel()).thenReturn(mock(Level.class));
+        event = mock(Log4jLogEvent.class);
+        when(event.getLoggerName()).thenReturn("logger-name");
+        when(event.getLevel()).thenReturn(Level.INFO);
         when(event.getThreadName()).thenReturn("thread-name");
-        when(event.getMessage()).thenReturn("message");
+        when(event.getMessage()).thenReturn(new SimpleMessage("message"));
     }
 
     @AfterEach
@@ -63,7 +63,7 @@ class DubboAppenderTest {
     void testAppend() {
         DubboAppender appender = new DubboAppender();
         appender.append(event);
-        assumeTrue(0 == DubboAppender.logList.size());
+        assumeTrue(DubboAppender.logList.isEmpty());
         DubboAppender.doStart();
         appender.append(event);
         assertThat(DubboAppender.logList, hasSize(1));

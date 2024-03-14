@@ -94,7 +94,6 @@ public interface Constants {
     String CONSUMER_MODEL = "consumerModel";
     String METHOD_MODEL = "methodModel";
 
-    String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
     String INVOCATION_KEY = "invocation";
     String SERIALIZATION_ID_KEY = "serialization_id";
 
@@ -104,13 +103,12 @@ public interface Constants {
     String H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY = "dubbo.rpc.tri.initial-window-size";
     String H2_SETTINGS_MAX_FRAME_SIZE_KEY = "dubbo.rpc.tri.max-frame-size";
     String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
+    String H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
+    String H2_SETTINGS_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
+    String H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";
+    String H2_SETTINGS_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
+    String H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS = "dubbo.rpc.tri.pass-through-standard-http-headers";
 
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";
-    String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
-    String TRI_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
-
-    String H2_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
-
-    String H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";
 }

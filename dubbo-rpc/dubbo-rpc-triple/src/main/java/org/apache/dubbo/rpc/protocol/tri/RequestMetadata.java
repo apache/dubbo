@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
@@ -55,7 +56,7 @@ public class RequestMetadata {
                 .authority(address)
                 .method(HttpMethod.POST.asciiName())
                 .path("/" + service + "/" + method.getMethodName())
-                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), MediaType.APPLICATION_GRPC_PROTO.getName())
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
         if (!ignoreDefaultVersion || !"1.0.0".equals(version)) {
@@ -67,7 +68,7 @@ public class RequestMetadata {
         if (!Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())) {
             setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
         }
-        StreamUtils.convertAttachment(header, attachments, convertNoLowerHeader);
+        StreamUtils.putHeaders(header, attachments, convertNoLowerHeader);
         return header;
     }
 

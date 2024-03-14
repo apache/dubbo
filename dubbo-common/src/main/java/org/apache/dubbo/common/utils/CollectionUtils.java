@@ -24,11 +24,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
@@ -404,11 +407,17 @@ public class CollectionUtils {
             return null;
         }
         if (values instanceof List) {
-            List<T> list = (List<T>) values;
-            return list.get(0);
+            return ((List<T>) values).get(0);
         } else {
             return values.iterator().next();
         }
+    }
+
+    public static <T> T first(List<T> values) {
+        if (isEmpty(values)) {
+            return null;
+        }
+        return values.get(0);
     }
 
     public static <T> Set<T> toTreeSet(Set<T> set) {
@@ -419,5 +428,79 @@ public class CollectionUtils {
             set = new TreeSet<>(set);
         }
         return set;
+    }
+
+    public static <T> Set<T> newHashSet(int expectedSize) {
+        return new HashSet<>(capacity(expectedSize));
+    }
+
+    public static <T> Set<T> newLinkedHashSet(int expectedSize) {
+        return new LinkedHashSet<>(capacity(expectedSize));
+    }
+
+    public static <T, K> Map<K, T> newHashMap(int expectedSize) {
+        return new HashMap<>(capacity(expectedSize));
+    }
+
+    public static <T, K> Map<K, T> newLinkedHashMap(int expectedSize) {
+        return new LinkedHashMap<>(capacity(expectedSize));
+    }
+
+    public static <T, K> Map<K, T> newConcurrentHashMap(int expectedSize) {
+        if (JRE.JAVA_8.isCurrentVersion()) {
+            return new SafeConcurrentHashMap<>(capacity(expectedSize));
+        }
+        return new ConcurrentHashMap<>(capacity(expectedSize));
+    }
+
+    public static <T, K> Map<K, T> newConcurrentHashMap() {
+        if (JRE.JAVA_8.isCurrentVersion()) {
+            return new SafeConcurrentHashMap<>();
+        }
+        return new ConcurrentHashMap<>();
+    }
+
+    public static int capacity(int expectedSize) {
+        if (expectedSize < 3) {
+            if (expectedSize < 0) {
+                throw new IllegalArgumentException("expectedSize cannot be negative but was: " + expectedSize);
+            }
+            return expectedSize + 1;
+        }
+        if (expectedSize < 1 << (Integer.SIZE - 2)) {
+            return (int) (expectedSize / 0.75F + 1.0F);
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    public static class SafeConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
+        private static final long serialVersionUID = 1L;
+
+        public SafeConcurrentHashMap() {}
+
+        public SafeConcurrentHashMap(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        public SafeConcurrentHashMap(Map<? extends K, ? extends V> m) {
+            super(m);
+        }
+
+        @Override
+        public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+            V value = get(key);
+            if (value != null) {
+                return value;
+            }
+            value = mappingFunction.apply(key);
+            if (value == null) {
+                return null;
+            }
+            V exists = putIfAbsent(key, value);
+            if (exists != null) {
+                return exists;
+            }
+            return value;
+        }
     }
 }

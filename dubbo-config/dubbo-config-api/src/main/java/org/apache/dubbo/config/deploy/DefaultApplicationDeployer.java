@@ -361,7 +361,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         configManager.loadConfigsOfTypeFromProps(RegistryConfig.class);
 
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
-        if (defaultRegistries.size() > 0) {
+        if (!defaultRegistries.isEmpty()) {
             defaultRegistries.stream()
                     .filter(this::isUsedRegistryAsConfigCenter)
                     .map(this::registryAsConfigCenter)
@@ -511,9 +511,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             defaultRegistries.stream()
                     .filter(this::isUsedRegistryAsMetadataCenter)
                     .map(registryConfig -> registryAsMetadataCenter(registryConfig, metadataConfigToOverride))
-                    .forEach(metadataReportConfig -> {
-                        overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig);
-                    });
+                    .forEach(metadataReportConfig ->
+                            overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig));
         }
     }
 
@@ -693,7 +692,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
 
                 // if is started and no new module, just return
-                if (isStarted() && !hasPendingModule) {
+                if ((isStarted() || isCompletion()) && !hasPendingModule) {
                     return CompletableFuture.completedFuture(false);
                 }
 
@@ -812,7 +811,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // start internal module
             ModuleDeployer internalModuleDeployer =
                     applicationModel.getInternalModule().getDeployer();
-            if (!internalModuleDeployer.isStarted()) {
+            if (!internalModuleDeployer.isCompletion()) {
                 Future future = internalModuleDeployer.start();
                 // wait for internal module startup
                 try {
@@ -1015,7 +1014,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
                                 // refresh for 30 times (default for 30s) when deployer is not started, prevent submit
                                 // too many revision
-                                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !isStarted()) {
+                                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !isCompletion()) {
                                     return;
                                 }
 
@@ -1190,6 +1189,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 case STARTED:
                     onStarted();
                     break;
+                case COMPLETION:
+                    onCompletion();
+                    break;
                 case STARTING:
                     onStarting();
                     break;
@@ -1216,13 +1218,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     // cannot change to pending from other state
                     // setPending();
                     break;
+                default:
             }
         }
     }
 
     private DeployState calculateState() {
-        DeployState newState = DeployState.UNKNOWN;
-        int pending = 0, starting = 0, started = 0, stopping = 0, stopped = 0, failed = 0;
+        int total = 0, pending = 0, starting = 0, started = 0, completion = 0, stopping = 0, stopped = 0, failed = 0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             ModuleDeployer deployer = moduleModel.getDeployer();
             if (deployer == null) {
@@ -1231,6 +1233,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 pending++;
             } else if (deployer.isStarting()) {
                 starting++;
+            } else if (deployer.isCompletion()) {
+                completion++;
             } else if (deployer.isStarted()) {
                 started++;
             } else if (deployer.isStopping()) {
@@ -1240,39 +1244,37 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             } else if (deployer.isFailed()) {
                 failed++;
             }
+            total++;
         }
-
+        // any module is failed
         if (failed > 0) {
-            newState = DeployState.FAILED;
-        } else if (started > 0) {
-            if (pending + starting + stopping + stopped == 0) {
-                // all modules have been started
-                newState = DeployState.STARTED;
-            } else if (pending + starting > 0) {
-                // some module is pending and some is started
-                newState = DeployState.STARTING;
-            } else if (stopping + stopped > 0) {
-                newState = DeployState.STOPPING;
-            }
-        } else if (starting > 0) {
-            // any module is starting
-            newState = DeployState.STARTING;
-        } else if (pending > 0) {
-            if (starting + starting + stopping + stopped == 0) {
-                // all modules have not starting or started
-                newState = DeployState.PENDING;
-            } else if (stopping + stopped > 0) {
-                // some is pending and some is stopping or stopped
-                newState = DeployState.STOPPING;
-            }
-        } else if (stopping > 0) {
-            // some is stopping and some stopped
-            newState = DeployState.STOPPING;
-        } else if (stopped > 0) {
-            // all modules are stopped
-            newState = DeployState.STOPPED;
+            return DeployState.FAILED;
         }
-        return newState;
+        // all modules have not starting or started
+        if (pending == total) {
+            return DeployState.PENDING;
+        }
+        // all modules have completed
+        if (completion == total) {
+            return DeployState.COMPLETION;
+        }
+        // all modules are stopped
+        if (stopped == total) {
+            return DeployState.STOPPED;
+        }
+        // some module is starting or pending, it's in starting state
+        if (starting > 0 || pending > 0) {
+            return DeployState.STARTING;
+        }
+        // some module is stopping or stopped, it's in stopping state
+        if (stopping > 0 || stopped > 0) {
+            return DeployState.STOPPING;
+        }
+        // all modules have been started
+        if (started > 0) {
+            return DeployState.STARTED;
+        }
+        return DeployState.UNKNOWN;
     }
 
     private void onInitialize() {
@@ -1291,7 +1293,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void doExportMetadataService() {
-        if (!isStarting() && !isStarted()) {
+        if (!isStarting() && !isStarted() && !isCompletion()) {
             return;
         }
         for (DeployListener<ApplicationModel> listener : listeners) {
@@ -1313,7 +1315,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void onStarting() {
         // pending -> starting
         // started -> starting
-        if (!(isPending() || isStarted())) {
+        // completion -> starting
+        if (!(isPending() || isStarted() || isCompletion())) {
             return;
         }
         setStarting();
@@ -1324,23 +1327,34 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStarted() {
+        // starting -> started
+        if (!isStarting()) {
+            return;
+        }
+        setStarted();
+        startMetricsCollector();
+        if (logger.isInfoEnabled()) {
+            logger.info(getIdentifier() + " is ready.");
+        }
+        // refresh metadata
         try {
-            // starting -> started
-            if (!isStarting()) {
+            if (registered) {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
+            }
+        } catch (Exception e) {
+            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+        }
+    }
+
+    private void onCompletion() {
+        try {
+            // started -> completion
+            if (!isStarted()) {
                 return;
             }
-            setStarted();
-            startMetricsCollector();
+            setCompletion();
             if (logger.isInfoEnabled()) {
-                logger.info(getIdentifier() + " is ready.");
-            }
-            // refresh metadata
-            try {
-                if (registered) {
-                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
-                }
-            } catch (Exception e) {
-                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+                logger.info(getIdentifier() + " has completed.");
             }
         } finally {
             // complete future

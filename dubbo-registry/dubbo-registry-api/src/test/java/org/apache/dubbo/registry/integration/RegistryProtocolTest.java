@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.client.migration.MigrationRuleListener;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
+import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
 import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -264,12 +265,12 @@ class RegistryProtocolTest {
 
         Assertions.assertTrue(invoker instanceof MigrationInvoker);
         Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof ScopeClusterWrapper);
-        //        Assertions.assertTrue(((ScopeClusterWrapper) ((MigrationInvoker<?>)
-        // invoker).getCluster()).getCluster() instanceof MockClusterWrapper);
-        //        Assertions.assertTrue(((MockClusterWrapper) ((ScopeClusterWrapper) ((MigrationInvoker<?>)
-        // invoker).getCluster()).getCluster()).getCluster() instanceof FailoverCluster);
         Assertions.assertTrue(
-                (((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster())).getCluster()
+                ((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster()
+                        instanceof MockClusterWrapper);
+        Assertions.assertTrue(
+                ((MockClusterWrapper) ((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster())
+                                .getCluster()
                         instanceof FailoverCluster);
     }
 

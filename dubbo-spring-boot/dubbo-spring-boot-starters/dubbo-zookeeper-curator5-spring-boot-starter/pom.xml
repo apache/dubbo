@@ -34,18 +34,6 @@
     <zookeeper_version>3.8.3</zookeeper_version>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.apache.zookeeper</groupId>
-        <artifactId>parent</artifactId>
-        <version>${zookeeper_version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.curator</groupId>

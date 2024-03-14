@@ -80,11 +80,6 @@
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-api</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
@@ -143,6 +138,13 @@
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-serialization-jdk</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-registry-multicast</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
@@ -171,8 +173,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -238,23 +240,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-condition</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-plugin-router-tag</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.19.1</version>
+      <version>1.19.7</version>
       <scope>test</scope>
     </dependency>
 

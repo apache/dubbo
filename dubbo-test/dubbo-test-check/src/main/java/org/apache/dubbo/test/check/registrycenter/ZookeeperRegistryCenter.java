@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
@@ -42,6 +43,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_JAVA_IO_TMPDIR;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.USER_HOME;
 
 /**
  * Build the registry center with embedded zookeeper, which is run by a new process.
@@ -142,11 +147,11 @@ class ZookeeperRegistryCenter implements RegistryCenter {
         }
         // Use System.getProperty(user.home)
         logger.info(String.format("The user home is %s to store zookeeper binary archive.", directory));
-        directory = System.getProperty("user.home");
+        directory = SystemPropertyConfigUtils.getSystemProperty(USER_HOME);
         logger.info(String.format("user.home is %s", directory));
         if (StringUtils.isEmpty(directory)) {
             // Use default temporary directory
-            directory = System.getProperty("java.io.tmpdir");
+            directory = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_JAVA_IO_TMPDIR);
             logger.info(String.format("The temporary directory is %s to store zookeeper binary archive.", directory));
         }
         Assert.notEmptyString(directory, "The directory to store zookeeper binary archive cannot be null or empty.");
@@ -167,7 +172,8 @@ class ZookeeperRegistryCenter implements RegistryCenter {
      * Returns the Operating System.
      */
     private static OS getOS() {
-        String osName = System.getProperty("os.name").toLowerCase();
+        String osName =
+                SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME).toLowerCase();
         OS os = OS.Unix;
         if (osName.contains("windows")) {
             os = OS.Windows;

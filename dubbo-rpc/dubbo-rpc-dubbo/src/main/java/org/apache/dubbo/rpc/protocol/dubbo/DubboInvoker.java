@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
@@ -34,6 +35,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -70,8 +72,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final int serverShutdownTimeout;
 
-    private static final boolean setFutureWhenSync =
-            Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     public DubboInvoker(Class<T> serviceType, URL url, ClientsProvider clientsProvider) {
         this(serviceType, url, clientsProvider, null);
@@ -98,6 +100,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         } else {
             currentClient = exchangeClients.get(index.getAndIncrement() % exchangeClients.size());
         }
+        RpcContext.getServiceContext().setLocalAddress(currentClient.getLocalAddress());
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
 

@@ -102,7 +102,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
      */
     public Class<?> loadClass(ClassLoader classLoader, String className) throws ClassNotFoundException {
         Class<?> aClass = loadClass0(classLoader, className);
-        if (checkSerializable && !aClass.isPrimitive() && !Serializable.class.isAssignableFrom(aClass)) {
+        if (!aClass.isPrimitive() && !Serializable.class.isAssignableFrom(aClass)) {
             String msg = "[Serialization Security] Serialized class " + className
                     + " has not implement Serializable interface. "
                     + "Current mode is strict check, will disallow to deserialize it by default. ";
@@ -110,7 +110,9 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
                 logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
             }
 
-            throw new IllegalArgumentException(msg);
+            if (checkSerializable) {
+                throw new IllegalArgumentException(msg);
+            }
         }
 
         return aClass;

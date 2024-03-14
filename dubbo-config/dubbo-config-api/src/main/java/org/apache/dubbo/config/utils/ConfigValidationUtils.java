@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
@@ -82,8 +83,9 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -116,7 +118,6 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.IGNORE_CHECK_KEYS;
 import static org.apache.dubbo.config.Constants.LAYER_KEY;
@@ -132,6 +133,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
@@ -329,7 +331,7 @@ public class ConfigValidationUtils {
         AbstractConfig.appendParameters(map, monitor);
         AbstractConfig.appendParameters(map, application);
         String address = null;
-        String sysAddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
+        String sysAddress = SystemPropertyConfigUtils.getSystemProperty(DUBBO_MONITOR_ADDRESS);
         if (sysAddress != null && sysAddress.length() > 0) {
             address = sysAddress;
         } else if (monitor != null) {
@@ -560,6 +562,11 @@ public class ConfigValidationUtils {
                 checkMultiExtension(config.getScopeModel(), Codec2.class, CODEC_KEY, config.getCodec());
                 checkMultiExtension(
                         config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
+                checkMultiExtension(
+                        config.getScopeModel(),
+                        Serialization.class,
+                        PREFER_SERIALIZATION_KEY,
+                        config.getPreferSerialization());
                 checkMultiExtension(config.getScopeModel(), Transporter.class, SERVER_KEY, config.getServer());
                 checkMultiExtension(config.getScopeModel(), Transporter.class, CLIENT_KEY, config.getClient());
             }
@@ -581,6 +588,9 @@ public class ConfigValidationUtils {
         checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
         checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
         checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+        checkMultiExtension(config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
+        checkMultiExtension(
+                config.getScopeModel(), Serialization.class, PREFER_SERIALIZATION_KEY, config.getPreferSerialization());
     }
 
     public static void validateConsumerConfig(ConsumerConfig config) {

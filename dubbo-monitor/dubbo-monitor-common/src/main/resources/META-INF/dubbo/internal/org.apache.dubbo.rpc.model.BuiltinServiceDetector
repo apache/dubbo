@@ -1,2 +1,0 @@
-monitor=org.apache.dubbo.monitor.support.MonitorServiceDetector
-metrics=org.apache.dubbo.monitor.support.MetricsServiceDetector

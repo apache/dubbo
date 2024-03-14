@@ -1,0 +1,11 @@
+jaxrs-path-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.PathParamArgumentResolver
+jaxrs-matrix-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.MatrixParamArgumentResolver
+jaxrs-query-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.QueryParamArgumentResolver
+jaxrs-header-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.HeaderParamArgumentResolver
+jaxrs-cookie-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.CookieParamArgumentResolver
+jaxrs-form-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.FormParamArgumentResolver
+jaxrs-bean-param=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.BeanParamArgumentResolver
+jaxrs-body=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.BodyArgumentResolver
+jaxrs-form=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.FormArgumentResolver
+jaxrs-misc=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JaxrsMiscArgumentResolver
+jaxrs-fallback=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.FallbackArgumentResolver

@@ -19,19 +19,18 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.HttpMessageCodecFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
-public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
-
-    private static final MediaType MEDIA_TYPE = new MediaType("application", "grpc");
+public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     @Override
-    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
+    public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
+        String serializeName = UrlUtils.serializationOrDefault(url);
         WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
         wrapperHttpMessageCodec.setSerializeType(serializeName);
         ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
@@ -39,12 +38,7 @@ public class GrpcCompositeCodecFactory implements HttpMessageCodecFactory {
     }
 
     @Override
-    public MediaType contentType() {
-        return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean support(String contentType) {
-        return contentType.startsWith(MEDIA_TYPE.getName());
+    public MediaType mediaType() {
+        return MediaType.APPLICATION_GRPC;
     }
 }
