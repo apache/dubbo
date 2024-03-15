@@ -47,7 +47,8 @@ public class JValidation extends AbstractValidation {
             } catch (Throwable ignore) {
             }
         }
-        throw new IllegalArgumentException("Failed to load jakarta.validation.Validation or javax.validation.Validation from env. "
-                + "Please import at least one validator");
+        throw new IllegalArgumentException(
+                "Failed to load jakarta.validation.Validation or javax.validation.Validation from env. "
+                        + "Please import at least one validator");
     }
 }
