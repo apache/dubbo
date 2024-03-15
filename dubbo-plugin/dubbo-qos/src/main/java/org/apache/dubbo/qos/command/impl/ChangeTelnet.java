@@ -58,7 +58,8 @@ public class ChangeTelnet implements BaseCommand {
             for (Exporter<?> exporter : dubboProtocol.getExporters()) {
                 if (message.equals(exporter.getInvoker().getInterface().getSimpleName())
                         || message.equals(exporter.getInvoker().getInterface().getName())
-                        || message.equals(exporter.getInvoker().getUrl().getPath())) {
+                        || message.equals(exporter.getInvoker().getUrl().getPath())
+                        || message.equals(exporter.getInvoker().getUrl().getServiceKey())) {
                     found = true;
                     break;
                 }

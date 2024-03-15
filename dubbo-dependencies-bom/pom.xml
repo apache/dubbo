@@ -147,7 +147,7 @@
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-    <log4j2_version>2.23.0</log4j2_version>
+    <log4j2_version>2.23.1</log4j2_version>
     <commons_io_version>2.15.1</commons_io_version>
     <commons-codec_version>1.16.0</commons-codec_version>
 
@@ -166,7 +166,7 @@
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
-    <test_container_version>1.19.6</test_container_version>
+    <test_container_version>1.19.7</test_container_version>
     <hessian_lite_version>3.2.13</hessian_lite_version>
     <swagger_version>1.6.13</swagger_version>
 
@@ -175,11 +175,11 @@
     <sofa_registry_version>5.4.3</sofa_registry_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.10.1</gson_version>
-    <jackson_version>2.16.1</jackson_version>
+    <jackson_version>2.16.2</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
-    <commons_compress_version>1.26.0</commons_compress_version>
+    <commons_compress_version>1.26.1</commons_compress_version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>

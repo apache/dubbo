@@ -118,7 +118,6 @@ dubbo-seata-spring-boot-starter
 dubbo-spring-security
 dubbo-tracing
 dubbo-xds
-dubbo-plugin-proxy-bytebuddy
 dubbo-plugin-loom
 dubbo-rest-jaxrs
 dubbo-rest-servlet

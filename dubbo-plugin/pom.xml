@@ -40,7 +40,6 @@
     <module>dubbo-compiler</module>
     <module>dubbo-filter-cache</module>
     <module>dubbo-filter-validation</module>
-    <module>dubbo-plugin-proxy-bytebuddy</module>
     <module>dubbo-rest-jaxrs</module>
     <module>dubbo-rest-servlet</module>
     <module>dubbo-rest-spring</module>
