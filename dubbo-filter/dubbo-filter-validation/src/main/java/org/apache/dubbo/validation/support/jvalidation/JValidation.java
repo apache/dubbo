@@ -20,6 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.validation.Validator;
 import org.apache.dubbo.validation.support.AbstractValidation;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Creates a new instance of {@link Validator} using input argument url.
  * @see AbstractValidation
@@ -28,12 +31,23 @@ import org.apache.dubbo.validation.support.AbstractValidation;
 public class JValidation extends AbstractValidation {
 
     /**
-     * Return new instance of {@link JValidator}
+     * Return new instance of {@link Validator}
      * @param url Valid URL instance
-     * @return Instance of JValidator
+     * @return Instance of Validator
      */
     @Override
     protected Validator createValidator(URL url) {
-        return new JValidator(url);
+        List<Class<? extends Validator>> validatorList = Arrays.asList(JValidator.class, JValidatorNew.class);
+        for (Class<? extends Validator> instance : validatorList) {
+            try {
+                Validator validator = instance.getConstructor(URL.class).newInstance(url);
+                if (validator.isSupport()) {
+                    return validator;
+                }
+            } catch (Throwable ignore) {
+            }
+        }
+        throw new IllegalArgumentException("Failed to load jakarta.validation.Validation or javax.validation.Validation from env. "
+                + "Please import at least one validator");
     }
 }
