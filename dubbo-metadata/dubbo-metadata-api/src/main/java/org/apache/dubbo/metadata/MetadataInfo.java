@@ -332,6 +332,16 @@ public class MetadataInfo implements Serializable {
         return exportedServiceURLs;
     }
 
+    public Set<URL> collectSubscribedURLSet() {
+        if (subscribedServiceURLs == null) {
+            return Collections.emptySet();
+        }
+        return subscribedServiceURLs.values().stream()
+                .filter(CollectionUtils::isNotEmpty)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
     public Set<URL> collectExportedURLSet() {
         if (exportedServiceURLs == null) {
             return Collections.emptySet();

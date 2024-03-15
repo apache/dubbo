@@ -16,19 +16,20 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.List;
+import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 
 public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanceCustomizer, Prioritized {
@@ -37,6 +38,7 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
+        // need configure registryConsumer=true and metadata-service-port
         Boolean registerConsumer = applicationModel.getCurrentConfig().getRegisterConsumer();
         if (registerConsumer == null || !registerConsumer) {
             return;
@@ -45,42 +47,31 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
         if (serviceInstance.getHost() != null && serviceInstance.getPort() != 0) {
             return;
         }
-        String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
+        MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
+        if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getSubscribedServiceURLs())) {
+            return;
+        }
+        Set<URL> urls = metadataInfo.collectSubscribedURLSet();
+        if (CollectionUtils.isEmpty(urls)) {
+            return;
+        }
         try {
-            if (preferredProtocol != null) {
-                Protocol protocol = applicationModel
-                        .getFrameworkModel()
-                        .getExtensionLoader(Protocol.class)
-                        .getExtension(preferredProtocol, false);
-                List<ProtocolServer> protocolServerList = protocol.getServers();
-                if (CollectionUtils.isNotEmpty(protocolServerList)) {
-                    for (ProtocolServer protocolServer : protocolServerList) {
-                        if (protocolServer.getUrl() == null) {
-                            continue;
-                        }
-                        String host = protocolServer.getUrl().getHost();
-                        int port = protocolServer.getUrl().getPort();
-                        // if not match continue
-                        if (host == null || port == 0) {
-                            continue;
-                        }
-                        if (serviceInstance instanceof DefaultServiceInstance) {
-                            DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
-                            instance.setHost(host);
-                            instance.setPort(port);
-                            break;
-                        }
-                    }
-                }
-            }
-            if (serviceInstance.getHost() == null || serviceInstance.getPort() == 0) {
+            URL url = urls.iterator().next();
+            String host = url.getHost();
+            int port = url.getParameter(METADATA_SERVICE_PORT_KEY, 0);
+            if (host == null || port == 0) {
                 logger.warn(
                         PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
                         "typo in preferred protocol",
                         "",
-                        "Can't find an protocolServer using the default preferredProtocol \"" + preferredProtocol
-                                + "\", "
-                                + "Failed to fill host and port to serviceInstance when only consumers are present.");
+                        "Host or port is not a valid value"
+                                + "Please try check the config of dubbo.application.metadata-service-port");
+            }
+
+            if (serviceInstance instanceof DefaultServiceInstance) {
+                DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+                instance.setHost(host);
+                instance.setPort(port);
             }
         } catch (Exception e) {
             logger.error(
