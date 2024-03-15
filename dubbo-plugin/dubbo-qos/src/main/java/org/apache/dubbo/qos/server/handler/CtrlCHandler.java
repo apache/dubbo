@@ -27,19 +27,20 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.CharsetUtil;
 
 public class CtrlCHandler extends ByteToMessageDecoder {
-    /*
-     * When typed 'Ctrl+C', telnet client will send the following sequence:
-     * 'FF F4 FF FD 06' to server, it can be divided into two parts:
-     *
+    /**
+     * When type 'Ctrl+C', telnet client will send the following sequence:
+     * 'FF F4 FF FD 06', it can be divided into two parts:
+     * <p>
      * 1. 'FF F4' is telnet interrupt process command.
-     *
+     * <p>
      * 2. 'FF FD 06' is  to suppress the output of the process that is to be
      *    interrupted by the  interrupt process command.
-     *
+     * <p>
      * We need to response with 'FF FC 06' to ignore it and tell the client continue
      * display output.
      */
     private byte[] CTRLC_BYTES_SEQUENCE = new byte[] {(byte) 0xff, (byte) 0xf4, (byte) 0xff, (byte) 0xfd, (byte) 0x06};
+
     private byte[] RESPONSE_SEQUENCE = new byte[] {(byte) 0xff, (byte) 0xfc, 0x06};
 
     @Override
@@ -61,8 +62,8 @@ public class CtrlCHandler extends ByteToMessageDecoder {
             if (match) {
                 buffer.readerIndex(readerIndex + buffer.readableBytes());
                 ctx.writeAndFlush(Unpooled.wrappedBuffer(RESPONSE_SEQUENCE));
-                ctx.writeAndFlush(Unpooled.wrappedBuffer((QosConstants.BR_STR
-                        + QosProcessHandler.PROMPT).getBytes(CharsetUtil.UTF_8)));
+                ctx.writeAndFlush(Unpooled.wrappedBuffer(
+                        (QosConstants.BR_STR + QosProcessHandler.PROMPT).getBytes(CharsetUtil.UTF_8)));
 
                 return;
             }
