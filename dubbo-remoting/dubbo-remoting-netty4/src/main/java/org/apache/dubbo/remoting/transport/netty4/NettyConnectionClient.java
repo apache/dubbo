@@ -31,8 +31,8 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,6 +75,10 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     public static final AttributeKey<AbstractConnectionClient> CONNECTION = AttributeKey.valueOf("connection");
 
+    private AtomicBoolean isReconnecting;
+
+    private ScheduledExecutorService scheduledExecutorService;
+
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
@@ -91,6 +95,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         this.closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.init = new AtomicBoolean(false);
         this.increase();
+        this.isReconnecting = new AtomicBoolean(false);
+        scheduledExecutorService = Executors.newScheduledThreadPool(1);
     }
 
     @Override
@@ -154,10 +160,15 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             this.channel.set(null);
             closePromise.setSuccess(null);
         }
+        scheduledExecutorService.shutdown();
     }
 
     @Override
     protected void doConnect() throws RemotingException {
+        if (!isReconnecting.compareAndSet(false, true)) {
+            return;
+        }
+
         if (isClosed()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
@@ -345,6 +356,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
         @Override
         public void operationComplete(ChannelFuture future) {
+            isReconnecting.set(false);
+
             if (future.isSuccess()) {
                 return;
             }
@@ -362,17 +375,21 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                         "%s is reconnecting, attempt=%d cause=%s",
                         connectionClient, 0, future.cause().getMessage()));
             }
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                try {
-                    connectionClient.doConnect();
-                } catch (RemotingException e) {
-                    LOGGER.error(
-                            TRANSPORT_FAILED_RECONNECT, "", "", "Failed to connect to server: " + getConnectAddress());
-                } finally {
-                    executor.shutdown();
-                }
-            });
+
+            scheduledExecutorService.schedule(
+                    () -> {
+                        try {
+                            connectionClient.doConnect();
+                        } catch (RemotingException e) {
+                            LOGGER.error(
+                                    TRANSPORT_FAILED_RECONNECT,
+                                    "",
+                                    "",
+                                    "Failed to connect to server: " + getConnectAddress());
+                        }
+                    },
+                    1,
+                    TimeUnit.SECONDS);
         }
     }
 }
