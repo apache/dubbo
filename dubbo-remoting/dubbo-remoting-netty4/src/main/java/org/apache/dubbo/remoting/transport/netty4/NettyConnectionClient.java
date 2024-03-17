@@ -96,7 +96,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         this.init = new AtomicBoolean(false);
         this.increase();
         this.isReconnecting = new AtomicBoolean(false);
-        scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     }
 
     @Override
@@ -160,7 +160,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             this.channel.set(null);
             closePromise.setSuccess(null);
         }
-        scheduledExecutorService.shutdown();
+        scheduledExecutorService.shutdownNow();
     }
 
     @Override
@@ -356,7 +356,10 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
         @Override
         public void operationComplete(ChannelFuture future) {
-            isReconnecting.set(false);
+
+            if (!isReconnecting.compareAndSet(true, false)) {
+                return;
+            }
 
             if (future.isSuccess()) {
                 return;
