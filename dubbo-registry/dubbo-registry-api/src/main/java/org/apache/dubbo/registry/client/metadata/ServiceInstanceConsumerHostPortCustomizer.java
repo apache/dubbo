@@ -64,7 +64,7 @@ public class ServiceInstanceConsumerHostPortCustomizer implements ServiceInstanc
                         PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
                         "typo in preferred protocol",
                         "",
-                        "Host or port is not a valid value"
+                        "Host or port is not a valid value "
                                 + "Please try check the config of dubbo.application.metadata-service-port");
             }
 
