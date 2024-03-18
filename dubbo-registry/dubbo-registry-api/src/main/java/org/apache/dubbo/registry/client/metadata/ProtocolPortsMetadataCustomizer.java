@@ -60,7 +60,7 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
             if (oldPort != null && oldPort != newPort) {
                 LOGGER.warn(
                         LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES,
-                        "the protocol is listening " + "multiple ports",
+                        "the protocol is listening multiple ports",
                         "",
                         "Same protocol " + "[" + protocol + "]" + " listens on different ports " + "[" + oldPort + ","
                                 + newPort + "]" + " will override with each other" + ". The port [" + oldPort
