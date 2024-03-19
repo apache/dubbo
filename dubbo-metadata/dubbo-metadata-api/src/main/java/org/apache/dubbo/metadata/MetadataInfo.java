@@ -310,13 +310,6 @@ public class MetadataInfo implements Serializable {
         return serviceInfo.toFullString();
     }
 
-    public synchronized void addSubscribedURL(URL url) {
-        if (subscribedServiceURLs == null) {
-            subscribedServiceURLs = new ConcurrentSkipListMap<>();
-        }
-        addURL(subscribedServiceURLs, url);
-    }
-
     public boolean removeSubscribedURL(URL url) {
         if (subscribedServiceURLs == null) {
             return true;
