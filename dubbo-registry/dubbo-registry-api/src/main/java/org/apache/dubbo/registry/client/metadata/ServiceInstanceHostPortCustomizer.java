@@ -21,6 +21,7 @@ import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -29,7 +30,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataParamsPropertyValue;
 
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
@@ -46,6 +49,10 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
         MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
         if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getExportedServiceURLs())) {
+            Boolean registerConsumer = applicationModel.getCurrentConfig().getRegisterConsumer();
+            if (registerConsumer != null && registerConsumer) {
+                setConsumerHostAndPort(serviceInstance, applicationModel);
+            }
             return;
         }
 
@@ -92,5 +99,33 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                 instance.setPort(port);
             }
         }
+    }
+
+    private void setConsumerHostAndPort(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
+        try {
+            if (serviceInstance instanceof DefaultServiceInstance) {
+                DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+                if (instance.getHost() == null) {
+                    instance.setHost(NetUtils.getLocalHost());
+                }
+                String paramPortKey = getMetadataParamsPropertyValue(serviceInstance, PORT_KEY);
+                if (instance.getPort() == 0 && paramPortKey != null) {
+                    instance.setPort(Integer.parseInt(paramPortKey));
+                }
+            }
+        } catch (Exception e) {
+            logger.error(
+                    PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
+                    "typo in preferred protocol",
+                    "",
+                    "Error to fill consumer host and port.",
+                    e);
+        }
+    }
+
+    @Override
+    public int getPriority() {
+        // After MetadataServiceURLParamsMetadataCustomizer
+        return Prioritized.MIN_PRIORITY;
     }
 }
