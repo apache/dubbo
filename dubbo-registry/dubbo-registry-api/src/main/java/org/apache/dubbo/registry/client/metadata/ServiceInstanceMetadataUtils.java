@@ -255,7 +255,11 @@ public class ServiceInstanceMetadataUtils {
         });
     }
 
-    public static boolean isValidInstance(ServiceInstance instance) {
+    public static boolean isValidInstance(ServiceInstance instance, ApplicationModel applicationModel) {
+        Boolean registerConsumer = applicationModel.getCurrentConfig().getRegisterConsumer();
+        if (registerConsumer != null && registerConsumer) {
+            return instance != null && instance.getHost() != null;
+        }
         return instance != null && instance.getHost() != null && instance.getPort() != 0;
     }
 
