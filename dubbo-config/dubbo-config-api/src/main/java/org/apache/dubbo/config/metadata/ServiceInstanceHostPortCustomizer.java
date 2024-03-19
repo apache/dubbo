@@ -106,19 +106,18 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                 ExporterDeployListener listener = getListener(applicationModel);
                 ConfigurableMetadataServiceExporter metadataServiceExporter = listener.getMetadataServiceExporter();
                 List<URL> urlList = metadataServiceExporter.getExportedURLs();
-                if (CollectionUtils.isEmpty(urlList)) {
-                    return;
+                if (CollectionUtils.isNotEmpty(urlList)) {
+                    URL url = urlList.iterator().next();
+                    instance.setHost(url.getHost());
+                    instance.setPort(url.getPort());
                 }
-                URL url = urlList.iterator().next();
-                instance.setHost(url.getHost());
-                instance.setPort(url.getPort());
             }
         } catch (Exception e) {
             logger.error(
                     PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
                     "typo in preferred protocol",
                     "",
-                    "Error to fill consumer host and port.",
+                    "Error to fill default host and port.",
                     e);
         }
     }
