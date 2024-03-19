@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -26,6 +27,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
@@ -45,6 +47,10 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
         MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
         if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getExportedServiceURLs())) {
+            Boolean registerConsumer = applicationModel.getCurrentConfig().getRegisterConsumer();
+            if (registerConsumer != null && registerConsumer) {
+                setDefaultHostAndPort(serviceInstance, applicationModel);
+            }
             return;
         }
 
@@ -91,5 +97,34 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                 instance.setPort(port);
             }
         }
+    }
+
+    private void setDefaultHostAndPort(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
+        try {
+            if (serviceInstance instanceof DefaultServiceInstance) {
+                DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+                ExporterDeployListener listener = getListener(applicationModel);
+                ConfigurableMetadataServiceExporter metadataServiceExporter = listener.getMetadataServiceExporter();
+                List<URL> urlList = metadataServiceExporter.getExportedURLs();
+                if (CollectionUtils.isEmpty(urlList)) {
+                    return;
+                }
+                URL url = urlList.iterator().next();
+                instance.setHost(url.getHost());
+                instance.setPort(url.getPort());
+            }
+        } catch (Exception e) {
+            logger.error(
+                    PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER,
+                    "typo in preferred protocol",
+                    "",
+                    "Error to fill consumer host and port.",
+                    e);
+        }
+    }
+
+    private ExporterDeployListener getListener(ApplicationModel model) {
+        return (ExporterDeployListener)
+                model.getExtensionLoader(ApplicationDeployListener.class).getExtension("exporter");
     }
 }

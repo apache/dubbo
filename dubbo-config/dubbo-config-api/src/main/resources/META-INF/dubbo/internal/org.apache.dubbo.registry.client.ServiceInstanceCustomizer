@@ -1,1 +1,2 @@
 metadata-url=org.apache.dubbo.config.metadata.MetadataServiceURLParamsMetadataCustomizer
+port=org.apache.dubbo.registry.client.metadata.ServiceInstanceHostPortCustomizer
