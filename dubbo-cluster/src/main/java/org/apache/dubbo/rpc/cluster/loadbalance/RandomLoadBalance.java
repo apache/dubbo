@@ -69,13 +69,14 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         int totalWeight = 0;
         for (int i = 0; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
+            // judge before accumulation
+            if (sameWeight && totalWeight != weight * i) {
+                sameWeight = false;
+            }
             // Sum
             totalWeight += weight;
             // save for later use
             weights[i] = totalWeight;
-            if (sameWeight && totalWeight != weight * (i + 1)) {
-                sameWeight = false;
-            }
         }
         if (totalWeight > 0 && !sameWeight) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on
