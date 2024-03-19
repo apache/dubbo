@@ -31,8 +31,6 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -77,8 +75,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     private AtomicBoolean isReconnecting;
 
-    private ScheduledExecutorService scheduledExecutorService;
-
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
@@ -96,7 +92,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         this.init = new AtomicBoolean(false);
         this.increase();
         this.isReconnecting = new AtomicBoolean(false);
-        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     }
 
     @Override
@@ -160,7 +155,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             this.channel.set(null);
             closePromise.setSuccess(null);
         }
-        scheduledExecutorService.shutdownNow();
     }
 
     @Override
@@ -379,7 +373,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                         connectionClient, 0, future.cause().getMessage()));
             }
 
-            scheduledExecutorService.schedule(
+            connectivityExecutor.schedule(
                     () -> {
                         try {
                             connectionClient.doConnect();
