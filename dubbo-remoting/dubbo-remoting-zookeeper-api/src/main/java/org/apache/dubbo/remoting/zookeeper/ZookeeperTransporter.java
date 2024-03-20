@@ -24,9 +24,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 @SPI(scope = ExtensionScope.APPLICATION)
 public interface ZookeeperTransporter {
-
-    String CURATOR_5 = "curator5";
-
     String CURATOR = "curator";
 
     ZookeeperClient connect(URL url);
@@ -36,7 +33,7 @@ public interface ZookeeperTransporter {
     static ZookeeperTransporter getExtension(ApplicationModel applicationModel) {
         ExtensionLoader<ZookeeperTransporter> extensionLoader =
                 applicationModel.getExtensionLoader(ZookeeperTransporter.class);
-        return isHighVersionCurator() ? extensionLoader.getExtension(CURATOR_5) : extensionLoader.getExtension(CURATOR);
+        return extensionLoader.getExtension(CURATOR);
     }
 
     static boolean isHighVersionCurator() {

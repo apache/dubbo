@@ -393,7 +393,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     /**
      * Triggered when children get changed. It will be invoked by implementation of CuratorWatcher.
      * <p>
-     * 'org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
+     * 'org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient.CuratorWatcherImpl' (Curator 5)
      */
     private class RegistryChildListenerImpl implements ChildListener {
         private final ZookeeperRegistryNotifier notifier;
