@@ -28,7 +28,7 @@
   <name>dubbo-core-spi</name>
   <description>All the SPI definitions of Dubbo</description>
   <properties>
-    <skip_maven_deploy>true</skip_maven_deploy>
+    <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
 
   <dependencies>

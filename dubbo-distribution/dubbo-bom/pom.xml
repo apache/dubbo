@@ -161,6 +161,11 @@
         <artifactId>dubbo-all-shaded</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-core-spi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
       <!-- filter -->
       <dependency>

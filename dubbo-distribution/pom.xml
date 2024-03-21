@@ -52,7 +52,9 @@
       </activation>
       <modules>
         <module>dubbo-all</module>
+        <module>dubbo-all-shaded</module>
         <module>dubbo-bom</module>
+        <module>dubbo-core-spi</module>
       </modules>
     </profile>
     <profile>

@@ -104,6 +104,22 @@
       <optional>true</optional>
     </dependency>
 
+    <!-- distribution -->
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-all-shaded</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-core-spi</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+
     <!-- filter -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -516,6 +532,7 @@
               <artifactSet>
                 <includes>
                   <include>org.apache.dubbo:dubbo-auth</include>
+                  <include>org.apache.dubbo:dubbo-all-shaded</include>
                   <include>org.apache.dubbo:dubbo-cluster</include>
                   <include>org.apache.dubbo:dubbo-common</include>
                   <include>org.apache.dubbo:dubbo-compatible</include>
@@ -525,6 +542,7 @@
                   <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                   <include>org.apache.dubbo:dubbo-configcenter-nacos</include>
                   <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
+                  <include>org.apache.dubbo:dubbo-core-spi</include>
                   <include>org.apache.dubbo:dubbo-filter-cache</include>
                   <include>org.apache.dubbo:dubbo-filter-validation</include>
                   <include>org.apache.dubbo:dubbo-metadata-api</include>
