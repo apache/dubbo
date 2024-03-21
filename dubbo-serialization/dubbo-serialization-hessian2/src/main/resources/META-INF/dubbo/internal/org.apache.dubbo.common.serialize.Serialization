@@ -1,1 +1,2 @@
 hessian2=org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization
+fastjson2=org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization
