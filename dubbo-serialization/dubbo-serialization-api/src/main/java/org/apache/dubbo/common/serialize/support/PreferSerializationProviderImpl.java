@@ -28,9 +28,9 @@ public class PreferSerializationProviderImpl implements PreferSerializationProvi
     private final String preferSerialization;
 
     public PreferSerializationProviderImpl(FrameworkModel frameworkModel) {
-        List<String> defaultSerializations = Arrays.asList("fastjson2", "hessian2");
+        List<String> defaultSerializations = Arrays.asList("hessian2");
         this.preferSerialization = defaultSerializations.stream()
-                .filter(s ->
+                .filter(s ->,hessian
                         frameworkModel.getExtensionLoader(Serialization.class).hasExtension(s))
                 .collect(Collectors.joining(","));
     }
