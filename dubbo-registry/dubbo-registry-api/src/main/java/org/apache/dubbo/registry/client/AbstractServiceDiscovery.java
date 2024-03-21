@@ -52,7 +52,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_F
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
@@ -84,8 +83,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this(applicationModel, applicationModel.getApplicationName(), registryURL);
         MetadataReportInstance metadataReportInstance =
                 applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
-        metadataType = metadataReportInstance.getMetadataType();
-        this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
+        this.metadataType = metadataReportInstance.getMetadataType();
+        this.metadataReport = metadataReportInstance.getMetadataReport(registryURL);
     }
 
     public AbstractServiceDiscovery(String serviceName, URL registryURL) {

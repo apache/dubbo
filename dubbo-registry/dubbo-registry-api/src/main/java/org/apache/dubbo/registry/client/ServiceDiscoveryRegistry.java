@@ -54,6 +54,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
+import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 
@@ -256,6 +257,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         String registryCluster = serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
         if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
             url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
+        }
+        String namespace = serviceDiscovery.getUrl().getParameter(NAMESPACE_KEY);
+        if (namespace != null && url.getParameter(NAMESPACE_KEY) == null) {
+            url = url.addParameter(NAMESPACE_KEY, namespace);
         }
         return url;
     }

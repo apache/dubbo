@@ -17,17 +17,24 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 public class DefaultRegistryClusterIdentifier implements RegistryClusterIdentifier {
+
+    private final MetadataReportInstance metadataReportInstance;
+
+    public DefaultRegistryClusterIdentifier(ApplicationModel applicationModel) {
+        this.metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+    }
+
     @Override
     public String providerKey(URL url) {
-        return url.getParameter(REGISTRY_CLUSTER_KEY);
+        return metadataReportInstance.getRegistryKey(url);
     }
 
     @Override
     public String consumerKey(URL url) {
-        return url.getParameter(REGISTRY_CLUSTER_KEY);
+        return metadataReportInstance.getRegistryKey(url);
     }
 }

@@ -35,6 +35,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
@@ -54,7 +55,7 @@ import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT
  */
 public class MetadataReportInstance implements Disposable {
 
-    private AtomicBoolean init = new AtomicBoolean(false);
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     private String metadataType;
 
     // mapping of registry id to metadata report instance, registry instances will use this mapping to find related
@@ -69,7 +70,7 @@ public class MetadataReportInstance implements Disposable {
     }
 
     public void init(List<MetadataReportConfig> metadataReportConfigs) {
-        if (!init.compareAndSet(false, true)) {
+        if (!initialized.compareAndSet(false, true)) {
             return;
         }
 
@@ -114,9 +115,13 @@ public class MetadataReportInstance implements Disposable {
     }
 
     private String getRelatedRegistryId(MetadataReportConfig config, URL url) {
-        String relatedRegistryId = isEmpty(config.getRegistry())
-                ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId())
-                : config.getRegistry();
+        String relatedRegistryId = config.getRegistry();
+        if (isEmpty(relatedRegistryId)) {
+            relatedRegistryId = config.getId();
+        }
+        if (isEmpty(relatedRegistryId)) {
+            relatedRegistryId = DEFAULT_KEY;
+        }
         String namespace = url.getParameter(NAMESPACE_KEY);
         if (!StringUtils.isEmpty(namespace)) {
             relatedRegistryId += ":" + namespace;
@@ -128,12 +133,25 @@ public class MetadataReportInstance implements Disposable {
         return metadataReports;
     }
 
+    public MetadataReport getMetadataReport(URL registryURL) {
+        return getMetadataReport(getRegistryKey(registryURL));
+    }
+
     public MetadataReport getMetadataReport(String registryKey) {
         MetadataReport metadataReport = metadataReports.get(registryKey);
         if (metadataReport == null && metadataReports.size() > 0) {
             metadataReport = metadataReports.values().iterator().next();
         }
         return metadataReport;
+    }
+
+    public String getRegistryKey(URL registryURL) {
+        String registryKey = registryURL.getParameter(REGISTRY_CLUSTER_KEY);
+        String namespace = registryURL.getParameter(NAMESPACE_KEY);
+        if (!StringUtils.isEmpty(namespace)) {
+            registryKey += ":" + namespace;
+        }
+        return registryKey;
     }
 
     public MetadataReport getNopMetadataReport() {
@@ -144,15 +162,13 @@ public class MetadataReportInstance implements Disposable {
         return metadataType;
     }
 
-    public boolean inited() {
-        return init.get();
+    public boolean isInitialized() {
+        return initialized.get();
     }
 
     @Override
     public void destroy() {
-        metadataReports.forEach((_k, reporter) -> {
-            reporter.destroy();
-        });
+        metadataReports.forEach((k, reporter) -> reporter.destroy());
         metadataReports.clear();
     }
 }
