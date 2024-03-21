@@ -189,7 +189,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     public void onStreamClosed() {
-        //doing on event loop thread
+        // doing on event loop thread
         getStreamingDecoder().close();
     }
 
