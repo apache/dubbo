@@ -30,7 +30,7 @@ public class PreferSerializationProviderImpl implements PreferSerializationProvi
     public PreferSerializationProviderImpl(FrameworkModel frameworkModel) {
         List<String> defaultSerializations = Arrays.asList("hessian2");
         this.preferSerialization = defaultSerializations.stream()
-                .filter(s ->,hessian
+                .filter(s ->
                         frameworkModel.getExtensionLoader(Serialization.class).hasExtension(s))
                 .collect(Collectors.joining(","));
     }
