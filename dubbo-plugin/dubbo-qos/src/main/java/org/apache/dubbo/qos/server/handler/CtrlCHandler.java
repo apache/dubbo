@@ -18,15 +18,13 @@ package org.apache.dubbo.qos.server.handler;
 
 import org.apache.dubbo.qos.common.QosConstants;
 
-import java.util.List;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.CharsetUtil;
 
-public class CtrlCHandler extends ByteToMessageDecoder {
+public class CtrlCHandler extends SimpleChannelInboundHandler<ByteBuf> {
     /**
      * When type 'Ctrl+C', telnet client will send the following sequence:
      * 'FF F4 FF FD 06', it can be divided into two parts:
@@ -44,7 +42,7 @@ public class CtrlCHandler extends ByteToMessageDecoder {
     private byte[] RESPONSE_SEQUENCE = new byte[] {(byte) 0xff, (byte) 0xfc, 0x06};
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {
         // find ctrl+c
         final int readerIndex = buffer.readerIndex();
         for (int i = readerIndex; i < buffer.writerIndex(); i++) {
@@ -68,6 +66,6 @@ public class CtrlCHandler extends ByteToMessageDecoder {
                 return;
             }
         }
-        out.add(buffer);
+        ctx.fireChannelRead(buffer);
     }
 }
