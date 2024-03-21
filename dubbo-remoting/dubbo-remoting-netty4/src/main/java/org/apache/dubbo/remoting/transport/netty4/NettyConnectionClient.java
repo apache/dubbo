@@ -385,8 +385,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                                     "Failed to connect to server: " + getConnectAddress());
                         }
                     },
-                    1,
-                    TimeUnit.SECONDS);
+                    reconnectDuaration,
+                    TimeUnit.MILLISECONDS);
         }
     }
 }

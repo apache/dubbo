@@ -138,7 +138,7 @@ public class ConnectionTest {
 
         nettyPortUnificationServer.bind();
         // auto reconnect
-        Thread.sleep(1000);
+        Thread.sleep(60000);
         Assertions.assertTrue(connectionClient.isAvailable());
 
         connectionClient.close();

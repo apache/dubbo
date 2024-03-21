@@ -44,6 +44,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
+import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
  * AbstractClient
@@ -62,6 +67,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     private ApplicationModel applicationModel;
 
+    protected long reconnectDuaration;
+
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         // set default needReconnect true when channel is not connected
@@ -70,6 +77,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         applicationModel = url.getOrDefaultApplicationModel();
 
         initExecutor(url);
+
+        reconnectDuaration = getReconnectDuration(url);
 
         try {
             doOpen();
@@ -309,6 +318,25 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } finally {
             connectLock.unlock();
         }
+    }
+
+    private long getReconnectDuration(URL url) {
+        int idleTimeout = getIdleTimeout(url);
+        long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
+        return calculateReconnectDuration(url, heartbeatTimeoutTick);
+    }
+
+    private long calculateLeastDuration(int time) {
+        if (time / HEARTBEAT_CHECK_TICK <= 0) {
+            return LEAST_HEARTBEAT_DURATION;
+        } else {
+            return time / HEARTBEAT_CHECK_TICK;
+        }
+    }
+
+    private long calculateReconnectDuration(URL url, long tick) {
+        long leastReconnectDuration = url.getParameter(LEAST_RECONNECT_DURATION_KEY, LEAST_RECONNECT_DURATION);
+        return Math.max(leastReconnectDuration, tick);
     }
 
     @Override
