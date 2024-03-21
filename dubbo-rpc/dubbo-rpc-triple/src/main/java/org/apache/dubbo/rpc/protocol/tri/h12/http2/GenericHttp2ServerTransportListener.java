@@ -187,6 +187,12 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         return serverChannelObserver;
     }
 
+    @Override
+    public void onStreamClosed() {
+        //doing on event loop thread
+        getStreamingDecoder().close();
+    }
+
     private static class Http2StreamingDecodeListener implements ListeningDecoder.Listener {
 
         private final ServerCallListener serverCallListener;
