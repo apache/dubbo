@@ -19,39 +19,38 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-registry</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-registry-api</artifactId>
+  <artifactId>dubbo-xds</artifactId>
   <packaging>jar</packaging>
   <name>${project.artifactId}</name>
-  <description>The registry module of dubbo project</description>
+  <description>The xds module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
   <dependencies>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-common</artifactId>
+      <artifactId>dubbo-rpc-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metadata-api</artifactId>
+      <artifactId>dubbo-rpc-injvm</artifactId>
       <version>${project.parent.version}</version>
+      <scope>test</scope>
     </dependency>
-
     <dependency>
-      <groupId>org.apache.curator</groupId>
-      <artifactId>curator-framework</artifactId>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-netty4</artifactId>
+      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
-      <artifactId>curator-recipes</artifactId>
+      <artifactId>curator-framework</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -61,7 +60,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-api</artifactId>
+      <artifactId>dubbo-test-check</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-metrics-registry</artifactId>
       <version>${project.parent.version}</version>
       <scope>compile</scope>
     </dependency>
@@ -69,37 +74,73 @@
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metrics-default</artifactId>
       <version>${project.parent.version}</version>
-      <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-metadata</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>compile</scope>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-tracing-integration-test</artifactId>
+      <scope>test</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-registry</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-native</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-api</artifactId>
+      <version>1.61.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.envoyproxy.controlplane</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-cluster</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-registry-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-rpc-dubbo</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 </project>

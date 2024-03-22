@@ -251,5 +251,10 @@
       <artifactId>resteasy-jackson-provider</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-xds</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
   </dependencies>
 </project>

@@ -53,6 +53,7 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+import org.apache.dubbo.xds.PilotExchanger;
 
 import java.beans.Transient;
 import java.util.ArrayList;
@@ -655,6 +656,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void createInvoker() {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
+
+            if (curUrl.getParameter("registry", "null").startsWith("xds")) {
+                // TODO: The PilotExchanger requests xds resources asynchronously,
+                //  and the xdsDirectory call filter chain may have an exception with invoker null,
+                //  which needs to be synchronized later.
+                // move to deployer
+                curUrl = curUrl.addParameter("xds", true);
+                PilotExchanger.initialize(curUrl);
+            }
+
             invoker = protocolSPI.refer(interfaceClass, curUrl);
             // registry url, mesh-enable and unloadClusterRelated is true, not need Cluster.
             if (!UrlUtils.isRegistry(curUrl) && !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {

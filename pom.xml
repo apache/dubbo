@@ -95,6 +95,7 @@
     <module>dubbo-spring-boot</module>
     <module>dubbo-test</module>
     <module>dubbo-maven-plugin</module>
+    <module>dubbo-xds</module>
   </modules>
 
   <scm>

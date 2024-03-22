@@ -296,7 +296,6 @@
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
-
     <!-- remoting -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
