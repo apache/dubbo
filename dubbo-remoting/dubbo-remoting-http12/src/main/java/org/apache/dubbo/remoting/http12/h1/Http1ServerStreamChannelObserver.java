@@ -17,6 +17,9 @@
 package org.apache.dubbo.remoting.http12.h1;
 
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
 import java.io.IOException;
@@ -34,6 +37,13 @@ public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver
     }
 
     @Override
+    protected HttpMetadata encodeHttpMetadata() {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set(HttpHeaderNames.TRANSFER_ENCODING.getName(), "chunked");
+        return new Http1Metadata(httpHeaders);
+    }
+
+    @Override
     protected void preOutputMessage(HttpOutputMessage httpMessage) throws IOException {
         HttpOutputMessage httpOutputMessage = this.getHttpChannel().newOutputMessage();
         httpOutputMessage
@@ -47,5 +57,10 @@ public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver
         HttpOutputMessage httpOutputMessage = this.getHttpChannel().newOutputMessage();
         httpOutputMessage.getBody().write(SERVER_SENT_EVENT_LF_BYTES, 0, SERVER_SENT_EVENT_LF_BYTES.length);
         this.getHttpChannel().writeMessage(httpOutputMessage);
+    }
+
+    @Override
+    protected boolean supportChunk() {
+        return true;
     }
 }

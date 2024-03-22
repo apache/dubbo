@@ -34,11 +34,11 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     private final HttpChannel httpChannel;
 
-    private boolean headerSent;
+    protected boolean headerSent;
 
     private HttpMessageEncoder responseEncoder;
 
-    public AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
+    protected AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
     }
 
@@ -71,6 +71,10 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     protected TrailersCustomizer getTrailersCustomizer() {
         return trailersCustomizer;
+    }
+
+    protected ErrorResponseCustomizer getErrorResponseCustomizer() {
+        return errorResponseCustomizer;
     }
 
     @Override
@@ -147,7 +151,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         return httpChannel;
     }
 
-    private void doSendHeaders(String statusCode, Map<String, List<String>> additionalHeaders) {
+    protected void doSendHeaders(String statusCode, Map<String, List<String>> additionalHeaders) {
         HttpMetadata httpMetadata = encodeHttpMetadata();
         HttpHeaders headers = httpMetadata.headers();
         headers.set(HttpHeaderNames.STATUS.getName(), statusCode);
