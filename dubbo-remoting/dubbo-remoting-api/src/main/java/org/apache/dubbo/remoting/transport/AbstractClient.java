@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -65,7 +65,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     protected volatile ScheduledExecutorService connectivityExecutor;
 
-    private ApplicationModel applicationModel;
+    private FrameworkModel frameworkModel;
 
     protected long reconnectDuaration;
 
@@ -74,7 +74,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         // set default needReconnect true when channel is not connected
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, true);
 
-        applicationModel = url.getOrDefaultApplicationModel();
+        frameworkModel = url.getOrDefaultFrameworkModel();
 
         initExecutor(url);
 
@@ -153,8 +153,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
 
-        connectivityExecutor = applicationModel
-                .getFrameworkModel()
+        connectivityExecutor = frameworkModel
                 .getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class)
                 .getConnectivityScheduledExecutor();
