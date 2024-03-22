@@ -42,9 +42,7 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(SerializeSecurityManager.class);
         beanFactory.registerBean(DefaultSerializeClassChecker.class);
         beanFactory.registerBean(CertManager.class);
-        if (NativeDetector.inNativeImage()) {
-            beanFactory.registerBean(ClassHolder.class);
-        }
+        beanFactory.registerBean(ClassHolder.class);
     }
 
     @Override
