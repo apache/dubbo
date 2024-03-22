@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common;
 
-import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationCache;
 import org.apache.dubbo.common.convert.ConverterUtil;
