@@ -66,7 +66,8 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
         FrameworkModel frameworkModel = moduleModel.getApplicationModel().getFrameworkModel();
         serializeSecurityManager = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
-        classHolder = NativeDetector.inNativeImage() ? frameworkModel.getBeanFactory().getBean(ClassHolder.class) : null;
+        classHolder =
+                NativeDetector.inNativeImage() ? frameworkModel.getBeanFactory().getBean(ClassHolder.class) : null;
 
         refreshStatus();
         refreshCheck();

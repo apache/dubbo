@@ -50,7 +50,8 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
     public DefaultSerializeClassChecker(FrameworkModel frameworkModel) {
         serializeSecurityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
         serializeSecurityManager.registerListener(this);
-        classHolder = NativeDetector.inNativeImage() ? frameworkModel.getBeanFactory().getBean(ClassHolder.class) : null;
+        classHolder =
+                NativeDetector.inNativeImage() ? frameworkModel.getBeanFactory().getBean(ClassHolder.class) : null;
     }
 
     @Override
