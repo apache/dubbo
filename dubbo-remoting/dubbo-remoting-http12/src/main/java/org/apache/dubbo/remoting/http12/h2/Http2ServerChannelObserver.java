@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.http12.HttpChannelObserver;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.CancellationContext;
 
@@ -36,6 +37,8 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     private StreamingDecoder streamingDecoder;
 
     private boolean autoRequestN = true;
+
+    private boolean closed = false;
 
     public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
         super(h2StreamChannel);
@@ -78,8 +81,32 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
         if (throwable instanceof ErrorCodeHolder) {
             errorCode = ((ErrorCodeHolder) throwable).getErrorCode();
         }
-        getHttpChannel().writeResetFrame(errorCode);
+        else if (throwable instanceof HttpStatusException) {
+            errorCode = ((HttpStatusException) throwable).getStatusCode();
+        }
+        if (errorCode == 0x8) {
+            // cancel by remote
+            closed = true;
+        } else {
+            getHttpChannel().writeResetFrame(errorCode);
+        }
         this.cancellationContext.cancel(throwable);
+    }
+
+    @Override
+    public void onNext(Object data) {
+        if (closed) {
+            return;
+        }
+        super.onNext(data);
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        if (closed) {
+            return;
+        }
+        super.onError(throwable);
     }
 
     @Override
