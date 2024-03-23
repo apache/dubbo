@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.http12.HttpChannelObserver;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.CancellationContext;
 
@@ -77,19 +76,17 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     @Override
     public void cancel(Throwable throwable) {
+        if (throwable instanceof CancelStreamException) {
+            if (((CancelStreamException) throwable).isCancelByRemote()) {
+                closed = true;
+            }
+        }
+        this.cancellationContext.cancel(throwable);
         long errorCode = 0;
         if (throwable instanceof ErrorCodeHolder) {
             errorCode = ((ErrorCodeHolder) throwable).getErrorCode();
-        } else if (throwable instanceof HttpStatusException) {
-            errorCode = ((HttpStatusException) throwable).getStatusCode();
         }
-        if (errorCode == 0x8) {
-            // cancel by remote
-            closed = true;
-        } else {
-            getHttpChannel().writeResetFrame(errorCode);
-        }
-        this.cancellationContext.cancel(throwable);
+        getHttpChannel().writeResetFrame(errorCode);
     }
 
     @Override
