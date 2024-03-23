@@ -80,8 +80,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
         long errorCode = 0;
         if (throwable instanceof ErrorCodeHolder) {
             errorCode = ((ErrorCodeHolder) throwable).getErrorCode();
-        }
-        else if (throwable instanceof HttpStatusException) {
+        } else if (throwable instanceof HttpStatusException) {
             errorCode = ((HttpStatusException) throwable).getStatusCode();
         }
         if (errorCode == 0x8) {
