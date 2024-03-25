@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerStreamChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
+import org.apache.dubbo.remoting.http12.h1.Http1ServerUnaryChannelObserver;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
@@ -58,8 +59,6 @@ public class DefaultHttp11ServerTransportListener
         executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .getExecutorSupport(url);
         this.httpChannel = httpChannel;
-        serverChannelObserver = new Http1ServerChannelObserver(httpChannel);
-        serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
     }
 
     @Override
@@ -85,6 +84,8 @@ public class DefaultHttp11ServerTransportListener
             RpcInvocation invocation, MethodDescriptor methodDescriptor, Invoker<?> invoker) {
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
+                serverChannelObserver = new Http1ServerUnaryChannelObserver(httpChannel);
+                serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, serverChannelObserver);
             case SERVER_STREAM:
                 serverChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);

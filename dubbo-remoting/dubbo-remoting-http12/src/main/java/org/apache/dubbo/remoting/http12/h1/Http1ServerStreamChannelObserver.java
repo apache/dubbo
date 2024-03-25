@@ -58,9 +58,4 @@ public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver
         httpOutputMessage.getBody().write(SERVER_SENT_EVENT_LF_BYTES, 0, SERVER_SENT_EVENT_LF_BYTES.length);
         this.getHttpChannel().writeMessage(httpOutputMessage);
     }
-
-    @Override
-    protected boolean supportChunk() {
-        return true;
-    }
 }
