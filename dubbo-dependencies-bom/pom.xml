@@ -139,7 +139,7 @@
     <jprotoc_version>1.2.2</jprotoc_version>
     <!-- Log libs -->
     <slf4j_version>1.7.36</slf4j_version>
-    <jcl_version>1.3.0</jcl_version>
+    <jcl_version>1.3.1</jcl_version>
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
