@@ -65,7 +65,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private RpcInvocationBuildContext context;
     private HttpMessageListener httpMessageListener;
 
-    public AbstractServerTransportListener(FrameworkModel frameworkModel, URL url, HttpChannel httpChannel) {
+    protected AbstractServerTransportListener(FrameworkModel frameworkModel, URL url, HttpChannel httpChannel) {
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
@@ -211,7 +211,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         inv.setObjectAttachments(StreamUtils.toAttachments(httpMetadata.headers()));
         inv.put(REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
         inv.getAttributes().putAll(context.getAttributes());
-
+        String consumerAppName = httpMetadata.headers().getFirst(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader());
+        if (null != consumerAppName) {
+            inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY, consumerAppName);
+        }
         // customizer RpcInvocation
         headerFilters.forEach(f -> f.invoke(invoker, inv));
 
