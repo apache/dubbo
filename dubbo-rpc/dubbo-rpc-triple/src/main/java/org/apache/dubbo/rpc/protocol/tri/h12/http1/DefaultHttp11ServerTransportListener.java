@@ -59,6 +59,8 @@ public class DefaultHttp11ServerTransportListener
         executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .getExecutorSupport(url);
         this.httpChannel = httpChannel;
+        serverChannelObserver = new Http1ServerUnaryChannelObserver(httpChannel);
+        serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
     }
 
     @Override
@@ -84,8 +86,6 @@ public class DefaultHttp11ServerTransportListener
             RpcInvocation invocation, MethodDescriptor methodDescriptor, Invoker<?> invoker) {
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
-                serverChannelObserver = new Http1ServerUnaryChannelObserver(httpChannel);
-                serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, serverChannelObserver);
             case SERVER_STREAM:
                 serverChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
