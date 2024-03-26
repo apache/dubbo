@@ -19,30 +19,75 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
-import org.apache.dubbo.rpc.protocol.tri.h12.HttpRequestHandlerMapping;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
+import org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping;
 
 @Activate(order = -3000)
-public final class GrpcRequestHandlerMapping extends HttpRequestHandlerMapping {
+public final class GrpcRequestHandlerMapping implements RequestHandlerMapping {
 
+    private final FrameworkModel frameworkModel;
+    private final PathResolver pathResolver;
     public static final GrpcCompositeCodecFactory CODEC_FACTORY = new GrpcCompositeCodecFactory();
 
     public GrpcRequestHandlerMapping(FrameworkModel frameworkModel) {
-        super(frameworkModel);
+        this.frameworkModel = frameworkModel;
+        pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
     }
 
     @Override
-    protected boolean supportContentType(String contentType) {
+    public RequestHandler getRequestHandler(URL url, HttpRequest request, HttpResponse response) {
+        if (!supportContentType(request.contentType())) {
+            return null;
+        }
+
+        String uri = request.uri();
+        int index = uri.indexOf('/', 1);
+        if (index == -1) {
+            return null;
+        }
+        if (uri.indexOf('/', index + 1) != -1) {
+            return null;
+        }
+
+        String serviceName = uri.substring(1, index);
+        String version = request.header(TripleHeaderEnum.SERVICE_VERSION.getHeader());
+        String group = request.header(TripleHeaderEnum.SERVICE_GROUP.getHeader());
+        String key = URL.buildKey(serviceName, group, version);
+        Invoker<?> invoker = pathResolver.resolve(key);
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
+            invoker = pathResolver.resolve(URL.buildKey(serviceName, group, TripleConstant.DEFAULT_VERSION));
+            if (invoker == null) {
+                invoker = pathResolver.resolve(serviceName);
+                if (invoker == null) {
+                    return null;
+                }
+            }
+        }
+
+        RequestHandler handler = new RequestHandler(invoker);
+        handler.setHasStub(pathResolver.hasNativeStub(uri));
+        handler.setMethodName(uri.substring(index + 1));
+        handler.setServiceDescriptor(DescriptorUtils.findServiceDescriptor(invoker, serviceName, handler.isHasStub()));
+        determineHttpMessageCodec(handler, url, request);
+        return handler;
+    }
+
+    private boolean supportContentType(String contentType) {
         return contentType != null && contentType.startsWith(MediaType.APPLICATION_GRPC.getName());
     }
 
-    @Override
-    protected void determineHttpMessageCodec(RequestHandler handler, URL url, HttpRequest request) {
-        HttpMessageCodec codec = CODEC_FACTORY.createCodec(url, getFrameworkModel(), request.contentType());
+    private void determineHttpMessageCodec(RequestHandler handler, URL url, HttpRequest request) {
+        HttpMessageCodec codec = CODEC_FACTORY.createCodec(url, frameworkModel, request.contentType());
         handler.setHttpMessageDecoder(codec);
         handler.setHttpMessageEncoder(codec);
     }

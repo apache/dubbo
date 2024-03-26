@@ -29,6 +29,7 @@ public final class RestConstants {
     public static final String EXTENSION_KEY = "extension";
     public static final String EXTENSIONS_ATTRIBUTE_KEY = "restExtensionsAttributeKey";
 
+    public static final int DIALECT_DEFAULT = 0;
     public static final int DIALECT_SPRING_MVC = 1;
     public static final int DIALECT_JAXRS = 2;
 
