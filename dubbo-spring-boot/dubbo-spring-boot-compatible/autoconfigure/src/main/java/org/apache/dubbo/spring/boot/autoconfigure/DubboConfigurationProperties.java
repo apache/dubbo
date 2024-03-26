@@ -17,6 +17,7 @@
 package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -26,25 +27,20 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
-import org.apache.dubbo.config.context.ConfigMode;
-import org.apache.dubbo.config.spring.ConfigCenterBean;
-import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.TripleConfig;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-import static org.apache.dubbo.spring.boot.util.DubboUtils.DEFAULT_MULTIPLE_CONFIG_PROPERTY_VALUE;
-import static org.apache.dubbo.spring.boot.util.DubboUtils.DEFAULT_OVERRIDE_CONFIG_PROPERTY_VALUE;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 
 /**
- * Dubbo {@link ConfigurationProperties Config Properties} only used to generate JSON metadata(non-public class)
+ * Dubbo {@link ConfigurationProperties Config Properties} only used to generate JSON metadata (non-public class)
  *
  * @see ConfigKeys
  * @since 2.7.1
@@ -52,83 +48,135 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 @ConfigurationProperties(DUBBO_PREFIX)
 public class DubboConfigurationProperties {
 
-    @NestedConfigurationProperty
-    private Config config = new Config();
-
-    @NestedConfigurationProperty
-    private Scan scan = new Scan();
-
-    // Single Config Bindings
+    /**
+     * Configuration properties for the application.
+     */
     @NestedConfigurationProperty
     private ApplicationConfig application = new ApplicationConfig();
 
+    /**
+     * Configuration properties for the module.
+     */
     @NestedConfigurationProperty
     private ModuleConfig module = new ModuleConfig();
 
+    /**
+     * Configuration properties for the registry.
+     */
     @NestedConfigurationProperty
     private RegistryConfig registry = new RegistryConfig();
 
+    /**
+     * Configuration properties for the protocol.
+     */
     @NestedConfigurationProperty
     private ProtocolConfig protocol = new ProtocolConfig();
 
+    /**
+     * Configuration properties for the monitor.
+     */
     @NestedConfigurationProperty
     private MonitorConfig monitor = new MonitorConfig();
 
+    /**
+     * Configuration properties for the provider.
+     */
     @NestedConfigurationProperty
     private ProviderConfig provider = new ProviderConfig();
 
+    /**
+     * Configuration properties for the consumer.
+     */
     @NestedConfigurationProperty
     private ConsumerConfig consumer = new ConsumerConfig();
 
+    /**
+     * Configuration properties for the config center.
+     */
     @NestedConfigurationProperty
-    private ConfigCenterBean configCenter = new ConfigCenterBean();
+    private ConfigCenterConfig configCenter = new ConfigCenterConfig();
 
+    /**
+     * Configuration properties for the metadata report.
+     */
     @NestedConfigurationProperty
     private MetadataReportConfig metadataReport = new MetadataReportConfig();
 
+    /**
+     * Configuration properties for metrics.
+     */
     @NestedConfigurationProperty
     private MetricsConfig metrics = new MetricsConfig();
 
+    /**
+     * Configuration properties for tracing.
+     */
     @NestedConfigurationProperty
     private TracingConfig tracing = new TracingConfig();
 
+    /**
+     * Configuration properties for ssl.
+     */
+    @NestedConfigurationProperty
+    private SslConfig ssl = new SslConfig();
+
+    /**
+     * Configuration properties for rpc.
+     */
+    @NestedConfigurationProperty
+    private RpcConfig rpc = new RpcConfig();
+
     // Multiple Config Bindings
 
+    /**
+     * Multiple configurations for Module.
+     */
     private Map<String, ModuleConfig> modules = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for Registry.
+     */
     private Map<String, RegistryConfig> registries = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for Protocol.
+     */
     private Map<String, ProtocolConfig> protocols = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for Monitor.
+     */
     private Map<String, MonitorConfig> monitors = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for Provider.
+     */
     private Map<String, ProviderConfig> providers = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for Consumer.
+     */
     private Map<String, ConsumerConfig> consumers = new LinkedHashMap<>();
 
-    private Map<String, ConfigCenterBean> configCenters = new LinkedHashMap<>();
+    /**
+     * Multiple configurations for ConfigCenterBean.
+     */
+    private Map<String, ConfigCenterConfig> configCenters = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for MetadataReportConfig.
+     */
     private Map<String, MetadataReportConfig> metadataReports = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for MetricsConfig.
+     */
     private Map<String, MetricsConfig> metricses = new LinkedHashMap<>();
 
+    /**
+     * Multiple configurations for TracingConfig.
+     */
     private Map<String, TracingConfig> tracings = new LinkedHashMap<>();
-
-    public Config getConfig() {
-        return config;
-    }
-
-    public void setConfig(Config config) {
-        this.config = config;
-    }
-
-    public Scan getScan() {
-        return scan;
-    }
-
-    public void setScan(Scan scan) {
-        this.scan = scan;
-    }
 
     public ApplicationConfig getApplication() {
         return application;
@@ -186,11 +234,11 @@ public class DubboConfigurationProperties {
         this.consumer = consumer;
     }
 
-    public ConfigCenterBean getConfigCenter() {
+    public ConfigCenterConfig getConfigCenter() {
         return configCenter;
     }
 
-    public void setConfigCenter(ConfigCenterBean configCenter) {
+    public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
     }
 
@@ -216,6 +264,22 @@ public class DubboConfigurationProperties {
 
     public void setTracing(TracingConfig tracing) {
         this.tracing = tracing;
+    }
+
+    public SslConfig getSsl() {
+        return ssl;
+    }
+
+    public void setSsl(SslConfig ssl) {
+        this.ssl = ssl;
+    }
+
+    public RpcConfig getRpc() {
+        return rpc;
+    }
+
+    public void setRpc(RpcConfig rpc) {
+        this.rpc = rpc;
     }
 
     public Map<String, ModuleConfig> getModules() {
@@ -266,11 +330,11 @@ public class DubboConfigurationProperties {
         this.consumers = consumers;
     }
 
-    public Map<String, ConfigCenterBean> getConfigCenters() {
+    public Map<String, ConfigCenterConfig> getConfigCenters() {
         return configCenters;
     }
 
-    public void setConfigCenters(Map<String, ConfigCenterBean> configCenters) {
+    public void setConfigCenters(Map<String, ConfigCenterConfig> configCenters) {
         this.configCenters = configCenters;
     }
 
@@ -298,64 +362,23 @@ public class DubboConfigurationProperties {
         this.tracings = tracings;
     }
 
-    static class Config {
+    /**
+     * Configuration for rpc.
+     */
+    public static class RpcConfig {
 
         /**
-         * Config processing mode
-         * @see ConfigMode
+         * The triple config.
          */
-        private ConfigMode mode = ConfigMode.STRICT;
+        @NestedConfigurationProperty
+        private TripleConfig tri;
 
-        /**
-         * Indicates multiple properties binding from externalized configuration or not.
-         */
-        private boolean multiple = DEFAULT_MULTIPLE_CONFIG_PROPERTY_VALUE;
-
-        /**
-         * The property name of override Dubbo config
-         */
-        private boolean override = DEFAULT_OVERRIDE_CONFIG_PROPERTY_VALUE;
-
-        public boolean isOverride() {
-            return override;
+        public TripleConfig getTri() {
+            return tri;
         }
 
-        public void setOverride(boolean override) {
-            this.override = override;
-        }
-
-        public boolean isMultiple() {
-            return multiple;
-        }
-
-        public void setMultiple(boolean multiple) {
-            this.multiple = multiple;
-        }
-
-        public ConfigMode getMode() {
-            return mode;
-        }
-
-        public void setMode(ConfigMode mode) {
-            this.mode = mode;
-        }
-    }
-
-    static class Scan {
-
-        /**
-         * The basePackages to scan , the multiple-value is delimited by comma
-         *
-         * @see EnableDubbo#scanBasePackages()
-         */
-        private Set<String> basePackages = new LinkedHashSet<>();
-
-        public Set<String> getBasePackages() {
-            return basePackages;
-        }
-
-        public void setBasePackages(Set<String> basePackages) {
-            this.basePackages = basePackages;
+        public void setTri(TripleConfig tri) {
+            this.tri = tri;
         }
     }
 }
