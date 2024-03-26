@@ -125,12 +125,6 @@
         <version>${project.version}</version>
         <type>pom</type>
       </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-dependencies-zookeeper-curator5</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
 
       <!-- dependencies-bom -->
       <dependency>
@@ -418,11 +412,6 @@
       <dependency>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-remoting-zookeeper</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
         <version>${project.version}</version>
       </dependency>
 

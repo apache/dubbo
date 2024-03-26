@@ -31,14 +31,11 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.data.Stat;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
+import org.junit.jupiter.api.Timeout;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,23 +44,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
-@DisabledForJreRange(min = JRE.JAVA_16)
 class CuratorZookeeperClientTest {
-    private CuratorZookeeperClient curatorClient;
-    CuratorFramework client = null;
+    private static CuratorZookeeperClient curatorClient;
+    private static CuratorFramework client = null;
 
     private static int zookeeperServerPort1;
     private static String zookeeperConnectionAddress1;
 
     @BeforeAll
-    public static void beforeAll() {
+    public static void setUp() throws Exception {
         zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
         zookeeperServerPort1 = Integer.parseInt(
                 zookeeperConnectionAddress1.substring(zookeeperConnectionAddress1.lastIndexOf(":") + 1));
-    }
-
-    @BeforeEach
-    public void setUp() throws Exception {
         curatorClient = new CuratorZookeeperClient(
                 URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
         client = CuratorFrameworkFactory.newClient(
@@ -91,9 +83,9 @@ class CuratorZookeeperClientTest {
     }
 
     @Test
-    @Disabled("Global registry center")
+    @Timeout(value = 2)
     public void testChildrenListener() throws InterruptedException {
-        String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
+        String path = "/dubbo/org.apache.dubbo.demo.DemoListenerService/providers";
         curatorClient.create(path, false, true);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         curatorClient.addTargetChildListener(path, new CuratorZookeeperClient.CuratorWatcherImpl() {
@@ -110,17 +102,8 @@ class CuratorZookeeperClientTest {
     @Test
     void testWithInvalidServer() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
+            curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=1000"));
             curatorClient.create("/testPath", true, true);
-        });
-    }
-
-    @Test
-    @Disabled("Global registry center cannot stop")
-    public void testWithStoppedServer() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            curatorClient.create("/testPath", true, true);
-            curatorClient.delete("/testPath");
         });
     }
 
@@ -208,11 +191,6 @@ class CuratorZookeeperClientTest {
         Assertions.assertTrue(curatorClient.checkExists(path));
     }
 
-    @AfterEach
-    public void tearDown() throws Exception {
-        curatorClient.close();
-    }
-
     @Test
     void testAddTargetDataListener() throws Exception {
         String listenerPath = "/dubbo/service.name/configuration";
@@ -224,7 +202,6 @@ class CuratorZookeeperClientTest {
         Assertions.assertEquals(value, valueFromCache);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         curatorClient.addTargetDataListener(path + "/d.json", new CuratorZookeeperClient.NodeCacheListenerImpl() {
-
             @Override
             public void nodeChanged() {
                 atomicInteger.incrementAndGet();
@@ -282,7 +259,7 @@ class CuratorZookeeperClientTest {
         });
         Assertions.assertThrows(
                 IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", false, 0));
-        Assertions.assertEquals("version x", curatorClient.getContent(path));
+        assertEquals("version x", curatorClient.getContent(path));
 
         client.setData().forPath(path, "version 1".getBytes(StandardCharsets.UTF_8));
 
@@ -297,13 +274,13 @@ class CuratorZookeeperClientTest {
         int version1 = ((Stat) configItem.getTicket()).getVersion();
         Assertions.assertThrows(
                 IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 2", false, version1));
-        Assertions.assertEquals("version x", curatorClient.getContent(path));
+        assertEquals("version x", curatorClient.getContent(path));
 
         runnable.set(null);
         configItem = curatorClient.getConfigItem(path);
         int version2 = ((Stat) configItem.getTicket()).getVersion();
         curatorClient.createOrUpdate(path, "version 2", false, version2);
-        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+        assertEquals("version 2", curatorClient.getContent(path));
 
         curatorClient.close();
     }
@@ -319,7 +296,7 @@ class CuratorZookeeperClientTest {
         curatorClient.createOrUpdate(path, "version x", false);
         Assertions.assertThrows(
                 IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", false, null));
-        Assertions.assertEquals("version x", curatorClient.getContent(path));
+        assertEquals("version x", curatorClient.getContent(path));
 
         curatorClient.close();
     }
@@ -350,7 +327,7 @@ class CuratorZookeeperClientTest {
         curatorClient.delete(path);
 
         curatorClient.createOrUpdate(path, "version 0", false);
-        Assertions.assertEquals("version 0", curatorClient.getContent(path));
+        assertEquals("version 0", curatorClient.getContent(path));
         curatorClient.delete(path);
 
         runnable.set(() -> {
@@ -361,7 +338,7 @@ class CuratorZookeeperClientTest {
             }
         });
         curatorClient.createOrUpdate(path, "version 1", false);
-        Assertions.assertEquals("version 1", curatorClient.getContent(path));
+        assertEquals("version 1", curatorClient.getContent(path));
 
         runnable.set(() -> {
             try {
@@ -371,11 +348,11 @@ class CuratorZookeeperClientTest {
             }
         });
         curatorClient.createOrUpdate(path, "version 2", false);
-        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+        assertEquals("version 2", curatorClient.getContent(path));
 
         runnable.set(null);
         curatorClient.createOrUpdate(path, "version 3", false);
-        Assertions.assertEquals("version 3", curatorClient.getContent(path));
+        assertEquals("version 3", curatorClient.getContent(path));
 
         curatorClient.close();
     }
@@ -415,7 +392,7 @@ class CuratorZookeeperClientTest {
         });
         Assertions.assertThrows(
                 IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", true, 0));
-        Assertions.assertEquals("version x", curatorClient.getContent(path));
+        assertEquals("version x", curatorClient.getContent(path));
 
         client.setData().forPath(path, "version 1".getBytes(StandardCharsets.UTF_8));
 
@@ -430,13 +407,13 @@ class CuratorZookeeperClientTest {
         int version1 = ((Stat) configItem.getTicket()).getVersion();
         Assertions.assertThrows(
                 IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 2", true, version1));
-        Assertions.assertEquals("version x", curatorClient.getContent(path));
+        assertEquals("version x", curatorClient.getContent(path));
 
         runnable.set(null);
         configItem = curatorClient.getConfigItem(path);
         int version2 = ((Stat) configItem.getTicket()).getVersion();
         curatorClient.createOrUpdate(path, "version 2", true, version2);
-        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+        assertEquals("version 2", curatorClient.getContent(path));
 
         curatorClient.close();
     }
@@ -452,7 +429,7 @@ class CuratorZookeeperClientTest {
         curatorClient.createOrUpdate(path, "version x", true);
         Assertions.assertThrows(
                 IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", true, null));
-        Assertions.assertEquals("version x", curatorClient.getContent(path));
+        assertEquals("version x", curatorClient.getContent(path));
 
         curatorClient.close();
     }
@@ -483,7 +460,7 @@ class CuratorZookeeperClientTest {
         curatorClient.delete(path);
 
         curatorClient.createOrUpdate(path, "version 0", true);
-        Assertions.assertEquals("version 0", curatorClient.getContent(path));
+        assertEquals("version 0", curatorClient.getContent(path));
         curatorClient.delete(path);
 
         runnable.set(() -> {
@@ -494,7 +471,7 @@ class CuratorZookeeperClientTest {
             }
         });
         curatorClient.createOrUpdate(path, "version 1", true);
-        Assertions.assertEquals("version 1", curatorClient.getContent(path));
+        assertEquals("version 1", curatorClient.getContent(path));
 
         runnable.set(() -> {
             try {
@@ -504,12 +481,17 @@ class CuratorZookeeperClientTest {
             }
         });
         curatorClient.createOrUpdate(path, "version 2", true);
-        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+        assertEquals("version 2", curatorClient.getContent(path));
 
         runnable.set(null);
         curatorClient.createOrUpdate(path, "version 3", true);
-        Assertions.assertEquals("version 3", curatorClient.getContent(path));
+        assertEquals("version 3", curatorClient.getContent(path));
 
+        curatorClient.close();
+    }
+
+    @AfterAll
+    public static void testWithStoppedServer() {
         curatorClient.close();
     }
 }

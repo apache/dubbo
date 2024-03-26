@@ -33,14 +33,17 @@ public class CuratorZookeeperReflectionTypeDescriberRegistrar implements Reflect
     public List<TypeDescriber> getTypeDescribers() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
         typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(ClientCnxnSocketNIO.class));
+        typeDescribers.add(buildTypeDescriberWithDeclared("org.apache.curator.x.discovery.ServiceInstance"));
+        typeDescribers.add(buildTypeDescriberWithDeclared("org.apache.curator.x.discovery.details.OldServiceInstance"));
         return typeDescribers;
     }
 
-    private TypeDescriber buildTypeDescriberWithDeclaredMethods(Class<?> c) {
+    private TypeDescriber buildTypeDescriberWithDeclared(String className) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_DECLARED_METHODS);
-        return new TypeDescriber(
-                c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+        memberCategories.add(MemberCategory.DECLARED_FIELDS);
+        return new TypeDescriber(className, null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 
     private TypeDescriber buildTypeDescriberWithDeclaredConstructors(Class<?> c) {

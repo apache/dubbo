@@ -27,8 +27,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
@@ -37,7 +35,6 @@ import static org.hamcrest.core.IsNull.nullValue;
 /**
  * AbstractZookeeperTransporterTest
  */
-@DisabledForJreRange(min = JRE.JAVA_16)
 class AbstractZookeeperTransporterTest {
     private ZookeeperClient zookeeperClient;
     private AbstractZookeeperTransporter abstractZookeeperTransporter;
@@ -57,8 +54,8 @@ class AbstractZookeeperTransporterTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        zookeeperClient = new CuratorZookeeperTransporter()
-                .connect(URL.valueOf("zookeeper://127.0.0.1:" + zookeeperServerPort1 + "/service"));
+        zookeeperClient =
+                new CuratorZookeeperTransporter().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
         abstractZookeeperTransporter = new CuratorZookeeperTransporter();
     }
 

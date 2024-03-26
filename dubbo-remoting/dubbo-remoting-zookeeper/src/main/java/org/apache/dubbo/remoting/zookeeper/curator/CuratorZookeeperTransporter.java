@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
 public class CuratorZookeeperTransporter extends AbstractZookeeperTransporter {
+
     @Override
     public ZookeeperClient createZookeeperClient(URL url) {
         return new CuratorZookeeperClient(url);

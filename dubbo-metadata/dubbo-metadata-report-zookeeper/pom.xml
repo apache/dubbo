@@ -63,14 +63,14 @@
 
   <profiles>
     <profile>
-      <id>curator5</id>
+      <id>zookeeper</id>
       <activation>
         <jdk>[17,)</jdk>
       </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.dubbo</groupId>
-          <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
+          <artifactId>dubbo-remoting-zookeeper</artifactId>
           <version>${project.parent.version}</version>
         </dependency>
       </dependencies>
