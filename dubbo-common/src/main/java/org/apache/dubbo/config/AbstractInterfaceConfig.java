@@ -221,7 +221,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The url of the reference service
      */
-    protected final transient List<URL> urls = new ArrayList<URL>();
+    protected final transient List<URL> urls = new ArrayList<>();
 
     @Transient
     public List<URL> getExportedUrls() {
@@ -252,7 +252,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         if (CollectionUtils.isNotEmpty(this.registries)) {
             this.registries.forEach(registryConfig -> {
-                if (registryConfig.getScopeModel() != applicationModel) {
+                if (registryConfig != null && registryConfig.getScopeModel() != applicationModel) {
                     registryConfig.setScopeModel(applicationModel);
                 }
             });
@@ -353,14 +353,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
             // refresh MethodConfigs
             List<MethodConfig> methodConfigs = this.getMethods();
-            if (methodConfigs != null && methodConfigs.size() > 0) {
+            if (methodConfigs != null && !methodConfigs.isEmpty()) {
                 // whether ignore invalid method config
                 Object ignoreInvalidMethodConfigVal = getEnvironment()
                         .getConfiguration()
                         .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "false");
                 boolean ignoreInvalidMethodConfig = Boolean.parseBoolean(ignoreInvalidMethodConfigVal.toString());
 
-                Class<?> finalInterfaceClass = interfaceClass;
+                final Class<?> finalInterfaceClass = interfaceClass;
                 List<MethodConfig> validMethodConfigs = methodConfigs.stream()
                         .filter(methodConfig -> {
                             methodConfig.setParentPrefix(preferredPrefix);
@@ -420,7 +420,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private ArgumentConfig getArgumentByIndex(MethodConfig methodConfig, int argIndex) {
-        if (methodConfig.getArguments() != null && methodConfig.getArguments().size() > 0) {
+        if (methodConfig.getArguments() != null && !methodConfig.getArguments().isEmpty()) {
             for (ArgumentConfig argument : methodConfig.getArguments()) {
                 if (argument.getIndex() != null && argument.getIndex() == argIndex) {
                     return argument;
@@ -441,7 +441,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected MethodConfig getMethodByName(String name) {
-        if (methods != null && methods.size() > 0) {
+        if (methods != null && !methods.isEmpty()) {
             for (MethodConfig methodConfig : methods) {
                 if (StringUtils.isEquals(methodConfig.getName(), name)) {
                     return methodConfig;
@@ -748,7 +748,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (methodsJson != null) {
             this.methods = new ArrayList<>();
             methodsJson.forEach(
-                    (methodConfigJson) -> methods.add(JsonUtils.toJavaObject(methodConfigJson, MethodConfig.class)));
+                    methodConfigJson -> methods.add(JsonUtils.toJavaObject(methodConfigJson, MethodConfig.class)));
         } else {
             this.methods = null;
         }
@@ -918,15 +918,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public String getGroup(AbstractInterfaceConfig interfaceConfig) {
-        return StringUtils.isEmpty(getGroup())
-                ? (interfaceConfig != null ? interfaceConfig.getGroup() : getGroup())
-                : getGroup();
+        if (StringUtils.isEmpty(getGroup()) && interfaceConfig != null) {
+            return interfaceConfig.getGroup();
+        }
+        return getGroup();
     }
 
     public String getVersion(AbstractInterfaceConfig interfaceConfig) {
-        return StringUtils.isEmpty(getVersion())
-                ? (interfaceConfig != null ? interfaceConfig.getVersion() : getVersion())
-                : getVersion();
+        if (StringUtils.isEmpty(getVersion()) && interfaceConfig != null) {
+            return interfaceConfig.getVersion();
+        }
+        return getVersion();
     }
 
     public String getVersion() {

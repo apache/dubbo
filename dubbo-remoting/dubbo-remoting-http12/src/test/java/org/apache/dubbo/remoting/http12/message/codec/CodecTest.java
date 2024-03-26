@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CodecTest {
+class CodecTest {
 
     final String MULTIPART_SAMPLE_1 = "--example-part-boundary\r\n"
             + "Content-Disposition: form-data; name=\"username\"\r\n"

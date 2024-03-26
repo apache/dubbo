@@ -40,6 +40,7 @@ public class JsonCodec implements HttpMessageCodec {
         }
     }
 
+    @Override
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
         try {
             os.write(JsonUtils.toJson(data).getBytes(charset));
