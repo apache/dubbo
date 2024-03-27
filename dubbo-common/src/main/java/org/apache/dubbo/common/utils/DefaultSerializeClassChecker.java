@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialization.ClassHolder;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.Serializable;
@@ -40,6 +42,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
     private volatile boolean checkSerializable = true;
 
     private final SerializeSecurityManager serializeSecurityManager;
+    private final ClassHolder classHolder;
     private volatile long[] allowPrefixes = new long[0];
 
     private volatile long[] disAllowPrefixes = new long[0];
@@ -47,6 +50,8 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
     public DefaultSerializeClassChecker(FrameworkModel frameworkModel) {
         serializeSecurityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
         serializeSecurityManager.registerListener(this);
+        classHolder =
+                NativeDetector.inNativeImage() ? frameworkModel.getBeanFactory().getBean(ClassHolder.class) : null;
     }
 
     @Override
@@ -120,7 +125,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
 
     private Class<?> loadClass0(ClassLoader classLoader, String className) throws ClassNotFoundException {
         if (checkStatus == SerializeCheckStatus.DISABLE) {
-            return ClassUtils.forName(className, classLoader);
+            return classForName(classLoader, className);
         }
 
         long hash = MAGIC_HASH_CODE;
@@ -133,7 +138,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
             hash *= MAGIC_PRIME;
 
             if (Arrays.binarySearch(allowPrefixes, hash) >= 0) {
-                return ClassUtils.forName(className, classLoader);
+                return classForName(classLoader, className);
             }
         }
 
@@ -190,7 +195,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
             }
         }
 
-        Class<?> clazz = ClassUtils.forName(className, classLoader);
+        Class<?> clazz = classForName(classLoader, className);
         if (serializeSecurityManager.getWarnedClasses().add(className)) {
             logger.warn(
                     PROTOCOL_UNTRUSTED_SERIALIZE_CLASS,
@@ -202,6 +207,16 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
                             + "Please add it into security/serialize.allowlist or follow FAQ to configure it.");
         }
         return clazz;
+    }
+
+    private Class<?> classForName(ClassLoader classLoader, String className) throws ClassNotFoundException {
+        if (classHolder != null) {
+            Class<?> aClass = classHolder.loadClass(className, classLoader);
+            if (aClass != null) {
+                return aClass;
+            }
+        }
+        return ClassUtils.forName(className, classLoader);
     }
 
     public static DefaultSerializeClassChecker getInstance() {

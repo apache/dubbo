@@ -60,7 +60,7 @@ public class Application {
         service.setRef(new DemoServiceImpl());
 
         ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
-        protocolConfig.setSerialization("fastjson2");
+        protocolConfig.setSerialization("hessian2");
         bootstrap
                 .application(applicationConfig)
                 .registry(new RegistryConfig(REGISTRY_URL))

@@ -25,6 +25,8 @@ import com.alibaba.com.caucho.hessian.io.JavaDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaSerializer;
 import com.alibaba.com.caucho.hessian.io.Serializer;
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import com.alibaba.com.caucho.hessian.io.UnsafeDeserializer;
+import com.alibaba.com.caucho.hessian.io.UnsafeSerializer;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
 
@@ -54,7 +56,9 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
         checkSerializable(cl);
 
-        return new JavaSerializer(cl, getClassLoader());
+        if (isEnableUnsafeSerializer() && JavaSerializer.getWriteReplace(cl) == null) {
+            return UnsafeSerializer.create(cl);
+        } else return JavaSerializer.create(cl);
     }
 
     @Override
@@ -68,7 +72,9 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
         checkSerializable(cl);
 
-        return new JavaDeserializer(cl);
+        if (isEnableUnsafeSerializer()) {
+            return new UnsafeDeserializer(cl, getFieldDeserializerFactory());
+        } else return new JavaDeserializer(cl, getFieldDeserializerFactory());
     }
 
     private void checkSerializable(Class<?> cl) {
