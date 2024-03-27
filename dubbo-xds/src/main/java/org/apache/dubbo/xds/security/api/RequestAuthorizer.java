@@ -23,5 +23,5 @@ import org.apache.dubbo.rpc.Invocation;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RequestAuthorizer {
 
-    boolean validate(Invocation invocation) throws AuthorizationException;
+    void validate(Invocation invocation) throws AuthorizationException;
 }

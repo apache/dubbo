@@ -27,7 +27,7 @@ import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 public class ExternalAuthorizer implements RequestAuthorizer {
 
     @Override
-    public boolean validate(Invocation invocation) throws AuthorizationException {
-        return false;
+    public void validate(Invocation invocation) throws AuthorizationException {
+
     }
 }

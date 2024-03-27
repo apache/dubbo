@@ -1,0 +1,1 @@
+istio=org.apache.dubbo.rpc.cluster.xds.security.istio.IstioCitadelCertificateSigner

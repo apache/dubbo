@@ -57,7 +57,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
     }
 
     @Override
-    public boolean validate(Invocation invocation) throws AuthorizationException {
+    public void validate(Invocation invocation) throws AuthorizationException {
 
         List<RuleSource> rulesSources =
                 ruleSourceProvider.getSource(invocation.getInvoker().getUrl(), invocation);
@@ -126,6 +126,9 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         if (CollectionUtils.isEmpty(orRules)) {
             orRes = true;
         }
-        return andRes && orRes;
+        if(andRes && orRes){
+            return;
+        }
+        throw new AuthorizationException("Request authorization failed: request credential doesn't meet rules.");
     }
 }

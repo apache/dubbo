@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 默认规则工厂。支持istio的默认校验属性，如请求来源、目标path、请求方式等
+ * 默认规则工厂
  */
 public class DefaultRuleFactory implements RuleFactory {
 
