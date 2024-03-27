@@ -93,6 +93,60 @@ public class DubboCertManager {
         this.frameworkModel = frameworkModel;
     }
 
+    /**
+     * Generate key pair with RSA
+     *
+     * @return key pair
+     */
+    protected static KeyPair signWithRsa() {
+        KeyPair keyPair = null;
+        try {
+            KeyPairGenerator kpGenerator = KeyPairGenerator.getInstance("RSA");
+            kpGenerator.initialize(4096);
+            java.security.KeyPair keypair = kpGenerator.generateKeyPair();
+            PublicKey publicKey = keypair.getPublic();
+            PrivateKey privateKey = keypair.getPrivate();
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keypair.getPrivate());
+            keyPair = new KeyPair(publicKey, privateKey, signer);
+        } catch (NoSuchAlgorithmException | OperatorCreationException e) {
+            logger.error(
+                    CONFIG_SSL_CERT_GENERATE_FAILED,
+                    "",
+                    "",
+                    "Generate Key with SHA256WithRSA algorithm failed. " + "Please check if your system support.",
+                    e);
+        }
+        return keyPair;
+    }
+
+    /**
+     * Generate key pair with ECDSA
+     *
+     * @return key pair
+     */
+    protected static KeyPair signWithEcdsa() {
+        KeyPair keyPair = null;
+        try {
+            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+            KeyPairGenerator g = KeyPairGenerator.getInstance("EC");
+            g.initialize(ecSpec, new SecureRandom());
+            java.security.KeyPair keypair = g.generateKeyPair();
+            PublicKey publicKey = keypair.getPublic();
+            PrivateKey privateKey = keypair.getPrivate();
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256withECDSA").build(privateKey);
+            keyPair = new KeyPair(publicKey, privateKey, signer);
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
+            logger.error(
+                    CONFIG_SSL_CERT_GENERATE_FAILED,
+                    "",
+                    "",
+                    "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
+                            + "Will attempt to generate with RSA2048.",
+                    e);
+        }
+        return keyPair;
+    }
+
     public synchronized void connect(CertConfig certConfig) {
         if (reference != null) {
             logger.error(INTERNAL_ERROR, "", "", "Dubbo Cert Authority server is already connected.");
@@ -149,12 +203,11 @@ public class DubboCertManager {
         reference = new ReferenceConfig<>();
         reference.setInterface(DubboCertificateService.class);
         reference.setProxy(CommonConstants.NATIVE_STUB);
-        reference.setUrl("tri://"+remoteAddress);
+        reference.setUrl("tri://" + remoteAddress);
         reference.setTimeout(3000);
 
-        dubboBootstrap = DubboBootstrap.newInstance()
-                .registry(new RegistryConfig("N/A"))
-                .reference(reference);
+        dubboBootstrap =
+                DubboBootstrap.newInstance().registry(new RegistryConfig("N/A")).reference(reference);
         try {
 
             if (StringUtils.isNotEmpty(caCertPath)) {
@@ -167,13 +220,12 @@ public class DubboCertManager {
                 sslConfig.setCaCertPath(caCertPath);
                 dubboBootstrap.ssl(sslConfig);
 
-
             } else {
                 logger.warn(
                         CONFIG_SSL_CONNECT_INSECURE,
                         "",
                         "",
-                        "No caCertPath is provided, will use insecure connection.");
+                        "No caCertPath is provided, will use insecure " + "connection.");
             }
 
         } catch (Exception e) {
@@ -212,7 +264,7 @@ public class DubboCertManager {
                                 CONFIG_SSL_CERT_GENERATE_FAILED,
                                 "",
                                 "",
-                                "Generate Cert from Dubbo Certificate Authority failed.");
+                                "Generate Cert from Dubbo Certificate " + "Authority failed.");
                     }
                 } catch (Exception e) {
                     logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
@@ -240,7 +292,7 @@ public class DubboCertManager {
                     CONFIG_SSL_CERT_GENERATE_FAILED,
                     "",
                     "",
-                    "Generate Key failed. Please check if your system support.");
+                    "Generate Key failed. Please check if your system " + "support.");
             return null;
         }
 
@@ -271,79 +323,28 @@ public class DubboCertManager {
                 certificateResponse.getExpireTime());
     }
 
-    private void setHeaderIfNeed(
-            ) throws IOException {
+    private void setHeaderIfNeed() throws IOException {
         String oidcTokenPath = certConfig.getOidcTokenPath();
         if (StringUtils.isNotEmpty(oidcTokenPath)) {
 
-            RpcContext.getClientAttachment().setAttachment("authorization","Bearer "
-                    + IOUtils.read(new FileReader(oidcTokenPath))
-                    .replace("\n", "")
-                    .replace("\t", "")
-                    .replace("\r", "")
-                    .trim());
+            RpcContext.getClientAttachment()
+                    .setAttachment(
+                            "authorization",
+                            "Bearer "
+                                    + IOUtils.read(new FileReader(oidcTokenPath))
+                                            .replace("\n", "")
+                                            .replace("\t", "")
+                                            .replace("\r", "")
+                                            .trim());
             logger.info("Use oidc token from " + oidcTokenPath + " to connect to Dubbo Certificate Authority.");
         } else {
             logger.warn(
                     CONFIG_SSL_CONNECT_INSECURE,
                     "",
                     "",
-                    "Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
+                    "Use insecure connection to connect to Dubbo Certificate"
+                            + " Authority. Reason: No oidc token is provided.");
         }
-    }
-
-    /**
-     * Generate key pair with RSA
-     *
-     * @return key pair
-     */
-    protected static KeyPair signWithRsa() {
-        KeyPair keyPair = null;
-        try {
-            KeyPairGenerator kpGenerator = KeyPairGenerator.getInstance("RSA");
-            kpGenerator.initialize(4096);
-            java.security.KeyPair keypair = kpGenerator.generateKeyPair();
-            PublicKey publicKey = keypair.getPublic();
-            PrivateKey privateKey = keypair.getPrivate();
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keypair.getPrivate());
-            keyPair = new KeyPair(publicKey, privateKey, signer);
-        } catch (NoSuchAlgorithmException | OperatorCreationException e) {
-            logger.error(
-                    CONFIG_SSL_CERT_GENERATE_FAILED,
-                    "",
-                    "",
-                    "Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.",
-                    e);
-        }
-        return keyPair;
-    }
-
-    /**
-     * Generate key pair with ECDSA
-     *
-     * @return key pair
-     */
-    protected static KeyPair signWithEcdsa() {
-        KeyPair keyPair = null;
-        try {
-            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
-            KeyPairGenerator g = KeyPairGenerator.getInstance("EC");
-            g.initialize(ecSpec, new SecureRandom());
-            java.security.KeyPair keypair = g.generateKeyPair();
-            PublicKey publicKey = keypair.getPublic();
-            PrivateKey privateKey = keypair.getPrivate();
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256withECDSA").build(privateKey);
-            keyPair = new KeyPair(publicKey, privateKey, signer);
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
-            logger.error(
-                    CONFIG_SSL_CERT_GENERATE_FAILED,
-                    "",
-                    "",
-                    "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
-                            + "Will attempt to generate with RSA2048.",
-                    e);
-        }
-        return keyPair;
     }
 
     private DubboCertificateRequest generateRequest(String csr) {
