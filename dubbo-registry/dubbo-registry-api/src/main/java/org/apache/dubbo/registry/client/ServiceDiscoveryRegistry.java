@@ -344,17 +344,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
         try {
             appSubscriptionLock.lock();
+            boolean initialization = false;
             ServiceInstancesChangedListener serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (serviceInstancesChangedListener == null) {
                 serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
-                for (String serviceName : serviceNames) {
-                    List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-                    if (CollectionUtils.isNotEmpty(serviceInstances)) {
-                        serviceInstancesChangedListener.onEvent(
-                                new ServiceInstancesChangedEvent(serviceName, serviceInstances));
-                    }
-                }
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
+                initialization = true;
             }
 
             if (!serviceInstancesChangedListener.isDestroyed()) {
@@ -372,6 +367,15 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                             serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
                             return null;
                         });
+                if (initialization) {
+                    for (String serviceName : serviceNames) {
+                        List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+                        if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                            serviceInstancesChangedListener.onEvent(
+                                    new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                        }
+                    }
+                }
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);

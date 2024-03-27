@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -236,18 +237,13 @@ public class NacosRegistry extends FailbackRegistry {
                  * in https://github.com/apache/dubbo/issues/5978
                  */
                 for (String serviceName : serviceNames) {
+                    subscribeEventListener(serviceName, url, listener);
                     List<Instance> instances =
                             namingService.getAllInstances(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
                     notifySubscriber(url, serviceName, listener, instances);
                 }
-                for (String serviceName : serviceNames) {
-                    subscribeEventListener(serviceName, url, listener);
-                }
             } else {
                 for (String serviceName : serviceNames) {
-                    List<Instance> instances = new LinkedList<>();
-                    instances.addAll(
-                            namingService.getAllInstances(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP)));
                     String serviceInterface = serviceName;
                     String[] segments = serviceName.split(SERVICE_NAME_SEPARATOR, -1);
                     if (segments.length == 4) {
@@ -255,8 +251,10 @@ public class NacosRegistry extends FailbackRegistry {
                     }
                     URL subscriberURL = url.setPath(serviceInterface)
                             .addParameters(INTERFACE_KEY, serviceInterface, CHECK_KEY, String.valueOf(false));
-                    notifySubscriber(subscriberURL, serviceName, listener, instances);
                     subscribeEventListener(serviceName, subscriberURL, listener);
+                    List<Instance> instances =
+                            namingService.getAllInstances(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
+                    notifySubscriber(subscriberURL, serviceName, listener, instances);
                 }
             }
         } catch (SkipFailbackWrapperException exception) {
@@ -369,18 +367,15 @@ public class NacosRegistry extends FailbackRegistry {
 
     private Set<String> filterServiceNames(NacosServiceName serviceName) {
         try {
-            Set<String> serviceNames = new LinkedHashSet<>();
-            serviceNames.addAll(
-                    namingService
-                            .getServicesOfServer(1, Integer.MAX_VALUE, getUrl().getGroup(Constants.DEFAULT_GROUP))
-                            .getData()
-                            .stream()
-                            .filter(this::isConformRules)
-                            .map(NacosServiceName::new)
-                            .filter(serviceName::isCompatible)
-                            .map(NacosServiceName::toString)
-                            .collect(Collectors.toList()));
-            return serviceNames;
+            return namingService
+                    .getServicesOfServer(1, Integer.MAX_VALUE, getUrl().getGroup(Constants.DEFAULT_GROUP))
+                    .getData()
+                    .stream()
+                    .filter(this::isConformRules)
+                    .map(NacosServiceName::new)
+                    .filter(serviceName::isCompatible)
+                    .map(NacosServiceName::toString)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         } catch (SkipFailbackWrapperException exception) {
             throw exception;
         } catch (Throwable cause) {
@@ -467,14 +462,13 @@ public class NacosRegistry extends FailbackRegistry {
 
     private Set<String> getAllServiceNames() {
         try {
-            final Set<String> serviceNames = new LinkedHashSet<>();
             int pageIndex = 1;
             ListView<String> listView = namingService.getServicesOfServer(
                     pageIndex, PAGINATION_SIZE, getUrl().getGroup(Constants.DEFAULT_GROUP));
             // First page data
             List<String> firstPageData = listView.getData();
             // Append first page into list
-            serviceNames.addAll(firstPageData);
+            final Set<String> serviceNames = new LinkedHashSet<>(firstPageData);
             // the total count
             int count = listView.getCount();
             // the number of pages
@@ -576,7 +570,7 @@ public class NacosRegistry extends FailbackRegistry {
         consumerURL = removeParamsFromConsumer(consumerURL);
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
-        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
+        if (urls.isEmpty() && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
             logger.warn(
                     REGISTRY_NACOS_EXCEPTION,
                     "",
@@ -651,7 +645,7 @@ public class NacosRegistry extends FailbackRegistry {
     private void notifySubscriber(
             URL url, String serviceName, NacosAggregateListener listener, Collection<Instance> instances) {
         List<Instance> enabledInstances = new LinkedList<>(instances);
-        if (enabledInstances.size() > 0) {
+        if (!enabledInstances.isEmpty()) {
             //  Instances
             filterEnabledInstances(enabledInstances);
         }
@@ -667,7 +661,9 @@ public class NacosRegistry extends FailbackRegistry {
      * @return non-null array
      */
     private List<String> getCategories(URL url) {
-        return ANY_VALUE.equals(url.getServiceInterface()) ? ALL_SUPPORTED_CATEGORIES : Arrays.asList(DEFAULT_CATEGORY);
+        return ANY_VALUE.equals(url.getServiceInterface())
+                ? ALL_SUPPORTED_CATEGORIES
+                : Collections.singletonList(DEFAULT_CATEGORY);
     }
 
     private URL buildURL(URL consumerURL, Instance instance) {
