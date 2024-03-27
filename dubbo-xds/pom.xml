@@ -27,8 +27,10 @@
   <packaging>jar</packaging>
   <name>${project.artifactId}</name>
   <description>The xds module of dubbo project</description>
+
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
+    <protobuf-java_version>3.25.1</protobuf-java_version>
   </properties>
   <dependencies>
     <dependency>
@@ -141,6 +143,53 @@
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>io.kubernetes</groupId>
+      <artifactId>client-java</artifactId>
+      <version>10.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+      <version>3.18.2</version>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>${maven_protobuf_plugin_version}</version>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf-java_version}:exe:${os.detected.classifier}</protocArtifact>
+          <pluginId>grpc-java</pluginId>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc_version}:exe:${os.detected.classifier}</pluginArtifact>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>compile-custom</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>9</source>
+          <target>9</target>
+        </configuration>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>${maven_os_plugin_version}</version>
+      </extension>
+    </extensions>
+  </build>
 </project>

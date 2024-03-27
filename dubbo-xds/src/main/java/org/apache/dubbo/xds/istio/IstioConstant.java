@@ -44,13 +44,15 @@ public class IstioConstant {
     /**
      * k8s jwt token
      */
-    public static final String KUBERNETES_SA_PATH = "";
+    public static final String KUBERNETES_SA_PATH =
+            "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token";
 
-    public static final String KUBERNETES_CA_PATH = "E:/k8s/ca.crt";
+    public static final String KUBERNETES_CA_PATH =
+            "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt";
 
-    public static final String ISTIO_SA_PATH = "/var/run/secrets/tokens/istio-token";
+    public static final String ISTIO_SA_PATH = "/Users/nameles/Desktop/test_secrets/token";
 
-    public static final String ISTIO_CA_PATH = "/var/run/secrets/istio/root-cert.pem";
+    public static final String ISTIO_CA_PATH = "/Users/nameles/Desktop/test_secrets/ca.crt";
 
     public static final String KUBERNETES_NAMESPACE_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
 
@@ -70,10 +72,14 @@ public class IstioConstant {
      */
     public static final String SECRET_TTL_KEY = "SECRET_TTL";
 
+    public static final String TRUST_TTL_KEY = "TRUST_TTL";
+
     /**
      * The cert lifetime default value 24h0m0s
      */
     public static final String DEFAULT_SECRET_TTL = "86400"; // 24 * 60 * 60
+
+    public static final String DEFAULT_TRUST_TTL = "86400";
 
     /**
      * The grace period ratio for the cert rotation
@@ -89,7 +95,7 @@ public class IstioConstant {
 
     public static final String PILOT_CERT_PROVIDER_KEY = "PILOT_CERT_PROVIDER";
 
-    public static final String ISTIO_PILOT_CERT_PROVIDER = "istiod";
+    public static final String PILOT_CERT_PROVIDER_ISTIO = "istiod";
 
     public static final String DEFAULT_ISTIO_META_CLUSTER_ID = "Kubernetes";
 

@@ -28,9 +28,25 @@ import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_READ_FILE_ISTIO;
+import static org.apache.dubbo.xds.istio.IstioConstant.CA_ADDR_KEY;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_CA_ADDR;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_ECC_SIG_ALG;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_ISTIO_META_CLUSTER_ID;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_JWT_POLICY;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_RSA_KEY_SIZE;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_SECRET_TTL;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_TRUST_DOMAIN;
+import static org.apache.dubbo.xds.istio.IstioConstant.DEFAULT_TRUST_TTL;
+import static org.apache.dubbo.xds.istio.IstioConstant.ECC_SIG_ALG_KEY;
+import static org.apache.dubbo.xds.istio.IstioConstant.ISTIO_META_CLUSTER_ID_KEY;
+import static org.apache.dubbo.xds.istio.IstioConstant.JWT_POLICY;
 import static org.apache.dubbo.xds.istio.IstioConstant.NS;
+import static org.apache.dubbo.xds.istio.IstioConstant.RSA_KEY_SIZE_KEY;
 import static org.apache.dubbo.xds.istio.IstioConstant.SA;
+import static org.apache.dubbo.xds.istio.IstioConstant.SECRET_TTL_KEY;
 import static org.apache.dubbo.xds.istio.IstioConstant.SPIFFE;
+import static org.apache.dubbo.xds.istio.IstioConstant.TRUST_DOMAIN_KEY;
+import static org.apache.dubbo.xds.istio.IstioConstant.TRUST_TTL_KEY;
 
 public class IstioEnv implements XdsEnv {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(IstioEnv.class);
@@ -51,20 +67,42 @@ public class IstioEnv implements XdsEnv {
 
     private String eccSigAlg;
 
-    private int secretTTL;
-
     private float secretGracePeriodRatio;
 
     private String istioMetaClusterId;
 
+    /**
+     * Who provides cert for istio pilot
+     */
     private String pilotCertProvider;
 
+    /**
+     * TTL of cert pair. This will affect the frequency of cert refresh.
+     */
+    private int secretTTL;
+
+    /**
+     * The time start to try to refresh certs
+     */
+    private long tryRefreshBeforeCertExpireAt;
+
+    /**
+     * TTL of trust storage. This will affect the frequency of trust refresh.
+     * In istio, trust always refresh with cert pair
+     * because istio use cert chains as response for an CSR request.
+     */
+    private long trustTTL;
+
+    /**
+     * TODO READ
+     */
+    private String serviceAccountJwt;
+
     private IstioEnv() {
-        jwtPolicy =
-                Optional.ofNullable(System.getenv(IstioConstant.JWT_POLICY)).orElse(IstioConstant.DEFAULT_JWT_POLICY);
-        podName = Optional.ofNullable(System.getenv("POD_NAME")).orElse(System.getenv("HOSTNAME"));
-        trustDomain = Optional.ofNullable(System.getenv(IstioConstant.TRUST_DOMAIN_KEY))
-                .orElse(IstioConstant.DEFAULT_TRUST_DOMAIN);
+        jwtPolicy = getStringProp(JWT_POLICY, DEFAULT_JWT_POLICY);
+        podName = Optional.ofNullable(getStringProp("POD_NAME", null)).orElse(getStringProp("HOSTNAME", ""));
+        trustDomain = getStringProp(TRUST_DOMAIN_KEY, DEFAULT_TRUST_DOMAIN);
+
         workloadNameSpace = Optional.ofNullable(System.getenv(IstioConstant.WORKLOAD_NAMESPACE_KEY))
                 .orElseGet(() -> {
                     File namespaceFile = new File(IstioConstant.KUBERNETES_NAMESPACE_PATH);
@@ -77,25 +115,45 @@ public class IstioEnv implements XdsEnv {
                     }
                     return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;
                 });
-        caAddr = Optional.ofNullable(System.getenv(IstioConstant.CA_ADDR_KEY)).orElse(IstioConstant.DEFAULT_CA_ADDR);
-        rasKeySize = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.RSA_KEY_SIZE_KEY))
-                .orElse(IstioConstant.DEFAULT_RSA_KEY_SIZE));
-        eccSigAlg = Optional.ofNullable(System.getenv(IstioConstant.ECC_SIG_ALG_KEY))
-                .orElse(IstioConstant.DEFAULT_ECC_SIG_ALG);
-        secretTTL = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.SECRET_TTL_KEY))
-                .orElse(IstioConstant.DEFAULT_SECRET_TTL));
+        caAddr = getStringProp(CA_ADDR_KEY, DEFAULT_CA_ADDR);
+
+        rasKeySize = getIntProp(RSA_KEY_SIZE_KEY, DEFAULT_RSA_KEY_SIZE);
+        eccSigAlg = getStringProp(ECC_SIG_ALG_KEY, DEFAULT_ECC_SIG_ALG);
+        secretTTL = getIntProp(SECRET_TTL_KEY, DEFAULT_SECRET_TTL);
+        trustTTL = getIntProp(TRUST_TTL_KEY, DEFAULT_TRUST_TTL);
+
         secretGracePeriodRatio =
                 Float.parseFloat(Optional.ofNullable(System.getenv(IstioConstant.SECRET_GRACE_PERIOD_RATIO_KEY))
                         .orElse(IstioConstant.DEFAULT_SECRET_GRACE_PERIOD_RATIO));
-        istioMetaClusterId = Optional.ofNullable(System.getenv(IstioConstant.ISTIO_META_CLUSTER_ID_KEY))
-                .orElse(IstioConstant.DEFAULT_ISTIO_META_CLUSTER_ID);
-        pilotCertProvider = Optional.ofNullable(System.getenv(IstioConstant.PILOT_CERT_PROVIDER_KEY))
-                .orElse("");
+        istioMetaClusterId = getStringProp(ISTIO_META_CLUSTER_ID_KEY, DEFAULT_ISTIO_META_CLUSTER_ID);
+        pilotCertProvider = getStringProp(IstioConstant.PILOT_CERT_PROVIDER_KEY, "");
 
         if (getServiceAccount() == null) {
             throw new UnsupportedOperationException("Unable to found kubernetes service account token file. "
                     + "Please check if work in Kubernetes and mount service account token file correctly.");
         }
+    }
+
+    private String getStringProp(String key, String defaultVal) {
+        String val = System.getenv(key);
+        if (val == null) {
+            val = System.getProperty(key);
+        }
+        if (val == null) {
+            val = defaultVal;
+        }
+        return val;
+    }
+
+    private Integer getIntProp(String key, String defaultVal) {
+        String val = System.getenv(key);
+        if (val == null) {
+            val = System.getProperty(key);
+        }
+        if (val == null) {
+            val = defaultVal;
+        }
+        return Integer.valueOf(val);
     }
 
     public static IstioEnv getInstance() {
@@ -132,8 +190,12 @@ public class IstioEnv implements XdsEnv {
                         e);
             }
         }
-        // TODO：Subsequent implementation in the security section
-        return "null";
+
+        return null;
+    }
+
+    public String getServiceAccountJwt() {
+        return serviceAccountJwt;
     }
 
     public String getCsrHost() {
@@ -159,7 +221,7 @@ public class IstioEnv implements XdsEnv {
     }
 
     public boolean isECCFirst() {
-        return IstioConstant.DEFAULT_ECC_SIG_ALG.equals(eccSigAlg);
+        return DEFAULT_ECC_SIG_ALG.equals(eccSigAlg);
     }
 
     public int getSecretTTL() {
@@ -174,11 +236,27 @@ public class IstioEnv implements XdsEnv {
         return istioMetaClusterId;
     }
 
+    public Long getTryRefreshBeforeCertExpireAt() {
+        return tryRefreshBeforeCertExpireAt;
+    }
+
+    public String getPilotCertProvider() {
+        return pilotCertProvider;
+    }
+
+    public long getTrustTTL() {
+        return trustTTL;
+    }
+
+    /**
+     * 每次都会重新读取，实现JWT轮转
+     */
     public String getCaCert() {
         File caFile;
-        if (IstioConstant.ISTIO_PILOT_CERT_PROVIDER.equals(pilotCertProvider)) {
+        if (IstioConstant.PILOT_CERT_PROVIDER_ISTIO.equals(pilotCertProvider)) {
             caFile = new File(IstioConstant.ISTIO_CA_PATH);
         } else {
+            // 控制面返回的是istio CA，而非K8s CA，启用第一方JWT时 不能直接使用从k8s SA得到的CA作为TrustStorage
             return null;
         }
         if (caFile.canRead()) {
