@@ -21,9 +21,6 @@ import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
-import java.util.List;
-import java.util.Map;
-
 public abstract class AbstractServerHttpChannelObserver implements CustomizableHttpChannelObserver<Object> {
 
     private HeadersCustomizer headersCustomizer = HeadersCustomizer.NO_OP;
@@ -34,7 +31,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     private final HttpChannel httpChannel;
 
-    protected boolean headerSent;
+    private boolean headerSent;
 
     private HttpMessageEncoder responseEncoder;
 
@@ -73,30 +70,22 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         return trailersCustomizer;
     }
 
-    protected ErrorResponseCustomizer getErrorResponseCustomizer() {
-        return errorResponseCustomizer;
-    }
-
     @Override
     public void onNext(Object data) {
         try {
-            if (data instanceof HttpResult) {
-                HttpResult<?> result = (HttpResult<?>) data;
-                if (!headerSent) {
-                    doSendHeaders(String.valueOf(result.getStatus()), result.getHeaders());
-                }
-                data = result.getBody();
-            } else if (!headerSent) {
-                doSendHeaders(HttpStatus.OK.getStatusString(), null);
-            }
-            HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
-            preOutputMessage(outputMessage);
-            responseEncoder.encode(outputMessage.getBody(), data);
-            getHttpChannel().writeMessage(outputMessage);
-            postOutputMessage(outputMessage);
+            doOnNext(data);
         } catch (Throwable e) {
             onError(e);
         }
+    }
+
+    protected void doOnNext(Object data) throws Throwable {
+        if (!headerSent) {
+            HttpMetadata httpMetadata = buildMetadata(httpStatusCode(data, false));
+            sendHeader(httpMetadata, data);
+        }
+        HttpOutputMessage outputMessage = encodeData(data);
+        sendData(outputMessage);
     }
 
     protected void preOutputMessage(HttpOutputMessage outputMessage) throws Throwable {}
@@ -119,26 +108,23 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             onNext(((HttpResultPayloadException) throwable).getResult());
             return;
         }
-        int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
-        if (throwable instanceof HttpStatusException) {
-            httpStatusCode = ((HttpStatusException) throwable).getStatusCode();
-        }
-        if (!headerSent) {
-            doSendHeaders(String.valueOf(httpStatusCode), null);
-        }
         try {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setStatus(String.valueOf(httpStatusCode));
-            errorResponse.setMessage(throwable.getMessage());
-            errorResponseCustomizer.accept(errorResponse, throwable);
-            HttpOutputMessage httpOutputMessage = encodeHttpOutputMessage(errorResponse);
-            responseEncoder.encode(httpOutputMessage.getBody(), errorResponse);
-            getHttpChannel().writeMessage(httpOutputMessage);
+            doOnError(throwable);
         } catch (Throwable ex) {
             throwable = new EncodeException(ex);
         } finally {
             doOnCompleted(throwable);
         }
+    }
+
+    protected void doOnError(Throwable throwable) throws Throwable {
+        String httpStatusCode = httpStatusCode(throwable, true);
+        if (!headerSent) {
+            HttpMetadata httpMetadata = buildMetadata(httpStatusCode);
+            sendHeader(httpMetadata, null);
+        }
+        HttpOutputMessage httpOutputMessage = encodeData(buildErrorResponse(httpStatusCode, throwable));
+        sendData(httpOutputMessage);
     }
 
     @Override
@@ -151,17 +137,62 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         return httpChannel;
     }
 
-    protected void doSendHeaders(String statusCode, Map<String, List<String>> additionalHeaders) {
+    protected HttpOutputMessage encodeData(Object data) throws Throwable {
+        if (data instanceof HttpResult) {
+            data = ((HttpResult<?>) data).getBody();
+        }
+        HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
+        preOutputMessage(outputMessage);
+        responseEncoder.encode(outputMessage.getBody(), data);
+        return outputMessage;
+    }
+
+    protected void sendData(HttpOutputMessage outputMessage) throws Throwable {
+        getHttpChannel().writeMessage(outputMessage);
+        postOutputMessage(outputMessage);
+    }
+
+    protected void sendHeader(HttpMetadata httpMetadata, Object data) {
+        if (data instanceof HttpResult) {
+            HttpResult<?> result = (HttpResult<?>) data;
+            if (result.getHeaders() != null) {
+                httpMetadata.headers().putAll(result.getHeaders());
+            }
+        }
+        getHttpChannel().writeHeader(httpMetadata);
+        headerSent = true;
+    }
+
+    protected String httpStatusCode(Object data, boolean isError) {
+        String httpStatusCode = HttpStatus.OK.getStatusString();
+        if (data instanceof HttpResult) {
+            httpStatusCode = String.valueOf(((HttpResult<?>) data).getStatus());
+        } else if (isError) {
+            Throwable throwable = (Throwable) data;
+            int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
+            if (throwable instanceof HttpStatusException) {
+                errorCode = ((HttpStatusException) throwable).getStatusCode();
+            }
+            httpStatusCode = String.valueOf(errorCode);
+        }
+        return httpStatusCode;
+    }
+
+    protected ErrorResponse buildErrorResponse(String statusCode, Throwable throwable) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(statusCode);
+        errorResponse.setMessage(throwable.getMessage());
+        errorResponseCustomizer.accept(errorResponse, throwable);
+        return errorResponse;
+    }
+
+    protected HttpMetadata buildMetadata(String statusCode) {
         HttpMetadata httpMetadata = encodeHttpMetadata();
         HttpHeaders headers = httpMetadata.headers();
         headers.set(HttpHeaderNames.STATUS.getName(), statusCode);
         headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), responseEncoder.contentType());
         headersCustomizer.accept(headers);
-        if (additionalHeaders != null) {
-            headers.putAll(additionalHeaders);
-        }
-        getHttpChannel().writeHeader(httpMetadata);
-        headerSent = true;
+        return httpMetadata;
     }
 
     protected void doOnCompleted(Throwable throwable) {
