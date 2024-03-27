@@ -18,34 +18,37 @@ package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.auth.v1alpha1.DubboCertificateRequest;
 import org.apache.dubbo.auth.v1alpha1.DubboCertificateResponse;
-import org.apache.dubbo.auth.v1alpha1.DubboCertificateServiceGrpc;
+import org.apache.dubbo.auth.v1alpha1.DubboCertificateService;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.cert.CertificateFactory;
 import java.security.spec.ECGenParameterSpec;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import io.grpc.Channel;
-import io.grpc.Metadata;
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
@@ -55,7 +58,6 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 
-import static io.grpc.stub.MetadataUtils.newAttachHeadersInterceptor;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CERT_GENERATE_FAILED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CONNECT_INSECURE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
@@ -66,10 +68,14 @@ public class DubboCertManager {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboCertManager.class);
 
     private final FrameworkModel frameworkModel;
+
+    protected volatile DubboBootstrap dubboBootstrap;
+
     /**
-     * gRPC channel to Dubbo Cert Authority server
+     * Triple Certificate Service reference
      */
-    protected volatile Channel channel;
+    protected volatile ReferenceConfig<DubboCertificateService> reference;
+
     /**
      * Cert pair for current Dubbo instance
      */
@@ -88,7 +94,7 @@ public class DubboCertManager {
     }
 
     public synchronized void connect(CertConfig certConfig) {
-        if (channel != null) {
+        if (reference != null) {
             logger.error(INTERNAL_ERROR, "", "", "Dubbo Cert Authority server is already connected.");
             return;
         }
@@ -140,25 +146,36 @@ public class DubboCertManager {
         String remoteAddress = certConfig.getRemoteAddress();
         logger.info(
                 "Try to connect to Dubbo Cert Authority server: " + remoteAddress + ", caCertPath: " + remoteAddress);
+        reference = new ReferenceConfig<>();
+        reference.setInterface(DubboCertificateService.class);
+        reference.setProxy(CommonConstants.NATIVE_STUB);
+        reference.setUrl("tri://"+remoteAddress);
+        reference.setTimeout(3000);
+
+        dubboBootstrap = DubboBootstrap.newInstance()
+                .registry(new RegistryConfig("N/A"))
+                .reference(reference);
         try {
+
             if (StringUtils.isNotEmpty(caCertPath)) {
-                channel = NettyChannelBuilder.forTarget(remoteAddress)
-                        .sslContext(GrpcSslContexts.forClient()
-                                .trustManager(new File(caCertPath))
-                                .build())
-                        .build();
+                File caFile = new File(caCertPath);
+                // Check if caCert is valid
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                cf.generateCertificate(Files.newInputStream(caFile.toPath()));
+
+                SslConfig sslConfig = new SslConfig();
+                sslConfig.setCaCertPath(caCertPath);
+                dubboBootstrap.ssl(sslConfig);
+
+
             } else {
                 logger.warn(
                         CONFIG_SSL_CONNECT_INSECURE,
                         "",
                         "",
                         "No caCertPath is provided, will use insecure connection.");
-                channel = NettyChannelBuilder.forTarget(remoteAddress)
-                        .sslContext(GrpcSslContexts.forClient()
-                                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                                .build())
-                        .build();
             }
+
         } catch (Exception e) {
             logger.error(LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED, "", "", "Failed to load SSL cert file.", e);
             throw new RuntimeException(e);
@@ -170,13 +187,13 @@ public class DubboCertManager {
             refreshFuture.cancel(true);
             refreshFuture = null;
         }
-        if (channel != null) {
-            channel = null;
+        if (reference != null) {
+            reference = null;
         }
     }
 
     public boolean isConnected() {
-        return certConfig != null && channel != null && certPair != null;
+        return certConfig != null && reference != null && certPair != null;
     }
 
     protected CertPair generateCert() {
@@ -228,12 +245,12 @@ public class DubboCertManager {
         }
 
         String csr = generateCsr(keyPair);
-        DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub stub =
-                DubboCertificateServiceGrpc.newBlockingStub(channel);
-        stub = setHeaderIfNeed(stub);
+        dubboBootstrap.start();
+        DubboCertificateService dubboCertificateService = reference.get();
+        setHeaderIfNeed();
 
         String privateKeyPem = generatePrivatePemKey(keyPair);
-        DubboCertificateResponse certificateResponse = stub.createCertificate(generateRequest(csr));
+        DubboCertificateResponse certificateResponse = dubboCertificateService.createCertificate(generateRequest(csr));
 
         if (certificateResponse == null || !certificateResponse.getSuccess()) {
             logger.error(
@@ -254,22 +271,17 @@ public class DubboCertManager {
                 certificateResponse.getExpireTime());
     }
 
-    private DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub setHeaderIfNeed(
-            DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub stub) throws IOException {
+    private void setHeaderIfNeed(
+            ) throws IOException {
         String oidcTokenPath = certConfig.getOidcTokenPath();
         if (StringUtils.isNotEmpty(oidcTokenPath)) {
-            Metadata header = new Metadata();
-            Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
-            header.put(
-                    key,
-                    "Bearer "
-                            + IOUtils.read(new FileReader(oidcTokenPath))
-                                    .replace("\n", "")
-                                    .replace("\t", "")
-                                    .replace("\r", "")
-                                    .trim());
 
-            stub = stub.withInterceptors(newAttachHeadersInterceptor(header));
+            RpcContext.getClientAttachment().setAttachment("authorization","Bearer "
+                    + IOUtils.read(new FileReader(oidcTokenPath))
+                    .replace("\n", "")
+                    .replace("\t", "")
+                    .replace("\r", "")
+                    .trim());
             logger.info("Use oidc token from " + oidcTokenPath + " to connect to Dubbo Certificate Authority.");
         } else {
             logger.warn(
@@ -278,7 +290,6 @@ public class DubboCertManager {
                     "",
                     "Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
         }
-        return stub;
     }
 
     /**

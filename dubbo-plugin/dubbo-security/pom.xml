@@ -35,7 +35,7 @@
     <!-- dubbo -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rpc-api</artifactId>
+      <artifactId>dubbo-config-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -51,18 +51,6 @@
     </dependency>
     <!-- dubbo -->
 
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-protobuf</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-stub</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty-shaded</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>com.google.protobuf</groupId>
@@ -85,52 +73,49 @@
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-ext-jdk15on</artifactId>
     </dependency>
-
-    <!-- test -->
+<!--    test-->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-config-api</artifactId>
+      <artifactId>dubbo-remoting-netty4</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.6.1</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <groupId>org.xolstice.maven.plugins</groupId>
         <artifactId>protobuf-maven-plugin</artifactId>
-        <version>${maven_protobuf_plugin_version}</version>
+        <version>0.6.1</version>
         <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
-          <pluginId>grpc-java</pluginId>
-          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc_version}:exe:${os.detected.classifier}</pluginArtifact>
+          <protocArtifact>com.google.protobuf:protoc:3.19.4:exe:${os.detected.classifier}</protocArtifact>
+          <protocPlugins>
+            <protocPlugin>
+              <id>dubbo</id>
+              <groupId>org.apache.dubbo</groupId>
+              <artifactId>dubbo-compiler</artifactId>
+              <version>${project.version}</version>
+              <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
+            </protocPlugin>
+          </protocPlugins>
         </configuration>
         <executions>
           <execution>
             <goals>
               <goal>compile</goal>
-              <goal>compile-custom</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
-      <!-- Override the maven-javadoc-plugin configuration that depends on the pass -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
     </plugins>
-    <extensions>
-      <extension>
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-        <version>1.7.1</version>
-      </extension>
-    </extensions>
   </build>
 
 </project>

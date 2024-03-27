@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 public class CertScopeModelInitializer implements ScopeModelInitializer {
     public static boolean isSupported() {
         try {
-            ClassUtils.forName("io.grpc.Channel");
             ClassUtils.forName("org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder");
             return true;
         } catch (Throwable t) {
