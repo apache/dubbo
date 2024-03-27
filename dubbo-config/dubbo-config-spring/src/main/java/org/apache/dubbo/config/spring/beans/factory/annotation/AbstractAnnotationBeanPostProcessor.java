@@ -79,7 +79,7 @@ public abstract class AbstractAnnotationBeanPostProcessor
 
     private final ConcurrentMap<String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>
             injectionMetadataCache = new ConcurrentHashMap<
-                    String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
+            >(CACHE_SIZE);
 
     private ConfigurableListableBeanFactory beanFactory;
 
@@ -98,7 +98,7 @@ public abstract class AbstractAnnotationBeanPostProcessor
     }
 
     private static <T> Collection<T> combine(Collection<? extends T>... elements) {
-        List<T> allElements = new ArrayList<T>();
+        List<T> allElements = new ArrayList<>();
         for (Collection<? extends T> e : elements) {
             allElements.addAll(e);
         }

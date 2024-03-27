@@ -43,7 +43,7 @@ import javassist.CtMethod;
  */
 public abstract class Wrapper {
     private static final ConcurrentMap<Class<?>, Wrapper> WRAPPER_MAP =
-            new ConcurrentHashMap<Class<?>, Wrapper>(); // class wrapper map
+            new ConcurrentHashMap<>(); // class wrapper map
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[] {"getClass", "hashCode", "toString", "equals"};
     private static final Wrapper OBJECT_WRAPPER = new Wrapper() {
