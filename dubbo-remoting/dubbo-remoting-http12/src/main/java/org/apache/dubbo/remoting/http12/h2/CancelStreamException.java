@@ -16,7 +16,33 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
+import org.apache.dubbo.remoting.http12.ErrorCodeHolder;
 
-    void onStreamClosed();
+public class CancelStreamException extends RuntimeException implements ErrorCodeHolder {
+
+    private final boolean cancelByRemote;
+
+    private final long errorCode;
+
+    private CancelStreamException(boolean cancelByRemote, long errorCode) {
+        this.cancelByRemote = cancelByRemote;
+        this.errorCode = errorCode;
+    }
+
+    public boolean isCancelByRemote() {
+        return cancelByRemote;
+    }
+
+    public static CancelStreamException fromRemote(long errorCode) {
+        return new CancelStreamException(true, errorCode);
+    }
+
+    public static CancelStreamException fromLocal(long errorCode) {
+        return new CancelStreamException(false, errorCode);
+    }
+
+    @Override
+    public long getErrorCode() {
+        return errorCode;
+    }
 }
