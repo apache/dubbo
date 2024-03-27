@@ -46,8 +46,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
      */
     public static final String HASH_ARGUMENTS = "hash.arguments";
 
-    private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors =
-            new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     @Override
