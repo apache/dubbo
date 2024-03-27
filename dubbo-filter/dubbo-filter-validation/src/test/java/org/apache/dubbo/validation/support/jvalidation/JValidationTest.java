@@ -20,8 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
 
-import javax.validation.ValidationException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +29,7 @@ import static org.hamcrest.core.Is.is;
 class JValidationTest {
     @Test
     void testReturnTypeWithInvalidValidationProvider() {
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             Validation jValidation = new JValidation();
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation?"
                     + "jvalidation=org.apache.dubbo.validation.Validation");
