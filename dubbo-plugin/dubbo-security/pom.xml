@@ -49,7 +49,6 @@
       <artifactId>dubbo-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <!-- dubbo -->
 
 
     <dependency>

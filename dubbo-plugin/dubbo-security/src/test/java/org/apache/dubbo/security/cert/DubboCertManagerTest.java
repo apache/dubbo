@@ -268,40 +268,36 @@ class DubboCertManagerTest {
                     .thenCallRealMethod();
 
 
-
-            ReferenceConfig<DubboCertificateService> ref = Mockito.mock(ReferenceConfig.class);
+            certManager.dubboBootstrap = Mockito.mock(DubboBootstrap.class);
+            ReferenceConfig<DubboCertificateService> reference = Mockito.mock(ReferenceConfig.class);
+            certManager.reference = reference;
             DubboCertificateService dubboCertificateService = Mockito.mock(DubboCertificateService.class);
-
-            Mockito.when(ref.get())
+            Mockito.when(reference.get())
                     .thenReturn(dubboCertificateService);
             Mockito.when(dubboCertificateService.createCertificate(Mockito.any()))
                     .thenReturn(DubboCertificateResponse.newBuilder()
                             .setSuccess(false)
                             .build());
 
-
-            certManager.dubboBootstrap = Mockito.mock(DubboBootstrap.class);
-            certManager.reference = Mockito.mock(ReferenceConfig.class);
-
-            Mockito.when(certManager.reference.get())
-                    .thenReturn(dubboCertificateService);
             certManager.certConfig = new CertConfig(null, null, null, null);
             Assertions.assertNull(certManager.refreshCert());
 
+
+
+            //Test setHeaderIfNeed()
             String file = Objects.requireNonNull(this.getClass()
                             .getClassLoader()
                             .getResource("certs/token"))
                     .getFile();
-
-            //Test setHeaderIfNeed()
-            MockedStatic<RpcContext> mockContext = Mockito.mockStatic(RpcContext.class);
-            RpcContextAttachment rpcContextAttachment = Mockito.mock(RpcContextAttachment.class);
-            mockContext.when(RpcContext::getClientAttachment)
-                    .thenReturn(rpcContextAttachment);
-            certManager.certConfig = new CertConfig(null, null, null, file);
-            Assertions.assertNull(certManager.refreshCert());
-            Mockito.verify(rpcContextAttachment,Mockito.times(1))
-                    .setAttachment(Mockito.any(),Mockito.any());
+            try(MockedStatic<RpcContext> mockContext = Mockito.mockStatic(RpcContext.class,Mockito.CALLS_REAL_METHODS)) {
+                RpcContextAttachment rpcContextAttachment = Mockito.mock(RpcContextAttachment.class);
+                mockContext.when(RpcContext::getClientAttachment)
+                        .thenReturn(rpcContextAttachment);
+                certManager.certConfig = new CertConfig(null, null, null, file);
+                Assertions.assertNull(certManager.refreshCert());
+                Mockito.verify(rpcContextAttachment, Mockito.times(1))
+                        .setAttachment(Mockito.any(), Mockito.any());
+            }
 
 
             Mockito.when(dubboCertificateService.createCertificate(Mockito.any()))
