@@ -19,11 +19,16 @@ package org.apache.dubbo.common.logger.log4j2;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
+import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.io.File;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 public class Log4j2LoggerAdapter implements LoggerAdapter {
     public static final String NAME = "log4j2";
@@ -116,6 +121,18 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
 
     @Override
     public boolean isConfigured() {
-        return true;
+        boolean hasAppender = false;
+        try {
+            LoggerContext context = (LoggerContext) LogManager.getContext(false);
+            org.apache.logging.log4j.core.config.Configuration configuration = context.getConfiguration();
+            LoggerConfig loggerConfig = configuration.getRootLogger();
+            Map<String, Appender> appenders = loggerConfig.getAppenders();
+            if (CollectionUtils.isNotEmptyMap(appenders)) {
+                hasAppender = true;
+            }
+        } catch (Exception t) {
+            // ignore
+        }
+        return hasAppender;
     }
 }
