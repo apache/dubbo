@@ -1,0 +1,46 @@
+syntax = "proto3";
+package org.apache.dubbo.metadata;
+
+option go_package = "dubbo.apache.org/dubbo-go/v3/metadata/triple_api";
+option java_package = "org.apache.dubbo.metadata";
+option java_multiple_files = true;
+
+service MetadataService{
+  rpc GetMetadataInfo(Revision) returns (MetadataMessage);
+
+  rpc GetAndListenInstanceMetadata(ConsumerId) returns (stream InstanceMetadata);
+
+  rpc ListenHeartbeat(ConsumerId) returns (stream HeartbeatMessage);
+}
+
+message Revision{
+  string value = 1;
+}
+
+message MetadataMessage{
+  string app = 1;
+  string version = 2;
+  map<string,ServiceMessage> services = 3;
+}
+
+message ServiceMessage{
+  string name = 1;
+  string group = 2;
+  string version = 3;
+  string protocol = 4;
+  int32 port = 5;
+  string path = 6;
+  map<string,string> params = 7;
+}
+
+message ConsumerId{
+  string id = 1;
+}
+
+message InstanceMetadata{
+  string data = 1;
+}
+
+message HeartbeatMessage{
+  string beat = 1;
+}

@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
 
 /**
@@ -65,13 +66,12 @@ public class ConfigurableMetadataServiceExporter {
                     .getInternalServiceExecutor();
             this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
                     .interfaceClass(MetadataService.class)
-                    .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
+                    .protocol(TRIPLE, METADATA_SERVICE_PROTOCOL_KEY)
                     .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
                     .registryId("internal-metadata-registry")
                     .executor(internalServiceExecutor)
                     .ref(metadataService)
                     .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
-
             // export
             serviceConfig.export();
 

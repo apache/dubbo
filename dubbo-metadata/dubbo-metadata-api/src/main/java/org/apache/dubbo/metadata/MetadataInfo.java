@@ -80,7 +80,15 @@ public class MetadataInfo implements Serializable {
     private transient ExtensionLoader<MetadataParamsFilter> loader;
 
     public MetadataInfo() {
-        this(null);
+        this((String) null);
+    }
+
+    public MetadataInfo(MetadataMessage metadata) {
+        this.app = metadata.getApp();
+        this.revision = metadata.getVersion();
+        this.services = toServiceInfoWrapperMap(metadata.getServicesMap());
+        this.extendParams = new ConcurrentHashMap<>();
+        this.instanceParams = new ConcurrentHashMap<>();
     }
 
     public MetadataInfo(String app) {
@@ -93,6 +101,26 @@ public class MetadataInfo implements Serializable {
         this.services = services == null ? new ConcurrentHashMap<>() : services;
         this.extendParams = new ConcurrentHashMap<>();
         this.instanceParams = new ConcurrentHashMap<>();
+    }
+
+    public MetadataMessage toMetadataInfo() {
+        return MetadataMessage.newBuilder()
+                .setVersion(StringUtils.isEmpty(this.revision) ? "" : this.revision)
+                .setApp(StringUtils.isEmpty(this.app) ? "" : this.app)
+                .putAllServices(toServiceInfoMap(services))
+                .build();
+    }
+
+    private Map<String, ServiceMessage> toServiceInfoMap(Map<String, ServiceInfo> serviceInfoWrapperMap) {
+        Map<String, ServiceMessage> serviceInfoMap = new HashMap<>(serviceInfoWrapperMap.size());
+        serviceInfoWrapperMap.forEach((key, value) -> serviceInfoMap.put(key, value.toServiceInfo()));
+        return serviceInfoMap;
+    }
+
+    private Map<String, ServiceInfo> toServiceInfoWrapperMap(Map<String, ServiceMessage> serviceInfoMap) {
+        Map<String, ServiceInfo> serviceInfosMap = new HashMap<>(serviceInfoMap.size());
+        serviceInfoMap.forEach((key, value) -> serviceInfosMap.put(key, new ServiceInfo(value)));
+        return serviceInfosMap;
     }
 
     private MetadataInfo(
@@ -506,6 +534,19 @@ public class MetadataInfo implements Serializable {
 
         public ServiceInfo() {}
 
+        public ServiceInfo(ServiceMessage serviceInfo) {
+            this.name = serviceInfo.getName();
+            this.group = serviceInfo.getGroup();
+            this.version = serviceInfo.getVersion();
+            this.protocol = serviceInfo.getProtocol();
+            this.port = serviceInfo.getPort();
+            this.path = serviceInfo.getPath();
+            this.params = params == null ? new ConcurrentHashMap<>() : params;
+
+            this.serviceKey = buildServiceKey(name, group, version);
+            this.matchKey = buildMatchKey();
+        }
+
         public ServiceInfo(URL url, List<MetadataParamsFilter> filters) {
             this(
                     url.getServiceInterface(),
@@ -540,6 +581,16 @@ public class MetadataInfo implements Serializable {
 
             this.serviceKey = buildServiceKey(name, group, version);
             this.matchKey = buildMatchKey();
+        }
+
+        public ServiceMessage toServiceInfo() {
+            return ServiceMessage.newBuilder()
+                    .setPath(this.path)
+                    .setProtocol(this.protocol)
+                    .setPort(this.port)
+                    .setName(StringUtils.isEmpty(this.name) ? "" : this.name)
+                    .setVersion(StringUtils.isEmpty(this.version) ? "" : this.version)
+                    .build();
         }
 
         private Map<String, String> extractServiceParams(URL url, List<MetadataParamsFilter> filters) {

@@ -30,4 +30,15 @@ public interface MetadataConstants {
     String PATH_SEPARATOR = "/";
 
     String NAMESPACE_KEY = "namespace";
+
+    // MetadataService Constants
+    /**
+     * The value of All service instances
+     */
+    String ALL_SERVICE_INTERFACES = "*";
+
+    /**
+     * The contract version of {@link MetadataService}, the future update must make sure compatible.
+     */
+    String SERVICE_VERSION = "1.0.0";
 }

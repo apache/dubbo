@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
@@ -175,11 +176,11 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .addParameter(Constants.RECONNECT_KEY, false)
                 .addParameter(SIDE_KEY, CONSUMER)
                 .addParameter(GROUP_KEY, serviceName)
-                .addParameter(VERSION_KEY, MetadataService.VERSION)
+                .addParameter(VERSION_KEY, MetadataConstants.SERVICE_VERSION)
                 .addParameter(RETRIES_KEY, 0);
 
         // add ServiceInstance Metadata notify support
-        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
+        //        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
 
         return urlBuilder.build();
     }

@@ -169,6 +169,7 @@ public class MetadataReportConfig extends AbstractConfig {
         return protocol;
     }
 
+    @Deprecated
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
