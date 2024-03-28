@@ -248,6 +248,12 @@ public class IstioEnv implements XdsEnv {
         return trustTTL;
     }
 
+    //for test
+    @Deprecated
+    public void setToken(String saJwtToken){
+        serviceAccountJwt = saJwtToken;
+    }
+
     /**
      * 每次都会重新读取，实现JWT轮转
      */
