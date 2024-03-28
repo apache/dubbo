@@ -129,7 +129,7 @@ class MetadataServiceNameMappingTest {
         set.add("app1");
 
         MetadataReportInstance reportInstance = mock(MetadataReportInstance.class);
-        Mockito.when(reportInstance.getMetadataReport((String) any())).thenReturn(metadataReport);
+        Mockito.when(reportInstance.getMetadataReport(any())).thenReturn(metadataReport);
         when(metadataReport.getServiceAppMapping(any(), any())).thenReturn(set);
 
         mapping.metadataReportInstance = reportInstance;

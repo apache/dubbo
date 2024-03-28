@@ -35,7 +35,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
@@ -133,25 +132,12 @@ public class MetadataReportInstance implements Disposable {
         return metadataReports;
     }
 
-    public MetadataReport getMetadataReport(URL registryURL) {
-        return getMetadataReport(getRegistryKey(registryURL));
-    }
-
     public MetadataReport getMetadataReport(String registryKey) {
         MetadataReport metadataReport = metadataReports.get(registryKey);
         if (metadataReport == null && metadataReports.size() > 0) {
             metadataReport = metadataReports.values().iterator().next();
         }
         return metadataReport;
-    }
-
-    public String getRegistryKey(URL registryURL) {
-        String registryKey = registryURL.getParameter(REGISTRY_CLUSTER_KEY);
-        String namespace = registryURL.getParameter(NAMESPACE_KEY);
-        if (!StringUtils.isEmpty(namespace)) {
-            registryKey += ":" + namespace;
-        }
-        return registryKey;
     }
 
     public MetadataReport getNopMetadataReport() {

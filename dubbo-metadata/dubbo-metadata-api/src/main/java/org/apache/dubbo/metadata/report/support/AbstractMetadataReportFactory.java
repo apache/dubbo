@@ -19,7 +19,6 @@ package org.apache.dubbo.metadata.report.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 
@@ -30,7 +29,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
-import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
 
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
 
@@ -91,12 +89,6 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     }
 
     protected String toMetadataReportKey(URL url) {
-        String namespace = url.getParameter(NAMESPACE_KEY);
-        if (!StringUtils.isEmpty(namespace)) {
-            return URL.valueOf(url.toServiceString())
-                    .addParameter(NAMESPACE_KEY, namespace)
-                    .toString();
-        }
         return url.toServiceString();
     }
 
