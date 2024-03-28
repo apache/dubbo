@@ -32,7 +32,7 @@ public class JsonUtils {
 
     private static volatile JSON json;
 
-    protected static JSON getJson() {
+    public static JSON getJson() {
         if (json == null) {
             synchronized (JsonUtils.class) {
                 if (json == null) {

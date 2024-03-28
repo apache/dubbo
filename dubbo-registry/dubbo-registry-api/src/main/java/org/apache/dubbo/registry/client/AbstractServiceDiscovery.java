@@ -181,8 +181,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         ServiceInstance oldServiceInstance = this.serviceInstance;
-        DefaultServiceInstance newServiceInstance =
-                new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
+        DefaultServiceInstance newServiceInstance = (DefaultServiceInstance) createServiceInstance(metadataInfo);
         boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
         if (revisionUpdated) {
             logger.info(String.format(
