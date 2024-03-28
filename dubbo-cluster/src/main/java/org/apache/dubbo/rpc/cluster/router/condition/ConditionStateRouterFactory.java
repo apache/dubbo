@@ -30,6 +30,6 @@ public class ConditionStateRouterFactory extends CacheableStateRouterFactory {
 
     @Override
     protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
-        return new ConditionStateRouter<T>(url);
+        return new ConditionStateRouter<>(url);
     }
 }

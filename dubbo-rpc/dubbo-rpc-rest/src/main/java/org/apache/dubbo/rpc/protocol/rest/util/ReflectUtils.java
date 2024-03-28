@@ -115,7 +115,7 @@ public class ReflectUtils {
         } catch (Exception e) {
 
         }
-        return new ArrayList<Constructor<?>>(methods);
+        return new ArrayList<>(methods);
     }
 
     private static void filterConstructMethod(Set<Constructor<?>> methods, Constructor<?>[] declaredMethods) {

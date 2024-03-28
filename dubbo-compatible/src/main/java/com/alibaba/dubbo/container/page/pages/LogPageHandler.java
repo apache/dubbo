@@ -97,8 +97,8 @@ public class LogPageHandler implements PageHandler {
             }
         }
         Level level = LogManager.getRootLogger().getLevel();
-        List<List<String>> rows = new ArrayList<List<String>>();
-        List<String> row = new ArrayList<String>();
+        List<List<String>> rows = new ArrayList<>();
+        List<String> row = new ArrayList<>();
         row.add(content);
         rows.add(row);
         return new Page(

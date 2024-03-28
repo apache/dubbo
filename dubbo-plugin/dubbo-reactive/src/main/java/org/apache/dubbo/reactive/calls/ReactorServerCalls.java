@@ -83,7 +83,7 @@ public final class ReactorServerCalls {
     public static <T, R> StreamObserver<T> manyToOne(
             StreamObserver<R> responseObserver, Function<Flux<T>, Mono<R>> func) {
         ServerTripleReactorPublisher<T> serverPublisher =
-                new ServerTripleReactorPublisher<T>((CallStreamObserver<R>) responseObserver);
+                new ServerTripleReactorPublisher<>((CallStreamObserver<R>) responseObserver);
         try {
             Mono<R> responseMono = func.apply(Flux.from(serverPublisher));
             responseMono.subscribe(
@@ -118,7 +118,7 @@ public final class ReactorServerCalls {
             StreamObserver<R> responseObserver, Function<Flux<T>, Flux<R>> func) {
         // responseObserver is also a subscription of publisher, we can use it to request more data
         ServerTripleReactorPublisher<T> serverPublisher =
-                new ServerTripleReactorPublisher<T>((CallStreamObserver<R>) responseObserver);
+                new ServerTripleReactorPublisher<>((CallStreamObserver<R>) responseObserver);
         try {
             Flux<R> responseFlux = func.apply(Flux.from(serverPublisher));
             ServerTripleReactorSubscriber<R> serverSubscriber =

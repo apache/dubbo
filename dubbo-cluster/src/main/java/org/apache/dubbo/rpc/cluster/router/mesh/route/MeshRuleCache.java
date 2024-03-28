@@ -136,7 +136,7 @@ public class MeshRuleCache<T> {
                     Collections.unmodifiableMap(totalSubsetMap),
                     unmatchedInvokers);
         } else {
-            return new MeshRuleCache<T>(
+            return new MeshRuleCache<>(
                     Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), invokers);
         }
     }

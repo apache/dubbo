@@ -161,7 +161,7 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     @Override
     public Collection<ExchangeChannel> getExchangeChannels() {
-        Collection<ExchangeChannel> exchangeChannels = new ArrayList<ExchangeChannel>();
+        Collection<ExchangeChannel> exchangeChannels = new ArrayList<>();
         Collection<Channel> channels = server.getChannels();
         if (CollectionUtils.isNotEmpty(channels)) {
             for (Channel channel : channels) {

@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class SysProps {
 
-    private static Map<String, String> map = new LinkedHashMap<String, String>();
+    private static Map<String, String> map = new LinkedHashMap<>();
 
     public static void reset() {
         map.clear();

@@ -135,7 +135,7 @@ public class ProviderModel extends ServiceModel {
     }
 
     public List<ProviderMethodModel> getAllMethodModels() {
-        List<ProviderMethodModel> result = new ArrayList<ProviderMethodModel>();
+        List<ProviderMethodModel> result = new ArrayList<>();
         for (List<ProviderMethodModel> models : methods.values()) {
             result.addAll(models);
         }

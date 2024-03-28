@@ -82,7 +82,7 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
 
     @Override
     public Collection<String> getPropertyNames() {
-        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<String> names = new ArrayList<>();
         Enumeration<String> enames = httpRequest.getAttributeNames();
         while (enames.hasMoreElements()) {
             names.add(enames.nextElement());
