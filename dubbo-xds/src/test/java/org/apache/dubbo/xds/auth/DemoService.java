@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds;
+package org.apache.dubbo.xds.auth;
 
-public class DemoServiceImpl implements DemoService {
-    @Override
-    public String sayHello() {
-        return "hello";
+public interface DemoService {
+    default String sayHello() {
+        return null;
     }
 }
