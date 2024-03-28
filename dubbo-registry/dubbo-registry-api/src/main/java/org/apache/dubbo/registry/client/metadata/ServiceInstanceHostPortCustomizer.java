@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -45,6 +46,12 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
         MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
         if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getExportedServiceURLs())) {
+            if (serviceInstance instanceof DefaultServiceInstance) {
+                DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+                if (instance.getHost() == null) {
+                    instance.setHost(NetUtils.getLocalHost());
+                }
+            }
             return;
         }
 
