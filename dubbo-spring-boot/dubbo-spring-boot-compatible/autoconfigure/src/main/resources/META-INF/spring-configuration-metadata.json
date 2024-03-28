@@ -1,0 +1,33 @@
+{
+    "groups":
+    [
+        {
+            "name": "Specify the time format based on the configuration when generic invoke",
+            "type": "org.apache.dubbo.spring.boot.context.event.Jsr310ConverterApplicationListener",
+            "sourceType": "org.apache.dubbo.spring.boot.context.event.Jsr310ConverterApplicationListener"
+        }
+    ],
+    "properties":
+    [
+        {
+            "name": "dubbo.generic.local-date-time-format",
+            "description": "LocalDateTime use this format when generic invoke",
+            "type": "java.lang.String",
+            "sourceType": "org.apache.dubbo.spring.boot.context.event.Jsr310ConverterApplicationListener"
+        },
+        {
+            "name": "dubbo.generic.local-date-format",
+            "description": "LocalDate use this format when generic invoke",
+            "type": "java.lang.String",
+            "sourceType": "org.apache.dubbo.spring.boot.context.event.Jsr310ConverterApplicationListener"
+        },
+        {
+            "name": "dubbo.generic.local-time-format",
+            "description": "LocalTime use this format when generic invoke",
+            "type": "java.lang.String",
+            "sourceType": "org.apache.dubbo.spring.boot.context.event.Jsr310ConverterApplicationListener"
+        }
+    ],
+    "hints":
+    []
+}
