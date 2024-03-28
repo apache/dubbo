@@ -619,9 +619,8 @@ public interface CommonConstants {
     String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
 
     /**
-     *
      * used in JVMUtil.java ,Control stack print lines, default is 32 lines
-     *
+     * if set to a negative number (e.g. -1), all lines will be printed
      */
     String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 
