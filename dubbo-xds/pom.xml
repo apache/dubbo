@@ -153,6 +153,28 @@
       <artifactId>java-jwt</artifactId>
       <version>3.18.2</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-config-api</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-rpc-triple</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-registry-zookeeper</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

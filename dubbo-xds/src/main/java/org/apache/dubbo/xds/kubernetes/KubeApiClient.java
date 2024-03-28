@@ -44,7 +44,7 @@ public class KubeApiClient {
 
         apiClient = new ClientBuilder()
                 .setBasePath(kubeEnv.getApiServerPath())
-                .setVerifyingSsl(kubeEnv.enableSsl())
+                .setVerifyingSsl(kubeEnv.isEnableSsl())
                 .setAuthentication(new AccessTokenAuthentication(kubeEnv.getServiceAccountToken()))
                 .build();
 

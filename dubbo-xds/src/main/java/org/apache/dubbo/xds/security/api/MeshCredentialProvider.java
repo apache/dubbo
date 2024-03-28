@@ -48,7 +48,7 @@ public class MeshCredentialProvider implements CertProvider {
 
     @Override
     public boolean isSupport(URL address) {
-        // 这里要判一下是否对端也是mesh下的dubbo服务，且版本支持
+        // TODO 这里要判一下是否对端也是mesh下的dubbo服务，且版本支持
         return true;
     }
 

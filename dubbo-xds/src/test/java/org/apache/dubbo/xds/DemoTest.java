@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.xds.auth.DemoService;
 import org.apache.dubbo.xds.directory.XdsDirectory;
 import org.apache.dubbo.xds.resource.XdsCluster;
 import org.apache.dubbo.xds.resource.XdsVirtualHost;

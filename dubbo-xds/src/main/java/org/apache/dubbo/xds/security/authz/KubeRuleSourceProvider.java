@@ -31,7 +31,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.kubernetes.client.openapi.ApiException;
@@ -49,14 +50,14 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeRuleSourceProvider.class);
 
-    private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public KubeRuleSourceProvider(ApplicationModel applicationModel) throws Exception {
         this.kubeApiClient = applicationModel.getBeanFactory().getBean(KubeApiClient.class);
         this.kubeEnv = applicationModel.getBeanFactory().getBean(KubeEnv.class);
 
         Map<String, Object> resource = kubeApiClient.getResourceAsMap(
-                "security.istio.io", "security.istio.io", "default", "authorizationpolicies");
+                "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
         updateSource(resource);
         startListenRequestAuthentication();
     }
@@ -71,7 +72,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
         Watch<Object> watch = kubeApiClient.listenResource(
                 "security.istio.io", "security.istio.io", "default", "authorizationpolicies");
 
-        executorService.schedule(
+        executor.schedule(
                 () -> {
                     try {
                         if (watch.hasNext()) {
