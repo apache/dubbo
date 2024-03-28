@@ -120,7 +120,7 @@ class CertDeployerListenerTest {
         ClassLoader newClassLoader = new ClassLoader(originClassLoader) {
             @Override
             public Class<?> loadClass(String name) throws ClassNotFoundException {
-                if (name.startsWith("io.grpc.Channel")) {
+                if (name.startsWith("org.apache.dubbo.config.ReferenceConfig")) {
                     throw new ClassNotFoundException("Test");
                 }
                 return super.loadClass(name);
