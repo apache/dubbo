@@ -157,6 +157,9 @@ public class HttpClientRestClient implements RestClient {
     }
 
     public CloseableHttpClient createHttpClient() {
+        if (this.closeableHttpClient != null) {
+            return closeableHttpClient;
+        }
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         return HttpClients.custom().setConnectionManager(connectionManager).build();
     }

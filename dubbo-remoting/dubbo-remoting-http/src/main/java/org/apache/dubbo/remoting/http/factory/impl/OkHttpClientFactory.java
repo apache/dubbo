@@ -30,6 +30,6 @@ public class OkHttpClientFactory extends AbstractHttpClientFactory {
     @Override
     protected RestClient doCreateRestClient(URL url) throws RpcException {
 
-        return new OKHttpRestClient(httpClientConfig);
+        return new OKHttpRestClient(httpClientConfig, url);
     }
 }
