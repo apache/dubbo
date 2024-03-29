@@ -35,8 +35,8 @@ public class RequestTemplate implements Serializable {
     public static final String ENCODING_DEFLATE = "deflate";
     private static final List<String> EMPTY_ARRAYLIST = new ArrayList<>();
 
-    private final Map<String, Collection<String>> queries = new LinkedHashMap<String, Collection<String>>();
-    private final Map<String, Collection<String>> headers = new LinkedHashMap<String, Collection<String>>();
+    private final Map<String, Collection<String>> queries = new LinkedHashMap<>();
+    private final Map<String, Collection<String>> headers = new LinkedHashMap<>();
     private String httpMethod;
     private String path;
     private String address;
