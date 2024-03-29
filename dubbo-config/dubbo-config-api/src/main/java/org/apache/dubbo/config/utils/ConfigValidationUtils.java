@@ -219,9 +219,11 @@ public class ConfigValidationUtils {
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
+                    String registryCluster = config.getId();
                     if (map.containsKey(CONFIG_NAMESPACE_KEY)) {
-                        map.put(REGISTRY_CLUSTER_KEY, config.getId() + ":" + map.get(CONFIG_NAMESPACE_KEY));
+                        registryCluster += ":" + map.get(CONFIG_NAMESPACE_KEY);
                     }
+                    map.put(REGISTRY_CLUSTER_KEY, registryCluster);
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
