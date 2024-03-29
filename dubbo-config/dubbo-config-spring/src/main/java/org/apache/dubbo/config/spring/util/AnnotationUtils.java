@@ -87,7 +87,7 @@ public abstract class AnnotationUtils {
 
         Set<String> ignoreAttributeNamesSet = new HashSet<>(Arrays.asList(ignoreAttributeNames));
 
-        Map<String, Object> actualAttributes = new LinkedHashMap<String, Object>();
+        Map<String, Object> actualAttributes = new LinkedHashMap<>();
 
         for (Map.Entry<String, Object> annotationAttribute : annotationAttributes.entrySet()) {
 
@@ -143,7 +143,7 @@ public abstract class AnnotationUtils {
 
         if (ignoreDefaultValue && !isEmpty(annotationAttributes)) {
 
-            List<String> attributeNamesToIgnore = new LinkedList<String>(asList(ignoreAttributeNames));
+            List<String> attributeNamesToIgnore = new LinkedList<>(asList(ignoreAttributeNames));
 
             for (Map.Entry<String, Object> annotationAttribute : annotationAttributes.entrySet()) {
                 String attributeName = annotationAttribute.getKey();

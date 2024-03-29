@@ -42,7 +42,7 @@ public class NettyHandler extends SimpleChannelHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyHandler.class);
 
-    private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
+    private final Map<String, Channel> channels = new ConcurrentHashMap<>(); // <ip:port, channel>
 
     private final URL url;
 
