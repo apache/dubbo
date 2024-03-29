@@ -220,6 +220,9 @@ public class ConfigValidationUtils {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
                     String registryCluster = config.getId();
+                    if (isEmpty(registryCluster)) {
+                        registryCluster = DEFAULT_KEY;
+                    }
                     if (map.containsKey(CONFIG_NAMESPACE_KEY)) {
                         registryCluster += ":" + map.get(CONFIG_NAMESPACE_KEY);
                     }
