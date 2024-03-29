@@ -68,6 +68,10 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                     responseObserver.onError(t);
                     return;
                 }
+                if (r.hasException()) {
+                    doOnResponseHasException(r.getException());
+                    return;
+                }
                 if (response.hasException()) {
                     doOnResponseHasException(response.getException());
                     return;
