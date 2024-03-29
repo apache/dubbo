@@ -44,7 +44,7 @@ public class IstioConstant {
     /**
      * k8s jwt token
      */
-    public static  String KUBERNETES_SA_PATH =
+    public static String KUBERNETES_SA_PATH =
             "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token";
 
     public static final String KUBERNETES_CA_PATH =

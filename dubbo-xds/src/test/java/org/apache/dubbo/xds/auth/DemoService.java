@@ -17,7 +17,7 @@
 package org.apache.dubbo.xds.auth;
 
 public interface DemoService {
-    default String sayHello() {
+    default String sayHello(String name) {
         return null;
     }
 }
