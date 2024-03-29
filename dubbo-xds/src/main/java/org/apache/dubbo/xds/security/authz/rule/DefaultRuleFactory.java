@@ -19,6 +19,7 @@ package org.apache.dubbo.xds.security.authz.rule;
 import org.apache.dubbo.xds.security.authz.RuleSource;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
+import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot.Action;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleTreeBuilder;
 
 import java.util.Arrays;
@@ -35,9 +36,14 @@ public class DefaultRuleFactory implements RuleFactory {
 
         Map<String, Object> ruleMap = ruleSource.readAsMap();
 
+        Action action = Action.map((String) ruleMap.get("action"));
+        if(action == null){
+             throw new RuntimeException("Parse rule map failed: unknown action");
+        }
+
         RuleTreeBuilder builder = new RuleTreeBuilder("rules");
         builder.createFromMap(ruleMap);
 
-        return Arrays.asList(builder.getRoot(Relation.AND));
+        return Arrays.asList(builder.getRoot(Relation.AND, action));
     }
 }

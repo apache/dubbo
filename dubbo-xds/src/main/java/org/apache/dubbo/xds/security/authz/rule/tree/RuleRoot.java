@@ -27,9 +27,12 @@ public class RuleRoot implements RuleNode {
 
     private CompositeRuleNode root;
 
-    public RuleRoot(Relation relationToOtherRoots, CompositeRuleNode root) {
+    private Action action;
+
+    public RuleRoot(Relation relationToOtherRoots, CompositeRuleNode root, Action action) {
         this.relationToRoots = relationToOtherRoots;
         this.root = root;
+        this.action = action;
     }
 
     public Relation getRelationToRoots() {
@@ -49,4 +52,50 @@ public class RuleRoot implements RuleNode {
     public String getName() {
         return "root";
     }
+
+    public Action getAction(){
+        return action;
+    }
+
+    /**
+     * The action of authorization policy
+     */
+    public enum Action{
+        /**
+         * The request must map this policy
+         */
+        ALLOW("ALLOW",true),
+
+        /**
+         * The request must not map this policy
+         */
+        DENY("DENY",false);
+
+        private final String name;
+
+        private boolean boolVal;
+
+        Action(String name,boolean boolValue){
+            this.name = name;
+            this.boolVal = boolValue;
+        }
+
+        public static Action map(String name){
+            name = name.toUpperCase();
+            switch (name){
+                case "ALLOW" :
+                    return ALLOW;
+                case "DENY":
+                    return DENY;
+            }
+            return null;
+        }
+
+        public boolean boolVal(){
+            return boolVal;
+        }
+
+    }
+
+
 }

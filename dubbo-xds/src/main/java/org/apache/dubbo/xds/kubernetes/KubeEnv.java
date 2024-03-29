@@ -17,36 +17,79 @@
 package org.apache.dubbo.xds.kubernetes;
 
 import org.apache.dubbo.common.io.Bytes;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.xds.istio.XdsEnv;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-public class KubeEnv {
+public class KubeEnv implements XdsEnv {
 
-    private String apiServerPath = "https://127.0.0.1:6443";
-        // "https://kubernetes.default.svc";
+    private String apiServerPath;
 
-    private boolean enableSsl = true;
+    private Boolean enableSsl;
 
-    private String serviceAccountPath = "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount";
-        // "/var/run/secrets/kubernetes.io/serviceaccount/";
+    private String serviceAccountCaPath;
 
-    private String namespace = "default";
+    private String serviceAccountTokenPath;
 
-    private String serviceName = "";
+    private String namespace;
 
-    private int apiClientConnectTimeout = 10000;
+    private String serviceName;
 
-    private int apiClientReadTimeout = 30000;
+    private String cluster;
+
+    private Integer apiClientConnectTimeout;
+
+    private Integer apiClientReadTimeout;
+
+    public KubeEnv(ApplicationModel applicationModel) {
+        // get config from applicationModel ...
+        setDefault();
+    }
+
+    public void setDefault(){
+        if(StringUtils.isEmpty(apiServerPath)) {
+            apiServerPath = getStringProp("API_SERVER_PATH","https://kubernetes.default.svc");
+        }
+        if(enableSsl != null) {
+            enableSsl = true;
+        }
+        if(StringUtils.isEmpty(serviceAccountCaPath)) {
+            serviceAccountCaPath = getStringProp("SA_CA_PATH","/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");
+        }
+        if(StringUtils.isEmpty(serviceAccountTokenPath)){
+            serviceAccountTokenPath = getStringProp("SA_TOKEN_PATH","/var/run/secrets/kubernetes.io/serviceaccount/token");
+        }
+        if(StringUtils.isEmpty(namespace)) {
+            namespace = getStringProp( "NAMESPACE","default");
+        }
+        if(StringUtils.isEmpty(serviceName)) {
+            serviceName = getStringProp("SERVICE_NAME","");
+        }
+        if(apiClientConnectTimeout == null) {
+            apiClientConnectTimeout = getIntProp("API_CLIENT_CONNECT_TIMEOUT","10000");
+        }
+        if(apiClientReadTimeout == null) {
+            apiClientReadTimeout = getIntProp("API_CLIENT_READ_TIMEOUT","30000");
+        }
+        if(StringUtils.isEmpty(cluster)){
+            cluster = getStringProp("CLUSTER","");
+        }
+    }
 
     public String getApiServerPath() {
         return apiServerPath;
     }
 
-    public String getServiceAccountPath() {
-        return serviceAccountPath;
+    public String getServiceAccountCaPath() {
+        return serviceAccountCaPath;
+    }
+
+    public String getServiceAccountTokenPath() {
+        return serviceAccountTokenPath;
     }
 
     public String getNamespace() {
@@ -57,29 +100,31 @@ public class KubeEnv {
         return serviceName;
     }
 
-    public String getServiceAccountToken() throws IOException {
+    public byte[] getServiceAccountToken() throws IOException {
+        return readFileAsBytes(getServiceAccountTokenPath());
+    }
 
-        String path = getServiceAccountPath() + "/token";
+    public byte[] getServiceAccountCa() throws IOException {
+        return readFileAsBytes(getServiceAccountCaPath() +"/ca.crt");
+    }
 
+    private byte[] readFileAsBytes(String path) throws IOException{
         File file = new File(path);
-        byte[] token = new byte[4096];
+        byte[] value = new byte[4096];
         if(!file.exists()){
-            return "";
+            return new byte[0];
         }
         try (FileInputStream in = new FileInputStream(file); ) {
-            int readBytes = in.read(token);
+            int readBytes = in.read(value);
             if (readBytes > 4096) {
                 throw new RuntimeException("ServiceAccount token too long");
             }
-            token = Bytes.copyOf(token,readBytes);
+            value = Bytes.copyOf(value,readBytes);
         }
 
-        return new String(token, StandardCharsets.UTF_8);
+        return value;
     }
 
-    public File getServiceAccountCa() {
-        return new File(getServiceAccountPath() + "/ca.crt");
-    }
 
     public int apiClientConnectTimeout() {
         return 10000;
@@ -109,8 +154,12 @@ public class KubeEnv {
         this.enableSsl = enableSsl;
     }
 
-    public void setServiceAccountPath(String serviceAccountPath) {
-        this.serviceAccountPath = serviceAccountPath;
+    public void setServiceAccountCaPath(String serviceAccountPath) {
+        this.serviceAccountCaPath = serviceAccountPath;
+    }
+
+    public void setServiceAccountTokenPath(String serviceAccountTokenPath){
+        this.serviceAccountTokenPath =serviceAccountTokenPath;
     }
 
     public void setNamespace(String namespace) {
@@ -127,5 +176,10 @@ public class KubeEnv {
 
     public void setApiClientReadTimeout(int apiClientReadTimeout) {
         this.apiClientReadTimeout = apiClientReadTimeout;
+    }
+
+    @Override
+    public String getCluster() {
+        return cluster;
     }
 }

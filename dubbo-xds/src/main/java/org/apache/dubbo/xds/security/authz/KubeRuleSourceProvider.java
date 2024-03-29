@@ -28,7 +28,6 @@ import org.apache.dubbo.xds.kubernetes.KubeEnv;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -70,7 +69,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
     private void startListenRequestAuthentication() throws ApiException {
 
         Watch<Object> watch = kubeApiClient.listenResource(
-                "security.istio.io", "security.istio.io", "default", "authorizationpolicies");
+                "security.istio.io", "security.istio.io", kubeEnv.getNamespace(), "authorizationpolicies");
 
         executor.schedule(
                 () -> {
@@ -84,7 +83,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                             }
                         }
                     } catch (Exception e) {
-                        logger.error("", "", "", "Got exception when watching RequestAuthorization resource", e);
+                        logger.error("", "", "", "Got exception when watch and updating RequestAuthorization resource", e);
                     }
                 },
                 500,
@@ -116,10 +115,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                     match = true;
                 }
                 if (match) {
-                    Map<String, Object> actionAndRules = new HashMap<>();
-                    actionAndRules.put("action", spec.get("action"));
-                    actionAndRules.put("rules", spec.get("rules"));
-                    rules.add(new MapRuleSource(actionAndRules));
+                    rules.add(new MapRuleSource(spec));
                 }
             }
         }

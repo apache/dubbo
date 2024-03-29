@@ -87,8 +87,8 @@ public class RuleTreeBuilder {
         return current;
     }
 
-    public RuleRoot getRoot(Relation relationToOtherRoots) {
-        return new RuleRoot(relationToOtherRoots, root);
+    public RuleRoot getRoot(Relation relationToOtherRoots, RuleRoot.Action action) {
+        return new RuleRoot(relationToOtherRoots, root, action);
     }
 
     // CompositeRuleNode 中添加 setRelation 方法

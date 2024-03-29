@@ -134,28 +134,6 @@ public class IstioEnv implements XdsEnv {
         }
     }
 
-    private String getStringProp(String key, String defaultVal) {
-        String val = System.getenv(key);
-        if (val == null) {
-            val = System.getProperty(key);
-        }
-        if (val == null) {
-            val = defaultVal;
-        }
-        return val;
-    }
-
-    private Integer getIntProp(String key, String defaultVal) {
-        String val = System.getenv(key);
-        if (val == null) {
-            val = System.getProperty(key);
-        }
-        if (val == null) {
-            val = defaultVal;
-        }
-        return Integer.valueOf(val);
-    }
-
     public static IstioEnv getInstance() {
         return INSTANCE;
     }
@@ -254,9 +232,6 @@ public class IstioEnv implements XdsEnv {
         serviceAccountJwt = saJwtToken;
     }
 
-    /**
-     * 每次都会重新读取，实现JWT轮转
-     */
     public String getCaCert() {
         File caFile;
         if (IstioConstant.PILOT_CERT_PROVIDER_ISTIO.equals(pilotCertProvider)) {

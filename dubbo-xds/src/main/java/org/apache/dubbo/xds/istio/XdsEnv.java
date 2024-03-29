@@ -19,4 +19,27 @@ package org.apache.dubbo.xds.istio;
 public interface XdsEnv {
 
     String getCluster();
+
+    default String getStringProp(String key, String defaultVal) {
+        String val = System.getenv(key);
+        if (val == null) {
+            val = System.getProperty(key);
+        }
+        if (val == null) {
+            val = defaultVal;
+        }
+        return val;
+    }
+
+    default Integer getIntProp(String key, String defaultVal) {
+        String val = System.getenv(key);
+        if (val == null) {
+            val = System.getProperty(key);
+        }
+        if (val == null) {
+            val = defaultVal;
+        }
+        return Integer.valueOf(val);
+    }
+
 }

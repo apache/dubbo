@@ -19,8 +19,16 @@ public class AuthTest {
     @Test
     public void authZTest() throws Exception {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        applicationModel.getBeanFactory().registerBean(new KubeEnv());
+        KubeEnv kubeEnv = new KubeEnv(applicationModel);
+        kubeEnv.setNamespace("foo");
+        kubeEnv.setEnableSsl(true);
+        kubeEnv.setApiServerPath( "https://127.0.0.1:6443");
+        kubeEnv.setServiceAccountTokenPath("/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token");
+        kubeEnv.setServiceAccountCaPath("/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
+
+        applicationModel.getBeanFactory().registerBean(kubeEnv);
         applicationModel.getBeanFactory().registerBean(new KubeApiClient(applicationModel));
+
         KubeRuleSourceProvider provider = new KubeRuleSourceProvider(applicationModel);
         applicationModel.getBeanFactory().registerBean(provider);
         applicationModel.getBeanFactory().registerBean(DefaultRuleFactory.class);

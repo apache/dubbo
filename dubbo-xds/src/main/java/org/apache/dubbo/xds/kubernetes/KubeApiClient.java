@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import com.google.gson.reflect.TypeToken;
@@ -45,7 +46,8 @@ public class KubeApiClient {
         apiClient = new ClientBuilder()
                 .setBasePath(kubeEnv.getApiServerPath())
                 .setVerifyingSsl(kubeEnv.isEnableSsl())
-                .setAuthentication(new AccessTokenAuthentication(kubeEnv.getServiceAccountToken()))
+                .setCertificateAuthority(kubeEnv.getServiceAccountCa())
+                .setAuthentication(new AccessTokenAuthentication(new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8)))
                 .build();
 
         apiClient.setConnectTimeout(kubeEnv.apiClientConnectTimeout());

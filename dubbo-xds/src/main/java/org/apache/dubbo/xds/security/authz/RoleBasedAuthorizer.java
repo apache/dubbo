@@ -47,6 +47,11 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RoleBasedAuthorizer.class);
 
+    /**
+     * TODO
+     * Cached rules
+     * Connection Identity -> Authorization Rules
+     */
     private final Map<String, List<RuleNode>> rules = new ConcurrentHashMap<>();
 
     public RoleBasedAuthorizer(ApplicationModel applicationModel) {
@@ -62,8 +67,8 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         List<RuleSource> rulesSources =
                 ruleSourceProvider.getSource(invocation.getInvoker().getUrl(), invocation);
 
-        List<RuleNode> andRules = new ArrayList<>();
-        List<RuleNode> orRules = new ArrayList<>();
+        List<RuleRoot> andRules = new ArrayList<>();
+        List<RuleRoot> orRules = new ArrayList<>();
 
         for (RuleSource source : rulesSources) {
             List<RuleRoot> roots = ruleFactory.getRules(source);
@@ -81,9 +86,9 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         AuthorizationContext context = new AuthorizationContext(invocation, requestCredential);
 
         boolean andRes = true;
-        for (RuleNode rule : andRules) {
+        for (RuleRoot rule : andRules) {
             try {
-                if (!rule.evaluate(context)) {
+                if (!rule.evaluate(context) && rule.getAction().boolVal()) {
                     andRes = false;
                     break;
                 }
@@ -92,7 +97,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
                         "",
                         "",
                         "",
-                        "Request authorization failed, source:" + invocation.getServiceName() + // TODO source
+                        "Request authorization failed, source:" + invocation.getServiceName() + // TODO get source
                                 ", target URL:" + invocation.getInvoker().getUrl(),
                         e.getCause());
                 if (e instanceof AuthorizationException) {
@@ -103,9 +108,9 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         }
 
         boolean orRes = false;
-        for (RuleNode rule : orRules) {
+        for (RuleRoot rule : orRules) {
             try {
-                orRes = rule.evaluate(context);
+                orRes = rule.evaluate(context) && rule.getAction().boolVal();
                 if (orRes) {
                     break;
                 }
