@@ -322,6 +322,14 @@ jobs:
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
           CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
+      - name: "Download Skywalking Agent And Mysql Driver"
+        run: |
+          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
+          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
+          wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
+          mv mysql-connector-java-8.0.23.jar /tmp/
+          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn clean package
+          cp ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Build test image"
         run: |
           cd test && bash ./build-test-image.sh
@@ -341,6 +349,66 @@ jobs:
         with:
           name: samples-test-result
           path: test/jobs/*-result*
+      - name: "Upload Error Build Log"
+        uses: actions/upload-artifact@v3
+        with:
+          name: samples-build-result
+          path: /tmp/logs/*
+      - name: "Upload jmh output result"
+        uses: actions/upload-artifact@v3
+        with:
+          name: samples-jmh-result
+          path: /tmp/jmh*.json
+      - name: "Push results to results repository"
+        env:
+          RESULTS_REPO_OWNER: wxbty
+          RESULTS_REPO_NAME: jmh_result
+          RESULTS_REPO_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+        run: |
+          if ! ls /tmp/jmh_result*.json -1q &> /dev/null; then
+            echo "No file matching /tmp/jmh_result*.json exists. Exiting..."
+            exit 0
+          fi
+          git clone --depth 1 https://github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git jmh_result
+          cd jmh_result
+          git config user.email "wxb_101@163.com"
+          git config user.name "wxbty"
+          WORK_DIR="$(pwd)"
+          echo "WorkDir: $WORK_DIR"
+          DIRECTORY_PATH="$WORK_DIR/test-results/pr"
+          if [ ! -d ${DIRECTORY_PATH} ];then
+            mkdir $DIRECTORY_PATH
+          fi
+          for file in /tmp/jmh_result*.json; do
+            cp "$file" "$DIRECTORY_PATH/jmh_result_$(date +%Y%m%d_%H%M%S_%N).json"
+          done
+          cd $DIRECTORY_PATH
+          if [ $? -eq 0 ];
+            then
+            num=`ls $DIRECTORY_PATH -l | grep '^-' | wc -l`;
+            if [ $num -gt 50 ];
+              then
+              num=`expr $num - 50`
+              ls -l $DIRECTORY_PATH | awk '{print $9}' | sort | head -$num | xargs -i -n1 rm {}
+            fi
+          fi
+          merged_file="merged_results.json"
+          if [ -f "$DIRECTORY_PATH/$merged_file" ];then
+            rm "$DIRECTORY_PATH/$merged_file"
+          fi
+          json_array=()
+          for file in $(ls -t1 "$DIRECTORY_PATH"/*.json); do
+           if [ -f "$file" ]; then
+              json_array+=( "$(cat "$file")" )
+           fi
+          done
+          merged_json=$(echo "${json_array[@]}" | jq -s add)
+          echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
+          git add --all
+          git commit -m "Add test results 1 from $(date +'%Y-%m-%d %H:%M:%S')"
+          git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
+
   samples-test-result:
     needs: [check-format, samples-test-job]
     if: always()
@@ -368,8 +436,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'apache/dubbo-integration-cases'
-          ref: main
+          repository: 'wxbty/dubbo-integration-cases'
+          ref: bh
       - name: "Prepare test list"
         run: |
           bash ./test/scripts/prepare-test.sh
@@ -393,8 +461,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'apache/dubbo-integration-cases'
-          ref: main
+          repository: 'wxbty/dubbo-integration-cases'
+          ref: bh
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
@@ -454,8 +522,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'apache/dubbo-integration-cases'
-          ref: main
+          repository: 'wxbty/dubbo-integration-cases'
+          ref: bh
       - name: "Download test result"
         uses: actions/download-artifact@v3
         with:
@@ -477,7 +545,7 @@ jobs:
           path: "./dubbo-samples"
       - uses: actions/checkout@v3
         with:
-          repository: 'apache/dubbo-integration-cases'
+          repository: 'wxbty/dubbo-integration-cases'
           path: "./dubbo-integration-cases"
       - name: "Set up JDK 21"
         uses: actions/setup-java@v3
