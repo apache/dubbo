@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 package org.apache.dubbo.config;
-
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+
 /**
  * 2024/03/31
  */
