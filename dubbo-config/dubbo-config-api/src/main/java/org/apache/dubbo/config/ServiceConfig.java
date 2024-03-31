@@ -976,7 +976,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+        List<CommonConfigPostProcessor> configPostProcessors = this.getExtensionLoader(CommonConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }

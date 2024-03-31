@@ -104,5 +104,11 @@
       <artifactId>protobuf-java</artifactId>
       <scope>test</scope>
     </dependency>
+      <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-config-api</artifactId>
+          <version>3.2.12-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
   </dependencies>
 </project>

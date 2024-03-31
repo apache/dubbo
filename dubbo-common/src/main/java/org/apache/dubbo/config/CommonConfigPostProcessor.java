@@ -18,12 +18,11 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-
 /**
- * 2019/12/30
+ * 2024/03/31
  */
 @SPI(scope = ExtensionScope.MODULE)
-public interface ConfigPostProcessor {
+public interface CommonConfigPostProcessor  {
 
     default void postProcessReferConfig(ReferenceConfig referenceConfig) {}
 

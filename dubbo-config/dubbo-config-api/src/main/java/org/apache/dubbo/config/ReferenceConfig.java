@@ -853,7 +853,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+        List<CommonConfigPostProcessor> configPostProcessors = this.getExtensionLoader(CommonConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }
