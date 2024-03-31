@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
-import org.apache.dubbo.xds.security.authz.AuthorizationContext;
+import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,14 +25,14 @@ import java.util.Map;
 
 public class CompositeRuleNode implements RuleNode {
 
-    private String name;
+    protected String name;
 
-    private Map<String, List<RuleNode>> children;
+    protected Map<String, List<RuleNode>> children;
 
     /**
      * 判断子结点策略
      */
-    private Relation relation;
+    protected Relation relation;
 
     public CompositeRuleNode(String name, Map<String, List<RuleNode>> children, Relation relation) {
         this.name = name;
@@ -54,8 +54,12 @@ public class CompositeRuleNode implements RuleNode {
         this.children.computeIfAbsent(key, (k) -> new ArrayList<>()).add(ruleNode);
     }
 
+    public Relation getRelation(){
+        return relation;
+    }
+
     @Override
-    public boolean evaluate(AuthorizationContext context) {
+    public boolean evaluate(AuthorizationRequestContext context) {
         context.addCurrentPath(name);
         boolean result;
         // 根据relation对children进行求值
@@ -72,7 +76,7 @@ public class CompositeRuleNode implements RuleNode {
     }
 
     @Override
-    public String getName() {
+    public String getNodeName() {
         return name;
     }
 }

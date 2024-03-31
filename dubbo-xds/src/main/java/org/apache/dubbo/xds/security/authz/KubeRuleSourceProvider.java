@@ -69,16 +69,16 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
     private void startListenRequestAuthentication() throws ApiException {
 
         Watch<Object> watch = kubeApiClient.listenResource(
-                "security.istio.io", "security.istio.io", kubeEnv.getNamespace(), "authorizationpolicies");
+                "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
 
         executor.schedule(
                 () -> {
                     try {
                         if (watch.hasNext()) {
                             Response<Object> resp = watch.next();
-                            if (resp.type.equals("ADDED") || resp.type.equals("MODIFIED")) {
+                            if ("ADDED".equals(resp.type) || "MODIFIED".equals(resp.type)) {
                                 updateSource((Map<String, Object>) resp.object);
-                            } else {
+                            } else if("DELETED".equals(resp.type)){
                                 ruleSourceInst = Collections.emptyList();
                             }
                         }

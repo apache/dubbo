@@ -73,17 +73,17 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         for (RuleSource source : rulesSources) {
             List<RuleRoot> roots = ruleFactory.getRules(source);
             andRules.addAll(roots.stream()
-                    .filter(root -> Relation.AND.equals(root.getRelationToRoots()))
+                    .filter(root -> Relation.AND.equals(root.getRelation()))
                     .collect(Collectors.toList()));
             orRules.addAll(roots.stream()
-                    .filter(root -> Relation.OR.equals(root.getRelationToRoots()))
+                    .filter(root -> Relation.OR.equals(root.getRelation()))
                     .collect(Collectors.toList()));
         }
 
         RequestCredential requestCredential =
                 credentialFactory.getRequestCredential(invocation.getInvoker().getUrl(), invocation);
 
-        AuthorizationContext context = new AuthorizationContext(invocation, requestCredential);
+        AuthorizationRequestContext context = new AuthorizationRequestContext(invocation, requestCredential);
 
         boolean andRes = true;
         for (RuleRoot rule : andRules) {

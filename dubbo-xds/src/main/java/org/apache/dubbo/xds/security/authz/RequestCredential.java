@@ -25,5 +25,5 @@ public interface RequestCredential {
 
     List<List<String>> supportPaths();
 
-    List<String> getByPath(List<String> mapPath);
+    List<String> getByPath(String mapPath);
 }

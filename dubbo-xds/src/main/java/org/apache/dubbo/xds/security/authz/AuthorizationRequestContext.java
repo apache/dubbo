@@ -19,9 +19,8 @@ package org.apache.dubbo.xds.security.authz;
 import org.apache.dubbo.rpc.Invocation;
 
 import java.util.LinkedList;
-import java.util.List;
 
-public class AuthorizationContext {
+public class AuthorizationRequestContext {
 
     private final Invocation invocation;
 
@@ -36,17 +35,17 @@ public class AuthorizationContext {
 
     private LinkedList<String> currentMapPath = new LinkedList<>();
 
-    public AuthorizationContext(Invocation invocation, RequestCredential requestCredential) {
+    public AuthorizationRequestContext(Invocation invocation, RequestCredential requestCredential) {
         this.invocation = invocation;
         this.requestCredential = requestCredential;
     }
 
     public void addCurrentPath(String mapPath) {
-        currentMapPath.push(mapPath);
+        currentMapPath.add(mapPath);
     }
 
-    public List<String> getCurrentPath() {
-        return currentMapPath;
+    public String getCurrentPath() {
+        return String.join(".", currentMapPath);
     }
 
     public void removeCurrentPath() {

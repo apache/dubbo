@@ -16,41 +16,88 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
-import org.apache.dubbo.xds.security.authz.AuthorizationContext;
+import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LeafRuleNode implements RuleNode {
 
-    // source
-    private String path;
+    /**
+     * e.g principle in rules.from.source.principles
+     */
+    private String rulePropName;
 
-    // principles: val1,val2 ; namespaces: val3,val4
-    private List<String> expectedValues;
+    /**
+     * patterns that matches required values
+     */
+    private List<String> expectedValuePattern;
 
-    public LeafRuleNode(String path, List<String> expectedValues) {
-        this.path = path;
-        this.expectedValues = expectedValues;
+    public LeafRuleNode(String nodeName, List<String> expectedValue) {
+        this.rulePropName = nodeName;
+        this.expectedValuePattern = parseToPattern(expectedValue);
     }
 
     @Override
-    public boolean evaluate(AuthorizationContext context) {
-        context.addCurrentPath(path);
+    public boolean evaluate(AuthorizationRequestContext context) {
+        context.addCurrentPath(rulePropName);
 
         List<String> valuesToValidate = context.getRequestCredential().getByPath(context.getCurrentPath());
-
         if (valuesToValidate.isEmpty()) {
+            context.removeCurrentPath();
             return false;
         }
 
         List<String> l = new ArrayList<>(valuesToValidate);
-        l.removeAll(expectedValues);
+        for (String p:expectedValuePattern) {
+            //If we have multiple values to validate, then every value must match at list one rule pattern
+            l.removeIf(val -> val.matches(p));
+            if(l.isEmpty()){
+                break;
+            }
+        }
+        context.removeCurrentPath();
         return l.isEmpty();
     }
 
     @Override
-    public String getName() {
-        return path;
+    public String getNodeName() {
+        return rulePropName;
     }
+
+    private List<String> parseToPattern(List<String> values){
+        List<String> pattern = new ArrayList<>(1);
+        for (String val: values) {
+            StringBuilder patternBuilder = new StringBuilder();
+            for (int i = 0; i < val.length(); i++) {
+                char c = val.charAt(i);
+                switch (c) {
+                    case '*':
+                        patternBuilder.append(".*");
+                        break;
+                    case '\\':
+                    case '.':
+                    case '^':
+                    case '$':
+                    case '+':
+                    case '?':
+                    case '{':
+                    case '}':
+                    case '[':
+                    case ']':
+                    case '|':
+                    case '(':
+                    case ')':
+                        patternBuilder.append("\\").append(c);
+                        break;
+                    default:
+                        patternBuilder.append(c);
+                        break;
+                }
+            }
+            pattern.add(patternBuilder.toString());
+        }
+        return pattern;
+    }
+
 }

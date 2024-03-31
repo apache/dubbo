@@ -16,50 +16,83 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
+import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot.Action;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * non-thread safe
+ */
 public class RuleTreeBuilder {
-    private CompositeRuleNode root;
 
-    public RuleTreeBuilder(String rootName) {
-        // 顶层默认OR关系
-        this.root = new CompositeRuleNode(rootName, RuleNode.Relation.OR);
+    /**
+     * Root of the rule tree.
+     */
+    private RuleRoot root;
+
+    /**
+     * The relations between nodes that have same parent. <p>
+     * eg: <p>
+     * 1. <code>rules[0].from</code> AND <code>rules[0].to</code>
+     * Only when the request meet all FROM AND TO rule,their parent (rules[0]) will returns true.
+     * <p>
+     * 2. <code>rules[0].from[0].source[0].principles[0]</code> OR <code>rules[0].from[0].source[0].namespaces[0]</code>
+     * Only when the request meet PRINCIPLE OR NAMESPACE rule, their parent (source[0]) will returns true.
+     * <p>
+     * The node in same level shares same relation, like <code>rules.from</code> and <code>rules.to</code> because they are in same level (2).
+     */
+    private List<Relation> nodeLevelRelations = new ArrayList<>();
+
+    public RuleTreeBuilder(Relation relationToOtherRoots, Action action) {
+        this.root = new RuleRoot(relationToOtherRoots, action);
     }
 
     public void createFromMap(Map<String, Object> map) {
+        if(CollectionUtils.isEmpty(nodeLevelRelations)){
+            throw new RuntimeException("node level relations can't be null");
+        }
+
         for (String key : map.keySet()) {
             Object value = map.get(key);
-            processNode(root, key, value);
+            processNode(root, key, value,0);
         }
     }
 
-    private void processNode(CompositeRuleNode parent, String key, Object value) {
+    public void setPathLevelRelations(List<Relation> pathLevelRelations){
+        this.nodeLevelRelations = pathLevelRelations;
+    }
+
+    private void processNode(CompositeRuleNode parent, String key, Object value,int level) {
+        //key：本结点名称
+        //value：本结点的子结点值
         if (value instanceof List) {
             List<?> list = (List<?>) value;
             if (!list.isEmpty()) {
 
                 // leaf结点
                 if (list.get(0) instanceof String) {
-                    parent.addChild(key, new LeafRuleNode(key, (List<String>) list));
+                    LeafRuleNode current = new LeafRuleNode(key, (List<String>) list);
+                    parent.addChild(key,current);
                 }
                 // 非leaf结点
                 else if (list.get(0) instanceof Map) {
+                    CompositeRuleNode current = new CompositeRuleNode(key, nodeLevelRelations.get(level));
+                    parent.addChild(key, current);
+
                     for (Object item : list) {
-                        CompositeRuleNode current = new CompositeRuleNode(key, RuleNode.Relation.AND);
-                        parent.addChild(key, current);
                         ((Map<?, ?>) item)
-                                .forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue));
+                                .forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue,level+1));
                     }
                 }
             }
         } else if (value instanceof Map) {
-            // leaf的前一层
-            CompositeRuleNode current = new CompositeRuleNode(key, RuleNode.Relation.OR);
+            CompositeRuleNode current = new CompositeRuleNode(key, nodeLevelRelations.get(level));
             parent.addChild(key, current);
-            ((Map<?, ?>) value).forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue));
+            ((Map<?, ?>) value).forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue,level+1));
         } else {
             throw new RuntimeException();
         }
@@ -87,8 +120,8 @@ public class RuleTreeBuilder {
         return current;
     }
 
-    public RuleRoot getRoot(Relation relationToOtherRoots, RuleRoot.Action action) {
-        return new RuleRoot(relationToOtherRoots, root, action);
+    public RuleRoot getRoot() {
+        return root;
     }
 
     // CompositeRuleNode 中添加 setRelation 方法

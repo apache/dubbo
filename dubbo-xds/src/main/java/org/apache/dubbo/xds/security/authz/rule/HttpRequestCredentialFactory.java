@@ -63,6 +63,14 @@ public class HttpRequestCredentialFactory implements CredentialFactory {
 
         String httpMethod = null; // TODO
 
-        return new HttpBasedRequestCredential(payload.get("iss"), payload.get("sub"), targetPath, httpMethod, payload);
+
+        return new HttpBasedRequestCredential(
+                payload.get("iss"),
+                payload.get("sub"),
+                targetPath,
+                httpMethod,
+                //TODO: get namespace from request
+                null,
+                payload);
     }
 }

@@ -105,7 +105,7 @@ public class KubeEnv implements XdsEnv {
     }
 
     public byte[] getServiceAccountCa() throws IOException {
-        return readFileAsBytes(getServiceAccountCaPath() +"/ca.crt");
+        return readFileAsBytes(getServiceAccountCaPath());
     }
 
     private byte[] readFileAsBytes(String path) throws IOException{
@@ -117,7 +117,7 @@ public class KubeEnv implements XdsEnv {
         try (FileInputStream in = new FileInputStream(file); ) {
             int readBytes = in.read(value);
             if (readBytes > 4096) {
-                throw new RuntimeException("ServiceAccount token too long");
+                throw new RuntimeException("Security resource size > 4096: Too long");
             }
             value = Bytes.copyOf(value,readBytes);
         }

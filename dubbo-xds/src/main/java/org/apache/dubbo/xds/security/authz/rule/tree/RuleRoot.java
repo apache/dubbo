@@ -16,51 +16,44 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
-import org.apache.dubbo.xds.security.authz.AuthorizationContext;
+import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 
-public class RuleRoot implements RuleNode {
+public class RuleRoot extends CompositeRuleNode {
 
     /**
      * root之间的关系。所有Relation=AND的树进行AND，所有Relation=OR的树进行OR
      */
-    private Relation relationToRoots;
-
-    private CompositeRuleNode root;
 
     private Action action;
 
-    public RuleRoot(Relation relationToOtherRoots, CompositeRuleNode root, Action action) {
-        this.relationToRoots = relationToOtherRoots;
-        this.root = root;
+    public RuleRoot(Relation relation, Action action) {
+        super("", relation);
         this.action = action;
-    }
-
-    public Relation getRelationToRoots() {
-        return relationToRoots;
-    }
-
-    public CompositeRuleNode getRoot() {
-        return root;
-    }
-
-    @Override
-    public boolean evaluate(AuthorizationContext context) {
-        return root.evaluate(context);
-    }
-
-    @Override
-    public String getName() {
-        return "root";
     }
 
     public Action getAction(){
         return action;
     }
 
+    @Override
+    public boolean evaluate(AuthorizationRequestContext context) {
+        boolean result;
+        if (relation == Relation.AND) {
+            result = children.values().stream()
+                    .allMatch(childList -> childList.stream().allMatch(ch -> ch.evaluate(context)));
+        } else {
+            // Relation.OR
+            result = children.values().stream()
+                    .anyMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
+        }
+        return result;
+    }
+
     /**
      * The action of authorization policy
      */
     public enum Action{
+
         /**
          * The request must map this policy
          */

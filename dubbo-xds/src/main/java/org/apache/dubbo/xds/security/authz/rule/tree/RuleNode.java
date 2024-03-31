@@ -16,12 +16,16 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
-import org.apache.dubbo.xds.security.authz.AuthorizationContext;
+import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 
 public interface RuleNode {
-    boolean evaluate(AuthorizationContext context);
 
-    String getName();
+    /**
+     * evaluate if the request can match rules in this node and its children
+     */
+    boolean evaluate(AuthorizationRequestContext context);
+
+    String getNodeName();
 
     enum Relation {
         AND,
