@@ -1,0 +1,274 @@
+name: Fixed Build And Test Scheduled
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORK_COUNT: 2
+  FAIL_FAST: 0
+  SHOW_ERROR_DETAIL: 1
+  #multi-version size limit
+  VERSIONS_LIMIT: 4
+  JACOCO_ENABLE: true
+  CANDIDATE_VERSIONS: '
+    spring.version:5.3.24;
+    spring-boot.version:2.7.6;
+    '
+
+jobs:
+  build-source:
+    name: "Build Dubbo"
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.dubbo-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: dubbo
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 8
+      - uses: actions/cache@v3
+        name: "Cache local Maven repository"
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
+      - name: "Dubbo cache"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+      - name: "Build Dubbo with Maven"
+        run: |
+          cd ./dubbo
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+      - name: "Calculate Dubbo Version"
+        id: dubbo-version
+        run: |
+          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+          echo "version=$REVISION" >> $GITHUB_OUTPUT
+          echo "dubbo version: $REVISION"
+  unit-test-prepare:
+    name: "Preparation for Unit Test"
+    needs: check-format
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    env:
+      ZOOKEEPER_VERSION: 3.6.3
+    steps:
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+      - name: "Set up msys2 if necessary"
+        if: ${{ startsWith( matrix.os, 'windows') && steps.cache-zookeeper.outputs.cache-hit != 'true' }}
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false  # support cache, see https://github.com/msys2/setup-msys2#context
+      - name: "Download zookeeper binary archive in Linux OS"
+        run: |
+          mkdir -p ${{ github.workspace }}/.tmp/zookeeper
+          wget -c https://archive.apache.org/dist/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c https://apache.website-solution.net/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.stu.edu.tw/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          echo "list the downloaded zookeeper binary archive"
+          ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+      - uses: actions/cache@v3
+        name: "Cache secret key"
+        id: "cache-secret-cert"
+        with:
+          path: ${{ github.workspace }}/.tmp/rsa
+          key: secret-rsa-${{ runner.os }}-${{ github.run_id }}
+      - name: "Create Secret"
+        run: |
+          mkdir -p ${{ github.workspace }}/.tmp/rsa
+          cd ${{ github.workspace }}/.tmp/rsa
+          openssl genrsa -out rsa_private.pem 1024
+          openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
+          echo "Current workflow run id: ${{ github.run_id }}"
+          echo "Start Print Rsa Public Key ---"
+          cat rsa_public.pem
+          echo "--- End Print Rsa Public Key"
+
+  samples-test-prepare:
+    needs: check-format
+    runs-on: ubuntu-latest
+    env:
+      JOB_COUNT: 3
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'wxbty/dubbo-samples'
+          ref: bh-bak
+      - name: "Prepare test list"
+        run: |
+          bash ./test/scripts/prepare-test.sh
+      - name: "Upload test list"
+        uses: actions/upload-artifact@v3
+        with:
+          name: samples-test-list
+          path: test/jobs
+  samples-test-job:
+    needs: [check-format, build-source, samples-test-prepare]
+    name: "Samples Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      JAVA_VER: 8
+      TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
+    strategy:
+      fail-fast: false
+      matrix:
+        job_id: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'wxbty/dubbo-samples'
+          ref: bh-bak
+      - name: "Cache local Maven repository"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
+      - name: "Restore Dubbo cache"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+            ${{ runner.os }}-dubbo-snapshot-
+      - name: "Download test list"
+        uses: actions/download-artifact@v3
+        with:
+          name: samples-test-list
+          path: test/jobs/
+      - name: "Set up JDK 8"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 8
+      - name: "Init Candidate Versions"
+        run: |
+          DUBBO_VERSION="${{needs.build-source.outputs.version}}"
+          CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
+          echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
+      - name: "Build test image"
+        run: |
+          cd test && bash ./build-test-image.sh
+      - name: "Run tests"
+        run: cd test && bash ./run-tests.sh 10-task/dubbo-samples-benchmark/
+      - name: "Upload test result"
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: samples-test-result
+          path: test/jobs/*-result*
+      - name: "Upload jmh output result"
+        uses: actions/upload-artifact@v3
+        with:
+          name: samples-jmh-result
+          path: /tmp/jmh*.json
+      - name: "Upload Error Build Log"
+        uses: actions/upload-artifact@v3
+        with:
+          name: samples-build-result
+          path: /tmp/logs/*
+      - name: Push results to results repository
+        env:
+          RESULTS_REPO_OWNER: wxbty
+          RESULTS_REPO_NAME: jmh_result
+          RESULTS_REPO_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+        run: |
+          if ! ls /tmp/jmh_result*.json -1q &> /dev/null; then
+            echo "No file matching /tmp/jmh_result*.json exists. Exiting..."
+            exit 0
+          fi
+
+          git clone --depth 1 https://github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git jmh_result
+          cd jmh_result
+          git config user.email "wxb_101@163.com"
+          git config user.name "wxbty"
+
+          WORK_DIR="$(pwd)"
+          echo "WorkDir: $WORK_DIR"
+          DIRECTORY_PATH="$WORK_DIR/test-results/scheduled"
+
+          if [ ! -d ${DIRECTORY_PATH} ];then
+            mkdir $DIRECTORY_PATH
+          fi
+
+          for file in /tmp/jmh_result*.json; do
+            cp "$file" "$DIRECTORY_PATH/jmh_result_$(date +%Y%m%d_%H%M%S_%N).json"
+          done
+
+          cd $DIRECTORY_PATH
+          if [ $? -eq 0 ];
+            then
+            num=`ls $DIRECTORY_PATH -l | grep '^-' | wc -l`;
+            if [ $num -gt 50 ];
+              then
+              num=`expr $num - 50`
+              ls -l $DIRECTORY_PATH | awk '{print $9}' | sort | head -$num | xargs -i -n1 rm {}
+            fi
+          fi
+
+          merged_file="merged_results.json"
+          if [ -f "$DIRECTORY_PATH/$merged_file" ];then
+            rm "$DIRECTORY_PATH/$merged_file"
+          fi
+
+
+          json_array=()
+          for file in $(ls -t1 "$DIRECTORY_PATH"/*.json); do
+           if [ -f "$file" ]; then
+              json_array+=( "$(cat "$file")" )
+           fi
+          done
+
+          merged_json=$(echo "${json_array[@]}" | jq -s add)
+          echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
+
+          git add --all
+          git commit -m "Add test results 1 from $(date +'%Y-%m-%d %H:%M:%S')"
+          git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
+
+  samples-test-result:
+    needs: [check-format, samples-test-job]
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      JAVA_VER: 8
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'wxbty/dubbo-samples'
+          ref: bh-bak
+      - name: "Download test result"
+        uses: actions/download-artifact@v3
+        with:
+          name: samples-test-result
+          path: test/jobs/
+      - name: "Merge test result"
+        run: ./test/scripts/merge-test-results.sh
