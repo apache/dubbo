@@ -48,6 +48,7 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.ECGenParameterSpec;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -69,12 +70,11 @@ public class DubboCertManager {
 
     private final FrameworkModel frameworkModel;
 
-    protected volatile DubboBootstrap dubboBootstrap;
-
+    private final AtomicReference<DubboBootstrap> dubboBootstrapRef = new AtomicReference<>();
     /**
-     * Triple Certificate Service reference
+     * Triple CertificateService reference
      */
-    protected volatile ReferenceConfig<DubboCertificateService> reference;
+    private final AtomicReference<ReferenceConfig<DubboCertificateService>> referenceRef = new AtomicReference<>();
 
     /**
      * Cert pair for current Dubbo instance
@@ -88,6 +88,22 @@ public class DubboCertManager {
      * Refresh cert pair for current Dubbo instance
      */
     protected volatile ScheduledFuture<?> refreshFuture;
+
+    public DubboBootstrap getDubboBootstrap() {
+        return dubboBootstrapRef.get();
+    }
+
+    public void setDubboBootstrap(DubboBootstrap bootstrap) {
+        dubboBootstrapRef.set(bootstrap);
+    }
+
+    public ReferenceConfig<DubboCertificateService> getReference() {
+        return referenceRef.get();
+    }
+
+    public void setReference(ReferenceConfig<DubboCertificateService> ref) {
+        referenceRef.set(ref);
+    }
 
     public DubboCertManager(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -148,7 +164,7 @@ public class DubboCertManager {
     }
 
     public synchronized void connect(CertConfig certConfig) {
-        if (reference != null) {
+        if (getReference() != null) {
             logger.error(INTERNAL_ERROR, "", "", "Dubbo Cert Authority server is already connected.");
             return;
         }
@@ -200,14 +216,15 @@ public class DubboCertManager {
         String remoteAddress = certConfig.getRemoteAddress();
         logger.info(
                 "Try to connect to Dubbo Cert Authority server: " + remoteAddress + ", caCertPath: " + remoteAddress);
-        reference = new ReferenceConfig<>();
-        reference.setInterface(DubboCertificateService.class);
-        reference.setProxy(CommonConstants.NATIVE_STUB);
-        reference.setUrl("tri://" + remoteAddress);
-        reference.setTimeout(3000);
-
-        dubboBootstrap =
-                DubboBootstrap.newInstance().registry(new RegistryConfig("N/A")).reference(reference);
+        ReferenceConfig<DubboCertificateService> ref = new ReferenceConfig<>();
+        ref.setInterface(DubboCertificateService.class);
+        ref.setProxy(CommonConstants.NATIVE_STUB);
+        ref.setUrl("tri://" + remoteAddress);
+        ref.setTimeout(3000);
+        setReference(ref);
+        DubboBootstrap dubboBootstrap =
+                DubboBootstrap.newInstance().registry(new RegistryConfig("N/A")).reference(getReference());
+        setDubboBootstrap(dubboBootstrap);
         try {
 
             if (StringUtils.isNotEmpty(caCertPath)) {
@@ -239,13 +256,13 @@ public class DubboCertManager {
             refreshFuture.cancel(true);
             refreshFuture = null;
         }
-        if (reference != null) {
-            reference = null;
+        if (getReference() != null) {
+            setReference(null);
         }
     }
 
     public boolean isConnected() {
-        return certConfig != null && reference != null && certPair != null;
+        return certConfig != null && getReference() != null && certPair != null;
     }
 
     protected CertPair generateCert() {
@@ -297,8 +314,8 @@ public class DubboCertManager {
         }
 
         String csr = generateCsr(keyPair);
-        dubboBootstrap.start();
-        DubboCertificateService dubboCertificateService = reference.get();
+        getDubboBootstrap().start();
+        DubboCertificateService dubboCertificateService = getReference().get();
         setHeaderIfNeed();
 
         String privateKeyPem = generatePrivatePemKey(keyPair);

@@ -82,7 +82,7 @@ class DubboCertManagerTest {
         Assertions.assertEquals(
                 new CertConfig("127.0.0.1:30060", "kubernetes", "caCertPath", "oidc345"), certManager.certConfig);
 
-        certManager.reference = Mockito.mock(ReferenceConfig.class);
+        certManager.setReference(Mockito.mock(ReferenceConfig.class));
         certManager.connect(new CertConfig("error", null, "error", "error"));
         Assertions.assertEquals(
                 new CertConfig("127.0.0.1:30060", "kubernetes", "caCertPath", "oidc345"), certManager.certConfig);
@@ -117,10 +117,10 @@ class DubboCertManagerTest {
         DubboCertManager certManager = new DubboCertManager(frameworkModel);
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, null, null);
         certManager.connect0(certConfig);
-        Assertions.assertNotNull(certManager.dubboBootstrap);
-        int endIndex = certManager.reference.getUrl().indexOf("//");
+        Assertions.assertNotNull(certManager.getDubboBootstrap());
+        int endIndex = certManager.getReference().getUrl().indexOf("//");
         Assertions.assertEquals(
-                "127.0.0.1:30062", certManager.reference.getUrl().substring(endIndex + 2));
+                "127.0.0.1:30062", certManager.getReference().getUrl().substring(endIndex + 2));
 
         frameworkModel.destroy();
     }
@@ -133,10 +133,10 @@ class DubboCertManagerTest {
                 .getFile();
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, file, null);
         certManager.connect0(certConfig);
-        Assertions.assertNotNull(certManager.reference);
-        int endIndex = certManager.reference.getUrl().indexOf("//");
+        Assertions.assertNotNull(certManager.getReference());
+        int endIndex = certManager.getReference().getUrl().indexOf("//");
         Assertions.assertEquals(
-                "127.0.0.1:30062", certManager.reference.getUrl().substring(endIndex + 2));
+                "127.0.0.1:30062", certManager.getReference().getUrl().substring(endIndex + 2));
 
         frameworkModel.destroy();
     }
@@ -163,9 +163,9 @@ class DubboCertManagerTest {
         Assertions.assertNull(certManager.refreshFuture);
         Mockito.verify(scheduledFuture, Mockito.times(1)).cancel(true);
 
-        certManager.reference = Mockito.mock(ReferenceConfig.class);
+        certManager.setReference(Mockito.mock(ReferenceConfig.class));
         certManager.disConnect();
-        Assertions.assertNull(certManager.reference);
+        Assertions.assertNull(certManager.getReference());
 
         frameworkModel.destroy();
     }
@@ -180,7 +180,7 @@ class DubboCertManagerTest {
         certManager.certConfig = Mockito.mock(CertConfig.class);
         Assertions.assertFalse(certManager.isConnected());
 
-        certManager.reference = Mockito.mock(ReferenceConfig.class);
+        certManager.setReference(Mockito.mock(ReferenceConfig.class));
         Assertions.assertFalse(certManager.isConnected());
 
         certManager.certPair = Mockito.mock(CertPair.class);
@@ -257,9 +257,9 @@ class DubboCertManagerTest {
 
             managerMock.when(DubboCertManager::signWithEcdsa).thenCallRealMethod();
 
-            certManager.dubboBootstrap = Mockito.mock(DubboBootstrap.class);
+            certManager.setDubboBootstrap(Mockito.mock(DubboBootstrap.class));
             ReferenceConfig<DubboCertificateService> reference = Mockito.mock(ReferenceConfig.class);
-            certManager.reference = reference;
+            certManager.setReference(reference);
             DubboCertificateService dubboCertificateService = Mockito.mock(DubboCertificateService.class);
             Mockito.when(reference.get()).thenReturn(dubboCertificateService);
             Mockito.when(dubboCertificateService.createCertificate(Mockito.any()))
