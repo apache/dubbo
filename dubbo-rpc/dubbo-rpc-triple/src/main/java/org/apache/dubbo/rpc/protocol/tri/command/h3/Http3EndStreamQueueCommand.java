@@ -20,7 +20,7 @@ public class Http3EndStreamQueueCommand extends Http3StreamQueueCommand {
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
         //((QuicStreamChannel)ctx.channel()).shutdownOutput();
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeLong(0x12ACEF001L);
+        buf.writeLong(0x12ACEF001L); // todo
         ctx.write(new DefaultHttp3DataFrame(buf), promise);
     }
 }

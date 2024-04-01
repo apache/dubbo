@@ -27,6 +27,7 @@ public class Http3ServerCallToObserverAdapter extends Http2ServerCallToObserverA
     protected HttpMetadata encodeTrailers(Throwable throwable) {
         HttpMetadata httpMetadata = new Http3MetadataFrame(new HttpHeaders());
         HttpHeaders headers = httpMetadata.headers();
+        headers.set("end-stream", "1");
         StreamUtils.putHeaders(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         return httpMetadata;
     }

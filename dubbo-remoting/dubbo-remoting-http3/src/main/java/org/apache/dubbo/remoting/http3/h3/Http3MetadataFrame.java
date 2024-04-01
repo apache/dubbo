@@ -28,7 +28,6 @@ public class Http3MetadataFrame implements Http2Header {
 
     @Override
     public boolean isEndStream() {
-        // always return false. endStream will be represented by a DATA frame
         return false;
     }
 }

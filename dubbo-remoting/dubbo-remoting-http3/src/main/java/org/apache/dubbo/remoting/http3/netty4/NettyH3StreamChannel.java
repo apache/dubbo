@@ -2,8 +2,13 @@ package org.apache.dubbo.remoting.http3.netty4;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
+import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
+import io.netty.incubator.codec.http3.Http3DataFrame;
+import io.netty.incubator.codec.http3.Http3HeadersFrame;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -13,6 +18,8 @@ import org.apache.dubbo.remoting.http3.h3.Http3OutputMessageFrame;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
 public class NettyH3StreamChannel implements H2StreamChannel {
@@ -25,15 +32,32 @@ public class NettyH3StreamChannel implements H2StreamChannel {
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
-        quicStreamChannel.write(httpMetadata).addListener(nettyHttpChannelFutureListener);
+        Http3HeadersFrame headers = Metadata2Headers(httpMetadata);
+        quicStreamChannel.write(headers).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    private Http3HeadersFrame Metadata2Headers(HttpMetadata metadata) {
+        Http3HeadersFrame headers = new DefaultHttp3HeadersFrame();
+        HttpHeaders metadataHeaders = metadata.headers();
+        for (Entry<String, List<String>> entry: metadataHeaders.entrySet()) {
+            headers.headers().add(entry.getKey(), entry.getValue());
+        }
+        return headers;
     }
 
     @Override
     public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
-        quicStreamChannel.write(httpOutputMessage).addListener(nettyHttpChannelFutureListener);
+        Http3DataFrame dataFrame = Output2Data(httpOutputMessage);
+        quicStreamChannel.write(dataFrame).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    private Http3DataFrame Output2Data(HttpOutputMessage output) {
+        ByteBufOutputStream stream = (ByteBufOutputStream)output.getBody();
+        Http3DataFrame data = new DefaultHttp3DataFrame(stream.buffer());
+        return data;
     }
 
     @Override
@@ -62,6 +86,7 @@ public class NettyH3StreamChannel implements H2StreamChannel {
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         ByteBuf buffer = quicStreamChannel.alloc().buffer();
+        // todo: Stream->ByteBuf
         ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer);
         return new Http3OutputMessageFrame(outputStream, endStream);
     }

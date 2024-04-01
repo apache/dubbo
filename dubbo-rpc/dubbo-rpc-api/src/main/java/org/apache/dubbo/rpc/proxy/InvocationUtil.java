@@ -64,8 +64,8 @@ public class InvocationUtil {
                     return invoker.invoke(rpcInvocation).recreate();
                 } finally {
                     Profiler.release(bizProfiler);
-                    Long timeout =
-                            RpcUtils.convertToNumber(rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
+                    Long timeout = 1000L*60*60; // for test
+                            //RpcUtils.convertToNumber(rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
 
                     if (timeout == null) {
                         timeout = (long) url.getMethodPositiveParameter(

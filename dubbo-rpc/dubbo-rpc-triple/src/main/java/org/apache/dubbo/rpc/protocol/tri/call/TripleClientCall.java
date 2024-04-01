@@ -30,10 +30,8 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleHttp12ClientStreamFactory;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleHttp3ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.Map;

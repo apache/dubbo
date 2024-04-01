@@ -3,6 +3,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
@@ -71,6 +72,7 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
         QuicSslContext context = QuicSslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .applicationProtocols(Http3.supportedApplicationProtocols()).build();
+        // todo: config
         io.netty.channel.ChannelHandler codec = Http3.newQuicClientCodecBuilder()
                 .sslContext(context)
                 .maxIdleTimeout(30, TimeUnit.MINUTES)
@@ -87,9 +89,28 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
                     .handler(new ChannelInitializer<NioDatagramChannel>() {
                         @Override
                         protected void initChannel(NioDatagramChannel ch) throws Exception {
-                            NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
+                            NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
 
                             ChannelPipeline pipeline = ch.pipeline();
+
+                            // for test
+                            /*pipeline.addLast(new ChannelInboundHandlerAdapter() {
+                                @Override
+                                public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                    //System.out.println("datagram channel: "+msg);
+
+                                    DatagramPacket packet = (DatagramPacket)msg;
+                                    ByteBuf content = packet.copy().content();
+                                    byte[] bytes = new byte[4096];
+                                    int sz = content.readableBytes();
+                                    content.readBytes(bytes, 0, sz);
+                                    content.release();
+                                    System.out.println("datagram channel read " + sz + " bytes: " + Arrays.toString(Arrays.copyOf(bytes, sz)));
+
+                                    ctx.fireChannelRead(msg);
+                                }
+                            });*/
+
                             pipeline.addLast(codec);
                         }
                     })
@@ -109,6 +130,15 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
                     @Override
                     protected void initChannel(QuicChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+
+                        // for test
+//                        pipeline.addLast(new ChannelInboundHandlerAdapter() {
+//                            @Override
+//                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+//                                System.out.println("quic channel: "+msg);
+//                                ctx.fireChannelRead(msg);
+//                            }
+//                        });
 
                         pipeline.addLast(new NettyHttp3ConnectionHandler(NettyHttp3ConnectionClient.this));
                         pipeline.addLast(new Http3ClientConnectionHandler());

@@ -13,7 +13,8 @@ public class GrpcHttp3ServerTransportListener extends GrpcHttp2ServerTransportLi
             H2StreamChannel h2StreamChannel,
             URL url,
             FrameworkModel frameworkModel) {
-        super(h2StreamChannel, url, frameworkModel);
+        super(h2StreamChannel, url, frameworkModel, new Http3ServerCallToObserverAdapter(
+                frameworkModel, h2StreamChannel));
     }
 
     /*@Override

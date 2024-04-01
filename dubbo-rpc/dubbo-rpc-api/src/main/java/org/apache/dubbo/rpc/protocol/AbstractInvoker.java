@@ -288,7 +288,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
              */
             Object timeoutKey = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-            long timeout = RpcUtils.convertToNumber(timeoutKey, Integer.MAX_VALUE);
+            long timeout = 1000*60*60; //RpcUtils.convertToNumber(timeoutKey, Integer.MAX_VALUE); // for test
 
             asyncResult.get(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {

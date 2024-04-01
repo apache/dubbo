@@ -13,8 +13,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.command.Http2WriteQueueChannel;
+import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
 import org.apache.dubbo.remoting.http3.h3.Http3ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -46,6 +49,13 @@ public class NettyHttp3ProtocolSelectorHandler extends SimpleChannelInboundHandl
         }
 
         H2StreamChannel h2StreamChannel = new NettyH3StreamChannel((QuicStreamChannel) ctx.channel());
+        HttpWriteQueueHandler writeQueueHandler =
+                ctx.channel().pipeline().get(HttpWriteQueueHandler.class);
+        if (writeQueueHandler != null) {
+            HttpWriteQueue writeQueue = writeQueueHandler.getWriteQueue();
+            h2StreamChannel = new Http2WriteQueueChannel(h2StreamChannel, writeQueue);
+        }
+
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast(new NettyHttp3FrameHandler(factory.newInstance(h2StreamChannel, url, frameworkModel)));
         pipeline.remove(this);
