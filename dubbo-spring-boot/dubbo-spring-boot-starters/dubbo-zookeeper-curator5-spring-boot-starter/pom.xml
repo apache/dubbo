@@ -31,7 +31,7 @@
 
   <properties>
     <curator5_version>5.1.0</curator5_version>
-    <zookeeper_version>3.8.3</zookeeper_version>
+    <zookeeper_version>3.8.4</zookeeper_version>
   </properties>
 
   <dependencies>
@@ -44,6 +44,20 @@
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
       <version>${zookeeper_version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>
