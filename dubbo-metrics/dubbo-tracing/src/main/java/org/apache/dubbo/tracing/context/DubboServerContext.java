@@ -19,6 +19,7 @@ package org.apache.dubbo.tracing.context;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
+import io.micrometer.observation.transport.Kind;
 import io.micrometer.observation.transport.ReceiverContext;
 
 /**
@@ -31,7 +32,7 @@ public class DubboServerContext extends ReceiverContext<Invocation> {
     private final Invocation invocation;
 
     public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
-        super((stringObjectMap, s) -> String.valueOf(stringObjectMap.getAttachment(s)));
+        super((carrier, s) -> String.valueOf(carrier.getAttachment(s)), Kind.SERVER);
         this.invoker = invoker;
         this.invocation = invocation;
         setCarrier(invocation);

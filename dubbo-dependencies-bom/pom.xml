@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>27</version>
+    <version>31</version>
     <relativePath />
   </parent>
 
@@ -91,24 +91,24 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.25</spring_version>
-    <spring_security_version>5.8.9</spring_security_version>
+    <spring_security_version>5.8.10</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.14.11</byte-buddy_version>
+    <byte-buddy_version>1.14.12</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.1.106.Final</netty4_version>
+    <netty4_version>4.1.107.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
-    <fastjson2_version>2.0.46</fastjson2_version>
+    <fastjson2_version>2.0.47</fastjson2_version>
     <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.1.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
     <jedis_version>3.10.0</jedis_version>
     <hessian_version>4.0.66</hessian_version>
-    <protobuf-java_version>3.25.2</protobuf-java_version>
+    <protobuf-java_version>3.25.3</protobuf-java_version>
     <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
     <servlet_version>3.1.0</servlet_version>
-    <jetty_version>9.4.53.v20231009</jetty_version>
+    <jetty_version>9.4.54.v20240208</jetty_version>
     <validation_new_version>3.0.2</validation_new_version>
     <validation_version>1.1.0.Final</validation_version>
     <hibernate_validator_version>5.4.3.Final</hibernate_validator_version>
@@ -119,25 +119,25 @@
     <snakeyaml_version>2.2</snakeyaml_version>
     <commons_lang3_version>3.14.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.12.2</micrometer.version>
+    <micrometer.version>1.12.4</micrometer.version>
     <opentelemetry.version>1.26.0</opentelemetry.version>
     <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
-    <micrometer-tracing.version>1.2.2</micrometer-tracing.version>
+    <micrometer-tracing.version>1.2.4</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
-    <reactor.version>3.6.2</reactor.version>
+    <reactor.version>3.6.4</reactor.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>3.14.9</okhttp_version>
 
     <rs_api_version>2.1.1</rs_api_version>
     <resteasy_version>3.15.6.Final</resteasy_version>
     <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
-    <tomcat_embed_version>8.5.98</tomcat_embed_version>
-    <nacos_version>2.2.4</nacos_version>
+    <tomcat_embed_version>8.5.99</tomcat_embed_version>
+    <nacos_version>2.3.1</nacos_version>
     <sentinel.version>1.8.6</sentinel.version>
     <seata.version>1.6.1</seata.version>
-    <grpc.version>1.61.1</grpc.version>
+    <grpc.version>1.62.2</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
     <mustache_version>0.9.10</mustache_version>
@@ -147,7 +147,7 @@
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-    <log4j2_version>2.22.1</log4j2_version>
+    <log4j2_version>2.23.1</log4j2_version>
     <commons_io_version>2.15.1</commons_io_version>
     <commons-codec_version>1.16.0</commons-codec_version>
 
@@ -166,7 +166,7 @@
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
-    <test_container_version>1.19.5</test_container_version>
+    <test_container_version>1.19.7</test_container_version>
     <hessian_lite_version>3.2.13</hessian_lite_version>
     <swagger_version>1.6.13</swagger_version>
 
@@ -175,11 +175,11 @@
     <sofa_registry_version>5.4.3</sofa_registry_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.10.1</gson_version>
-    <jackson_version>2.16.1</jackson_version>
+    <jackson_version>2.17.0</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
-    <commons_compress_version>1.25.0</commons_compress_version>
+    <commons_compress_version>1.26.1</commons_compress_version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>

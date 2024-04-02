@@ -1,1 +1,0 @@
-integer-to-multi-valued-map=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.MultivaluedMapCreationConverter

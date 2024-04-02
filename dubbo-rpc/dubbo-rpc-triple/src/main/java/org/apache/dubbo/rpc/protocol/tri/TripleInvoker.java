@@ -157,6 +157,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
         ClientCall call = new TripleClientCall(
                 connectionClient, callbackExecutor, getUrl().getOrDefaultFrameworkModel(), writeQueue);
+        RpcContext.getServiceContext().setLocalAddress(connectionClient.getLocalAddress());
         AsyncRpcResult result;
         try {
             switch (methodDescriptor.getRpcType()) {

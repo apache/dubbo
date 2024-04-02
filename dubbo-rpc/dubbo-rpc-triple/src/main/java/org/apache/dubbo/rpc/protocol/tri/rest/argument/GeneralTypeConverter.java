@@ -730,11 +730,11 @@ public class GeneralTypeConverter implements TypeConverter {
     }
 
     protected Collection customCreateCollection(Class targetClass, int size) {
-        return null;
+        return converterUtil == null ? null : (Collection) converterUtil.convertIfPossible(size, targetClass);
     }
 
-    private Map customCreateMap(Class targetClass, int size) {
-        return null;
+    protected Map customCreateMap(Class targetClass, int size) {
+        return converterUtil == null ? null : (Map) converterUtil.convertIfPossible(size, targetClass);
     }
 
     private Collection createCollection(Class targetClass, int size) {
@@ -789,10 +789,6 @@ public class GeneralTypeConverter implements TypeConverter {
             }
         }
         Collection collection = customCreateCollection(targetClass, size);
-        if (collection != null) {
-            return collection;
-        }
-        collection = (Collection) converterUtil.convertIfPossible(size, targetClass);
         if (collection != null) {
             return collection;
         }
@@ -931,10 +927,6 @@ public class GeneralTypeConverter implements TypeConverter {
             }
         }
         Map map = customCreateMap(targetClass, size);
-        if (map != null) {
-            return map;
-        }
-        map = (Map) converterUtil.convertIfPossible(size, targetClass);
         if (map != null) {
             return map;
         }

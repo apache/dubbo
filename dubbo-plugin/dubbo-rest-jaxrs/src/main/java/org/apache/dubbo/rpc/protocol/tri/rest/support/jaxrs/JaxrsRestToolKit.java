@@ -23,6 +23,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.DefaultRestToolKit;
 
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+
 final class JaxrsRestToolKit extends DefaultRestToolKit {
 
     private final BeanArgumentBinder binder;
@@ -30,6 +33,17 @@ final class JaxrsRestToolKit extends DefaultRestToolKit {
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
         binder = new BeanArgumentBinder(frameworkModel);
+    }
+
+    @Override
+    public Object convert(Object value, ParameterMeta parameter) {
+        if (MultivaluedMap.class.isAssignableFrom(parameter.getType())) {
+            if (value instanceof MultivaluedMap) {
+                return value;
+            }
+            return typeConverter.convert(value, MultivaluedHashMap.class);
+        }
+        return super.convert(value, parameter);
     }
 
     @Override

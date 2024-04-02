@@ -14,8 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.config.spring6.utils;
 
-public interface DemoService {
-    String echo(String text);
+import java.io.Serializable;
+
+public class DemoA implements Serializable {
+    private DemoB b;
 }

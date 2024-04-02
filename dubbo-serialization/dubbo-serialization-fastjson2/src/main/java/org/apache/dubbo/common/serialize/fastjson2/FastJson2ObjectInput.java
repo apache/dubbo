@@ -91,7 +91,7 @@ public class FastJson2ObjectInput implements ObjectInput {
 
     @Override
     public byte[] readBytes() throws IOException {
-        int length = is.read();
+        int length = readLength();
         byte[] bytes = new byte[length];
         int read = is.read(bytes, 0, length);
         if (read != length) {

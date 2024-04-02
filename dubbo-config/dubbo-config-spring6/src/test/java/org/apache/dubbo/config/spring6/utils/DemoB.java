@@ -14,13 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.proxy.bytebuddy;
+package org.apache.dubbo.config.spring6.utils;
 
-import org.apache.dubbo.rpc.proxy.AbstractProxyTest;
+import java.io.Serializable;
 
-class ByteBuddyProxyFactoryTest extends AbstractProxyTest {
-
-    static {
-        AbstractProxyTest.factory = new ByteBuddyProxyFactory();
-    }
+public class DemoB implements Serializable {
+    private DemoA a;
 }

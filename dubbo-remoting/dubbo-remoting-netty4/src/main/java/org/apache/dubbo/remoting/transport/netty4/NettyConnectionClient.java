@@ -33,6 +33,7 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -345,7 +346,9 @@ public class NettyConnectionClient extends AbstractConnectionClient {
     @Override
     public String toString() {
         return super.toString() + " (Ref=" + this.getCounter() + ",local="
-                + (getChannel() == null ? null : getChannel().getLocalAddress()) + ",remote=" + getRemoteAddress();
+                + Optional.ofNullable(getChannel())
+                        .map(Channel::getLocalAddress)
+                        .orElse(null) + ",remote=" + getRemoteAddress();
     }
 
     class ConnectionListener implements ChannelFutureListener {

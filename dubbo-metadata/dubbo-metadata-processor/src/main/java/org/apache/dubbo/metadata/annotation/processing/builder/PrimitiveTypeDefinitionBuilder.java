@@ -27,7 +27,7 @@ import java.util.Map;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isPrimitiveType;
 
 /**
- * {@link TypeBuilder} for Java {@link PrimitiveType primitve type}
+ * {@link TypeBuilder} for Java {@link PrimitiveType primitive type}
  *
  * @since 2.7.6
  */

@@ -23,6 +23,8 @@ import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.tracing.handler.DubboClientTracingObservationHandler;
+import org.apache.dubbo.tracing.handler.DubboServerTracingObservationHandler;
 import org.apache.dubbo.tracing.tracer.PropagatorProvider;
 import org.apache.dubbo.tracing.tracer.PropagatorProviderFactory;
 import org.apache.dubbo.tracing.tracer.TracerProvider;
@@ -87,7 +89,11 @@ public class DubboObservationRegistry {
                                         tracer, propagator),
                                 new io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<>(
                                         tracer, propagator),
-                                new io.micrometer.tracing.handler.DefaultTracingObservationHandler(tracer)));
+                                new io.micrometer.tracing.handler.DefaultTracingObservationHandler(tracer)))
+                .observationHandler(
+                        new io.micrometer.observation.ObservationHandler.FirstMatchingCompositeObservationHandler(
+                                new DubboClientTracingObservationHandler<>(tracer),
+                                new DubboServerTracingObservationHandler<>(tracer)));
 
         if (MetricsSupportUtil.isSupportMetrics()) {
             io.micrometer.core.instrument.MeterRegistry meterRegistry =

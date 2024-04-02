@@ -30,7 +30,7 @@
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
     <curator5_version>5.1.0</curator5_version>
-    <zookeeper_version>3.8.3</zookeeper_version>
+    <zookeeper_version>3.8.4</zookeeper_version>
   </properties>
 
   <dependencies>
@@ -157,7 +157,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.4.14</version>
+      <version>1.5.3</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -204,7 +204,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.10.0</version>
+            <version>0.10.1</version>
             <configuration>
               <classesDirectory>${project.build.outputDirectory}</classesDirectory>
               <metadataRepository>

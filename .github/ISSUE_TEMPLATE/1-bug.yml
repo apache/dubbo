@@ -1,0 +1,142 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: Bug Report
+description: File a bug report
+title: "[Bug] "
+labels: ["type/need-triage", "component/need-triage"]
+projects: ["apache/337"]
+body:
+- type: markdown
+  attributes:
+    value: |
+      <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
+
+      Thank you for finding the time to report the problem! We really appreciate the community efforts to improve Dubbo.
+
+      Please make sure what you are reporting is indeed a bug with reproducible steps, if you want to ask questions
+      or share ideas, please [subscribe to our mailing list](mailto:dev-subscribe@dubbo.apache.org) and sent
+      emails to [our mailing list](mailto:dev@dubbo.apache.org), you can also head to our
+      [Discussion](https://github.com/apache/dubbo/discussions) tab.
+
+      If you need to report a security issue, please visit [our security policy](https://github.com/apache/dubbo/security/policy).
+
+      **Dubbo is open for world wide collaboration, please make sure that all the content you provide is in English.**
+      Remember that non-English issues is quite not friendly for everyone, and might unable to get the response!
+
+- type: checkboxes
+  attributes:
+    label: Pre-check
+    options:
+      - label: >
+          I am sure that all the content I provide is in English.
+        required: true
+
+- type: checkboxes
+  attributes:
+    label: Search before asking
+    description: >
+      Please make sure to search in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) first to see
+      whether the same issue was reported already.
+    options:
+      - label: >
+          I had searched in the [issues](https://github.com/apache/dubbo/issues?q=is%3Aissue) and found no similar
+          issues.
+        required: true
+
+- type: dropdown
+  attributes:
+    label: Apache Dubbo Component
+    description: |
+      What Apache Dubbo component are you using? Apache Dubbo has many subprojects, please make sure
+      to choose the component that you want to ask questions about.
+    multiple: false
+    options:
+      - "Java SDK (apache/dubbo)"
+      - "Java Samples (apache/dubbo-samples)"
+      - "Java Integration Cases (apache/dubbo-integration-cases)"
+      - "Java SPI Extensions (apache/dubbo-spi-extensions)"
+      - "Java Benchmark (apache/dubbo-benchmark)"
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Dubbo Version
+    description: "Which Dubbo version, JDK version and operating system did you use?"
+    placeholder: "Example: Dubbo Java 3.2.12, OpenJDK 1.8, Ubuntu 20.04"
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce this issue
+    description: >
+      Describe how to reproduce this issue.If you are not able to provide a reproducible case,
+      please open a [Discussion](https://github.com/apache/dubbo/discussions) instead.
+    placeholder: >
+      Please provide the context in which the problem occurred and explain what happened.
+      A [GitHub address] would be helpful for maintainers to reproduce the problem.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: What you expected to happen
+    description: What do you think went wrong?
+    placeholder: >
+      Please explain why you think the behaviour is erroneous. It is extremely helpful if you copy and paste
+      the fragment of logs showing the exact error messages or wrong behaviour and screenshots for
+      UI problems. You can include files by dragging and dropping them here.
+
+      **NOTE**: please copy and paste texts instead of taking screenshots of them for easy future search.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Anything else
+    description: Anything else we need to know?
+    placeholder: >
+      How often does this problem occur? (Once? Every time? Only when certain conditions are met?)
+      Any relevant logs to include? Put them here inside fenced
+      ``` ``` blocks or inside a collapsable details tag if it's too long:
+      <details><summary>x.log</summary> lots of stuff </details>
+
+- type: checkboxes
+  attributes:
+    label: Are you willing to submit a pull request to fix on your own?
+    description: >
+      This is absolutely not required, but we are happy to guide you in the contribution process
+      especially if you already have a good understanding of how to implement the fix.
+      Dubbo is a totally community-driven project and we love to bring new contributors in.
+    options:
+      - label: Yes I am willing to submit a pull request on my own!
+
+- type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it.
+    options:
+      - label: >
+          I agree to follow this project's
+          [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
+        required: true
+
+- type: markdown
+  attributes:
+    value: "Thanks for completing our form!"
