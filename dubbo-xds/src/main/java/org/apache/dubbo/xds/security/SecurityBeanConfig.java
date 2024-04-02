@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
 import org.apache.dubbo.xds.security.api.MeshCredentialProvider;
+import org.apache.dubbo.xds.security.authz.rule.DefaultRuleFactory;
 
 public class SecurityBeanConfig implements ScopeModelInitializer {
 
@@ -35,6 +36,7 @@ public class SecurityBeanConfig implements ScopeModelInitializer {
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         applicationModel.getBeanFactory().getOrRegisterBean(KubeEnv.class);
         applicationModel.getBeanFactory().getOrRegisterBean(KubeApiClient.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(DefaultRuleFactory.class);
     }
 
     @Override

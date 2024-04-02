@@ -41,11 +41,11 @@ import io.kubernetes.client.util.Watch.Response;
 @Activate
 public class KubeRuleSourceProvider implements RuleSourceProvider {
 
-    private final KubeApiClient kubeApiClient;
+    protected final KubeApiClient kubeApiClient;
 
     private volatile List<RuleSource> ruleSourceInst;
 
-    private KubeEnv kubeEnv;
+    protected KubeEnv kubeEnv;
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeRuleSourceProvider.class);
 
@@ -54,9 +54,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
     public KubeRuleSourceProvider(ApplicationModel applicationModel) throws Exception {
         this.kubeApiClient = applicationModel.getBeanFactory().getBean(KubeApiClient.class);
         this.kubeEnv = applicationModel.getBeanFactory().getBean(KubeEnv.class);
-
-        Map<String, Object> resource = kubeApiClient.getResourceAsMap(
-                "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
+        Map<String, Object> resource = getResource();
         updateSource(resource);
         startListenRequestAuthentication();
     }
@@ -68,8 +66,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
 
     private void startListenRequestAuthentication() throws ApiException {
 
-        Watch<Object> watch = kubeApiClient.listenResource(
-                "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
+        Watch<Object> watch = getResourceListen();
 
         executor.schedule(
                 () -> {
@@ -90,7 +87,17 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                 TimeUnit.MILLISECONDS);
     }
 
-    private void updateSource(Map<String, Object> resultMap) {
+    protected Map<String,Object> getResource(){
+        return kubeApiClient.getResourceAsMap(
+                "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
+    }
+
+    protected Watch<Object> getResourceListen(){
+        return kubeApiClient.listenResource(
+                "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
+    }
+
+    protected void updateSource(Map<String, Object> resultMap) {
 
         List<Map<String, Object>> items = (List<Map<String, Object>>) resultMap.get("items");
         List<RuleSource> rules = new ArrayList<>();
@@ -111,7 +118,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                         match = true;
                     }
                 } else {
-                    // selector == null
+                    //no selector set
                     match = true;
                 }
                 if (match) {

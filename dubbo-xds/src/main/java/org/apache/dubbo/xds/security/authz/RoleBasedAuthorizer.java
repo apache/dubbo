@@ -55,9 +55,9 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
     private final Map<String, List<RuleNode>> rules = new ConcurrentHashMap<>();
 
     public RoleBasedAuthorizer(ApplicationModel applicationModel) {
-        this.ruleSourceProvider = applicationModel.getBeanFactory().getBean(RuleSourceProvider.class);
+        this.ruleSourceProvider = applicationModel.getAdaptiveExtension(RuleSourceProvider.class);
         this.credentialFactory =
-                applicationModel.getExtensionLoader(CredentialFactory.class).getAdaptiveExtension();
+                applicationModel.getAdaptiveExtension(CredentialFactory.class);
         this.ruleFactory = applicationModel.getBeanFactory().getBean(RuleFactory.class);
     }
 

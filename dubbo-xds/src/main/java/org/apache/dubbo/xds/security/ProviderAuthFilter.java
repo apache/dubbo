@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 
 import java.util.List;
@@ -31,11 +31,11 @@ import java.util.List;
 @Activate(group = CommonConstants.PROVIDER)
 public class ProviderAuthFilter implements Filter {
 
-    private List<RequestAuthorizer> requestAuthorizers;
+    private final List<RequestAuthorizer> requestAuthorizers;
 
-    public ProviderAuthFilter(FrameworkModel frameworkModel) {
+    public ProviderAuthFilter(ApplicationModel applicationModel) {
         this.requestAuthorizers =
-                frameworkModel.getExtensionLoader(RequestAuthorizer.class).getActivateExtensions();
+                applicationModel.getExtensionLoader(RequestAuthorizer.class).getActivateExtensions();
     }
 
     @Override

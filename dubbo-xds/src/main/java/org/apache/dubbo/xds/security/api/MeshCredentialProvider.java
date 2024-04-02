@@ -22,10 +22,10 @@ import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 @Activate
 public class MeshCredentialProvider implements CertProvider {
@@ -36,13 +36,10 @@ public class MeshCredentialProvider implements CertProvider {
 
     private final CertSource certSource;
 
-    private final ServiceAccountJwtSource jwtSource;
 
     public MeshCredentialProvider(FrameworkModel frameworkModel) {
         this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class).getAdaptiveExtension();
         this.certSource = frameworkModel.getExtensionLoader(CertSource.class).getAdaptiveExtension();
-        this.jwtSource =
-                frameworkModel.getExtensionLoader(ServiceAccountJwtSource.class).getAdaptiveExtension();
         // TODO for test
         this.credentialSourceUrl = URL.valueOf("xds://localhost:15012?signer=istio");
     }
@@ -51,7 +48,10 @@ public class MeshCredentialProvider implements CertProvider {
     public boolean isSupport(URL address) {
         String security = address.getParameter("security");
         String mesh = address.getParameter("mesh");
-        return "mTLS".equals(security) && StringUtils.isNotEmpty(mesh);
+        if(mesh != null && security != null && Arrays.asList(security.split(",")).contains("mTLS")){
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class MeshCredentialProvider implements CertProvider {
     }
 
     private ProviderCert getServiceCredential(URL remoteUrl,AuthPolicy authPolicy) {
-        remoteUrl = credentialSourceUrl; //TODO for test
+//        remoteUrl = credentialSourceUrl; //TODO for test
         CertPair cert = certSource.getCert(remoteUrl);
         return new ProviderCert(
                 cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
@@ -76,10 +76,6 @@ public class MeshCredentialProvider implements CertProvider {
 
     public void setUrl(URL credentialSourceUrl) {
         this.credentialSourceUrl = credentialSourceUrl;
-    }
-
-    public String getSaJwt() {
-        return jwtSource.getSaJwt(credentialSourceUrl);
     }
 
     public CertPair getCert() {

@@ -78,6 +78,9 @@ public class KubeEnv implements XdsEnv {
         if(StringUtils.isEmpty(cluster)){
             cluster = getStringProp("CLUSTER","");
         }
+        if(enableSsl == null){
+            enableSsl = true;
+        }
     }
 
     public String getApiServerPath() {

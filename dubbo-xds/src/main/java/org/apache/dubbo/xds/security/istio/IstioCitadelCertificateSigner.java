@@ -84,7 +84,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
 
     private volatile CertPair certPair;
 
-    private volatile X509CertChains certChains;
+    private volatile X509CertChains trustChain;
 
     public IstioCitadelCertificateSigner() {
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
@@ -107,9 +107,8 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
 
     @Override
     public X509CertChains getTrustCerts(URL url) {
-        // istio provides ca certs
         getCert(url);
-        return certChains;
+        return trustChain;
     }
 
     private class GenerateCertTask implements Runnable {
@@ -187,12 +186,11 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
                 throw new RpcException(e);
             }
         }
-        // 公钥+服务元数据->证书
+
         String csr = generateCsr(publicKey, signer);
 
         String caCert = istioEnv.getCaCert();
         ManagedChannel channel;
-        // 控制面返回的是istio CA，而非K8s CA，因此启用第一方JWT时 不能直接使用从k8s SA得到的CA作为TrustStorage
         if (StringUtils.isNotEmpty(caCert)) {
             channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
                     .sslContext(GrpcSslContexts.forClient()
@@ -245,7 +243,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
 
     private void updateTrust(List<String> trustChains) {
         try {
-            this.certChains = new X509CertChains(trustChains);
+            this.trustChain = new X509CertChains(trustChains);
         } catch (Exception e) {
             logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "Got exception when resolving trust chains from istio", e);
         }
@@ -323,15 +321,12 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
     }
 
     public String generateCsr(PublicKey publicKey, ContentSigner signer) throws IOException {
-        // 备用主题名称（SAN），请求者认为有效的域名
         GeneralNames subjectAltNames = new GeneralNames(new GeneralName[] {new GeneralName(6, istioEnv.getCsrHost())});
 
-        // 将SAN作为一个必选拓展加入证书
         ExtensionsGenerator extGen = new ExtensionsGenerator();
         extGen.addExtension(Extension.subjectAlternativeName, true, subjectAltNames);
 
         PKCS10CertificationRequest request = new JcaPKCS10CertificationRequestBuilder(
-                        // 请求者身份信息。默认使用 cluster.local
                         new X500Name("O=" + istioEnv.getTrustDomain()), publicKey)
                 .addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extGen.generate())
                 .build(signer);

@@ -53,7 +53,7 @@ public class RuleTreeBuilder {
 
     public void createFromMap(Map<String, Object> map) {
         if(CollectionUtils.isEmpty(nodeLevelRelations)){
-            throw new RuntimeException("node level relations can't be null");
+            throw new RuntimeException("Node level relations can't be null or empty");
         }
 
         for (String key : map.keySet()) {
@@ -67,18 +67,17 @@ public class RuleTreeBuilder {
     }
 
     private void processNode(CompositeRuleNode parent, String key, Object value,int level) {
-        //key：本结点名称
-        //value：本结点的子结点值
+        //key：name of current node
+        //value：values for children of current node
         if (value instanceof List) {
             List<?> list = (List<?>) value;
             if (!list.isEmpty()) {
 
-                // leaf结点
                 if (list.get(0) instanceof String) {
                     LeafRuleNode current = new LeafRuleNode(key, (List<String>) list);
                     parent.addChild(key,current);
                 }
-                // 非leaf结点
+
                 else if (list.get(0) instanceof Map) {
                     CompositeRuleNode current = new CompositeRuleNode(key, nodeLevelRelations.get(level));
                     parent.addChild(key, current);
@@ -98,31 +97,7 @@ public class RuleTreeBuilder {
         }
     }
 
-    // 根据path修改所有同path记录的Relation
-    public void changeRelationByPath(String path, RuleNode.Relation newRelation) {
-        CompositeRuleNode node = getNodeByPath(path);
-        if (node != null) {
-            // 更新找到的节点的关系
-            node.setRelation(newRelation);
-        }
-    }
-
-    // 获取路径指定的节点
-    private CompositeRuleNode getNodeByPath(String path) {
-        String[] segments = path.split("\\.");
-        CompositeRuleNode current = root;
-        for (String segment : segments) {
-            if (current == null) {
-                return null;
-            }
-            //            current = current.getName(segment);
-        }
-        return current;
-    }
-
     public RuleRoot getRoot() {
         return root;
     }
-
-    // CompositeRuleNode 中添加 setRelation 方法
 }

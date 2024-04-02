@@ -21,9 +21,9 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI(value = "default", scope = ExtensionScope.FRAMEWORK)
-public interface ServiceAccountJwtSource {
+@SPI(value = "default", scope = ExtensionScope.APPLICATION)
+public interface ServiceAccountSource {
 
-    @Adaptive("sa-jwt")
+    @Adaptive(value = {"sa-jwt"})
     String getSaJwt(URL url);
 }

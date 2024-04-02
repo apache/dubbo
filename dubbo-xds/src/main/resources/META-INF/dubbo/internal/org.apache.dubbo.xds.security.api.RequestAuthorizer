@@ -1,0 +1,1 @@
+rbac=org.apache.dubbo.xds.security.authz.RoleBasedAuthorizer

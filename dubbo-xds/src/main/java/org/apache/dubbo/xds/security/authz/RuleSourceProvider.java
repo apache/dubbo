@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.security.authz;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
@@ -26,7 +27,7 @@ import java.util.List;
 /**
  * Provides rules for role-based authorization
  */
-@SPI
+@SPI(value = "default",scope = ExtensionScope.APPLICATION)
 public interface RuleSourceProvider {
 
     @Adaptive("authz_rule_provider")

@@ -63,17 +63,16 @@ public class KubeApiClient {
                     apiGroup, version, namespace, plural, null, null, null, null, null, null, null, null);
         } catch (ApiException apiException) {
             // log
-            throw new RuntimeException("Failed to get CRDs from ApiServer.", apiException);
+            throw new RuntimeException("Failed to get resource from ApiServer.", apiException);
         }
     }
 
-    public Watch<Object> listenResource(String apiGroup, String version, String namespace, String plural)
-            throws ApiException {
-        CustomObjectsApi api = new CustomObjectsApi();
-        return Watch.createWatch(
-                apiClient,
-                api.listNamespacedCustomObjectCall(
-                        apiGroup, version, namespace, plural, null, null, null, null, null, null, null, null, null),
-                new TypeToken<Response<Object>>() {}.getType());
+    public Watch<Object> listenResource(String apiGroup, String version, String namespace, String plural) {
+        try {
+            CustomObjectsApi api = new CustomObjectsApi();
+            return Watch.createWatch(apiClient, api.listNamespacedCustomObjectCall(apiGroup, version, namespace, plural, null, null, null, null, null, null, null, null, null), new TypeToken<Response<Object>>() {}.getType());
+        }catch (ApiException apiException){
+            throw new RuntimeException("Failed to listen resource from ApiServer.", apiException);
+        }
     }
 }

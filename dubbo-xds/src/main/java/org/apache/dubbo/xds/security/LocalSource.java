@@ -17,13 +17,32 @@
 package org.apache.dubbo.xds.security;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.xds.istio.IstioEnv;
-import org.apache.dubbo.xds.security.api.ServiceAccountJwtSource;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.xds.kubernetes.KubeEnv;
+import org.apache.dubbo.xds.security.api.ServiceAccountSource;
 
-public class LocalJwtSource implements ServiceAccountJwtSource {
+import java.nio.charset.StandardCharsets;
+
+public class LocalSource implements ServiceAccountSource {
+
+    private final KubeEnv kubeEnv;
+
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LocalSource.class);
+
+    public LocalSource(ApplicationModel applicationModel){
+        this.kubeEnv=applicationModel.getBeanFactory().getBean(KubeEnv.class);
+    }
+
 
     @Override
     public String getSaJwt(URL url) {
-        return IstioEnv.getInstance().getServiceAccountJwt();
+        try {
+            return new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8);
+        }catch (Exception e){
+            logger.error("","","Failed to read ServiceAccount from KubeEnv.","",e);
+            return "";
+        }
     }
 }

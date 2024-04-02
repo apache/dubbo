@@ -20,7 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface RequestAuthorizer {
 
     void validate(Invocation invocation) throws AuthorizationException;
