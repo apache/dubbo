@@ -76,13 +76,6 @@ public class TripleHttp3ClientStream extends AbstractStream implements ClientStr
         this.writeQueue = writeQueue;
         this.parent = parent;
         this.streamChannelFuture = initQuicStreamChannel();
-
-        // todo: NullPointerException
-//        try {
-//            streamChannelFuture.sync().getNow();
-//        } catch (InterruptedException e) {
-//            LOGGER.error(e.getMessage());
-//        }
     }
 
     private Future<QuicStreamChannel> initQuicStreamChannel() {
