@@ -76,7 +76,7 @@ public class AuthTest {
         serviceConfig.setRef(serviceInst);
         ProtocolConfig triConf = new ProtocolConfig("tri");
         triConf.setPort(port);
-        triConf.setHost("192.168.0.108");
+        triConf.setHost("192.168.236.215");
         serviceConfig.setRegistry(new RegistryConfig("zookeeper://localhost:2181"));
         serviceConfig.setProtocol(triConf);
         serviceConfig.setScopeModel(framework.newApplication().newModule());

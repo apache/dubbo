@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.xds.security;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -27,12 +28,12 @@ import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 
 import java.util.List;
 
-@Activate
-public class AuthFilter implements Filter {
+@Activate(group = CommonConstants.PROVIDER)
+public class ProviderAuthFilter implements Filter {
 
     private List<RequestAuthorizer> requestAuthorizers;
 
-    public AuthFilter(FrameworkModel frameworkModel) {
+    public ProviderAuthFilter(FrameworkModel frameworkModel) {
         this.requestAuthorizers =
                 frameworkModel.getExtensionLoader(RequestAuthorizer.class).getActivateExtensions();
     }

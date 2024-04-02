@@ -23,9 +23,6 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.xds.security.authz.RequestCredential;
 
-/**
- * 提供根据协议，提取请求凭据的能力。如HTTP下提取的基于JWT的凭据。
- */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface CredentialFactory {
 

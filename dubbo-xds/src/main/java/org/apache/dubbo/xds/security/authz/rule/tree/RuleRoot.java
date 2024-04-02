@@ -21,9 +21,9 @@ import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 public class RuleRoot extends CompositeRuleNode {
 
     /**
-     * root之间的关系。所有Relation=AND的树进行AND，所有Relation=OR的树进行OR
+     * Relations between rule tree roots.
+     * All roots that has Relation=AND will do AND, and all roots has Relation=OR will do OR.
      */
-
     private Action action;
 
     public RuleRoot(Relation relation, Action action) {
@@ -42,7 +42,7 @@ public class RuleRoot extends CompositeRuleNode {
             result = children.values().stream()
                     .allMatch(childList -> childList.stream().allMatch(ch -> ch.evaluate(context)));
         } else {
-            // Relation.OR
+            // Relation == OR
             result = children.values().stream()
                     .anyMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
         }

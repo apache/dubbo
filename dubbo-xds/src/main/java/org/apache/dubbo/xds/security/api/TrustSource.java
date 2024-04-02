@@ -23,6 +23,6 @@ import org.apache.dubbo.common.extension.SPI;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface TrustSource {
-    @Adaptive(value = {"signer", "trust"})
+    @Adaptive(value = {"mesh","signer", "trust"})
     X509CertChains getTrustCerts(URL url);
 }

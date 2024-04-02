@@ -22,11 +22,12 @@ import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.nio.charset.StandardCharsets;
 
-@Activate(order = -20000)
+@Activate
 public class MeshCredentialProvider implements CertProvider {
 
     private URL credentialSourceUrl;
@@ -48,26 +49,28 @@ public class MeshCredentialProvider implements CertProvider {
 
     @Override
     public boolean isSupport(URL address) {
-        // TODO 这里要判一下是否对端也是mesh下的dubbo服务，且版本支持
-        return true;
+        String security = address.getParameter("security");
+        String mesh = address.getParameter("mesh");
+        return "mTLS".equals(security) && StringUtils.isNotEmpty(mesh);
     }
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
-        return getServiceCredential(AuthPolicy.CLIENT_AUTH);
+        return getServiceCredential(localAddress, AuthPolicy.CLIENT_AUTH);
     }
 
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
-        return getServiceCredential(AuthPolicy.SERVER_AUTH);
+        return getServiceCredential(remoteAddress, AuthPolicy.SERVER_AUTH);
     }
 
-    private ProviderCert getServiceCredential(AuthPolicy authPolicy) {
-        CertPair cert = certSource.getCert(credentialSourceUrl);
+    private ProviderCert getServiceCredential(URL remoteUrl,AuthPolicy authPolicy) {
+        remoteUrl = credentialSourceUrl; //TODO for test
+        CertPair cert = certSource.getCert(remoteUrl);
         return new ProviderCert(
                 cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
                 cert.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-                trustSource.getTrustCerts(credentialSourceUrl).readAsBytes(),
+                trustSource.getTrustCerts(remoteUrl).readAsBytes(),
                 authPolicy);
     }
 

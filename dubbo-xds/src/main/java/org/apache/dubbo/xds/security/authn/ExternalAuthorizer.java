@@ -21,13 +21,11 @@ import org.apache.dubbo.xds.security.api.AuthorizationException;
 import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 
 /**
- * 调用外部服务进行请求校验
  * TODO
  */
 public class ExternalAuthorizer implements RequestAuthorizer {
 
     @Override
     public void validate(Invocation invocation) throws AuthorizationException {
-
     }
 }

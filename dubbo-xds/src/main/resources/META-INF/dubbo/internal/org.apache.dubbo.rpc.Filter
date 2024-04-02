@@ -1,0 +1,2 @@
+saJwtClient=org.apache.dubbo.xds.security.authz.ConsumerServiceAccountAuthFilter
+providerAuth=org.apache.dubbo.xds.security.ProviderAuthFilter
