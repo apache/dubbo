@@ -33,24 +33,22 @@ public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver 
 
     @Override
     protected void doOnNext(Object data) throws Throwable {
-        HttpOutputMessage httpOutputMessage = encodeData(data);
-        HttpMetadata httpMetadata = buildMetadata(httpStatusCode(data, false));
-        preMetadata(httpMetadata, httpOutputMessage);
-        sendHeader(httpMetadata, data);
-        sendData(httpOutputMessage);
+        HttpOutputMessage httpOutputMessage = buildMessage(data);
+        sendHeader(buildMetadata(resolveStatusCode(data), data, httpOutputMessage));
+        sendMessage(httpOutputMessage);
     }
 
     @Override
     protected void doOnError(Throwable throwable) throws Throwable {
-        String httpStatusCode = httpStatusCode(throwable, true);
-        HttpOutputMessage httpOutputMessage = encodeData(buildErrorResponse(httpStatusCode, throwable));
-        HttpMetadata httpMetadata = buildMetadata(httpStatusCode);
-        preMetadata(httpMetadata, httpOutputMessage);
-        sendHeader(httpMetadata, null);
-        sendData(httpOutputMessage);
+        String statusCode = resolveStatusCode(throwable);
+        Object data = buildErrorResponse(statusCode, throwable);
+        HttpOutputMessage httpOutputMessage = buildMessage(data);
+        sendHeader(buildMetadata(statusCode, data, httpOutputMessage));
+        sendMessage(httpOutputMessage);
     }
 
-    private void preMetadata(HttpMetadata httpMetadata, HttpOutputMessage outputMessage) {
+    @Override
+    protected void preMetadata(HttpMetadata httpMetadata, HttpOutputMessage outputMessage) {
         OutputStream body = outputMessage.getBody();
         if (body instanceof ByteBufOutputStream) {
             int contentLength = ((ByteBufOutputStream) body).writtenBytes();
