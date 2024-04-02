@@ -131,6 +131,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     private File initializeLocalCacheFile(URL reportServerURL) {
         // Start file save timer
+        /**
+         * 文件可以通过 file 属性来自定义，
+         * 默认文件名：${user.home}/.dubbo/dubbo-metadata-${appName}-{ip-port}.cache
+         */
         String defaultFilename = System.getProperty("user.home") +
                 "/.dubbo/dubbo-metadata-" +
                 reportServerURL.getParameter(APPLICATION_KEY) + "-" +
@@ -173,6 +177,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         // Save
         try {
+            /**
+             * 文件路径参见这个方法
+             * 根据规则拼出来如：${user.home}/.dubbo/dubbo-metadata-${appName}-{ip-port}.cache.lock
+             * @see AbstractMetadataReport#initializeLocalCacheFile(org.apache.dubbo.common.URL)
+             */
             File lockfile = new File(localCacheFile.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
@@ -268,6 +277,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    /**
+     * 将 URL 注册到注册中心
+     * @param providerMetadataIdentifier
+     * @param serviceDefinition
+     */
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         try {
             if (logger.isInfoEnabled()) {
@@ -277,7 +291,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             failedReports.remove(providerMetadataIdentifier);
             Gson gson = new Gson();
             String data = gson.toJson(serviceDefinition);
+            // 保存到对应的注册中心
             doStoreProviderMetadata(providerMetadataIdentifier, data);
+
+            // 通过 FileLock 将注册信息写到服务器上
             saveProperties(providerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
@@ -431,6 +448,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
 
         void startRetryTask() {
+            /**
+             * 默认值重试次数及重试频率：
+             * retryLimit： 100
+             * retryPeriod： 3000s
+             */
             if (retryScheduledFuture == null) {
                 synchronized (retryCounter) {
                     if (retryScheduledFuture == null) {

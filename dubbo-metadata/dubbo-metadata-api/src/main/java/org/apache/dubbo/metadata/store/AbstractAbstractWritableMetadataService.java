@@ -58,6 +58,9 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
 
         String side = url.getParameter(SIDE_KEY);
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
+            /**
+             * @see RemoteWritableMetadataService#publishProviderServiceDefinition(org.apache.dubbo.common.URL)
+             */
             publishProviderServiceDefinition(url);
         } else {
             publishConsumerParameters(url);

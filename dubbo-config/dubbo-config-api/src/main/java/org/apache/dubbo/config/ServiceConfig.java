@@ -32,6 +32,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
 import org.apache.dubbo.config.event.ServiceConfigUnexportedEvent;
+import org.apache.dubbo.config.event.listener.PublishingServiceDefinitionListener;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -199,12 +200,18 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (shouldDelay()) {
             DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
+            // 构建 URL
             doExport();
         }
 
+        // 导出服务
         exported();
     }
 
+    /**
+     * 导出服务
+     * @see PublishingServiceDefinitionListener#onEvent(org.apache.dubbo.config.event.ServiceConfigExportedEvent)
+     */
     public void exported() {
         // dispatch a ServiceConfigExportedEvent since 2.7.4
         dispatch(new ServiceConfigExportedEvent(this));
@@ -224,6 +231,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (!isOnlyInJvm()) {
             checkRegistry();
         }
+
+        // 赋值操作，对属性 or 方法进行 invoke
         this.refresh();
 
         if (StringUtils.isEmpty(interfaceName)) {
@@ -293,6 +302,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
+        // 生成 URL
         doExportUrls();
     }
 
@@ -443,6 +453,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
 
+        // 通过PROTOCOL.export 来启动对应的服务器(如：Netty、Tomcat 等等)
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {

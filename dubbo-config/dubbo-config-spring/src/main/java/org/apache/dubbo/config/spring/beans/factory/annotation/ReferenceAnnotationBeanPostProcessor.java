@@ -131,14 +131,18 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
          */
         String referenceBeanName = getReferenceBeanName(attributes, injectedType);
 
+        // 生成ReferenceBean
         ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referenceBeanName, attributes, injectedType);
 
         boolean localServiceBean = isLocalServiceBean(referencedBeanName, referenceBean, attributes);
 
+        // 处理本应用的 Service
         prepareReferenceBean(referencedBeanName, referenceBean, localServiceBean);
 
+        // 处理本应用的 Service 及远程非本机的服务
         registerReferenceBean(referencedBeanName, referenceBean, attributes, localServiceBean, injectedType);
 
+        // 缓存
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
         return referenceBean.get();

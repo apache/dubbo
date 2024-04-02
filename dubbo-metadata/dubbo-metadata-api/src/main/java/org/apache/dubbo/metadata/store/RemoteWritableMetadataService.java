@@ -72,6 +72,7 @@ public class RemoteWritableMetadataService extends AbstractAbstractWritableMetad
                 Class interfaceClass = Class.forName(interfaceName);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                         providerURL.getParameters());
+                // 将 URL 注册到注册中心
                 getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerURL.getServiceInterface(),
                         providerURL.getParameter(VERSION_KEY), providerURL.getParameter(GROUP_KEY),
                         PROVIDER_SIDE, providerURL.getParameter(APPLICATION_KEY)), fullServiceDefinition);

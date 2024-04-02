@@ -300,6 +300,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        // 启动服务器
         openServer(url);
         optimizeSerialization(url);
 
@@ -317,6 +318,7 @@ public class DubboProtocol extends AbstractProtocol {
                 synchronized (this) {
                     server = serverMap.get(key);
                     if (server == null) {
+                        // Double Check，创建服务器并将服务器缓存起来
                         serverMap.put(key, createServer(url));
                     }
                 }

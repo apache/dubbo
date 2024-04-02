@@ -46,10 +46,19 @@ public interface DubboBeanUtils {
     static void registerCommonBeans(BeanDefinitionRegistry registry) {
 
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
+        /**
+         * 通过实现spring 的SmartInstantiationAwareBeanPostProcessor接口
+         * 找到对应的注入点并为其赋值，处理下面几个需要实现注入的注解，
+         *
+         * org.apache.dubbo.config.annotation.DubboReference
+         * org.apache.dubbo.config.annotation.Reference
+         * com.alibaba.dubbo.config.annotation.Reference
+         */
         registerInfrastructureBean(registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME,
                 ReferenceAnnotationBeanPostProcessor.class);
 
         // Since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
+        // 处理dubbo别名
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME,
                 DubboConfigAliasPostProcessor.class);
 
@@ -58,6 +67,10 @@ public interface DubboBeanUtils {
                 DubboLifecycleComponentApplicationListener.class);
 
         // Since 2.7.4 Register DubboBootstrapApplicationListener as an infrastructure Bean
+        /**
+         * 服务导出，通过 applicationEvent 的方式来导出
+         * @see DubboBootstrapApplicationListener#onApplicationContextEvent(org.springframework.context.event.ApplicationContextEvent)
+          */
         registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,
                 DubboBootstrapApplicationListener.class);
 
