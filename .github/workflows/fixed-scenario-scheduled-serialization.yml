@@ -168,24 +168,41 @@ jobs:
 
           WORK_DIR="$(pwd)"
           echo "WorkDir: $WORK_DIR"
-          DIRECTORY_PATH="$WORK_DIR/test-results/scenario"
-          rm -rf $DIRECTORY_PATH/*
-          cp /tmp/jmh_result_prop*.json "$DIRECTORY_PATH"
 
-          if ls /tmp/jmh_trace*.json 1>/dev/null 2>&1; then
-            TRACE_PATH="$WORK_DIR/test-results/trace"
-            rm -rf $TRACE_PATH/*
-            cp /tmp/jmh_trace*.json "$TRACE_PATH"
+          DIRECTORY_PATH="$WORK_DIR/test-results/fixed/serialization"
+          if [ ! -d ${DIRECTORY_PATH} ];then
+            mkdir $DIRECTORY_PATH;else
+            rm $DIRECTORY_PATH/*
           fi
 
-          sudo apt-get update
-          sudo apt-get install -y jq
+          cp /tmp/jmh_result*.json "$DIRECTORY_PATH"
+          cp /tmp/jmh_trace*.json "$DIRECTORY_PATH"
 
           merged_file="merged_prop_results.json"
-          merged_json=$(jq -s 'add' "$DIRECTORY_PATH"/jmh_result_prop*.json)
+          merged_trace_file="merged_prop_traces.json"
+
+          json_array=()
+          for file in $(ls -t1 "$DIRECTORY_PATH"/jmh_result*.json); do
+           if [ -f "$file" ]; then
+              echo "fileName=$file"
+              json_array+=( "$(cat "$file")" )
+           fi
+          done
+
+          merged_json=$(echo "${json_array[@]}" | jq -s add)
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
 
-          RESULT_PATH="$WORK_DIR/test-results"
-          git add $RESULT_PATH
+          json_array=()
+          for file in $(ls -t1 "$DIRECTORY_PATH"/jmh_trace*.json); do
+           if [ -f "$file" ]; then
+              echo "fileName=$file"
+              json_array+=( "$(cat "$file")" )
+           fi
+          done
+
+          merged_json=$(echo "${json_array[@]}" | jq -s add)
+          echo "$merged_json" > "$DIRECTORY_PATH/$merged_trace_file"
+
+          git add --all
           git commit -m "Compare prop in $(date +'%Y-%m-%d %H:%M:%S')"
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}

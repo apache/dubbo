@@ -373,8 +373,8 @@ jobs:
           RESULTS_REPO_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
         run: |
-          if ! ls /tmp/jmh_result_prop*.json -1q &> /dev/null; then
-            echo "No file matching /tmp/jmh_result_prop*.json exists. Exiting..."
+          if [[ ! -f /tmp/jmh_result.json ]]; then
+            echo "/tmp/jmh_result.json does not exist. Exiting..."
             exit 0
           fi
           git clone https://github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git jmh_result
@@ -384,28 +384,33 @@ jobs:
 
           WORK_DIR="$(pwd)"
           echo "WorkDir: $WORK_DIR"
-          DIRECTORY_PATH="$WORK_DIR/test-results/scenario"
-          rm -rf $DIRECTORY_PATH/*
-          cp /tmp/jmh_result_prop*.json "$DIRECTORY_PATH"
+          DIRECTORY_PATH="$WORK_DIR/test-results/pr"
+          cp "/tmp/jmh_result.json" "$DIRECTORY_PATH/jmh_result_$(date +%Y%m%d)_$RANDOM.json"
 
-          if ls /tmp/jmh_trace*.json 1>/dev/null 2>&1; then
-            TRACE_PATH="$WORK_DIR/test-results/trace"
-            rm -rf $TRACE_PATH/*
-            cp /tmp/jmh_trace*.json "$TRACE_PATH"
+          MAX_FILES=5
+          files=($(ls -t1 "$DIRECTORY_PATH" | tail -n +2))
+          if [[ ${#files[@]} -gt $MAX_FILES ]]; then
+            oldest_file="${files[0]}"
+            echo "删除最旧的文件: $oldest_file"
+            rm "$DIRECTORY_PATH/$oldest_file"
           fi
 
-          sudo apt-get update
-          sudo apt-get install -y jq
+          merged_file="merged_results.json"
+          rm -rf "$DIRECTORY_PATH/$merged_file"
 
-          merged_file="merged_prop_results.json"
-          merged_json=$(jq -s 'add' "$DIRECTORY_PATH"/jmh_result_prop*.json)
+          json_array=()
+          for file in $(ls -t1 "$DIRECTORY_PATH"/*.json); do
+           if [ -f "$file" ]; then
+              json_array+=( "$(cat "$file")" )
+           fi
+          done
+
+          merged_json=$(echo "${json_array[@]}" | jq -s add)
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
 
-          RESULT_PATH="$WORK_DIR/test-results"
-          git add $RESULT_PATH
-          git commit -m "Compare prop in $(date +'%Y-%m-%d %H:%M:%S')"
+          git add $DIRECTORY_PATH
+          git commit -m "Add test results 1 from $(date +'%Y-%m-%d %H:%M:%S')"
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
-
   samples-test-result:
     needs: [check-format, samples-test-job]
     if: always()
