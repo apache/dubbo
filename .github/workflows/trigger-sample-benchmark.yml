@@ -161,9 +161,6 @@ jobs:
             cp /tmp/jmh_trace*.json "$TRACE_PATH"
           fi
 
-          sudo apt-get update
-          sudo apt-get install -y jq
-
           merged_file="merged_prop_results.json"
           merged_json=$(jq -s 'add' "$DIRECTORY_PATH"/jmh_result_prop*.json)
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
