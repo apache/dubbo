@@ -138,14 +138,15 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     protected void preMetadata(HttpMetadata httpMetadata, HttpOutputMessage outputMessage) {}
 
     protected final String resolveStatusCode(Object data) {
-        return String.valueOf(data instanceof HttpResult ? ((HttpResult<?>) data).getStatus() : HttpStatus.OK);
+        return data instanceof HttpResult
+                ? String.valueOf(((HttpResult<?>) data).getStatus())
+                : HttpStatus.OK.getStatusString();
     }
 
     protected final String resolveStatusCode(Throwable throwable) {
-        return String.valueOf(
-                throwable instanceof HttpStatusException
-                        ? ((HttpStatusException) throwable).getStatusCode()
-                        : HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+        return throwable instanceof HttpStatusException
+                ? String.valueOf(((HttpStatusException) throwable).getStatusCode())
+                : HttpStatus.INTERNAL_SERVER_ERROR.getStatusString();
     }
 
     protected final ErrorResponse buildErrorResponse(String statusCode, Throwable throwable) {
