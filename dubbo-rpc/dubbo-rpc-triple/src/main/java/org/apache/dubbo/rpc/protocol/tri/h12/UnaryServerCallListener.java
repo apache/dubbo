@@ -37,14 +37,12 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onReturn(Object value) {
-        System.out.println("onReturn: "+value);
         responseObserver.onNext(value);
         responseObserver.onCompleted();
     }
 
     @Override
     public void onMessage(Object message) {
-        System.out.println("onMessage: "+message);
         if (message instanceof Object[]) {
             invocation.setArguments((Object[]) message);
         } else {
@@ -76,7 +74,6 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-        System.out.println("onComplete");
         invoke();
     }
 }
