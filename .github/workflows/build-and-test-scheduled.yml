@@ -157,10 +157,11 @@ jobs:
           path: /tmp/logs/*
       - name: Push results to results repository
         env:
-          RESULTS_REPO_OWNER: wxbty
-          RESULTS_REPO_NAME: jmh_result
+          RESULTS_REPO_OWNER: ${{ secrets.PUSH_NAME }}
+          RESULTS_REPO_NAME: ${{ secrets.REPO_NAME }}
           RESULTS_REPO_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+          PUSH_EMAIL: ${{ secrets.PUSH_EMAIL }}
         run: |
           if ! ls /tmp/jmh_result*.json -1q &> /dev/null; then
             echo "No file matching /tmp/jmh_result*.json exists. Exiting..."
@@ -169,8 +170,8 @@ jobs:
 
           git clone --depth 1 https://github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git jmh_result
           cd jmh_result
-          git config user.email "dubbo@apache.org"
-          git config user.name "dubbo"
+          git config user.email ${PUSH_EMAIL}
+          git config user.name ${RESULTS_REPO_OWNER}
 
           WORK_DIR="$(pwd)"
           echo "WorkDir: $WORK_DIR"
