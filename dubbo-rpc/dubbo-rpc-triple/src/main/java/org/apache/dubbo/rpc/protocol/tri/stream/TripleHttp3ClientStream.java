@@ -12,6 +12,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.incubator.codec.http3.Http3;
+import io.netty.incubator.codec.http3.Http3ErrorCode;
 import io.netty.incubator.codec.http3.Http3Headers;
 import io.netty.incubator.codec.http3.Http3RequestStreamInitializer;
 import io.netty.incubator.codec.quic.QuicChannel;
@@ -28,6 +29,7 @@ import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.h3.Http3CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.h3.Http3DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.h3.Http3EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.h3.Http3HeaderQueueCommand;
@@ -141,7 +143,15 @@ public class TripleHttp3ClientStream extends AbstractStream implements ClientStr
 
     @Override
     public Future<?> cancelByLocal(TriRpcStatus status) {
-        return null;
+        ChannelFuture checkResult = preCheck();
+        if (!checkResult.isSuccess()) {
+            return checkResult;
+        }
+
+        final Http3CancelQueueCommand cmd = Http3CancelQueueCommand.create(
+                streamChannelFuture, Http3ErrorCode.H3_REQUEST_CANCELLED);
+        rst = true;
+        return writeQueue.enqueue(cmd);
     }
 
     @Override
@@ -193,6 +203,11 @@ public class TripleHttp3ClientStream extends AbstractStream implements ClientStr
             }
             return h2h;
         }
+
+        @Override
+        public void cancelByRemote(long errorCode) {
+            h2TransportListener.cancelByRemote(errorCode);
+        }
     }
 
     class H2ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {
@@ -202,8 +217,7 @@ public class TripleHttp3ClientStream extends AbstractStream implements ClientStr
         private Http2Headers trailers;
 
         void handleH2TransportError(TriRpcStatus status) {
-            // todo: Http3CancelQueueCommand
-            /*writeQueue.enqueue(CancelQueueCommand.createCommand(streamChannelFuture, Http2Error.NO_ERROR));*/
+            writeQueue.enqueue(Http3CancelQueueCommand.create(streamChannelFuture, Http3ErrorCode.H3_NO_ERROR));
             TripleHttp3ClientStream.this.rst = true;
             finishProcess(status, null, false);
         }
@@ -402,9 +416,8 @@ public class TripleHttp3ClientStream extends AbstractStream implements ClientStr
                     if (!halfClosed) {
                         QuicStreamChannel channel = streamChannelFuture.getNow();
                         if (channel.isActive() && !rst) {
-                            // todo: Http3CancelQueueCommand
-                            /*writeQueue.enqueue(
-                                    CancelQueueCommand.createCommand(streamChannelFuture, Http2Error.CANCEL));*/
+                            writeQueue.enqueue(
+                                    Http3CancelQueueCommand.create(streamChannelFuture, Http3ErrorCode.H3_REQUEST_CANCELLED));
                             rst = true;
                         }
                     }

@@ -56,8 +56,7 @@ public class NettyH3StreamChannel implements H2StreamChannel {
 
     private Http3DataFrame Output2Data(HttpOutputMessage output) {
         ByteBufOutputStream stream = (ByteBufOutputStream)output.getBody();
-        Http3DataFrame data = new DefaultHttp3DataFrame(stream.buffer());
-        return data;
+        return new DefaultHttp3DataFrame(stream.buffer());
     }
 
     @Override
@@ -79,8 +78,11 @@ public class NettyH3StreamChannel implements H2StreamChannel {
 
     @Override
     public CompletableFuture<Void> writeResetFrame(long errorCode) {
-        // todo
-        return null;
+        DefaultHttp3HeadersFrame frame = new DefaultHttp3HeadersFrame();
+        frame.headers().addLong("reset", errorCode);
+        NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
+        quicStreamChannel.write(frame).addListener(nettyHttpChannelFutureListener);
+        return nettyHttpChannelFutureListener;
     }
 
     @Override

@@ -57,7 +57,7 @@ public class NettyHttp3ProtocolSelectorHandler extends SimpleChannelInboundHandl
         }
 
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast(new NettyHttp3FrameHandler(factory.newInstance(h2StreamChannel, url, frameworkModel)));
+        pipeline.addLast(new NettyHttp3FrameHandler(h2StreamChannel, factory.newInstance(h2StreamChannel, url, frameworkModel)));
         pipeline.remove(this);
         ctx.fireChannelRead(metadata);
     }

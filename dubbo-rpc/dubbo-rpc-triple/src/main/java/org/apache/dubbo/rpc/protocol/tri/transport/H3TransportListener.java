@@ -18,4 +18,6 @@ public interface H3TransportListener {
      * @param endStream whether this data should terminate the stream
      */
     void onData(ByteBuf data, boolean endStream);
+
+    void cancelByRemote(long errorCode);
 }

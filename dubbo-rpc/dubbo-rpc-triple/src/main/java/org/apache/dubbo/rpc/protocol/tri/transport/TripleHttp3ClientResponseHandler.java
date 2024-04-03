@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.incubator.codec.http3.Http3DataFrame;
+import io.netty.incubator.codec.http3.Http3ErrorCode;
 import io.netty.incubator.codec.http3.Http3HeadersFrame;
 import io.netty.incubator.codec.http3.Http3RequestStreamFrame;
 
@@ -16,7 +17,7 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 
-public class TripleHttp3ClientResponseHandler extends SimpleChannelInboundHandler<Http3RequestStreamFrame> {
+public final class TripleHttp3ClientResponseHandler extends SimpleChannelInboundHandler<Http3RequestStreamFrame> {
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(TripleHttp3ClientResponseHandler.class);
 
@@ -30,7 +31,12 @@ public class TripleHttp3ClientResponseHandler extends SimpleChannelInboundHandle
     protected void channelRead0(ChannelHandlerContext ctx, Http3RequestStreamFrame msg) throws Exception {
         if (msg instanceof Http3HeadersFrame) {
             final Http3HeadersFrame headers = (Http3HeadersFrame) msg;
-            transportListener.onHeader(headers.headers());
+            if (headers.headers().contains("reset")) { // RESET frame
+                onResetRead(ctx, headers);
+            }
+            else { // HEADERS frame
+                transportListener.onHeader(headers.headers());
+            }
         } else if (msg instanceof Http3DataFrame) {
             final Http3DataFrame data = (Http3DataFrame) msg;
             data.content().retain(); // because TriDecoder.deframe() will release it
@@ -56,10 +62,18 @@ public class TripleHttp3ClientResponseHandler extends SimpleChannelInboundHandle
                 "",
                 "Meet Exception on ClientResponseHandler, status code is: " + status.code,
                 cause);
-        // todo: cancel
-        /*transportListener.cancelByRemote(Http2Error.INTERNAL_ERROR.code());*/
+        transportListener.cancelByRemote(Http3ErrorCode.H3_INTERNAL_ERROR.getCode());
         ctx.close();
     }
 
-    // todo: on reset
+    private void onResetRead(ChannelHandlerContext ctx, Http3HeadersFrame resetFrame) {
+        long errorCode = Long.parseLong(resetFrame.headers().get("reset").toString());
+        LOGGER.warn(
+                PROTOCOL_FAILED_SERIALIZE_TRIPLE,
+                "",
+                "",
+                "Triple Client received remote reset errorCode=" + errorCode);
+        transportListener.cancelByRemote(errorCode);
+        ctx.close();
+    }
 }
