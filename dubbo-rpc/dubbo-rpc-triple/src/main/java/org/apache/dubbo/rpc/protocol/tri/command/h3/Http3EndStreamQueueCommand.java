@@ -7,6 +7,8 @@ import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.util.concurrent.Future;
 
+import org.apache.dubbo.remoting.http3.h3.Http3InputMessageFrame;
+
 public class Http3EndStreamQueueCommand extends Http3StreamQueueCommand {
     public static Http3EndStreamQueueCommand create(Future<QuicStreamChannel> streamChannelFuture) {
         return new Http3EndStreamQueueCommand(streamChannelFuture);
@@ -18,9 +20,8 @@ public class Http3EndStreamQueueCommand extends Http3StreamQueueCommand {
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        //((QuicStreamChannel)ctx.channel()).shutdownOutput();
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeLong(0x12ACEF001L); // todo
+        buf.writeLong(Http3InputMessageFrame.END_STREAM_DATA);
         ctx.write(new DefaultHttp3DataFrame(buf), promise);
     }
 }

@@ -178,8 +178,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
     }
 
     protected void waitTimeoutAndHandleFailure(Future<?> promise, long start) throws RemotingException {
-        // todo: suitable timeout
-        boolean ret = connectingPromise.get().awaitUninterruptibly(1000*60 /*getConnectTimeout()*/, TimeUnit.MILLISECONDS);
+        boolean ret = connectingPromise.get().awaitUninterruptibly(1000*60, TimeUnit.MILLISECONDS);
         // destroy connectingPromise after used
         synchronized (this) {
             connectingPromise.set(null);

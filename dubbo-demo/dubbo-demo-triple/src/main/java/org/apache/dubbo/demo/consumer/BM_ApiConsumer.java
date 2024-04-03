@@ -14,6 +14,8 @@ import org.springframework.util.StopWatch;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -38,12 +40,49 @@ public class BM_ApiConsumer {
         GreeterService greeterService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
 
+        HelloRequest request = HelloRequest.newBuilder().setName("triple").build();
+        final int NUM_WARMUP = 10;
+        final int NUM_TEST = 100;
+        testAsyncCalls(greeterService, request, NUM_WARMUP, NUM_TEST);
+
+        System.in.read();
+    }
+
+    private static void testAsyncCalls(GreeterService greeterService, HelloRequest request,
+                                       final int NUM_WARMUP, final int NUM_TEST) {
         int i=0;
         try {
-            HelloRequest request = HelloRequest.newBuilder().setName("triple").build();
-            final int NUM_WARMUP = 10;
-            final int NUM_TEST = 100;
+            warmUp(NUM_WARMUP, greeterService, request);
 
+            long[] durations = new long[NUM_TEST];
+            ArrayList<CompletableFuture<String>> futures = new ArrayList<>(NUM_TEST);
+            StopWatch stopWatch = new StopWatch();
+            for (; i<NUM_TEST; ++i) {
+                stopWatch.start();
+                CompletableFuture<String> future = greeterService.sayHelloAsync("triple");
+                stopWatch.stop();
+                futures.add(future);
+
+                long duration = stopWatch.getLastTaskTimeMillis();
+                durations[i] = duration;
+            }
+            System.out.println("测试完毕："+NUM_TEST);
+
+            printDurations(durations, "http3Async.csv");
+
+            for (CompletableFuture<String> f: futures) {
+                f.get();
+            }
+        } catch (Throwable t) {
+            System.out.println("Error occurs when i="+i);
+            t.printStackTrace();
+        }
+    }
+
+    private static void testSyncCalls(GreeterService greeterService, HelloRequest request,
+                                      final int NUM_WARMUP, final int NUM_TEST) {
+        int i=0;
+        try {
             warmUp(NUM_WARMUP, greeterService, request);
 
             long[] durations = new long[NUM_TEST];
@@ -58,12 +97,11 @@ public class BM_ApiConsumer {
             }
             System.out.println("测试完毕："+NUM_TEST);
 
-            printDurations(durations);
+            printDurations(durations, "http3.csv");
         } catch (Throwable t) {
             System.out.println("Error occurs when i="+i);
             t.printStackTrace();
         }
-        System.in.read();
     }
 
     private static void warmUp(final int NUM_WARMUP, GreeterService greeterService, HelloRequest request) {
@@ -73,12 +111,7 @@ public class BM_ApiConsumer {
         System.out.println("预热完毕："+NUM_WARMUP);
     }
 
-    private static void printDurations(long[] durations) {
-        /*for (int i=0; i<durations.length; ++i) {
-            System.out.println(i+": "+durations[i]+" ms");
-        }*/
-
-        final String csvFile = "http3.csv";
+    private static void printDurations(long[] durations, final String csvFile) {
         try (FileWriter writer = new FileWriter(csvFile)) {
             for (long duration : durations) {
                 writer.write(String.valueOf(duration));

@@ -61,13 +61,11 @@ public class NettyH3StreamChannel implements H2StreamChannel {
 
     @Override
     public SocketAddress remoteAddress() {
-        // todo
         return new InetSocketAddress(Long.toString(quicStreamChannel.remoteAddress().streamId()), 0);
     }
 
     @Override
     public SocketAddress localAddress() {
-        // todo
         return new InetSocketAddress(Long.toString(quicStreamChannel.localAddress().streamId()), 0);
     }
 
@@ -88,7 +86,6 @@ public class NettyH3StreamChannel implements H2StreamChannel {
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         ByteBuf buffer = quicStreamChannel.alloc().buffer();
-        // todo: Stream->ByteBuf
         ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer);
         return new Http3OutputMessageFrame(outputStream, endStream);
     }
