@@ -138,7 +138,7 @@ jobs:
         run: |
           cd test && bash ./build-test-image.sh
       - name: "Run tests"
-        run: cd test && bash ./run-tests.sh 10-task/dubbo-samples-benchmark/
+        run: cd test && bash ./run-tests.sh ../10-task/dubbo-samples-benchmark/
       - name: "Upload test result"
         if: always()
         uses: actions/upload-artifact@v3
