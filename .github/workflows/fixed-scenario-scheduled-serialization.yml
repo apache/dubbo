@@ -126,8 +126,8 @@ jobs:
           done
       - name: "Download Skywalking Agent And Mysql Driver"
         run: |
-          wget -c https://dlcdn.apache.org/skywalking/java-agent/9.2.0/apache-skywalking-java-agent-9.2.0.tgz --no-check-certificate
-          tar -zxvf apache-skywalking-java-agent-9.2.0.tgz -C /tmp
+          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
+          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
           wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
           mv mysql-connector-java-8.0.23.jar /tmp/
           cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn clean package
