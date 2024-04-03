@@ -67,7 +67,9 @@ jobs:
         if: steps.dubbocache.outputs.cache-hit != 'true'
         run: |
           ./mvnw --batch-mode --no-snapshot-updates --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
-
+      - name: "commit_id"
+        run: |
+          echo "commit_id: ${{ github.sha }}"
   samples-test-job:
     needs: [ build-source ]
     name: "Samples benchmark test on ubuntu-latest"
