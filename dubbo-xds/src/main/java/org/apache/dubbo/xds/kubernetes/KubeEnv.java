@@ -76,7 +76,7 @@ public class KubeEnv implements XdsEnv {
             apiClientReadTimeout = getIntProp("API_CLIENT_READ_TIMEOUT","30000");
         }
         if(StringUtils.isEmpty(cluster)){
-            cluster = getStringProp("CLUSTER","");
+            cluster = getStringProp("CLUSTER","cluster.local");
         }
         if(enableSsl == null){
             enableSsl = true;

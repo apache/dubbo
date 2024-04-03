@@ -20,44 +20,46 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
+import org.apache.dubbo.xds.protocol.XdsResourceListener;
 import org.apache.dubbo.xds.resource.XdsRoute;
 import org.apache.dubbo.xds.resource.XdsRouteAction;
 import org.apache.dubbo.xds.resource.XdsRouteConfiguration;
 import org.apache.dubbo.xds.resource.XdsRouteMatch;
 import org.apache.dubbo.xds.resource.XdsVirtualHost;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.core.v3.Node;
+import io.envoyproxy.envoy.config.listener.v3.Filter;
+import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.config.route.v3.RouteMatch;
 import io.envoyproxy.envoy.config.route.v3.VirtualHost;
+import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
+import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class RdsProtocol extends AbstractProtocol<String> {
+public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
-
-    protected Consumer<List<XdsRouteConfiguration>> updateCallback;
 
     public RdsProtocol(
             AdsObserver adsObserver,
             Node node,
-            int checkInterval,
-            Consumer<List<XdsRouteConfiguration>> updateCallback) {
+            int checkInterval) {
         super(adsObserver, node, checkInterval);
-        this.updateCallback = updateCallback;
     }
 
     @Override
@@ -65,19 +67,31 @@ public class RdsProtocol extends AbstractProtocol<String> {
         return "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
     }
 
+//    @Override
+//    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
+//        List<XdsRouteConfiguration> xdsRouteConfigurations = parse(response);
+//        System.out.println(xdsRouteConfigurations);
+//        updateCallback.accept(xdsRouteConfigurations);
+//        // if (getTypeUrl().equals(response.getTypeUrl())) {
+//        //     return response.getResourcesList().stream()
+//        //             .map(RdsProtocol::unpackRouteConfiguration)
+//        //             .filter(Objects::nonNull)
+//        //             .collect(Collectors.toConcurrentMap(RouteConfiguration::getName,
+//        // this::decodeResourceToListener));
+//        // }
+//        return new HashMap<>();
+//    }
+
     @Override
-    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
-        List<XdsRouteConfiguration> xdsRouteConfigurations = parse(response);
-        System.out.println(xdsRouteConfigurations);
-        updateCallback.accept(xdsRouteConfigurations);
-        // if (getTypeUrl().equals(response.getTypeUrl())) {
-        //     return response.getResourcesList().stream()
-        //             .map(RdsProtocol::unpackRouteConfiguration)
-        //             .filter(Objects::nonNull)
-        //             .collect(Collectors.toConcurrentMap(RouteConfiguration::getName,
-        // this::decodeResourceToListener));
-        // }
-        return new HashMap<>();
+    protected Map<String,XdsRouteConfiguration> decodeDiscoveryResponse(DiscoveryResponse response) {
+        if (getTypeUrl().equals(response.getTypeUrl())) {
+            return response.getResourcesList().stream()
+                    .map(RdsProtocol::unpackRouteConfiguration)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toConcurrentMap(RouteConfiguration::getName, this::parseRouteConfiguration));
+        }
+
+        return Collections.emptyMap();
     }
 
     public List<XdsRouteConfiguration> parse(DiscoveryResponse response) {
@@ -164,6 +178,40 @@ public class RdsProtocol extends AbstractProtocol<String> {
         return xdsRouteAction;
     }
 
+    public XdsResourceListener<Listener> getLdsListener(){
+        return ldsListener;
+    }
+
+    private final XdsResourceListener<Listener> ldsListener = resource -> {
+        Set<String> set = resource.stream()
+                .flatMap(e -> listenerToConnectionManagerNames(e).stream())
+            .collect(Collectors.toSet());
+        this.subscribeResource(set);
+    };
+
+    private Set<String> listenerToConnectionManagerNames(Listener resource) {
+        return resource.getFilterChainsList().stream()
+                .flatMap(e -> e.getFiltersList().stream())
+                .map(Filter::getTypedConfig)
+                .map(this::unpackHttpConnectionManager)
+                .filter(Objects::nonNull)
+                .map(HttpConnectionManager::getRds)
+                .map(Rds::getRouteConfigName)
+                .collect(Collectors.toSet());
+    }
+
+    private HttpConnectionManager unpackHttpConnectionManager(Any any) {
+        try {
+            if (!any.is(HttpConnectionManager.class)) {
+                return null;
+            }
+            return any.unpack(HttpConnectionManager.class);
+        } catch (InvalidProtocolBufferException e) {
+            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
+            return null;
+        }
+    }
+
     private static RouteConfiguration unpackRouteConfiguration(Any any) {
         try {
             return any.unpack(RouteConfiguration.class);
@@ -172,4 +220,5 @@ public class RdsProtocol extends AbstractProtocol<String> {
             return null;
         }
     }
+
 }

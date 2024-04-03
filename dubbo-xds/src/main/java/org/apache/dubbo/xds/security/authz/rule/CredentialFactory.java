@@ -23,7 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.xds.security.authz.RequestCredential;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface CredentialFactory {
 
     @Adaptive("protocol")

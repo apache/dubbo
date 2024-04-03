@@ -1,5 +1,6 @@
 package org.apache.dubbo.xds.auth;
 
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.xds.istio.IstioConstant;
@@ -22,6 +23,7 @@ public class MtlsService2 extends AuthTest{
 
         while (true) {
             try {
+                RpcContext.getClientAttachment().setAttachment("s2","attachment from service2");
                 System.out.println(demoService.sayHello("service2 to service1"));
                 Thread.sleep(1000L);
             }catch (Exception e){

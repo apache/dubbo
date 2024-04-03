@@ -7,7 +7,6 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.security.api.ServiceAccountSource;
@@ -15,7 +14,7 @@ import org.apache.dubbo.xds.security.api.ServiceAccountSource;
 import java.util.Arrays;
 import java.util.List;
 
-@Activate(group = CommonConstants.CONSUMER,order = 100000)
+@Activate(group = CommonConstants.CONSUMER,order = -10000)
 public class ConsumerServiceAccountAuthFilter implements Filter {
 
     private final ServiceAccountSource accountJwtSource;
@@ -32,8 +31,7 @@ public class ConsumerServiceAccountAuthFilter implements Filter {
             boolean enable = parts.stream()
                     .anyMatch("sa_jwt"::equals);
             if(enable) {
-                RpcContext.getClientAttachment()
-                        .setAttachment("Authorization", accountJwtSource.getSaJwt(invoker.getUrl()));
+                invocation.setObjectAttachment("authz",  accountJwtSource.getSaJwt(invoker.getUrl()));
             }
         }
         return invoker.invoke(invocation);

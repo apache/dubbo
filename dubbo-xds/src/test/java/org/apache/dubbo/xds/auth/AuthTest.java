@@ -7,15 +7,11 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
-import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 import org.apache.dubbo.xds.security.authz.KubeRuleSourceProvider;
-import org.apache.dubbo.xds.security.authz.RequestCredential;
 import org.apache.dubbo.xds.security.authz.RuleSource;
 import org.apache.dubbo.xds.security.authz.rule.DefaultRuleFactory;
-import org.apache.dubbo.xds.security.authz.rule.HttpBasedRequestCredential;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
@@ -47,19 +43,26 @@ public class AuthTest {
 
         List<RuleRoot> rules = defaultRuleFactory.getRules(source.get(0));
 
-        RequestCredential credential = new HttpBasedRequestCredential(
-                "cluster.local/ns/default/sa/sleep",
-                "test_subject",
-                "/info",
-                "GET",
-                "test",
-                new HashMap<>()
-        );
+//        HttpBasedMeshRequestCredential credential = new HttpBasedMeshRequestCredential(
+//                "cluster.local/ns/default/sa/sleep",
+//                "test_subject",
+//                "/info",
+//                "GET",
+//                "test",
+//                new HashMap<>()
+//        );
+//
+//        credential.setIssuer("");
+//        credential.setTargetPath();
+//        credential.setServiceName();
+//        credential.setPodId();
+//        credential.setNamespace();
+//        credential.setServiceUid();
 
-        AuthorizationRequestContext context = new AuthorizationRequestContext(null,credential);
-        boolean res = rules.get(0).evaluate(context);
-
-        System.out.println(res);
+//        AuthorizationRequestContext context = new AuthorizationRequestContext(null,credential);
+//        boolean res = rules.get(0).evaluate(context);
+//
+//        System.out.println(res);
     }
 
      static <T> T newRef(ApplicationModel applicationModel,Class<T> serviceClass){
@@ -78,7 +81,7 @@ public class AuthTest {
         serviceConfig.setRef(serviceInst);
         ProtocolConfig triConf = new ProtocolConfig("tri");
         triConf.setPort(port);
-        triConf.setHost("10.23.204.23");
+        triConf.setHost("192.168.0.103");
         serviceConfig.setRegistry(new RegistryConfig("zookeeper://localhost:2181"));
         serviceConfig.setProtocol(triConf);
         serviceConfig.setScopeModel(applicationModel.newModule());

@@ -20,14 +20,15 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
+import org.apache.dubbo.xds.protocol.XdsResourceListener;
 import org.apache.dubbo.xds.resource.XdsCluster;
-import org.apache.dubbo.xds.resource.XdsEndpoint;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
@@ -35,12 +36,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster;
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
-import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class EdsProtocol extends AbstractProtocol<String> {
+public class EdsProtocol extends AbstractProtocol<ClusterLoadAssignment> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
@@ -50,10 +50,17 @@ public class EdsProtocol extends AbstractProtocol<String> {
 
     private Consumer<List<XdsCluster>> updateCallback;
 
+    private XdsResourceListener<Cluster> clusterListener = clusters -> {
+        Set<String> clusterNames = clusters.stream()
+                .map(Cluster::getName)
+                .collect(Collectors.toSet());
+        this.subscribeResource(clusterNames);
+    };
+
+
     public EdsProtocol(
-            AdsObserver adsObserver, Node node, int checkInterval, Consumer<List<XdsCluster>> updateCallback) {
+            AdsObserver adsObserver, Node node, int checkInterval) {
         super(adsObserver, node, checkInterval);
-        this.updateCallback = updateCallback;
     }
 
     @Override
@@ -61,55 +68,69 @@ public class EdsProtocol extends AbstractProtocol<String> {
         return "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
     }
 
-    @Override
-    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
-        List<XdsCluster> clusters = parse(response);
-        updateCallback.accept(clusters);
-
-        // if (getTypeUrl().equals(response.getTypeUrl())) {
-        //     return response.getResourcesList().stream()
-        //             .map(EdsProtocol::unpackClusterLoadAssignment)
-        //             .filter(Objects::nonNull)
-        //             .collect(Collectors.toConcurrentMap(
-        //                     ClusterLoadAssignment::getClusterName, this::decodeResourceToEndpoint));
-        // }
-        return new HashMap<>();
+    public XdsResourceListener<Cluster> getCdsListener(){
+        return clusterListener;
     }
 
-    public List<XdsCluster> parse(DiscoveryResponse response) {
+//    @Override
+//    protected Map<String, ClusterLoadAssignment> decodeDiscoveryResponse(DiscoveryResponse response) {
+//        List<XdsCluster> clusters = parse(response);
+//        updateCallback.accept(clusters);
+//
+//         if (getTypeUrl().equals(response.getTypeUrl())) {
+//             return response.getResourcesList().stream()
+//                     .map(EdsProtocol::unpackClusterLoadAssignment)
+//                     .filter(Objects::nonNull)
+//                     .collect(Collectors.toConcurrentMap(
+//                             ClusterLoadAssignment::getClusterName, this::decodeResourceToEndpoint));
+//         }
+//        return new HashMap<>();
+//    }
+
+    @Override
+    protected Map<String,ClusterLoadAssignment> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (!getTypeUrl().equals(response.getTypeUrl())) {
             return null;
         }
-
         return response.getResourcesList().stream()
-                .map(EdsProtocol::unpackClusterLoadAssignment)
-                .filter(Objects::nonNull)
-                .map(this::parseCluster)
-                .collect(Collectors.toList());
+                .map(EdsProtocol::unpackClusterLoadAssignment).filter(Objects::nonNull)
+                .collect(Collectors.toConcurrentMap(ClusterLoadAssignment::getClusterName, Function.identity()));
     }
 
-    public XdsCluster parseCluster(ClusterLoadAssignment cluster) {
-        XdsCluster xdsCluster = new XdsCluster();
-
-        xdsCluster.setName(cluster.getClusterName());
-
-        List<XdsEndpoint> xdsEndpoints = cluster.getEndpointsList().stream()
-                .flatMap(e -> e.getLbEndpointsList().stream())
-                .map(LbEndpoint::getEndpoint)
-                .map(this::parseEndpoint)
-                .collect(Collectors.toList());
-
-        xdsCluster.setXdsEndpoints(xdsEndpoints);
-
-        return xdsCluster;
-    }
-
-    public XdsEndpoint parseEndpoint(io.envoyproxy.envoy.config.endpoint.v3.Endpoint endpoint) {
-        XdsEndpoint xdsEndpoint = new XdsEndpoint();
-        xdsEndpoint.setAddress(endpoint.getAddress().getSocketAddress().getAddress());
-        xdsEndpoint.setPortValue(endpoint.getAddress().getSocketAddress().getPortValue());
-        return xdsEndpoint;
-    }
+//    public List<XdsCluster> parse(DiscoveryResponse response) {
+//        if (!getTypeUrl().equals(response.getTypeUrl())) {
+//            return null;
+//        }
+//
+//        return response.getResourcesList().stream()
+//                .map(EdsProtocol::unpackClusterLoadAssignment)
+//                .filter(Objects::nonNull)
+//                .map(this::parseCluster)
+//                .collect(Collectors.toList());
+//    }
+//
+//    public XdsCluster parseCluster(ClusterLoadAssignment cluster) {
+//        XdsCluster xdsCluster = new XdsCluster();
+//
+//        xdsCluster.setName(cluster.getClusterName());
+//
+//        List<XdsEndpoint> xdsEndpoints = cluster.getEndpointsList().stream()
+//                .flatMap(e -> e.getLbEndpointsList().stream())
+//                .map(LbEndpoint::getEndpoint)
+//                .map(this::parseEndpoint)
+//                .collect(Collectors.toList());
+//
+//        xdsCluster.setXdsEndpoints(xdsEndpoints);
+//
+//        return xdsCluster;
+//    }
+//
+//    public XdsEndpoint parseEndpoint(io.envoyproxy.envoy.config.endpoint.v3.Endpoint endpoint) {
+//        XdsEndpoint xdsEndpoint = new XdsEndpoint();
+//        xdsEndpoint.setAddress(endpoint.getAddress().getSocketAddress().getAddress());
+//        xdsEndpoint.setPortValue(endpoint.getAddress().getSocketAddress().getPortValue());
+//        return xdsEndpoint;
+//    }
 
     private static ClusterLoadAssignment unpackClusterLoadAssignment(Any any) {
         try {

@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -70,12 +71,19 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
 
     protected Map<String, T> resourcesMap = new ConcurrentHashMap<>();
 
+    protected List<XdsResourceListener<T>> resourceListeners = new CopyOnWriteArrayList<>();
+
     public AbstractProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
         this.adsObserver = adsObserver;
         this.node = node;
         this.checkInterval = checkInterval;
         adsObserver.addListener(this);
     }
+
+    public void registerListen(XdsResourceListener<T> listener){
+        this.resourceListeners.add(listener);
+    }
+
 
     /**
      * Abstract method to obtain Type-URL from sub-class
@@ -163,13 +171,18 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
                 .build();
     }
 
-    protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
+//    protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
+
+    protected abstract Map<String,T> decodeDiscoveryResponse(DiscoveryResponse response);
 
     @Override
     public final void process(DiscoveryResponse discoveryResponse) {
-        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
+//        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
         Map<String, T> oldResource = resourcesMap;
         // discoveryResponseListener(oldResource, newResult);
+
+        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
+        resourceListeners.forEach(l -> l.onResourceUpdate(new ArrayList<>(newResult.values())));
         resourcesMap = newResult;
     }
 

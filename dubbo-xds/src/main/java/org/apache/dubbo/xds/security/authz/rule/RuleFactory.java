@@ -23,7 +23,7 @@ import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 import java.util.List;
 
 /**
- * 规则工厂。提供规则树，提供用户拓展校验属性的能力
+ *
  */
 @SPI
 public interface RuleFactory {

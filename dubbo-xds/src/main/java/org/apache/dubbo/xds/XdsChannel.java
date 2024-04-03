@@ -86,7 +86,8 @@ public class XdsChannel {
                                     new ByteArrayInputStream(
                                             certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
                                     new ByteArrayInputStream(
-                                            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                                            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8))
+                            )
                             .build();
                     managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
                             .sslContext(context)
