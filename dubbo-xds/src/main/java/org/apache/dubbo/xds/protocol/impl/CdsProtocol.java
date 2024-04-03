@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.protocol.impl;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 import org.apache.dubbo.xds.resource.XdsCluster;
@@ -52,8 +53,8 @@ public class CdsProtocol extends AbstractProtocol<Cluster> {
 
     private Consumer<Set<String>> updateCallback;
 
-    public CdsProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
-        super(adsObserver, node, checkInterval);
+    public CdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
+        super(adsObserver, node, checkInterval, applicationModel);
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.protocol.impl;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 import org.apache.dubbo.xds.protocol.XdsResourceListener;
@@ -58,8 +59,9 @@ public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
     public RdsProtocol(
             AdsObserver adsObserver,
             Node node,
-            int checkInterval) {
-        super(adsObserver, node, checkInterval);
+            int checkInterval,
+            ApplicationModel applicationModel) {
+        super(adsObserver, node, checkInterval,applicationModel);
     }
 
     @Override

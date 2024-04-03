@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.XdsListener;
 
@@ -73,10 +74,13 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
 
     protected List<XdsResourceListener<T>> resourceListeners = new CopyOnWriteArrayList<>();
 
-    public AbstractProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
+    protected ApplicationModel applicationModel;
+
+    public AbstractProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
         this.adsObserver = adsObserver;
         this.node = node;
         this.checkInterval = checkInterval;
+        this.applicationModel = applicationModel;
         adsObserver.addListener(this);
     }
 

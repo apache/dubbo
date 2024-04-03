@@ -95,10 +95,10 @@ public class PilotExchanger {
 //            });
 //        };
 
-        this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
-        this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
-        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
-        this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
+        this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
+        this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
+        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
+        this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
 
 
         XdsResourceListener<XdsRouteConfiguration> pilotRdsListener = xdsRouteConfigurations ->
@@ -133,6 +133,7 @@ public class PilotExchanger {
 
         // cds resources callback，listen to all cds resources in the callback function
         this.cdsProtocol.subscribeClusters();
+        this.ldsProtocol.subscribeListeners();
     }
 
     public static Map<String, XdsVirtualHost> getXdsVirtualHostMap() {

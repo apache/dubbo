@@ -18,14 +18,16 @@ package org.apache.dubbo.xds.protocol.impl;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
+import org.apache.dubbo.xds.listener.LdsListener;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,16 +43,14 @@ import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class LdsProtocol extends AbstractProtocol<Listener> {
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
-    public void setUpdateCallback(Consumer<Set<String>> updateCallback) {
-        this.updateCallback = updateCallback;
-    }
-
-    private Consumer<Set<String>> updateCallback;
-
-    public LdsProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
-        super(adsObserver, node, checkInterval);
+    public LdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
+        super(adsObserver, node, checkInterval, applicationModel);
+        List<LdsListener> ldsListeners = applicationModel.getExtensionLoader(LdsListener.class)
+                .getActivateExtensions();
+        ldsListeners.forEach(this::registerListen);
     }
 
     @Override
@@ -61,24 +61,6 @@ public class LdsProtocol extends AbstractProtocol<Listener> {
     public void subscribeListeners() {
         subscribeResource(null);
     }
-
-
-
-//    @Override
-//    protected Map<String, XdsVirtualHost> decodeDiscoveryResponse(DiscoveryResponse response) {
-//        if (getTypeUrl().equals(response.getTypeUrl())) {
-//            Set<String> set = response.getResourcesList().stream()
-//                    .map(LdsProtocol::unpackListener)
-//                    .filter(Objects::nonNull)
-//                    .flatMap(e -> decodeResourceToListener(e).stream())
-//                    .collect(Collectors.toSet());
-//            updateCallback.accept(set);
-//            // Map<String, ListenerResult> listenerDecodeResult = new ConcurrentHashMap<>();
-//            // listenerDecodeResult.put(emptyResourceName, new ListenerResult(set));
-//            return null;
-//        }
-//        return new HashMap<>()
-//    }
 
     @Override
     protected Map<String,Listener> decodeDiscoveryResponse(DiscoveryResponse response) {

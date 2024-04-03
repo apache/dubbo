@@ -23,6 +23,8 @@ import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.xds.listener.TlsModeListener.TlsType;
+import org.apache.dubbo.xds.listener.TlsModeRepo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -30,27 +32,39 @@ import java.util.Arrays;
 @Activate
 public class MeshCredentialProvider implements CertProvider {
 
-    private URL credentialSourceUrl;
-
     private final TrustSource trustSource;
 
     private final CertSource certSource;
 
+    private final TlsModeRepo modeRepo;
 
     public MeshCredentialProvider(FrameworkModel frameworkModel) {
         this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class).getAdaptiveExtension();
         this.certSource = frameworkModel.getExtensionLoader(CertSource.class).getAdaptiveExtension();
-        // TODO for test
-        this.credentialSourceUrl = URL.valueOf("xds://localhost:15012?signer=istio");
+        this.modeRepo = frameworkModel.getBeanFactory().getOrRegisterBean(TlsModeRepo.class);
     }
 
     @Override
     public boolean isSupport(URL address) {
-        String security = address.getParameter("security");
-        String mesh = address.getParameter("mesh");
-        if(mesh != null && security != null && Arrays.asList(security.split(",")).contains("mTLS")){
+
+        //TODO: To support multi-protocol in one port , we need more properties to indicate if opposite supports TLS
+        int port = address.getPort();
+        TlsType type = modeRepo.getType(String.valueOf(port));
+
+        if(type == null || TlsType.DISABLE.equals(type)){
+            return false;
+        }
+
+        if(TlsType.STRICT.equals(type)){
             return true;
         }
+
+        if(TlsType.PERMISSIVE.equals(type)){
+            String security = address.getParameter("security");
+            String mesh = address.getParameter("mesh");
+            return mesh != null && security != null && Arrays.asList(security.split(",")).contains("mTLS");
+        }
+
         return false;
     }
 
@@ -65,7 +79,6 @@ public class MeshCredentialProvider implements CertProvider {
     }
 
     private ProviderCert getServiceCredential(URL remoteUrl,AuthPolicy authPolicy) {
-//        remoteUrl = credentialSourceUrl; //TODO for test
         CertPair cert = certSource.getCert(remoteUrl);
         return new ProviderCert(
                 cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
@@ -74,15 +87,4 @@ public class MeshCredentialProvider implements CertProvider {
                 authPolicy);
     }
 
-    public void setUrl(URL credentialSourceUrl) {
-        this.credentialSourceUrl = credentialSourceUrl;
-    }
-
-    public CertPair getCert() {
-        return certSource.getCert(credentialSourceUrl);
-    }
-
-    public X509CertChains getTrust() {
-        return trustSource.getTrustCerts(credentialSourceUrl);
-    }
 }
