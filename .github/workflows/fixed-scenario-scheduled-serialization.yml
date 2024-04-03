@@ -161,7 +161,12 @@ jobs:
             echo "No file matching /tmp/jmh_result_prop*.json exists. Exiting..."
             exit 0
           fi
-          git clone https://github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git jmh_result
+          if ! ls /tmp/jmh_trace_prop*.json -1q &> /dev/null; then
+            echo "No file matching /tmp/jmh_trace_prop*.json exists. Exiting..."
+            exit 0
+          fi
+
+          git clone --depth 1 https://github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git jmh_result
           cd jmh_result
           git config user.email "dubbo@apache.org"
           git config user.name "dubbo"

@@ -122,10 +122,19 @@ jobs:
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
           CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
-      - name: "Replace runtime parameter rpc:dubbo tri rmi"
+      - name: "Replace runtime parameter"
         run: |
           RUNTIME_CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-runtime-parameter.conf
           rm -rf $RUNTIME_CONFIG_PATH
+      - name: "Download Skywalking Agent And Mysql Driver"
+        run: |
+          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
+          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
+          wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
+          mv mysql-connector-java-8.0.23.jar /tmp/
+          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn clean package
+          rm /tmp/skywalking-agent/plugins/*
+          cp ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Build test image"
         run: |
           cd test && bash ./build-test-image.sh
