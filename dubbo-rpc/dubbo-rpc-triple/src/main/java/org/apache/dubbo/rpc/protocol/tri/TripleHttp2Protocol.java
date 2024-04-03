@@ -109,11 +109,12 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
     private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
-    private static final int DEFAULT_IDLE_TIMEOUT = 1000;
+    // http3 settings
+    private static final int DEFAULT_IDLE_TIMEOUT = 1000 * 60 * 30;
     private static final int DEFAULT_MAX_DATA = 10000000;
     private static final int DEFAULT_MAX_STREAM_DATA_LOCAL = 1000000;
     private static final int DEFAULT_MAX_STREAM_DATA_REMOTE = 1000000;
-    private static final int DEFAULT_MAX_STREAMS = 100;
+    private static final int DEFAULT_MAX_STREAMS = Integer.MAX_VALUE;
 
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
@@ -248,8 +249,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 .build();
         io.netty.channel.ChannelHandler codec = Http3.newQuicServerCodecBuilder()
                 .sslContext(sslContext)
-                // for test
-                .maxIdleTimeout(config.getInt(H3_SETTINGS_MAX_IDLE_TIMEOUT_KEY, 30*60*1000), TimeUnit.MILLISECONDS)
+                .maxIdleTimeout(config.getInt(H3_SETTINGS_MAX_IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT), TimeUnit.MILLISECONDS)
                 .initialMaxData(config.getInt(H3_SETTINGS_INIT_MAX_DATA_KEY, DEFAULT_MAX_DATA))
                 .initialMaxStreamDataBidirectionalLocal(config.getInt(H3_SETTINGS_INIT_MAX_STREAM_DATA_LOCAL_KEY, DEFAULT_MAX_STREAM_DATA_LOCAL))
                 .initialMaxStreamDataBidirectionalRemote(config.getInt(H3_SETTINGS_INIT_MAX_STREAM_DATA_REMOTE_KEY, DEFAULT_MAX_STREAM_DATA_REMOTE))
@@ -272,22 +272,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 })
                 .build();
 
-        // for test
-        /*handlers.add(new ChannelHandlerPretender(new ChannelOutboundHandlerAdapter() {
-            @Override
-            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-                DatagramPacket packet = (DatagramPacket)msg;
-                ByteBuf content = packet.copy().content();
-                byte[] bytes = new byte[4096];
-                int sz = content.readableBytes();
-                content.readBytes(bytes, 0, sz);
-                content.release();
-                System.out.println("write " + sz + " bytes: " + Arrays.toString(Arrays.copyOf(bytes, sz)));
-
-                ctx.write(msg, promise);
-            }
-        }));*/
-
         handlers.add(new ChannelHandlerPretender(codec));
+        handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
+        handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
     }
 }

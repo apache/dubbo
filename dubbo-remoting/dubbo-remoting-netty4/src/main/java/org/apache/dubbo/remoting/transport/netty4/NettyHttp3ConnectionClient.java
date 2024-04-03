@@ -24,10 +24,13 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 
 import java.nio.charset.Charset;
@@ -37,10 +40,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_INIT_MAX_DATA_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_INIT_MAX_STREAM_DATA_LOCAL_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_MAX_IDLE_TIMEOUT_KEY;
 
 public class NettyHttp3ConnectionClient extends NettyConnectionClient {
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(NettyHttp3ConnectionClient.class);
+
+    private static final int DEFAULT_IDLE_TIMEOUT = 1000 * 60 * 30;
+    private static final int DEFAULT_MAX_DATA = 10000000;
+    private static final int DEFAULT_MAX_STREAM_DATA_LOCAL = 1000000;
 
     private AtomicReference<io.netty.channel.Channel> datagramChannel;
     private QuicConnectionListener quicConnectionListener;
@@ -72,12 +82,12 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
         QuicSslContext context = QuicSslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .applicationProtocols(Http3.supportedApplicationProtocols()).build();
-        // todo: config
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(getUrl().getOrDefaultApplicationModel());
         io.netty.channel.ChannelHandler codec = Http3.newQuicClientCodecBuilder()
                 .sslContext(context)
-                .maxIdleTimeout(30, TimeUnit.MINUTES)
-                .initialMaxData(10000000)
-                .initialMaxStreamDataBidirectionalLocal(1000000)
+                .maxIdleTimeout(config.getInt(H3_SETTINGS_MAX_IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT), TimeUnit.MILLISECONDS)
+                .initialMaxData(config.getInt(H3_SETTINGS_INIT_MAX_DATA_KEY, DEFAULT_MAX_DATA))
+                .initialMaxStreamDataBidirectionalLocal(config.getInt(H3_SETTINGS_INIT_MAX_STREAM_DATA_LOCAL_KEY, DEFAULT_MAX_STREAM_DATA_LOCAL))
                 .build();
 
         NioEventLoopGroup group = new NioEventLoopGroup(1);
@@ -92,25 +102,6 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
                             NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
 
                             ChannelPipeline pipeline = ch.pipeline();
-
-                            // for test
-                            /*pipeline.addLast(new ChannelInboundHandlerAdapter() {
-                                @Override
-                                public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                    //System.out.println("datagram channel: "+msg);
-
-                                    DatagramPacket packet = (DatagramPacket)msg;
-                                    ByteBuf content = packet.copy().content();
-                                    byte[] bytes = new byte[4096];
-                                    int sz = content.readableBytes();
-                                    content.readBytes(bytes, 0, sz);
-                                    content.release();
-                                    System.out.println("datagram channel read " + sz + " bytes: " + Arrays.toString(Arrays.copyOf(bytes, sz)));
-
-                                    ctx.fireChannelRead(msg);
-                                }
-                            });*/
-
                             pipeline.addLast(codec);
                         }
                     })
@@ -130,17 +121,8 @@ public class NettyHttp3ConnectionClient extends NettyConnectionClient {
                     @Override
                     protected void initChannel(QuicChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-
-                        // for test
-//                        pipeline.addLast(new ChannelInboundHandlerAdapter() {
-//                            @Override
-//                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//                                System.out.println("quic channel: "+msg);
-//                                ctx.fireChannelRead(msg);
-//                            }
-//                        });
-
-                        pipeline.addLast(new NettyHttp3ConnectionHandler(NettyHttp3ConnectionClient.this));
+                        pipeline.addLast(Constants.CONNECTION_HANDLER_NAME,
+                                new NettyHttp3ConnectionHandler(NettyHttp3ConnectionClient.this));
                         pipeline.addLast(new Http3ClientConnectionHandler());
 
                         ch.closeFuture().addListener(channelFuture -> channel.set(null));
