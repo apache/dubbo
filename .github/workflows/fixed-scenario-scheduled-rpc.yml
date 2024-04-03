@@ -155,6 +155,7 @@ jobs:
           RESULTS_REPO_NAME: jmh_result
           RESULTS_REPO_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           if ! ls /tmp/jmh_result_prop*.json -1q &> /dev/null; then
             echo "No file matching /tmp/jmh_result_prop*.json exists. Exiting..."
@@ -194,7 +195,7 @@ jobs:
           done
 
           merged_json=$(echo "${json_array[@]}" | jq -s add)
-          merged_json=$(echo "$merged_json" | jq '.[] += {commitId: ${{ github.sha }}')
+          merged_json=$(echo "$merged_json" | jq --arg commitId "$GITHUB_SHA" '.[] += {commitId: $commitId}')
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
 
           json_array=()
