@@ -133,7 +133,6 @@ jobs:
           wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
           mv mysql-connector-java-8.0.23.jar /tmp/
           cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn clean package
-          rm /tmp/skywalking-agent/plugins/*
           cp ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Build test image"
         run: |
