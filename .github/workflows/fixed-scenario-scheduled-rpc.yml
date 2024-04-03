@@ -194,6 +194,7 @@ jobs:
           done
 
           merged_json=$(echo "${json_array[@]}" | jq -s add)
+          merged_json=$(echo "$merged_json" | jq '.[] += {commitId: ${{ github.sha }}')
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
 
           json_array=()
