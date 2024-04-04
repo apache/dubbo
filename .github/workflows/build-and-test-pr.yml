@@ -264,8 +264,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Prepare test list"
         run: |
           bash ./test/scripts/prepare-test.sh
@@ -289,8 +289,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
@@ -438,8 +438,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Download test result"
         uses: actions/download-artifact@v3
         with:
@@ -456,7 +456,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-integration-cases'
+          repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Prepare test list"
         run: |
@@ -481,7 +481,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-integration-cases'
+          repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
@@ -542,7 +542,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-integration-cases'
+          repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Download test result"
         uses: actions/download-artifact@v3
@@ -561,11 +561,11 @@ jobs:
           path: "./dubbo"
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
+          repository: 'apache/dubbo-samples'
           path: "./dubbo-samples"
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-integration-cases'
+          repository: 'apache/dubbo-integration-cases'
           path: "./dubbo-integration-cases"
       - name: "Set up JDK 21"
         uses: actions/setup-java@v3
