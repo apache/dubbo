@@ -44,11 +44,9 @@ public class IstioConstant {
     /**
      * k8s jwt token
      */
-    public static String KUBERNETES_SA_PATH =
-            "/Users/smzdm/hjf/xds/resources/token";
+    public static String KUBERNETES_SA_PATH = "/Users/smzdm/hjf/xds/resources/token";
 
-    public static final String KUBERNETES_CA_PATH =
-            "/Users/smzdm/hjf/xds/resources/ca.crt";
+    public static final String KUBERNETES_CA_PATH = "/Users/smzdm/hjf/xds/resources/ca.crt";
 
     public static String ISTIO_SA_PATH = "/Users/smzdm/hjf/xds/resources/token";
 
@@ -73,6 +71,10 @@ public class IstioConstant {
     public static final String SECRET_TTL_KEY = "SECRET_TTL";
 
     public static final String TRUST_TTL_KEY = "TRUST_TTL";
+
+    public static final String SERVICE_NAME_KEY = "SERVICE_NAME";
+
+    private static final String DEFAULT_SERVICE_NAME = "default";
 
     /**
      * The cert lifetime default value 24h0m0s

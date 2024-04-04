@@ -66,7 +66,8 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         this.protocolName = url.getParameter("protocol", "dubbo");
         this.protocol = directory.getProtocol();
         super.routerChain = directory.getRouterChain();
-        this.pilotExchanger = url.getOrDefaultApplicationModel().getBeanFactory().getBean(PilotExchanger.class);
+        this.pilotExchanger =
+                url.getOrDefaultApplicationModel().getBeanFactory().getBean(PilotExchanger.class);
 
         // subscribe resource
         for (String applicationName : applicationNames) {

@@ -138,7 +138,6 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
         long min = 0;
         long max = expireAt;
         long rand = min + (long) (Math.random() * (max - min + 1));
-        ;
 
         return System.currentTimeMillis() - expireAt < (refreshBeforeCertExpireAt - rand);
     }
@@ -194,7 +193,6 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
         if (StringUtils.isNotEmpty(caCert)) {
             channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
                     .sslContext(GrpcSslContexts.forClient()
-                            //
                             .trustManager(new ByteArrayInputStream(caCert.getBytes(StandardCharsets.UTF_8)))
                             .build())
                     .build();

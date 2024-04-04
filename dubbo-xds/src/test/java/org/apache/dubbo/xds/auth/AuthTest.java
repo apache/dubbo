@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.xds.istio.IstioConstant;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
 import org.apache.dubbo.xds.security.authz.KubeRuleSourceProvider;
@@ -81,14 +82,19 @@ public class AuthTest {
         //        System.out.println(res);
     }
 
+    static {
+        System.setProperty(IstioConstant.SERVICE_NAME_KEY, "httpbin");
+    }
+
     static <T> T newRef(ApplicationModel applicationModel, Class<T> serviceClass) {
         ReferenceConfig<T> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(serviceClass);
-        referenceConfig.setRegistry(new RegistryConfig("zookeeper://localhost:2181"));
+        referenceConfig.setRegistry(new RegistryConfig("xds://localhost:15012?signer=istio"));
         referenceConfig.setScopeModel(applicationModel.newModule());
         referenceConfig.setTimeout(1000000);
         referenceConfig.getParameters().put("mesh", "istio");
         referenceConfig.getParameters().put("security", "mTLS,sa_jwt");
+        referenceConfig.setProvidedBy("httpbin");
         return referenceConfig.get(false);
     }
 
@@ -98,7 +104,7 @@ public class AuthTest {
         ProtocolConfig triConf = new ProtocolConfig("tri");
         triConf.setPort(port);
         triConf.setHost("192.168.0.103");
-        serviceConfig.setRegistry(new RegistryConfig("zookeeper://localhost:2181"));
+        serviceConfig.setRegistry(new RegistryConfig("xds://localhost:15012?signer=istio"));
         serviceConfig.setProtocol(triConf);
         serviceConfig.setScopeModel(applicationModel.newModule());
         serviceConfig.setInterface(serviceClass);

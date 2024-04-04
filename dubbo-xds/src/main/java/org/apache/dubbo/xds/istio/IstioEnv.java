@@ -53,6 +53,9 @@ public class IstioEnv implements XdsEnv {
 
     private static final IstioEnv INSTANCE = new IstioEnv();
 
+    /**
+     * TODO this can auto read from sa jwt
+     */
     private String podName;
 
     private String caAddr;
@@ -61,6 +64,9 @@ public class IstioEnv implements XdsEnv {
 
     private String trustDomain;
 
+    /**
+     * TODO this can auto read from sa jwt
+     */
     private String workloadNameSpace;
 
     private int rasKeySize;
@@ -93,18 +99,19 @@ public class IstioEnv implements XdsEnv {
      */
     private long trustTTL;
 
-    /**
-     * TODO READ
-     */
     private String serviceAccountJwt;
+
+    /**
+     * TODO this can auto read from sa jwt
+     */
+    private String serviceAccountName;
 
     private IstioEnv() {
         jwtPolicy = getStringProp(JWT_POLICY, DEFAULT_JWT_POLICY);
-        podName = Optional.ofNullable(getStringProp("POD_NAME", null)).orElse(getStringProp("HOSTNAME", ""));
+        podName = Optional.ofNullable(getStringProp("POD_NAME",(String) null)).orElse(getStringProp("HOSTNAME", ""));
         trustDomain = getStringProp(TRUST_DOMAIN_KEY, DEFAULT_TRUST_DOMAIN);
 
-        workloadNameSpace = Optional.ofNullable(System.getenv(IstioConstant.WORKLOAD_NAMESPACE_KEY))
-                .orElseGet(() -> {
+        workloadNameSpace = getStringProp(IstioConstant.WORKLOAD_NAMESPACE_KEY,() -> {
                     File namespaceFile = new File(IstioConstant.KUBERNETES_NAMESPACE_PATH);
                     if (namespaceFile.canRead()) {
                         try {
@@ -114,7 +121,7 @@ public class IstioEnv implements XdsEnv {
                         }
                     }
                     return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;
-                });
+        });
         caAddr = getStringProp(CA_ADDR_KEY, DEFAULT_CA_ADDR);
 
         rasKeySize = getIntProp(RSA_KEY_SIZE_KEY, DEFAULT_RSA_KEY_SIZE);
@@ -127,7 +134,7 @@ public class IstioEnv implements XdsEnv {
                         .orElse(IstioConstant.DEFAULT_SECRET_GRACE_PERIOD_RATIO));
         istioMetaClusterId = getStringProp(ISTIO_META_CLUSTER_ID_KEY, DEFAULT_ISTIO_META_CLUSTER_ID);
         pilotCertProvider = getStringProp(IstioConstant.PILOT_CERT_PROVIDER_KEY, "");
-
+        serviceAccountName = getStringProp(IstioConstant.SERVICE_NAME_KEY,"default");
         if (getServiceAccount() == null) {
             throw new UnsupportedOperationException("Unable to found kubernetes service account token file. "
                     + "Please check if work in Kubernetes and mount service account token file correctly.");
@@ -178,8 +185,11 @@ public class IstioEnv implements XdsEnv {
 
     public String getCsrHost() {
         // spiffe://<trust_domain>/ns/<namespace>/sa/<service_account>
-        return "default";
-        // return SPIFFE + trustDomain + NS + workloadNameSpace + SA + getServiceAccount();
+         return SPIFFE + trustDomain + NS + workloadNameSpace + SA + getServiceAccountName();
+    }
+
+    public String getIstioMetaNamespace(){
+        return getCsrHost();
     }
 
     public String getTrustDomain() {
@@ -227,6 +237,10 @@ public class IstioEnv implements XdsEnv {
         return trustTTL;
     }
 
+    public String getServiceAccountName(){
+        return serviceAccountName;
+    }
+
     // for test
     @Deprecated
     public void setToken(String saJwtToken) {
@@ -238,7 +252,6 @@ public class IstioEnv implements XdsEnv {
         if (IstioConstant.PILOT_CERT_PROVIDER_ISTIO.equals(pilotCertProvider)) {
             caFile = new File(IstioConstant.ISTIO_CA_PATH);
         } else {
-            // 控制面返回的是istio CA，而非K8s CA，启用第一方JWT时 不能直接使用从k8s SA得到的CA作为TrustStorage
             return null;
         }
         if (caFile.canRead()) {

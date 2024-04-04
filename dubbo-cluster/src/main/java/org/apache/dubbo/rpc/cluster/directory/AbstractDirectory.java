@@ -188,7 +188,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             this.consumerUrl = consumerUrlFrom.addParameters(queryMap);
         }
 
-        if(url.getParameter(MESH_KEY) != null) {
+        if (url.getParameter(MESH_KEY) != null) {
             this.consumerUrl = this.consumerUrl.addParameter(MESH_KEY, url.getParameter(MESH_KEY));
             if (url.getParameter(SECURITY_KEY) != null) {
                 this.consumerUrl = this.consumerUrl.addParameter(SECURITY_KEY, url.getParameter(SECURITY_KEY));

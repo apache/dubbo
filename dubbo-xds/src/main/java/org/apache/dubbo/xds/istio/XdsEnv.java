@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.xds.istio;
 
+import java.util.function.Supplier;
+
 public interface XdsEnv {
 
     String getCluster();
@@ -27,6 +29,17 @@ public interface XdsEnv {
         }
         if (val == null) {
             val = defaultVal;
+        }
+        return val;
+    }
+
+    default String getStringProp(String key, Supplier<String> defaultValSupplier){
+        String val = System.getenv(key);
+        if (val == null) {
+            val = System.getProperty(key);
+        }
+        if (val == null) {
+            val = defaultValSupplier.get();
         }
         return val;
     }

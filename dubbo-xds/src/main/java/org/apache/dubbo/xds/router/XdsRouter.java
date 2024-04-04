@@ -39,7 +39,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.Constants.MESH_KEY;
-import static org.apache.dubbo.rpc.Constants.SUPPORT_MESH_TYPE;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> {
 

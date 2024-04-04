@@ -61,8 +61,7 @@ public class KubeEnv implements XdsEnv {
             serviceAccountCaPath = getStringProp("SA_CA_PATH", "/Users/smzdm/hjf/xds/resources/ca.crt");
         }
         if (StringUtils.isEmpty(serviceAccountTokenPath)) {
-            serviceAccountTokenPath =
-                    getStringProp("SA_TOKEN_PATH", "/Users/smzdm/hjf/xds/resources/token");
+            serviceAccountTokenPath = getStringProp("SA_TOKEN_PATH", "/Users/smzdm/hjf/xds/resources/token");
         }
         if (StringUtils.isEmpty(namespace)) {
             namespace = getStringProp("NAMESPACE", "dubbo-demo");

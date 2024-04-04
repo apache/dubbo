@@ -24,6 +24,7 @@ import org.apache.dubbo.xds.istio.IstioConstant;
 public class MtlsService1 extends AuthTest {
 
     public static void main(String[] args) {
+        System.setProperty(IstioConstant.WORKLOAD_NAMESPACE_KEY,"bar");
         System.setProperty("API_SERVER_PATH", "https://127.0.0.1:6443");
         System.setProperty("SA_CA_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
         System.setProperty(

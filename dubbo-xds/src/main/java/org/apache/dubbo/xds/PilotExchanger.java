@@ -94,10 +94,14 @@ public class PilotExchanger {
         //            });
         //        };
 
-        this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
-        this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
-        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
-        this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.rdsProtocol =
+                new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.edsProtocol =
+                new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.ldsProtocol =
+                new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.cdsProtocol =
+                new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
 
         XdsResourceListener<XdsRouteConfiguration> pilotRdsListener =
                 xdsRouteConfigurations -> xdsRouteConfigurations.forEach(xdsRouteConfiguration -> xdsRouteConfiguration

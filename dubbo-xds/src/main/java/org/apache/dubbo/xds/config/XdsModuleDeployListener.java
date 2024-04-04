@@ -17,7 +17,6 @@
 package org.apache.dubbo.xds.config;
 
 import org.apache.dubbo.common.deploy.ModuleDeployListener;
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
@@ -31,8 +30,7 @@ import java.util.List;
 
 public class XdsModuleDeployListener implements ModuleDeployListener {
     @Override
-    public void onInitialize(ModuleModel scopeModel) {
-    }
+    public void onInitialize(ModuleModel scopeModel) {}
 
     @Override
     public void onStarting(ModuleModel scopeModel) {
@@ -50,7 +48,6 @@ public class XdsModuleDeployListener implements ModuleDeployListener {
         ConfigManager manager = scopeModel.getApplicationModel().getApplicationConfigManager();
         Collection<RegistryConfig> configs = manager.getRegistries();
 
-
         Collection<ConsumerConfig> consumerConfigs = configManager.getConsumers();
         for (ReferenceConfigBase<?> rc : configManager.getReferences()) {
             System.out.println(rc);
@@ -58,8 +55,7 @@ public class XdsModuleDeployListener implements ModuleDeployListener {
     }
 
     @Override
-    public void onStarted(ModuleModel scopeModel) {
-    }
+    public void onStarted(ModuleModel scopeModel) {}
 
     @Override
     public void onStopping(ModuleModel scopeModel) {}
