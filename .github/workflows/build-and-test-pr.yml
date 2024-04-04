@@ -10,7 +10,7 @@ env:
   FAIL_FAST: 0
   SHOW_ERROR_DETAIL: 1
   #multi-version size limit
-  VERSIONS_LIMIT: 5
+  VERSIONS_LIMIT: 4
   JACOCO_ENABLE: true
   CANDIDATE_VERSIONS: '
     spring.version:5.3.24;
