@@ -22,7 +22,6 @@ env:
 jobs:
   build-source:
     name: "Build Dubbo"
-    needs: check-format
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
