@@ -116,7 +116,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Cache Skywalking Agent"
         id: cache-skywalking-agent
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/apache-skywalking-java-agent-9.0.0
           key: ${{ runner.os }}-skywalking-agent-9.0.0
@@ -124,7 +124,7 @@ jobs:
             ${{ runner.os }}-skywalking-agent-
       - name: "Cache MySQL Driver"
         id: cache-mysql-driver
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/mysql-connector-java-8.0.23.jar
           key: ${{ runner.os }}-mysql-driver-8.0.23
