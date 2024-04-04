@@ -21,7 +21,7 @@ env:
     '
 
 jobs:
-  check-benchmark-pat:
+  check-benchmark-path:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -188,8 +188,8 @@ jobs:
 
           WORK_DIR="$(pwd)"
           echo "WorkDir: $WORK_DIR"
-          DIRECTORY_PATH="$WORK_DIR/test-results/pr"
 
+          DIRECTORY_PATH="$WORK_DIR/test-results/pr"
           if [ ! -d ${DIRECTORY_PATH} ];then
             mkdir $DIRECTORY_PATH
           fi

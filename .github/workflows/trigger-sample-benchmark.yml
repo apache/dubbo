@@ -190,8 +190,8 @@ jobs:
 
           WORK_DIR="$(pwd)"
           echo "WorkDir: $WORK_DIR"
-          DIRECTORY_PATH="$WORK_DIR/test-results/scenario"
 
+          DIRECTORY_PATH="$WORK_DIR/test-results/scenario"
           if [ ! -d ${DIRECTORY_PATH} ];then
             mkdir $DIRECTORY_PATH;else
             rm $DIRECTORY_PATH/*
