@@ -31,6 +31,7 @@ jobs:
       - name: Check if directory exists
         run: |
           #!/bin/bash
+          cd test
           PATH_TO_CHECK="../10-task/dubbo-samples-benchmark/"
           if [ ! -d "$PATH_TO_CHECK" ]; then
             exit 1
