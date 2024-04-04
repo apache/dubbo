@@ -1,0 +1,38 @@
+name: Benchmark PR
+
+on:
+  push:
+    branches:
+      - 3.3
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-benchmark-path:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Cache Skywalking Agent"
+        id: cache-skywalking-agent
+        uses: actions/cache@v3
+        with:
+          path: /tmp/apache-skywalking-java-agent-9.0.0
+          key: ${{ runner.os }}-skywalking-agent-9.0.0
+          restore-keys: |
+            ${{ runner.os }}-skywalking-agent-
+      - name: "Cache MySQL Driver"
+        id: cache-mysql-driver
+        uses: actions/cache@v3
+        with:
+          path: /tmp/mysql-connector-java-8.0.23.jar
+          key: ${{ runner.os }}-mysql-driver-8.0.23
+          restore-keys: |
+            ${{ runner.os }}-mysql-driver-
+      - name: "Download Skywalking Agent and MySQL Driver"
+        if: steps.cache-skywalking-agent.outputs.cache-hit != 'true' || steps.cache-mysql-driver.outputs.cache-hit != 'true'
+        run: |
+          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
+          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
+          wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
+          mv mysql-connector-java-8.0.23.jar /tmp/
