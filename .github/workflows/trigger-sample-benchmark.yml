@@ -8,20 +8,35 @@ permissions:
   contents: read
 
 env:
-  FORK_COUNT: 2
-  FAIL_FAST: 0
+  FORK_COUNT: 0
+  FAIL_FAST: 1
   SHOW_ERROR_DETAIL: 1
   #multi-version size limit
-  VERSIONS_LIMIT: 4
-  JACOCO_ENABLE: true
+  VERSIONS_LIMIT: 1
   CANDIDATE_VERSIONS: '
     spring.version:5.3.24;
     spring-boot.version:2.7.6;
     '
 
 jobs:
+  check-benchmark-pat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'wxbty/dubbo-samples'
+          ref: bh-test
+      - name: Check if directory exists
+        run: |
+          #!/bin/bash
+          PATH_TO_CHECK="../10-task/dubbo-samples-benchmark/"
+          if [ ! -d "$PATH_TO_CHECK" ]; then
+            exit 1
+          fi
+
   build-source:
     name: "Build Dubbo"
+    needs: check-benchmark-pat
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
@@ -38,6 +53,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Dubbo cache"
+        id: dubbo-cache
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
@@ -95,6 +111,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
+      - name: "Cache Skywalking Agent"
+        id: cache-skywalking-agent
+        uses: actions/cache@v2
+        with:
+          path: /tmp/apache-skywalking-java-agent-9.0.0
+          key: ${{ runner.os }}-skywalking-agent-9.0.0
+          restore-keys: |
+            ${{ runner.os }}-skywalking-agent-
+      - name: "Cache MySQL Driver"
+        id: cache-mysql-driver
+        uses: actions/cache@v2
+        with:
+          path: /tmp/mysql-connector-java-8.0.23.jar
+          key: ${{ runner.os }}-mysql-driver-8.0.23
+          restore-keys: |
+            ${{ runner.os }}-mysql-driver-
+      - name: "Download Skywalking Agent and MySQL Driver"
+        if: steps.cache-skywalking-agent.outputs.cache-hit != 'true' || steps.cache-mysql-driver.outputs.cache-hit != 'true'
+        run: |
+          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
+          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
+          wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
+          mv mysql-connector-java-8.0.23.jar /tmp/
       - name: "Set up JDK 8"
         uses: actions/setup-java@v3
         with:
@@ -114,14 +153,6 @@ jobs:
           for ((i=0; i<${#prop_array[@]}; i+=2)); do
             echo "${prop_array[i]}=${prop_array[i+1]}" >> $RUNTIME_CONFIG_PATH
           done
-      - name: "Download Skywalking Agent And Mysql Driver"
-        run: |
-          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
-          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
-          wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
-          mv mysql-connector-java-8.0.23.jar /tmp/
-          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn clean package
-          cp ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Build test image"
         run: |
           cd test && bash ./build-test-image.sh
@@ -151,6 +182,7 @@ jobs:
             echo "No file matching /tmp/jmh_result_prop*.json exists. Exiting..."
             exit 0
           fi
+
           git clone --depth 1 https://github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git jmh_result
           cd jmh_result
           git config user.email ${PUSH_EMAIL}
@@ -159,6 +191,7 @@ jobs:
           WORK_DIR="$(pwd)"
           echo "WorkDir: $WORK_DIR"
           DIRECTORY_PATH="$WORK_DIR/test-results/scenario"
+
           if [ ! -d ${DIRECTORY_PATH} ];then
             mkdir $DIRECTORY_PATH;else
             rm $DIRECTORY_PATH/*
@@ -184,7 +217,6 @@ jobs:
           json_array=()
           for file in $(ls -t1 "$DIRECTORY_PATH"/jmh_trace*.json); do
            if [ -f "$file" ]; then
-              echo "fileName=$file"
               json_array+=( "$(cat "$file")" )
            fi
           done
@@ -192,6 +224,6 @@ jobs:
           merged_json=$(echo "${json_array[@]}" | jq -s add)
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_trace_file"
 
-          git add --all
+          git add $DIRECTORY_PATH
           git commit -m "Compare prop in $(date +'%Y-%m-%d %H:%M:%S')"
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}

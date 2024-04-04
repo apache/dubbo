@@ -1,9 +1,9 @@
-name: Benchmark- PR
+name: Benchmark PR
 
 on:
   push:
     branches:
-      - 3.3_tmp
+      - 3.3
   workflow_dispatch:
 
 permissions:
