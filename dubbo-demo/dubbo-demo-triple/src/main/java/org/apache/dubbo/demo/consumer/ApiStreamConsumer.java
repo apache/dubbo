@@ -40,7 +40,7 @@ public class ApiStreamConsumer {
                 .build(), new StreamObserver<HelloReply>() {
             @Override
             public void onNext(HelloReply data) {
-                System.out.println("serverStream responseObserver.onNext: "+data.getMessage());
+                System.out.println("serverStream responseObserver.onNext");
             }
 
             @Override
@@ -58,7 +58,7 @@ public class ApiStreamConsumer {
         StreamObserver<HelloRequest> requestObserver = delegate.biStream(new StreamObserver<HelloReply>() {
             @Override
             public void onNext(HelloReply data) {
-                System.out.println("biStream responseObserver.onNext: "+data.getMessage());
+                System.out.println("biStream responseObserver.onNext");
             }
 
             @Override

@@ -11,7 +11,7 @@ public class GreeterStreamServiceImpl implements GreeterStreamService {
         return new StreamObserver<HelloRequest>() {
             @Override
             public void onNext(HelloRequest data) {
-                HelloReply reply = HelloReply.newBuilder().setMessage("reply from biStream "+data.getName()).build();
+                HelloReply reply = HelloReply.newBuilder().setMessage("reply from biStream").build();
                 responseObserver.onNext(reply);
             }
 
@@ -22,14 +22,14 @@ public class GreeterStreamServiceImpl implements GreeterStreamService {
 
             @Override
             public void onCompleted() {
-
+                System.out.println("biStream requestObserver.onCompleted");
             }
         };
     }
 
     @Override
     public void serverStream(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
-        System.out.println("received request "+request.getName());
+        System.out.println("received request");
         for (int i=0; i<10; ++i) {
             HelloReply reply = HelloReply.newBuilder().setMessage("reply from serverStream."+i).build();
             responseObserver.onNext(reply);
