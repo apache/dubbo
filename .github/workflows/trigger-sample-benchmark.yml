@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
+          repository: 'apache/dubbo-samples'
           ref: bh
       - name: "Cache local Maven repository"
         uses: actions/cache@v3

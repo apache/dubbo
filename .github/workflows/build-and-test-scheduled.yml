@@ -64,8 +64,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Prepare test list"
         run: |
           bash ./test/scripts/prepare-test.sh
@@ -89,8 +89,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
@@ -225,8 +225,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Download test result"
         uses: actions/download-artifact@v3
         with:

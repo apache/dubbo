@@ -82,8 +82,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
