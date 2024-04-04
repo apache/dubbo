@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Provides rules for role-based authorization
  */
-@SPI(value = "default",scope = ExtensionScope.APPLICATION)
+@SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface RuleSourceProvider {
 
     @Adaptive("authz_rule_provider")

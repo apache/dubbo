@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 @EnableDubbo
 public class ConsumerApplication {
 
-    @DubboReference
+    @DubboReference(cluster = "xds", providedBy = "dubbo-springboot-demo-provider")
     private DemoService demoService;
 
     public static void main(String[] args) {

@@ -141,9 +141,12 @@ import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
 import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
+import static org.apache.dubbo.rpc.Constants.MESH_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
+import static org.apache.dubbo.rpc.Constants.SECURITY_KEY;
+import static org.apache.dubbo.rpc.Constants.SUPPORT_MESH_TYPE;
 import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -218,8 +221,15 @@ public class ConfigValidationUtils {
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
+                    String protocol = config.getProtocol();
+                    if (StringUtils.isNotEmpty(protocol) && SUPPORT_MESH_TYPE.contains(protocol)) {
+                        map.put(MESH_KEY, protocol);
+                        Map<String, String> parameters = config.getParameters();
+                        if (parameters != null && parameters.containsKey(SECURITY_KEY)) {
+                            map.put(SECURITY_KEY, parameters.get(SECURITY_KEY));
+                        }
+                    }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
-
                     for (URL url : urls) {
                         url = URLBuilder.from(url)
                                 .addParameter(REGISTRY_KEY, url.getProtocol())

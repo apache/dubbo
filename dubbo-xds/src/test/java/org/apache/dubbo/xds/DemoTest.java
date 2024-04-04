@@ -42,33 +42,34 @@ import org.mockito.Mockito;
 
 public class DemoTest {
 
-//    private Protocol protocol =
-//            ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    //    private Protocol protocol =
+    //            ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
-//
-//    private ProxyFactory proxy =
-//            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-//
+    //
+    //    private ProxyFactory proxy =
+    //            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    //
 
     @Test
     public void testXdsRouterInitial() throws InterruptedException {
-        System.setProperty("API_SERVER_PATH","https://127.0.0.1:6443");
-        System.setProperty("SA_CA_PATH","/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
-        System.setProperty("SA_TOKEN_PATH","/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
-        System.setProperty("NAMESPACE","foo");
+        System.setProperty("API_SERVER_PATH", "https://127.0.0.1:6443");
+        System.setProperty("SA_CA_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
+        System.setProperty(
+                "SA_TOKEN_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
+        System.setProperty("NAMESPACE", "foo");
 
-        System.setProperty("CA_ADDR_KEY","/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
+        System.setProperty("CA_ADDR_KEY", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
 
-
-//        ApplicationModel app = FrameworkModel.defaultModel().defaultApplication();
-//        KubeEnv kubeEnv = new KubeEnv(app);
-//        kubeEnv.setNamespace("foo");
-//        kubeEnv.setEnableSsl(true);
-//        kubeEnv.setApiServerPath( "https://127.0.0.1:6443");
-//        kubeEnv.setServiceAccountTokenPath("/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
-//        kubeEnv.setServiceAccountCaPath("/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
-//        app.getBeanFactory().registerBean(kubeEnv);
-
+        //        ApplicationModel app = FrameworkModel.defaultModel().defaultApplication();
+        //        KubeEnv kubeEnv = new KubeEnv(app);
+        //        kubeEnv.setNamespace("foo");
+        //        kubeEnv.setEnableSsl(true);
+        //        kubeEnv.setApiServerPath( "https://127.0.0.1:6443");
+        //
+        // kubeEnv.setServiceAccountTokenPath("/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
+        //
+        // kubeEnv.setServiceAccountCaPath("/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
+        //        app.getBeanFactory().registerBean(kubeEnv);
 
         URL url = URL.valueOf("xds://localhost:15010/?secure=plaintext");
 
@@ -83,7 +84,7 @@ public class DemoTest {
                 .thenReturn(URL.valueOf("dubbo://0.0.0.0:15010/DemoService?provided-by=dubbo-samples-xds-provider"));
         Mockito.when(directory.getInterface()).thenReturn(DemoService.class);
         // doReturn(DemoService.class).when(directory.getInterface());
-//        Mockito.when(directory.getProtocol()).thenReturn(protocol);
+        //        Mockito.when(directory.getProtocol()).thenReturn(protocol);
 
         SingleRouterChain singleRouterChain =
                 new SingleRouterChain<>(Collections.emptyList(), Arrays.asList(new XdsRouter<>(url)), false, null);

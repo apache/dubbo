@@ -47,7 +47,8 @@ public class KubeApiClient {
                 .setBasePath(kubeEnv.getApiServerPath())
                 .setVerifyingSsl(kubeEnv.isEnableSsl())
                 .setCertificateAuthority(kubeEnv.getServiceAccountCa())
-                .setAuthentication(new AccessTokenAuthentication(new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8)))
+                .setAuthentication(new AccessTokenAuthentication(
+                        new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8)))
                 .build();
 
         apiClient.setConnectTimeout(kubeEnv.apiClientConnectTimeout());
@@ -70,8 +71,12 @@ public class KubeApiClient {
     public Watch<Object> listenResource(String apiGroup, String version, String namespace, String plural) {
         try {
             CustomObjectsApi api = new CustomObjectsApi();
-            return Watch.createWatch(apiClient, api.listNamespacedCustomObjectCall(apiGroup, version, namespace, plural, null, null, null, null, null, null, null, null, null), new TypeToken<Response<Object>>() {}.getType());
-        }catch (ApiException apiException){
+            return Watch.createWatch(
+                    apiClient,
+                    api.listNamespacedCustomObjectCall(
+                            apiGroup, version, namespace, plural, null, null, null, null, null, null, null, null, null),
+                    new TypeToken<Response<Object>>() {}.getType());
+        } catch (ApiException apiException) {
             throw new RuntimeException("Failed to listen resource from ApiServer.", apiException);
         }
     }

@@ -42,6 +42,9 @@ import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.StreamObserver;
 
+import org.apache.dubbo.xds.security.api.CertPair;
+import org.apache.dubbo.xds.security.api.CertSource;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_CREATE_CHANNEL_XDS;
 
 public class XdsChannel {
@@ -76,18 +79,17 @@ public class XdsChannel {
                             .usePlaintext()
                             .build();
                 } else {
-                    XdsCertificateSigner signer = url.getOrDefaultApplicationModel()
-                            .getExtensionLoader(XdsCertificateSigner.class)
+                    CertSource signer = url.getOrDefaultApplicationModel()
+                            .getExtensionLoader(CertSource.class)
                             .getExtension(url.getParameter("signer", "istio"));
-                    XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
+                    CertPair certPair = signer.getCert(url);
                     SslContext context = GrpcSslContexts.forClient()
                             .trustManager(InsecureTrustManagerFactory.INSTANCE)
                             .keyManager(
                                     new ByteArrayInputStream(
                                             certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
                                     new ByteArrayInputStream(
-                                            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8))
-                            )
+                                            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
                             .build();
                     managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
                             .sslContext(context)

@@ -48,8 +48,8 @@ public class LdsProtocol extends AbstractProtocol<Listener> {
 
     public LdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
         super(adsObserver, node, checkInterval, applicationModel);
-        List<LdsListener> ldsListeners = applicationModel.getExtensionLoader(LdsListener.class)
-                .getActivateExtensions();
+        List<LdsListener> ldsListeners =
+                applicationModel.getExtensionLoader(LdsListener.class).getActivateExtensions();
         ldsListeners.forEach(this::registerListen);
     }
 
@@ -63,7 +63,7 @@ public class LdsProtocol extends AbstractProtocol<Listener> {
     }
 
     @Override
-    protected Map<String,Listener> decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, Listener> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             return response.getResourcesList().stream()
                     .map(LdsProtocol::unpackListener)

@@ -34,7 +34,7 @@ public class X509CertChains {
 
     private final long expireAt;
 
-    public X509CertChains(List<String> pemTrustChains){
+    public X509CertChains(List<String> pemTrustChains) {
 
         StringBuilder builder = new StringBuilder();
         for (String str : pemTrustChains) {

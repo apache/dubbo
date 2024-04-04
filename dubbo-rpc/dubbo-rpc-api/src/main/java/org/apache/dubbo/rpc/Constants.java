@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public interface Constants {
     String LOCAL_KEY = "local";
 
@@ -111,4 +115,12 @@ public interface Constants {
 
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";
+    String MESH_KEY = "mesh";
+    String SECURITY_KEY = "security";
+
+    Set<String> SUPPORT_MESH_TYPE = new HashSet<String>() {
+        {
+            addAll(Arrays.asList("istio", "zookeeper"));
+        }
+    };
 }

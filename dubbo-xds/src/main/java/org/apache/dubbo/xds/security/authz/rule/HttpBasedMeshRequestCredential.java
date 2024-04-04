@@ -76,26 +76,26 @@ public class HttpBasedMeshRequestCredential implements RequestCredential {
         this.allCredentials = allCredentials;
         this.credentialPropPath = new HashMap<>();
 
-        //standard AuthorizationPolicy filtering items
-        //destination.service.host and destination.workload.name, <serviceName>/<methodName>
-        //non-standard properties, but can also use as filtering items
+        // standard AuthorizationPolicy filtering items
+        // destination.service.host and destination.workload.name, <serviceName>/<methodName>
+        // non-standard properties, but can also use as filtering items
     }
 
     @Override
     public List<List<String>> supportPaths() {
         return null;
-//        return Arrays.asList(
-//                Arrays.asList("from", "source", "principals"),
-//                Arrays.asList("to", "operation", "methods"),
-//                Arrays.asList("to", "operation", "paths"));
+        //        return Arrays.asList(
+        //                Arrays.asList("from", "source", "principals"),
+        //                Arrays.asList("to", "operation", "methods"),
+        //                Arrays.asList("to", "operation", "paths"));
     }
 
     @Override
     public List<String> getByPath(String mapPath) {
         String propertyPath = credentialPropPath.get(mapPath);
-        if(StringUtils.isNotEmpty(propertyPath)) {
+        if (StringUtils.isNotEmpty(propertyPath)) {
             return Collections.singletonList(propertyPath);
-        }else {
+        } else {
             return Collections.emptyList();
         }
     }
@@ -201,7 +201,7 @@ public class HttpBasedMeshRequestCredential implements RequestCredential {
     }
 
     public void setVersion(String version) {
-        credentialPropPath.put("rules.to.operation.version",version);
+        credentialPropPath.put("rules.to.operation.version", version);
         this.version = version;
     }
 }

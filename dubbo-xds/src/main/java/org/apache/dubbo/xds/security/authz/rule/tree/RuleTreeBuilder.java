@@ -52,46 +52,46 @@ public class RuleTreeBuilder {
     }
 
     public void createFromMap(Map<String, Object> map) {
-        if(CollectionUtils.isEmpty(nodeLevelRelations)){
+        if (CollectionUtils.isEmpty(nodeLevelRelations)) {
             throw new RuntimeException("Node level relations can't be null or empty");
         }
 
         for (String key : map.keySet()) {
             Object value = map.get(key);
-            processNode(root, key, value,0);
+            processNode(root, key, value, 0);
         }
     }
 
-    public void setPathLevelRelations(List<Relation> pathLevelRelations){
+    public void setPathLevelRelations(List<Relation> pathLevelRelations) {
         this.nodeLevelRelations = pathLevelRelations;
     }
 
-    private void processNode(CompositeRuleNode parent, String key, Object value,int level) {
-        //key：name of current node
-        //value：values for children of current node
+    private void processNode(CompositeRuleNode parent, String key, Object value, int level) {
+        // key：name of current node
+        // value：values for children of current node
         if (value instanceof List) {
             List<?> list = (List<?>) value;
             if (!list.isEmpty()) {
 
                 if (list.get(0) instanceof String) {
                     LeafRuleNode current = new LeafRuleNode(key, (List<String>) list);
-                    parent.addChild(key,current);
-                }
-
-                else if (list.get(0) instanceof Map) {
+                    parent.addChild(key, current);
+                } else if (list.get(0) instanceof Map) {
                     CompositeRuleNode current = new CompositeRuleNode(key, nodeLevelRelations.get(level));
                     parent.addChild(key, current);
 
                     for (Object item : list) {
                         ((Map<?, ?>) item)
-                                .forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue,level+1));
+                                .forEach((childKey, childValue) ->
+                                        processNode(current, (String) childKey, childValue, level + 1));
                     }
                 }
             }
         } else if (value instanceof Map) {
             CompositeRuleNode current = new CompositeRuleNode(key, nodeLevelRelations.get(level));
             parent.addChild(key, current);
-            ((Map<?, ?>) value).forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue,level+1));
+            ((Map<?, ?>) value)
+                    .forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue, level + 1));
         } else {
             throw new RuntimeException();
         }

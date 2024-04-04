@@ -31,7 +31,7 @@ public class RuleRoot extends CompositeRuleNode {
         this.action = action;
     }
 
-    public Action getAction(){
+    public Action getAction() {
         return action;
     }
 
@@ -52,31 +52,31 @@ public class RuleRoot extends CompositeRuleNode {
     /**
      * The action of authorization policy
      */
-    public enum Action{
+    public enum Action {
 
         /**
          * The request must map this policy
          */
-        ALLOW("ALLOW",true),
+        ALLOW("ALLOW", true),
 
         /**
          * The request must not map this policy
          */
-        DENY("DENY",false);
+        DENY("DENY", false);
 
         private final String name;
 
         private boolean boolVal;
 
-        Action(String name,boolean boolValue){
+        Action(String name, boolean boolValue) {
             this.name = name;
             this.boolVal = boolValue;
         }
 
-        public static Action map(String name){
+        public static Action map(String name) {
             name = name.toUpperCase();
-            switch (name){
-                case "ALLOW" :
+            switch (name) {
+                case "ALLOW":
                     return ALLOW;
                 case "DENY":
                     return DENY;
@@ -84,11 +84,8 @@ public class RuleRoot extends CompositeRuleNode {
             return null;
         }
 
-        public boolean boolVal(){
+        public boolean boolVal() {
             return boolVal;
         }
-
     }
-
-
 }

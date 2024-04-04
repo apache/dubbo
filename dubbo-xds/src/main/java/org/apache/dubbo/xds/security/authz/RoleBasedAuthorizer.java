@@ -56,8 +56,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
 
     public RoleBasedAuthorizer(ApplicationModel applicationModel) {
         this.ruleSourceProvider = applicationModel.getAdaptiveExtension(RuleSourceProvider.class);
-        this.credentialFactory =
-                applicationModel.getAdaptiveExtension(CredentialFactory.class);
+        this.credentialFactory = applicationModel.getAdaptiveExtension(CredentialFactory.class);
         this.ruleFactory = applicationModel.getBeanFactory().getBean(RuleFactory.class);
     }
 
@@ -131,7 +130,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         if (CollectionUtils.isEmpty(orRules)) {
             orRes = true;
         }
-        if(andRes && orRes){
+        if (andRes && orRes) {
             return;
         }
         throw new AuthorizationException("Request authorization failed: request credential doesn't meet rules.");

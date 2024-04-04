@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.router;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.Holder;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -37,9 +38,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.rpc.Constants.MESH_KEY;
+import static org.apache.dubbo.rpc.Constants.SUPPORT_MESH_TYPE;
+
 public class XdsRouter<T> extends AbstractStateRouter<T> {
 
-    private final PilotExchanger pilotExchanger = PilotExchanger.getInstance();
+    private final PilotExchanger pilotExchanger;
 
     private Map<String, XdsVirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
@@ -47,6 +51,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     public XdsRouter(URL url) {
         super(url);
+        pilotExchanger = url.getOrDefaultApplicationModel().getBeanFactory().getBean(PilotExchanger.class);
     }
 
     @Override
@@ -60,8 +65,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             throws RpcException {
 
         // return all invokers directly if xds is not used
-        // TODO：need to consider where to set ‘xds’ param
-        if (!url.getParameter("xds", false)) {
+        String meshType = url.getParameter(MESH_KEY);
+        if (StringUtils.isEmpty(meshType)) {
             return invokers;
         }
 

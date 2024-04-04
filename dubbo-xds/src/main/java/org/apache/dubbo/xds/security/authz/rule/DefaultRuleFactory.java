@@ -39,17 +39,17 @@ public class DefaultRuleFactory implements RuleFactory {
         Map<String, Object> sourceMap = ruleSource.readAsMap();
 
         Action action = Action.map((String) sourceMap.get("action"));
-        if(action == null){
-             throw new RuntimeException("Parse rule map failed: unknown action");
+        if (action == null) {
+            throw new RuntimeException("Parse rule map failed: unknown action");
         }
 
-        RuleTreeBuilder builder = new RuleTreeBuilder(Relation.AND,action);
+        RuleTreeBuilder builder = new RuleTreeBuilder(Relation.AND, action);
         ArrayList<Relation> levelRelations = new ArrayList<>();
-        //from|to|...
+        // from|to|...
         levelRelations.add(Relation.AND);
-        //from.source[0]|from.source[1]|...
+        // from.source[0]|from.source[1]|...
         levelRelations.add(Relation.OR);
-        //from.source.principle|from.source.namespaces|...
+        // from.source.principle|from.source.namespaces|...
         levelRelations.add(Relation.AND);
 
         Map<String, Object> ruleMap = new HashMap<>();

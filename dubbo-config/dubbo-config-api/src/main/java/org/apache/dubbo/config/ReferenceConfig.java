@@ -53,7 +53,6 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.apache.dubbo.xds.PilotExchanger;
 
 import java.beans.Transient;
 import java.util.ArrayList;
@@ -101,6 +100,8 @@ import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.MESH_KEY;
+import static org.apache.dubbo.rpc.Constants.SECURITY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -632,6 +633,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     u = u.addParameter(LOCAL_PROTOCOL, true);
                 }
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
+                if (u.hasParameter(MESH_KEY)) {
+                    referenceParameters.put(MESH_KEY, u.getParameter(MESH_KEY));
+                    if (u.hasParameter(SECURITY_KEY)) {
+                        referenceParameters.put(SECURITY_KEY, u.getParameter(SECURITY_KEY));
+                    }
+                }
             }
         }
         if (urls.isEmpty() && shouldJvmRefer(referenceParameters)) {
@@ -656,15 +663,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void createInvoker() {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
-
-            if (curUrl.getParameter("registry", "null").startsWith("xds")) {
-                // TODO: The PilotExchanger requests xds resources asynchronously,
-                //  and the xdsDirectory call filter chain may have an exception with invoker null,
-                //  which needs to be synchronized later.
-                // move to deployer
-                curUrl = curUrl.addParameter("xds", true);
-                PilotExchanger.initialize(curUrl);
-            }
 
             invoker = protocolSPI.refer(interfaceClass, curUrl);
             // registry url, mesh-enable and unloadClusterRelated is true, not need Cluster.

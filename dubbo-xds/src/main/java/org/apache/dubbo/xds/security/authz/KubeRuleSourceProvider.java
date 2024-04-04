@@ -75,26 +75,26 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                             Response<Object> resp = watch.next();
                             if ("ADDED".equals(resp.type) || "MODIFIED".equals(resp.type)) {
                                 updateSource((Map<String, Object>) resp.object);
-                            } else if("DELETED".equals(resp.type)){
+                            } else if ("DELETED".equals(resp.type)) {
                                 ruleSourceInst = Collections.emptyList();
                             }
                         }
                     } catch (Exception e) {
-                        logger.error("", "", "", "Got exception when watch and updating RequestAuthorization resource", e);
+                        logger.error(
+                                "", "", "", "Got exception when watch and updating RequestAuthorization resource", e);
                     }
                 },
                 500,
                 TimeUnit.MILLISECONDS);
     }
 
-    protected Map<String,Object> getResource(){
+    protected Map<String, Object> getResource() {
         return kubeApiClient.getResourceAsMap(
                 "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
     }
 
-    protected Watch<Object> getResourceListen(){
-        return kubeApiClient.listenResource(
-                "security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
+    protected Watch<Object> getResourceListen() {
+        return kubeApiClient.listenResource("security.istio.io", "v1", kubeEnv.getNamespace(), "authorizationpolicies");
     }
 
     protected void updateSource(Map<String, Object> resultMap) {
@@ -118,7 +118,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                         match = true;
                     }
                 } else {
-                    //no selector set
+                    // no selector set
                     match = true;
                 }
                 if (match) {

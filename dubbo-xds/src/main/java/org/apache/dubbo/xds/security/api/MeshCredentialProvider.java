@@ -47,22 +47,24 @@ public class MeshCredentialProvider implements CertProvider {
     @Override
     public boolean isSupport(URL address) {
 
-        //TODO: To support multi-protocol in one port , we need more properties to indicate if opposite supports TLS
+        // TODO: To support multi-protocol in one port , we need more properties to indicate if opposite supports TLS
         int port = address.getPort();
         TlsType type = modeRepo.getType(String.valueOf(port));
 
-        if(type == null || TlsType.DISABLE.equals(type)){
+        if (type == null || TlsType.DISABLE.equals(type)) {
             return false;
         }
 
-        if(TlsType.STRICT.equals(type)){
+        if (TlsType.STRICT.equals(type)) {
             return true;
         }
 
-        if(TlsType.PERMISSIVE.equals(type)){
+        if (TlsType.PERMISSIVE.equals(type)) {
             String security = address.getParameter("security");
             String mesh = address.getParameter("mesh");
-            return mesh != null && security != null && Arrays.asList(security.split(",")).contains("mTLS");
+            return mesh != null
+                    && security != null
+                    && Arrays.asList(security.split(",")).contains("mTLS");
         }
 
         return false;
@@ -78,7 +80,7 @@ public class MeshCredentialProvider implements CertProvider {
         return getServiceCredential(remoteAddress, AuthPolicy.SERVER_AUTH);
     }
 
-    private ProviderCert getServiceCredential(URL remoteUrl,AuthPolicy authPolicy) {
+    private ProviderCert getServiceCredential(URL remoteUrl, AuthPolicy authPolicy) {
         CertPair cert = certSource.getCert(remoteUrl);
         return new ProviderCert(
                 cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
@@ -86,5 +88,4 @@ public class MeshCredentialProvider implements CertProvider {
                 trustSource.getTrustCerts(remoteUrl).readAsBytes(),
                 authPolicy);
     }
-
 }

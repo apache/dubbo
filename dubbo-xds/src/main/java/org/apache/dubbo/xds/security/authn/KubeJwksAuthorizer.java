@@ -26,7 +26,5 @@ import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 public class KubeJwksAuthorizer implements RequestAuthorizer {
 
     @Override
-    public void validate(Invocation invocation) throws AuthorizationException {
-
-    }
+    public void validate(Invocation invocation) throws AuthorizationException {}
 }

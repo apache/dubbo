@@ -50,35 +50,36 @@ public class KubeEnv implements XdsEnv {
         setDefault();
     }
 
-    public void setDefault(){
-        if(StringUtils.isEmpty(apiServerPath)) {
-            apiServerPath = getStringProp("API_SERVER_PATH","https://kubernetes.default.svc");
+    public void setDefault() {
+        if (StringUtils.isEmpty(apiServerPath)) {
+            apiServerPath = getStringProp("API_SERVER_PATH", "https://kubernetes.default.svc");
         }
-        if(enableSsl != null) {
+        if (enableSsl != null) {
             enableSsl = true;
         }
-        if(StringUtils.isEmpty(serviceAccountCaPath)) {
-            serviceAccountCaPath = getStringProp("SA_CA_PATH","/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");
+        if (StringUtils.isEmpty(serviceAccountCaPath)) {
+            serviceAccountCaPath = getStringProp("SA_CA_PATH", "/Users/smzdm/hjf/xds/resources/ca.crt");
         }
-        if(StringUtils.isEmpty(serviceAccountTokenPath)){
-            serviceAccountTokenPath = getStringProp("SA_TOKEN_PATH","/var/run/secrets/kubernetes.io/serviceaccount/token");
+        if (StringUtils.isEmpty(serviceAccountTokenPath)) {
+            serviceAccountTokenPath =
+                    getStringProp("SA_TOKEN_PATH", "/Users/smzdm/hjf/xds/resources/token");
         }
-        if(StringUtils.isEmpty(namespace)) {
-            namespace = getStringProp( "NAMESPACE","default");
+        if (StringUtils.isEmpty(namespace)) {
+            namespace = getStringProp("NAMESPACE", "dubbo-demo");
         }
-        if(StringUtils.isEmpty(serviceName)) {
-            serviceName = getStringProp("SERVICE_NAME","");
+        if (StringUtils.isEmpty(serviceName)) {
+            serviceName = getStringProp("SERVICE_NAME", "");
         }
-        if(apiClientConnectTimeout == null) {
-            apiClientConnectTimeout = getIntProp("API_CLIENT_CONNECT_TIMEOUT","10000");
+        if (apiClientConnectTimeout == null) {
+            apiClientConnectTimeout = getIntProp("API_CLIENT_CONNECT_TIMEOUT", "10000");
         }
-        if(apiClientReadTimeout == null) {
-            apiClientReadTimeout = getIntProp("API_CLIENT_READ_TIMEOUT","30000");
+        if (apiClientReadTimeout == null) {
+            apiClientReadTimeout = getIntProp("API_CLIENT_READ_TIMEOUT", "30000");
         }
-        if(StringUtils.isEmpty(cluster)){
-            cluster = getStringProp("CLUSTER","cluster.local");
+        if (StringUtils.isEmpty(cluster)) {
+            cluster = getStringProp("CLUSTER", "cluster.local");
         }
-        if(enableSsl == null){
+        if (enableSsl == null) {
             enableSsl = true;
         }
     }
@@ -111,10 +112,10 @@ public class KubeEnv implements XdsEnv {
         return readFileAsBytes(getServiceAccountCaPath());
     }
 
-    private byte[] readFileAsBytes(String path) throws IOException{
+    private byte[] readFileAsBytes(String path) throws IOException {
         File file = new File(path);
         byte[] value = new byte[4096];
-        if(!file.exists()){
+        if (!file.exists()) {
             return new byte[0];
         }
         try (FileInputStream in = new FileInputStream(file); ) {
@@ -122,12 +123,11 @@ public class KubeEnv implements XdsEnv {
             if (readBytes > 4096) {
                 throw new RuntimeException("Security resource size > 4096: Too long");
             }
-            value = Bytes.copyOf(value,readBytes);
+            value = Bytes.copyOf(value, readBytes);
         }
 
         return value;
     }
-
 
     public int apiClientConnectTimeout() {
         return 10000;
@@ -161,8 +161,8 @@ public class KubeEnv implements XdsEnv {
         this.serviceAccountCaPath = serviceAccountPath;
     }
 
-    public void setServiceAccountTokenPath(String serviceAccountTokenPath){
-        this.serviceAccountTokenPath =serviceAccountTokenPath;
+    public void setServiceAccountTokenPath(String serviceAccountTokenPath) {
+        this.serviceAccountTokenPath = serviceAccountTokenPath;
     }
 
     public void setNamespace(String namespace) {

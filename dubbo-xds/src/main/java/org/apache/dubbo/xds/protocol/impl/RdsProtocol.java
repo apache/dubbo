@@ -56,12 +56,8 @@ public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
-    public RdsProtocol(
-            AdsObserver adsObserver,
-            Node node,
-            int checkInterval,
-            ApplicationModel applicationModel) {
-        super(adsObserver, node, checkInterval,applicationModel);
+    public RdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
+        super(adsObserver, node, checkInterval, applicationModel);
     }
 
     @Override
@@ -69,23 +65,23 @@ public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
         return "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
     }
 
-//    @Override
-//    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
-//        List<XdsRouteConfiguration> xdsRouteConfigurations = parse(response);
-//        System.out.println(xdsRouteConfigurations);
-//        updateCallback.accept(xdsRouteConfigurations);
-//        // if (getTypeUrl().equals(response.getTypeUrl())) {
-//        //     return response.getResourcesList().stream()
-//        //             .map(RdsProtocol::unpackRouteConfiguration)
-//        //             .filter(Objects::nonNull)
-//        //             .collect(Collectors.toConcurrentMap(RouteConfiguration::getName,
-//        // this::decodeResourceToListener));
-//        // }
-//        return new HashMap<>();
-//    }
+    //    @Override
+    //    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
+    //        List<XdsRouteConfiguration> xdsRouteConfigurations = parse(response);
+    //        System.out.println(xdsRouteConfigurations);
+    //        updateCallback.accept(xdsRouteConfigurations);
+    //        // if (getTypeUrl().equals(response.getTypeUrl())) {
+    //        //     return response.getResourcesList().stream()
+    //        //             .map(RdsProtocol::unpackRouteConfiguration)
+    //        //             .filter(Objects::nonNull)
+    //        //             .collect(Collectors.toConcurrentMap(RouteConfiguration::getName,
+    //        // this::decodeResourceToListener));
+    //        // }
+    //        return new HashMap<>();
+    //    }
 
     @Override
-    protected Map<String,XdsRouteConfiguration> decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, XdsRouteConfiguration> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             return response.getResourcesList().stream()
                     .map(RdsProtocol::unpackRouteConfiguration)
@@ -180,14 +176,14 @@ public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
         return xdsRouteAction;
     }
 
-    public XdsResourceListener<Listener> getLdsListener(){
+    public XdsResourceListener<Listener> getLdsListener() {
         return ldsListener;
     }
 
     private final XdsResourceListener<Listener> ldsListener = resource -> {
         Set<String> set = resource.stream()
                 .flatMap(e -> listenerToConnectionManagerNames(e).stream())
-            .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
         this.subscribeResource(set);
     };
 
@@ -222,5 +218,4 @@ public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
             return null;
         }
     }
-
 }

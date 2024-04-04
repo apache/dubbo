@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.listener;
 
 import org.apache.dubbo.common.extension.Activate;
@@ -21,7 +37,7 @@ public class TlsModeListener implements LdsListener {
 
     private final TlsModeRepo repo;
 
-    public TlsModeListener(ApplicationModel applicationModel){
+    public TlsModeListener(ApplicationModel applicationModel) {
         this.repo = applicationModel.getBeanFactory().getOrRegisterBean(TlsModeRepo.class);
     }
 
@@ -45,13 +61,14 @@ public class TlsModeListener implements LdsListener {
                 }
                 FilterChainMatch match = filterChain.getFilterChainMatch();
                 int port = match.getDestinationPort().getValue();
-//                String applicationProtocolIndicator = Strings.join(match.getApplicationProtocolsList(),":");
+                //                String applicationProtocolIndicator =
+                // Strings.join(match.getApplicationProtocolsList(),":");
 
                 TlsType newTlsType = TlsType.DISABLE;
                 if (TLS.equals(match.getTransportProtocol())) {
                     newTlsType = TlsType.STRICT;
                 }
-                //PERMISSIVE mode resolves both plaintext and tls
+                // PERMISSIVE mode resolves both plaintext and tls
                 if (indicatorToTls.containsKey(port)) {
                     newTlsType = TlsType.PERMISSIVE;
                 }
@@ -63,7 +80,6 @@ public class TlsModeListener implements LdsListener {
         repo.setGlobalConfig(globalSetting);
         repo.update(indicatorToTls);
     }
-
 
     public enum TlsType {
         STRICT(0, "Strict Mode"),
@@ -92,10 +108,7 @@ public class TlsModeListener implements LdsListener {
 
         @Override
         public String toString() {
-            return "TlsType{" +
-                    "code=" + code +
-                    ", msg='" + msg + '\'' +
-                    '}';
+            return "TlsType{" + "code=" + code + ", msg='" + msg + '\'' + '}';
         }
 
         public int getCode() {

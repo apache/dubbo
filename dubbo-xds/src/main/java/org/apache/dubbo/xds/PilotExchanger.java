@@ -66,55 +66,55 @@ public class PilotExchanger {
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
         adsObserver = new AdsObserver(url, NodeBuilder.build());
 
-//        // rds resources callback
-//        Consumer<List<XdsRouteConfiguration>> rdsCallback = (xdsRouteConfigurations) -> {
-//            xdsRouteConfigurations.forEach(xdsRouteConfiguration -> {
-//                xdsRouteConfiguration.getVirtualHosts().forEach((serviceName, xdsVirtualHost) -> {
-//                    this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
-//                    // when resource update, notify subscribers
-//                    if (rdsListeners.containsKey(serviceName)) {
-//                        for (XdsDirectory listener : rdsListeners.get(serviceName)) {
-//                            listener.onRdsChange(serviceName, xdsVirtualHost);
-//                        }
-//                    }
-//                });
-//            });
-//        };
-//
-
+        //        // rds resources callback
+        //        Consumer<List<XdsRouteConfiguration>> rdsCallback = (xdsRouteConfigurations) -> {
+        //            xdsRouteConfigurations.forEach(xdsRouteConfiguration -> {
+        //                xdsRouteConfiguration.getVirtualHosts().forEach((serviceName, xdsVirtualHost) -> {
+        //                    this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
+        //                    // when resource update, notify subscribers
+        //                    if (rdsListeners.containsKey(serviceName)) {
+        //                        for (XdsDirectory listener : rdsListeners.get(serviceName)) {
+        //                            listener.onRdsChange(serviceName, xdsVirtualHost);
+        //                        }
+        //                    }
+        //                });
+        //            });
+        //        };
+        //
 
         // eds resources callback
-//        Consumer<List<XdsCluster>> edsCallback = (xdsClusters) -> {
-//            xdsClusters.forEach(xdsCluster -> {
-//                this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
-//                if (cdsListeners.containsKey(xdsCluster.getName())) {
-//                    for (XdsDirectory listener : cdsListeners.get(xdsCluster.getName())) {
-//                        listener.onEdsChange(xdsCluster.getName(), xdsCluster);
-//                    }
-//                }
-//            });
-//        };
+        //        Consumer<List<XdsCluster>> edsCallback = (xdsClusters) -> {
+        //            xdsClusters.forEach(xdsCluster -> {
+        //                this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
+        //                if (cdsListeners.containsKey(xdsCluster.getName())) {
+        //                    for (XdsDirectory listener : cdsListeners.get(xdsCluster.getName())) {
+        //                        listener.onEdsChange(xdsCluster.getName(), xdsCluster);
+        //                    }
+        //                }
+        //            });
+        //        };
 
-        this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
-        this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
-        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
-        this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getApplicationModel());
+        this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
 
-
-        XdsResourceListener<XdsRouteConfiguration> pilotRdsListener = xdsRouteConfigurations ->
-                xdsRouteConfigurations.forEach(xdsRouteConfiguration ->
-                        xdsRouteConfiguration.getVirtualHosts().forEach((serviceName, xdsVirtualHost) -> {
-                    this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
-                    // when resource update, notify subscribers
-                    if (rdsListeners.containsKey(serviceName)) {
-                        for (XdsDirectory listener : rdsListeners.get(serviceName)) {
-                            listener.onRdsChange(serviceName, xdsVirtualHost);
-                        }
-                    }
-                }));
+        XdsResourceListener<XdsRouteConfiguration> pilotRdsListener =
+                xdsRouteConfigurations -> xdsRouteConfigurations.forEach(xdsRouteConfiguration -> xdsRouteConfiguration
+                        .getVirtualHosts()
+                        .forEach((serviceName, xdsVirtualHost) -> {
+                            this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
+                            // when resource update, notify subscribers
+                            if (rdsListeners.containsKey(serviceName)) {
+                                for (XdsDirectory listener : rdsListeners.get(serviceName)) {
+                                    listener.onRdsChange(serviceName, xdsVirtualHost);
+                                }
+                            }
+                        }));
 
         XdsResourceListener<ClusterLoadAssignment> pilotEdsListener = clusterLoadAssignments -> {
-            List<XdsCluster> xdsClusters = clusterLoadAssignments.stream().map(this::parseCluster).collect(Collectors.toList());
+            List<XdsCluster> xdsClusters =
+                    clusterLoadAssignments.stream().map(this::parseCluster).collect(Collectors.toList());
             xdsClusters.forEach(xdsCluster -> {
                 this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
                 if (cdsListeners.containsKey(xdsCluster.getName())) {
@@ -181,6 +181,10 @@ public class PilotExchanger {
         synchronized (PilotExchanger.class) {
             return GLOBAL_PILOT_EXCHANGER;
         }
+    }
+
+    public static PilotExchanger createInstance(URL url) {
+        return new PilotExchanger(url);
     }
 
     public static boolean isEnabled() {

@@ -66,29 +66,29 @@ public class CdsProtocol extends AbstractProtocol<Cluster> {
         subscribeResource(null);
     }
 
-//    @Override
-//    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
-//        if (getTypeUrl().equals(response.getTypeUrl())) {
-//            Set<String> set = response.getResourcesList().stream()
-//                    .map(CdsProtocol::unpackCluster)
-//                    .filter(Objects::nonNull)
-//                    .map(Cluster::getName)
-//                    .collect(Collectors.toSet());
-//            updateCallback.accept(set);
-//            // Map<String, ListenerResult> listenerDecodeResult = new ConcurrentHashMap<>();
-//            // listenerDecodeResult.put(emptyResourceName, new ListenerResult(set));
-//            // return listenerDecodeResult;
-//        }
-//        return new HashMap<>();
-//    }
+    //    @Override
+    //    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
+    //        if (getTypeUrl().equals(response.getTypeUrl())) {
+    //            Set<String> set = response.getResourcesList().stream()
+    //                    .map(CdsProtocol::unpackCluster)
+    //                    .filter(Objects::nonNull)
+    //                    .map(Cluster::getName)
+    //                    .collect(Collectors.toSet());
+    //            updateCallback.accept(set);
+    //            // Map<String, ListenerResult> listenerDecodeResult = new ConcurrentHashMap<>();
+    //            // listenerDecodeResult.put(emptyResourceName, new ListenerResult(set));
+    //            // return listenerDecodeResult;
+    //        }
+    //        return new HashMap<>();
+    //    }
 
     @Override
-    protected Map<String,Cluster> decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, Cluster> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             return response.getResourcesList().stream()
                     .map(CdsProtocol::unpackCluster)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toMap(Cluster::getName, Function.identity()));
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toMap(Cluster::getName, Function.identity()));
         }
         return Collections.emptyMap();
     }

@@ -21,7 +21,8 @@ import org.apache.dubbo.rpc.RpcContext;
 public class DemoServiceImpl implements DemoService {
     @Override
     public String sayHello(String name) {
-        System.out.println("service1 impl get attachment:"+ RpcContext.getServerAttachment().getAttachment("s2"));
-        return "hello:"+name;
+        System.out.println("service1 impl get attachment:"
+                + RpcContext.getServerAttachment().getAttachment("s2"));
+        return "hello:" + name;
     }
 }

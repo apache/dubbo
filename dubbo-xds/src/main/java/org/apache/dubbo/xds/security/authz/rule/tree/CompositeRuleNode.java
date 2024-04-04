@@ -54,7 +54,7 @@ public class CompositeRuleNode implements RuleNode {
         this.children.computeIfAbsent(key, (k) -> new ArrayList<>()).add(ruleNode);
     }
 
-    public Relation getRelation(){
+    public Relation getRelation() {
         return relation;
     }
 

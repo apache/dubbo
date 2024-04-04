@@ -84,10 +84,9 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
         adsObserver.addListener(this);
     }
 
-    public void registerListen(XdsResourceListener<T> listener){
+    public void registerListen(XdsResourceListener<T> listener) {
         this.resourceListeners.add(listener);
     }
-
 
     /**
      * Abstract method to obtain Type-URL from sub-class
@@ -175,13 +174,13 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
                 .build();
     }
 
-//    protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
+    //    protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
 
-    protected abstract Map<String,T> decodeDiscoveryResponse(DiscoveryResponse response);
+    protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
 
     @Override
     public final void process(DiscoveryResponse discoveryResponse) {
-//        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
+        //        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
         Map<String, T> oldResource = resourcesMap;
         // discoveryResponseListener(oldResource, newResult);
 

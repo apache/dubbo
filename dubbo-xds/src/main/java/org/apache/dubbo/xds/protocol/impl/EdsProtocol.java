@@ -43,15 +43,12 @@ public class EdsProtocol extends AbstractProtocol<ClusterLoadAssignment> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
     private XdsResourceListener<Cluster> clusterListener = clusters -> {
-        Set<String> clusterNames = clusters.stream()
-                .map(Cluster::getName)
-                .collect(Collectors.toSet());
+        Set<String> clusterNames = clusters.stream().map(Cluster::getName).collect(Collectors.toSet());
         this.subscribeResource(clusterNames);
     };
 
-    public EdsProtocol(
-            AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
-        super(adsObserver, node, checkInterval,applicationModel);
+    public EdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
+        super(adsObserver, node, checkInterval, applicationModel);
     }
 
     @Override
@@ -59,17 +56,18 @@ public class EdsProtocol extends AbstractProtocol<ClusterLoadAssignment> {
         return "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
     }
 
-    public XdsResourceListener<Cluster> getCdsListener(){
+    public XdsResourceListener<Cluster> getCdsListener() {
         return clusterListener;
     }
 
     @Override
-    protected Map<String,ClusterLoadAssignment> decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, ClusterLoadAssignment> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (!getTypeUrl().equals(response.getTypeUrl())) {
             return null;
         }
         return response.getResourcesList().stream()
-                .map(EdsProtocol::unpackClusterLoadAssignment).filter(Objects::nonNull)
+                .map(EdsProtocol::unpackClusterLoadAssignment)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toConcurrentMap(ClusterLoadAssignment::getClusterName, Function.identity()));
     }
 

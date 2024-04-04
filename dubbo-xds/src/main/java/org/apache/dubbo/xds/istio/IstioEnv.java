@@ -178,7 +178,8 @@ public class IstioEnv implements XdsEnv {
 
     public String getCsrHost() {
         // spiffe://<trust_domain>/ns/<namespace>/sa/<service_account>
-        return SPIFFE + trustDomain + NS + workloadNameSpace + SA + getServiceAccount();
+        return "default";
+        // return SPIFFE + trustDomain + NS + workloadNameSpace + SA + getServiceAccount();
     }
 
     public String getTrustDomain() {
@@ -226,9 +227,9 @@ public class IstioEnv implements XdsEnv {
         return trustTTL;
     }
 
-    //for test
+    // for test
     @Deprecated
-    public void setToken(String saJwtToken){
+    public void setToken(String saJwtToken) {
         serviceAccountJwt = saJwtToken;
     }
 

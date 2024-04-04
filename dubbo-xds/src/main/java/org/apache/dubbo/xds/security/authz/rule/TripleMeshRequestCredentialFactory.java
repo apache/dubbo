@@ -37,7 +37,7 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
 
     private final KubeEnv kubeEnv;
 
-    public TripleMeshRequestCredentialFactory(ApplicationModel applicationModel){
+    public TripleMeshRequestCredentialFactory(ApplicationModel applicationModel) {
         this.kubeEnv = applicationModel.getBeanFactory().getBean(KubeEnv.class);
     }
 
@@ -49,7 +49,8 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
         }
 
         if (token.startsWith("Bearer ")) {
-            token = token.substring("Bearer ".length());;
+            token = token.substring("Bearer ".length());
+            ;
         }
 
         DecodedJWT jwt = JWT.decode(token);
@@ -67,35 +68,32 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
 
         String targetPath = invocation.getServiceName() + "/" + invocation.getMethodName();
         String httpMethod = "POST";
-        Map<String,Object> kubeProps = jwt.getClaims().get("kubernetes.io").asMap();
+        Map<String, Object> kubeProps = jwt.getClaims().get("kubernetes.io").asMap();
         String issuer = jwt.getIssuer();
         String sub = jwt.getSubject();
         String namespace = null;
 
-
         String podName = null;
         String podId = null;
-        Map<String,String> serviceAccount = Collections.emptyMap();
-        if(kubeProps != null) {
+        Map<String, String> serviceAccount = Collections.emptyMap();
+        if (kubeProps != null) {
             namespace = (String) kubeProps.get("namespace");
-            serviceAccount =  (Map<String, String>) kubeProps.get("serviceaccount");
+            serviceAccount = (Map<String, String>) kubeProps.get("serviceaccount");
 
-            Map<String,String> pod =  (Map<String, String>) kubeProps.get("pod");
-            if(pod != null){
-                podName= pod.get("name");
+            Map<String, String> pod = (Map<String, String>) kubeProps.get("pod");
+            if (pod != null) {
+                podName = pod.get("name");
                 podId = pod.get("uid");
             }
-
         }
         String name = serviceAccount.get("name");
         String uid = serviceAccount.get("uid");
 
         HttpBasedMeshRequestCredential requestCredential = new HttpBasedMeshRequestCredential(jwt.getClaims());
 
-
-        //TODO support non-local cluster
+        // TODO support non-local cluster
         String cluster = kubeEnv.getCluster();
-        requestCredential.setPrinciple(cluster+"/ns/"+namespace+"/sa/"+name);
+        requestCredential.setPrinciple(cluster + "/ns/" + namespace + "/sa/" + name);
         requestCredential.setIssuer(issuer);
         requestCredential.setSubject(sub);
         requestCredential.setTargetPath(targetPath);
@@ -105,9 +103,7 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
         requestCredential.setPodId(podId);
         requestCredential.setPodName(podName);
         requestCredential.setServiceUid(uid);
-        requestCredential.setVersion( invocation.getInvoker()
-                .getUrl()
-                .getVersion());
+        requestCredential.setVersion(invocation.getInvoker().getUrl().getVersion());
 
         return requestCredential;
     }

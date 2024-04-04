@@ -49,10 +49,10 @@ public class LeafRuleNode implements RuleNode {
         }
 
         List<String> l = new ArrayList<>(valuesToValidate);
-        for (String p:expectedValuePattern) {
-            //If we have multiple values to validate, then every value must match at list one rule pattern
+        for (String p : expectedValuePattern) {
+            // If we have multiple values to validate, then every value must match at list one rule pattern
             l.removeIf(val -> val.matches(p));
-            if(l.isEmpty()){
+            if (l.isEmpty()) {
                 break;
             }
         }
@@ -65,9 +65,9 @@ public class LeafRuleNode implements RuleNode {
         return rulePropName;
     }
 
-    private List<String> parseToPattern(List<String> values){
+    private List<String> parseToPattern(List<String> values) {
         List<String> pattern = new ArrayList<>(1);
-        for (String val: values) {
+        for (String val : values) {
             StringBuilder patternBuilder = new StringBuilder();
             for (int i = 0; i < val.length(); i++) {
                 char c = val.charAt(i);
@@ -99,5 +99,4 @@ public class LeafRuleNode implements RuleNode {
         }
         return pattern;
     }
-
 }

@@ -31,17 +31,16 @@ public class LocalSource implements ServiceAccountSource {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LocalSource.class);
 
-    public LocalSource(ApplicationModel applicationModel){
-        this.kubeEnv=applicationModel.getBeanFactory().getBean(KubeEnv.class);
+    public LocalSource(ApplicationModel applicationModel) {
+        this.kubeEnv = applicationModel.getBeanFactory().getBean(KubeEnv.class);
     }
-
 
     @Override
     public String getSaJwt(URL url) {
         try {
             return new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8);
-        }catch (Exception e){
-            logger.error("","","Failed to read ServiceAccount from KubeEnv.","",e);
+        } catch (Exception e) {
+            logger.error("", "", "Failed to read ServiceAccount from KubeEnv.", "", e);
             return "";
         }
     }
