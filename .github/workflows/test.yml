@@ -17,7 +17,7 @@ jobs:
         id: cache-skywalking-agent
         uses: actions/cache@v3
         with:
-          path: /tmp/apache-skywalking-java-agent-9.0.0
+          path: /tmp/skywalking-agent
           key: ${{ runner.os }}-skywalking-agent-9.0.0
           restore-keys: |
             ${{ runner.os }}-skywalking-agent-
