@@ -94,12 +94,8 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: dubbo
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 17
-      - uses: actions/cache@v3
-        name: "Cache local Maven repository"
+      - name: "Cache local Maven repository"
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
@@ -111,7 +107,25 @@ jobs:
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+      - name: "Cache target/classes"
+        id: target-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/target/classes
+          key: ${{ runner.os }}-target-classes-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-target-classes-${{ github.sha }}
+      - name: "Set up JDK 17"
+        if: steps.dubbo-cache.outputs.cache-hit != 'true'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
       - name: "Build Dubbo with Maven"
+        if: steps.dubbo-cache.outputs.cache-hit != 'true' || steps.target-cache.outputs.cache-hit != 'true'
         run: |
           cd ./dubbo
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
@@ -139,6 +153,7 @@ jobs:
           REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
           echo "version=$REVISION" >> $GITHUB_OUTPUT
           echo "dubbo version: $REVISION"
+          echo "commit_id: ${{ github.sha }}"
 
   unit-test-prepare:
     name: "Preparation for Unit Test"

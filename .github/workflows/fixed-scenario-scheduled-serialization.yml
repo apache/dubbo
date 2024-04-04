@@ -23,50 +23,47 @@ env:
 jobs:
   build-source:
     name: "Build Dubbo"
+    needs: check-format
     runs-on: ubuntu-latest
     outputs:
-      commit_id: ${{ steps.git-checker.outputs.commit_id }}
-      version: ${{ steps.git-checker.outputs.version }}
+      version: ${{ steps.dubbo-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'apache/dubbo'
-      - name: Get commit id and dubbo version
-        id: git-checker
-        run: |
-          # Calculate Dubbo Version
-          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' pom.xml`
-          echo "::set-output name=version::$REVISION"
-          echo "dubbo version: $REVISION"
-          #
-          # commit id
-          commit_id=`git log --format="%H" -n 1`
-          echo "::set-output name=commit_id::$commit_id"
-          echo "commit_id: $commit_id"
-      - name: Dubbo cache
-        id: dubbocache
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{steps.git-checker.outputs.commit_id}}
-      - name: Cache local Maven repository
-        if: steps.dubbocache.outputs.cache-hit != 'true'
+          path: dubbo
+      - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-dubbo-${{steps.git-checker.outputs.version}}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-dubbo-${{steps.git-checker.outputs.version}}-maven-
-      - name: Set up JDK 8
-        if: steps.dubbocache.outputs.cache-hit != 'true'
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
+      - name: "Dubbo cache"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+      - name: "Set up JDK 17"
+        if: steps.dubbo-cache.outputs.cache-hit != 'true'
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 17
       - name: "Build Dubbo with Maven"
-        if: steps.dubbocache.outputs.cache-hit != 'true'
+        if: steps.dubbo-cache.outputs.cache-hit != 'true'
         run: |
+          cd ./dubbo
           ./mvnw --batch-mode --no-snapshot-updates --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+      - name: "Calculate Dubbo Version"
+        id: dubbo-version
+        run: |
+          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+          echo "version=$REVISION" >> $GITHUB_OUTPUT
+          echo "dubbo version: $REVISION"
+          echo "commit_id: ${{ github.sha }}"
 
   samples-test-job:
     needs: [ build-source ]
