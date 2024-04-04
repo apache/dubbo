@@ -265,7 +265,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'wxbty/dubbo-samples'
-          ref: new_bh
+          ref: bh
       - name: "Prepare test list"
         run: |
           bash ./test/scripts/prepare-test.sh
@@ -290,7 +290,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'wxbty/dubbo-samples'
-          ref: new_bh
+          ref: bh
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
@@ -424,6 +424,7 @@ jobs:
           merged_json=$(echo "$merged_json" | jq --arg commitId "$GITHUB_SHA" '.[] += {commitId: $commitId}')
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
 
+          git pull
           git add $DIRECTORY_PATH
           git commit -m "Add test results 1 from $(date +'%Y-%m-%d %H:%M:%S')"
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
@@ -438,7 +439,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'wxbty/dubbo-samples'
-          ref: new_bh
+          ref: bh
       - name: "Download test result"
         uses: actions/download-artifact@v3
         with:
