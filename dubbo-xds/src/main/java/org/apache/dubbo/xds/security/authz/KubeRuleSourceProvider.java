@@ -27,7 +27,6 @@ import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -36,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.util.Watch;
-import io.kubernetes.client.util.Watch.Response;
 
 @Activate
 public class KubeRuleSourceProvider implements RuleSourceProvider {
@@ -49,7 +47,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeRuleSourceProvider.class);
 
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,task-> new Thread(task,"KubeRuleSourceProvider-Scheduled"));
 
     public KubeRuleSourceProvider(ApplicationModel applicationModel) throws Exception {
         this.kubeApiClient = applicationModel.getBeanFactory().getBean(KubeApiClient.class);
@@ -68,23 +66,26 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
 
         Watch<Object> watch = getResourceListen();
 
-        executor.schedule(
+        executor.scheduleAtFixedRate(
                 () -> {
                     try {
-                        if (watch.hasNext()) {
-                            Response<Object> resp = watch.next();
-                            if ("ADDED".equals(resp.type) || "MODIFIED".equals(resp.type)) {
-                                updateSource((Map<String, Object>) resp.object);
-                            } else if ("DELETED".equals(resp.type)) {
-                                ruleSourceInst = Collections.emptyList();
-                            }
-                        }
+                        Map<String, Object> resource = getResource();
+                        updateSource(resource);
+//                        if (watch.hasNext()) {
+//                            Response<Object> resp = watch.next();
+//                            if ("ADDED".equals(resp.type) || "MODIFIED".equals(resp.type)) {
+//                                updateSource((Map<String, Object>) resp.object);
+//                            } else if ("DELETED".equals(resp.type)) {
+//                                ruleSourceInst = Collections.emptyList();
+//                            }
+//                            System.out.println("resource updated"+ resp.object);
+//                        }
                     } catch (Exception e) {
                         logger.error(
                                 "", "", "", "Got exception when watch and updating RequestAuthorization resource", e);
                     }
                 },
-                500,
+                2000,2000,
                 TimeUnit.MILLISECONDS);
     }
 

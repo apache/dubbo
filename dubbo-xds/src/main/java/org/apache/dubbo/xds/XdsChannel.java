@@ -79,7 +79,7 @@ public class XdsChannel {
                 } else {
                     CertSource signer = url.getOrDefaultApplicationModel()
                             .getExtensionLoader(CertSource.class)
-                            .getExtension(url.getParameter("signer", "istio"));
+                            .getExtension(url.getProtocol());
                     CertPair certPair = signer.getCert(url);
                     SslContext context = GrpcSslContexts.forClient()
                             .trustManager(InsecureTrustManagerFactory.INSTANCE)

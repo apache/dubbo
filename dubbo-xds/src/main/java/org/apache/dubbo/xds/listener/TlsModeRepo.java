@@ -18,14 +18,15 @@ package org.apache.dubbo.xds.listener;
 
 import org.apache.dubbo.xds.listener.TlsModeListener.TlsType;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class TlsModeRepo {
 
     public TlsModeRepo() {}
-    ;
 
-    private Map<String, TlsType> connectionType;
+
+    private Map<String, TlsType> connectionType = Collections.emptyMap();
 
     private TlsType globalConfig;
 

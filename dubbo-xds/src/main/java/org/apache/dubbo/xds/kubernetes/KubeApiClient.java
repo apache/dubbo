@@ -74,7 +74,7 @@ public class KubeApiClient {
             return Watch.createWatch(
                     apiClient,
                     api.listNamespacedCustomObjectCall(
-                            apiGroup, version, namespace, plural, null, null, null, null, null, null, null, null, null),
+                            apiGroup, version, namespace, plural, null, null, null, null, null, null, null, true, null),
                     new TypeToken<Response<Object>>() {}.getType());
         } catch (ApiException apiException) {
             throw new RuntimeException("Failed to listen resource from ApiServer.", apiException);

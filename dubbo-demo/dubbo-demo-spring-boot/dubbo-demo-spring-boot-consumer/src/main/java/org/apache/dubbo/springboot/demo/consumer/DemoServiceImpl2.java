@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.springboot.demo.provider;
+package org.apache.dubbo.springboot.demo.consumer;
 
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.springboot.demo.DemoService;
+import org.apache.dubbo.springboot.demo.DemoService2;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @DubboService(parameters = {"security","mTLS,sa_jwt"})
-public class DemoServiceImpl implements DemoService {
+public class DemoServiceImpl2 implements DemoService2 {
 
-    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl2.class);
 
     @Override
     public String sayHello(String name) {
+
         logger.info("Hello " + name + ", request from consumer: "
                 + RpcContext.getContext().getRemoteAddress());
-        return "Hello " + name;
+        return "hello," + name;
     }
 }

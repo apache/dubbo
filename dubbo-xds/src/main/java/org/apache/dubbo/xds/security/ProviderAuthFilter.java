@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.security;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -26,6 +27,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Activate(group = CommonConstants.PROVIDER)
@@ -41,8 +43,15 @@ public class ProviderAuthFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
 
-        for (RequestAuthorizer requestAuthorizer : requestAuthorizers) {
-            requestAuthorizer.validate(invocation);
+        String security = invoker.getUrl().getParameter("security");
+        if (StringUtils.isNotEmpty(security)) {
+            List<String> parts = Arrays.asList(security.split(","));
+            boolean enable = parts.stream().anyMatch("sa_jwt"::equals);
+            if (enable) {
+                for (RequestAuthorizer requestAuthorizer : requestAuthorizers) {
+                    requestAuthorizer.validate(invocation);
+                }
+            }
         }
         return invoker.invoke(invocation);
     }

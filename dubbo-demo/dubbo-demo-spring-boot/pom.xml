@@ -41,6 +41,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-rpc-triple</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
         <version>${spring-boot.version}</version>

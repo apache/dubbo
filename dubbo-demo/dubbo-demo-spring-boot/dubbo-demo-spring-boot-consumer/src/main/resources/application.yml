@@ -22,14 +22,16 @@ dubbo:
   application:
     name: ${spring.application.name}
   protocol:
-    name: dubbo
-    port: -1
+    name: tri
+    port: 12345
+    host: 192.168.0.103
   registry:
     id: zk-registry
-    address: istio://localhost:15012?security=mTLS
-  config-center:
-    address: zookeeper://127.0.0.1:2181
-  metadata-report:
-    address: zookeeper://127.0.0.1:2181
+    address: zookeeper://127.0.0.1:2181?security=mTLS,sa_jwt
+#    address: istio://localhost:15012?security=mTLS,sa_jwt
+#  config-center:
+#    address: zookeeper://127.0.0.1:2181
+#  metadata-report:
+#    address: zookeeper://127.0.0.1:2181
 
 

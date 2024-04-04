@@ -22,22 +22,10 @@ dubbo:
   application:
     name: ${spring.application.name}
   protocol:
-    name: dubbo
-    port: -1
+    name: tri
+    port: 12346
+    host: 192.168.0.103
   registry:
     id: zk-registry
-    address: zookeeper://127.0.0.1:2181
-  config-center:
-    address: zookeeper://127.0.0.1:2181
-  metadata-report:
-    address: zookeeper://127.0.0.1:2181
-  metrics:
-    protocol: prometheus
-    enable-jvm: true
-    enable-registry: true
-    aggregation:
-      enabled: true
-    prometheus:
-      exporter:
-        enabled: true
-    enable-metadata: true
+    address: zookeeper://127.0.0.1:2181?security=mTLS,sa_jwt
+#    address: istio://localhost:15012?security=mTLS,sa_jwt
