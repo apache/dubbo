@@ -19,7 +19,7 @@ env:
     '
 
 jobs:
-  check-benchmark-pat:
+  check-benchmark-path:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -36,7 +36,7 @@ jobs:
 
   build-source:
     name: "Build Dubbo"
-    needs: check-benchmark-pat
+    needs: check-benchmark-path
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}

@@ -38,7 +38,7 @@ jobs:
 
   build-source:
     name: "Build Dubbo"
-    needs: check-benchmark-pat
+    needs: check-benchmark-path
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
