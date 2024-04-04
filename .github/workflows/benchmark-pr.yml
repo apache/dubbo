@@ -191,7 +191,7 @@ jobs:
 
           DIRECTORY_PATH="$WORK_DIR/test-results/pr"
           if [ ! -d ${DIRECTORY_PATH} ];then
-            mkdir $DIRECTORY_PATH
+            mkdir -p $DIRECTORY_PATH
           fi
 
           for file in /tmp/jmh_result*.json; do

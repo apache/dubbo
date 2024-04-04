@@ -200,7 +200,7 @@ jobs:
 
           DIRECTORY_PATH="$WORK_DIR/test-results/scheduled"
           if [ ! -d ${DIRECTORY_PATH} ];then
-            mkdir $DIRECTORY_PATH
+            mkdir -p $DIRECTORY_PATH
           fi
 
           for file in /tmp/jmh_result*.json; do
@@ -361,7 +361,7 @@ jobs:
 
           DIRECTORY_PATH="$WORK_DIR/test-results/fixed/rpc"
           if [ ! -d ${DIRECTORY_PATH} ];then
-            mkdir $DIRECTORY_PATH;else
+            mkdir -p $DIRECTORY_PATH;else
             rm $DIRECTORY_PATH/*
           fi
 
@@ -519,7 +519,7 @@ jobs:
 
           DIRECTORY_PATH="$WORK_DIR/test-results/fixed/serialization"
           if [ ! -d ${DIRECTORY_PATH} ];then
-            mkdir $DIRECTORY_PATH;else
+            mkdir -p $DIRECTORY_PATH;else
             rm $DIRECTORY_PATH/*
           fi
 

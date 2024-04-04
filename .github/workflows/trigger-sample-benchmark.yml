@@ -193,7 +193,7 @@ jobs:
 
           DIRECTORY_PATH="$WORK_DIR/test-results/scenario"
           if [ ! -d ${DIRECTORY_PATH} ];then
-            mkdir $DIRECTORY_PATH;else
+            mkdir -p $DIRECTORY_PATH;else
             rm $DIRECTORY_PATH/*
           fi
 
