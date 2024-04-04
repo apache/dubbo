@@ -15,9 +15,4 @@ public class GenericHttp3ServerTransportListener extends GenericHttp2ServerTrans
         super(h2StreamChannel, url, frameworkModel, new Http3ServerCallToObserverAdapter(
                 frameworkModel, h2StreamChannel));
     }
-
-    /*@Override
-    public void onDataCompletion() {
-        serverCallListener.onComplete();
-    }*/
 }

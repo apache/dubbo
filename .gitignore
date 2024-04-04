@@ -1,7 +1,3 @@
-# temp
-.github/workflows
-.github/dependabot.yaml
-
 # maven ignore
 target/
 *.jar

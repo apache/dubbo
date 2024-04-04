@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.util.concurrent.Future;
+
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -29,6 +32,8 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class NettyUdpServer {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(NettyUdpServer.class);
@@ -49,6 +54,22 @@ public class NettyUdpServer {
                     .channel();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void doCloseChannel() {
+        if (channel != null) {
+            channel.close();
+            channel = null;
+        }
+    }
+
+    public void doCloseBootstrap(int serverShutdownTimeoutMills) {
+        if (bootstrap != null) {
+            long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
+            long quietPeriod = Math.min(2000L, timeout);
+            Future<?> groupShutdownFuture = group.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
+            groupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
         }
     }
 }

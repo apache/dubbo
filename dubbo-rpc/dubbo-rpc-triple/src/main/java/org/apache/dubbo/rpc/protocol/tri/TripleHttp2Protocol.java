@@ -274,6 +274,5 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
         handlers.add(new ChannelHandlerPretender(codec));
         handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
-        handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
     }
 }

@@ -206,11 +206,14 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
 
+        udpServer.doCloseChannel();
+
         for (WireProtocol protocol : getProtocols().values()) {
             protocol.close();
         }
 
         closeBootstrap();
+        udpServer.doCloseBootstrap(serverShutdownTimeoutMills);
     }
 
     @Override
