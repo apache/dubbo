@@ -393,7 +393,8 @@ jobs:
           fi
 
           for file in /tmp/jmh_result*.json; do
-            cp "$file" "$DIRECTORY_PATH/jmh_result_$(date +%Y%m%d_%H%M%S_%N).json"
+            new_file="${DIRECTORY_PATH}/jmh_result_$(date +%Y%m%d_%H%M%S_%N).json"
+            jq --arg commitId "$GITHUB_SHA" 'map(. + {commitId: $commitId})' "$file" > "$new_file"
           done
 
           cd $DIRECTORY_PATH
@@ -421,7 +422,6 @@ jobs:
           done
 
           merged_json=$(echo "${json_array[@]}" | jq -s add)
-          merged_json=$(echo "$merged_json" | jq --arg commitId "$GITHUB_SHA" '.[] += {commitId: $commitId}')
           echo "$merged_json" > "$DIRECTORY_PATH/$merged_file"
 
           git pull
