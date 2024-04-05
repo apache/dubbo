@@ -266,15 +266,15 @@ jobs:
         with:
           repository: 'apache/dubbo-samples'
           ref: master
+      - name: "Remove benchmark"
+        run: |
+          CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-configuration.conf
+          if [ -f "$CONFIG_PATH" ]; then
+            rm "$CONFIG_PATH"
+          fi
       - name: "Prepare test list"
         run: |
           bash ./test/scripts/prepare-test.sh
-      - name: "Remove benchmark"
-        run: |
-          RUNTIME_CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-configuration.conf
-          if [ -f "$RUNTIME_CONFIG_PATH" ]; then
-            rm "$RUNTIME_CONFIG_PATH"
-          fi
       - name: "Upload test list"
         uses: actions/upload-artifact@v3
         with:
