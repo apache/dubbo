@@ -134,6 +134,11 @@ jobs:
           tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
           wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
           mv mysql-connector-java-8.0.23.jar /tmp/
+      - name: "Mvn Benchmark Skywalking Plugin"
+        run: |
+          rm /tmp/skywalking-agent/plugins/*
+          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn clean package
+          cp -f ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Set up JDK 8"
         uses: actions/setup-java@v3
         with:
