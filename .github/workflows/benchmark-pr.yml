@@ -1,28 +1,45 @@
-name: Fixed Build And Test Scheduled
+name: Benchmark PR
 
 on:
-  schedule:
-    - cron: '0 * * * *'
+  push:
+    branches:
+      - 3.3
   workflow_dispatch:
 
 permissions:
   contents: read
 
 env:
-  FORK_COUNT: 2
-  FAIL_FAST: 0
+  FORK_COUNT: 0
+  FAIL_FAST: 1
   SHOW_ERROR_DETAIL: 1
   #multi-version size limit
-  VERSIONS_LIMIT: 4
-  JACOCO_ENABLE: true
+  VERSIONS_LIMIT: 1
   CANDIDATE_VERSIONS: '
     spring.version:5.3.24;
     spring-boot.version:2.7.6;
     '
 
 jobs:
+  check-benchmark-path:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'apache/dubbo-samples'
+          ref: master
+      - name: Check if directory exists
+        run: |
+          #!/bin/bash
+          cd test
+          PATH_TO_CHECK="../10-task/dubbo-samples-benchmark/"
+          if [ ! -d "$PATH_TO_CHECK" ]; then
+            exit 1
+          fi
+
   build-source:
     name: "Build Dubbo"
+    needs: check-benchmark-path
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
@@ -30,12 +47,8 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: dubbo
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 8
-      - uses: actions/cache@v3
-        name: "Cache local Maven repository"
+      - name: "Cache local Maven repository"
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
@@ -43,49 +56,41 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Dubbo cache"
+        id: dubbo-cache
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+      - name: "Set up JDK 17"
+        if: steps.dubbo-cache.outputs.cache-hit != 'true'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
       - name: "Build Dubbo with Maven"
+        if: steps.dubbo-cache.outputs.cache-hit != 'true'
         run: |
           cd ./dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+          ./mvnw --batch-mode --no-snapshot-updates --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
       - name: "Calculate Dubbo Version"
         id: dubbo-version
         run: |
           REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
           echo "version=$REVISION" >> $GITHUB_OUTPUT
           echo "dubbo version: $REVISION"
-  samples-test-prepare:
-    runs-on: ubuntu-latest
-    env:
-      JOB_COUNT: 3
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: 'apache/dubbo-samples'
-          ref: master
-      - name: "Prepare test list"
-        run: |
-          bash ./test/scripts/prepare-test.sh
-      - name: "Upload test list"
-        uses: actions/upload-artifact@v3
-        with:
-          name: samples-test-list
-          path: test/jobs
+          echo "commit_id: ${{ github.sha }}"
+
   samples-test-job:
-    needs: [build-source, samples-test-prepare]
-    name: "Samples Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
+    needs: [ build-source ]
+    name: "Samples benchmark test on ubuntu-latest"
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
       JAVA_VER: 8
-      TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
     strategy:
-      fail-fast: false
       matrix:
-        job_id: [1, 2, 3]
+        job_id: [ 1 ]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v3
         with:
@@ -103,15 +108,31 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
-            ${{ runner.os }}-dubbo-snapshot-
-      - name: "Download test list"
-        uses: actions/download-artifact@v3
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+      - name: "Cache Skywalking Agent"
+        id: cache-skywalking-agent
+        uses: actions/cache@v3
         with:
-          name: samples-test-list
-          path: test/jobs/
+          path: /tmp/skywalking-agent
+          key: ${{ runner.os }}-skywalking-agent-9.0.0
+      - name: "Cache MySQL Driver"
+        id: cache-mysql-driver
+        uses: actions/cache@v3
+        with:
+          path: /tmp/mysql-connector-java-8.0.23.jar
+          key: ${{ runner.os }}-mysql-driver-8.0.23
+      - name: "Download Skywalking Agent and MySQL Driver"
+        if: steps.cache-skywalking-agent.outputs.cache-hit != 'true' || steps.cache-mysql-driver.outputs.cache-hit != 'true'
+        run: |
+          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
+          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
+          wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
+          mv mysql-connector-java-8.0.23.jar /tmp/
+      - name: "Mvn Benchmark Skywalking Plugin"
+        run: |
+          rm /tmp/skywalking-agent/plugins/*
+          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn --batch-mode --no-snapshot-updates -e --no-transfer-progress clean package -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          cp -f ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Set up JDK 8"
         uses: actions/setup-java@v3
         with:
@@ -126,36 +147,24 @@ jobs:
         run: |
           RUNTIME_CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-runtime-parameter.conf
           rm -rf $RUNTIME_CONFIG_PATH
-      - name: "Download Skywalking Agent And Mysql Driver"
-        run: |
-          wget -c https://archive.apache.org/dist/skywalking/java-agent/9.0.0/apache-skywalking-java-agent-9.0.0.tgz --no-check-certificate
-          tar -zxvf apache-skywalking-java-agent-9.0.0.tgz -C /tmp
-          wget -c https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.23/mysql-connector-java-8.0.23.jar
-          mv mysql-connector-java-8.0.23.jar /tmp/
-          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn clean package
-          cp ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Build test image"
         run: |
           cd test && bash ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh ../10-task/dubbo-samples-benchmark/
-      - name: "Upload test result"
-        if: always()
+      - name: "Upload docker log"
         uses: actions/upload-artifact@v3
         with:
-          name: samples-test-result
-          path: test/jobs/*-result*
+          name: samples-docker-log
+          path: |
+            ./10-task/dubbo-samples-benchmark/target/logs/*.log
+            /tmp/skywalking-agent/logs/*.log
       - name: "Upload jmh output result"
         uses: actions/upload-artifact@v3
         with:
           name: samples-jmh-result
           path: /tmp/jmh*.json
-      - name: "Upload Error Build Log"
-        uses: actions/upload-artifact@v3
-        with:
-          name: samples-build-result
-          path: /tmp/logs/*
-      - name: Push results to results repository
+      - name: "Push results to results repository"
         env:
           RESULTS_REPO_OWNER: ${{ secrets.PUSH_NAME }}
           RESULTS_REPO_NAME: ${{ secrets.REPO_NAME }}
@@ -175,14 +184,15 @@ jobs:
 
           WORK_DIR="$(pwd)"
           echo "WorkDir: $WORK_DIR"
-          DIRECTORY_PATH="$WORK_DIR/test-results/scheduled"
 
+          DIRECTORY_PATH="$WORK_DIR/test-results/pr"
           if [ ! -d ${DIRECTORY_PATH} ];then
-            mkdir $DIRECTORY_PATH
+            mkdir -p $DIRECTORY_PATH
           fi
 
           for file in /tmp/jmh_result*.json; do
-            cp "$file" "$DIRECTORY_PATH/jmh_result_$(date +%Y%m%d_%H%M%S_%N).json"
+            new_file="${DIRECTORY_PATH}/jmh_result_$(date +%Y%m%d_%H%M%S_%N).json"
+            jq --arg commitId "$GITHUB_SHA" 'map(. + {commitId: $commitId})' "$file" > "$new_file"
           done
 
           cd $DIRECTORY_PATH
@@ -215,22 +225,3 @@ jobs:
           git add $DIRECTORY_PATH
           git commit -m "Add test results 1 from $(date +'%Y-%m-%d %H:%M:%S')"
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
-
-  samples-test-result:
-    needs: [samples-test-job]
-    if: always()
-    runs-on: ubuntu-latest
-    env:
-      JAVA_VER: 8
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: 'apache/dubbo-samples'
-          ref: master
-      - name: "Download test result"
-        uses: actions/download-artifact@v3
-        with:
-          name: samples-test-result
-          path: test/jobs/
-      - name: "Merge test result"
-        run: ./test/scripts/merge-test-results.sh
