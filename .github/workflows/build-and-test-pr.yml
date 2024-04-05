@@ -268,9 +268,12 @@ jobs:
           ref: master
       - name: "Remove benchmark"
         run: |
-          CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-configuration.conf
+          CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-configuration.yml
           if [ -f "$CONFIG_PATH" ]; then
             rm "$CONFIG_PATH"
+            echo "remove success"
+          else
+            echo "remove failed"
           fi
       - name: "Prepare test list"
         run: |
