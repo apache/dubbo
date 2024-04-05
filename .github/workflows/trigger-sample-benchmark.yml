@@ -145,9 +145,14 @@ jobs:
           RUNTIME_CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-runtime-parameter.conf
           rm -rf $RUNTIME_CONFIG_PATH
           runtime_para_pairs="${{ github.event.client_payload.prop}}"
-          IFS='|' read -ra prop_array <<< "$runtime_para_pairs"
-          for ((i=0; i<${#prop_array[@]}; i+=2)); do
-            echo "${prop_array[i]}=${prop_array[i+1]}" >> $RUNTIME_CONFIG_PATH
+          IFS='@' read -ra groups <<< "$runtime_para_pairs"
+          for group in "${groups[@]}"; do
+            IFS='|' read -ra prop_array <<< "$group"
+            config_line=""
+            for ((i=0; i<${#prop_array[@]}; i+=2)); do
+              config_line+="-D${prop_array[i]}=${prop_array[i+1]} "
+            done
+            echo "${config_line% }" >> "$RUNTIME_CONFIG_PATH"
           done
       - name: "Build test image"
         run: |
