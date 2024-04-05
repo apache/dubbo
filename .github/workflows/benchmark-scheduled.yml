@@ -151,20 +151,10 @@ jobs:
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
           CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
-      - name: "Replace runtime parameter rpc:dubbo tri rmi"
+      - name: "Replace runtime parameter"
         run: |
           RUNTIME_CONFIG_PATH=./10-task/dubbo-samples-benchmark/case-runtime-parameter.conf
           rm -rf $RUNTIME_CONFIG_PATH
-          runtime_para_pairs="dubbo.protocol.name|dubbo@dubbo.protocol.name|tri@dubbo.protocol.name|rmi"
-          IFS='@' read -ra groups <<< "$runtime_para_pairs"
-          for group in "${groups[@]}"; do
-            IFS='|' read -ra prop_array <<< "$group"
-            config_line=""
-            for ((i=0; i<${#prop_array[@]}; i+=2)); do
-              config_line+="-D${prop_array[i]}=${prop_array[i+1]} "
-            done
-            echo "${config_line% }" >> "$RUNTIME_CONFIG_PATH"
-          done
       - name: "Build test image"
         run: |
           cd test && bash ./build-test-image.sh
