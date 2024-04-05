@@ -2,7 +2,7 @@ name: Benchmark Scheduled
 
 on:
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -25,8 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh-test
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: Check if directory exists
         run: |
           #!/bin/bash
@@ -83,7 +83,7 @@ jobs:
 
   normal-samples-test-job:
     needs: [ build-source ]
-    name: "Samples benchmark test on ubuntu-latest"
+    name: "Normal Samples benchmark test on ubuntu-latest"
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
@@ -95,8 +95,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh-test
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
@@ -240,7 +240,7 @@ jobs:
 
   rpc-samples-test-job:
     needs: [ build-source ]
-    name: "Samples benchmark test on ubuntu-latest"
+    name: "Rpc Samples benchmark test on ubuntu-latest"
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
@@ -252,8 +252,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh-test
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
@@ -398,7 +398,7 @@ jobs:
 
   serialization-samples-test-job:
     needs: [ build-source ]
-    name: "Samples benchmark test on ubuntu-latest"
+    name: "Serialization Samples benchmark test on ubuntu-latest"
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
@@ -410,8 +410,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'wxbty/dubbo-samples'
-          ref: bh-test
+          repository: 'apache/dubbo-samples'
+          ref: master
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
