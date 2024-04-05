@@ -57,9 +57,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
       - name: "Set up JDK 17"
         if: steps.dubbo-cache.outputs.cache-hit != 'true'
         uses: actions/setup-java@v3
@@ -107,26 +105,19 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
-            ${{ runner.os }}-dubbo-snapshot-
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
       - name: "Cache Skywalking Agent"
         id: cache-skywalking-agent
         uses: actions/cache@v3
         with:
           path: /tmp/skywalking-agent
           key: ${{ runner.os }}-skywalking-agent-9.0.0
-          restore-keys: |
-            ${{ runner.os }}-skywalking-agent-
       - name: "Cache MySQL Driver"
         id: cache-mysql-driver
         uses: actions/cache@v3
         with:
           path: /tmp/mysql-connector-java-8.0.23.jar
           key: ${{ runner.os }}-mysql-driver-8.0.23
-          restore-keys: |
-            ${{ runner.os }}-mysql-driver-
       - name: "Download Skywalking Agent and MySQL Driver"
         if: steps.cache-skywalking-agent.outputs.cache-hit != 'true' || steps.cache-mysql-driver.outputs.cache-hit != 'true'
         run: |
