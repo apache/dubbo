@@ -139,7 +139,7 @@ jobs:
       - name: "Mvn Benchmark Skywalking Plugin"
         run: |
           rm /tmp/skywalking-agent/plugins/*
-          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn --batch-mode --no-snapshot-updates --no-transfer-progress clean package -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn --batch-mode --no-snapshot-updates -e --no-transfer-progress clean package -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
           cp -f ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Set up JDK 8"
         uses: actions/setup-java@v3
@@ -301,7 +301,7 @@ jobs:
       - name: "Mvn Benchmark Skywalking Plugin"
         run: |
           rm /tmp/skywalking-agent/plugins/*
-          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn --batch-mode --no-snapshot-updates --no-transfer-progress clean package -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn --batch-mode --no-snapshot-updates -e --no-transfer-progress clean package -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
           cp -f ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Set up JDK 8"
         uses: actions/setup-java@v3
@@ -464,7 +464,7 @@ jobs:
       - name: "Mvn Benchmark Skywalking Plugin"
         run: |
           rm /tmp/skywalking-agent/plugins/*
-          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn --batch-mode --no-snapshot-updates --no-transfer-progress clean package -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          cd 10-task/dubbo-samples-benchmark/dubbo-samples-benchmark-agent && mvn --batch-mode --no-snapshot-updates -e --no-transfer-progress clean package -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
           cp -f ./target/dubbo-samples-benchmark-agent.jar /tmp/skywalking-agent/plugins/
       - name: "Set up JDK 8"
         uses: actions/setup-java@v3
