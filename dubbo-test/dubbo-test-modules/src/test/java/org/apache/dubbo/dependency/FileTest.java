@@ -389,18 +389,55 @@ class FileTest {
     }
 
     @Test
-    void checkDubboAllTransform() throws DocumentException {
+    void checkDubboTransform() throws DocumentException {
         File baseFile = getBaseFile();
         List<String> spis = new LinkedList<>();
         readSPI(baseFile, spis);
 
         String dubboAllPath = "dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml";
+        String dubboAllShadedPath =
+                "dubbo-distribution" + File.separator + "dubbo-all-shaded" + File.separator + "pom.xml";
+        String dubboCoreSPIPath = "dubbo-distribution" + File.separator + "dubbo-core-spi" + File.separator + "pom.xml";
 
         SAXReader reader = new SAXReader();
         Document dubboAll = reader.read(new File(baseFile, dubboAllPath));
+        Document dubboAllShaded = reader.read(new File(baseFile, dubboAllShadedPath));
+        Document dubboCoreSPI = reader.read(new File(baseFile, dubboCoreSPIPath));
 
         List<String> transformsInDubboAll =
                 dubboAll.getRootElement().element("build").element("plugins").elements("plugin").stream()
+                        .filter(ele -> ele.elementText("artifactId").equals("maven-shade-plugin"))
+                        .map(ele -> ele.element("executions"))
+                        .map(ele -> ele.elements("execution"))
+                        .flatMap(Collection::stream)
+                        .filter(ele -> ele.elementText("phase").equals("package"))
+                        .map(ele -> ele.element("configuration"))
+                        .map(ele -> ele.element("transformers"))
+                        .map(ele -> ele.elements("transformer"))
+                        .flatMap(Collection::stream)
+                        .map(ele -> ele.elementText("resource"))
+                        .map(String::trim)
+                        .map(resource -> resource.substring(resource.lastIndexOf("/") + 1))
+                        .collect(Collectors.toList());
+
+        List<String> transformsInDubboAllShaded =
+                dubboAllShaded.getRootElement().element("build").element("plugins").elements("plugin").stream()
+                        .filter(ele -> ele.elementText("artifactId").equals("maven-shade-plugin"))
+                        .map(ele -> ele.element("executions"))
+                        .map(ele -> ele.elements("execution"))
+                        .flatMap(Collection::stream)
+                        .filter(ele -> ele.elementText("phase").equals("package"))
+                        .map(ele -> ele.element("configuration"))
+                        .map(ele -> ele.element("transformers"))
+                        .map(ele -> ele.elements("transformer"))
+                        .flatMap(Collection::stream)
+                        .map(ele -> ele.elementText("resource"))
+                        .map(String::trim)
+                        .map(resource -> resource.substring(resource.lastIndexOf("/") + 1))
+                        .collect(Collectors.toList());
+
+        List<String> transformsInDubboCoreSPI =
+                dubboCoreSPI.getRootElement().element("build").element("plugins").elements("plugin").stream()
                         .filter(ele -> ele.elementText("artifactId").equals("maven-shade-plugin"))
                         .map(ele -> ele.element("executions"))
                         .map(ele -> ele.elements("execution"))
@@ -429,6 +466,44 @@ class FileTest {
                 unexpectedSpis.isEmpty(),
                 "Class without `@SPI` declaration should not be added to dubbo-all(dubbo-distribution" + File.separator
                         + "dubbo-all" + File.separator + "pom.xml in shade plugin) to being transformed. Found spis: "
+                        + unexpectedSpis);
+
+        expectedSpis = new LinkedList<>(spis);
+        expectedSpis.removeAll(transformsInDubboAllShaded);
+        Assertions.assertTrue(
+                expectedSpis.isEmpty(),
+                "Newly created SPI interface must be added to dubbo-all-shaded(dubbo-distribution" + File.separator
+                        + "dubbo-all-shaded" + File.separator
+                        + "pom.xml in shade plugin) to being transformed. Found spis: "
+                        + expectedSpis);
+
+        unexpectedSpis = new LinkedList<>(transformsInDubboAllShaded);
+        unexpectedSpis.removeAll(spis);
+        Assertions.assertTrue(
+                unexpectedSpis.isEmpty(),
+                "Class without `@SPI` declaration should not be added to dubbo-all-shaded(dubbo-distribution"
+                        + File.separator
+                        + "dubbo-all-shaded" + File.separator
+                        + "pom.xml in shade plugin) to being transformed. Found spis: "
+                        + unexpectedSpis);
+
+        expectedSpis = new LinkedList<>(spis);
+        expectedSpis.removeAll(transformsInDubboCoreSPI);
+        Assertions.assertTrue(
+                expectedSpis.isEmpty(),
+                "Newly created SPI interface must be added to dubbo-core-spi(dubbo-distribution" + File.separator
+                        + "dubbo-core-spi" + File.separator
+                        + "pom.xml in shade plugin) to being transformed. Found spis: "
+                        + expectedSpis);
+
+        unexpectedSpis = new LinkedList<>(transformsInDubboCoreSPI);
+        unexpectedSpis.removeAll(spis);
+        Assertions.assertTrue(
+                unexpectedSpis.isEmpty(),
+                "Class without `@SPI` declaration should not be added to dubbo-core-spi(dubbo-distribution"
+                        + File.separator
+                        + "dubbo-core-spi" + File.separator
+                        + "pom.xml in shade plugin) to being transformed. Found spis: "
                         + unexpectedSpis);
     }
 
