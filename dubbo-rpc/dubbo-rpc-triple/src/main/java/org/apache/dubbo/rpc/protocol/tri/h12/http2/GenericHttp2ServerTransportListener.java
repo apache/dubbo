@@ -164,7 +164,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onDataCompletion(Http2InputMessage message) {
         if (message.isEndStream()) {
-            serverCallListener.onComplete();
+            getStreamingDecoder().close();
         }
     }
 
