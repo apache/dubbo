@@ -1000,11 +1000,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(
-                        CommonConfigPostProcessor.class)
+        List<ConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
 
-        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+        HashSet<ConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
 
         // merge common and old config
         allConfigPostProcessor.addAll(commonConfigPostProcessors);
