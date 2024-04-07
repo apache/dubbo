@@ -153,14 +153,14 @@ jobs:
       - name: "Upload docker log"
         uses: actions/upload-artifact@v3
         with:
-          name: samples-docker-log
+          name: normal-samples-docker-log
           path: |
             ./10-task/dubbo-samples-benchmark/target/logs/*.log
             /tmp/skywalking-agent/logs/*.log
       - name: "Upload jmh output result"
         uses: actions/upload-artifact@v3
         with:
-          name: samples-jmh-result
+          name: normal-samples-jmh-result
           path: /tmp/jmh*.json
       - name: "Push results to results repository"
         env:
@@ -308,14 +308,14 @@ jobs:
       - name: "Upload docker log"
         uses: actions/upload-artifact@v3
         with:
-          name: samples-docker-log
+          name: rpc-samples-docker-log
           path: |
             ./10-task/dubbo-samples-benchmark/target/logs/*.log
             /tmp/skywalking-agent/logs/*.log
       - name: "Upload jmh output result"
         uses: actions/upload-artifact@v3
         with:
-          name: samples-jmh-result
+          name: rpc-samples-jmh-result
           path: /tmp/jmh*.json
       - name: "Push results to results repository"
         env:
@@ -464,14 +464,14 @@ jobs:
       - name: "Upload docker log"
         uses: actions/upload-artifact@v3
         with:
-          name: samples-docker-log
+          name: serialization-samples-docker-log
           path: |
             ./10-task/dubbo-samples-benchmark/target/logs/*.log
             /tmp/skywalking-agent/logs/*.log
       - name: "Upload jmh output result"
         uses: actions/upload-artifact@v3
         with:
-          name: samples-jmh-result
+          name: serialization-samples-jmh-result
           path: /tmp/jmh*.json
       - name: "Push results to results repository"
         env:
