@@ -107,6 +107,12 @@
       <version>${project.parent.version}</version>
       <scope>provided</scope>
     </dependency>
+      <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo</artifactId>
+          <version>3.3.0-beta.2-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
   </dependencies>
   <build>
     <plugins>
