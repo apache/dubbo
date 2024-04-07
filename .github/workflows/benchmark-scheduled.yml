@@ -2,7 +2,7 @@ name: Benchmark Scheduled
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 0/6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -221,6 +221,7 @@ jobs:
 
           git add $DIRECTORY_PATH
           git commit -m "Add test results 1 from $(date +'%Y-%m-%d %H:%M:%S')"
+          git pull --rebase
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
 
   rpc-samples-test-job:
@@ -376,6 +377,7 @@ jobs:
 
           git add $DIRECTORY_PATH
           git commit -m "Compare prop in $(date +'%Y-%m-%d %H:%M:%S')"
+          git pull --rebase
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
 
   serialization-samples-test-job:
@@ -531,4 +533,5 @@ jobs:
 
           git add $DIRECTORY_PATH
           git commit -m "Compare prop in $(date +'%Y-%m-%d %H:%M:%S')"
+          git pull --rebase
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}

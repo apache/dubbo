@@ -223,4 +223,5 @@ jobs:
 
           git add $DIRECTORY_PATH
           git commit -m "Add test results 1 from $(date +'%Y-%m-%d %H:%M:%S')"
+          git pull --rebase
           git push https://${GITHUB_TOKEN}@github.com/${RESULTS_REPO_OWNER}/${RESULTS_REPO_NAME}.git ${RESULTS_REPO_BRANCH}
