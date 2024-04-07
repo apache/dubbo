@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.utils.StringUtils;
-
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
@@ -34,14 +33,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.annotation.Bean;
 
 /**
  * ServiceFactoryBean
  *
  * @export
  */
-
 public class ServiceBean<T> extends ServiceConfig<T>
         implements InitializingBean,
                 DisposableBean,
