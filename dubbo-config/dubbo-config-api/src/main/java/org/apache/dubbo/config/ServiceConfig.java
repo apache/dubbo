@@ -1000,13 +1000,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        List<ConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+        List<ConfigPostProcessor> ConfigPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
 
         HashSet<ConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
 
         // merge common and old config
-        allConfigPostProcessor.addAll(commonConfigPostProcessors);
+        allConfigPostProcessor.addAll(ConfigPostProcessors);
         allConfigPostProcessor.addAll(configPostProcessors);
 
         allConfigPostProcessor.forEach(component -> component.postProcessServiceConfig(this));
