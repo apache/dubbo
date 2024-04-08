@@ -202,7 +202,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (producesCondition != null) {
             request.setAttribute(RestConstants.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producesCondition.getMediaTypes());
         }
-
         return handler;
     }
 

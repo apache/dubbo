@@ -70,6 +70,8 @@ public class CorsMeta {
 
     private Long maxAge;
 
+    public CorsMeta() {}
+
     public CorsMeta(CorsMeta other) {
         this.allowedOrigins = other.allowedOrigins;
         this.allowedOriginPatterns = other.allowedOriginPatterns;

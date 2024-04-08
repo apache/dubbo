@@ -63,6 +63,8 @@ public final class RestConstants {
     public static final String HTTPS = "https";
     public static final String WS = "ws";
     public static final String WSS = "wss";
+    public static final String ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK = "Access-Control-Request-Private-Network";
+    public static final String ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK = "Access-Control-Allow-Private-Network";
 
     /* Configuration Key */
     public static final String CONFIG_PREFIX = "dubbo.rpc.rest.";

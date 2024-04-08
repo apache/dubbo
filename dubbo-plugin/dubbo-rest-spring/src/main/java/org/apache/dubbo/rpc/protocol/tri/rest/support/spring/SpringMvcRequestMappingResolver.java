@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
@@ -27,6 +28,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+
+import java.util.Arrays;
 
 import org.springframework.http.HttpStatus;
 
@@ -62,9 +65,11 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
             return null;
         }
         AnnotationMeta<?> responseStatus = serviceMeta.findMergedAnnotation(Annotations.ResponseStatus);
+        AnnotationMeta<?> crossOrigin = serviceMeta.findMergedAnnotation(Annotations.CrossOrigin);
         return builder(requestMapping, responseStatus)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
+                .cors(createCorsMeta(crossOrigin))
                 .build();
     }
 
@@ -80,10 +85,13 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         }
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         AnnotationMeta<?> responseStatus = methodMeta.findMergedAnnotation(Annotations.ResponseStatus);
+
+        AnnotationMeta<?> crossOrigin = methodMeta.findMergedAnnotation(Annotations.CrossOrigin);
         return builder(requestMapping, responseStatus)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(serviceMeta.getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
+                .cors(createCorsMeta(crossOrigin))
                 .build();
     }
 
@@ -103,5 +111,19 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
                 .header(requestMapping.getStringArray("headers"))
                 .consume(requestMapping.getStringArray("consumes"))
                 .produce(requestMapping.getStringArray("produces"));
+    }
+
+    private CorsMeta createCorsMeta(AnnotationMeta<?> crossOrigin) {
+        CorsMeta meta = new CorsMeta();
+        if (crossOrigin == null) {
+            return meta;
+        }
+        meta.setAllowCredentials(crossOrigin.getBoolean("allowCredentials"));
+        meta.setAllowedHeaders(Arrays.asList(crossOrigin.getStringArray("allowedHeaders")));
+        meta.setAllowedMethods(Arrays.asList(crossOrigin.getStringArray("allowedMethods")));
+        meta.setAllowedOrigins(Arrays.asList(crossOrigin.getStringArray("allowedOrigins")));
+        meta.setExposedHeaders(Arrays.asList(crossOrigin.getStringArray("exposedHeaders")));
+        meta.setMaxAge(crossOrigin.getNumber("maxAge").longValue());
+        return meta;
     }
 }
