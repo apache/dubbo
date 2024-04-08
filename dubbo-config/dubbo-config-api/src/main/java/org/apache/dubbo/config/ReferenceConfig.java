@@ -857,14 +857,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
-        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(
-                        CommonConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
-
-        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+        HashSet<ConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
 
         // merge common and old config
-        allConfigPostProcessor.addAll(commonConfigPostProcessors);
         allConfigPostProcessor.addAll(configPostProcessors);
 
         allConfigPostProcessor.forEach(component -> component.postProcessReferConfig(this));

@@ -20,8 +20,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.CommonConfigPostProcessor;
-import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.ConfigPostProcessor;
+import org.apache.dubbo.config.ReferenceConfig;
 
 import java.lang.annotation.Annotation;
 
@@ -29,15 +29,15 @@ import java.lang.annotation.Annotation;
  * parsing @FeignClient service name attribute to replace reference config provided by
  */
 @Activate
-public class FeignClientAnnotationConfigPostProcessor implements CommonConfigPostProcessor {
+public class FeignClientAnnotationConfigPostProcessor implements ConfigPostProcessor {
 
     @Override
-    public void postProcessReferConfig(ReferenceConfigBase referenceConfig) {
+    public void postProcessReferConfig(ReferenceConfig referenceConfig) {
         appendParametersFromInterfaceClassMetadata(referenceConfig.getInterfaceClass(), referenceConfig);
     }
 
     public static void appendParametersFromInterfaceClassMetadata(
-            Class<?> interfaceClass, ReferenceConfigBase referenceConfig) {
+            Class<?> interfaceClass, ReferenceConfig referenceConfig) {
 
         if (interfaceClass == null) {
             return;
