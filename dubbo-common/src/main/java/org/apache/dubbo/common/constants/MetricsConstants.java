@@ -87,6 +87,8 @@ public interface MetricsConstants {
 
     String PROMETHEUS_PUSHGATEWAY_JOB_KEY = "prometheus.pushgateway.job";
 
+    String OTLP_DEFAULT_METRICS_ENDPOINT = "otlp.metrics.endpoint";
+
     int PROMETHEUS_DEFAULT_METRICS_PORT = 20888;
 
     String PROMETHEUS_DEFAULT_METRICS_PATH = "/metrics";

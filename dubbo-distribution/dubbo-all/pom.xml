@@ -202,6 +202,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-metrics-otlp</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metrics-metadata</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
@@ -542,6 +549,9 @@
                   <include>org.apache.dubbo:dubbo-metrics-netty</include>
                   <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                   <include>org.apache.dubbo:dubbo-tracing</include>
+                  <include>org.apache.dubbo:dubbo-metrics-otlp</include>
+                  <include>org.apache.dubbo:dubbo-monitor-api</include>
+                  <include>org.apache.dubbo:dubbo-monitor-default</include>
                   <include>org.apache.dubbo:dubbo-qos</include>
                   <include>org.apache.dubbo:dubbo-qos-api</include>
                   <include>org.apache.dubbo:dubbo-security</include>

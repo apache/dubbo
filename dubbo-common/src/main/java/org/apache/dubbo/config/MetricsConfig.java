@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
@@ -105,6 +106,9 @@ public class MetricsConfig extends AbstractConfig {
     /**
      * Protocol used for metrics collection and export.
      */
+    @Nested
+    private ExporterConfig exporter;
+
     private String exportServiceProtocol;
 
     /**
@@ -198,6 +202,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setHistogram(HistogramConfig histogram) {
         this.histogram = histogram;
+    }
+
+    public ExporterConfig getExporter() {
+        return exporter;
+    }
+
+    public void setExporter(ExporterConfig exporter) {
+        this.exporter = exporter;
     }
 
     public String getExportServiceProtocol() {
