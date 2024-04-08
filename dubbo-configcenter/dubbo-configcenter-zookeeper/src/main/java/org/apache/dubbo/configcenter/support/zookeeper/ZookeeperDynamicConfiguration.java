@@ -24,7 +24,7 @@ import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
@@ -107,7 +107,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
         // zkClient is shared in framework, should not close it here
         // zkClient.close();
-        // See: org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
+        // See: org.apache.dubbo.remoting.zookeeper.curator5.AbstractZookeeperTransporter#destroy()
         // All zk clients is created and destroyed in ZookeeperTransporter.
         zkClient = null;
     }

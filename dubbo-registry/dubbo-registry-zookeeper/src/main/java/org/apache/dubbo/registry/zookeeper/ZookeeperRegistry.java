@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
@@ -156,7 +156,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         zkListeners.clear();
 
         // Just release zkClient reference, but can not close zk client here for zk client is shared somewhere else.
-        // See org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
+        // See org.apache.dubbo.remoting.zookeeper.curator5.AbstractZookeeperTransporter#destroy()
         zkClient = null;
     }
 

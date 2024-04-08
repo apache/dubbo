@@ -35,7 +35,7 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter;
 
 import java.util.ArrayList;
 import java.util.Collections;

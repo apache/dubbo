@@ -17,4 +17,4 @@
 package com.alibaba.dubbo.remoting.zookeeper;
 
 @Deprecated
-public interface ZookeeperTransporter extends org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter {}
+public interface ZookeeperTransporter extends org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter {}

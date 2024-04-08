@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -37,7 +37,7 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
 
     public ZookeeperRegistryFactory(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.zookeeperTransporter = ZookeeperTransporter.getExtension(applicationModel);
+        this.zookeeperTransporter = ZookeeperTransporter.getInstance(applicationModel);
     }
 
     @DisableInject

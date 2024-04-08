@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,7 +79,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     /**
      * @param url the url that will create zookeeper connection .
      *            The url in AbstractZookeeperTransporter#connect parameter is rewritten by this one.
-     *            such as: zookeeper://127.0.0.1:2181/org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter
+     *            such as: zookeeper://127.0.0.1:2181/org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter
      * @return
      */
     protected abstract ZookeeperClient createZookeeperClient(URL url);
