@@ -20,6 +20,7 @@ public interface MetricsConstants {
 
     String PROTOCOL_PROMETHEUS = "prometheus";
     String PROTOCOL_DEFAULT = "default";
+    String PROTOCOL_OTLP = "otlp";
 
     String TAG_IP = "ip";
 
@@ -87,7 +88,7 @@ public interface MetricsConstants {
 
     String PROMETHEUS_PUSHGATEWAY_JOB_KEY = "prometheus.pushgateway.job";
 
-    String OTLP_DEFAULT_METRICS_ENDPOINT = "otlp.metrics.endpoint";
+    String OTLP_DEFAULT_METRICS_ENDPOINT = "otlp.endpoint";
 
     int PROMETHEUS_DEFAULT_METRICS_PORT = 20888;
 
