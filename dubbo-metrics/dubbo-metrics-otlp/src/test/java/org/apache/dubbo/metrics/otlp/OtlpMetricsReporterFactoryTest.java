@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.metrics.otlp;
 
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.nested.ExporterConfig;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.nested.OtlpMetricConfig;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -25,24 +27,37 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class OtlpMetricsReporterFactoryTest {
-    @Test
-    void test() {
-        ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        OtlpMetricsReporterFactory factory = new OtlpMetricsReporterFactory(applicationModel);
 
+    @Test
+    public void test_MetricsReporter() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ConfigManager applicationConfigManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = new MetricsConfig();
         config.setProtocol("otlp");
-
-        ExporterConfig.OtlpConfig otlpMetricsConfig = new ExporterConfig.OtlpConfig();
-        otlpMetricsConfig.setEndpoint("http://localhost:4318/v1/metrics");
-
-        ExporterConfig exporterConfig = new ExporterConfig();
-        exporterConfig.setOtlpConfig(otlpMetricsConfig);
-
-        config.setExporter(exporterConfig);
-
+        OtlpMetricConfig otlpMetricsConfig = new OtlpMetricConfig();
+        otlpMetricsConfig.setUrl("http://localhost:4318/v1/metrics");
+        config.setOtlp(otlpMetricsConfig);
+        applicationConfigManager.setMetrics(config);
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("test_app_name");
+        applicationConfigManager.setApplication(applicationConfig);
+        OtlpMetricsReporterFactory factory = new OtlpMetricsReporterFactory(applicationModel);
         MetricsReporter reporter = factory.createMetricsReporter(config.toUrl());
-
         Assertions.assertTrue(reporter instanceof OtlpMetricsReporter);
+    }
+
+    @Test
+    public void test_MetricsReporter_with_not_match_protocol() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        OtlpMetricsReporterFactory factory = new OtlpMetricsReporterFactory(applicationModel);
+        MetricsConfig config = new MetricsConfig();
+        OtlpMetricConfig otlpMetricsConfig = new OtlpMetricConfig();
+        otlpMetricsConfig.setUrl("http://localhost:4318/v1/metrics");
+        config.setOtlp(otlpMetricsConfig);
+        try {
+            factory.createMetricsReporter(config.toUrl());
+        } catch (Exception ex) {
+            Assertions.assertInstanceOf(IllegalStateException.class, ex);
+        }
     }
 }
