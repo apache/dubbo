@@ -29,18 +29,29 @@
   <description>Apache Dubbo Spring Boot Starter</description>
 
   <dependencies>
-    <!-- Spring Boot dependencies -->
+    <!-- Spring Boot 依赖项 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
       <optional>true</optional>
+      <exclusions>
+        <!-- 排除 Spring Framework 的依赖项 -->
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-beans</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-context</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+    <!-- 其他依赖项 -->
 
   </dependencies>
 </project>
