@@ -252,7 +252,7 @@ check 2.7.5 milestone for details.
 
 ### Notice
 
-'zkclient' extension for 'org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter' is removed from Dubbo 2.7.1, and 'curator' extension becomes the default extension. If you happen to config your application to use 'zkclient' explicitly, pls. switch to use 'curator' instead.
+'zkclient' extension for 'org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter' is removed from Dubbo 2.7.1, and 'curator' extension becomes the default extension. If you happen to config your application to use 'zkclient' explicitly, pls. switch to use 'curator' instead.
 
 ### New Features
 

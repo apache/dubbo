@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper.curator5;
+package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +26,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
-class Curator5ZookeeperTransporterTest {
+class Curator5ZookeeperClientManagerTest {
     private ZookeeperClient zookeeperClient;
-    private Curator5ZookeeperTransporter curatorZookeeperTransporter;
+    private ZookeeperClientManager zookeeperClientManager;
     private static String zookeeperConnectionAddress1;
 
     @BeforeAll
@@ -39,9 +38,8 @@ class Curator5ZookeeperTransporterTest {
 
     @BeforeEach
     public void setUp() {
-        zookeeperClient =
-                new Curator5ZookeeperTransporter().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
-        curatorZookeeperTransporter = new Curator5ZookeeperTransporter();
+        zookeeperClient = new ZookeeperClientManager().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
+        zookeeperClientManager = new ZookeeperClientManager();
     }
 
     @Test

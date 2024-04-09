@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClientManager;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
@@ -72,7 +72,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     private ZookeeperClient zkClient;
 
-    public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
+    public ZookeeperRegistry(URL url, ZookeeperClientManager zookeeperClientManager) {
         super(url);
 
         if (url.isAnyHost()) {
@@ -85,7 +85,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         }
 
         this.root = group;
-        this.zkClient = zookeeperTransporter.connect(url);
+        this.zkClient = zookeeperClientManager.connect(url);
 
         this.zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
@@ -156,7 +156,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         zkListeners.clear();
 
         // Just release zkClient reference, but can not close zk client here for zk client is shared somewhere else.
-        // See org.apache.dubbo.remoting.zookeeper.curator5.AbstractZookeeperTransporter#destroy()
+        // See org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
         zkClient = null;
     }
 
@@ -393,7 +393,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     /**
      * Triggered when children get changed. It will be invoked by implementation of CuratorWatcher.
      * <p>
-     * 'org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
+     * 'org.apache.dubbo.remoting.zookeeper.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
      */
     private class RegistryChildListenerImpl implements ChildListener {
         private final ZookeeperRegistryNotifier notifier;
