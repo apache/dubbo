@@ -33,12 +33,6 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rpc-rest</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <!-- Spring Web MVC -->
     <dependency>
       <groupId>org.springframework</groupId>
