@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz.rule;
+package org.apache.dubbo.xds.security.authz.rule.source;
 
+import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.xds.security.authz.RuleSource;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 
 import java.util.List;
@@ -26,7 +26,8 @@ import java.util.List;
  *
  */
 @SPI
-public interface RuleFactory {
+public interface RuleFactory<T> {
 
-    List<RuleRoot> getRules(RuleSource ruleSource);
+    @Adaptive({"mesh","authz_rule"})
+    List<RuleRoot> getRules(List<T> ruleSource);
 }

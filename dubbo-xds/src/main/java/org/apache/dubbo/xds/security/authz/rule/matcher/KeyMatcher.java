@@ -1,7 +1,7 @@
 package org.apache.dubbo.xds.security.authz.rule.matcher;
 
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
-import org.apache.dubbo.xds.security.authz.rule.matcher.StringMatcher.MatcherType;
+import org.apache.dubbo.xds.security.authz.rule.matcher.StringMatcher.MatchType;
 
 import java.util.Map;
 
@@ -11,8 +11,8 @@ public class KeyMatcher implements Matcher<Map<String, String>>{
 
     private StringMatcher stringMatcher;
 
-    public KeyMatcher(MatcherType matcherType, String condition, RequestAuthProperty authProperty, String key) {
-        this.stringMatcher = new StringMatcher(matcherType, condition, authProperty);
+    public KeyMatcher(MatchType matchType, String condition, RequestAuthProperty authProperty, String key) {
+        this.stringMatcher = new StringMatcher(matchType, condition, authProperty);
         this.key = key;
     }
 

@@ -11,7 +11,6 @@ public class WildcardStringMatcher implements Matcher<String>{
 
     private RequestAuthProperty authProperty;
 
-
     public WildcardStringMatcher(String value, RequestAuthProperty authProperty) {
         this.value =  parseToPattern(value);
         this.authProperty = authProperty;

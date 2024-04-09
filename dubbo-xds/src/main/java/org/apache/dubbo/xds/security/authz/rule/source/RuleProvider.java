@@ -14,11 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz;
+package org.apache.dubbo.xds.security.authz.rule.source;
 
-import java.util.Map;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
 
-public interface RuleSource {
+import java.util.List;
 
-    Map<String, Object> readAsMap();
+/**
+ * Provides rules for role-based authorization
+ */
+@SPI(value = "default", scope = ExtensionScope.APPLICATION)
+public interface RuleProvider<T> {
+
+    @Adaptive(value = {"mesh","authz_rule"})
+    List<T> getSource(URL url, Invocation invocation);
 }

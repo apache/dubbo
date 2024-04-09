@@ -1,1 +1,1 @@
-default=org.apache.dubbo.xds.security.authz.rule.DefaultRuleFactory
+default=org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory

@@ -54,13 +54,11 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
 
         DecodedJWT jwt = JWT.decode(token);
 
-        //        TODO: 校验签名，RSA256
-        //        String signature = jwt.getSignature();
-        //        String secret = "secret";
-        //        Algorithm algorithm = Algorithm.HMAC256(secret);
 
         long now = System.currentTimeMillis();
         String expAt = String.valueOf(jwt.getClaims().get("exp"));
+
+        //convert millisecond -> second
         if (Long.parseLong(expAt) * 1000 < now) {
             throw new AuthorizationException("JWT token already expire, now:" + now + " exp:" + expAt);
         }
@@ -90,7 +88,6 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
 
         HttpRequestCredential requestCredential = new HttpRequestCredential(jwt.getClaims());
 
-        // TODO support non-local cluster
         String cluster = kubeEnv.getCluster();
 
         requestCredential.addByType(RequestAuthProperty.SERVICE_PRINCIPAL, cluster + "/ns/" + namespace + "/sa/" + sourceService);
@@ -103,6 +100,17 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
         requestCredential.addByType(RequestAuthProperty.SOURCE_POD_ID,podId);
         requestCredential.addByType(RequestAuthProperty.SOURCE_SERVICE_UID,uid);
         requestCredential.addByType(RequestAuthProperty.TARGET_VERSION,invocation.getInvoker().getUrl().getVersion());
+
+        //匹配时 下发的 acceptAud和这个audience列表有交集即可
+        requestCredential.addByType(RequestAuthProperty.JWT_AUDIENCES,jwt.getAudience());
+
+        Map<String,String> requestHttpHeaders = null; //TODO get full http headers
+        requestCredential.addByType(RequestAuthProperty.JWT_FROM_HEADERS,requestHttpHeaders);
+
+//        requestCredential.addByType(RequestAuthProperty.JWT_NAME,);
+        requestCredential.addByType(RequestAuthProperty.JWT_FROM_PARAMS,);
+        requestCredential.addByType(RequestAuthProperty.JWT_ISSUER,);
+        requestCredential.addByType(RequestAuthProperty.JWKS,jwt);
 
         //TODO read other props
         //TODO  requestCredential.addByType(RequestAuthProperty.REQUESTED_SERVER_NAME,name);

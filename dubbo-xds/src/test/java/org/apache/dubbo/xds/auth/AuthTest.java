@@ -24,12 +24,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.istio.IstioConstant;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
-import org.apache.dubbo.xds.security.authz.KubeRuleSourceProvider;
-import org.apache.dubbo.xds.security.authz.RuleSource;
-import org.apache.dubbo.xds.security.authz.rule.DefaultRuleFactory;
-import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
-
-import java.util.List;
+import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
+import org.apache.dubbo.xds.security.authz.rule.source.KubeRuleProvider;
 
 import org.junit.Test;
 
@@ -56,15 +52,15 @@ public class AuthTest {
         applicationModel.getBeanFactory().registerBean(kubeEnv);
         applicationModel.getBeanFactory().registerBean(new KubeApiClient(applicationModel));
 
-        DefaultRuleFactory defaultRuleFactory = new DefaultRuleFactory();
+        MapRuleFactory defaultRuleFactory = new MapRuleFactory();
         applicationModel.getBeanFactory().registerBean(defaultRuleFactory);
 
-        KubeRuleSourceProvider provider = new KubeRuleSourceProvider(applicationModel);
+        KubeRuleProvider provider = new KubeRuleProvider(applicationModel);
         applicationModel.getBeanFactory().registerBean(provider);
-        applicationModel.getBeanFactory().registerBean(DefaultRuleFactory.class);
-        List<RuleSource> source = provider.getSource(null, null);
-
-        List<RuleRoot> rules = defaultRuleFactory.getRules(source.get(0));
+        applicationModel.getBeanFactory().registerBean(MapRuleFactory.class);
+//        List<RuleSource> source = provider.getSource(null, null);
+//
+//        List<RuleRoot> rules = defaultRuleFactory.getRules(source.get(0));
 
         //        HttpBasedMeshRequestCredential credential = new HttpBasedMeshRequestCredential(
         //                "cluster.local/ns/default/sa/sleep",

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz;
+package org.apache.dubbo.xds.security.authz.rule.source;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
@@ -37,19 +37,19 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.util.Watch;
 
 @Activate
-public class KubeRuleSourceProvider implements RuleSourceProvider {
+public class KubeRuleProvider implements RuleProvider<Map<String,Object>> {
 
     protected final KubeApiClient kubeApiClient;
 
-    private volatile List<RuleSource> ruleSourceInst;
+    private volatile List<Map<String,Object>> ruleSourceInst;
 
     protected KubeEnv kubeEnv;
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeRuleSourceProvider.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeRuleProvider.class);
 
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,task-> new Thread(task,"KubeRuleSourceProvider-Scheduled"));
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, task-> new Thread(task,"KubeRuleSourceProvider-Scheduled-AutoRefresh"));
 
-    public KubeRuleSourceProvider(ApplicationModel applicationModel) throws Exception {
+    public KubeRuleProvider(ApplicationModel applicationModel) throws Exception {
         this.kubeApiClient = applicationModel.getBeanFactory().getBean(KubeApiClient.class);
         this.kubeEnv = applicationModel.getBeanFactory().getBean(KubeEnv.class);
         Map<String, Object> resource = getResource();
@@ -58,7 +58,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
     }
 
     @Override
-    public List<RuleSource> getSource(URL url, Invocation invocation) {
+    public List<Map<String,Object>> getSource(URL url, Invocation invocation) {
         return new ArrayList<>(ruleSourceInst);
     }
 
@@ -100,7 +100,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
 
     protected void updateSource(Map<String, Object> resultMap) {
         List<Map<String, Object>> items = (List<Map<String, Object>>) resultMap.get("items");
-        List<RuleSource> rules = new ArrayList<>();
+        List<Map<String, Object>> rules = new ArrayList<>();
         for (Map<String, Object> item : items) {
             Map<String, Object> spec = (Map<String, Object>) item.get("spec");
             boolean match = false;
@@ -112,9 +112,8 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                     String targetLabelKey = "app";
                     String targetLabelValue = kubeEnv.getServiceName();
 
-                    if (matchLabels != null
-                            && (StringUtils.isEmpty(targetLabelValue)
-                                    || targetLabelValue.equals(matchLabels.get(targetLabelKey)))) {
+                    if (matchLabels != null && (StringUtils.isEmpty(targetLabelValue)
+                            || targetLabelValue.equals(matchLabels.get(targetLabelKey)))) {
                         match = true;
                     }
                 } else {
@@ -122,7 +121,7 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
                     match = true;
                 }
                 if (match) {
-                    rules.add(new MapRuleSource(spec));
+                    rules.add(spec);
                 }
             }
         }

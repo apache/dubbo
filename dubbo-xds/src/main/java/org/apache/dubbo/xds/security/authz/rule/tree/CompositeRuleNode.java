@@ -61,10 +61,14 @@ public class CompositeRuleNode implements RuleNode {
         if (relation == Relation.AND) {
             result = children.values().stream()
                     .allMatch(childList -> childList.stream().allMatch(ch -> ch.evaluate(context)));
-        } else {
+        } else if(relation == Relation.OR){
             // Relation.OR
             result = children.values().stream()
                     .anyMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
+        }else{
+            //relation == NOT
+            result = children.values().stream()
+                    .noneMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
         }
         return result;
     }

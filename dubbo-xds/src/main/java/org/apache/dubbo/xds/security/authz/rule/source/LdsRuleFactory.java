@@ -1,13 +1,13 @@
-package org.apache.dubbo.xds.listener;
+package org.apache.dubbo.xds.security.authz.rule.source;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.xds.security.authz.RuleSource;
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
+import org.apache.dubbo.xds.security.authz.rule.matcher.CustomMatcher;
 import org.apache.dubbo.xds.security.authz.rule.matcher.IpMatcher;
 import org.apache.dubbo.xds.security.authz.rule.matcher.KeyMatcher;
+import org.apache.dubbo.xds.security.authz.rule.matcher.Matcher;
 import org.apache.dubbo.xds.security.authz.rule.matcher.Matchers;
 import org.apache.dubbo.xds.security.authz.rule.matcher.StringMatcher;
 import org.apache.dubbo.xds.security.authz.rule.tree.CompositeRuleNode;
@@ -17,51 +17,73 @@ import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot.Action;
 
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.protobuf.Any;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.envoyproxy.envoy.config.listener.v3.Filter;
-import io.envoyproxy.envoy.config.listener.v3.FilterChain;
-import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.config.rbac.v3.Permission;
 import io.envoyproxy.envoy.config.rbac.v3.Policy;
 import io.envoyproxy.envoy.config.rbac.v3.Principal;
 import io.envoyproxy.envoy.config.rbac.v3.Principal.IdentifierCase;
 import io.envoyproxy.envoy.config.rbac.v3.RBAC;
-import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
+import io.envoyproxy.envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication;
+import io.envoyproxy.envoy.extensions.filters.http.jwt_authn.v3.JwtHeader;
+import io.envoyproxy.envoy.extensions.filters.http.jwt_authn.v3.JwtProvider;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpFilter;
 import io.envoyproxy.envoy.type.matcher.v3.MetadataMatcher.PathSegment;
 
+import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_JWT_FILTER;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.AUTHENTICATED;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.DIRECT_REMOTE_IP;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.HEADER;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.REMOTE_IP;
 import static org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation.AND;
+import static org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation.OR;
 
-/**
- * Filter for authentication rules
- *
- * @author lwj
- * @since 2.0.0
- */
-public class RbacLdsListener implements LdsListener, RuleSource {
+public class LdsRuleFactory implements RuleFactory<HttpFilter> {
 
     protected static final String LDS_RBAC_FILTER = "envoy.filters.http.rbac";
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RbacLdsListener.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsRuleFactory.class);
 
-    public RbacLdsListener(ApplicationModel applicationModel) {
+    public static final String LDS_REQUEST_AUTH_PRINCIPAL = "request.auth.principal";
 
+    public static final String LDS_REQUEST_AUTH_AUDIENCE = "request.auth.audiences";
+
+    public static final String LDS_REQUEST_AUTH_PRESENTER = "request.auth.presenter";
+
+    public static final String LDS_REQUEST_AUTH_CLAIMS = "request.auth.claims";
+
+    public LdsRuleFactory(ApplicationModel applicationModel) {}
+
+    @Override
+    public List<RuleRoot> getRules(List<HttpFilter> ruleSource) {
+        ArrayList<RuleRoot> roots = new ArrayList<>(resolveJWT(ruleSource).values());
+        roots.addAll(resolveRbac(ruleSource).values());
+        return roots;
     }
 
-    public void resolveRbac(List<HttpFilter> httpFilters, Map<String, RuleRoot> roots) {
-        //action (ALLOW/DENY/...) -> policies
+    public Map<String, RuleRoot> resolveRbac(List<HttpFilter> httpFilters) {
+        Map<String,RuleRoot> roots = new HashMap<>();
         Map<RBAC.Action, RBAC> rbacMap = new HashMap<>();
         for (HttpFilter httpFilter : httpFilters) {
             if (!httpFilter.getName()
@@ -72,7 +94,7 @@ public class RbacLdsListener implements LdsListener, RuleSource {
                 io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC rbac = httpFilter.getTypedConfig()
                         .unpack(io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC.class);
                 if (rbac != null) {
-                    /**There are multiple duplicates, and we only choose one of them */
+                    /*There are multiple duplicates, and we only choose one of them */
                     if (!rbacMap.containsKey(rbac.getRules()
                             .getAction())) {
                         rbacMap.put(rbac.getRules()
@@ -88,9 +110,7 @@ public class RbacLdsListener implements LdsListener, RuleSource {
         for (Entry<RBAC.Action, RBAC> rbacEntry : rbacMap.entrySet()) {
             RBAC.Action action = rbacEntry.getKey();
             RBAC rbac = rbacEntry.getValue();
-            /*
-              单个RBAC rule根节点
-             */
+
             RuleRoot ruleNode = new RuleRoot(AND, action.equals(RBAC.Action.ALLOW) ? Action.ALLOW : Action.DENY, "rules");
 
             //policies:  "service-admin"、"product-viewer"
@@ -136,26 +156,8 @@ public class RbacLdsListener implements LdsListener, RuleSource {
                 roots.put(ruleNode.getNodeName(), ruleNode);
             }
         }
+        return roots;
     }
-
-    public static HttpConnectionManager unpackHttpConnectionManager(Any any) {
-        try {
-            if (!any.is(HttpConnectionManager.class)) {
-                return null;
-            }
-            return any.unpack(HttpConnectionManager.class);
-        } catch (InvalidProtocolBufferException e) {
-            return null;
-        }
-    }
-
-    public static final String LDS_REQUEST_AUTH_PRINCIPAL = "request.auth.principal";
-
-    public static final String LDS_REQUEST_AUTH_AUDIENCE = "request.auth.audiences";
-
-    public static final String LDS_REQUEST_AUTH_PRESENTER = "request.auth.presenter";
-
-    public static final String LDS_REQUEST_AUTH_CLAIMS = "request.auth.claims";
 
     private RuleNode resolvePrincipal(Principal principal) {
 
@@ -349,107 +351,146 @@ public class RbacLdsListener implements LdsListener, RuleSource {
         return leafRuleNode;
     }
 
-    @Override
-    public void onResourceUpdate(List<Listener> listeners) {
+    public Map<String, RuleRoot> resolveJWT(List<HttpFilter> httpFilters) {
+        Map<String, RuleRoot> jwtRules = new HashMap<>();
 
-        if (CollectionUtils.isEmpty(listeners)) {
-            return;
-        }
+        JwtAuthentication jwtAuthentication = null;
 
-        List<HttpFilter> httpFilters = resolveHttpFilter(listeners);
-        Map<String, RuleRoot> ruleRoots = new HashMap<>();
-
-        //读 rbac filter
-        resolveRbac(httpFilters, ruleRoots);
-
-        //这里读的是 envoy.filters.http.jwt_authn 验证filter
-//        Map<String, JwtRule> jwtRules = resolveJWT(httpFilters);
-//
-//        logger.info("[XdsDataSource] Auth rules resolve finish, RBAC rules size: {}, Jwt rules size: {}",
-//            ruleRoots.size() + denyAuthRules.size(), jwtRules.size());
-
-        //转为RuleSourceProvider
-//        Rules rules = new Rules(allowAuthRules, denyAuthRules, jwtRules);
-//        authRepository.update(rules);
-//        return true;
-    }
-
-    protected static final String LDS_VIRTUAL_INBOUND = "virtualInbound";
-
-    protected static final String LDS_CONNECTION_MANAGER = "envoy.filters.network.http_connection_manager";
-
-    public static List<HttpFilter> resolveHttpFilter(List<Listener> listeners) {
-        List<HttpFilter> httpFilters = new ArrayList<>();
-        for (Listener listener : listeners) {
-            if (!listener.getName().equals(LDS_VIRTUAL_INBOUND)) {
+        for (HttpFilter httpFilter : httpFilters) {
+            if (!httpFilter.getName().equals(LDS_JWT_FILTER)) {
                 continue;
             }
-            for (FilterChain filterChain : listener.getFilterChainsList()) {
-                for (Filter filter : filterChain.getFiltersList()) {
-                    if (!filter.getName().equals(LDS_CONNECTION_MANAGER)) {
-                        continue;
-                    }
-                    HttpConnectionManager httpConnectionManager = unpackHttpConnectionManager(filter.getTypedConfig());
-                    if (httpConnectionManager == null) {
-                        continue;
-                    }
-                    for (HttpFilter httpFilter : httpConnectionManager.getHttpFiltersList()) {
-                        if (httpFilter != null) {
-                            httpFilters.add(httpFilter);
-                        }
-                    }
+            try {
+                jwtAuthentication = httpFilter.getTypedConfig().unpack(JwtAuthentication.class);
+                if (null != jwtAuthentication) {
+                    break;
                 }
+            } catch (InvalidProtocolBufferException e) {
+                logger.warn("","","","[XdsDataSource] Parsing JwtRule error", e);
             }
         }
-        return httpFilters;
+        if (null == jwtAuthentication) {
+            return jwtRules;
+        }
+
+        RuleRoot ruleRoot = new RuleRoot(OR,Action.ALLOW,"providers");
+
+        Map<String, JwtProvider> jwtProviders = jwtAuthentication.getProvidersMap();
+        for (Entry<String, JwtProvider> entry : jwtProviders.entrySet()) {
+
+            CompositeRuleNode compositeRuleNode = new CompositeRuleNode(entry.getKey(), AND);
+            JwtProvider provider = entry.getValue();
+
+            Map<String, String> fromHeaders = new HashMap<>();
+            for (JwtHeader header : provider.getFromHeadersList()) {
+                fromHeaders.put(header.getName(), header.getValuePrefix());
+            }
+
+            if(!fromHeaders.isEmpty()){
+                Matcher<Map<String,String>> matcher = new CustomMatcher<>(RequestAuthProperty.JWT_FROM_HEADERS,
+                        actualHeaders -> {
+                    //TODO
+                    return true;
+                });
+                compositeRuleNode.addChild(new LeafRuleNode(matcher,RequestAuthProperty.JWT_FROM_HEADERS.name()));
+            }
+
+            String issuer = provider.getIssuer();
+
+            compositeRuleNode.addChild(new LeafRuleNode(Matchers.stringMatcher(issuer,RequestAuthProperty.JWT_ISSUER),RequestAuthProperty.JWT_ISSUER.name()));
+            HashSet<String> audiencesList = new HashSet<>(provider.getAudiencesList());
+
+            if(!audiencesList.isEmpty()){
+                Matcher<List<String>> matcher = new CustomMatcher<>(RequestAuthProperty.JWT_AUDIENCES,
+                        actualAudiences -> {
+
+                    ArrayList<String> copy = new ArrayList<>(audiencesList);
+                    copy.removeAll(actualAudiences);
+                    //Any request audiences can match given audiences
+                    return copy.size() != audiencesList.size();
+                });
+                compositeRuleNode.addChild(new LeafRuleNode(matcher,RequestAuthProperty.JWT_AUDIENCES.name()));
+            }
+
+            String localJwks  = provider.getLocalJwks().getInlineString();
+            Matcher<DecodedJWT> jwkMatcher = buildJwkMatcher(localJwks);
+            compositeRuleNode.addChild(new LeafRuleNode(jwkMatcher,RequestAuthProperty.JWKS.name()));
+
+            List<String> fromParamsList = provider.getFromParamsList();
+            if(!fromParamsList.isEmpty()){
+                Matcher<List<String>> matcher = new CustomMatcher<>(RequestAuthProperty.JWT_FROM_PARAMS,
+                        actualParams -> {
+                            //TODO
+                            return true;
+                        });
+                compositeRuleNode.addChild(new LeafRuleNode(matcher,RequestAuthProperty.JWT_AUDIENCES.name()));
+            }
+
+            ruleRoot.addChild(compositeRuleNode);
+        }
+
+        return jwtRules;
     }
 
-//    /**
-//     * Parsing JWT Rule
-//     *
-//     * @param httpFilters
-//     * @return
-//     */
-//    public static Map<String, JwtRule> resolveJWT(List<HttpFilter> httpFilters) {
-//        Map<String, JwtRule> jwtRules = new HashMap<>();
-//        /**There are multiple duplicates, and we only choose one of them */
-//        JwtAuthentication jwtAuthentication = null;
-//        for (HttpFilter httpFilter : httpFilters) {
-//            if (!httpFilter.getName().equals(LDS_JWT_FILTER)) {
-//                continue;
-//            }
-//            try {
-//                jwtAuthentication = httpFilter.getTypedConfig().unpack(JwtAuthentication.class);
-//                if (null != jwtAuthentication) {
-//                    break;
-//                }
-//            } catch (InvalidProtocolBufferException e) {
-//                logger.warn("","","","[XdsDataSource] Parsing JwtRule error", e);
-//            }
-//        }
-//        if (null == jwtAuthentication) {
-//            return jwtRules;
-//        }
-//
-//        Map<String, JwtProvider> jwtProviders = jwtAuthentication.getProvidersMap();
-//        for (Entry<String, JwtProvider> entry : jwtProviders.entrySet()) {
-//            JwtProvider provider = entry.getValue();
-//            Map<String, String> fromHeaders = new HashMap<>();
-//            for (JwtHeader header : provider.getFromHeadersList()) {
-//                fromHeaders.put(header.getName(), header.getValuePrefix());
-//            }
-//            jwtRules.put(entry.getKey(),
-//                    new JwtRule(entry.getKey(), fromHeaders, provider.getIssuer(),
-//                            new ArrayList<>(provider.getAudiencesList()),
-//                            provider.getLocalJwks().getInlineString(),
-//                            new ArrayList<>(provider.getFromParamsList())));
-//        }
-//
-//        return jwtRules;
-//    }
+    public Matcher<DecodedJWT> buildJwkMatcher(String localJwks){
+        JSONObject jwks = JSON.parseObject(localJwks);
 
-    @Override
-    public Map<String, Object> readAsMap() {
-        return null;
+        JSONArray keys = jwks.getJSONArray("keys");
+
+        return new CustomMatcher<>(RequestAuthProperty.JWKS,
+                requestJwt ->{
+                    String kid = requestJwt.getKeyId();
+                    String alg = requestJwt.getAlgorithm();
+                    RSAPublicKey publicKey = null;
+
+                    for (int i = 0; i < keys.size(); i++) {
+                        JSONObject keyNode = keys.getJSONObject(i);
+                        if (keyNode.getString("kid").equals(kid)) {
+                            try {
+                                publicKey = buildPublicKey(keyNode.getString("n"), keyNode.getString("e"));
+                            }catch (Exception e){
+                                logger.warn("","","","Failed to verify JWT by JWKS: build JWT public key failed.");
+                                return false;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (publicKey == null) {
+                        throw new IllegalStateException("Public key not found in JWKS");
+                    }
+                    Algorithm algorithm = determineAlgorithm(alg,publicKey);
+                    JWTVerifier verifier = JWT.require(algorithm)
+                            .build();
+
+                    // Verify the token
+                    verifier.verify(requestJwt);
+                    return true;
+                });
+    }
+
+
+    private static RSAPublicKey buildPublicKey(String modulusBase64, String exponentBase64) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] modulusBytes = Base64.getUrlDecoder().decode(modulusBase64);
+        byte[] exponentBytes = Base64.getUrlDecoder().decode(exponentBase64);
+        BigInteger modulus = new BigInteger(1, modulusBytes);
+        BigInteger exponent = new BigInteger(1, exponentBytes);
+
+        RSAPublicKeySpec spec = new RSAPublicKeySpec(modulus, exponent);
+        KeyFactory factory = KeyFactory.getInstance("RSA");
+        return (RSAPublicKey) factory.generatePublic(spec);
+    }
+
+    private static Algorithm determineAlgorithm(String alg,RSAPublicKey publicKey) throws IllegalArgumentException {
+        switch (alg) {
+            case "RS256":
+                return Algorithm.RSA256(publicKey, null);
+            case "RS384":
+                return Algorithm.RSA384(publicKey, null);
+            case "RS512":
+                return Algorithm.RSA512(publicKey, null);
+            default:
+                throw new IllegalArgumentException("Unsupported algorithm: " + alg);
+        }
     }
 }

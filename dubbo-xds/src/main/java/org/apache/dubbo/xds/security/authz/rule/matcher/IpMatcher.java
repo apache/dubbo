@@ -7,7 +7,6 @@ import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
 public class IpMatcher implements Matcher<String>{
 
-
     /**
      * Prefix length in CIDR case
      */

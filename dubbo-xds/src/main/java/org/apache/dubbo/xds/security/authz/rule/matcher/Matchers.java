@@ -2,13 +2,22 @@ package org.apache.dubbo.xds.security.authz.rule.matcher;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
-import org.apache.dubbo.xds.security.authz.rule.matcher.StringMatcher.MatcherType;
+import org.apache.dubbo.xds.security.authz.rule.matcher.StringMatcher.MatchType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import io.envoyproxy.envoy.config.core.v3.CidrRange;
 import io.envoyproxy.envoy.config.route.v3.HeaderMatcher;
 import io.envoyproxy.envoy.type.matcher.v3.RegexMatcher;
 
 public class Matchers {
+
+    public static MapMatcher mapMatcher(Map<String,String> valueMap,RequestAuthProperty propertyType,StringMatcher.MatchType matchType){
+        Map<String,Matcher<String>> matcherMap = new HashMap<>(valueMap.size());
+        valueMap.forEach((k,v)-> matcherMap.put(k,stringMatcher(v,propertyType)));
+        return new MapMatcher(matcherMap,propertyType);
+    }
 
    public static IpMatcher ipMatcher(CidrRange range, RequestAuthProperty authProperty){
        return new IpMatcher(range.getPrefixLen().getValue(), range.getAddressPrefix(),authProperty);
@@ -19,7 +28,7 @@ public class Matchers {
    }
 
    public static StringMatcher stringMatcher(String value, RequestAuthProperty property){
-       return new StringMatcher(MatcherType.EXACT,value,property);
+       return new StringMatcher(MatchType.EXACT,value,property);
    }
 
     public static StringMatcher stringMatcher(io.envoyproxy.envoy.type.matcher.v3.StringMatcher stringMatcher, RequestAuthProperty authProperty){
@@ -29,19 +38,19 @@ public class Matchers {
         String contains = stringMatcher.getContains();
         String regex = stringMatcher.getSafeRegex().getRegex();
         if (StringUtils.isNotBlank(exact)) {
-            return new StringMatcher(StringMatcher.MatcherType.EXACT,exact,authProperty);
+            return new StringMatcher(MatchType.EXACT,exact,authProperty);
         }
         if (StringUtils.isNotBlank(prefix)) {
-            return new StringMatcher(StringMatcher.MatcherType.PREFIX,prefix,authProperty);
+            return new StringMatcher(MatchType.PREFIX,prefix,authProperty);
         }
         if (StringUtils.isNotBlank(suffix)) {
-            return new StringMatcher(StringMatcher.MatcherType.SUFFIX,suffix,authProperty);
+            return new StringMatcher(MatchType.SUFFIX,suffix,authProperty);
         }
         if (StringUtils.isNotBlank(contains)) {
-            return new StringMatcher(StringMatcher.MatcherType.CONTAIN,contains,authProperty);
+            return new StringMatcher(MatchType.CONTAIN,contains,authProperty);
         }
         if (StringUtils.isNotBlank(regex)) {
-            return new StringMatcher(StringMatcher.MatcherType.REGEX,regex,authProperty);
+            return new StringMatcher(MatchType.REGEX,regex,authProperty);
         }
         return null;
     }
@@ -88,12 +97,12 @@ public class Matchers {
     }
 
 
-    public static StringMatcher convertHeaderMatcher(HeaderMatcher headerMatcher,RequestAuthProperty property) {
-        return convStringMatcher(headerMatch2StringMatch(headerMatcher),property);
+    public static StringMatcher toStringMatcher(HeaderMatcher headerMatcher, RequestAuthProperty property) {
+        return toStringMatcher(headerMatch2StringMatch(headerMatcher),property);
     }
 
 
-    public static StringMatcher convStringMatcher(io.envoyproxy.envoy.type.matcher.v3.StringMatcher stringMatcher,RequestAuthProperty authPropertyth) {
+    public static StringMatcher toStringMatcher(io.envoyproxy.envoy.type.matcher.v3.StringMatcher stringMatcher, RequestAuthProperty authProperty) {
         if (stringMatcher == null) {
             return null;
         }
@@ -104,19 +113,19 @@ public class Matchers {
         String contains = stringMatcher.getContains();
         String regex = stringMatcher.getSafeRegex().getRegex();
         if (StringUtils.isNotBlank(exact)) {
-            return new StringMatcher(StringMatcher.MatcherType.EXACT, prefix,authPropertyth);
+            return new StringMatcher(MatchType.EXACT, prefix,authProperty);
         }
         if (StringUtils.isNotBlank(prefix)) {
-            return new StringMatcher(StringMatcher.MatcherType.PREFIX, prefix,authPropertyth);
+            return new StringMatcher(MatchType.PREFIX, prefix,authProperty);
         }
         if (StringUtils.isNotBlank(suffix)) {
-            return new StringMatcher(StringMatcher.MatcherType.SUFFIX, prefix,authPropertyth);
+            return new StringMatcher(MatchType.SUFFIX, prefix,authProperty);
         }
         if (StringUtils.isNotBlank(contains)) {
-            return new StringMatcher(StringMatcher.MatcherType.CONTAIN, prefix,authPropertyth);
+            return new StringMatcher(MatchType.CONTAIN, prefix,authProperty);
         }
         if (StringUtils.isNotBlank(regex)) {
-            return new StringMatcher(StringMatcher.MatcherType.REGEX, prefix,authPropertyth);
+            return new StringMatcher(MatchType.REGEX, prefix,authProperty);
         }
         return null;
     }

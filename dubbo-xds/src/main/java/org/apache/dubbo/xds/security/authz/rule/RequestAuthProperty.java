@@ -57,16 +57,6 @@ public enum RequestAuthProperty {
      */
     JWT_PRINCIPALS,
 
-    /**
-     * Audience in jwt
-     * Rule attribution:principal
-     * <p>
-     * Rule modification section：
-     * <p>
-     * when:
-     * 1)rules:when (request.auth.audiences)
-     */
-    JWT_AUDIENCES,
 
     /**
      * Audience in jwt
@@ -199,6 +189,30 @@ public enum RequestAuthProperty {
 
     SOURCE_CLUSTER,
 
-    SOURCE_METADATA;
+    SOURCE_METADATA,
+
+
+    //JWT rules
+
+    /**
+     * Audience in jwt
+     * Rule attribution:principal
+     * <p>
+     * Rule modification section：
+     * <p>
+     * when:
+     * 1)rules:when (request.auth.audiences)
+     */
+    JWT_AUDIENCES,
+    JWT_NAME,
+    JWT_FROM_HEADERS,
+    JWT_ISSUER,
+    JWKS,
+    JWT_FROM_PARAMS;
+
+
+
+
+
 
 }

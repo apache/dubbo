@@ -25,12 +25,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.security.api.AuthorizationException;
 import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 import org.apache.dubbo.xds.security.authz.rule.CredentialFactory;
-import org.apache.dubbo.xds.security.authz.rule.RuleFactory;
+import org.apache.dubbo.xds.security.authz.rule.source.RuleFactory;
+import org.apache.dubbo.xds.security.authz.rule.source.RuleProvider;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Activate
 public class RoleBasedAuthorizer implements RequestAuthorizer {
 
-    private final RuleSourceProvider ruleSourceProvider;
+    private final RuleProvider<?> ruleProvider;
 
     private final CredentialFactory credentialFactory;
 
@@ -55,29 +55,22 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
     private final Map<String, List<RuleNode>> rules = new ConcurrentHashMap<>();
 
     public RoleBasedAuthorizer(ApplicationModel applicationModel) {
-        this.ruleSourceProvider = applicationModel.getAdaptiveExtension(RuleSourceProvider.class);
+        this.ruleProvider = applicationModel.getAdaptiveExtension(RuleProvider.class);
         this.credentialFactory = applicationModel.getAdaptiveExtension(CredentialFactory.class);
         this.ruleFactory = applicationModel.getBeanFactory().getBean(RuleFactory.class);
     }
 
     @Override
+    @SuppressWarnings({"unchecked","rawtypes"})
     public void validate(Invocation invocation) throws AuthorizationException {
 
-        List<RuleSource> rulesSources =
-                ruleSourceProvider.getSource(invocation.getInvoker().getUrl(), invocation);
+        List rulesSources = ruleProvider.getSource(invocation.getInvoker().getUrl(), invocation);
 
-        List<RuleRoot> andRules = new ArrayList<>();
-        List<RuleRoot> orRules = new ArrayList<>();
-
-        for (RuleSource source : rulesSources) {
-            List<RuleRoot> roots = ruleFactory.getRules(source);
-            andRules.addAll(roots.stream()
-                    .filter(root -> Relation.AND.equals(root.getRelation()))
-                    .collect(Collectors.toList()));
-            orRules.addAll(roots.stream()
-                    .filter(root -> Relation.OR.equals(root.getRelation()))
-                    .collect(Collectors.toList()));
-        }
+        List<RuleRoot> roots = ruleFactory.getRules(rulesSources);
+        List<RuleRoot> andRules = roots.stream()
+                .filter(root -> Relation.AND.equals(root.getRelation())).collect(Collectors.toList());
+        List<RuleRoot> orRules = roots.stream()
+                .filter(root -> Relation.OR.equals(root.getRelation())).collect(Collectors.toList());
 
         RequestCredential requestCredential =
                 credentialFactory.getRequestCredential(invocation.getInvoker().getUrl(), invocation);

@@ -19,59 +19,21 @@ package org.apache.dubbo.xds.security.authz.rule;
 import org.apache.dubbo.xds.security.authz.RequestCredential;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.auth0.jwt.interfaces.Claim;
 
 public class HttpRequestCredential implements RequestCredential {
 
-    private String principle;
-
-    /**
-     * who created and signed this request credential
-     */
-    private String issuer;
-
-    /**
-     * whom this credential refers to
-     */
-    private String subject;
-
-    /**
-     * Request PATH
-     */
-    private String targetPath;
-
-    /**
-     * The HTTP request methods like GET/POST
-     */
-    private String method;
-
-    /**
-     * namespace that request comes from
-     */
-    private String namespace;
-
-    private String serviceName;
-
-    private String serviceUid;
-
-    private String podName;
-
-    private String podId;
-
-    private String version;
-
-    private final Map<String, Claim> jwtCredentials;
+    private final Map<String, Claim> jwtClaims;
 
     /**
      * path-> credential properties
      */
     private final Map<RequestAuthProperty, Object> authProperties;
 
-    public HttpRequestCredential(Map<String, Claim> jwtCredentials) {
-        this.jwtCredentials = jwtCredentials;
+    public HttpRequestCredential(Map<String, Claim> jwtClaims) {
+        this.jwtClaims = jwtClaims;
         this.authProperties = new HashMap<>();
     }
 
@@ -79,6 +41,7 @@ public class HttpRequestCredential implements RequestCredential {
     public Object getRequestProperty(RequestAuthProperty propertyType) {
         return authProperties.get(propertyType);
     }
+
 
     public void addByType(RequestAuthProperty propertyType, Object value) {
         this.authProperties.put(propertyType,value);

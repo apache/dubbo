@@ -18,9 +18,6 @@ package org.apache.dubbo.xds.security.authz;
 
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
-/**
- * 提供请求value-规则path的映射关系
- */
 public interface RequestCredential {
 
     Object getRequestProperty(RequestAuthProperty propertyType);

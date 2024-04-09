@@ -7,13 +7,13 @@ import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.xds.security.authz.rule.matcher.StringMatcher.MatcherType.EXACT;
+import static org.apache.dubbo.xds.security.authz.rule.matcher.StringMatcher.MatchType.EXACT;
 
 public class StringMatcher implements Matcher<String>{
 
     private String condition;
 
-    private MatcherType matcherType;
+    private MatchType matchType;
 
     private RequestAuthProperty authProperty;
 
@@ -31,28 +31,28 @@ public class StringMatcher implements Matcher<String>{
             return new StringMatcher(EXACT,exact,authProperty);
         }
         if (StringUtils.isNotBlank(prefix)) {
-            return new StringMatcher(StringMatcher.MatcherType.PREFIX,prefix,authProperty);
+            return new StringMatcher(MatchType.PREFIX,prefix,authProperty);
         }
         if (StringUtils.isNotBlank(suffix)) {
-            return new StringMatcher(StringMatcher.MatcherType.SUFFIX,suffix,authProperty);
+            return new StringMatcher(MatchType.SUFFIX,suffix,authProperty);
         }
         if (StringUtils.isNotBlank(contains)) {
-            return new StringMatcher(StringMatcher.MatcherType.CONTAIN,contains,authProperty);
+            return new StringMatcher(MatchType.CONTAIN,contains,authProperty);
         }
         if (StringUtils.isNotBlank(regex)) {
-            return new StringMatcher(StringMatcher.MatcherType.REGEX,regex,authProperty);
+            return new StringMatcher(MatchType.REGEX,regex,authProperty);
         }
         return null;
     }
 
-    public StringMatcher(MatcherType matcherType,String condition, RequestAuthProperty authProperty) {
-        this.matcherType = matcherType;
+    public StringMatcher(MatchType matchType, String condition, RequestAuthProperty authProperty) {
+        this.matchType = matchType;
         this.condition = condition;
         this.authProperty = authProperty;
     }
 
-    public StringMatcher(MatcherType matcherType,String condition, RequestAuthProperty authProperty, boolean not) {
-        this.matcherType = matcherType;
+    public StringMatcher(MatchType matchType, String condition, RequestAuthProperty authProperty, boolean not) {
+        this.matchType = matchType;
         this.condition = condition;
         this.authProperty = authProperty;
         this.not = not;
@@ -64,7 +64,7 @@ public class StringMatcher implements Matcher<String>{
         if (StringUtils.isEmpty(actual)) {
             res = false;
         }else {
-            switch (matcherType) {
+            switch (matchType) {
                 case EXACT:
                     res = actual.equals(condition);
                     break;
@@ -98,7 +98,7 @@ public class StringMatcher implements Matcher<String>{
         return authProperty;
     }
 
-    public enum MatcherType {
+    public enum MatchType {
 
         /**
          * exact match.
@@ -126,7 +126,7 @@ public class StringMatcher implements Matcher<String>{
          */
         public final String key;
 
-        MatcherType(String type) {
+        MatchType(String type) {
             this.key = type;
         }
 
