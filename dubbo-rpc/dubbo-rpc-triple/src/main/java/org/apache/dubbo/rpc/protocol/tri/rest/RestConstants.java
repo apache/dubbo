@@ -68,13 +68,20 @@ public final class RestConstants {
 
     /* Configuration Key */
     public static final String CONFIG_PREFIX = "dubbo.rpc.rest.";
-    public static final String CORS_CONFIG_PREFIX = CONFIG_PREFIX + "cors.";
     public static final String MAX_BODY_SIZE_KEY = CONFIG_PREFIX + "max-body-size";
     public static final String MAX_RESPONSE_BODY_SIZE_KEY = CONFIG_PREFIX + "max-response-body-size";
     public static final String SUFFIX_PATTERN_MATCH_KEY = CONFIG_PREFIX + "suffix-pattern-match";
     public static final String TRAILING_SLASH_MATCH_KEY = CONFIG_PREFIX + "trailing-slash-match";
     public static final String CASE_SENSITIVE_MATCH_KEY = CONFIG_PREFIX + "case-sensitive-match";
     public static final String FORMAT_PARAMETER_NAME_KEY = CONFIG_PREFIX + "format-parameter-name";
+    public static final String CORS_CONFIG_PREFIX = CONFIG_PREFIX + "cors.";
+    public static final String ALLOWED_ORIGINS = CORS_CONFIG_PREFIX + "allowed-origins";
+    public static final String ALLOWED_METHODS = CORS_CONFIG_PREFIX + "allowed-methods";
+    public static final String ALLOWED_HEADERS = CORS_CONFIG_PREFIX + "allowed-headers";
+    public static final String EXPOSED_HEADERS = CORS_CONFIG_PREFIX + "exposed-headers";
+    public static final String MAX_AGE = CORS_CONFIG_PREFIX + "max-age";
+    public static final String ALLOW_CREDENTIALS = CORS_CONFIG_PREFIX + "allow-credentials";
+    public static final String ALLOW_PRIVATE_NETWORK = CORS_CONFIG_PREFIX + "allow-private-network";
 
     private RestConstants() {}
 }

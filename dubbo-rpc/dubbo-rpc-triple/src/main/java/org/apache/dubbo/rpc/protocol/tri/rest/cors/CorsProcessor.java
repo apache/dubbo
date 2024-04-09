@@ -37,9 +37,7 @@ import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.ACCESS_CONTRO
 import static org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtil.getPort;
 
 public class CorsProcessor {
-    private static final ErrorTypeAwareLogger LOGGER =
-            LoggerFactory.getErrorTypeAwareLogger(CorsProcessor.class);
-
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CorsProcessor.class);
 
     public boolean process(CorsMeta config, HttpRequest request, HttpResponse response) {
         // set vary header
@@ -54,10 +52,10 @@ public class CorsProcessor {
         if (response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN) != null) {
             return true;
         }
-
+        boolean preFlight = isPreFlight(request);
         if (config == null) {
             // if no cors config and is a preflight request
-            if (isPreFlight(request)) {
+            if (preFlight) {
                 reject(response);
                 return false;
             }
@@ -65,7 +63,7 @@ public class CorsProcessor {
         }
 
         // handle cors request
-        return handleInternal(request, response, config, isPreFlight(request));
+        return handleInternal(request, response, config, preFlight);
     }
 
     protected boolean handleInternal(HttpRequest request, HttpResponse response, CorsMeta config, boolean isPreLight) {
@@ -116,7 +114,6 @@ public class CorsProcessor {
             response.setHeader(
                     RestConstants.ACCESS_CONTROL_MAX_AGE, config.getMaxAge().toString());
         }
-
         return true;
     }
 
@@ -162,25 +159,25 @@ public class CorsProcessor {
         } catch (URISyntaxException e) {
             LOGGER.debug("Origin header is not a valid URI: " + origin);
             // skip if origin is not a valid URI
-            return false;
+            return true;
         }
     }
 
     private void setVaryHeaders(HttpResponse response) {
         List<String> varyHeaders = response.headerValues(RestConstants.VARY);
         if (varyHeaders == null) {
-            response.setHeader(RestConstants.VARY, RestConstants.ORIGIN);
-            response.setHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
-            response.setHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
+            response.addHeader(RestConstants.VARY, RestConstants.ORIGIN);
+            response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
+            response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
         } else {
             if (!varyHeaders.contains(RestConstants.ORIGIN)) {
-                response.setHeader(RestConstants.VARY, RestConstants.ORIGIN);
+                response.addHeader(RestConstants.VARY, RestConstants.ORIGIN);
             }
             if (!varyHeaders.contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD)) {
-                response.setHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
+                response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
             }
             if (!varyHeaders.contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS)) {
-                response.setHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
+                response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
             }
         }
     }

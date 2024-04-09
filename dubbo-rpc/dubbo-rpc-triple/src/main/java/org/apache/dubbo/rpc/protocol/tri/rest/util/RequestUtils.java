@@ -176,15 +176,4 @@ public final class RequestUtils {
         }
         return value;
     }
-
-    public static int getPort(String scheme, int port) {
-        if (port == -1) {
-            if (RestConstants.HTTP.equals(scheme) || RestConstants.WS.equals(scheme)) {
-                port = 80;
-            } else if (RestConstants.HTTPS.equals(scheme) || RestConstants.WSS.equals(scheme)) {
-                port = 443;
-            }
-        }
-        return port;
-    }
 }

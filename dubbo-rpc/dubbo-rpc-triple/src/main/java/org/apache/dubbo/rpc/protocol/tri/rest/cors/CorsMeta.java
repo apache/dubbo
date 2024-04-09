@@ -20,7 +20,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,19 +37,21 @@ public class CorsMeta {
 
     public static final String ALL = "*";
 
-    private static final List<String> ALL_LIST = Collections.singletonList(ALL);
+    public static final List<String> ALL_LIST = Collections.singletonList(ALL);
 
     private static final OriginPattern ALL_PATTERN = new OriginPattern("*");
 
     private static final List<OriginPattern> ALL_PATTERN_LIST = Collections.singletonList(ALL_PATTERN);
 
-    private static final List<String> DEFAULT_PERMIT_ALL = Collections.singletonList(ALL);
+    public static final List<String> DEFAULT_PERMIT_ALL = Collections.singletonList(ALL);
 
-    private static final List<HttpMethods> DEFAULT_METHODS =
+    public static final List<HttpMethods> DEFAULT_METHODS =
             Collections.unmodifiableList(Arrays.asList(HttpMethods.GET, HttpMethods.HEAD));
 
-    private static final List<String> DEFAULT_PERMIT_METHODS = Collections.unmodifiableList(
+    public static final List<String> DEFAULT_PERMIT_METHODS = Collections.unmodifiableList(
             Arrays.asList(HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()));
+
+    public static final Long DEFAULT_MAX_AGE = 1800L;
 
     private List<String> allowedOrigins;
 
@@ -114,7 +115,7 @@ public class CorsMeta {
         this.allowedOrigins.add(origin);
     }
 
-    public CorsMeta setAllowedOriginPatterns(List<String> allowedOriginPatterns) {
+    public void setAllowedOriginPatterns(List<String> allowedOriginPatterns) {
         if (allowedOriginPatterns == null) {
             this.allowedOriginPatterns = null;
         } else {
@@ -123,7 +124,6 @@ public class CorsMeta {
                 addAllowedOriginPattern(patternValue);
             }
         }
-        return this;
     }
 
     public List<String> getAllowedOriginPatterns() {
@@ -238,10 +238,6 @@ public class CorsMeta {
         return this.allowPrivateNetwork;
     }
 
-    public void setMaxAge(Duration maxAge) {
-        this.maxAge = maxAge.getSeconds();
-    }
-
     public void setMaxAge(Long maxAge) {
         this.maxAge = maxAge;
     }
@@ -263,42 +259,49 @@ public class CorsMeta {
             this.allowedHeaders = DEFAULT_PERMIT_ALL;
         }
         if (this.maxAge == null) {
-            this.maxAge = 1800L;
+            this.maxAge = DEFAULT_MAX_AGE;
+        }
+        if(this.allowCredentials == null){
+            this.allowCredentials = false;
+        }
+        if(this.allowPrivateNetwork == null){
+            this.allowPrivateNetwork = false;
         }
         return this;
     }
 
-    public void validateAllowCredentials() {
-        if (this.allowCredentials.equals(Boolean.TRUE)
+    public boolean validateAllowCredentials() {
+        //      When allowCredentials is true, allowedOrigins cannot contain the special value \"*\"
+        //      since that cannot be set on the \"Access-Control-Allow-Origin\" response header.
+        //      To allow credentials to a set of origins, list them explicitly
+        //      or consider using \"allowedOriginPatterns\" instead.
+        return this.allowCredentials != null
+                && this.allowCredentials.equals(Boolean.TRUE)
                 && this.allowedOrigins != null
-                && this.allowedOrigins.contains(ALL)) {
-
-            throw new IllegalArgumentException(
-                    "When allowCredentials is true, allowedOrigins cannot contain the special value \"*\" "
-                            + "since that cannot be set on the \"Access-Control-Allow-Origin\" response header. "
-                            + "To allow credentials to a set of origins, list them explicitly "
-                            + "or consider using \"allowedOriginPatterns\" instead.");
-        }
+                && this.allowedOrigins.contains(ALL);
     }
 
-    public void validateAllowPrivateNetwork() {
-        if (this.allowPrivateNetwork.equals(Boolean.TRUE)
-                && this.allowedOrigins != null
-                && this.allowedOrigins.contains(ALL)) {
+    public boolean validateAllowPrivateNetwork() {
 
-            throw new IllegalArgumentException(
-                    "When allowPrivateNetwork is true, allowedOrigins cannot contain the special value \"*\" "
-                            + "as it is not recommended from a security perspective. "
-                            + "To allow private network access to a set of origins, list them explicitly "
-                            + "or consider using \"allowedOriginPatterns\" instead.");
-        }
+        //       When allowPrivateNetwork is true, allowedOrigins cannot contain the special value \"*\"
+        //       as it is not recommended from a security perspective.
+        //       To allow private network access to a set of origins, list them explicitly
+        //       or consider using \"allowedOriginPatterns\" instead.
+        return this.allowPrivateNetwork != null
+                && this.allowPrivateNetwork.equals(Boolean.TRUE)
+                && this.allowedOrigins != null
+                && this.allowedOrigins.contains(ALL);
     }
 
+    /**
+     *  the custom value always cover default value
+     * @param other other
+     * @return {@link CorsMeta}
+     */
     public CorsMeta combine(CorsMeta other) {
         if (other == null) {
             return this;
         }
-        // Bypass setAllowedOrigins to avoid re-compiling patterns
         CorsMeta config = new CorsMeta(this);
         List<String> origins = combine(getAllowedOrigins(), other.getAllowedOrigins());
         List<OriginPattern> patterns = combinePatterns(this.allowedOriginPatterns, other.allowedOriginPatterns);
@@ -322,6 +325,13 @@ public class CorsMeta {
         return config;
     }
 
+    /**
+     * combine
+     *
+     * @param source source
+     * @param other  other
+     * @return {@link List}<{@link String}>
+     */
     private List<String> combine(List<String> source, List<String> other) {
         if (other == null) {
             return (source != null ? source : Collections.emptyList());
@@ -329,6 +339,7 @@ public class CorsMeta {
         if (source == null) {
             return other;
         }
+        // save setting value at first
         if (source == DEFAULT_PERMIT_ALL || source == DEFAULT_PERMIT_METHODS) {
             return other;
         }
@@ -368,8 +379,9 @@ public class CorsMeta {
         String originToCheck = trimTrailingSlash(origin);
         if (!ObjectUtils.isEmpty(this.allowedOrigins)) {
             if (this.allowedOrigins.contains(ALL)) {
-                validateAllowCredentials();
-                validateAllowPrivateNetwork();
+                if (validateAllowCredentials() || validateAllowPrivateNetwork()) {
+                    return null;
+                }
                 return ALL;
             }
             for (String allowedOrigin : this.allowedOrigins) {
@@ -477,7 +489,7 @@ public class CorsMeta {
             if (other == null || !getClass().equals(other.getClass())) {
                 return false;
             }
-            return ObjectUtils.equals(this.declaredPattern, ((OriginPattern) other).declaredPattern);
+            return Objects.equals(this.declaredPattern, ((OriginPattern) other).declaredPattern);
         }
 
         @Override

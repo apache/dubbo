@@ -20,11 +20,7 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.CONFIG_PREFIX;
-import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.CORS_CONFIG_PREFIX;
 
 public class CorsUtil {
 
@@ -40,37 +36,36 @@ public class CorsUtil {
     }
 
     public static CorsMeta resolveGlobalMeta(Configuration config) {
+
         // Get the CORS configuration properties from the configuration object.
-        String allowOrigins = config.getString(CORS_CONFIG_PREFIX+RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN);
-        String allowMethods = config.getString(CORS_CONFIG_PREFIX+RestConstants.ACCESS_CONTROL_ALLOW_METHODS);
-        String allowHeaders = config.getString(CORS_CONFIG_PREFIX+RestConstants.ACCESS_CONTROL_ALLOW_HEADERS);
-        String exposeHeaders = config.getString(CORS_CONFIG_PREFIX+RestConstants.ACCESS_CONTROL_EXPOSE_HEADERS);
-        String maxAge = config.getString(CORS_CONFIG_PREFIX+RestConstants.ACCESS_CONTROL_MAX_AGE);
-        String allowCredentials = config.getString(CORS_CONFIG_PREFIX+RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS);
-        String allowPrivateNetwork = config.getString(CORS_CONFIG_PREFIX+RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK);
+        String allowOrigins = config.getString(RestConstants.ALLOWED_ORIGINS);
+        String allowMethods = config.getString(RestConstants.ALLOWED_METHODS);
+        String allowHeaders = config.getString(RestConstants.ALLOWED_HEADERS);
+        String exposeHeaders = config.getString(RestConstants.EXPOSED_HEADERS);
+        String maxAge = config.getString(RestConstants.MAX_AGE);
+        String allowCredentials = config.getString(RestConstants.ALLOW_CREDENTIALS);
+        String allowPrivateNetwork = config.getString(RestConstants.ALLOW_PRIVATE_NETWORK);
         // Create a new CorsMeta object and set the properties.
         CorsMeta meta = new CorsMeta();
         meta.setAllowedOrigins(parseList(allowOrigins));
         meta.setAllowedMethods(parseList(allowMethods));
         meta.setAllowedHeaders(parseList(allowHeaders));
         meta.setExposedHeaders(parseList(exposeHeaders));
-        meta.setMaxAge( maxAge == null ? null : Long.getLong(maxAge) );
-        meta.setAllowCredentials(allowCredentials == null ?null : Boolean.getBoolean(allowCredentials));
-        meta.setAllowPrivateNetwork( allowPrivateNetwork == null ?null : Boolean.getBoolean(allowPrivateNetwork));
+        meta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
+        meta.setAllowCredentials(allowCredentials == null ? null : Boolean.valueOf(allowCredentials));
+        meta.setAllowPrivateNetwork(allowPrivateNetwork == null ? null : Boolean.valueOf(allowPrivateNetwork));
         // Return the CorsMeta object.
-        return meta;
+        return meta.applyPermitDefaultValues();
     }
 
     private static List<String> parseList(String value) {
         if (value == null) {
             return null;
         }
-
         List<String> list = new ArrayList<>();
         for (String item : value.split(",")) {
             list.add(item.trim());
         }
-
         return list;
     }
 }

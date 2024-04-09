@@ -76,7 +76,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 }
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
                 if (classMapping != null) {
-                    classMapping.setCorsMeta(globalCorsMeta.combine(classMapping.getCorsMeta()));
+                    classMapping.setCorsMeta(classMapping.getCorsMeta().combine(globalCorsMeta));
                 }
                 consumer.accept((methods) -> {
                     MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
@@ -86,6 +86,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     }
                     if (classMapping != null) {
                         methodMapping = classMapping.combine(methodMapping);
+                        methodMapping.setCorsMeta(methodMapping.getCorsMeta().combine(globalCorsMeta));
                     }
                     register0(methodMapping, buildHandlerMeta(invoker, methodMeta));
                 });
