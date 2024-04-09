@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.annotation.processing.util;
 
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest;
-import org.apache.dubbo.metadata.rest.SpringRestService;
 import org.apache.dubbo.metadata.tools.TestService;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
@@ -238,12 +237,6 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         assertNull(getAttribute(findAnnotation(testType, Path.class), null));
         assertNull(getAttribute(findAnnotation(testType, (Class) null), null));
 
-        ExecutableElement method = findMethod(getType(SpringRestService.class), "param", String.class);
-
-        AnnotationMirror annotation = findAnnotation(method, GetMapping.class);
-
-        assertArrayEquals(new String[] {"/param"}, (String[]) getAttribute(annotation, "value"));
-        assertNull(getAttribute(annotation, "path"));
     }
 
     @Test
