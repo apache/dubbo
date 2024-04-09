@@ -42,12 +42,18 @@ public class CorsUtilTest {
         CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
         Assertions.assertTrue(meta.getAllowedOrigins().contains("http://localhost:8080"));
         Assertions.assertTrue(meta.getAllowedMethods().contains("GET"));
+        Assertions.assertTrue(meta.getAllowedMethods().contains("POST"));
+        Assertions.assertTrue(meta.getAllowedMethods().contains("PUT"));
+        Assertions.assertTrue(meta.getAllowedMethods().contains("DELETE"));
         Assertions.assertTrue(meta.getAllowedHeaders().contains("Content-Type"));
+        Assertions.assertTrue(meta.getAllowedHeaders().contains("Authorization"));
         Assertions.assertTrue(meta.getExposedHeaders().contains("Content-Type"));
+        Assertions.assertTrue(meta.getExposedHeaders().contains("Authorization"));
         Assertions.assertEquals(3600, meta.getMaxAge());
         Assertions.assertTrue(meta.getAllowCredentials());
         Assertions.assertTrue(meta.getAllowPrivateNetwork());
     }
+
 
     @Test
     void testResolveGlobalMetaWithNullConfig() {
