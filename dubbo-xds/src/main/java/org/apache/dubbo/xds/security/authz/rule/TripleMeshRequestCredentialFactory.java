@@ -50,7 +50,6 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
 
         if (token.startsWith("Bearer ")) {
             token = token.substring("Bearer ".length());
-            ;
         }
 
         DecodedJWT jwt = JWT.decode(token);
@@ -86,25 +85,27 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
                 podId = pod.get("uid");
             }
         }
-        String name = serviceAccount.get("name");
+        String sourceService = serviceAccount.get("name");
         String uid = serviceAccount.get("uid");
 
-        HttpBasedMeshRequestCredential requestCredential = new HttpBasedMeshRequestCredential(jwt.getClaims());
+        HttpRequestCredential requestCredential = new HttpRequestCredential(jwt.getClaims());
 
         // TODO support non-local cluster
         String cluster = kubeEnv.getCluster();
-        requestCredential.setPrinciple(cluster + "/ns/" + namespace + "/sa/" + name);
-        requestCredential.setIssuer(issuer);
-        requestCredential.setSubject(sub);
-        requestCredential.setTargetPath(targetPath);
-        requestCredential.setMethod(httpMethod);
-        requestCredential.setNamespace(namespace);
-        requestCredential.setServiceName(name);
-        requestCredential.setPodId(podId);
-        requestCredential.setPodName(podName);
-        requestCredential.setServiceUid(uid);
-        requestCredential.setVersion(invocation.getInvoker().getUrl().getVersion());
 
+        requestCredential.addByType(RequestAuthProperty.SERVICE_PRINCIPAL, cluster + "/ns/" + namespace + "/sa/" + sourceService);
+        requestCredential.addByType(RequestAuthProperty.JWT_PRINCIPALS, issuer + "/" + sub);
+        requestCredential.addByType(RequestAuthProperty.URL_PATH,targetPath);
+        requestCredential.addByType(RequestAuthProperty.HTTP_METHOD,httpMethod);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_NAMESPACE,namespace);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_SERVICE_NAME,sourceService);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_POD_NAME,podName);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_POD_ID,podId);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_SERVICE_UID,uid);
+        requestCredential.addByType(RequestAuthProperty.TARGET_VERSION,invocation.getInvoker().getUrl().getVersion());
+
+        //TODO read other props
+        //TODO  requestCredential.addByType(RequestAuthProperty.REQUESTED_SERVER_NAME,name);
         return requestCredential;
     }
 }

@@ -23,7 +23,6 @@ import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot.Action;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleTreeBuilder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,10 @@ public class DefaultRuleFactory implements RuleFactory {
             throw new RuntimeException("Parse rule map failed: unknown action");
         }
 
-        RuleTreeBuilder builder = new RuleTreeBuilder(Relation.AND, action);
+        RuleTreeBuilder builder = new RuleTreeBuilder();
+        RuleRoot ruleRoot = new RuleRoot(Relation.AND, action);
+        builder.addRoot(ruleRoot);
+
         ArrayList<Relation> levelRelations = new ArrayList<>();
         // from|to|...
         levelRelations.add(Relation.AND);
@@ -52,12 +54,12 @@ public class DefaultRuleFactory implements RuleFactory {
         // from.source.principle|from.source.namespaces|...
         levelRelations.add(Relation.AND);
 
-        Map<String, Object> ruleMap = new HashMap<>();
+        Map<String, Object> ruleMap = new HashMap<>(1);
         ruleMap.put("rules", ruleSource.readAsMap().get("rules"));
 
         builder.setPathLevelRelations(levelRelations);
-        builder.createFromMap(ruleMap);
+        builder.createFromRuleMap(ruleMap,ruleRoot);
 
-        return Arrays.asList(builder.getRoot());
+        return builder.getRoots();
     }
 }

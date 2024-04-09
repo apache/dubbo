@@ -29,6 +29,7 @@ public interface RuleNode {
 
     enum Relation {
         AND,
-        OR
+        OR,
+        NOT
     }
 }

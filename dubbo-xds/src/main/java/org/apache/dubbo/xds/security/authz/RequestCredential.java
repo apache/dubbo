@@ -16,14 +16,12 @@
  */
 package org.apache.dubbo.xds.security.authz;
 
-import java.util.List;
+import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
 /**
  * 提供请求value-规则path的映射关系
  */
 public interface RequestCredential {
 
-    List<List<String>> supportPaths();
-
-    List<String> getByPath(String mapPath);
+    Object getRequestProperty(RequestAuthProperty propertyType);
 }

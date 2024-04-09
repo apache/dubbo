@@ -99,7 +99,6 @@ public class KubeRuleSourceProvider implements RuleSourceProvider {
     }
 
     protected void updateSource(Map<String, Object> resultMap) {
-
         List<Map<String, Object>> items = (List<Map<String, Object>>) resultMap.get("items");
         List<RuleSource> rules = new ArrayList<>();
         for (Map<String, Object> item : items) {

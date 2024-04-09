@@ -17,22 +17,25 @@
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.xds.security.authz.rule.AuthorizationPolicyPathConvertor;
+import org.apache.dubbo.xds.security.authz.rule.matcher.WildcardStringMatcher;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot.Action;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * non-thread safe
+ * non thread-safe
  */
 public class RuleTreeBuilder {
 
     /**
      * Root of the rule tree.
      */
-    private RuleRoot root;
+    private List<RuleRoot> roots = new ArrayList<>();
 
     /**
      * The relations between nodes that have same parent. <p>
@@ -47,18 +50,26 @@ public class RuleTreeBuilder {
      */
     private List<Relation> nodeLevelRelations = new ArrayList<>();
 
-    public RuleTreeBuilder(Relation relationToOtherRoots, Action action) {
-        this.root = new RuleRoot(relationToOtherRoots, action);
+    public RuleTreeBuilder() {}
+
+    public void addRoot(RuleRoot root){
+        this.roots.add(root);
     }
 
-    public void createFromMap(Map<String, Object> map) {
+    public void addRoot(Relation relationToOtherRoots, Action action) {
+        this.roots.add(new RuleRoot(relationToOtherRoots, action));
+    }
+
+    public void createFromRuleMap(Map<String, Object> map, RuleRoot rootToCreate) {
         if (CollectionUtils.isEmpty(nodeLevelRelations)) {
             throw new RuntimeException("Node level relations can't be null or empty");
         }
-
+        if(this.roots.isEmpty()){
+            throw new RuntimeException("No rule root exist.");
+        }
         for (String key : map.keySet()) {
             Object value = map.get(key);
-            processNode(root, key, value, 0);
+            processNode(rootToCreate, key, value, 0);
         }
     }
 
@@ -66,7 +77,7 @@ public class RuleTreeBuilder {
         this.nodeLevelRelations = pathLevelRelations;
     }
 
-    private void processNode(CompositeRuleNode parent, String key, Object value, int level) {
+    private void processNode(CompositeRuleNode parent, String currentKey, Object value, int level) {
         // key：name of current node
         // value：values for children of current node
         if (value instanceof List) {
@@ -74,30 +85,35 @@ public class RuleTreeBuilder {
             if (!list.isEmpty()) {
 
                 if (list.get(0) instanceof String) {
-                    LeafRuleNode current = new LeafRuleNode(key, (List<String>) list);
-                    parent.addChild(key, current);
-                } else if (list.get(0) instanceof Map) {
-                    CompositeRuleNode current = new CompositeRuleNode(key, nodeLevelRelations.get(level));
-                    parent.addChild(key, current);
 
+                    List<WildcardStringMatcher> matchers = ((List<String>) list).stream()
+                            .map(s -> new WildcardStringMatcher(s, AuthorizationPolicyPathConvertor.convert(currentKey)))
+                            .collect(Collectors.toList());
+
+                    LeafRuleNode current = new LeafRuleNode(matchers,currentKey);
+                    parent.addChild(current);
+                } else if (list.get(0) instanceof Map) {
+
+                    CompositeRuleNode current = new CompositeRuleNode(currentKey,nodeLevelRelations.get(level));
+                    parent.addChild(current);
                     for (Object item : list) {
                         ((Map<?, ?>) item)
                                 .forEach((childKey, childValue) ->
-                                        processNode(current, (String) childKey, childValue, level + 1));
+                                        processNode(current, currentKey + "." + childKey, childValue, level + 1));
                     }
                 }
             }
         } else if (value instanceof Map) {
-            CompositeRuleNode current = new CompositeRuleNode(key, nodeLevelRelations.get(level));
-            parent.addChild(key, current);
+            CompositeRuleNode current = new CompositeRuleNode(currentKey,nodeLevelRelations.get(level));
+            parent.addChild(current);
             ((Map<?, ?>) value)
-                    .forEach((childKey, childValue) -> processNode(current, (String) childKey, childValue, level + 1));
+                    .forEach((childKey, childValue) -> processNode(current,currentKey + "." + childKey, childValue, level + 1));
         } else {
             throw new RuntimeException();
         }
     }
 
-    public RuleRoot getRoot() {
-        return root;
+    public List<RuleRoot> getRoots() {
+        return roots;
     }
 }

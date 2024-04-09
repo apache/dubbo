@@ -17,10 +17,12 @@
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
 import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
+import org.apache.dubbo.xds.security.authz.rule.matcher.Matcher;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("unchecked,rawtypes")
 public class LeafRuleNode implements RuleNode {
 
     /**
@@ -31,72 +33,36 @@ public class LeafRuleNode implements RuleNode {
     /**
      * patterns that matches required values
      */
-    private List<String> expectedValuePattern;
+    private List<Matcher> matchers;
 
-    public LeafRuleNode(String nodeName, List<String> expectedValue) {
-        this.rulePropName = nodeName;
-        this.expectedValuePattern = parseToPattern(expectedValue);
+    public LeafRuleNode(List<? extends Matcher> expectedConditions, String name) {
+        this.matchers = (List<Matcher>) expectedConditions;
+        this.rulePropName = name;
+    }
+
+    public LeafRuleNode(Matcher matcher, String name){
+        this.matchers = Collections.singletonList(matcher);
+        this.rulePropName = name;
     }
 
     @Override
     public boolean evaluate(AuthorizationRequestContext context) {
-        context.addCurrentPath(rulePropName);
+        // If we have multiple values to validate, then every value must match at list one rule pattern
+        for (Matcher matcher: matchers) {
 
-        List<String> valuesToValidate = context.getRequestCredential().getByPath(context.getCurrentPath());
-        if (valuesToValidate.isEmpty()) {
-            context.removeCurrentPath();
-            return false;
-        }
+            Object toValidate = context.getRequestCredential()
+                    .getRequestProperty(matcher.propType());
 
-        List<String> l = new ArrayList<>(valuesToValidate);
-        for (String p : expectedValuePattern) {
-            // If we have multiple values to validate, then every value must match at list one rule pattern
-            l.removeIf(val -> val.matches(p));
-            if (l.isEmpty()) {
-                break;
+            if(!matcher.match(toValidate)){
+                return false;
             }
         }
-        context.removeCurrentPath();
-        return l.isEmpty();
+
+        return true;
     }
 
     @Override
     public String getNodeName() {
         return rulePropName;
-    }
-
-    private List<String> parseToPattern(List<String> values) {
-        List<String> pattern = new ArrayList<>(1);
-        for (String val : values) {
-            StringBuilder patternBuilder = new StringBuilder();
-            for (int i = 0; i < val.length(); i++) {
-                char c = val.charAt(i);
-                switch (c) {
-                    case '*':
-                        patternBuilder.append(".*");
-                        break;
-                    case '\\':
-                    case '.':
-                    case '^':
-                    case '$':
-                    case '+':
-                    case '?':
-                    case '{':
-                    case '}':
-                    case '[':
-                    case ']':
-                    case '|':
-                    case '(':
-                    case ')':
-                        patternBuilder.append("\\").append(c);
-                        break;
-                    default:
-                        patternBuilder.append(c);
-                        break;
-                }
-            }
-            pattern.add(patternBuilder.toString());
-        }
-        return pattern;
     }
 }

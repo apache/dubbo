@@ -26,6 +26,11 @@ public class RuleRoot extends CompositeRuleNode {
      */
     private Action action;
 
+    public RuleRoot(Relation relation, Action action, String name){
+        super(name,relation);
+        this.action = action;
+    }
+
     public RuleRoot(Relation relation, Action action) {
         super("", relation);
         this.action = action;
@@ -80,8 +85,9 @@ public class RuleRoot extends CompositeRuleNode {
                     return ALLOW;
                 case "DENY":
                     return DENY;
+                default:
+                    return null;
             }
-            return null;
         }
 
         public boolean boolVal() {

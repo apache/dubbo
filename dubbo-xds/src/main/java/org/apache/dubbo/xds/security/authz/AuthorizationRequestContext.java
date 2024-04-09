@@ -40,17 +40,11 @@ public class AuthorizationRequestContext {
         this.requestCredential = requestCredential;
     }
 
-    public void addCurrentPath(String mapPath) {
-        currentMapPath.add(mapPath);
-    }
 
     public String getCurrentPath() {
         return String.join(".", currentMapPath);
     }
 
-    public void removeCurrentPath() {
-        currentMapPath.removeLast();
-    }
 
     public boolean isFailed() {
         return failed;

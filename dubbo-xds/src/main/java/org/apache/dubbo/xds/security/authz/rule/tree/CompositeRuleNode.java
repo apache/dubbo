@@ -29,9 +29,6 @@ public class CompositeRuleNode implements RuleNode {
 
     protected Map<String, List<RuleNode>> children;
 
-    /**
-     * 判断子结点策略
-     */
     protected Relation relation;
 
     public CompositeRuleNode(String name, Map<String, List<RuleNode>> children, Relation relation) {
@@ -50,8 +47,8 @@ public class CompositeRuleNode implements RuleNode {
         this.relation = relation;
     }
 
-    public void addChild(String key, RuleNode ruleNode) {
-        this.children.computeIfAbsent(key, (k) -> new ArrayList<>()).add(ruleNode);
+    public void addChild(RuleNode ruleNode) {
+        this.children.computeIfAbsent(ruleNode.getNodeName(), (k) -> new ArrayList<>()).add(ruleNode);
     }
 
     public Relation getRelation() {
@@ -60,9 +57,7 @@ public class CompositeRuleNode implements RuleNode {
 
     @Override
     public boolean evaluate(AuthorizationRequestContext context) {
-        context.addCurrentPath(name);
         boolean result;
-        // 根据relation对children进行求值
         if (relation == Relation.AND) {
             result = children.values().stream()
                     .allMatch(childList -> childList.stream().allMatch(ch -> ch.evaluate(context)));
@@ -71,11 +66,14 @@ public class CompositeRuleNode implements RuleNode {
             result = children.values().stream()
                     .anyMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
         }
-        context.removeCurrentPath();
         return result;
     }
 
-    @Override
+
+    public Map<String, List<RuleNode>> getChildren(){
+        return children;
+    }
+
     public String getNodeName() {
         return name;
     }
