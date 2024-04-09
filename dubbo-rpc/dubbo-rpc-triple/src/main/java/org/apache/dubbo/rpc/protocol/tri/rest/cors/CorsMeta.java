@@ -261,10 +261,10 @@ public class CorsMeta {
         if (this.maxAge == null) {
             this.maxAge = DEFAULT_MAX_AGE;
         }
-        if(this.allowCredentials == null){
+        if (this.allowCredentials == null) {
             this.allowCredentials = false;
         }
-        if(this.allowPrivateNetwork == null){
+        if (this.allowPrivateNetwork == null) {
             this.allowPrivateNetwork = false;
         }
         return this;

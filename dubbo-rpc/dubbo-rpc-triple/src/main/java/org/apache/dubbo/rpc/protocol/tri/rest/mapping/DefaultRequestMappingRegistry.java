@@ -216,7 +216,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     private void loadGlobalCorsMeta(FrameworkModel frameworkModel) {
-        Configuration config = ConfigurationUtils.getGlobalConfiguration(frameworkModel);
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
         globalCorsMeta = CorsUtil.resolveGlobalMeta(config);
     }
 

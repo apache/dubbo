@@ -31,13 +31,14 @@ public class CorsUtilTest {
     void testResolveGlobalMetaInCommon() {
         Configuration config = Mockito.mock(Configuration.class);
         Mockito.when(config.getString(RestConstants.ALLOWED_ORIGINS)).thenReturn("http://localhost:8080");
-        Mockito.when(config.getString(RestConstants.ALLOWED_METHODS)).thenReturn( "GET,POST,PUT,DELETE" );
-        Mockito.when(config.getString(RestConstants.ALLOWED_HEADERS)).thenReturn( "Content-Type,Authorization" );
-        Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn( "Content-Type,Authorization" );
-        Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn( "3600" );
-        Mockito.when(config.getString(RestConstants.ALLOW_CREDENTIALS)).thenReturn( "true" );
-        Mockito.when(config.getString(RestConstants.ALLOW_PRIVATE_NETWORK)).thenReturn( "true" );
-        Mockito.when(config.getString(CORS_CONFIG_PREFIX + RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK)).thenReturn( "true" );
+        Mockito.when(config.getString(RestConstants.ALLOWED_METHODS)).thenReturn("GET,POST,PUT,DELETE");
+        Mockito.when(config.getString(RestConstants.ALLOWED_HEADERS)).thenReturn("Content-Type,Authorization");
+        Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn("Content-Type,Authorization");
+        Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn("3600");
+        Mockito.when(config.getString(RestConstants.ALLOW_CREDENTIALS)).thenReturn("true");
+        Mockito.when(config.getString(RestConstants.ALLOW_PRIVATE_NETWORK)).thenReturn("true");
+        Mockito.when(config.getString(CORS_CONFIG_PREFIX + RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK))
+                .thenReturn("true");
         CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
         Assertions.assertTrue(meta.getAllowedOrigins().contains("http://localhost:8080"));
         Assertions.assertTrue(meta.getAllowedMethods().contains("GET"));
@@ -62,7 +63,7 @@ public class CorsUtilTest {
         CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
         Assertions.assertEquals(meta.getMaxAge(), CorsMeta.DEFAULT_MAX_AGE);
         Assertions.assertEquals(meta.getAllowCredentials(), false);
-        Assertions.assertEquals(meta.getAllowPrivateNetwork(),false);
+        Assertions.assertEquals(meta.getAllowPrivateNetwork(), false);
         Assertions.assertEquals(meta.getAllowedOrigins(), CorsMeta.DEFAULT_PERMIT_ALL);
         Assertions.assertEquals(meta.getAllowedMethods(), CorsMeta.DEFAULT_PERMIT_METHODS);
         Assertions.assertEquals(meta.getAllowedHeaders(), CorsMeta.DEFAULT_PERMIT_ALL);
