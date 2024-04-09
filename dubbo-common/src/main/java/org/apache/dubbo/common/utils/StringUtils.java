@@ -861,7 +861,7 @@ public final class StringUtils {
      */
     private static Map<String, String> parseKeyValuePair(String str, String itemSeparator) {
         String[] tmp = str.split(itemSeparator);
-        Map<String, String> map = new HashMap<String, String>(tmp.length);
+        Map<String, String> map = new HashMap<>(tmp.length);
         for (int i = 0; i < tmp.length; i++) {
             Matcher matcher = KVP_PATTERN.matcher(tmp[i]);
             if (!matcher.matches()) {
@@ -885,7 +885,7 @@ public final class StringUtils {
      */
     public static Map<String, String> parseQueryString(String qs) {
         if (isEmpty(qs)) {
-            return new HashMap<String, String>();
+            return new HashMap<>();
         }
         return parseKeyValuePair(qs, "\\&");
     }
