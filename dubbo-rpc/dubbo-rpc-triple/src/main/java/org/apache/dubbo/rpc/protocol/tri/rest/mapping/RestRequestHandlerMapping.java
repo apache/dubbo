@@ -35,7 +35,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsProcessor;
-import org.apache.dubbo.rpc.protocol.tri.rest.cors.DefaultCorsProcessor;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
@@ -60,7 +59,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
         typeConverter = beanFactory.getOrRegisterBean(GeneralTypeConverter.class);
         contentNegotiator = beanFactory.getOrRegisterBean(ContentNegotiator.class);
         codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
-        corsProcessor = beanFactory.getOrRegisterBean(DefaultCorsProcessor.class);
+        corsProcessor = beanFactory.getOrRegisterBean(CorsProcessor.class);
     }
 
     @Override

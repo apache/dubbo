@@ -68,6 +68,7 @@ public final class RestConstants {
 
     /* Configuration Key */
     public static final String CONFIG_PREFIX = "dubbo.rpc.rest.";
+    public static final String CORS_CONFIG_PREFIX = CONFIG_PREFIX + "cors.";
     public static final String MAX_BODY_SIZE_KEY = CONFIG_PREFIX + "max-body-size";
     public static final String MAX_RESPONSE_BODY_SIZE_KEY = CONFIG_PREFIX + "max-response-body-size";
     public static final String SUFFIX_PATTERN_MATCH_KEY = CONFIG_PREFIX + "suffix-pattern-match";

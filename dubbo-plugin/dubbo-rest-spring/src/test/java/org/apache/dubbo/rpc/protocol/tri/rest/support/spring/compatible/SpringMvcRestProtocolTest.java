@@ -86,6 +86,20 @@ public class SpringMvcRestProtocolTest {
     }
 
     @Test
+    void testCors(){
+
+        SpringRestDemoService server = getServerImpl();
+
+        URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
+
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
+
+        SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
+        String cors = demoService.cors();
+        Assertions.assertNotEquals("you should not pass", cors);
+    }
+
+    @Test
     void testRestProtocol() {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf(

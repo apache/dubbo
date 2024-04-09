@@ -20,12 +20,14 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+@CrossOrigin
 @RequestMapping("/demoService")
 public interface SpringRestDemoService {
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
@@ -69,4 +71,8 @@ public interface SpringRestDemoService {
 
     @RequestMapping(method = RequestMethod.POST, value = "/primitiveShort")
     long primitiveShort(@RequestParam("a") short a, @RequestParam("b") Long b, @RequestBody int c);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/cors")
+    @CrossOrigin(origins =  "http://localhowt:8080")
+    String cors();
 }

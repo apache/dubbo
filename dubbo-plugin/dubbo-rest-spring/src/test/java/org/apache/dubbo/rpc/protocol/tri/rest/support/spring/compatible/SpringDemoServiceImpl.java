@@ -106,4 +106,9 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     public long primitiveShort(short a, Long b, int c) {
         return a + b;
     }
+
+    @Override
+    public String cors() {
+        return "you should not pass";
+    }
 }

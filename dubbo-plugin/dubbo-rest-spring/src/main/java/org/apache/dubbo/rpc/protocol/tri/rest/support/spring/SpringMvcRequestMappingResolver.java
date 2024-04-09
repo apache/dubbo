@@ -118,10 +118,10 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         if (crossOrigin == null) {
             return meta;
         }
-        meta.setAllowCredentials(crossOrigin.getBoolean("allowCredentials"));
+        meta.setAllowCredentials(Boolean.valueOf(crossOrigin.getString("allowCredentials")));
         meta.setAllowedHeaders(Arrays.asList(crossOrigin.getStringArray("allowedHeaders")));
-        meta.setAllowedMethods(Arrays.asList(crossOrigin.getStringArray("allowedMethods")));
-        meta.setAllowedOrigins(Arrays.asList(crossOrigin.getStringArray("allowedOrigins")));
+        meta.setAllowedMethods(Arrays.asList(crossOrigin.getStringArray("methods")));
+        meta.setAllowedOrigins(Arrays.asList(crossOrigin.getStringArray("origins")));
         meta.setExposedHeaders(Arrays.asList(crossOrigin.getStringArray("exposedHeaders")));
         meta.setMaxAge(crossOrigin.getNumber("maxAge").longValue());
         return meta;

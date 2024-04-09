@@ -184,6 +184,10 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return corsMeta;
     }
 
+    public void setCorsMeta(CorsMeta corsMeta) {
+        corsMeta = corsMeta;
+    }
+
     @Override
     public int compareTo(RequestMapping other, HttpRequest request) {
         int result;
@@ -233,11 +237,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             result = customCondition.compareTo(other.customCondition, request);
             return result;
         }
-        if (corsMeta != null) {
-            //            TODO
-            //            result = corsMeta.compareTo(other.corsMeta, request);
-            //            return result;
-        }
+
         return 0;
     }
 
@@ -395,7 +395,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             ConsumesCondition consumesCondition = isEmpty(consumes) ? null : new ConsumesCondition(consumes);
             ProducesCondition producesCondition = isEmpty(produces) ? null : new ProducesCondition(produces);
             ResponseMeta response = responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason);
-            CorsMeta corsMeta = this.corsMeta == null ? new CorsMeta().applyPermitDefaultValues() : this.corsMeta;
+            CorsMeta corsMeta = this.corsMeta == null ? null: this.corsMeta;
             return new RequestMapping(
                     name,
                     pathCondition,

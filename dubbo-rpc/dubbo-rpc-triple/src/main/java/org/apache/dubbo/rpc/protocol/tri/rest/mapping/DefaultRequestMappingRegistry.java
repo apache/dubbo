@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
@@ -26,6 +28,8 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtil;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
@@ -53,22 +57,27 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private final RadixTree<Registration> tree = new RadixTree<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    private CorsMeta globalCorsMeta;
+
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+        loadGlobalCorsMeta(frameworkModel);
     }
 
     @Override
     public void register(Invoker<?> invoker) {
         Object service = invoker.getUrl().getServiceModel().getProxyObject();
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
-            for (int i = 0, size = resolvers.size(); i < size; i++) {
-                RequestMappingResolver resolver = resolvers.get(i);
+            for (RequestMappingResolver resolver : resolvers) {
                 RestToolKit toolKit = resolver.getRestToolKit();
                 ServiceMeta serviceMeta = new ServiceMeta(classes, service, invoker.getUrl(), toolKit);
                 if (!resolver.accept(serviceMeta)) {
                     continue;
                 }
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
+                if (classMapping != null) {
+                    classMapping.setCorsMeta(globalCorsMeta.combine(classMapping.getCorsMeta()));
+                }
                 consumer.accept((methods) -> {
                     MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
                     RequestMapping methodMapping = resolver.resolve(methodMeta);
@@ -203,6 +212,11 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             request.setAttribute(RestConstants.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producesCondition.getMediaTypes());
         }
         return handler;
+    }
+
+    private void loadGlobalCorsMeta(FrameworkModel frameworkModel) {
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(frameworkModel);
+        globalCorsMeta = CorsUtil.resolveGlobalMeta(config);
     }
 
     private static final class Registration {

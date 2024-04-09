@@ -68,6 +68,11 @@ public class RestConfig implements Serializable {
      */
     private String formatParameterName;
 
+    /**
+     *  The config is used to set the Global CORS configuration properties.
+     */
+    private CorsConfig corsConfig;
+
     public Integer getMaxBodySize() {
         return maxBodySize;
     }
@@ -115,4 +120,6 @@ public class RestConfig implements Serializable {
     public void setFormatParameterName(String formatParameterName) {
         this.formatParameterName = formatParameterName;
     }
+
+
 }
