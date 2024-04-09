@@ -778,6 +778,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                     invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
             copiedInvocation.setObjectAttachment(CommonConstants.GROUP_KEY, protocolServiceKey.getGroup());
             copiedInvocation.setObjectAttachment(CommonConstants.VERSION_KEY, protocolServiceKey.getVersion());
+            // When there are multiple MethodDescriptors with the same method name, the return type will be wrong
+            // same with org.apache.dubbo.rpc.stub.StubInvocationUtil.call
+            // fix https://github.com/apache/dubbo/issues/13931
+            if (invocation instanceof RpcInvocation) {
+                copiedInvocation.setReturnType(((RpcInvocation) invocation).getReturnType());
+            }
             return originInvoker.invoke(copiedInvocation);
         }
 

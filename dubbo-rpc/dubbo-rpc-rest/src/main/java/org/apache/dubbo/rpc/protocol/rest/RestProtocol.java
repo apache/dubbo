@@ -134,7 +134,7 @@ public class RestProtocol extends AbstractProtocol {
                 MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
 
         Invoker<T> invoker =
-                new RestInvoker<T>(type, url, refClient, httpConnectionPreBuildIntercepts, serviceRestMetadata);
+                new RestInvoker<>(type, url, refClient, httpConnectionPreBuildIntercepts, serviceRestMetadata);
 
         invokers.add(invoker);
         return invoker;
