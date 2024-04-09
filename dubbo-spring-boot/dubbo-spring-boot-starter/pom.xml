@@ -29,7 +29,7 @@
   <description>Apache Dubbo Spring Boot Starter</description>
 
   <dependencies>
-    <!-- Spring Boot dependencies -->
+    <!-- Spring Boot 依赖项 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
@@ -51,11 +51,7 @@
       </exclusions>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+    <!-- 其他依赖项 -->
 
   </dependencies>
 </project>
