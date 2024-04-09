@@ -24,7 +24,6 @@ import org.apache.dubbo.metadata.tools.TestServiceImpl;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.ws.rs.Path;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findMetaAnnotation;
@@ -44,9 +42,7 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.isAnnotationPresent;
-import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -236,7 +232,6 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
 
         assertNull(getAttribute(findAnnotation(testType, Path.class), null));
         assertNull(getAttribute(findAnnotation(testType, (Class) null), null));
-
     }
 
     @Test
