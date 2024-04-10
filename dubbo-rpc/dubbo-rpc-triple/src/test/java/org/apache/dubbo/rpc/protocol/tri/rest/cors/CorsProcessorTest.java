@@ -226,14 +226,14 @@ public class CorsProcessorTest {
     }
 
     @Test
-    void preflightRequestAllOriginsAllowed() {
+    void preflightRequestWithoutRequestheader() {
         Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
         Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
         Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD))
                 .thenReturn("GET");
         this.conf.addAllowedOrigin("*");
 
-        this.processor.process(this.conf, this.request, this.response);
+        this.processor.process(this.conf, request, this.response);
         Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
                 this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));

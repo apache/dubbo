@@ -78,9 +78,9 @@ public class CorsProcessor {
             reject(response);
             return false;
         }
-
-        List<String> allowHeaders = config.checkHeaders(getHttpHeaders(request, isPreLight));
-        if (isPreLight && allowHeaders == null) {
+        List<String> httpHeaders = getHttpHeaders(request, isPreLight);
+        List<String> allowHeaders = config.checkHeaders(httpHeaders);
+        if (isPreLight && httpHeaders != null && allowHeaders == null) {
             reject(response);
             return false;
         }
@@ -93,7 +93,7 @@ public class CorsProcessor {
                     allowHttpMethods.stream().map(Enum::name).collect(Collectors.toList()));
         }
 
-        if (isPreLight && !allowHeaders.isEmpty()) {
+        if (isPreLight && !(allowHeaders == null || allowHeaders.isEmpty())) {
             response.setHeader(RestConstants.ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders);
         }
 

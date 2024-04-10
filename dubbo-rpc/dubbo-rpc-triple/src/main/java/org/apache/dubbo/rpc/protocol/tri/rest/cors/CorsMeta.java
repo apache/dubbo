@@ -419,7 +419,6 @@ public class CorsMeta {
         if (this.allowedHeaders == null || this.allowedHeaders.isEmpty()) {
             return null;
         }
-
         boolean allowAnyHeader = this.allowedHeaders.contains(ALL);
         List<String> result = new ArrayList<>(requestHeaders.size());
         for (String requestHeader : requestHeaders) {
