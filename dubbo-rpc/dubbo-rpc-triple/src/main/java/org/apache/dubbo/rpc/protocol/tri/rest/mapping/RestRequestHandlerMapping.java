@@ -23,7 +23,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -72,7 +73,8 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
         RequestMapping mapping = request.attribute(RestConstants.MAPPING_ATTRIBUTE);
         if (!corsProcessor.process(mapping.getCorsMeta(), request, response)) {
-            throw new HttpResultPayloadException(" CORS request rejected: " + request.uri());
+            response.commit();
+            throw new HttpStatusException(HttpStatus.FORBIDDEN.getCode(), " CORS request rejected: " + request.uri());
         }
 
         String requestMediaType = request.mediaType();

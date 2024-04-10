@@ -45,7 +45,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
     private final ProducesCondition producesCondition;
     private final ConditionWrapper customCondition;
     private final ResponseMeta response;
-    private final CorsMeta corsMeta;
+    private CorsMeta corsMeta;
 
     private int hashCode;
 
@@ -185,7 +185,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
     }
 
     public void setCorsMeta(CorsMeta corsMeta) {
-        corsMeta = corsMeta;
+        this.corsMeta = corsMeta;
     }
 
     @Override
