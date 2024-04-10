@@ -48,7 +48,9 @@ public class CompositeRuleNode implements RuleNode {
     }
 
     public void addChild(RuleNode ruleNode) {
-        this.children.computeIfAbsent(ruleNode.getNodeName(), (k) -> new ArrayList<>()).add(ruleNode);
+        this.children
+                .computeIfAbsent(ruleNode.getNodeName(), (k) -> new ArrayList<>())
+                .add(ruleNode);
     }
 
     public Relation getRelation() {
@@ -61,20 +63,19 @@ public class CompositeRuleNode implements RuleNode {
         if (relation == Relation.AND) {
             result = children.values().stream()
                     .allMatch(childList -> childList.stream().allMatch(ch -> ch.evaluate(context)));
-        } else if(relation == Relation.OR){
+        } else if (relation == Relation.OR) {
             // Relation.OR
             result = children.values().stream()
                     .anyMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
-        }else{
-            //relation == NOT
+        } else {
+            // relation == NOT
             result = children.values().stream()
                     .noneMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
         }
         return result;
     }
 
-
-    public Map<String, List<RuleNode>> getChildren(){
+    public Map<String, List<RuleNode>> getChildren() {
         return children;
     }
 

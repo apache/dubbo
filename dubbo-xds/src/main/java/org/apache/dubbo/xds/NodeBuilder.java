@@ -41,13 +41,13 @@ public class NodeBuilder {
 
         Map<String, Value> metadataMap = new HashMap<>(2);
 
-        metadataMap.put("ISTIO_META_NAMESPACE", Value.newBuilder().setStringValue(podNamespace).build());
-        metadataMap.put("SERVICE_ACCOUNT", Value.newBuilder().setStringValue(saName).build());
+        metadataMap.put(
+                "ISTIO_META_NAMESPACE",
+                Value.newBuilder().setStringValue(podNamespace).build());
+        metadataMap.put(
+                "SERVICE_ACCOUNT", Value.newBuilder().setStringValue(saName).build());
 
-        Struct metadata = Struct.newBuilder()
-                .putAllFields(metadataMap)
-                .build();
-
+        Struct metadata = Struct.newBuilder().putAllFields(metadataMap).build();
 
         // id -> sidecar~ip~{POD_NAME}~{NAMESPACE_NAME}.svc.cluster.local
         // cluster -> {SVC_NAME}

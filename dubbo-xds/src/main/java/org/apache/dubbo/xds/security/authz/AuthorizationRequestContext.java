@@ -40,11 +40,9 @@ public class AuthorizationRequestContext {
         this.requestCredential = requestCredential;
     }
 
-
     public String getCurrentPath() {
         return String.join(".", currentMapPath);
     }
-
 
     public boolean isFailed() {
         return failed;

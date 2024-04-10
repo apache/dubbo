@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz.rule.matcher;
+package org.apache.dubbo.xds.security.api;
 
-import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
+import org.apache.dubbo.common.extension.SPI;
 
-/**
- * @param <T> Type of the actual value to match.
- */
-public interface Matcher<T> {
-    boolean match(T actual);
+@SPI
+public interface JwkSource {
 
-    RequestAuthProperty propType();
+    String getJwk();
 }

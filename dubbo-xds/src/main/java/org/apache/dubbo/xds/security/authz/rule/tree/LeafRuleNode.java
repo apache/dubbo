@@ -40,7 +40,7 @@ public class LeafRuleNode implements RuleNode {
         this.rulePropName = name;
     }
 
-    public LeafRuleNode(Matcher matcher, String name){
+    public LeafRuleNode(Matcher matcher, String name) {
         this.matchers = Collections.singletonList(matcher);
         this.rulePropName = name;
     }
@@ -48,12 +48,11 @@ public class LeafRuleNode implements RuleNode {
     @Override
     public boolean evaluate(AuthorizationRequestContext context) {
         // If we have multiple values to validate, then every value must match at list one rule pattern
-        for (Matcher matcher: matchers) {
+        for (Matcher matcher : matchers) {
 
-            Object toValidate = context.getRequestCredential()
-                    .getRequestProperty(matcher.propType());
+            Object toValidate = context.getRequestCredential().getRequestProperty(matcher.propType());
 
-            if(!matcher.match(toValidate)){
+            if (!matcher.match(toValidate)) {
                 return false;
             }
         }

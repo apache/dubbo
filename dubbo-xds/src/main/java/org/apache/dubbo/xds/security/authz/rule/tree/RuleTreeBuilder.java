@@ -52,7 +52,7 @@ public class RuleTreeBuilder {
 
     public RuleTreeBuilder() {}
 
-    public void addRoot(RuleRoot root){
+    public void addRoot(RuleRoot root) {
         this.roots.add(root);
     }
 
@@ -64,7 +64,7 @@ public class RuleTreeBuilder {
         if (CollectionUtils.isEmpty(nodeLevelRelations)) {
             throw new RuntimeException("Node level relations can't be null or empty");
         }
-        if(this.roots.isEmpty()){
+        if (this.roots.isEmpty()) {
             throw new RuntimeException("No rule root exist.");
         }
         for (String key : map.keySet()) {
@@ -86,15 +86,17 @@ public class RuleTreeBuilder {
 
                 if (list.get(0) instanceof String) {
 
-                    List<WildcardStringMatcher> matchers = ((List<String>) list).stream()
-                            .map(s -> new WildcardStringMatcher(s, AuthorizationPolicyPathConvertor.convert(currentKey)))
-                            .collect(Collectors.toList());
+                    List<WildcardStringMatcher> matchers = ((List<String>) list)
+                            .stream()
+                                    .map(s -> new WildcardStringMatcher(
+                                            s, AuthorizationPolicyPathConvertor.convert(currentKey)))
+                                    .collect(Collectors.toList());
 
-                    LeafRuleNode current = new LeafRuleNode(matchers,currentKey);
+                    LeafRuleNode current = new LeafRuleNode(matchers, currentKey);
                     parent.addChild(current);
                 } else if (list.get(0) instanceof Map) {
 
-                    CompositeRuleNode current = new CompositeRuleNode(currentKey,nodeLevelRelations.get(level));
+                    CompositeRuleNode current = new CompositeRuleNode(currentKey, nodeLevelRelations.get(level));
                     parent.addChild(current);
                     for (Object item : list) {
                         ((Map<?, ?>) item)
@@ -104,10 +106,11 @@ public class RuleTreeBuilder {
                 }
             }
         } else if (value instanceof Map) {
-            CompositeRuleNode current = new CompositeRuleNode(currentKey,nodeLevelRelations.get(level));
+            CompositeRuleNode current = new CompositeRuleNode(currentKey, nodeLevelRelations.get(level));
             parent.addChild(current);
             ((Map<?, ?>) value)
-                    .forEach((childKey, childValue) -> processNode(current,currentKey + "." + childKey, childValue, level + 1));
+                    .forEach((childKey, childValue) ->
+                            processNode(current, currentKey + "." + childKey, childValue, level + 1));
         } else {
             throw new RuntimeException();
         }

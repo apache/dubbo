@@ -26,8 +26,8 @@ public class RuleRoot extends CompositeRuleNode {
      */
     private Action action;
 
-    public RuleRoot(Relation relation, Action action, String name){
-        super(name,relation);
+    public RuleRoot(Relation relation, Action action, String name) {
+        super(name, relation);
         this.action = action;
     }
 

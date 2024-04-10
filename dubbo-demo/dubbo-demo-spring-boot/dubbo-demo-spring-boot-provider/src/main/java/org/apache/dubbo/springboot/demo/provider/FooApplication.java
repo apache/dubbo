@@ -33,7 +33,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class FooApplication {
 
     //    @DubboReference(cluster = "xds", providedBy = "httpbin")
-    @DubboReference(lazy = true,parameters = {"security","mTLS,sa_jwt"})
+    @DubboReference(
+            lazy = true,
+            parameters = {"security", "mTLS,sa_jwt"})
     private DemoService2 demoService;
 
     public static void main(String[] args) throws Exception {

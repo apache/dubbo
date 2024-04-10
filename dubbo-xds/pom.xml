@@ -153,6 +153,11 @@
       <artifactId>java-jwt</artifactId>
       <version>3.18.2</version>
     </dependency>
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>jwks-rsa</artifactId>
+      <version>0.18.0</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>

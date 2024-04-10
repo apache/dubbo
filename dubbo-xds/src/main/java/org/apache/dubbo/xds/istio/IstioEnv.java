@@ -108,19 +108,19 @@ public class IstioEnv implements XdsEnv {
 
     private IstioEnv() {
         jwtPolicy = getStringProp(JWT_POLICY, DEFAULT_JWT_POLICY);
-        podName = Optional.ofNullable(getStringProp("POD_NAME",(String) null)).orElse(getStringProp("HOSTNAME", ""));
+        podName = Optional.ofNullable(getStringProp("POD_NAME", (String) null)).orElse(getStringProp("HOSTNAME", ""));
         trustDomain = getStringProp(TRUST_DOMAIN_KEY, DEFAULT_TRUST_DOMAIN);
 
-        workloadNameSpace = getStringProp(IstioConstant.WORKLOAD_NAMESPACE_KEY,() -> {
-                    File namespaceFile = new File(IstioConstant.KUBERNETES_NAMESPACE_PATH);
-                    if (namespaceFile.canRead()) {
-                        try {
-                            return FileUtils.readFileToString(namespaceFile, StandardCharsets.UTF_8);
-                        } catch (IOException e) {
-                            logger.error(REGISTRY_ERROR_READ_FILE_ISTIO, "", "", "read namespace file error", e);
-                        }
-                    }
-                    return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;
+        workloadNameSpace = getStringProp(IstioConstant.WORKLOAD_NAMESPACE_KEY, () -> {
+            File namespaceFile = new File(IstioConstant.KUBERNETES_NAMESPACE_PATH);
+            if (namespaceFile.canRead()) {
+                try {
+                    return FileUtils.readFileToString(namespaceFile, StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    logger.error(REGISTRY_ERROR_READ_FILE_ISTIO, "", "", "read namespace file error", e);
+                }
+            }
+            return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;
         });
         caAddr = getStringProp(CA_ADDR_KEY, DEFAULT_CA_ADDR);
 
@@ -134,7 +134,7 @@ public class IstioEnv implements XdsEnv {
                         .orElse(IstioConstant.DEFAULT_SECRET_GRACE_PERIOD_RATIO));
         istioMetaClusterId = getStringProp(ISTIO_META_CLUSTER_ID_KEY, DEFAULT_ISTIO_META_CLUSTER_ID);
         pilotCertProvider = getStringProp(IstioConstant.PILOT_CERT_PROVIDER_KEY, "");
-        serviceAccountName = getStringProp(IstioConstant.SERVICE_NAME_KEY,"default");
+        serviceAccountName = getStringProp(IstioConstant.SERVICE_NAME_KEY, "default");
         if (getServiceAccount() == null) {
             throw new UnsupportedOperationException("Unable to found kubernetes service account token file. "
                     + "Please check if work in Kubernetes and mount service account token file correctly.");
@@ -185,10 +185,10 @@ public class IstioEnv implements XdsEnv {
 
     public String getCsrHost() {
         // spiffe://<trust_domain>/ns/<namespace>/sa/<service_account>
-         return SPIFFE + trustDomain + NS + workloadNameSpace + SA + getServiceAccountName();
+        return SPIFFE + trustDomain + NS + workloadNameSpace + SA + getServiceAccountName();
     }
 
-    public String getIstioMetaNamespace(){
+    public String getIstioMetaNamespace() {
         return getCsrHost();
     }
 
@@ -237,7 +237,7 @@ public class IstioEnv implements XdsEnv {
         return trustTTL;
     }
 
-    public String getServiceAccountName(){
+    public String getServiceAccountName() {
         return serviceAccountName;
     }
 

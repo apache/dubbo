@@ -27,6 +27,7 @@ import org.apache.dubbo.xds.security.api.AuthorizationException;
 import org.apache.dubbo.xds.security.authz.RequestCredential;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.auth0.jwt.JWT;
@@ -54,11 +55,10 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
 
         DecodedJWT jwt = JWT.decode(token);
 
-
         long now = System.currentTimeMillis();
         String expAt = String.valueOf(jwt.getClaims().get("exp"));
 
-        //convert millisecond -> second
+        // convert millisecond -> second
         if (Long.parseLong(expAt) * 1000 < now) {
             throw new AuthorizationException("JWT token already expire, now:" + now + " exp:" + expAt);
         }
@@ -90,30 +90,40 @@ public class TripleMeshRequestCredentialFactory implements CredentialFactory {
 
         String cluster = kubeEnv.getCluster();
 
-        requestCredential.addByType(RequestAuthProperty.SERVICE_PRINCIPAL, cluster + "/ns/" + namespace + "/sa/" + sourceService);
+        requestCredential.addByType(
+                RequestAuthProperty.SERVICE_PRINCIPAL, cluster + "/ns/" + namespace + "/sa/" + sourceService);
         requestCredential.addByType(RequestAuthProperty.JWT_PRINCIPALS, issuer + "/" + sub);
-        requestCredential.addByType(RequestAuthProperty.URL_PATH,targetPath);
-        requestCredential.addByType(RequestAuthProperty.HTTP_METHOD,httpMethod);
-        requestCredential.addByType(RequestAuthProperty.SOURCE_NAMESPACE,namespace);
-        requestCredential.addByType(RequestAuthProperty.SOURCE_SERVICE_NAME,sourceService);
-        requestCredential.addByType(RequestAuthProperty.SOURCE_POD_NAME,podName);
-        requestCredential.addByType(RequestAuthProperty.SOURCE_POD_ID,podId);
-        requestCredential.addByType(RequestAuthProperty.SOURCE_SERVICE_UID,uid);
-        requestCredential.addByType(RequestAuthProperty.TARGET_VERSION,invocation.getInvoker().getUrl().getVersion());
+        requestCredential.addByType(RequestAuthProperty.URL_PATH, targetPath);
+        requestCredential.addByType(RequestAuthProperty.HTTP_METHOD, httpMethod);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_NAMESPACE, namespace);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_SERVICE_NAME, sourceService);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_POD_NAME, podName);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_POD_ID, podId);
+        requestCredential.addByType(RequestAuthProperty.SOURCE_SERVICE_UID, uid);
+        requestCredential.addByType(
+                RequestAuthProperty.TARGET_VERSION,
+                invocation.getInvoker().getUrl().getVersion());
 
-        //匹配时 下发的 acceptAud和这个audience列表有交集即可
-        requestCredential.addByType(RequestAuthProperty.JWT_AUDIENCES,jwt.getAudience());
+        // 匹配时 下发的 acceptAud和这个audience列表有交集即可
+        requestCredential.addByType(RequestAuthProperty.JWT_AUDIENCES, jwt.getAudience());
 
-        Map<String,String> requestHttpHeaders = null; //TODO get full http headers
-        requestCredential.addByType(RequestAuthProperty.JWT_FROM_HEADERS,requestHttpHeaders);
+        Map<String, String> requestHttpHeaders = null; // TODO get full http headers
+        requestCredential.addByType(RequestAuthProperty.JWT_FROM_HEADERS, requestHttpHeaders);
 
-//        requestCredential.addByType(RequestAuthProperty.JWT_NAME,);
-        requestCredential.addByType(RequestAuthProperty.JWT_FROM_PARAMS,);
-        requestCredential.addByType(RequestAuthProperty.JWT_ISSUER,);
-        requestCredential.addByType(RequestAuthProperty.JWKS,jwt);
+        //        requestCredential.addByType(RequestAuthProperty.JWT_NAME,);
 
-        //TODO read other props
-        //TODO  requestCredential.addByType(RequestAuthProperty.REQUESTED_SERVER_NAME,name);
+        /*
+         * User customized HTTP from params that submitted by GET or POST method.
+         * TODO get params from request
+         */
+        Map<String, List<String>> httpRequestParams = null;
+        requestCredential.addByType(RequestAuthProperty.JWT_FROM_PARAMS, httpRequestParams);
+
+        requestCredential.addByType(RequestAuthProperty.JWT_ISSUER, issuer);
+        requestCredential.addByType(RequestAuthProperty.JWKS, jwt);
+
+        // TODO read other props
+        // TODO  requestCredential.addByType(RequestAuthProperty.REQUESTED_SERVER_NAME,name);
         return requestCredential;
     }
 }

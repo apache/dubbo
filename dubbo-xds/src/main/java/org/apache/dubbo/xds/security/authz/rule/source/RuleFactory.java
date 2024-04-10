@@ -28,6 +28,6 @@ import java.util.List;
 @SPI
 public interface RuleFactory<T> {
 
-    @Adaptive({"mesh","authz_rule"})
+    @Adaptive({"mesh", "authz_rule"})
     List<RuleRoot> getRules(List<T> ruleSource);
 }

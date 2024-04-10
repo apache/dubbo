@@ -37,17 +37,18 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.util.Watch;
 
 @Activate
-public class KubeRuleProvider implements RuleProvider<Map<String,Object>> {
+public class KubeRuleProvider implements RuleProvider<Map<String, Object>> {
 
     protected final KubeApiClient kubeApiClient;
 
-    private volatile List<Map<String,Object>> ruleSourceInst;
+    private volatile List<Map<String, Object>> ruleSourceInst;
 
     protected KubeEnv kubeEnv;
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeRuleProvider.class);
 
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, task-> new Thread(task,"KubeRuleSourceProvider-Scheduled-AutoRefresh"));
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(
+            1, task -> new Thread(task, "KubeRuleSourceProvider-Scheduled-AutoRefresh"));
 
     public KubeRuleProvider(ApplicationModel applicationModel) throws Exception {
         this.kubeApiClient = applicationModel.getBeanFactory().getBean(KubeApiClient.class);
@@ -58,7 +59,7 @@ public class KubeRuleProvider implements RuleProvider<Map<String,Object>> {
     }
 
     @Override
-    public List<Map<String,Object>> getSource(URL url, Invocation invocation) {
+    public List<Map<String, Object>> getSource(URL url, Invocation invocation) {
         return new ArrayList<>(ruleSourceInst);
     }
 
@@ -71,21 +72,22 @@ public class KubeRuleProvider implements RuleProvider<Map<String,Object>> {
                     try {
                         Map<String, Object> resource = getResource();
                         updateSource(resource);
-//                        if (watch.hasNext()) {
-//                            Response<Object> resp = watch.next();
-//                            if ("ADDED".equals(resp.type) || "MODIFIED".equals(resp.type)) {
-//                                updateSource((Map<String, Object>) resp.object);
-//                            } else if ("DELETED".equals(resp.type)) {
-//                                ruleSourceInst = Collections.emptyList();
-//                            }
-//                            System.out.println("resource updated"+ resp.object);
-//                        }
+                        //                        if (watch.hasNext()) {
+                        //                            Response<Object> resp = watch.next();
+                        //                            if ("ADDED".equals(resp.type) || "MODIFIED".equals(resp.type)) {
+                        //                                updateSource((Map<String, Object>) resp.object);
+                        //                            } else if ("DELETED".equals(resp.type)) {
+                        //                                ruleSourceInst = Collections.emptyList();
+                        //                            }
+                        //                            System.out.println("resource updated"+ resp.object);
+                        //                        }
                     } catch (Exception e) {
                         logger.error(
                                 "", "", "", "Got exception when watch and updating RequestAuthorization resource", e);
                     }
                 },
-                2000,2000,
+                2000,
+                2000,
                 TimeUnit.MILLISECONDS);
     }
 
@@ -112,8 +114,9 @@ public class KubeRuleProvider implements RuleProvider<Map<String,Object>> {
                     String targetLabelKey = "app";
                     String targetLabelValue = kubeEnv.getServiceName();
 
-                    if (matchLabels != null && (StringUtils.isEmpty(targetLabelValue)
-                            || targetLabelValue.equals(matchLabels.get(targetLabelKey)))) {
+                    if (matchLabels != null
+                            && (StringUtils.isEmpty(targetLabelValue)
+                                    || targetLabelValue.equals(matchLabels.get(targetLabelKey)))) {
                         match = true;
                     }
                 } else {

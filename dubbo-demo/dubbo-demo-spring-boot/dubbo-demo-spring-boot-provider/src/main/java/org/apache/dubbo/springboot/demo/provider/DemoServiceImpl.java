@@ -23,7 +23,7 @@ import org.apache.dubbo.springboot.demo.DemoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@DubboService(parameters = {"security","mTLS,sa_jwt"})
+@DubboService(parameters = {"security", "mTLS,sa_jwt"})
 public class DemoServiceImpl implements DemoService {
 
     private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);

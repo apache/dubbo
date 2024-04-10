@@ -29,14 +29,14 @@ import java.util.Map;
 /**
  * Default rule factory that supports common AuthorizationPolicy properties
  */
-public class MapRuleFactory implements RuleFactory<Map<String,Object>> {
+public class MapRuleFactory implements RuleFactory<Map<String, Object>> {
 
     @Override
     public List<RuleRoot> getRules(List<Map<String, Object>> ruleSources) {
 
         List<RuleRoot> roots = new ArrayList<>();
 
-        for (Map<String,Object> sourceMap : ruleSources) {
+        for (Map<String, Object> sourceMap : ruleSources) {
 
             Action action = Action.map((String) sourceMap.get("action"));
             if (action == null) {
@@ -56,8 +56,7 @@ public class MapRuleFactory implements RuleFactory<Map<String,Object>> {
             levelRelations.add(Relation.AND);
 
             Map<String, Object> ruleMap = new HashMap<>(1);
-            ruleMap.put("rules", sourceMap
-                    .get("rules"));
+            ruleMap.put("rules", sourceMap.get("rules"));
 
             builder.setPathLevelRelations(levelRelations);
             builder.createFromRuleMap(ruleMap, ruleRoot);
@@ -66,5 +65,4 @@ public class MapRuleFactory implements RuleFactory<Map<String,Object>> {
         }
         return roots;
     }
-
 }

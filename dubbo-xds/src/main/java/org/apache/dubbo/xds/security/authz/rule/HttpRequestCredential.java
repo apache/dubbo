@@ -42,9 +42,7 @@ public class HttpRequestCredential implements RequestCredential {
         return authProperties.get(propertyType);
     }
 
-
     public void addByType(RequestAuthProperty propertyType, Object value) {
-        this.authProperties.put(propertyType,value);
+        this.authProperties.put(propertyType, value);
     }
-
 }

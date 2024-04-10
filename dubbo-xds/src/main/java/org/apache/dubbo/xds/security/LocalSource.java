@@ -36,7 +36,7 @@ public class LocalSource implements ServiceAccountSource {
     }
 
     @Override
-    public String getSaJwt(URL url) {
+    public String getJwt(URL url) {
         try {
             return new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8);
         } catch (Exception e) {

@@ -33,7 +33,7 @@ public interface XdsEnv {
         return val;
     }
 
-    default String getStringProp(String key, Supplier<String> defaultValSupplier){
+    default String getStringProp(String key, Supplier<String> defaultValSupplier) {
         String val = System.getenv(key);
         if (val == null) {
             val = System.getProperty(key);

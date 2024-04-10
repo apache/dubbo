@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.security.authz.rule.source;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -26,6 +42,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +63,6 @@ import io.envoyproxy.envoy.config.rbac.v3.Principal;
 import io.envoyproxy.envoy.config.rbac.v3.Principal.IdentifierCase;
 import io.envoyproxy.envoy.config.rbac.v3.RBAC;
 import io.envoyproxy.envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication;
-import io.envoyproxy.envoy.extensions.filters.http.jwt_authn.v3.JwtHeader;
 import io.envoyproxy.envoy.extensions.filters.http.jwt_authn.v3.JwtProvider;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpFilter;
 import io.envoyproxy.envoy.type.matcher.v3.MetadataMatcher.PathSegment;
@@ -83,27 +99,24 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
     }
 
     public Map<String, RuleRoot> resolveRbac(List<HttpFilter> httpFilters) {
-        Map<String,RuleRoot> roots = new HashMap<>();
+        Map<String, RuleRoot> roots = new HashMap<>();
         Map<RBAC.Action, RBAC> rbacMap = new HashMap<>();
         for (HttpFilter httpFilter : httpFilters) {
-            if (!httpFilter.getName()
-                    .equals(LDS_RBAC_FILTER)) {
+            if (!httpFilter.getName().equals(LDS_RBAC_FILTER)) {
                 continue;
             }
             try {
-                io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC rbac = httpFilter.getTypedConfig()
+                io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC rbac = httpFilter
+                        .getTypedConfig()
                         .unpack(io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC.class);
                 if (rbac != null) {
                     /*There are multiple duplicates, and we only choose one of them */
-                    if (!rbacMap.containsKey(rbac.getRules()
-                            .getAction())) {
-                        rbacMap.put(rbac.getRules()
-                                .getAction(), rbac.getRules());
+                    if (!rbacMap.containsKey(rbac.getRules().getAction())) {
+                        rbacMap.put(rbac.getRules().getAction(), rbac.getRules());
                     }
-
                 }
             } catch (InvalidProtocolBufferException e) {
-                logger.warn("", "", "", "[XdsDataSource] Parsing RbacRule error", e);
+                logger.warn("", "", "", "Parsing RbacRule error", e);
             }
         }
 
@@ -111,23 +124,22 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
             RBAC.Action action = rbacEntry.getKey();
             RBAC rbac = rbacEntry.getValue();
 
-            RuleRoot ruleNode = new RuleRoot(AND, action.equals(RBAC.Action.ALLOW) ? Action.ALLOW : Action.DENY, "rules");
+            RuleRoot ruleNode =
+                    new RuleRoot(AND, action.equals(RBAC.Action.ALLOW) ? Action.ALLOW : Action.DENY, "rules");
 
-            //policies:  "service-admin"、"product-viewer"
-            for (Entry<String, Policy> entry : rbac.getPoliciesMap()
-                    .entrySet()) {
+            // policies:  "service-admin"、"product-viewer"
+            for (Entry<String, Policy> entry : rbac.getPoliciesMap().entrySet()) {
 
-                //rule下的单个policy,包含一个principals Node和 permissions Node，两Node之间AND关系
+                // rule下的单个policy,包含一个principals Node和 permissions Node，两Node之间AND关系
                 CompositeRuleNode policyNode = new CompositeRuleNode(entry.getKey(), AND);
 
-                //每个policy下可以多个principal，之间OR关系
+                // 每个policy下可以多个principal，之间OR关系
                 CompositeRuleNode principalNode = new CompositeRuleNode("principals", Relation.OR);
 
-                List<Principal> principals = entry.getValue()
-                        .getPrincipalsList();
+                List<Principal> principals = entry.getValue().getPrincipalsList();
 
                 for (Principal principal : principals) {
-                    //解析单个Principal到node
+                    // 解析单个Principal到node
                     RuleNode principalAnd = resolvePrincipal(principal);
                     if (principalAnd != null) {
                         principalNode.addChild(principalAnd);
@@ -139,8 +151,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                 }
 
                 CompositeRuleNode permissionNode = new CompositeRuleNode("permissions", Relation.OR);
-                List<Permission> permissions = entry.getValue()
-                        .getPermissionsList();
+                List<Permission> permissions = entry.getValue().getPermissionsList();
                 for (Permission permission : permissions) {
                     RuleNode permissionRule = resolvePermission(permission);
                     if (permissionRule != null) {
@@ -164,16 +175,14 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         switch (principal.getIdentifierCase()) {
             case AND_IDS:
                 CompositeRuleNode andNode = new CompositeRuleNode("and_ids", Relation.AND);
-                for (Principal subPrincipal : principal.getAndIds()
-                        .getIdsList()) {
+                for (Principal subPrincipal : principal.getAndIds().getIdsList()) {
                     andNode.addChild(resolvePrincipal(subPrincipal));
                 }
                 return andNode;
 
             case OR_IDS:
                 CompositeRuleNode orNode = new CompositeRuleNode("or_ids", Relation.OR);
-                for (Principal subPrincipal : principal.getOrIds()
-                        .getIdsList()) {
+                for (Principal subPrincipal : principal.getOrIds().getIdsList()) {
                     orNode.addChild(resolvePrincipal(subPrincipal));
                 }
                 return orNode;
@@ -187,6 +196,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                 return handleLeafPrincipal(principal);
         }
     }
+
     private LeafRuleNode handleLeafPrincipal(Principal orIdentity) {
         IdentifierCase principalCase = orIdentity.getIdentifierCase();
 
@@ -194,7 +204,8 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
 
         switch (principalCase) {
             case AUTHENTICATED:
-                StringMatcher matcher = Matchers.stringMatcher(orIdentity.getAuthenticated().getPrincipalName(), AUTHENTICATED);
+                StringMatcher matcher =
+                        Matchers.stringMatcher(orIdentity.getAuthenticated().getPrincipalName(), AUTHENTICATED);
                 if (matcher != null) {
                     valueNode = new LeafRuleNode(Collections.singletonList(matcher), AUTHENTICATED.name());
                 }
@@ -202,7 +213,8 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
 
             case HEADER:
                 String headerName = orIdentity.getHeader().getName();
-                KeyMatcher keyMatcher = Matchers.keyMatcher(headerName, Matchers.stringMatcher(orIdentity.getHeader(), HEADER));
+                KeyMatcher keyMatcher =
+                        Matchers.keyMatcher(headerName, Matchers.stringMatcher(orIdentity.getHeader(), HEADER));
                 valueNode = new LeafRuleNode(Collections.singletonList(keyMatcher), HEADER.name());
                 break;
 
@@ -223,48 +235,62 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                 switch (key) {
                     case LDS_REQUEST_AUTH_PRINCIPAL:
                         StringMatcher jwtPrincipalMatcher = Matchers.stringMatcher(
-                                orIdentity.getMetadata().getValue().getStringMatch(), RequestAuthProperty.JWT_PRINCIPALS);
+                                orIdentity.getMetadata().getValue().getStringMatch(),
+                                RequestAuthProperty.JWT_PRINCIPALS);
                         if (jwtPrincipalMatcher != null) {
-                            valueNode = new LeafRuleNode(Collections.singletonList(jwtPrincipalMatcher), LDS_REQUEST_AUTH_PRINCIPAL);
+                            valueNode = new LeafRuleNode(
+                                    Collections.singletonList(jwtPrincipalMatcher), LDS_REQUEST_AUTH_PRINCIPAL);
                         }
                         break;
                     case LDS_REQUEST_AUTH_AUDIENCE:
                         StringMatcher jwtAudienceMatcher = Matchers.stringMatcher(
-                                orIdentity.getMetadata().getValue().getStringMatch(), RequestAuthProperty.JWT_AUDIENCES);
+                                orIdentity.getMetadata().getValue().getStringMatch(),
+                                RequestAuthProperty.JWT_AUDIENCES);
                         if (jwtAudienceMatcher != null) {
-                            valueNode = new LeafRuleNode(Collections.singletonList(jwtAudienceMatcher), LDS_REQUEST_AUTH_AUDIENCE);
+                            valueNode = new LeafRuleNode(
+                                    Collections.singletonList(jwtAudienceMatcher), LDS_REQUEST_AUTH_AUDIENCE);
                         }
                         break;
                     case LDS_REQUEST_AUTH_PRESENTER:
                         StringMatcher jwtPresenterMatcher = Matchers.stringMatcher(
-                                orIdentity.getMetadata().getValue().getStringMatch(), RequestAuthProperty.JWT_PRESENTERS);
+                                orIdentity.getMetadata().getValue().getStringMatch(),
+                                RequestAuthProperty.JWT_PRESENTERS);
                         if (jwtPresenterMatcher != null) {
-                            valueNode = new LeafRuleNode(Collections.singletonList(jwtPresenterMatcher), LDS_REQUEST_AUTH_PRESENTER);
+                            valueNode = new LeafRuleNode(
+                                    Collections.singletonList(jwtPresenterMatcher), LDS_REQUEST_AUTH_PRESENTER);
                         }
                         break;
                     case LDS_REQUEST_AUTH_CLAIMS:
                         if (segments.size() >= 2) {
                             String claimKey = segments.get(1).getKey();
-                            KeyMatcher jwtClaimsMatcher = Matchers.keyMatcher(claimKey, Matchers.stringMatcher(
-                                    orIdentity.getMetadata().getValue().getListMatch().getOneOf().getStringMatch(), RequestAuthProperty.JWT_CLAIMS));
-                            valueNode = new LeafRuleNode(Collections.singletonList(jwtClaimsMatcher), LDS_REQUEST_AUTH_CLAIMS);
+                            KeyMatcher jwtClaimsMatcher = Matchers.keyMatcher(
+                                    claimKey,
+                                    Matchers.stringMatcher(
+                                            orIdentity
+                                                    .getMetadata()
+                                                    .getValue()
+                                                    .getListMatch()
+                                                    .getOneOf()
+                                                    .getStringMatch(),
+                                            RequestAuthProperty.JWT_CLAIMS));
+                            valueNode = new LeafRuleNode(
+                                    Collections.singletonList(jwtClaimsMatcher), LDS_REQUEST_AUTH_CLAIMS);
                         }
                         break;
                     default:
-                        logger.warn("[XdsDataSource] Unsupported metadata type=" + key);
+                        logger.warn("Unsupported metadata type=" + key);
                         break;
                 }
                 break;
 
             default:
-                logger.warn("[XdsDataSource] Unsupported principalCase =" + principalCase);
+                logger.warn("Unsupported principalCase =" + principalCase);
                 break;
         }
         return valueNode;
     }
 
-
-    private RuleNode resolvePermission(Permission permission){
+    private RuleNode resolvePermission(Permission permission) {
 
         switch (permission.getRuleCase()) {
             case AND_RULES:
@@ -295,7 +321,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
 
     protected static final String LDS_HEADER_NAME_METHOD = ":method";
 
-    private RuleNode handleLeafPermission(Permission permission){
+    private RuleNode handleLeafPermission(Permission permission) {
         Permission.RuleCase ruleCase = permission.getRuleCase();
 
         LeafRuleNode leafRuleNode = null;
@@ -304,48 +330,59 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
             case DESTINATION_PORT: {
                 int port = permission.getDestinationPort();
                 if (port != 0) {
-                    StringMatcher matcher = Matchers.stringMatcher(String.valueOf(permission.getDestinationPort()), RequestAuthProperty.DESTINATION_PORT);
-                    leafRuleNode = new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.DESTINATION_PORT.name());
+                    StringMatcher matcher = Matchers.stringMatcher(
+                            String.valueOf(permission.getDestinationPort()), RequestAuthProperty.DESTINATION_PORT);
+                    leafRuleNode = new LeafRuleNode(
+                            Collections.singletonList(matcher), RequestAuthProperty.DESTINATION_PORT.name());
                 }
                 break;
             }
             case REQUESTED_SERVER_NAME: {
-                StringMatcher matcher = Matchers.stringMatcher(permission.getRequestedServerName(), RequestAuthProperty.REQUESTED_SERVER_NAME);
-                leafRuleNode = new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.DESTINATION_PORT.name());
+                StringMatcher matcher = Matchers.stringMatcher(
+                        permission.getRequestedServerName(), RequestAuthProperty.REQUESTED_SERVER_NAME);
+                leafRuleNode = new LeafRuleNode(
+                        Collections.singletonList(matcher), RequestAuthProperty.DESTINATION_PORT.name());
                 break;
             }
-            case DESTINATION_IP:{
-                IpMatcher matcher = Matchers.ipMatcher(permission.getDestinationIp(),RequestAuthProperty.DESTINATION_IP);
-                leafRuleNode = new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.DESTINATION_IP.name());
+            case DESTINATION_IP: {
+                IpMatcher matcher =
+                        Matchers.ipMatcher(permission.getDestinationIp(), RequestAuthProperty.DESTINATION_IP);
+                leafRuleNode =
+                        new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.DESTINATION_IP.name());
                 break;
             }
             case URL_PATH: {
-                StringMatcher matcher = Matchers.stringMatcher(permission.getUrlPath().getPath(),RequestAuthProperty.URL_PATH);
-                leafRuleNode = new LeafRuleNode(Collections.singletonList(matcher),RequestAuthProperty.URL_PATH.name());
+                StringMatcher matcher =
+                        Matchers.stringMatcher(permission.getUrlPath().getPath(), RequestAuthProperty.URL_PATH);
+                leafRuleNode =
+                        new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.URL_PATH.name());
                 break;
             }
             case HEADER: {
-                String headerName = permission.getHeader()
-                        .getName();
+                String headerName = permission.getHeader().getName();
 
                 KeyMatcher matcher = null;
 
                 if (LDS_HEADER_NAME_AUTHORITY.equals(headerName)) {
-                    matcher = Matchers.keyMatcher(headerName ,Matchers.stringMatcher(permission.getHeader(),RequestAuthProperty.HOSTS));
-                    leafRuleNode = new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.HOSTS.name());
+                    matcher = Matchers.keyMatcher(
+                            headerName, Matchers.stringMatcher(permission.getHeader(), RequestAuthProperty.HOSTS));
+                    leafRuleNode =
+                            new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.HOSTS.name());
                 } else if (LDS_HEADER_NAME_METHOD.equals(headerName)) {
-                    matcher = Matchers.keyMatcher(headerName ,Matchers.stringMatcher(permission.getHeader(),RequestAuthProperty.METHODS));
-                    leafRuleNode = new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.METHODS.name());
+                    matcher = Matchers.keyMatcher(
+                            headerName, Matchers.stringMatcher(permission.getHeader(), RequestAuthProperty.METHODS));
+                    leafRuleNode =
+                            new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.METHODS.name());
                 }
 
                 if (matcher == null) {
-                    logger.warn("","","","[XdsDataSource] Unsupported headerName="+headerName);
+                    logger.warn("", "", "", "Unsupported headerName=" + headerName);
                 }
 
                 break;
             }
             default:
-                logger.warn("","","","[XdsDataSource] Unsupported ruleCase="+ ruleCase);
+                logger.warn("", "", "", "Unsupported ruleCase=" + ruleCase);
                 break;
         }
         return leafRuleNode;
@@ -366,14 +403,14 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                     break;
                 }
             } catch (InvalidProtocolBufferException e) {
-                logger.warn("","","","[XdsDataSource] Parsing JwtRule error", e);
+                logger.warn("", "", "", "Parsing JwtRule error", e);
             }
         }
         if (null == jwtAuthentication) {
             return jwtRules;
         }
 
-        RuleRoot ruleRoot = new RuleRoot(OR,Action.ALLOW,"providers");
+        RuleRoot ruleRoot = new RuleRoot(OR, Action.ALLOW, "providers");
 
         Map<String, JwtProvider> jwtProviders = jwtAuthentication.getProvidersMap();
         for (Entry<String, JwtProvider> entry : jwtProviders.entrySet()) {
@@ -381,50 +418,26 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
             CompositeRuleNode compositeRuleNode = new CompositeRuleNode(entry.getKey(), AND);
             JwtProvider provider = entry.getValue();
 
-            Map<String, String> fromHeaders = new HashMap<>();
-            for (JwtHeader header : provider.getFromHeadersList()) {
-                fromHeaders.put(header.getName(), header.getValuePrefix());
-            }
-
-            if(!fromHeaders.isEmpty()){
-                Matcher<Map<String,String>> matcher = new CustomMatcher<>(RequestAuthProperty.JWT_FROM_HEADERS,
-                        actualHeaders -> {
-                    //TODO
-                    return true;
-                });
-                compositeRuleNode.addChild(new LeafRuleNode(matcher,RequestAuthProperty.JWT_FROM_HEADERS.name()));
-            }
-
             String issuer = provider.getIssuer();
-
-            compositeRuleNode.addChild(new LeafRuleNode(Matchers.stringMatcher(issuer,RequestAuthProperty.JWT_ISSUER),RequestAuthProperty.JWT_ISSUER.name()));
+            compositeRuleNode.addChild(new LeafRuleNode(
+                    Matchers.stringMatcher(issuer, RequestAuthProperty.JWT_ISSUER),
+                    RequestAuthProperty.JWT_ISSUER.name()));
             HashSet<String> audiencesList = new HashSet<>(provider.getAudiencesList());
 
-            if(!audiencesList.isEmpty()){
-                Matcher<List<String>> matcher = new CustomMatcher<>(RequestAuthProperty.JWT_AUDIENCES,
-                        actualAudiences -> {
-
-                    ArrayList<String> copy = new ArrayList<>(audiencesList);
-                    copy.removeAll(actualAudiences);
-                    //Any request audiences can match given audiences
-                    return copy.size() != audiencesList.size();
-                });
-                compositeRuleNode.addChild(new LeafRuleNode(matcher,RequestAuthProperty.JWT_AUDIENCES.name()));
-            }
-
-            String localJwks  = provider.getLocalJwks().getInlineString();
-            Matcher<DecodedJWT> jwkMatcher = buildJwkMatcher(localJwks);
-            compositeRuleNode.addChild(new LeafRuleNode(jwkMatcher,RequestAuthProperty.JWKS.name()));
-
-            List<String> fromParamsList = provider.getFromParamsList();
-            if(!fromParamsList.isEmpty()){
-                Matcher<List<String>> matcher = new CustomMatcher<>(RequestAuthProperty.JWT_FROM_PARAMS,
-                        actualParams -> {
-                            //TODO
-                            return true;
+            if (!audiencesList.isEmpty()) {
+                Matcher<List<String>> matcher =
+                        new CustomMatcher<>(RequestAuthProperty.JWT_AUDIENCES, actualAudiences -> {
+                            ArrayList<String> copy = new ArrayList<>(audiencesList);
+                            copy.removeAll(actualAudiences);
+                            // At least one request audiences can match given audiences
+                            return copy.size() != audiencesList.size();
                         });
-                compositeRuleNode.addChild(new LeafRuleNode(matcher,RequestAuthProperty.JWT_AUDIENCES.name()));
+                compositeRuleNode.addChild(new LeafRuleNode(matcher, RequestAuthProperty.JWT_AUDIENCES.name()));
             }
+
+            String localJwks = provider.getLocalJwks().getInlineString();
+            Matcher<DecodedJWT> jwkMatcher = buildJwksMatcher(localJwks);
+            compositeRuleNode.addChild(new LeafRuleNode(jwkMatcher, RequestAuthProperty.JWKS.name()));
 
             ruleRoot.addChild(compositeRuleNode);
         }
@@ -432,45 +445,54 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         return jwtRules;
     }
 
-    public Matcher<DecodedJWT> buildJwkMatcher(String localJwks){
+    public Matcher<DecodedJWT> buildJwksMatcher(String localJwks) {
         JSONObject jwks = JSON.parseObject(localJwks);
 
         JSONArray keys = jwks.getJSONArray("keys");
 
-        return new CustomMatcher<>(RequestAuthProperty.JWKS,
-                requestJwt ->{
-                    String kid = requestJwt.getKeyId();
-                    String alg = requestJwt.getAlgorithm();
-                    RSAPublicKey publicKey = null;
+        return new CustomMatcher<>(RequestAuthProperty.JWKS, requestJwt -> {
+            Date expiresAt = requestJwt.getExpiresAt();
+            if (expiresAt == null || expiresAt.getTime() <= System.currentTimeMillis()) {
+                logger.warn(
+                        "",
+                        "",
+                        "",
+                        "Failed to verify JWT: JWT.expiresAt=[" + expiresAt + "] and current time is "
+                                + System.currentTimeMillis());
+                return false;
+            }
 
-                    for (int i = 0; i < keys.size(); i++) {
-                        JSONObject keyNode = keys.getJSONObject(i);
-                        if (keyNode.getString("kid").equals(kid)) {
-                            try {
-                                publicKey = buildPublicKey(keyNode.getString("n"), keyNode.getString("e"));
-                            }catch (Exception e){
-                                logger.warn("","","","Failed to verify JWT by JWKS: build JWT public key failed.");
-                                return false;
-                            }
-                            break;
-                        }
+            String kid = requestJwt.getKeyId();
+            String alg = requestJwt.getAlgorithm();
+            RSAPublicKey publicKey = null;
+
+            for (int i = 0; i < keys.size(); i++) {
+                JSONObject keyNode = keys.getJSONObject(i);
+                if (keyNode.getString("kid").equals(kid)) {
+                    try {
+                        publicKey = buildPublicKey(keyNode.getString("n"), keyNode.getString("e"));
+                    } catch (Exception e) {
+                        logger.warn("", "", "", "Failed to verify JWT by JWKS: build JWT public key failed.");
+                        return false;
                     }
+                    break;
+                }
+            }
 
-                    if (publicKey == null) {
-                        throw new IllegalStateException("Public key not found in JWKS");
-                    }
-                    Algorithm algorithm = determineAlgorithm(alg,publicKey);
-                    JWTVerifier verifier = JWT.require(algorithm)
-                            .build();
+            if (publicKey == null) {
+                throw new IllegalStateException("Public key not found in JWKS");
+            }
+            Algorithm algorithm = determineAlgorithm(alg, publicKey);
+            JWTVerifier verifier = JWT.require(algorithm).build();
 
-                    // Verify the token
-                    verifier.verify(requestJwt);
-                    return true;
-                });
+            // Verify the token
+            verifier.verify(requestJwt);
+            return true;
+        });
     }
 
-
-    private static RSAPublicKey buildPublicKey(String modulusBase64, String exponentBase64) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private static RSAPublicKey buildPublicKey(String modulusBase64, String exponentBase64)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] modulusBytes = Base64.getUrlDecoder().decode(modulusBase64);
         byte[] exponentBytes = Base64.getUrlDecoder().decode(exponentBase64);
         BigInteger modulus = new BigInteger(1, modulusBytes);
@@ -481,7 +503,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         return (RSAPublicKey) factory.generatePublic(spec);
     }
 
-    private static Algorithm determineAlgorithm(String alg,RSAPublicKey publicKey) throws IllegalArgumentException {
+    private static Algorithm determineAlgorithm(String alg, RSAPublicKey publicKey) throws IllegalArgumentException {
         switch (alg) {
             case "RS256":
                 return Algorithm.RSA256(publicKey, null);

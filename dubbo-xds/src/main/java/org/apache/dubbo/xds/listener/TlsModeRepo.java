@@ -25,7 +25,6 @@ public class TlsModeRepo {
 
     public TlsModeRepo() {}
 
-
     private Map<String, TlsType> connectionType = Collections.emptyMap();
 
     private TlsType globalConfig;

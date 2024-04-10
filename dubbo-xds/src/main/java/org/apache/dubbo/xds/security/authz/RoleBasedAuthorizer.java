@@ -61,16 +61,18 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
     }
 
     @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void validate(Invocation invocation) throws AuthorizationException {
 
         List rulesSources = ruleProvider.getSource(invocation.getInvoker().getUrl(), invocation);
 
         List<RuleRoot> roots = ruleFactory.getRules(rulesSources);
         List<RuleRoot> andRules = roots.stream()
-                .filter(root -> Relation.AND.equals(root.getRelation())).collect(Collectors.toList());
+                .filter(root -> Relation.AND.equals(root.getRelation()))
+                .collect(Collectors.toList());
         List<RuleRoot> orRules = roots.stream()
-                .filter(root -> Relation.OR.equals(root.getRelation())).collect(Collectors.toList());
+                .filter(root -> Relation.OR.equals(root.getRelation()))
+                .collect(Collectors.toList());
 
         RequestCredential requestCredential =
                 credentialFactory.getRequestCredential(invocation.getInvoker().getUrl(), invocation);

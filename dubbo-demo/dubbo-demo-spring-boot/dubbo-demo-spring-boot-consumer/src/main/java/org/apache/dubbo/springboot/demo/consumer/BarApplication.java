@@ -33,8 +33,9 @@ import org.springframework.stereotype.Service;
 @EnableDubbo
 public class BarApplication {
 
-    //    @DubboReference(cluster = "xds", providedBy = "httpbin")
-    @DubboReference(lazy = true,parameters = {"security","mTLS,sa_jwt"})
+    @DubboReference(
+            lazy = true,
+            parameters = {"security", "mTLS,sa_jwt"})
     private DemoService demoService;
 
     public static void main(String[] args) throws InterruptedException {

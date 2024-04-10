@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.security.authz.rule.matcher;
 
 import org.apache.dubbo.common.utils.StringUtils;
@@ -13,50 +29,52 @@ import io.envoyproxy.envoy.type.matcher.v3.RegexMatcher;
 
 public class Matchers {
 
-    public static MapMatcher mapMatcher(Map<String,String> valueMap,RequestAuthProperty propertyType,StringMatcher.MatchType matchType){
-        Map<String,Matcher<String>> matcherMap = new HashMap<>(valueMap.size());
-        valueMap.forEach((k,v)-> matcherMap.put(k,stringMatcher(v,propertyType)));
-        return new MapMatcher(matcherMap,propertyType);
+    public static MapMatcher mapMatcher(
+            Map<String, String> valueMap, RequestAuthProperty propertyType, StringMatcher.MatchType matchType) {
+        Map<String, Matcher<String>> matcherMap = new HashMap<>(valueMap.size());
+        valueMap.forEach((k, v) -> matcherMap.put(k, stringMatcher(v, propertyType)));
+        return new MapMatcher(matcherMap, propertyType);
     }
 
-   public static IpMatcher ipMatcher(CidrRange range, RequestAuthProperty authProperty){
-       return new IpMatcher(range.getPrefixLen().getValue(), range.getAddressPrefix(),authProperty);
-   }
+    public static IpMatcher ipMatcher(CidrRange range, RequestAuthProperty authProperty) {
+        return new IpMatcher(range.getPrefixLen().getValue(), range.getAddressPrefix(), authProperty);
+    }
 
-   public static KeyMatcher keyMatcher(String key,StringMatcher stringMatcher){
-       return new KeyMatcher(key, stringMatcher);
-   }
+    public static KeyMatcher keyMatcher(String key, StringMatcher stringMatcher) {
+        return new KeyMatcher(key, stringMatcher);
+    }
 
-   public static StringMatcher stringMatcher(String value, RequestAuthProperty property){
-       return new StringMatcher(MatchType.EXACT,value,property);
-   }
+    public static StringMatcher stringMatcher(String value, RequestAuthProperty property) {
+        return new StringMatcher(MatchType.EXACT, value, property);
+    }
 
-    public static StringMatcher stringMatcher(io.envoyproxy.envoy.type.matcher.v3.StringMatcher stringMatcher, RequestAuthProperty authProperty){
+    public static StringMatcher stringMatcher(
+            io.envoyproxy.envoy.type.matcher.v3.StringMatcher stringMatcher, RequestAuthProperty authProperty) {
         String exact = stringMatcher.getExact();
         String prefix = stringMatcher.getPrefix();
         String suffix = stringMatcher.getSuffix();
         String contains = stringMatcher.getContains();
         String regex = stringMatcher.getSafeRegex().getRegex();
         if (StringUtils.isNotBlank(exact)) {
-            return new StringMatcher(MatchType.EXACT,exact,authProperty);
+            return new StringMatcher(MatchType.EXACT, exact, authProperty);
         }
         if (StringUtils.isNotBlank(prefix)) {
-            return new StringMatcher(MatchType.PREFIX,prefix,authProperty);
+            return new StringMatcher(MatchType.PREFIX, prefix, authProperty);
         }
         if (StringUtils.isNotBlank(suffix)) {
-            return new StringMatcher(MatchType.SUFFIX,suffix,authProperty);
+            return new StringMatcher(MatchType.SUFFIX, suffix, authProperty);
         }
         if (StringUtils.isNotBlank(contains)) {
-            return new StringMatcher(MatchType.CONTAIN,contains,authProperty);
+            return new StringMatcher(MatchType.CONTAIN, contains, authProperty);
         }
         if (StringUtils.isNotBlank(regex)) {
-            return new StringMatcher(MatchType.REGEX,regex,authProperty);
+            return new StringMatcher(MatchType.REGEX, regex, authProperty);
         }
         return null;
     }
 
-    public static StringMatcher stringMatcher(HeaderMatcher headerMatcher,RequestAuthProperty authProperty) {
-        return stringMatcher(headerMatch2StringMatch(headerMatcher),authProperty);
+    public static StringMatcher stringMatcher(HeaderMatcher headerMatcher, RequestAuthProperty authProperty) {
+        return stringMatcher(headerMatch2StringMatch(headerMatcher), authProperty);
     }
 
     public static io.envoyproxy.envoy.type.matcher.v3.StringMatcher headerMatch2StringMatch(
@@ -65,16 +83,15 @@ public class Matchers {
             return null;
         }
         if (headerMatcher.getPresentMatch()) {
-            io.envoyproxy.envoy.type.matcher.v3.StringMatcher.Builder builder
-                    = io.envoyproxy.envoy.type.matcher.v3.StringMatcher
-                    .newBuilder();
+            io.envoyproxy.envoy.type.matcher.v3.StringMatcher.Builder builder =
+                    io.envoyproxy.envoy.type.matcher.v3.StringMatcher.newBuilder();
             return builder.setSafeRegex(RegexMatcher.newBuilder().build())
-                    .setIgnoreCase(true).build();
+                    .setIgnoreCase(true)
+                    .build();
         }
         if (!headerMatcher.hasStringMatch()) {
-            io.envoyproxy.envoy.type.matcher.v3.StringMatcher.Builder builder
-                    = io.envoyproxy.envoy.type.matcher.v3.StringMatcher
-                    .newBuilder();
+            io.envoyproxy.envoy.type.matcher.v3.StringMatcher.Builder builder =
+                    io.envoyproxy.envoy.type.matcher.v3.StringMatcher.newBuilder();
             String exactMatch = headerMatcher.getExactMatch();
             String containsMatch = headerMatcher.getContainsMatch();
             String prefixMatch = headerMatcher.getPrefixMatch();
@@ -96,13 +113,12 @@ public class Matchers {
         return headerMatcher.getStringMatch();
     }
 
-
     public static StringMatcher toStringMatcher(HeaderMatcher headerMatcher, RequestAuthProperty property) {
-        return toStringMatcher(headerMatch2StringMatch(headerMatcher),property);
+        return toStringMatcher(headerMatch2StringMatch(headerMatcher), property);
     }
 
-
-    public static StringMatcher toStringMatcher(io.envoyproxy.envoy.type.matcher.v3.StringMatcher stringMatcher, RequestAuthProperty authProperty) {
+    public static StringMatcher toStringMatcher(
+            io.envoyproxy.envoy.type.matcher.v3.StringMatcher stringMatcher, RequestAuthProperty authProperty) {
         if (stringMatcher == null) {
             return null;
         }
@@ -113,21 +129,20 @@ public class Matchers {
         String contains = stringMatcher.getContains();
         String regex = stringMatcher.getSafeRegex().getRegex();
         if (StringUtils.isNotBlank(exact)) {
-            return new StringMatcher(MatchType.EXACT, prefix,authProperty);
+            return new StringMatcher(MatchType.EXACT, prefix, authProperty);
         }
         if (StringUtils.isNotBlank(prefix)) {
-            return new StringMatcher(MatchType.PREFIX, prefix,authProperty);
+            return new StringMatcher(MatchType.PREFIX, prefix, authProperty);
         }
         if (StringUtils.isNotBlank(suffix)) {
-            return new StringMatcher(MatchType.SUFFIX, prefix,authProperty);
+            return new StringMatcher(MatchType.SUFFIX, prefix, authProperty);
         }
         if (StringUtils.isNotBlank(contains)) {
-            return new StringMatcher(MatchType.CONTAIN, prefix,authProperty);
+            return new StringMatcher(MatchType.CONTAIN, prefix, authProperty);
         }
         if (StringUtils.isNotBlank(regex)) {
-            return new StringMatcher(MatchType.REGEX, prefix,authProperty);
+            return new StringMatcher(MatchType.REGEX, prefix, authProperty);
         }
         return null;
     }
-
 }

@@ -46,7 +46,7 @@ public class ConsumerServiceAccountAuthFilter implements Filter {
             List<String> parts = Arrays.asList(security.split(","));
             boolean enable = parts.stream().anyMatch("sa_jwt"::equals);
             if (enable) {
-                invocation.setObjectAttachment("authz", accountJwtSource.getSaJwt(invoker.getUrl()));
+                invocation.setObjectAttachment("authz", accountJwtSource.getJwt(invoker.getUrl()));
             }
         }
         return invoker.invoke(invocation);
