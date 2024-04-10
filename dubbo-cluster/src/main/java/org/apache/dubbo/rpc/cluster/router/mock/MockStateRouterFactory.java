@@ -30,6 +30,6 @@ public class MockStateRouterFactory implements StateRouterFactory {
 
     @Override
     public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
-        return new MockInvokersSelector<T>(url);
+        return new MockInvokersSelector<>(url);
     }
 }
