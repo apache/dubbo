@@ -375,7 +375,7 @@ public class CorsMeta {
             return null;
         }
         String originToCheck = trimTrailingSlash(origin);
-        if (!this.allowedOrigins.isEmpty()) {
+        if (!(this.allowedOrigins == null || this.allowedOrigins.isEmpty())) {
             if (this.allowedOrigins.contains(ALL)) {
                 if (validateAllowCredentials() || validateAllowPrivateNetwork()) {
                     return null;
@@ -388,7 +388,7 @@ public class CorsMeta {
                 }
             }
         }
-        if (!this.allowedOriginPatterns.isEmpty()) {
+        if (!(this.allowedOriginPatterns == null || this.allowedOriginPatterns.isEmpty())) {
             for (OriginPattern p : this.allowedOriginPatterns) {
                 if (p.getDeclaredPattern().equals(ALL)
                         || p.getPattern().matcher(originToCheck).matches()) {
@@ -416,7 +416,7 @@ public class CorsMeta {
         if (requestHeaders.isEmpty()) {
             return Collections.emptyList();
         }
-        if (this.allowedHeaders.isEmpty()) {
+        if (this.allowedHeaders == null || this.allowedHeaders.isEmpty()) {
             return null;
         }
 

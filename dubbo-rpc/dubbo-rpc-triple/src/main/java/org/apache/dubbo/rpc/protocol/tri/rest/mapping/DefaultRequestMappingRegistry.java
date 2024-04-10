@@ -50,6 +50,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -167,16 +168,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             return null;
         }
 
-        String method = null;
-        if (request.hasHeader(HttpMethods.OPTIONS.name())) {
-            if (CorsProcessor.isPreFlight(request)) {
-                method = request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
-                request.setMethod(method);
-            } else {
-                throw new HttpStatusException(
-                        HttpStatus.FORBIDDEN.getCode(), " CORS request rejected: " + request.uri());
-            }
-        }
+        String method = preprocessingCors(request);
 
         List<Candidate> candidates = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -234,6 +226,20 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
 
         return handler;
+    }
+
+    private String preprocessingCors(HttpRequest request) {
+        if (Objects.equals(request.method(), HttpMethods.OPTIONS.name())) {
+            if (CorsProcessor.isPreFlight(request)) {
+                String realMethod = request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
+                request.setMethod(realMethod);
+                return realMethod;
+            } else {
+                throw new HttpStatusException(
+                        HttpStatus.FORBIDDEN.getCode(), " CORS request rejected: " + request.uri());
+            }
+        }
+        return null;
     }
 
     private void processCors(String method, RequestMapping mapping, HttpRequest request, HttpResponse response) {
