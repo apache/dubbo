@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.match.ListStringMatch;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.match.StringMatch;
+
 import java.util.ArrayList;
 import java.util.List;
 

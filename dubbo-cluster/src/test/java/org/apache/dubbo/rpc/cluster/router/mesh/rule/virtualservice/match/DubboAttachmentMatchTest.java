@@ -18,7 +18,9 @@ package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.match.DubboAttachmentMatch;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.util.TracingContextProvider;
 
 import java.util.Collections;
 import java.util.HashMap;

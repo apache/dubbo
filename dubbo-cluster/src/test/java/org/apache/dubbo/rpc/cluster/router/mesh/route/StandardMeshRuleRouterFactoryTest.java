@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.StandardMeshRuleRouter;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.StandardMeshRuleRouterFactory;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

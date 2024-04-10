@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.util;
 
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.util.MeshRuleDispatcher;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.util.MeshRuleListener;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;

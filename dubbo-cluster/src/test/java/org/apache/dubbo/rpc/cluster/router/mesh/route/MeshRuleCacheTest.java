@@ -19,10 +19,11 @@ package org.apache.dubbo.rpc.cluster.router.mesh.route;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRuleSpec;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.Subset;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshRuleCache;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.VsDestinationGroup;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.destination.DestinationRule;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.destination.DestinationRuleSpec;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.destination.Subset;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
 import java.util.Arrays;

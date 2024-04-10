@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.match.StringMatch;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

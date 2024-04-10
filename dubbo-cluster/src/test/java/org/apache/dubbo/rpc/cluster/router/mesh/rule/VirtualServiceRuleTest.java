@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.rule;
 
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRoute;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRouteDetail;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.DubboRoute;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.DubboRouteDetail;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.VirtualServiceRule;
 
 import java.util.List;
 

@@ -20,9 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.cluster.configurator.absent.AbsentConfigurator;
 import org.apache.dubbo.rpc.cluster.configurator.consts.UrlConstant;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.match.StringMatch;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConditionMatch;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ParamMatch;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
 
 import java.util.Arrays;
 import java.util.HashMap;

@@ -18,9 +18,9 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshRuleManager;
 import org.apache.dubbo.rpc.cluster.merger.MergerFactory;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
-import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleManager;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;

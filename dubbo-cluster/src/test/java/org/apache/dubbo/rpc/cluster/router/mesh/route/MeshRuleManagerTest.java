@@ -17,8 +17,12 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshAppRuleListener;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshEnvListener;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshEnvListenerFactory;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshRuleManager;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.util.MeshRuleListener;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 

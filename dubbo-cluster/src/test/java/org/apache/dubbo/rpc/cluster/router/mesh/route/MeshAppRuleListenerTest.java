@@ -20,7 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshAppRuleListener;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshRuleConstants;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.StandardMeshRuleRouter;
+import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.util.MeshRuleListener;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +37,7 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.MESH_RULE_DATA_ID_SUFFIX;
+import static org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshRuleConstants.MESH_RULE_DATA_ID_SUFFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
