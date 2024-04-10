@@ -60,7 +60,7 @@ public final class Version {
     public static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
 
     public static final int HIGHEST_PROTOCOL_VERSION = 2009900; // 2.0.99
-    private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
+    private static final Map<String, Integer> VERSION2INT = new HashMap<>();
 
     static {
         // get dubbo version and last commit id
