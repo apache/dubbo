@@ -54,7 +54,6 @@ public class CorsUtilTest {
         Assertions.assertTrue(meta.getAllowPrivateNetwork());
     }
 
-
     @Test
     void testResolveGlobalMetaWithNullConfig() {
         Configuration config = Mockito.mock(Configuration.class);

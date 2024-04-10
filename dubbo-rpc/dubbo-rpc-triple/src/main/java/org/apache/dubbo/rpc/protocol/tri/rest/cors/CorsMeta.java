@@ -31,8 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.ObjectUtils;
-
 public class CorsMeta {
 
     public static final String ALL = "*";
@@ -377,7 +375,7 @@ public class CorsMeta {
             return null;
         }
         String originToCheck = trimTrailingSlash(origin);
-        if (!ObjectUtils.isEmpty(this.allowedOrigins)) {
+        if (!this.allowedOrigins.isEmpty()) {
             if (this.allowedOrigins.contains(ALL)) {
                 if (validateAllowCredentials() || validateAllowPrivateNetwork()) {
                     return null;
@@ -390,7 +388,7 @@ public class CorsMeta {
                 }
             }
         }
-        if (!ObjectUtils.isEmpty(this.allowedOriginPatterns)) {
+        if (!this.allowedOriginPatterns.isEmpty()) {
             for (OriginPattern p : this.allowedOriginPatterns) {
                 if (p.getDeclaredPattern().equals(ALL)
                         || p.getPattern().matcher(originToCheck).matches()) {
@@ -418,7 +416,7 @@ public class CorsMeta {
         if (requestHeaders.isEmpty()) {
             return Collections.emptyList();
         }
-        if (ObjectUtils.isEmpty(this.allowedHeaders)) {
+        if (this.allowedHeaders.isEmpty()) {
             return null;
         }
 

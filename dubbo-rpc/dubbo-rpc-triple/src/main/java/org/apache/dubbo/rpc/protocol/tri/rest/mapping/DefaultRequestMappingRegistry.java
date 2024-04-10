@@ -86,7 +86,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     }
                     if (classMapping != null) {
                         methodMapping = classMapping.combine(methodMapping);
-                        methodMapping.setCorsMeta(methodMapping.getCorsMeta().combine(globalCorsMeta));
                     }
                     register0(methodMapping, buildHandlerMeta(invoker, methodMeta));
                 });

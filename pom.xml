@@ -147,12 +147,12 @@
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
-    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2. 43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
 
-    <revision>3.3.0-beta.2-SNAPSHOT</revision>
+    <revision>3.3.0-beta.3-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -160,7 +160,7 @@
       <dependency>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-dependencies-bom</artifactId>
-        <version>${project.version}</version>
+        <version>3.3.0-beta.2-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
