@@ -354,7 +354,10 @@ class BitListTest {
     }
 
     @Test
-    @ValueSource(ints = {2,})
+    @ValueSource(
+            ints = {
+                2,
+            })
     void testListIterator2() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
@@ -612,9 +615,7 @@ class BitListTest {
             countDownLatch.countDown();
             countDownLatch2.await();
 
-            Assertions.assertDoesNotThrow(() -> ref.get()
-                    .iterator()
-                    .hasNext());
+            Assertions.assertDoesNotThrow(() -> ref.get().iterator().hasNext());
         }
     }
 }
