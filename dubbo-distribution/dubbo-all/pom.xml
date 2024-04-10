@@ -857,7 +857,7 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.interceptor.ClusterInterceptor</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route.MeshEnvListenerFactory</resource>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route.MeshEnvListenerFactory</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory</resource>
@@ -911,7 +911,7 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.api.pu.PortUnificationTransporter</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.configurator.parser.mesh.util.TracingContextProvider</resource>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.util.TracingContextProvider</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver</resource>

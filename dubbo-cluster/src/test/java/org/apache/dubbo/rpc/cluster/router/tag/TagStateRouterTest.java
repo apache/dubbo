@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.cluster.configurator.parser.mesh.util.TracingContextProvider;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;

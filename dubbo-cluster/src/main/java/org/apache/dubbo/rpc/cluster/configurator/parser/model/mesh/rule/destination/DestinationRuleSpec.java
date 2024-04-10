@@ -14,42 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import java.util.List;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+public class DestinationRuleSpec {
+    private String host;
+    private List<Subset> subsets;
+    private TrafficPolicy trafficPolicy;
 
-    public String getKey() {
-        return key;
+    public String getHost() {
+        return host;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public List<Subset> getSubsets() {
+        return subsets;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
+    public void setSubsets(List<Subset> subsets) {
+        this.subsets = subsets;
     }
 
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
+    public TrafficPolicy getTrafficPolicy() {
+        return trafficPolicy;
+    }
 
-        String input = url.getParameter(key);
-        return value.isMatch(input);
+    public void setTrafficPolicy(TrafficPolicy trafficPolicy) {
+        this.trafficPolicy = trafficPolicy;
     }
 
     @Override
     public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+        return "DestinationRuleSpec{" + "host='"
+                + host + '\'' + ", subsets="
+                + subsets + ", trafficPolicy="
+                + trafficPolicy + '}';
     }
 }

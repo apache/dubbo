@@ -14,42 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import java.util.List;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+public class VirtualServiceSpec {
+    private List<String> hosts;
+    private List<DubboRoute> dubbo;
 
-    public String getKey() {
-        return key;
+    public List<String> getHosts() {
+        return hosts;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setHosts(List<String> hosts) {
+        this.hosts = hosts;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public List<DubboRoute> getDubbo() {
+        return dubbo;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
-
-        String input = url.getParameter(key);
-        return value.isMatch(input);
+    public void setDubbo(List<DubboRoute> dubbo) {
+        this.dubbo = dubbo;
     }
 
     @Override
     public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+        return "VirtualServiceSpec{" + "hosts=" + hosts + ", dubbo=" + dubbo + '}';
     }
 }

@@ -14,42 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+public class DoubleRangeMatch {
+    private Double start;
+    private Double end;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
-
-    public String getKey() {
-        return key;
+    public Double getStart() {
+        return start;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setStart(Double start) {
+        this.start = start;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public Double getEnd() {
+        return end;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
+    public void setEnd(Double end) {
+        this.end = end;
     }
 
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
+    public boolean isMatch(Double input) {
+        if (start != null && end != null) {
+            return input.compareTo(start) >= 0 && input.compareTo(end) < 0;
+        } else if (start != null) {
+            return input.compareTo(start) >= 0;
+        } else if (end != null) {
+            return input.compareTo(end) < 0;
+        } else {
             return false;
         }
-
-        String input = url.getParameter(key);
-        return value.isMatch(input);
-    }
-
-    @Override
-    public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
     }
 }

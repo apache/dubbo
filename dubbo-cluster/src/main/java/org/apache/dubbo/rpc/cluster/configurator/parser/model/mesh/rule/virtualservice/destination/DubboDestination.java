@@ -14,34 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.destination;
 
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+public class DubboDestination {
+    private String host;
+    private String subset;
+    private int port;
+    private DubboRouteDestination fallback;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
-
-    public String getKey() {
-        return key;
+    public String getHost() {
+        return host;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public String getSubset() {
+        return subset;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
+    public void setSubset(String subset) {
+        this.subset = subset;
     }
 
-    public boolean isMatch(String input) {
-        if (getValue() != null) {
-            return getValue().isMatch(input);
-        }
-        return false;
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public DubboRouteDestination getFallback() {
+        return fallback;
+    }
+
+    public void setFallback(DubboRouteDestination fallback) {
+        this.fallback = fallback;
     }
 }
