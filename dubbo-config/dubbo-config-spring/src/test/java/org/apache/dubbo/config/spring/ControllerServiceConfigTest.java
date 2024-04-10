@@ -32,7 +32,7 @@ public class ControllerServiceConfigTest {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("dubbo");
         serviceServiceConfig.setApplication(applicationConfig);
-        serviceServiceConfig.setProtocol(new ProtocolConfig("rest", 8080));
+        serviceServiceConfig.setProtocol(new ProtocolConfig("dubbo", 8080));
         serviceServiceConfig.setRef(new SpringControllerService());
         serviceServiceConfig.setInterface(SpringControllerService.class.getName());
         serviceServiceConfig.export();
