@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
@@ -61,7 +62,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
-        loadGlobalCorsMeta(frameworkModel);
     }
 
     @Override
@@ -76,7 +76,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 }
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
                 if (classMapping != null) {
-                    classMapping.setCorsMeta(classMapping.getCorsMeta().combine(globalCorsMeta));
+                    classMapping.setCorsMeta(classMapping.getCorsMeta().combine(getGlobalCorsMeta()));
                 }
                 consumer.accept((methods) -> {
                     MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
@@ -214,9 +214,13 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         return handler;
     }
 
-    private void loadGlobalCorsMeta(FrameworkModel frameworkModel) {
-        Configuration config = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-        globalCorsMeta = CorsUtil.resolveGlobalMeta(config);
+    private CorsMeta getGlobalCorsMeta() {
+        if (globalCorsMeta == null) {
+            Configuration globalConfiguration =
+                    ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
+            globalCorsMeta = CorsUtil.resolveGlobalMeta(globalConfiguration);
+        }
+        return globalCorsMeta;
     }
 
     private static final class Registration {
