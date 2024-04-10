@@ -76,7 +76,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     }
 
     @Override
-    protected BitList<Invoker<T>> doRoute(
+    public BitList<Invoker<T>> doRoute(
             BitList<Invoker<T>> invokers,
             URL url,
             Invocation invocation,
