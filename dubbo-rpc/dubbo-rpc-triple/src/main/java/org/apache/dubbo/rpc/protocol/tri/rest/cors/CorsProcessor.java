@@ -136,7 +136,7 @@ public class CorsProcessor {
         response.setBody("Invalid CORS request");
     }
 
-    private boolean isPreFlight(HttpRequest request) {
+    public static boolean isPreFlight(HttpRequest request) {
         // preflight request is a OPTIONS request with Access-Control-Request-Method header
         return request.method().equals(HttpMethods.OPTIONS.name())
                 && request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD) != null;

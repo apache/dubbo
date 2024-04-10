@@ -23,8 +23,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.HttpStatus;
-import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -35,7 +33,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
-import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsProcessor;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
@@ -50,7 +47,6 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
     private final TypeConverter typeConverter;
     private final ContentNegotiator contentNegotiator;
     private final CodecUtils codecUtils;
-    private final CorsProcessor corsProcessor;
 
     public RestRequestHandlerMapping(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -60,21 +56,14 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
         typeConverter = beanFactory.getOrRegisterBean(GeneralTypeConverter.class);
         contentNegotiator = beanFactory.getOrRegisterBean(ContentNegotiator.class);
         codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
-        corsProcessor = beanFactory.getOrRegisterBean(CorsProcessor.class);
     }
 
     @Override
     public RequestHandler getRequestHandler(URL url, HttpRequest request, HttpResponse response) {
 
-        HandlerMeta meta = requestMappingRegistry.lookup(request);
+        HandlerMeta meta = requestMappingRegistry.lookup(request, response);
         if (meta == null) {
             return null;
-        }
-
-        RequestMapping mapping = request.attribute(RestConstants.MAPPING_ATTRIBUTE);
-        if (!corsProcessor.process(mapping.getCorsMeta(), request, response)) {
-            response.commit();
-            throw new HttpStatusException(HttpStatus.FORBIDDEN.getCode(), " CORS request rejected: " + request.uri());
         }
 
         String requestMediaType = request.mediaType();
