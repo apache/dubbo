@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 
 public class CorsMeta {
 
+    // Default value
+
     public static final String ALL = "*";
 
     public static final List<String> ALL_LIST = Collections.singletonList(ALL);
@@ -50,6 +52,8 @@ public class CorsMeta {
             Arrays.asList(HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()));
 
     public static final Long DEFAULT_MAX_AGE = 1800L;
+
+    // Fields
 
     private List<String> allowedOrigins;
 
@@ -375,7 +379,7 @@ public class CorsMeta {
             return null;
         }
         String originToCheck = trimTrailingSlash(origin);
-        if (!(this.allowedOrigins == null || this.allowedOrigins.isEmpty())) {
+        if (!CollectionUtils.isEmpty(this.allowedOrigins)) {
             if (this.allowedOrigins.contains(ALL)) {
                 if (validateAllowCredentials() || validateAllowPrivateNetwork()) {
                     return null;
@@ -388,7 +392,7 @@ public class CorsMeta {
                 }
             }
         }
-        if (!(this.allowedOriginPatterns == null || this.allowedOriginPatterns.isEmpty())) {
+        if (!CollectionUtils.isEmpty(this.allowedOriginPatterns)) {
             for (OriginPattern p : this.allowedOriginPatterns) {
                 if (p.getDeclaredPattern().equals(ALL)
                         || p.getPattern().matcher(originToCheck).matches()) {
@@ -416,7 +420,7 @@ public class CorsMeta {
         if (requestHeaders.isEmpty()) {
             return Collections.emptyList();
         }
-        if (this.allowedHeaders == null || this.allowedHeaders.isEmpty()) {
+        if (CollectionUtils.isEmpty(this.allowedHeaders)) {
             return null;
         }
         boolean allowAnyHeader = this.allowedHeaders.contains(ALL);

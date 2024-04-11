@@ -56,8 +56,7 @@ public class CorsProcessor {
         if (config == null) {
             // if no cors config and is a preflight request
             if (preFlight) {
-                reject(response);
-                return false;
+                return reject(response);
             }
             return true;
         }
@@ -69,20 +68,17 @@ public class CorsProcessor {
     protected boolean handleInternal(HttpRequest request, HttpResponse response, CorsMeta config, boolean isPreLight) {
         String allowOrigin = config.checkOrigin(request.header(RestConstants.ORIGIN));
         if (allowOrigin == null) {
-            reject(response);
-            return false;
+            return reject(response);
         }
 
         List<HttpMethods> allowHttpMethods = config.checkHttpMethods(getHttpMethods(request, isPreLight));
         if (allowHttpMethods == null) {
-            reject(response);
-            return false;
+            return reject(response);
         }
         List<String> httpHeaders = getHttpHeaders(request, isPreLight);
         List<String> allowHeaders = config.checkHeaders(httpHeaders);
         if (isPreLight && httpHeaders != null && allowHeaders == null) {
-            reject(response);
-            return false;
+            return reject(response);
         }
 
         response.setHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN, allowOrigin);
@@ -91,10 +87,13 @@ public class CorsProcessor {
             response.setHeader(
                     RestConstants.ACCESS_CONTROL_ALLOW_METHODS,
                     allowHttpMethods.stream().map(Enum::name).collect(Collectors.toList()));
-        }
-
-        if (isPreLight && !(allowHeaders == null || allowHeaders.isEmpty())) {
-            response.setHeader(RestConstants.ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders);
+            if (!CollectionUtils.isEmpty(allowHeaders)) {
+                response.setHeader(RestConstants.ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders);
+            }
+            if (config.getMaxAge() != null) {
+                response.setHeader(
+                        RestConstants.ACCESS_CONTROL_MAX_AGE, config.getMaxAge().toString());
+            }
         }
 
         if (!CollectionUtils.isEmpty(config.getExposedHeaders())) {
@@ -110,10 +109,6 @@ public class CorsProcessor {
             response.setHeader(ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK, Boolean.TRUE.toString());
         }
 
-        if (isPreLight && config.getMaxAge() != null) {
-            response.setHeader(
-                    RestConstants.ACCESS_CONTROL_MAX_AGE, config.getMaxAge().toString());
-        }
         return true;
     }
 
@@ -131,9 +126,10 @@ public class CorsProcessor {
         return new ArrayList<>(request.headerNames());
     }
 
-    private void reject(HttpResponse response) {
+    private boolean reject(HttpResponse response) {
         response.setStatus(HttpStatus.FORBIDDEN.getCode());
         response.setBody("Invalid CORS request");
+        return false;
     }
 
     public static boolean isPreFlight(HttpRequest request) {

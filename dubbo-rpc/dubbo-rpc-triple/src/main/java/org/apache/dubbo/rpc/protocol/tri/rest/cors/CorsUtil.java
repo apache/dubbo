@@ -19,8 +19,9 @@ package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CorsUtil {
 
@@ -62,10 +63,6 @@ public class CorsUtil {
         if (value == null) {
             return null;
         }
-        List<String> list = new ArrayList<>();
-        for (String item : value.split(",")) {
-            list.add(item.trim());
-        }
-        return list;
+        return Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 }

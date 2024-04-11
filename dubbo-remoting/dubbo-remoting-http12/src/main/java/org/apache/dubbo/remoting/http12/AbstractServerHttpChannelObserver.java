@@ -81,7 +81,14 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
                 if (!headerSent) {
                     doSendHeaders(String.valueOf(result.getStatus()), result.getHeaders());
                 }
-                data = result.getBody();
+                if (result.getStatus() != HttpStatus.OK.getCode()) {
+                    ErrorResponse errorResponse = new ErrorResponse();
+                    errorResponse.setStatus(String.valueOf(result.getStatus()));
+                    errorResponse.setMessage(result.getBody().toString());
+                    data = errorResponse;
+                } else {
+                    data = result.getBody();
+                }
             } else if (!headerSent) {
                 doSendHeaders(HttpStatus.OK.getStatusString(), null);
             }
@@ -113,6 +120,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     public void onError(Throwable throwable) {
         if (throwable instanceof HttpResultPayloadException) {
             onNext(((HttpResultPayloadException) throwable).getResult());
+            doOnCompleted(null);
             return;
         }
         int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
