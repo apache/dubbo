@@ -135,7 +135,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (mapping != null) {
             CorsMeta corsMeta = mapping.getCorsMeta();
             if (corsMeta != null) {
-                mapping.setCorsMeta(corsMeta.combine(getGlobalCorsMeta()));
+                mapping.setCorsMeta(CorsMeta.combine(corsMeta, getGlobalCorsMeta()));
             } else {
                 mapping.setCorsMeta(getGlobalCorsMeta());
             }

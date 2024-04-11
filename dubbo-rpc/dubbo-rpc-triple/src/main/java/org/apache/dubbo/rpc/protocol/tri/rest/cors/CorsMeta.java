@@ -300,25 +300,32 @@ public class CorsMeta {
      * @param other other
      * @return {@link CorsMeta}
      */
-    public CorsMeta combine(CorsMeta other) {
-        if (other == null) {
-            return this;
+    public static CorsMeta combine(CorsMeta priority, CorsMeta other) {
+        if (priority == null && other == null) {
+            return null;
         }
-        CorsMeta config = new CorsMeta(this);
-        List<String> origins = combine(getAllowedOrigins(), other.getAllowedOrigins());
-        List<OriginPattern> patterns = combinePatterns(this.allowedOriginPatterns, other.allowedOriginPatterns);
+        if (priority == null) {
+            return other;
+        }
+        if (other == null) {
+            return priority;
+        }
+        CorsMeta config = new CorsMeta(priority);
+        List<String> origins = priority.combine(priority.getAllowedOrigins(), other.getAllowedOrigins());
+        List<OriginPattern> patterns =
+                priority.combinePatterns(priority.allowedOriginPatterns, other.allowedOriginPatterns);
         config.allowedOrigins = (origins == DEFAULT_PERMIT_ALL && !CollectionUtils.isEmpty(patterns) ? null : origins);
         config.allowedOriginPatterns = patterns;
-        config.setAllowedMethods(combine(getAllowedMethods(), other.getAllowedMethods()));
-        config.setAllowedHeaders(combine(getAllowedHeaders(), other.getAllowedHeaders()));
-        config.setExposedHeaders(combine(getExposedHeaders(), other.getExposedHeaders()));
-        if (this.allowCredentials == null) {
+        config.setAllowedMethods(priority.combine(priority.getAllowedMethods(), other.getAllowedMethods()));
+        config.setAllowedHeaders(priority.combine(priority.getAllowedHeaders(), other.getAllowedHeaders()));
+        config.setExposedHeaders(priority.combine(priority.getExposedHeaders(), other.getExposedHeaders()));
+        if (priority.allowCredentials == null) {
             config.setAllowCredentials(other.getAllowCredentials());
         }
-        if (this.allowPrivateNetwork == null) {
+        if (priority.allowPrivateNetwork == null) {
             config.setAllowPrivateNetwork(other.allowPrivateNetwork);
         }
-        if (this.maxAge == null) {
+        if (priority.maxAge == null) {
             config.setMaxAge(other.maxAge);
         }
         return config;

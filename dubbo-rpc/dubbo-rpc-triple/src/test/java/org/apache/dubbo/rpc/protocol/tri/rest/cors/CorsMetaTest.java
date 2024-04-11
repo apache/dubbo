@@ -81,7 +81,7 @@ public class CorsMetaTest {
 
         CorsMeta config = new CorsMeta();
         config.setAllowedOrigins(Collections.singletonList("*"));
-        config.combine(null);
+        CorsMeta.combine(config, null);
         Assertions.assertArrayEquals(
                 new String[] {"*"}, config.getAllowedOrigins().toArray());
         Assertions.assertNull(config.getAllowedOriginPatterns());
@@ -99,7 +99,7 @@ public class CorsMetaTest {
         config.setAllowCredentials(true);
         config.setAllowPrivateNetwork(true);
         CorsMeta other = new CorsMeta();
-        config = config.combine(other);
+        config = CorsMeta.combine(config, other);
         // Assert the combined config
         Assertions.assertNotNull(config);
         Assertions.assertArrayEquals(
@@ -126,7 +126,7 @@ public class CorsMetaTest {
         other.addAllowedOrigin("https://domain.com");
         other.addAllowedHeader("header1");
         other.addAllowedMethod(HttpMethods.PUT.name());
-        CorsMeta combinedConfig = priority.combine(other);
+        CorsMeta combinedConfig = CorsMeta.combine(priority, other);
 
         Assertions.assertNotNull(combinedConfig);
         Assertions.assertArrayEquals(
@@ -138,7 +138,7 @@ public class CorsMetaTest {
                 combinedConfig.getAllowedMethods().toArray());
         Assertions.assertTrue(combinedConfig.getExposedHeaders().isEmpty());
 
-        combinedConfig = other.combine(priority);
+        combinedConfig = CorsMeta.combine(other, priority);
         Assertions.assertNotNull(combinedConfig);
         Assertions.assertArrayEquals(
                 new String[] {"https://domain.com"},
@@ -149,7 +149,7 @@ public class CorsMetaTest {
                 new String[] {HttpMethods.PUT.name()},
                 combinedConfig.getAllowedMethods().toArray());
         Assertions.assertTrue(combinedConfig.getExposedHeaders().isEmpty());
-        combinedConfig = priority.combine(new CorsMeta());
+        combinedConfig = CorsMeta.combine(priority, new CorsMeta());
         Assertions.assertNotNull(combinedConfig);
         Assertions.assertArrayEquals(
                 new String[] {"*"}, priority.getAllowedOrigins().toArray());
@@ -161,7 +161,7 @@ public class CorsMetaTest {
         Assertions.assertTrue(combinedConfig.getExposedHeaders().isEmpty());
 
         // Combine an empty config with config
-        combinedConfig = new CorsMeta().combine(priority);
+        combinedConfig = CorsMeta.combine(new CorsMeta(), priority);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -185,7 +185,7 @@ public class CorsMetaTest {
         other.addAllowedOriginPattern("http://*.com");
 
         // Combine the configs, with 'other' first
-        CorsMeta combinedConfig = other.combine(config);
+        CorsMeta combinedConfig = CorsMeta.combine(other, config);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -195,7 +195,7 @@ public class CorsMetaTest {
                 combinedConfig.getAllowedOriginPatterns().toArray());
 
         // Combine the configs, with 'config' first
-        combinedConfig = config.combine(other);
+        combinedConfig = CorsMeta.combine(config, other);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -216,7 +216,7 @@ public class CorsMetaTest {
         other.addAllowedOriginPattern("http://*.com");
 
         // Combine the configs, with 'other' first
-        CorsMeta combinedConfig = other.combine(config);
+        CorsMeta combinedConfig = CorsMeta.combine(other, config);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -228,7 +228,7 @@ public class CorsMetaTest {
                 combinedConfig.getAllowedOriginPatterns().toArray());
 
         // Combine the configs, with 'config' first
-        combinedConfig = config.combine(other);
+        combinedConfig = CorsMeta.combine(config, other);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -261,7 +261,7 @@ public class CorsMetaTest {
         other.addAllowedMethod(HttpMethods.PUT.name());
 
         // Combine the configs, with 'config' first
-        CorsMeta combinedConfig = config.combine(other);
+        CorsMeta combinedConfig = CorsMeta.combine(config, other);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -277,7 +277,7 @@ public class CorsMetaTest {
                 new String[] {"*"}, combinedConfig.getAllowedMethods().toArray());
 
         // Combine the configs, with 'other' first
-        combinedConfig = other.combine(config);
+        combinedConfig = CorsMeta.combine(other, config);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -317,7 +317,7 @@ public class CorsMetaTest {
         other.addAllowedMethod(HttpMethods.GET.name());
 
         // Combine the configs
-        CorsMeta combinedConfig = config.combine(other);
+        CorsMeta combinedConfig = CorsMeta.combine(config, other);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
@@ -363,7 +363,7 @@ public class CorsMetaTest {
         other.setAllowPrivateNetwork(false);
 
         // Combine the configs
-        priority = priority.combine(other);
+        priority = CorsMeta.combine(priority, other);
 
         // Assert the combined config
         Assertions.assertNotNull(priority);
