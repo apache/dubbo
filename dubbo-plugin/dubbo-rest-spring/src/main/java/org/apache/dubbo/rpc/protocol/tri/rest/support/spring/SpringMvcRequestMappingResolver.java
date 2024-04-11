@@ -131,8 +131,13 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         meta.setMaxAge(maxAge != null ? Long.valueOf(maxAge) : null);
         String allowCredentials = crossOrigin.getString("allowCredentials");
         meta.setAllowCredentials(allowCredentials != null ? Boolean.valueOf(allowCredentials) : null);
-        String allowPrivateNetwork = crossOrigin.getString("allowPrivateNetwork");
-        meta.setAllowPrivateNetwork(allowPrivateNetwork != null ? Boolean.valueOf(allowPrivateNetwork) : null);
+        // Because allowPrivateNetwork does not exist in some spring versions, we need to catch the exception
+        try {
+            String allowPrivateNetwork = crossOrigin.getString("allowPrivateNetwork");
+            meta.setAllowPrivateNetwork(allowPrivateNetwork != null ? Boolean.valueOf(allowPrivateNetwork) : null);
+        } catch (IllegalArgumentException e) {
+            meta.setAllowPrivateNetwork(null);
+        }
         return meta;
     }
 }
