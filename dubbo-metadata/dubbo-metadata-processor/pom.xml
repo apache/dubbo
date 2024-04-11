@@ -64,10 +64,6 @@
         <!--                </exclusion>-->
         <exclusion>
           <groupId>org.apache.dubbo</groupId>
-          <artifactId>dubbo-metadata-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.dubbo</groupId>
           <artifactId>dubbo-remoting-api</artifactId>
         </exclusion>
         <exclusion>
