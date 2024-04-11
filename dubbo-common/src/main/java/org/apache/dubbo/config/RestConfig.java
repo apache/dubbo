@@ -72,6 +72,8 @@ public class RestConfig implements Serializable {
 
     /**
      *  The config is used to set the Global CORS configuration properties.
+     *  The default value can found in org.apache.dubbo.rpc.protocol.tri.rest.
+     *  cors.CorsMeta.applyPermitDefaultValues()
      */
     @Nested
     private CorsConfig cors;
