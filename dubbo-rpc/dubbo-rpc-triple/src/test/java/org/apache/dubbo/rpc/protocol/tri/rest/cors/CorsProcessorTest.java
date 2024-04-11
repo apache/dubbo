@@ -59,11 +59,11 @@ public class CorsProcessorTest {
         Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -73,11 +73,11 @@ public class CorsProcessorTest {
         Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("http://domain1.example");
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -88,11 +88,11 @@ public class CorsProcessorTest {
 
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.FORBIDDEN.getCode(), this.response.status());
     }
 
@@ -117,11 +117,11 @@ public class CorsProcessorTest {
         Assertions.assertEquals("*", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_MAX_AGE));
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_EXPOSE_HEADERS));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -139,11 +139,11 @@ public class CorsProcessorTest {
         Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
         Assertions.assertEquals("true", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -166,11 +166,11 @@ public class CorsProcessorTest {
         Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
         Assertions.assertEquals("true", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -213,11 +213,11 @@ public class CorsProcessorTest {
         Assertions.assertTrue(this.response
                 .headerValues(RestConstants.ACCESS_CONTROL_EXPOSE_HEADERS)
                 .contains("header2"));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -230,11 +230,11 @@ public class CorsProcessorTest {
         this.conf.addAllowedOrigin("*");
 
         this.processor.process(this.conf, request, this.response);
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -246,11 +246,11 @@ public class CorsProcessorTest {
                 .thenReturn("DELETE");
         this.conf.addAllowedOrigin("*");
         this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.FORBIDDEN.getCode(), this.response.status());
     }
 
@@ -268,11 +268,11 @@ public class CorsProcessorTest {
                 this.response
                         .headerValues(RestConstants.ACCESS_CONTROL_ALLOW_METHODS)
                         .toArray());
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
     }
 
     @Test
@@ -282,11 +282,11 @@ public class CorsProcessorTest {
 
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.FORBIDDEN.getCode(), this.response.status());
     }
 
@@ -298,11 +298,11 @@ public class CorsProcessorTest {
                 .thenReturn("Header1");
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.FORBIDDEN.getCode(), this.response.status());
     }
 
@@ -317,11 +317,11 @@ public class CorsProcessorTest {
 
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.FORBIDDEN.getCode(), this.response.status());
     }
 
@@ -349,11 +349,11 @@ public class CorsProcessorTest {
                         .headerValues(RestConstants.ACCESS_CONTROL_ALLOW_METHODS)
                         .toArray());
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_MAX_AGE));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -376,11 +376,11 @@ public class CorsProcessorTest {
         Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
         Assertions.assertEquals("true", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -406,11 +406,11 @@ public class CorsProcessorTest {
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -439,11 +439,11 @@ public class CorsProcessorTest {
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK));
         Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -472,11 +472,11 @@ public class CorsProcessorTest {
         Assertions.assertFalse(this.response
                 .headerValues(RestConstants.ACCESS_CONTROL_ALLOW_HEADERS)
                 .contains("Header3"));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -503,11 +503,11 @@ public class CorsProcessorTest {
         Assertions.assertFalse(this.response
                 .headerValues(RestConstants.ACCESS_CONTROL_ALLOW_HEADERS)
                 .contains("*"));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -525,11 +525,11 @@ public class CorsProcessorTest {
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_HEADERS));
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
@@ -549,16 +549,16 @@ public class CorsProcessorTest {
     @Test
     void preventDuplicatedVaryHeaders() {
         Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
-        this.response.setHeader(RestConstants.VARY, RestConstants.ORIGIN);
-        this.response.setHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
-        this.response.setHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
-
+        this.response.setHeader(
+                RestConstants.VARY,
+                RestConstants.ORIGIN + "," + RestConstants.ACCESS_CONTROL_REQUEST_METHOD + ","
+                        + RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
         this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
-                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
     }
 
     @Test

@@ -51,7 +51,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -239,18 +238,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     private String preprocessingCors(HttpRequest request, HttpResponse response) {
-        if (Objects.equals(request.method(), HttpMethods.OPTIONS.name())) {
-            if (CorsProcessor.isPreFlight(request)) {
-                String realMethod = request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
-                request.setMethod(realMethod);
-                return realMethod;
-            } else {
-                throw new HttpResultPayloadException(HttpResult.builder()
-                        .status(HttpStatus.FORBIDDEN)
-                        .body(response.body())
-                        .headers(response.headers())
-                        .build());
-            }
+        if (CorsProcessor.isPreFlight(request)) {
+            String realMethod = request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
+            request.setMethod(realMethod);
+            return realMethod;
         }
         return null;
     }

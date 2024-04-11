@@ -135,6 +135,7 @@ public class CorsProcessor {
     public static boolean isPreFlight(HttpRequest request) {
         // preflight request is a OPTIONS request with Access-Control-Request-Method header
         return request.method().equals(HttpMethods.OPTIONS.name())
+                && request.header(RestConstants.ORIGIN) != null
                 && request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD) != null;
     }
 
@@ -162,18 +163,25 @@ public class CorsProcessor {
     private void setVaryHeaders(HttpResponse response) {
         List<String> varyHeaders = response.headerValues(RestConstants.VARY);
         if (varyHeaders == null) {
-            response.addHeader(RestConstants.VARY, RestConstants.ORIGIN);
-            response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
-            response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
+
+            response.addHeader(
+                    RestConstants.VARY,
+                    RestConstants.ORIGIN + "," + RestConstants.ACCESS_CONTROL_REQUEST_METHOD + ","
+                            + RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
         } else {
+            StringBuilder builder = new StringBuilder();
             if (!varyHeaders.contains(RestConstants.ORIGIN)) {
-                response.addHeader(RestConstants.VARY, RestConstants.ORIGIN);
+                builder.append(RestConstants.ORIGIN).append(",");
             }
             if (!varyHeaders.contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD)) {
-                response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
+                builder.append(RestConstants.ACCESS_CONTROL_REQUEST_METHOD).append(",");
             }
             if (!varyHeaders.contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS)) {
-                response.addHeader(RestConstants.VARY, RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
+                builder.append(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS).append(",");
+            }
+            if (builder.length() > 0) {
+                builder.deleteCharAt(builder.length() - 1);
+                response.addHeader(RestConstants.VARY, builder.toString());
             }
         }
     }
