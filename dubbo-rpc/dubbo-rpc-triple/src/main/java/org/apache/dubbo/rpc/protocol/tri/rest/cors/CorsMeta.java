@@ -339,12 +339,13 @@ public class CorsMeta {
             return other;
         }
         // save setting value at first
-        if (source == DEFAULT_PERMIT_ALL || source == DEFAULT_PERMIT_METHODS) {
+        if (source == DEFAULT_PERMIT_ALL
+                || source == DEFAULT_PERMIT_METHODS
+                || other == DEFAULT_PERMIT_ALL
+                || other == DEFAULT_PERMIT_METHODS) {
             return source;
         }
-        if (other == DEFAULT_PERMIT_ALL || other == DEFAULT_PERMIT_METHODS) {
-            return source;
-        }
+
         if (source.contains(ALL) || other.contains(ALL)) {
             return ALL_LIST;
         }
