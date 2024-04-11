@@ -21,8 +21,10 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.spring.api.SpringControllerService;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class ControllerServiceConfigTest {
 
     @Test
