@@ -93,7 +93,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         return;
                     }
                     if (classMapping != null) {
-                        methodMapping = classMapping.combine(methodMapping);
+                        methodMapping = methodMapping.combine(classMapping);
                     }
                     register0(methodMapping, buildHandlerMeta(invoker, methodMeta));
                 });

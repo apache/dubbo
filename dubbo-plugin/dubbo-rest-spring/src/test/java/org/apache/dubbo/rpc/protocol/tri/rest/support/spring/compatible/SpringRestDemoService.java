@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@CrossOrigin(origins = "http://127.0.0.1:80")
 @RequestMapping("/demoService")
 public interface SpringRestDemoService {
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
@@ -73,6 +72,5 @@ public interface SpringRestDemoService {
     long primitiveShort(@RequestParam("a") short a, @RequestParam("b") Long b, @RequestBody int c);
 
     @RequestMapping(method = RequestMethod.GET, value = "/cors")
-    @CrossOrigin(origins = "http://128.0.0.1:80")
     String cors();
 }

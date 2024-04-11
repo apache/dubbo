@@ -296,7 +296,7 @@ public class CorsMeta {
     }
 
     /**
-     *  the custom value always cover default value
+     * Combines two lists of strings, with a priority on this
      * @param other other
      * @return {@link CorsMeta}
      */
@@ -312,27 +312,24 @@ public class CorsMeta {
         config.setAllowedMethods(combine(getAllowedMethods(), other.getAllowedMethods()));
         config.setAllowedHeaders(combine(getAllowedHeaders(), other.getAllowedHeaders()));
         config.setExposedHeaders(combine(getExposedHeaders(), other.getExposedHeaders()));
-        Boolean allowCredentials = other.getAllowCredentials();
-        if (allowCredentials != null) {
-            config.setAllowCredentials(allowCredentials);
+        if (this.allowCredentials == null) {
+            config.setAllowCredentials(other.getAllowCredentials());
         }
-        Boolean allowPrivateNetwork = other.getAllowPrivateNetwork();
-        if (allowPrivateNetwork != null) {
-            config.setAllowPrivateNetwork(allowPrivateNetwork);
+        if (this.allowPrivateNetwork == null) {
+            config.setAllowPrivateNetwork(other.allowPrivateNetwork);
         }
-        Long maxAge = other.getMaxAge();
-        if (maxAge != null) {
-            config.setMaxAge(maxAge);
+        if (this.maxAge == null) {
+            config.setMaxAge(other.maxAge);
         }
         return config;
     }
 
     /**
-     * combine
+     * Combines two lists of strings, with a priority on the source list.
      *
-     * @param source source
-     * @param other  other
-     * @return {@link List}<{@link String}>
+     * @param source The primary list of strings.
+     * @param other  The secondary list of strings to be combined with the source.
+     * @return A combined list of strings, with the source list taking priority in case of conflicts.
      */
     private List<String> combine(List<String> source, List<String> other) {
         if (other == null) {
@@ -343,7 +340,7 @@ public class CorsMeta {
         }
         // save setting value at first
         if (source == DEFAULT_PERMIT_ALL || source == DEFAULT_PERMIT_METHODS) {
-            return other;
+            return source;
         }
         if (other == DEFAULT_PERMIT_ALL || other == DEFAULT_PERMIT_METHODS) {
             return source;

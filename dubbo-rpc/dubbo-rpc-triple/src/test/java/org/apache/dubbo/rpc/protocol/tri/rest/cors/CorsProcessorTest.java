@@ -80,25 +80,21 @@ public class CorsProcessorTest {
                 this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
-    //    Although in this test it can pass, but In actual use,
-    //    due to the implementation of Http12 error return,
-    //    it is not yet possible to set the Vary request header while being intercepted.
-    //    @Test
-    //    void actualRequestWithOriginHeader() {
-    //        Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
-    //        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-    //
-    //        this.processor.process(this.conf, this.request, this.response);
-    //        Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-    //        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
-    //        Assertions.assertTrue(
-    //
-    // this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
-    //        Assertions.assertTrue(
-    //
-    // this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
-    //        Assertions.assertEquals(HttpStatus.FORBIDDEN.getCode(), this.response.status());
-    //    }
+
+    @Test
+    void actualRequestWithOriginHeader() {
+        Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
+        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
+
+        this.processor.process(this.conf, this.request, this.response);
+        Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
+        Assertions.assertTrue(this.response.headerValues(RestConstants.VARY).contains(RestConstants.ORIGIN));
+        Assertions.assertTrue(
+                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
+        Assertions.assertTrue(
+                this.response.headerValues(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
+        Assertions.assertEquals(HttpStatus.FORBIDDEN.getCode(), this.response.status());
+    }
 
     @Test
     void actualRequestWithOriginHeaderAndNullConfig() {

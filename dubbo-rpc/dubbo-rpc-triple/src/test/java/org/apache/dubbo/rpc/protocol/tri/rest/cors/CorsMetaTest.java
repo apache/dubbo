@@ -121,24 +121,24 @@ public class CorsMetaTest {
 
     @Test
     void combineWithDefaultPermitValues() {
-        CorsMeta config = new CorsMeta().applyPermitDefaultValues();
+        CorsMeta priority = new CorsMeta().applyPermitDefaultValues();
         CorsMeta other = new CorsMeta();
         other.addAllowedOrigin("https://domain.com");
         other.addAllowedHeader("header1");
         other.addAllowedMethod(HttpMethods.PUT.name());
-        CorsMeta combinedConfig = config.combine(other);
+        CorsMeta combinedConfig = priority.combine(other);
 
         Assertions.assertNotNull(combinedConfig);
         Assertions.assertArrayEquals(
-                new String[] {"https://domain.com"},
-                combinedConfig.getAllowedOrigins().toArray());
+                new String[] {"*"}, combinedConfig.getAllowedOrigins().toArray());
         Assertions.assertArrayEquals(
-                new String[] {"header1"}, combinedConfig.getAllowedHeaders().toArray());
+                new String[] {"*"}, combinedConfig.getAllowedHeaders().toArray());
         Assertions.assertArrayEquals(
-                new String[] {HttpMethods.PUT.name()},
+                new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()},
                 combinedConfig.getAllowedMethods().toArray());
         Assertions.assertTrue(combinedConfig.getExposedHeaders().isEmpty());
-        combinedConfig = other.combine(config);
+
+        combinedConfig = other.combine(priority);
         Assertions.assertNotNull(combinedConfig);
         Assertions.assertArrayEquals(
                 new String[] {"https://domain.com"},
@@ -149,26 +149,26 @@ public class CorsMetaTest {
                 new String[] {HttpMethods.PUT.name()},
                 combinedConfig.getAllowedMethods().toArray());
         Assertions.assertTrue(combinedConfig.getExposedHeaders().isEmpty());
-        combinedConfig = config.combine(new CorsMeta());
+        combinedConfig = priority.combine(new CorsMeta());
         Assertions.assertNotNull(combinedConfig);
         Assertions.assertArrayEquals(
-                new String[] {"*"}, config.getAllowedOrigins().toArray());
+                new String[] {"*"}, priority.getAllowedOrigins().toArray());
         Assertions.assertArrayEquals(
-                new String[] {"*"}, config.getAllowedHeaders().toArray());
+                new String[] {"*"}, priority.getAllowedHeaders().toArray());
         Assertions.assertArrayEquals(
                 new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()},
                 combinedConfig.getAllowedMethods().toArray());
         Assertions.assertTrue(combinedConfig.getExposedHeaders().isEmpty());
 
         // Combine an empty config with config
-        combinedConfig = new CorsMeta().combine(config);
+        combinedConfig = new CorsMeta().combine(priority);
 
         // Assert the combined config
         Assertions.assertNotNull(combinedConfig);
         Assertions.assertArrayEquals(
-                new String[] {"*"}, config.getAllowedOrigins().toArray());
+                new String[] {"*"}, priority.getAllowedOrigins().toArray());
         Assertions.assertArrayEquals(
-                new String[] {"*"}, config.getAllowedHeaders().toArray());
+                new String[] {"*"}, priority.getAllowedHeaders().toArray());
         Assertions.assertArrayEquals(
                 new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()},
                 combinedConfig.getAllowedMethods().toArray());
@@ -341,15 +341,15 @@ public class CorsMetaTest {
     @Test
     void combine() {
         // Create a config with some values
-        CorsMeta config = new CorsMeta();
-        config.addAllowedOrigin("https://domain1.com");
-        config.addAllowedOriginPattern("http://*.domain1.com");
-        config.addAllowedHeader("header1");
-        config.addExposedHeader("header3");
-        config.addAllowedMethod(HttpMethods.GET.name());
-        config.setMaxAge(123L);
-        config.setAllowCredentials(true);
-        config.setAllowPrivateNetwork(true);
+        CorsMeta priority = new CorsMeta();
+        priority.addAllowedOrigin("https://domain1.com");
+        priority.addAllowedOriginPattern("http://*.domain1.com");
+        priority.addAllowedHeader("header1");
+        priority.addExposedHeader("header3");
+        priority.addAllowedMethod(HttpMethods.GET.name());
+        priority.setMaxAge(123L);
+        priority.setAllowCredentials(true);
+        priority.setAllowPrivateNetwork(true);
 
         // Create another config with some different values
         CorsMeta other = new CorsMeta();
@@ -363,26 +363,28 @@ public class CorsMetaTest {
         other.setAllowPrivateNetwork(false);
 
         // Combine the configs
-        config = config.combine(other);
+        priority = priority.combine(other);
 
         // Assert the combined config
-        Assertions.assertNotNull(config);
+        Assertions.assertNotNull(priority);
         Assertions.assertArrayEquals(
                 new String[] {"https://domain1.com", "https://domain2.com"},
-                config.getAllowedOrigins().toArray());
+                priority.getAllowedOrigins().toArray());
         Assertions.assertArrayEquals(
-                new String[] {"header1", "header2"}, config.getAllowedHeaders().toArray());
+                new String[] {"header1", "header2"},
+                priority.getAllowedHeaders().toArray());
         Assertions.assertArrayEquals(
-                new String[] {"header3", "header4"}, config.getExposedHeaders().toArray());
+                new String[] {"header3", "header4"},
+                priority.getExposedHeaders().toArray());
         Assertions.assertArrayEquals(
                 new String[] {HttpMethods.GET.name(), HttpMethods.PUT.name()},
-                config.getAllowedMethods().toArray());
-        Assertions.assertEquals(Long.valueOf(456), config.getMaxAge());
-        Assertions.assertFalse(config.getAllowCredentials());
-        Assertions.assertFalse(config.getAllowPrivateNetwork());
+                priority.getAllowedMethods().toArray());
+        Assertions.assertEquals(Long.valueOf(123L), priority.getMaxAge());
+        Assertions.assertTrue(priority.getAllowCredentials());
+        Assertions.assertTrue(priority.getAllowPrivateNetwork());
         Assertions.assertArrayEquals(
                 new String[] {"http://*.domain1.com", "http://*.domain2.com"},
-                config.getAllowedOriginPatterns().toArray());
+                priority.getAllowedOriginPatterns().toArray());
     }
 
     @Test
