@@ -14,42 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
 
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public StringMatch getValue() {
-        return value;
-    }
-
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
-
-        String input = url.getParameter(key);
-        return value.isMatch(input);
+    public StandardMeshRuleRouter(URL url) {
+        super(url);
     }
 
     @Override
-    public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+    public String ruleSuffix() {
+        return MeshRuleConstants.STANDARD_ROUTER_KEY;
     }
 }

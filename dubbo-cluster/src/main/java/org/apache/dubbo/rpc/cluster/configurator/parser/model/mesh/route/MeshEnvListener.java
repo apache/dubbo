@@ -14,34 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route;
 
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
-
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public StringMatch getValue() {
-        return value;
-    }
-
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(String input) {
-        if (getValue() != null) {
-            return getValue().isMatch(input);
-        }
+/**
+ * Mesh Rule Listener
+ * Such as Kubernetes, Service Mesh (xDS) environment support define rule in env
+ */
+public interface MeshEnvListener {
+    /**
+     * @return whether current environment support listen
+     */
+    default boolean isEnable() {
         return false;
     }
+
+    void onSubscribe(String appName, MeshAppRuleListener listener);
+
+    void onUnSubscribe(String appName);
 }

@@ -14,42 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import java.util.Map;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+public class BaseRule {
+    private String apiVersion;
+    private String kind;
+    private Map<String, String> metadata;
 
-    public String getKey() {
-        return key;
+    public String getApiVersion() {
+        return apiVersion;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public String getKind() {
+        return kind;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
+    public void setKind(String kind) {
+        this.kind = kind;
     }
 
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
 
-        String input = url.getParameter(key);
-        return value.isMatch(input);
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }
 
     @Override
     public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+        return "BaseRule{" + "apiVersion='"
+                + apiVersion + '\'' + ", kind='"
+                + kind + '\'' + ", metadata="
+                + metadata + '}';
     }
 }

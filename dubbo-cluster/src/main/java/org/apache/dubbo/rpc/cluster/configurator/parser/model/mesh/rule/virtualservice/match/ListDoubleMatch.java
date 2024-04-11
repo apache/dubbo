@@ -14,33 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match;
 
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import java.util.List;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+public class ListDoubleMatch {
+    private List<DoubleMatch> oneof;
 
-    public String getKey() {
-        return key;
+    public List<DoubleMatch> getOneof() {
+        return oneof;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setOneof(List<DoubleMatch> oneof) {
+        this.oneof = oneof;
     }
 
-    public StringMatch getValue() {
-        return value;
-    }
+    public boolean isMatch(Double input) {
 
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(String input) {
-        if (getValue() != null) {
-            return getValue().isMatch(input);
+        for (DoubleMatch doubleMatch : oneof) {
+            if (doubleMatch.isMatch(input)) {
+                return true;
+            }
         }
         return false;
     }

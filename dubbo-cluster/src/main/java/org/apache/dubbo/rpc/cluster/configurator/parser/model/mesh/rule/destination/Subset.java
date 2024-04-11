@@ -14,42 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import java.util.Map;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+public class Subset {
+    private String name;
+    private Map<String, String> labels;
 
-    public String getKey() {
-        return key;
+    public String getName() {
+        return name;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public Map<String, String> getLabels() {
+        return labels;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
-
-        String input = url.getParameter(key);
-        return value.isMatch(input);
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
     }
 
     @Override
     public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+        return "Subset{" + "name='" + name + '\'' + ", labels=" + labels + '}';
     }
 }

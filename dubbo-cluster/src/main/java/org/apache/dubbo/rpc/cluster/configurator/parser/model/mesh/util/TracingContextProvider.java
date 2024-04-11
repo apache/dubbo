@@ -14,34 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.util;
 
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+/**
+ * SPI to get tracing context from 3rd-party tracing utils ( e.g. OpenTracing )
+ */
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface TracingContextProvider {
 
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public StringMatch getValue() {
-        return value;
-    }
-
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(String input) {
-        if (getValue() != null) {
-            return getValue().isMatch(input);
-        }
-        return false;
-    }
+    /**
+     * Get value from context
+     *
+     * @param invocation invocation
+     * @param key key of value
+     * @return value (null if absent)
+     */
+    String getValue(Invocation invocation, String key);
 }

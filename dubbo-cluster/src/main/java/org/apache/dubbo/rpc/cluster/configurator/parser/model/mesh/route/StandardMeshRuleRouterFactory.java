@@ -14,42 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public StringMatch getValue() {
-        return value;
-    }
-
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
-
-        String input = url.getParameter(key);
-        return value.isMatch(input);
-    }
-
+@Activate(order = -50)
+public class StandardMeshRuleRouterFactory implements StateRouterFactory {
     @Override
-    public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new StandardMeshRuleRouter<>(url);
     }
 }

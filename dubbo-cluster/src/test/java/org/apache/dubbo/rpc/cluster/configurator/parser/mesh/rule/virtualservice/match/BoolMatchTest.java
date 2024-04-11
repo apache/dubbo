@@ -14,34 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.mesh.rule.virtualservice.match;
 
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.BoolMatch;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+import org.junit.jupiter.api.Test;
 
-    public String getKey() {
-        return key;
-    }
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    public void setKey(String key) {
-        this.key = key;
-    }
+class BoolMatchTest {
 
-    public StringMatch getValue() {
-        return value;
-    }
+    @Test
+    void isMatch() {
+        BoolMatch boolMatch = new BoolMatch();
+        boolMatch.setExact(true);
 
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
+        assertTrue(boolMatch.isMatch(true));
+        assertFalse(boolMatch.isMatch(false));
 
-    public boolean isMatch(String input) {
-        if (getValue() != null) {
-            return getValue().isMatch(input);
-        }
-        return false;
+        boolMatch.setExact(false);
+        assertFalse(boolMatch.isMatch(true));
+        assertTrue(boolMatch.isMatch(false));
     }
 }

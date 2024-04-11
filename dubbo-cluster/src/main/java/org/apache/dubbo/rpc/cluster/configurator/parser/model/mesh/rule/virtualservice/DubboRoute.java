@@ -14,42 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+import java.util.List;
 
-    public String getKey() {
-        return key;
+public class DubboRoute {
+    private String name;
+    private List<StringMatch> services;
+    private List<DubboRouteDetail> routedetail;
+
+    public String getName() {
+        return name;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public List<StringMatch> getServices() {
+        return services;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
+    public void setServices(List<StringMatch> services) {
+        this.services = services;
     }
 
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
+    public List<DubboRouteDetail> getRoutedetail() {
+        return routedetail;
+    }
 
-        String input = url.getParameter(key);
-        return value.isMatch(input);
+    public void setRoutedetail(List<DubboRouteDetail> routedetail) {
+        this.routedetail = routedetail;
     }
 
     @Override
     public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+        return "DubboRoute{" + "name='" + name + '\'' + ", services=" + services + ", routedetail=" + routedetail + '}';
     }
 }

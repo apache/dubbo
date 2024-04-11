@@ -14,34 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route;
 
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+public class MeshRuleConstants {
+    public static final String INVALID_APP_NAME = "unknown";
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+    public static final String DESTINATION_RULE_KEY = "DestinationRule";
 
-    public String getKey() {
-        return key;
-    }
+    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
 
-    public void setKey(String key) {
-        this.key = key;
-    }
+    public static final String KIND_KEY = "kind";
 
-    public StringMatch getValue() {
-        return value;
-    }
+    public static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
 
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
+    public static final String NAME_KEY = "name";
 
-    public boolean isMatch(String input) {
-        if (getValue() != null) {
-            return getValue().isMatch(input);
-        }
-        return false;
-    }
+    public static final String METADATA_KEY = "metadata";
+
+    public static final String STANDARD_ROUTER_KEY = "standard";
 }

@@ -14,34 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.mesh.route;
 
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route.StandardMeshRuleRouter;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route.StandardMeshRuleRouterFactory;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    public String getKey() {
-        return key;
-    }
+class StandardMeshRuleRouterFactoryTest {
 
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public StringMatch getValue() {
-        return value;
-    }
-
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(String input) {
-        if (getValue() != null) {
-            return getValue().isMatch(input);
-        }
-        return false;
+    @Test
+    void getRouter() {
+        StandardMeshRuleRouterFactory ruleRouterFactory = new StandardMeshRuleRouterFactory();
+        Assertions.assertTrue(
+                ruleRouterFactory.getRouter(Object.class, URL.valueOf("")) instanceof StandardMeshRuleRouter);
     }
 }

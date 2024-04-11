@@ -14,42 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination.loadbalance;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
+public class LoadBalancerSettings {
+    private SimpleLB simple;
+    private ConsistentHashLB consistentHash;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
-
-    public String getKey() {
-        return key;
+    public SimpleLB getSimple() {
+        return simple;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setSimple(SimpleLB simple) {
+        this.simple = simple;
     }
 
-    public StringMatch getValue() {
-        return value;
+    public ConsistentHashLB getConsistentHash() {
+        return consistentHash;
     }
 
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(URL url) {
-        if (key == null || value == null) {
-            return false;
-        }
-
-        String input = url.getParameter(key);
-        return value.isMatch(input);
+    public void setConsistentHash(ConsistentHashLB consistentHash) {
+        this.consistentHash = consistentHash;
     }
 
     @Override
     public String toString() {
-        return "ParamMatch{" + "key='" + key + '\'' + ", value='" + value + '\'' + '}';
+        return "LoadBalancerSettings{" + "simple=" + simple + ", consistentHash=" + consistentHash + '}';
     }
 }
