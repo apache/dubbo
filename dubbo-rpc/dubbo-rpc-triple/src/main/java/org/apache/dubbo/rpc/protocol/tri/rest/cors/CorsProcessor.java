@@ -163,7 +163,6 @@ public class CorsProcessor {
     private void setVaryHeaders(HttpResponse response) {
         List<String> varyHeaders = response.headerValues(RestConstants.VARY);
         if (varyHeaders == null) {
-
             response.addHeader(
                     RestConstants.VARY,
                     RestConstants.ORIGIN + "," + RestConstants.ACCESS_CONTROL_REQUEST_METHOD + ","
