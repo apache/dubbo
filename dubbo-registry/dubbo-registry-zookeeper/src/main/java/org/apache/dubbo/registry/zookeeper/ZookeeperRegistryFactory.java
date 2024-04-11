@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClientManager;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**

@@ -79,7 +79,7 @@ dubbo-remoting-http
 dubbo-remoting-http12
 dubbo-remoting-netty
 dubbo-remoting-netty4
-dubbo-remoting-zookeeper-api
+dubbo-remoting-zookeeper-curator5
 dubbo-rpc
 dubbo-rpc-api
 dubbo-rpc-dubbo

@@ -32,10 +32,10 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClientManager;
+import org.apache.dubbo.remoting.zookeeper.curator5.DataListener;
+import org.apache.dubbo.remoting.zookeeper.curator5.EventType;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 
 import java.util.ArrayList;
 import java.util.Collections;

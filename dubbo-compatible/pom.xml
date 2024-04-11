@@ -45,7 +45,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-zookeeper-api</artifactId>
+      <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>

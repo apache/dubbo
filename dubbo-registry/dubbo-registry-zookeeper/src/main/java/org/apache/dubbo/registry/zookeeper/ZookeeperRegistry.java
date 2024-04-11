@@ -26,10 +26,10 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClientManager;
+import org.apache.dubbo.remoting.zookeeper.curator5.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.curator5.StateListener;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
@@ -393,7 +393,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     /**
      * Triggered when children get changed. It will be invoked by implementation of CuratorWatcher.
      * <p>
-     * 'org.apache.dubbo.remoting.zookeeper.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
+     * 'org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
      */
     private class RegistryChildListenerImpl implements ChildListener {
         private final ZookeeperRegistryNotifier notifier;

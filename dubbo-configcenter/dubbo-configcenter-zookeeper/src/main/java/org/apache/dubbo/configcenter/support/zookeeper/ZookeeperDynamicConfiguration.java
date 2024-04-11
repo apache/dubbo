@@ -23,8 +23,8 @@ import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClientManager;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
