@@ -131,7 +131,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     /**
      * A random port cache, the different protocols who have no port specified have different random port
      */
-    private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
+    private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<>();
 
     private Protocol protocolSPI;
 
@@ -671,7 +671,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private Map<String, String> buildAttributes(ProtocolConfig protocolConfig) {
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
         // append params with basic configs,
