@@ -19,8 +19,8 @@ package org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.route;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.util.MeshRuleListener;
+import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Objects;

@@ -20,9 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination.DestinationRuleSpec;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination.DestinationRule;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination.DestinationRuleSpec;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination.Subset;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 

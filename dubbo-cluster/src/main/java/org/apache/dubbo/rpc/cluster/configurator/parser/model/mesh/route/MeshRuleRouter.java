@@ -26,6 +26,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.VsDestinationGroup;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.DubboMatchRequest;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.DubboRoute;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.DubboRouteDetail;
@@ -34,11 +36,9 @@ import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtuals
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.destination.DubboDestination;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.destination.DubboRouteDestination;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.virtualservice.match.StringMatch;
-import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.VsDestinationGroup;
-import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.util.MeshRuleListener;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.mesh.util.TracingContextProvider;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
