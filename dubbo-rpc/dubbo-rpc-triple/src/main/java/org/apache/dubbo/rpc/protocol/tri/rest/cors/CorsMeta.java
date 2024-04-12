@@ -54,7 +54,6 @@ public class CorsMeta {
 
     public static final Long DEFAULT_MAX_AGE = 1800L;
 
-
     @Nullable
     private List<String> allowedOrigins;
 
@@ -246,6 +245,7 @@ public class CorsMeta {
     public void setAllowCredentials(@Nullable Boolean allowCredentials) {
         this.allowCredentials = allowCredentials;
     }
+
     @Nullable
     public Boolean getAllowCredentials() {
         return this.allowCredentials;
@@ -320,7 +320,7 @@ public class CorsMeta {
      * @param other other
      * @return {@link CorsMeta}
      */
-    public static CorsMeta combine(@Nullable CorsMeta priority,@Nullable CorsMeta other) {
+    public static CorsMeta combine(@Nullable CorsMeta priority, @Nullable CorsMeta other) {
         if (priority == null && other == null) {
             return new CorsMeta();
         }
@@ -358,7 +358,7 @@ public class CorsMeta {
      * @param other  The secondary list of strings to be combined with the source.
      * @return A combined list of strings, with the source list taking priority in case of conflicts.
      */
-    private List<String> combine(@Nullable List<String> source,@Nullable List<String> other) {
+    private List<String> combine(@Nullable List<String> source, @Nullable List<String> other) {
         if (other == null) {
             return (source != null ? source : Collections.emptyList());
         }
@@ -382,8 +382,8 @@ public class CorsMeta {
         return new ArrayList<>(combined);
     }
 
-    private List<OriginPattern> combinePatterns(@Nullable List<OriginPattern> source,
-                                                @Nullable List<OriginPattern> other) {
+    private List<OriginPattern> combinePatterns(
+            @Nullable List<OriginPattern> source, @Nullable List<OriginPattern> other) {
 
         if (other == null) {
             return (source != null ? source : Collections.emptyList());
@@ -443,8 +443,9 @@ public class CorsMeta {
         }
         return false;
     }
+
     @Nullable
-    public List<HttpMethods> checkHttpMethods( @Nullable HttpMethods requestMethod) {
+    public List<HttpMethods> checkHttpMethods(@Nullable HttpMethods requestMethod) {
         if (requestMethod == null) {
             return null;
         }
@@ -453,6 +454,7 @@ public class CorsMeta {
         }
         return (this.resolvedMethods.contains(requestMethod) ? this.resolvedMethods : null);
     }
+
     @Nullable
     public List<String> checkHeaders(@Nullable List<String> requestHeaders) {
         if (requestHeaders == null) {
