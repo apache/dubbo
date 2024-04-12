@@ -48,6 +48,24 @@ public final class RestConstants {
     public static final String PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE =
             "org.springframework.web.servlet.HandlerMapping.producibleMediaTypes";
 
+    /* Cors Config */
+    public static final String VARY = "Vary";
+    public static final String ORIGIN = "Origin";
+    public static final String ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
+    public static final String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";
+    public static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+    public static final String ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
+    public static final String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
+    public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+    public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+    public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    public static final String HTTP = "http";
+    public static final String HTTPS = "https";
+    public static final String WS = "ws";
+    public static final String WSS = "wss";
+    public static final String ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK = "Access-Control-Request-Private-Network";
+    public static final String ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK = "Access-Control-Allow-Private-Network";
+
     /* Configuration Key */
     public static final String CONFIG_PREFIX = "dubbo.rpc.rest.";
     public static final String MAX_BODY_SIZE_KEY = CONFIG_PREFIX + "max-body-size";
@@ -56,6 +74,14 @@ public final class RestConstants {
     public static final String TRAILING_SLASH_MATCH_KEY = CONFIG_PREFIX + "trailing-slash-match";
     public static final String CASE_SENSITIVE_MATCH_KEY = CONFIG_PREFIX + "case-sensitive-match";
     public static final String FORMAT_PARAMETER_NAME_KEY = CONFIG_PREFIX + "format-parameter-name";
+    public static final String CORS_CONFIG_PREFIX = CONFIG_PREFIX + "cors.";
+    public static final String ALLOWED_ORIGINS = CORS_CONFIG_PREFIX + "allowed-origins";
+    public static final String ALLOWED_METHODS = CORS_CONFIG_PREFIX + "allowed-methods";
+    public static final String ALLOWED_HEADERS = CORS_CONFIG_PREFIX + "allowed-headers";
+    public static final String EXPOSED_HEADERS = CORS_CONFIG_PREFIX + "exposed-headers";
+    public static final String MAX_AGE = CORS_CONFIG_PREFIX + "max-age";
+    public static final String ALLOW_CREDENTIALS = CORS_CONFIG_PREFIX + "allow-credentials";
+    public static final String ALLOW_PRIVATE_NETWORK = CORS_CONFIG_PREFIX + "allow-private-network";
 
     private RestConstants() {}
 }

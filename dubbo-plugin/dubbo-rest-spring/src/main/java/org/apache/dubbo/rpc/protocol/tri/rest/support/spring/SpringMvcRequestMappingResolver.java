@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
@@ -27,6 +28,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.springframework.http.HttpStatus;
 
@@ -62,9 +66,11 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
             return null;
         }
         AnnotationMeta<?> responseStatus = serviceMeta.findMergedAnnotation(Annotations.ResponseStatus);
+        AnnotationMeta<?> crossOrigin = serviceMeta.findMergedAnnotation(Annotations.CrossOrigin);
         return builder(requestMapping, responseStatus)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
+                .cors(createCorsMeta(crossOrigin))
                 .build();
     }
 
@@ -80,10 +86,13 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         }
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         AnnotationMeta<?> responseStatus = methodMeta.findMergedAnnotation(Annotations.ResponseStatus);
+
+        AnnotationMeta<?> crossOrigin = methodMeta.findMergedAnnotation(Annotations.CrossOrigin);
         return builder(requestMapping, responseStatus)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(serviceMeta.getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
+                .cors(createCorsMeta(crossOrigin))
                 .build();
     }
 
@@ -103,5 +112,32 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
                 .header(requestMapping.getStringArray("headers"))
                 .consume(requestMapping.getStringArray("consumes"))
                 .produce(requestMapping.getStringArray("produces"));
+    }
+
+    private CorsMeta createCorsMeta(AnnotationMeta<?> crossOrigin) {
+        CorsMeta meta = new CorsMeta();
+        if (crossOrigin == null) {
+            return meta;
+        }
+        String[] allowedHeaders = crossOrigin.getStringArray("allowedHeaders");
+        meta.setAllowedHeaders(allowedHeaders != null ? Arrays.asList(allowedHeaders) : Collections.emptyList());
+        String[] methods = crossOrigin.getStringArray("methods");
+        meta.setAllowedMethods(methods != null ? Arrays.asList(methods) : Collections.emptyList());
+        String[] origins = crossOrigin.getStringArray("origins");
+        meta.setAllowedOrigins(origins != null ? Arrays.asList(origins) : Collections.emptyList());
+        String[] exposedHeaders = crossOrigin.getStringArray("exposedHeaders");
+        meta.setExposedHeaders(exposedHeaders != null ? Arrays.asList(exposedHeaders) : Collections.emptyList());
+        String maxAge = crossOrigin.getString("maxAge");
+        meta.setMaxAge(maxAge != null ? Long.valueOf(maxAge) : null);
+        String allowCredentials = crossOrigin.getString("allowCredentials");
+        meta.setAllowCredentials(allowCredentials != null ? Boolean.valueOf(allowCredentials) : null);
+        // Because allowPrivateNetwork does not exist in some spring versions, we need to catch the exception
+        try {
+            String allowPrivateNetwork = crossOrigin.getString("allowPrivateNetwork");
+            meta.setAllowPrivateNetwork(allowPrivateNetwork != null ? Boolean.valueOf(allowPrivateNetwork) : null);
+        } catch (IllegalArgumentException e) {
+            meta.setAllowPrivateNetwork(null);
+        }
+        return meta;
     }
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.Condition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ConditionWrapper;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ConsumesCondition;
@@ -44,6 +45,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
     private final ProducesCondition producesCondition;
     private final ConditionWrapper customCondition;
     private final ResponseMeta response;
+    private CorsMeta corsMeta;
 
     private int hashCode;
 
@@ -56,7 +58,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             ConsumesCondition consumesCondition,
             ProducesCondition producesCondition,
             Condition<?, HttpRequest> customCondition,
-            ResponseMeta response) {
+            ResponseMeta response,
+            CorsMeta corsMeta) {
         this.name = name;
         this.pathCondition = pathCondition;
         this.methodsCondition = methodsCondition;
@@ -66,6 +69,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         this.producesCondition = producesCondition;
         this.customCondition = customCondition == null ? null : new ConditionWrapper(customCondition);
         this.response = response;
+        this.corsMeta = corsMeta;
     }
 
     public static Builder builder() {
@@ -83,7 +87,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         ProducesCondition produces = combine(producesCondition, other.producesCondition);
         ConditionWrapper custom = combine(customCondition, other.customCondition);
         ResponseMeta response = ResponseMeta.combine(this.response, other.response);
-        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, response);
+        CorsMeta meta = CorsMeta.combine(other.corsMeta, this.corsMeta);
+        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, response, meta);
     }
 
     private <T extends Condition<T, HttpRequest>> T combine(T value, T other) {
@@ -155,8 +160,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                 return null;
             }
         }
-
-        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, response);
+        return new RequestMapping(
+                name, paths, methods, params, headers, consumes, produces, custom, response, corsMeta);
     }
 
     public String getName() {
@@ -173,6 +178,14 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
     public ResponseMeta getResponse() {
         return response;
+    }
+
+    public CorsMeta getCorsMeta() {
+        return corsMeta;
+    }
+
+    public void setCorsMeta(CorsMeta corsMeta) {
+        this.corsMeta = corsMeta;
     }
 
     @Override
@@ -224,6 +237,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             result = customCondition.compareTo(other.customCondition, request);
             return result;
         }
+
         return 0;
     }
 
@@ -238,7 +252,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                     headersCondition,
                     consumesCondition,
                     producesCondition,
-                    customCondition);
+                    customCondition,
+                    corsMeta);
             this.hashCode = hashCode;
         }
         return hashCode;
@@ -259,7 +274,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                 && Objects.equals(headersCondition, other.headersCondition)
                 && Objects.equals(consumesCondition, other.consumesCondition)
                 && Objects.equals(producesCondition, other.producesCondition)
-                && Objects.equals(customCondition, other.customCondition);
+                && Objects.equals(customCondition, other.customCondition)
+                && Objects.equals(corsMeta, other.corsMeta);
     }
 
     @Override
@@ -290,6 +306,9 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         if (response != null) {
             sb.append(", response=").append(response);
         }
+        if (corsMeta != null) {
+            sb.append(", corsMeta=").append(corsMeta);
+        }
         sb.append('}');
         return sb.toString();
     }
@@ -306,6 +325,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         private Condition<?, HttpRequest> customCondition;
         private Integer responseStatus;
         private String responseReason;
+        private CorsMeta corsMeta;
 
         public Builder name(String name) {
             this.name = name;
@@ -362,6 +382,11 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             return this;
         }
 
+        public Builder cors(CorsMeta corsMeta) {
+            this.corsMeta = corsMeta;
+            return this;
+        }
+
         public RequestMapping build() {
             PathCondition pathCondition = isEmpty(paths) ? null : new PathCondition(contextPath, paths);
             MethodsCondition methodsCondition = isEmpty(methods) ? null : new MethodsCondition(methods);
@@ -370,6 +395,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             ConsumesCondition consumesCondition = isEmpty(consumes) ? null : new ConsumesCondition(consumes);
             ProducesCondition producesCondition = isEmpty(produces) ? null : new ProducesCondition(produces);
             ResponseMeta response = responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason);
+            CorsMeta corsMeta = this.corsMeta == null ? null : this.corsMeta;
             return new RequestMapping(
                     name,
                     pathCondition,
@@ -379,7 +405,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                     consumesCondition,
                     producesCondition,
                     customCondition,
-                    response);
+                    response,
+                    corsMeta);
         }
     }
 }

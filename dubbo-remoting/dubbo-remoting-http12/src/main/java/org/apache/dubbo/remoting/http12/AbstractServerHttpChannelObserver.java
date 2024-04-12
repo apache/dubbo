@@ -87,6 +87,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     public final void onError(Throwable throwable) {
         if (throwable instanceof HttpResultPayloadException) {
             onNext(((HttpResultPayloadException) throwable).getResult());
+            doOnCompleted(null);
             return;
         }
         try {

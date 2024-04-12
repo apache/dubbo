@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
@@ -29,7 +30,7 @@ public interface RequestMappingRegistry {
 
     void unregister(Invoker<?> invoker);
 
-    HandlerMeta lookup(HttpRequest request);
+    HandlerMeta lookup(HttpRequest request, HttpResponse response);
 
     void destroy();
 }
