@@ -44,7 +44,7 @@ public class TripleConfig extends AbstractConfig implements Serializable {
      * HTTP requests and responses can be quite large, in which case it's better to process the data as a stream of
      * chunks.
      * This sets the limit, in bytes, at which Netty will send a chunk down the pipeline.
-     * <p>The default value is 1MiB.
+     * <p>The default value is 8MiB.
      */
     private Integer maxChunkSize;
 
@@ -220,7 +220,7 @@ public class TripleConfig extends AbstractConfig implements Serializable {
             maxResponseBodySize = 1 << 23; // 8MiB
         }
         if (maxChunkSize == null) {
-            maxChunkSize = 1 << 20; // 1MiB
+            maxChunkSize = 1 << 23; // 8MiB
         }
         if (maxHeaderSize == null) {
             maxHeaderSize = 8192;
