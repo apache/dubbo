@@ -86,7 +86,7 @@ public class JsonCodec implements HttpMessageCodec {
                 return new Object[] {JsonUtils.convertObject(obj, targetTypes[0])};
             }
             throw new DecodeException("Json must be array");
-        }  catch (HttpStatusException e) {
+        } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
             throw new DecodeException("Error decoding json", t);

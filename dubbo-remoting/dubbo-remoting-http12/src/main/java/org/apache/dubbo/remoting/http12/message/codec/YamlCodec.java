@@ -46,7 +46,7 @@ public class YamlCodec implements HttpMessageCodec {
             return createYaml().loadAs(reader, (Class) targetType);
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Throwable t) {
+        } catch (Throwable t) {
             throw new DecodeException("Error decoding yaml", t);
         }
     }
@@ -74,7 +74,7 @@ public class YamlCodec implements HttpMessageCodec {
             return results;
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Throwable t) {
+        } catch (Throwable t) {
             throw new DecodeException("Error decoding yaml", t);
         }
     }
@@ -85,7 +85,7 @@ public class YamlCodec implements HttpMessageCodec {
             createYaml().dump(data, writer);
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Throwable t) {
+        } catch (Throwable t) {
             throw new EncodeException("Error encoding yaml", t);
         }
     }
@@ -96,7 +96,7 @@ public class YamlCodec implements HttpMessageCodec {
             createYaml().dump(data, writer);
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Throwable t) {
+        } catch (Throwable t) {
             throw new EncodeException("Error encoding yaml", t);
         }
     }

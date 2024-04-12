@@ -50,7 +50,7 @@ public class XmlCodec implements HttpMessageCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new EncodeException("Error encoding xml", e);
         }
     }
@@ -68,7 +68,7 @@ public class XmlCodec implements HttpMessageCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new DecodeException("Error decoding xml", e);
         }
     }

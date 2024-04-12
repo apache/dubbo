@@ -66,7 +66,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new EncodeException(e);
         }
     }
@@ -104,7 +104,7 @@ public class UrlEncodeFormCodec implements HttpMessageCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new DecodeException(e);
         }
     }

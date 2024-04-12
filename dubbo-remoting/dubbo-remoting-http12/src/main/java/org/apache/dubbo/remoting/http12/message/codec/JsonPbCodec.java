@@ -58,7 +58,7 @@ public final class JsonPbCodec extends JsonCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Throwable e) {
+        } catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }
         return super.decode(is, targetType, charset);
@@ -73,7 +73,7 @@ public final class JsonPbCodec extends JsonCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Throwable e) {
+        } catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }
         return super.decode(is, targetTypes, charset);

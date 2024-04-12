@@ -54,7 +54,7 @@ public final class PlainTextCodec implements HttpMessageCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new DecodeException(e);
         }
         throw new DecodeException("'text/plain' media-type only supports String as method param.");

@@ -43,7 +43,8 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
         this.url = url;
         this.frameworkModel = frameworkModel;
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
-        this.triple = url.getOrDefaultApplicationModel().getApplicationConfigManager().getTripleOrElseThrow();
+        this.triple =
+                url.getOrDefaultApplicationModel().getApplicationConfigManager().getTripleOrElseThrow();
     }
 
     /**
