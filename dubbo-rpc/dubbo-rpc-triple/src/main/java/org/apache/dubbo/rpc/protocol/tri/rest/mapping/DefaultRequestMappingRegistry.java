@@ -177,7 +177,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             return null;
         }
 
-        String method = preprocessingCors(request, response);
+        String method = preprocessingCors(request);
 
         List<Candidate> candidates = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -237,7 +237,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         return handler;
     }
 
-    private String preprocessingCors(HttpRequest request, HttpResponse response) {
+    private String preprocessingCors(HttpRequest request) {
         if (CorsProcessor.isPreFlight(request)) {
             String realMethod = request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
             request.setMethod(realMethod);
