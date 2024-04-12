@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.xds.security.api.ServiceAccountSource;
+import org.apache.dubbo.xds.security.api.ServiceIdentitySource;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,10 +33,10 @@ import java.util.List;
 @Activate(group = CommonConstants.CONSUMER, order = -10000)
 public class ConsumerServiceAccountAuthFilter implements Filter {
 
-    private final ServiceAccountSource accountJwtSource;
+    private final ServiceIdentitySource serviceIdentitySource;
 
     public ConsumerServiceAccountAuthFilter(ApplicationModel applicationModel) {
-        this.accountJwtSource = applicationModel.getAdaptiveExtension(ServiceAccountSource.class);
+        this.serviceIdentitySource = applicationModel.getAdaptiveExtension(ServiceIdentitySource.class);
     }
 
     @Override
@@ -44,9 +44,9 @@ public class ConsumerServiceAccountAuthFilter implements Filter {
         String security = invoker.getUrl().getParameter("security");
         if (StringUtils.isNotEmpty(security)) {
             List<String> parts = Arrays.asList(security.split(","));
-            boolean enable = parts.stream().anyMatch("sa_jwt"::equals);
+            boolean enable = parts.stream().anyMatch("serviceIdentity"::equals);
             if (enable) {
-                invocation.setObjectAttachment("authz", accountJwtSource.getJwt(invoker.getUrl()));
+                invocation.setObjectAttachment("serviceIdentity", serviceIdentitySource.getJwt(invoker.getUrl()));
             }
         }
         return invoker.invoke(invocation);

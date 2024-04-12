@@ -199,9 +199,6 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
         } else {
             channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
                     .sslContext(GrpcSslContexts.forClient()
-                            // Currently, we can't verify istio server's CA if istio configured USE_FIRST_PARTY_JWT,
-                            // because istio always returns its own CA (third party CA).
-                            // If we use k8s CA here, client side verification will fail.
                             .trustManager(InsecureTrustManagerFactory.INSTANCE)
                             .build())
                     .build();

@@ -40,12 +40,7 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_CONNECTION_MANAGER;
 import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_VIRTUAL_INBOUND;
 
-/**
- * Filter for authentication rules
- *
- * @author lwj
- * @since 2.0.0
- */
+
 @Activate
 public class LdsRuleProvider implements LdsListener, RuleProvider<HttpFilter> {
 

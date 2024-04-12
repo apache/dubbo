@@ -21,17 +21,17 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
-import org.apache.dubbo.xds.security.api.ServiceAccountSource;
+import org.apache.dubbo.xds.security.api.ServiceIdentitySource;
 
 import java.nio.charset.StandardCharsets;
 
-public class LocalSource implements ServiceAccountSource {
+public class KubeServiceJwtIdentitySource implements ServiceIdentitySource {
 
     private final KubeEnv kubeEnv;
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LocalSource.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeServiceJwtIdentitySource.class);
 
-    public LocalSource(ApplicationModel applicationModel) {
+    public KubeServiceJwtIdentitySource(ApplicationModel applicationModel) {
         this.kubeEnv = applicationModel.getBeanFactory().getBean(KubeEnv.class);
     }
 

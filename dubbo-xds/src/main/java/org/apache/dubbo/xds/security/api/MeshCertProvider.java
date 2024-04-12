@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 @Activate
-public class MeshCredentialProvider implements CertProvider {
+public class MeshCertProvider implements CertProvider {
 
     private final TrustSource trustSource;
 
@@ -38,7 +38,7 @@ public class MeshCredentialProvider implements CertProvider {
 
     private final TlsModeRepo modeRepo;
 
-    public MeshCredentialProvider(FrameworkModel frameworkModel) {
+    public MeshCertProvider(FrameworkModel frameworkModel) {
         this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class).getAdaptiveExtension();
         this.certSource = frameworkModel.getExtensionLoader(CertSource.class).getAdaptiveExtension();
         this.modeRepo = frameworkModel.getBeanFactory().getOrRegisterBean(TlsModeRepo.class);

@@ -16,16 +16,19 @@
  */
 package org.apache.dubbo.xds.auth;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.xds.PilotExchanger;
 import org.apache.dubbo.xds.istio.IstioConstant;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
-import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
 import org.apache.dubbo.xds.security.authz.rule.source.KubeRuleProvider;
+import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
 
 import org.junit.Test;
 
@@ -35,11 +38,12 @@ public class AuthTest {
     public void authZTest() throws Exception {
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        System.setProperty("NAMESPACE","foo");
-        System.setProperty("SERVICE_NAME","httpbin");
-        System.setProperty("API_SERVER_PATH","https://127.0.0.1:6443");
-        System.setProperty("SA_CA_PATH","/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
-        System.setProperty("SA_TOKEN_PATH","/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
+        System.setProperty("NAMESPACE", "foo");
+        System.setProperty("SERVICE_NAME", "httpbin");
+        System.setProperty("API_SERVER_PATH", "https://127.0.0.1:6443");
+        System.setProperty("SA_CA_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
+        System.setProperty(
+                "SA_TOKEN_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
 
         KubeEnv kubeEnv = new KubeEnv(applicationModel);
         kubeEnv.setNamespace("foo");
@@ -58,9 +62,9 @@ public class AuthTest {
         KubeRuleProvider provider = new KubeRuleProvider(applicationModel);
         applicationModel.getBeanFactory().registerBean(provider);
         applicationModel.getBeanFactory().registerBean(MapRuleFactory.class);
-//        List<RuleSource> source = provider.getSource(null, null);
-//
-//        List<RuleRoot> rules = defaultRuleFactory.getRules(source.get(0));
+        //        List<RuleSource> source = provider.getSource(null, null);
+        //
+        //        List<RuleRoot> rules = defaultRuleFactory.getRules(source.get(0));
 
         //        HttpBasedMeshRequestCredential credential = new HttpBasedMeshRequestCredential(
         //                "cluster.local/ns/default/sa/sleep",
@@ -84,6 +88,28 @@ public class AuthTest {
         //        System.out.println(res);
     }
 
+
+    public void testLdsRules(){
+
+        ApplicationModel applicationModel = FrameworkModel.defaultModel().newApplication();
+        applicationModel.setModelName("test-app-1");
+        URL xdsUrl = URL.valueOf("xds://localhost:15012?secure=istio");
+        xdsUrl.setScopeModel(applicationModel);
+
+        //服务JWT
+        PilotExchanger pilotExchanger = PilotExchanger.createInstance(xdsUrl);
+
+        //LDS建立连接
+
+        //LDS更新Rule资源
+
+        //LDS
+
+
+    }
+
+
+
     static {
         System.setProperty(IstioConstant.SERVICE_NAME_KEY, "httpbin");
     }
@@ -97,7 +123,7 @@ public class AuthTest {
         referenceConfig.setScopeModel(applicationModel.newModule());
         referenceConfig.setTimeout(1000000);
         referenceConfig.getParameters().put("mesh", "istio");
-        referenceConfig.getParameters().put("security", "mTLS,sa_jwt");
+        referenceConfig.getParameters().put("security", "mTLS,serviceIdentity");
         referenceConfig.setProvidedBy("httpbin");
         return referenceConfig.get(false);
     }
@@ -115,7 +141,7 @@ public class AuthTest {
         serviceConfig.setInterface(serviceClass);
         serviceConfig.setTimeout(1000000);
         serviceConfig.getParameters().put("mesh", "istio");
-        serviceConfig.getParameters().put("security", "mTLS,sa_jwt");
+        serviceConfig.getParameters().put("security", "mTLS,serviceIdentity");
         serviceConfig.export();
     }
 }

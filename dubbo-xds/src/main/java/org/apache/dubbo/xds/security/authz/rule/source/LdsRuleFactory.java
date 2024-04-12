@@ -68,6 +68,7 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import io.envoyproxy.envoy.type.matcher.v3.MetadataMatcher.PathSegment;
 
 import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_JWT_FILTER;
+import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_RBAC_FILTER;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.AUTHENTICATED;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.DIRECT_REMOTE_IP;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.HEADER;
@@ -76,8 +77,6 @@ import static org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation.AN
 import static org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation.OR;
 
 public class LdsRuleFactory implements RuleFactory<HttpFilter> {
-
-    protected static final String LDS_RBAC_FILTER = "envoy.filters.http.rbac";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsRuleFactory.class);
 

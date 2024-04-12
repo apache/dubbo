@@ -1,1 +1,1 @@
-istio=org.apache.dubbo.xds.security.api.MeshCredentialProvider
+istio=org.apache.dubbo.xds.security.api.MeshCertProvider
