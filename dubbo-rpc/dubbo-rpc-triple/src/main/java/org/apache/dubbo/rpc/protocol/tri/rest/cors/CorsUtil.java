@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 import java.util.Arrays;
@@ -60,7 +61,8 @@ public class CorsUtil {
         return meta.applyPermitDefaultValues();
     }
 
-    private static List<String> parseList(String value) {
+    @Nullable
+    private static List<String> parseList(@Nullable String value) {
         if (value == null) {
             return null;
         }

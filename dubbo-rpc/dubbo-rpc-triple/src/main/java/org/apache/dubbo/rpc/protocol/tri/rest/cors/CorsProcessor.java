@@ -113,14 +113,14 @@ public class CorsProcessor {
     }
 
     private HttpMethods getHttpMethods(HttpRequest request, Boolean isPreLight) {
-        if (isPreLight) {
+        if (Boolean.TRUE.equals(isPreLight)) {
             return HttpMethods.valueOf(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
         }
         return HttpMethods.valueOf(request.method());
     }
 
     private List<String> getHttpHeaders(HttpRequest request, Boolean isPreLight) {
-        if (isPreLight) {
+        if (Boolean.TRUE.equals(isPreLight)) {
             return request.headerValues(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS);
         }
         return new ArrayList<>(request.headerNames());
