@@ -66,7 +66,7 @@ public class TripleConfig extends AbstractConfig implements Serializable {
 
     /**
      * Set the initial size of the temporary buffer used when parsing the lines of the HTTP headers.
-     * <p>The default value is 128 octets.
+     * <p>The default value is 16384 octets.
      */
     private Integer initialBufferSize;
 
@@ -229,7 +229,7 @@ public class TripleConfig extends AbstractConfig implements Serializable {
             maxInitialLineLength = 4096;
         }
         if (initialBufferSize == null) {
-            initialBufferSize = 128;
+            initialBufferSize = 16384;
         }
         if (headerTableSize == null) {
             headerTableSize = 4096;
