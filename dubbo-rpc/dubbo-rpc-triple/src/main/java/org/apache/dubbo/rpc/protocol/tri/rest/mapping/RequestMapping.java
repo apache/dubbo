@@ -395,7 +395,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             ConsumesCondition consumesCondition = isEmpty(consumes) ? null : new ConsumesCondition(consumes);
             ProducesCondition producesCondition = isEmpty(produces) ? null : new ProducesCondition(produces);
             ResponseMeta response = responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason);
-            CorsMeta corsMeta = this.corsMeta == null ? null : this.corsMeta;
+            CorsMeta cors = this.corsMeta == null ? null : this.corsMeta;
             return new RequestMapping(
                     name,
                     pathCondition,
@@ -406,7 +406,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                     producesCondition,
                     customCondition,
                     response,
-                    corsMeta);
+                    cors);
         }
     }
 }

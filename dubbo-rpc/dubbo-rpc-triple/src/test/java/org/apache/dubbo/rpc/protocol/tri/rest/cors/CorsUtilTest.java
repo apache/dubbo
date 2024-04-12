@@ -25,7 +25,7 @@ import org.mockito.Mockito;
 
 import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.CORS_CONFIG_PREFIX;
 
-public class CorsUtilTest {
+class CorsUtilTest {
 
     @Test
     void testResolveGlobalMetaInCommon() {
@@ -66,12 +66,12 @@ public class CorsUtilTest {
         Mockito.when(config.getString(RestConstants.ALLOW_PRIVATE_NETWORK)).thenReturn(null);
 
         CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
-        Assertions.assertEquals(meta.getMaxAge(), CorsMeta.DEFAULT_MAX_AGE);
-        Assertions.assertEquals(meta.getAllowCredentials(), false);
-        Assertions.assertEquals(meta.getAllowPrivateNetwork(), false);
-        Assertions.assertEquals(meta.getAllowedOrigins(), CorsMeta.DEFAULT_PERMIT_ALL);
-        Assertions.assertEquals(meta.getAllowedMethods(), CorsMeta.DEFAULT_PERMIT_METHODS);
-        Assertions.assertEquals(meta.getAllowedHeaders(), CorsMeta.DEFAULT_PERMIT_ALL);
+        Assertions.assertEquals(CorsMeta.DEFAULT_MAX_AGE, meta.getMaxAge());
+        Assertions.assertFalse(meta.getAllowCredentials());
+        Assertions.assertFalse(meta.getAllowPrivateNetwork());
+        Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_ALL, meta.getAllowedOrigins());
+        Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_METHODS, meta.getAllowedMethods());
+        Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_ALL, meta.getAllowedHeaders());
     }
 
     @Test

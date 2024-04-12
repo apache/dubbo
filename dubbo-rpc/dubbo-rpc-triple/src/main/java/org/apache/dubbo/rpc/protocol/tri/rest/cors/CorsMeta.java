@@ -152,8 +152,16 @@ public class CorsMeta {
     }
 
     public void setAllowedMethods(List<String> allowedMethods) {
-        this.allowedMethods = (allowedMethods != null ? new ArrayList<>(allowedMethods) : null);
-        if (!CollectionUtils.isEmpty(allowedMethods)) {
+        if (allowedMethods != null) {
+            this.allowedMethods = new ArrayList<>(allowedMethods);
+            setResolvedMethods(allowedMethods);
+        } else {
+            this.allowedMethods = null;
+        }
+    }
+
+    public void setResolvedMethods(List<String> allowedMethods) {
+        if (!allowedMethods.isEmpty()) {
             this.resolvedMethods = new ArrayList<>(allowedMethods.size());
             for (String method : allowedMethods) {
                 if (ALL.equals(method)) {
@@ -386,26 +394,41 @@ public class CorsMeta {
         String originToCheck = trimTrailingSlash(origin);
         if (!CollectionUtils.isEmpty(this.allowedOrigins)) {
             if (this.allowedOrigins.contains(ALL)) {
-                if (validateAllowCredentials() || validateAllowPrivateNetwork()) {
-                    return null;
-                }
-                return ALL;
+                return allOriginAllowed();
             }
-            for (String allowedOrigin : this.allowedOrigins) {
-                if (originToCheck.equalsIgnoreCase(allowedOrigin)) {
-                    return origin;
-                }
+            if (isOriginAllowed(originToCheck)) {
+                return origin;
             }
         }
+        if (isOriginPatternAllowed(originToCheck)) {
+            return origin;
+        }
+        return null;
+    }
+
+    private String allOriginAllowed() {
+        return (validateAllowCredentials() || validateAllowPrivateNetwork() ? null : ALL);
+    }
+
+    private boolean isOriginAllowed(String originToCheck) {
+        for (String allowedOrigin : this.allowedOrigins) {
+            if (originToCheck.equalsIgnoreCase(allowedOrigin)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isOriginPatternAllowed(String originToCheck) {
         if (!CollectionUtils.isEmpty(this.allowedOriginPatterns)) {
             for (OriginPattern p : this.allowedOriginPatterns) {
                 if (p.getDeclaredPattern().equals(ALL)
                         || p.getPattern().matcher(originToCheck).matches()) {
-                    return origin;
+                    return true;
                 }
             }
         }
-        return null;
+        return false;
     }
 
     public List<HttpMethods> checkHttpMethods(HttpMethods requestMethod) {
@@ -430,22 +453,30 @@ public class CorsMeta {
         }
         boolean allowAnyHeader = this.allowedHeaders.contains(ALL);
         List<String> result = new ArrayList<>(requestHeaders.size());
+        loadAllowedHeaders(requestHeaders, result, allowAnyHeader);
+        return (result.isEmpty() ? null : result);
+    }
+
+    private void loadAllowedHeaders(List<String> requestHeaders, List<String> result, boolean allowAnyHeader) {
         for (String requestHeader : requestHeaders) {
             if (StringUtils.hasText(requestHeader)) {
                 requestHeader = requestHeader.trim();
                 if (allowAnyHeader) {
                     result.add(requestHeader);
                 } else {
-                    for (String allowedHeader : this.allowedHeaders) {
-                        if (requestHeader.equalsIgnoreCase(allowedHeader)) {
-                            result.add(requestHeader);
-                            break;
-                        }
-                    }
+                    loadAllowedHeaders(result, requestHeader);
                 }
             }
         }
-        return (result.isEmpty() ? null : result);
+    }
+
+    private void loadAllowedHeaders(List<String> result, String requestHeader) {
+        for (String allowedHeader : this.allowedHeaders) {
+            if (requestHeader.equalsIgnoreCase(allowedHeader)) {
+                result.add(requestHeader);
+                break;
+            }
+        }
     }
 
     private static class OriginPattern {

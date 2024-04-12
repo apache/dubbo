@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CorsUtil {
+    private CorsUtil() {}
 
     public static int getPort(String scheme, int port) {
         if (port == -1) {

@@ -25,7 +25,7 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CorsMetaTest {
+class CorsMetaTest {
     @Test
     void setNullValues() {
         CorsMeta config = new CorsMeta();
