@@ -20,6 +20,7 @@ import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +29,6 @@ import java.nio.charset.Charset;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
-
-import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 public final class JsonPbCodec extends JsonCodec {
 
