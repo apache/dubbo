@@ -40,6 +40,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
+import org.apache.dubbo.config.TripleConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -96,6 +97,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         uniqueConfigTypes.add(MetricsConfig.class);
         uniqueConfigTypes.add(TracingConfig.class);
         uniqueConfigTypes.add(SslConfig.class);
+        uniqueConfigTypes.add(TripleConfig.class);
 
         // unique config in each module
         uniqueConfigTypes.add(ModuleConfig.class);

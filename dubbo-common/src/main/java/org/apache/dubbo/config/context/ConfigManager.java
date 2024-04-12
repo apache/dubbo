@@ -33,6 +33,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
+import org.apache.dubbo.config.TripleConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
@@ -69,7 +70,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
                         RegistryConfig.class,
                         ConfigCenterConfig.class,
                         MetadataReportConfig.class,
-                        TracingConfig.class));
+                        TracingConfig.class,
+                        TripleConfig.class));
     }
 
     // ApplicationConfig correlative methods
@@ -129,6 +131,19 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
 
     public Optional<SslConfig> getSsl() {
         return ofNullable(getSingleConfig(getTagName(SslConfig.class)));
+    }
+
+    @DisableInject
+    public void setTriple(TripleConfig tripleConfig) {
+        addConfig(tripleConfig);
+    }
+
+    public Optional<TripleConfig> getTriple() {
+        return ofNullable(getSingleConfig(getTagName(TripleConfig.class)));
+    }
+
+    public TripleConfig getTripleOrElseThrow() {
+        return getTriple().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
     }
 
     // ConfigCenterConfig correlative methods
@@ -242,6 +257,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         getMetrics().ifPresent(MetricsConfig::refresh);
         getTracing().ifPresent(TracingConfig::refresh);
         getSsl().ifPresent(SslConfig::refresh);
+        getTriple().ifPresent(TripleConfig::refresh);
 
         getProtocols().forEach(ProtocolConfig::refresh);
         getRegistries().forEach(RegistryConfig::refresh);
@@ -277,6 +293,9 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // config centers has bean loaded before starting config center
         // loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
+        // load dubbo.triples.xxx
+        loadConfigsOfTypeFromProps(TripleConfig.class);
+
         refreshAll();
 
         checkConfigs();
@@ -296,7 +315,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
                 MonitorConfig.class,
                 MetricsConfig.class,
                 TracingConfig.class,
-                SslConfig.class);
+                SslConfig.class,
+                TripleConfig.class);
 
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
             checkDefaultAndValidateConfigs(configType);

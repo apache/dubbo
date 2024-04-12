@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.remoting.http12.exception;
 
-import io.netty.buffer.ByteBufOutputStream;
+public class HttpOverPayloadException extends HttpStatusException {
 
-public class Http1OutputMessage extends LimitedHttpOutputMessage {
+    private static final String OVER_PAYLOAD_MESSAGE = "Response Entity Too Large: %s, max response body size: %s";
 
-    public Http1OutputMessage(ByteBufOutputStream outputStream, int capacity) {
-        super(outputStream, capacity);
+    public HttpOverPayloadException(String message) {
+        super(500, message);
+    }
+
+    public HttpOverPayloadException(int writerIndex, int capacity) {
+        super(500, String.format(OVER_PAYLOAD_MESSAGE, writerIndex, capacity));
     }
 }

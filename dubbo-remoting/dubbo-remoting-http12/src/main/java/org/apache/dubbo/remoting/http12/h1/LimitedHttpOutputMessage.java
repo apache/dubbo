@@ -16,11 +16,22 @@
  */
 package org.apache.dubbo.remoting.http12.h1;
 
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+
+import java.io.OutputStream;
+
 import io.netty.buffer.ByteBufOutputStream;
 
-public class Http1OutputMessage extends LimitedHttpOutputMessage {
+public class LimitedHttpOutputMessage implements HttpOutputMessage {
 
-    public Http1OutputMessage(ByteBufOutputStream outputStream, int capacity) {
-        super(outputStream, capacity);
+    private final OutputStream delegate;
+
+    protected LimitedHttpOutputMessage(ByteBufOutputStream outputStream, int capacity) {
+        this.delegate = new LimitedByteBufOutputStreamDelegate(outputStream, capacity);
+    }
+
+    @Override
+    public OutputStream getBody() {
+        return delegate;
     }
 }

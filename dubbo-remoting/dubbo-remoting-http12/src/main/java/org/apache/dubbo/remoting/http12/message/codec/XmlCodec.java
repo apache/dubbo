@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
@@ -47,7 +48,9 @@ public class XmlCodec implements HttpMessageCodec {
             try (OutputStreamWriter writer = new OutputStreamWriter(os, charset)) {
                 marshaller.marshal(data, writer);
             }
-        } catch (Exception e) {
+        } catch (HttpStatusException e) {
+            throw e;
+        }  catch (Exception e) {
             throw new EncodeException("Error encoding xml", e);
         }
     }
@@ -63,7 +66,9 @@ public class XmlCodec implements HttpMessageCodec {
                 Unmarshaller unmarshaller = context.createUnmarshaller();
                 return unmarshaller.unmarshal(xmlSource);
             }
-        } catch (Exception e) {
+        } catch (HttpStatusException e) {
+            throw e;
+        }  catch (Exception e) {
             throw new DecodeException("Error decoding xml", e);
         }
     }

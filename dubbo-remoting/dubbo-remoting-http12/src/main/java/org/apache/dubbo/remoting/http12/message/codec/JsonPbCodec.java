@@ -29,6 +29,8 @@ import java.nio.charset.Charset;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+
 public final class JsonPbCodec extends JsonCodec {
 
     @Override
@@ -54,7 +56,9 @@ public final class JsonPbCodec extends JsonCodec {
                 JsonFormat.parser().ignoringUnknownFields().merge(StreamUtils.toString(is, charset), newBuilder);
                 return newBuilder.build();
             }
-        } catch (Throwable e) {
+        } catch (HttpStatusException e) {
+            throw e;
+        }  catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }
         return super.decode(is, targetType, charset);
@@ -67,7 +71,9 @@ public final class JsonPbCodec extends JsonCodec {
                 // protobuf only support one parameter
                 return new Object[] {decode(is, targetTypes[0], charset)};
             }
-        } catch (Throwable e) {
+        } catch (HttpStatusException e) {
+            throw e;
+        }  catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }
         return super.decode(is, targetTypes, charset);

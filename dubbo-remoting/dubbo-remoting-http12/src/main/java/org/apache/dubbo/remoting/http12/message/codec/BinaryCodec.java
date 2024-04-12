@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
@@ -49,6 +50,8 @@ public class BinaryCodec implements HttpMessageCodec {
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try {
             return StreamUtils.readBytes(is);
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Exception e) {
             throw new DecodeException(e);
         }

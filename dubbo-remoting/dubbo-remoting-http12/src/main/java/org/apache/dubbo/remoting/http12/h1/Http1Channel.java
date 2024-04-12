@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.remoting.http12.h1;
 
-import io.netty.buffer.ByteBufOutputStream;
+import org.apache.dubbo.remoting.http12.HttpChannel;
 
-public class Http1OutputMessage extends LimitedHttpOutputMessage {
+import java.util.concurrent.CompletableFuture;
 
-    public Http1OutputMessage(ByteBufOutputStream outputStream, int capacity) {
-        super(outputStream, capacity);
-    }
+import io.netty.handler.codec.http.FullHttpMessage;
+
+public interface Http1Channel extends HttpChannel {
+
+    CompletableFuture<Void> writeFullHttpMessage(FullHttpMessage fullHttpMessage);
 }

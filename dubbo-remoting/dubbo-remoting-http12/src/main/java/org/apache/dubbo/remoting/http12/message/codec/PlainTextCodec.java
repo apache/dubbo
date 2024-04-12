@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
@@ -51,7 +52,9 @@ public final class PlainTextCodec implements HttpMessageCodec {
             if (targetType == String.class) {
                 return StreamUtils.toString(is, charset);
             }
-        } catch (Exception e) {
+        } catch (HttpStatusException e) {
+            throw e;
+        }  catch (Exception e) {
             throw new DecodeException(e);
         }
         throw new DecodeException("'text/plain' media-type only supports String as method param.");

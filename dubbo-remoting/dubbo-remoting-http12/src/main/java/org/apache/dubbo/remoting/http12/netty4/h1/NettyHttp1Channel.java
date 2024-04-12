@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
-import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.config.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.h1.Http1Channel;
 import org.apache.dubbo.remoting.http12.h1.Http1OutputMessage;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
@@ -27,13 +28,17 @@ import java.util.concurrent.CompletableFuture;
 
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.FullHttpMessage;
 
-public class NettyHttp1Channel implements HttpChannel {
+public class NettyHttp1Channel implements Http1Channel {
 
     private final Channel channel;
 
-    public NettyHttp1Channel(Channel channel) {
+    private final TripleConfig triple;
+
+    public NettyHttp1Channel(Channel channel, TripleConfig triple) {
         this.channel = channel;
+        this.triple = triple;
     }
 
     @Override
@@ -51,8 +56,15 @@ public class NettyHttp1Channel implements HttpChannel {
     }
 
     @Override
+    public CompletableFuture<Void> writeFullHttpMessage(FullHttpMessage fullHttpMessage) {
+        NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
+        this.channel.writeAndFlush(fullHttpMessage).addListener(nettyHttpChannelFutureListener);
+        return nettyHttpChannelFutureListener;
+    }
+
+    @Override
     public HttpOutputMessage newOutputMessage() {
-        return new Http1OutputMessage(new ByteBufOutputStream(channel.alloc().buffer()));
+        return new Http1OutputMessage(new ByteBufOutputStream(channel.alloc().buffer()), triple.getMaxResponseBodySize());
     }
 
     @Override

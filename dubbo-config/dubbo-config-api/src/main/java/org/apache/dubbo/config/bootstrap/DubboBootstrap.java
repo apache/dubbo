@@ -40,6 +40,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
+import org.apache.dubbo.config.TripleConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConfigCenterBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
@@ -713,6 +714,12 @@ public final class DubboBootstrap {
     public DubboBootstrap ssl(SslConfig sslConfig) {
         sslConfig.setScopeModel(applicationModel);
         configManager.setSsl(sslConfig);
+        return this;
+    }
+
+    public DubboBootstrap triple(TripleConfig triple) {
+        triple.setScopeModel(applicationModel);
+        configManager.setTriple(triple);
         return this;
     }
 

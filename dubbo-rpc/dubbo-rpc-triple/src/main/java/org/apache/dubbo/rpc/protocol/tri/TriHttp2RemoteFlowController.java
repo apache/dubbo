@@ -16,8 +16,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.config.TripleConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -37,7 +36,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import static io.netty.handler.codec.http2.Http2CodecUtil.DEFAULT_WINDOW_SIZE;
 import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_WEIGHT;
 import static io.netty.handler.codec.http2.Http2CodecUtil.MIN_WEIGHT;
 import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
@@ -49,7 +47,6 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
 
 /**
  * This design is learning from {@see io.netty.handler.codec.http2.DefaultHttp2RemoteFlowController} which is in Netty.
@@ -63,7 +60,7 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
     private final Http2Connection.PropertyKey stateKey;
     private final StreamByteDistributor streamByteDistributor;
     private final FlowState connectionState;
-    private final Configuration config;
+    private final TripleConfig config;
     private int initialWindowSize;
     private WritabilityMonitor monitor;
     private ChannelHandlerContext ctx;
@@ -88,8 +85,8 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                                         ApplicationModel applicationModel) {
         this.connection = checkNotNull(connection, "connection");
         this.streamByteDistributor = checkNotNull(streamByteDistributor, "streamWriteDistributor");
-        this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
-        this.initialWindowSize = config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
+        this.config = applicationModel.getApplicationConfigManager().getTripleOrElseThrow();
+        this.initialWindowSize = config.getInitialWindowSize();
 
         // Add a flow state for the connection.
         stateKey = connection.newKey();

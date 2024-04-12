@@ -31,6 +31,11 @@ public class Http1ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
+    public Http1Channel getHttpChannel() {
+        return (Http1Channel) super.getHttpChannel();
+    }
+
+    @Override
     protected HttpMetadata encodeHttpMetadata() {
         HttpHeaders httpHeaders = new HttpHeaders();
         return new Http1Metadata(httpHeaders);

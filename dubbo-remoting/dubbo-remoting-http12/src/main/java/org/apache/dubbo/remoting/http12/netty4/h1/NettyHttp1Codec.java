@@ -35,6 +35,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -78,6 +79,10 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
             doWriteMessage(ctx, ((HttpOutputMessage) msg), promise);
             return;
         }
+        if (msg instanceof FullHttpMessage) {
+            doWriteFullHttpMessage(ctx, (FullHttpMessage) msg, promise);
+            return;
+        }
         super.write(ctx, msg, promise);
     }
 
@@ -109,5 +114,10 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
             return;
         }
         throw new IllegalArgumentException("HttpOutputMessage body must be 'io.netty.buffer.ByteBufOutputStream'");
+    }
+
+    private void doWriteFullHttpMessage(
+            ChannelHandlerContext ctx, FullHttpMessage fullHttpMessage, ChannelPromise promise) {
+        ctx.writeAndFlush(fullHttpMessage, promise);
     }
 }
