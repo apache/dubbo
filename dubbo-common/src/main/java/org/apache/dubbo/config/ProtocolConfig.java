@@ -19,6 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.serialization.PreferSerializationProvider;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.nested.TripleConfig;
+import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -235,6 +237,9 @@ public class ProtocolConfig extends AbstractConfig {
      * JSON check level for serialization.
      */
     private String jsonCheckLevel;
+
+    @Nested
+    private TripleConfig triple = new TripleConfig();
 
     public ProtocolConfig() {}
 
@@ -619,6 +624,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtProtocol(String extProtocol) {
         this.extProtocol = extProtocol;
+    }
+
+    public TripleConfig getTriple() {
+        return triple;
+    }
+
+    public void setTriple(TripleConfig triple) {
+        this.triple = triple;
     }
 
     public void mergeProtocol(ProtocolConfig sourceConfig) {
