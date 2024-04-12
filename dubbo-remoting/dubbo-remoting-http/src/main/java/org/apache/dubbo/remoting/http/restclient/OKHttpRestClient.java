@@ -146,12 +146,10 @@ public class OKHttpRestClient implements RestClient {
                 .readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS)
                 .writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS)
                 .connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS)
-                .connectionPool(
-                        new ConnectionPool(
-                                httpClientConfig.getMaxIdleConnections(),
-                                httpClientConfig.getKeepAliveDuration(),
-                                TimeUnit.SECONDS
-                        )
-                ).build();
+                .connectionPool(new ConnectionPool(
+                        httpClientConfig.getMaxIdleConnections(),
+                        httpClientConfig.getKeepAliveDuration(),
+                        TimeUnit.SECONDS))
+                .build();
     }
 }

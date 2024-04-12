@@ -81,5 +81,4 @@ public class HttpClientConfig {
 
         this.keepAliveDuration = keepAliveDuration;
     }
-
 }
