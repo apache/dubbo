@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.metrics.filter;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
@@ -25,14 +28,27 @@ import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.service.CompatibleMetricsService;
+import org.apache.dubbo.metrics.service.MetricsService;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.alibaba.fastjson2.JSON;
+
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_FILTER_EVENT;
@@ -47,6 +63,9 @@ public class MetricsFilter implements ScopeModelAware {
     private MetricsDispatcher metricsDispatcher;
     private DefaultMetricsCollector defaultMetricsCollector;
     private boolean serviceLevel;
+    private static final AtomicBoolean exported = new AtomicBoolean(false);
+    private Integer port;
+    private String protocolName;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -67,6 +86,24 @@ public class MetricsFilter implements ScopeModelAware {
     }
 
     public Result invoke(Invoker<?> invoker, Invocation invocation, boolean isProvider) throws RpcException {
+        if (exported.compareAndSet(false, true)) {
+            this.protocolName = invoker.getUrl().getParameter(METRICS_SERVICE_PROTOCOL_KEY) == null
+                    ? DEFAULT_PROTOCOL
+                    : invoker.getUrl().getParameter(METRICS_SERVICE_PROTOCOL_KEY);
+
+            Protocol protocol =
+                    ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
+            this.port = invoker.getUrl().getParameter(METRICS_SERVICE_PORT_KEY) == null
+                    ? protocol.getDefaultPort()
+                    : Integer.parseInt(invoker.getUrl().getParameter(METRICS_SERVICE_PORT_KEY));
+            Invoker<CompatibleMetricsService> metricsInvoker = initMetricsInvoker(isProvider);
+            try {
+                protocol.export(metricsInvoker);
+            } catch (RuntimeException e) {
+                LOGGER.error("Metrics Service need to be configured" + " when multiple processes are running on a host"
+                        + e.getMessage());
+            }
+        }
         if (rpcMetricsEnable) {
             try {
                 RequestEvent requestEvent = RequestEvent.toRequestEvent(
@@ -116,5 +153,35 @@ public class MetricsFilter implements ScopeModelAware {
                 LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when onResponse.", throwable);
             }
         }
+    }
+
+    private Invoker<CompatibleMetricsService> initMetricsInvoker(boolean isProvider) {
+        return new Invoker<CompatibleMetricsService>() {
+            @Override
+            public Class<CompatibleMetricsService> getInterface() {
+                return CompatibleMetricsService.class;
+            }
+
+            @Override
+            public Result invoke(Invocation invocation) throws RpcException {
+
+                List<MetricSample> collect = defaultMetricsCollector.collect();
+                return AsyncRpcResult.newDefaultAsyncResult(JSON.toJSONString(collect), invocation);
+            }
+
+            @Override
+            public URL getUrl() {
+                return URL.valueOf(protocolName + "://" + NetUtils.getIpByConfig(applicationModel) + ":" + port + "/"
+                        + CompatibleMetricsService.class.getName());
+            }
+
+            @Override
+            public boolean isAvailable() {
+                return false;
+            }
+
+            @Override
+            public void destroy() {}
+        };
     }
 }
