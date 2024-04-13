@@ -28,9 +28,10 @@
   <name>${project.artifactId}</name>
   <description>The metrics module of dubbo project</description>
   <modules>
+    <module>dubbo-metrics-annotation</module>
     <module>dubbo-metrics-api</module>
-    <module>dubbo-metrics-event</module>
     <module>dubbo-metrics-default</module>
+    <module>dubbo-metrics-starter</module>
     <module>dubbo-metrics-registry</module>
     <module>dubbo-metrics-metadata</module>
     <module>dubbo-metrics-prometheus</module>

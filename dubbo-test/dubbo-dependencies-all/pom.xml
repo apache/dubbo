@@ -158,7 +158,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-event</artifactId>
+      <artifactId>dubbo-metrics-annotation</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -193,6 +193,11 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metrics-prometheus</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-metrics-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

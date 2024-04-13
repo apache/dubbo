@@ -17,16 +17,16 @@
 package org.apache.dubbo.configcenter.support.apollo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigCenterChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
-import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
@@ -58,7 +58,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.ThirdPartyProper
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO;
-import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -269,13 +268,12 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                         new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
                 listeners.forEach(listener -> listener.process(event));
 
-                MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(
+                DubboEventBus.publish(new ConfigCenterChangeEvent(
                         applicationModel,
                         event.getKey(),
                         event.getGroup(),
-                        ConfigCenterEvent.APOLLO_PROTOCOL,
-                        ConfigChangeType.ADDED.name(),
-                        SELF_INCREMENT_SIZE));
+                        ApolloConstants.APOLLO_PROTOCOL,
+                        ConfigChangeType.ADDED.name()));
             }
         }
 

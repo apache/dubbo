@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,10 +32,9 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.event.RegistrySubscribeEvent;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -145,7 +145,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 .getParameter(
                         RegistryConstants.REGISTRY_CLUSTER_KEY,
                         registry.getUrl().getParameter(PROTOCOL_KEY));
-        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel, registryClusterName), () -> {
+        DubboEventBus.post(new RegistrySubscribeEvent(applicationModel, registryClusterName), () -> {
             super.subscribe(url);
             return null;
         });

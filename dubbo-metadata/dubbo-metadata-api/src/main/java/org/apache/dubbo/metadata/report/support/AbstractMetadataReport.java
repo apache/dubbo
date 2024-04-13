@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -26,13 +27,12 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.metadata.event.MetaDataServiceSubscribeEvent;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
@@ -298,9 +298,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     private void storeProviderMetadataTask(
             MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
 
-        MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(
-                applicationModel, providerMetadataIdentifier.getUniqueServiceName());
-        MetricsEventBus.post(
+        MetaDataServiceSubscribeEvent metadataEvent =
+                new MetaDataServiceSubscribeEvent(applicationModel, providerMetadataIdentifier.getUniqueServiceName());
+        DubboEventBus.post(
                 metadataEvent,
                 () -> {
                     boolean result = true;
@@ -329,7 +329,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     }
                     return result;
                 },
-                aBoolean -> aBoolean);
+                result -> result);
     }
 
     @Override

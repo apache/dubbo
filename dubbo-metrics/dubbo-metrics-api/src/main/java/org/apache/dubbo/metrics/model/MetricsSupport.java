@@ -213,10 +213,7 @@ public class MetricsSupport {
      * Incr service num
      */
     public static void increment(
-            MetricsKey metricsKey,
-            MetricsPlaceValue placeType,
-            ServiceMetricsCollector<TimeCounterEvent> collector,
-            MetricsEvent event) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector collector, MetricsEvent event) {
         collector.increment(
                 event.getAttachmentValue(ATTACHMENT_KEY_SERVICE),
                 new MetricsKeyWrapper(metricsKey, placeType),
@@ -229,7 +226,7 @@ public class MetricsSupport {
     public static void incrAndAddRt(
             MetricsKey metricsKey,
             MetricsPlaceValue placeType,
-            ServiceMetricsCollector<TimeCounterEvent> collector,
+            ServiceMetricsCollector collector,
             TimeCounterEvent event) {
         collector.increment(
                 event.getAttachmentValue(ATTACHMENT_KEY_SERVICE),
@@ -251,10 +248,7 @@ public class MetricsSupport {
      * Incr method num
      */
     public static void increment(
-            MetricsKey metricsKey,
-            MetricsPlaceValue placeType,
-            MethodMetricsCollector<TimeCounterEvent> collector,
-            MetricsEvent event) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector collector, MetricsEvent event) {
         collector.increment(
                 event.getAttachmentValue(METHOD_METRICS),
                 new MetricsKeyWrapper(metricsKey, placeType),
@@ -262,10 +256,7 @@ public class MetricsSupport {
     }
 
     public static void init(
-            MetricsKey metricsKey,
-            MetricsPlaceValue placeType,
-            MethodMetricsCollector<TimeCounterEvent> collector,
-            MetricsEvent event) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector collector, MetricsEvent event) {
         collector.init(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType));
     }
 
@@ -273,10 +264,7 @@ public class MetricsSupport {
      * Dec method num
      */
     public static void dec(
-            MetricsKey metricsKey,
-            MetricsPlaceValue placeType,
-            MethodMetricsCollector<TimeCounterEvent> collector,
-            MetricsEvent event) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector collector, MetricsEvent event) {
         collector.increment(
                 event.getAttachmentValue(METHOD_METRICS),
                 new MetricsKeyWrapper(metricsKey, placeType),
@@ -289,7 +277,7 @@ public class MetricsSupport {
     public static void incrAndAddRt(
             MetricsKey metricsKey,
             MetricsPlaceValue placeType,
-            MethodMetricsCollector<TimeCounterEvent> collector,
+            MethodMetricsCollector collector,
             TimeCounterEvent event) {
         collector.increment(
                 event.getAttachmentValue(METHOD_METRICS),

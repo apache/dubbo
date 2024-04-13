@@ -16,20 +16,17 @@
  */
 package org.apache.dubbo.metrics.listener;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.function.Consumer;
 
 /**
- * According to the event template of {@link MetricsEventBus},
+ * According to the event template of {@link DubboEventBus},
  * build a consistent static method for general and custom monitoring consume methods
- *
  */
-public abstract class AbstractMetricsKeyListener extends AbstractMetricsListener<TimeCounterEvent>
-        implements MetricsLifeListener<TimeCounterEvent> {
+public abstract class AbstractMetricsKeyListener {
 
     private final MetricsKey metricsKey;
 
@@ -40,13 +37,15 @@ public abstract class AbstractMetricsKeyListener extends AbstractMetricsListener
     /**
      * The MetricsKey type determines whether events are supported
      */
-    @Override
-    public boolean isSupport(MetricsEvent event) {
-        return super.isSupport(event) && event.isAssignableFrom(metricsKey);
+    public boolean support(TimeCounterEvent event) {
+        return event.isAssignableFrom(metricsKey);
     }
 
-    @Override
     public void onEvent(TimeCounterEvent event) {}
+
+    public void onEventFinish(TimeCounterEvent event) {}
+
+    public void onEventError(TimeCounterEvent event) {}
 
     public static AbstractMetricsKeyListener onEvent(MetricsKey metricsKey, Consumer<TimeCounterEvent> postFunc) {
 

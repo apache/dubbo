@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metrics.collector;
 
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 /**
@@ -25,7 +24,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
  *
  * @Params <T>  metrics type
  */
-public interface ApplicationMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
+public interface ApplicationMetricsCollector extends MetricsCollector {
 
     void increment(MetricsKey metricsKey);
 

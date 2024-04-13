@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.metrics.metadata.event;
 
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.common.event.AbstractDubboLifecycleListener;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.event.MetaDataEvent;
+import org.apache.dubbo.metrics.event.TimeCounterEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
 import org.apache.dubbo.metrics.listener.MetricsServiceListener;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
@@ -31,19 +35,55 @@ import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
-public final class MetadataSubDispatcher extends SimpleMetricsEventMulticaster {
+public final class MetadataSubDispatcher extends AbstractDubboLifecycleListener<MetaDataEvent> {
+
+    ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataSubDispatcher.class);
+
+    private final TimeCounterEventMulticaster multicaster;
 
     public MetadataSubDispatcher(MetadataMetricsCollector collector) {
-
+        this.multicaster = new TimeCounterEventMulticaster();
         CategorySet.ALL.forEach(categorySet -> {
-            super.addListener(categorySet.getPost().getEventFunc().apply(collector));
+            this.multicaster.addListener(categorySet.getPost().getEventFunc().apply(collector));
             if (categorySet.getFinish() != null) {
-                super.addListener(categorySet.getFinish().getEventFunc().apply(collector));
+                this.multicaster.addListener(
+                        categorySet.getFinish().getEventFunc().apply(collector));
             }
             if (categorySet.getError() != null) {
-                super.addListener(categorySet.getError().getEventFunc().apply(collector));
+                this.multicaster.addListener(
+                        categorySet.getError().getEventFunc().apply(collector));
             }
         });
+    }
+
+    @Override
+    public void onEventBefore(MetaDataEvent event) {
+        MetadataMetricsEvent metadataMetricsEvent = MetadataMetricsEvent.convertEvent(event);
+        if (metadataMetricsEvent == null) {
+            logger.debug("Unsupported event type: {}", event.getClass().getName());
+            return;
+        }
+        this.multicaster.publishEvent(metadataMetricsEvent);
+    }
+
+    @Override
+    public void onEventFinish(MetaDataEvent event) {
+        MetadataMetricsEvent metadataMetricsEvent = MetadataMetricsEvent.convertEvent(event);
+        if (metadataMetricsEvent == null) {
+            logger.debug("Unsupported event type: {}", event.getClass().getName());
+            return;
+        }
+        this.multicaster.publishFinishEvent(metadataMetricsEvent);
+    }
+
+    @Override
+    public void onEventError(MetaDataEvent event) {
+        MetadataMetricsEvent metadataMetricsEvent = MetadataMetricsEvent.convertEvent(event);
+        if (metadataMetricsEvent == null) {
+            logger.debug("Unsupported event type: {}", event.getClass().getName());
+            return;
+        }
+        this.multicaster.publishErrorEvent(metadataMetricsEvent);
     }
 
     /**

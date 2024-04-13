@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,13 +27,12 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.event.RegistryRegisterEvent;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -211,8 +211,8 @@ public class ServiceInstanceMetadataUtils {
             LOGGER.info("Start registering instance address to registry.");
             List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
             for (ServiceDiscovery serviceDiscovery : serviceDiscoveries) {
-                MetricsEventBus.post(
-                        RegistryEvent.toRegisterEvent(
+                DubboEventBus.post(
+                        new RegistryRegisterEvent(
                                 applicationModel, Collections.singletonList(getServiceDiscoveryName(serviceDiscovery))),
                         () -> {
                             // register service instance

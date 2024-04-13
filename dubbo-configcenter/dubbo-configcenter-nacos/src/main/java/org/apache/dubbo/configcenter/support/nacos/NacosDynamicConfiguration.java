@@ -17,19 +17,19 @@
 package org.apache.dubbo.configcenter.support.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigCenterChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
@@ -55,7 +55,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INT
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
-import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -362,13 +361,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             listeners.forEach(listener -> listener.process(event));
 
-            MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(
+            DubboEventBus.publish(new ConfigCenterChangeEvent(
                     applicationModel,
                     event.getKey(),
                     event.getGroup(),
-                    ConfigCenterEvent.NACOS_PROTOCOL,
-                    ConfigChangeType.ADDED.name(),
-                    SELF_INCREMENT_SIZE));
+                    NacosConstants.NACOS_PROTOCOL,
+                    ConfigChangeType.ADDED.name()));
         }
 
         void addListener(ConfigurationListener configurationListener) {

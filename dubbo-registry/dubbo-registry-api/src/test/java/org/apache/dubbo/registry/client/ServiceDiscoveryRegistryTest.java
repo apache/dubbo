@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.client.event.listener.MockServiceInstancesChang
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,6 +106,7 @@ class ServiceDiscoveryRegistryTest {
         doNothing().when(instanceListener).onEvent(any());
         when(serviceDiscovery.createListener(any())).thenReturn(instanceListener);
         when(serviceDiscovery.getInstances(any())).thenReturn(Collections.emptyList());
+        url = url.setScopeModel(ScopeModelUtil.getApplicationModel(null));
         when(serviceDiscovery.getUrl()).thenReturn(url);
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
@@ -225,6 +227,7 @@ class ServiceDiscoveryRegistryTest {
         // different interface mapping to the same apps
         NotifyListener testServiceListener2 = mock(NotifyListener.class);
         URL url2 = URL.valueOf("tri://127.0.0.1/TestService2?interface=TestService2&check=false&protocol=tri");
+        url2 = url2.setScopeModel(ScopeModelUtil.getApplicationModel(null));
         when(testServiceListener2.getConsumerUrl()).thenReturn(url2);
         serviceDiscoveryRegistry.subscribeURLs(url2, testServiceListener2, multiApps);
         // check instance listeners not changed, methods not called
@@ -265,6 +268,7 @@ class ServiceDiscoveryRegistryTest {
         multiApps.add(APP_NAME2);
         NotifyListener testServiceListener2 = mock(NotifyListener.class);
         URL url2 = URL.valueOf("consumer://127.0.0.1/TestService2?interface=TestService1&check=false&protocol=tri");
+        url2 = url2.setScopeModel(ScopeModelUtil.getApplicationModel(null));
         when(testServiceListener2.getConsumerUrl()).thenReturn(url2);
         serviceDiscoveryRegistry.subscribeURLs(url, testServiceListener, multiApps);
         serviceDiscoveryRegistry.subscribeURLs(url2, testServiceListener2, multiApps);

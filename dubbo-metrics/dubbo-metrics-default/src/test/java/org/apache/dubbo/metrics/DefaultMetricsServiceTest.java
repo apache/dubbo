@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -46,6 +47,8 @@ public class DefaultMetricsServiceTest {
     @BeforeEach
     public void setUp() {
         ApplicationModel applicationModel = Mockito.mock(ApplicationModel.class);
+        new DubboApplicationMulticasterRegistry().initializeApplicationModel(applicationModel);
+
         ScopeBeanFactory beanFactory = Mockito.mock(ScopeBeanFactory.class);
         metricsCollector = Mockito.mock(MetricsCollector.class);
 

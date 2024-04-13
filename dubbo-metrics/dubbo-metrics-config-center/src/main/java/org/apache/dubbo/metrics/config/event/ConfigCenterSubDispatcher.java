@@ -16,38 +16,21 @@
  */
 package org.apache.dubbo.metrics.config.event;
 
+import org.apache.dubbo.common.config.configcenter.ConfigCenterChangeEvent;
+import org.apache.dubbo.common.event.AbstractDubboListener;
 import org.apache.dubbo.metrics.config.collector.ConfigCenterMetricsCollector;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
-import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CHANGE_TYPE;
-import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CONFIG_FILE;
-import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CONFIG_GROUP;
-import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CONFIG_PROTOCOL;
+public final class ConfigCenterSubDispatcher extends AbstractDubboListener<ConfigCenterChangeEvent> {
 
-public final class ConfigCenterSubDispatcher extends SimpleMetricsEventMulticaster {
+    private ConfigCenterMetricsCollector collector;
 
     public ConfigCenterSubDispatcher(ConfigCenterMetricsCollector collector) {
+        this.collector = collector;
+    }
 
-        super.addListener(new AbstractMetricsKeyListener(MetricsKey.CONFIGCENTER_METRIC_TOTAL) {
-            @Override
-            public boolean isSupport(MetricsEvent event) {
-                return event instanceof ConfigCenterEvent;
-            }
-
-            @Override
-            public void onEvent(TimeCounterEvent event) {
-                collector.increase(
-                        event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_FILE),
-                        event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_GROUP),
-                        event.getAttachmentValue(ATTACHMENT_KEY_CONFIG_PROTOCOL),
-                        event.getAttachmentValue(ATTACHMENT_KEY_CHANGE_TYPE),
-                        event.getAttachmentValue(ATTACHMENT_KEY_SIZE));
-            }
-        });
+    @Override
+    public void onEvent(ConfigCenterChangeEvent event) {
+        collector.increase(
+                event.getKey(), event.getGroup(), event.getProtocol(), event.getChangeType(), event.getCount());
     }
 }

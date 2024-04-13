@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -34,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,10 +51,18 @@ public class ThreadPoolMetricsSamplerTest {
 
     ThreadPoolMetricsSampler sampler;
 
+    private DubboApplicationMulticasterRegistry multicasterRegistry = new DubboApplicationMulticasterRegistry();
+
     @BeforeEach
     void setUp() {
+        multicasterRegistry.initializeApplicationModel(applicationModel);
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         sampler = new ThreadPoolMetricsSampler(collector);
+    }
+
+    @AfterEach
+    void tearDown() {
+        multicasterRegistry.onDestroy(applicationModel);
     }
 
     @Test
@@ -135,6 +145,7 @@ public class ThreadPoolMetricsSamplerTest {
     @BeforeEach
     public void setUp2() {
         MockitoAnnotations.openMocks(this);
+        new DubboApplicationMulticasterRegistry().initializeApplicationModel(applicationModel);
 
         collector = new DefaultMetricsCollector(applicationModel);
         sampler2 = new ThreadPoolMetricsSampler(collector);

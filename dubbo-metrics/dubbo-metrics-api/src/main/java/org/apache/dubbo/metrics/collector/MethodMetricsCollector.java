@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metrics.collector;
 
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.rpc.Invocation;
@@ -24,7 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 /**
  * Method-level metrics collection for rpc invocation scenarios
  */
-public interface MethodMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
+public interface MethodMetricsCollector extends MetricsCollector {
 
     void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size);
 

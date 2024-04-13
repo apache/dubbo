@@ -17,9 +17,6 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.List;
@@ -29,7 +26,7 @@ import java.util.List;
  * An interface of collector to collect framework internal metrics.
  */
 @SPI
-public interface MetricsCollector<E extends TimeCounterEvent> extends MetricsLifeListener<E> {
+public interface MetricsCollector {
 
     default boolean isCollectEnabled() {
         return false;
@@ -49,7 +46,4 @@ public interface MetricsCollector<E extends TimeCounterEvent> extends MetricsLif
      * @return true if samples have been changed
      */
     boolean calSamplesChanged();
-
-    default void initMetrics(MetricsEvent event) {}
-    ;
 }

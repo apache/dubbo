@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.metrics.filter;
 
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.event.MetricsDispatcher;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.event.RequestMetricsEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.rpc.Invocation;
@@ -44,7 +43,6 @@ public class MetricsFilter implements ScopeModelAware {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
     private boolean rpcMetricsEnable;
     private String appName;
-    private MetricsDispatcher metricsDispatcher;
     private DefaultMetricsCollector defaultMetricsCollector;
     private boolean serviceLevel;
 
@@ -57,7 +55,6 @@ public class MetricsFilter implements ScopeModelAware {
                 .map(MetricsConfig::getEnableRpc)
                 .orElse(true);
         this.appName = applicationModel.tryGetApplicationName();
-        this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
         this.defaultMetricsCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         serviceLevel = MethodMetric.isServiceLevel(applicationModel);
     }
@@ -69,15 +66,14 @@ public class MetricsFilter implements ScopeModelAware {
     public Result invoke(Invoker<?> invoker, Invocation invocation, boolean isProvider) throws RpcException {
         if (rpcMetricsEnable) {
             try {
-                RequestEvent requestEvent = RequestEvent.toRequestEvent(
+                RequestMetricsEvent requestEvent = RequestMetricsEvent.toRequestEvent(
                         applicationModel,
                         appName,
-                        metricsDispatcher,
                         defaultMetricsCollector,
                         invocation,
                         isProvider ? PROVIDER : CONSUMER,
                         serviceLevel);
-                MetricsEventBus.before(requestEvent);
+                DubboEventBus.before(requestEvent);
                 invocation.put(METRIC_FILTER_EVENT, requestEvent);
             } catch (Throwable t) {
                 LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when invoke.", t);
@@ -94,7 +90,7 @@ public class MetricsFilter implements ScopeModelAware {
         Object eventObj = invocation.get(METRIC_FILTER_EVENT);
         if (eventObj != null) {
             try {
-                MetricsEventBus.after((RequestEvent) eventObj, result);
+                DubboEventBus.after((RequestMetricsEvent) eventObj, result);
             } catch (Throwable t) {
                 LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when onResponse.", t);
             }
@@ -109,9 +105,9 @@ public class MetricsFilter implements ScopeModelAware {
         Object eventObj = invocation.get(METRIC_FILTER_EVENT);
         if (eventObj != null) {
             try {
-                RequestEvent requestEvent = (RequestEvent) eventObj;
+                RequestMetricsEvent requestEvent = (RequestMetricsEvent) eventObj;
                 requestEvent.putAttachment(METRIC_THROWABLE, t);
-                MetricsEventBus.error(requestEvent);
+                DubboEventBus.error(requestEvent);
             } catch (Throwable throwable) {
                 LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when onResponse.", throwable);
             }

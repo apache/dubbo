@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RegisterTypeEnum;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -38,9 +39,6 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.MetricsInitEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -628,7 +626,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         String[] methods = Optional.ofNullable(url.getParameter(METHODS_KEY))
                 .map(i -> i.split(","))
                 .orElse(new String[] {});
-        boolean serviceLevel = MethodMetric.isServiceLevel(application.getApplicationModel());
         Arrays.stream(methods).forEach(method -> {
             RpcInvocation invocation = new RpcInvocation(
                     url.getServiceKey(),
@@ -642,8 +639,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     null,
                     null,
                     null);
-            MetricsEventBus.publish(
-                    MetricsInitEvent.toMetricsInitEvent(application.getApplicationModel(), invocation, serviceLevel));
+            DubboEventBus.publish(new InitServiceMethodEvent(application.getApplicationModel(), invocation));
         });
     }
 

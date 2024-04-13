@@ -17,13 +17,12 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.InitServiceMethodEvent;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.MetricsInitEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
@@ -82,7 +81,7 @@ class InitServiceMetricsTest {
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
         applicationModel.getApplicationConfigManager().setApplication(config);
 
-        defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        defaultCollector = new DefaultMetricsCollector(applicationModel);
         defaultCollector.setCollectEnabled(true);
 
         aggregateMetricsCollector =
@@ -101,8 +100,7 @@ class InitServiceMetricsTest {
 
         RpcInvocation invocation = new RpcInvocation(
                 serviceKey, null, methodName, interfaceName, protocolServiceKey, null, null, null, null, null, null);
-        MetricsEventBus.publish(MetricsInitEvent.toMetricsInitEvent(
-                applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel)));
+        DubboEventBus.publish(new InitServiceMethodEvent(applicationModel, invocation));
     }
 
     @AfterEach

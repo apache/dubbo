@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metrics.metadata.collector;
 
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
@@ -25,7 +26,6 @@ import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.metadata.MetadataMetricsConstants;
-import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.metadata.event.MetadataSubDispatcher;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -43,7 +43,7 @@ import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent> {
+public class MetadataMetricsCollector extends CombMetricsCollector {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
@@ -68,8 +68,9 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
                 rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
             }
         });
-        super.setEventMulticaster(new MetadataSubDispatcher(this));
         this.applicationModel = applicationModel;
+
+        DubboEventBus.addListener(applicationModel, new MetadataSubDispatcher(this));
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {

@@ -17,12 +17,14 @@
 package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
+import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -59,5 +61,11 @@ public class MetricsSupportTest {
         MetricsSupport.fillZero(data);
         Assertions.assertEquals(
                 4, data.values().stream().mapToLong(map -> map.values().size()).sum());
+    }
+
+    @Test
+    void isSupportPrometheus() {
+        boolean supportPrometheus = MetricsSupportUtil.isSupportPrometheus();
+        Assert.assertTrue(!supportPrometheus, "MetricsSupportUtil.isSupportPrometheus() should return false");
     }
 }

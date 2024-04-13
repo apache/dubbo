@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.config.configcenter.ConfigCenterChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
@@ -31,6 +32,7 @@ import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -46,20 +48,14 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.deploy.event.ApplicationLoadedEvent;
+import org.apache.dubbo.config.deploy.event.ApplicationStartedEvent;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
-import org.apache.dubbo.metrics.report.MetricsReporter;
-import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
-import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -70,8 +66,6 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
-import org.apache.dubbo.tracing.DubboObservationRegistry;
-import org.apache.dubbo.tracing.utils.ObservationSupportUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -95,14 +89,11 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTROY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.Constants.DEFAULT_APP_NAME;
@@ -135,8 +126,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
     private final DubboShutdownHook dubboShutdownHook;
-
-    private volatile MetricsServiceExporter metricsServiceExporter;
 
     private final Object stateLock = new Object();
     private final Object startLock = new Object();
@@ -227,12 +216,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             initModuleDeployers();
 
-            initMetricsReporter();
-
-            initMetricsService();
-
-            // @since 3.2.3
-            initObservationRegistry();
+            DubboEventBus.publish(new ApplicationLoadedEvent(applicationModel));
 
             // @since 2.7.8
             startMetadataCenter();
@@ -373,83 +357,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                         logger.info("use registry as config-center: " + configCenter);
                     });
         }
-    }
-
-    private void initMetricsService() {
-        this.metricsServiceExporter =
-                getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
-        metricsServiceExporter.init();
-    }
-
-    private void initMetricsReporter() {
-        if (!MetricsSupportUtil.isSupportMetrics()) {
-            return;
-        }
-        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        Optional<MetricsConfig> configOptional = configManager.getMetrics();
-        // If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
-        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
-        if (StringUtils.isBlank(metricsConfig.getProtocol())) {
-            metricsConfig.setProtocol(
-                    MetricsSupportUtil.isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
-        }
-        collector.setCollectEnabled(true);
-        collector.collectApplication();
-        collector.setThreadpoolCollectEnabled(
-                Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
-        collector.setMetricsInitEnabled(
-                Optional.ofNullable(metricsConfig.getEnableMetricsInit()).orElse(true));
-        MetricsReporterFactory metricsReporterFactory =
-                getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
-        MetricsReporter metricsReporter = null;
-        try {
-            metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-        } catch (IllegalStateException e) {
-            if (e.getMessage().startsWith("No such extension org.apache.dubbo.metrics.report.MetricsReporterFactory")) {
-                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", e.getMessage());
-                return;
-            } else {
-                throw e;
-            }
-        }
-        metricsReporter.init();
-        applicationModel.getBeanFactory().registerBean(metricsReporter);
-        // If the protocol is not the default protocol, the default protocol is also initialized.
-        if (!PROTOCOL_DEFAULT.equals(metricsConfig.getProtocol())) {
-            DefaultMetricsReporterFactory defaultMetricsReporterFactory =
-                    new DefaultMetricsReporterFactory(applicationModel);
-            MetricsReporter defaultMetricsReporter =
-                    defaultMetricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-            defaultMetricsReporter.init();
-            applicationModel.getBeanFactory().registerBean(defaultMetricsReporter);
-        }
-    }
-
-    /**
-     * init ObservationRegistry(Micrometer)
-     */
-    private void initObservationRegistry() {
-        if (!ObservationSupportUtil.isSupportObservation()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "Not found micrometer-observation or plz check the version of micrometer-observation version if already introduced, need > 1.10.0");
-            }
-            return;
-        }
-        if (!ObservationSupportUtil.isSupportTracing()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Not found micrometer-tracing dependency, skip init ObservationRegistry.");
-            }
-            return;
-        }
-        Optional<TracingConfig> configOptional = configManager.getTracing();
-        if (!configOptional.isPresent() || !configOptional.get().getEnabled()) {
-            return;
-        }
-
-        DubboObservationRegistry dubboObservationRegistry =
-                new DubboObservationRegistry(applicationModel, configOptional.get());
-        dubboObservationRegistry.initObservationRegistry();
     }
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
@@ -830,6 +737,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void exportMetricsService() {
+        MetricsServiceExporter metricsServiceExporter =
+                applicationModel.getBeanFactory().getBean(MetricsServiceExporter.class);
         boolean exportMetrics = applicationModel
                 .getApplicationConfigManager()
                 .getMetrics()
@@ -850,6 +759,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void unexportMetricsService() {
+        MetricsServiceExporter metricsServiceExporter =
+                applicationModel.getBeanFactory().getBean(MetricsServiceExporter.class);
         if (metricsServiceExporter != null) {
             try {
                 metricsServiceExporter.unexport();
@@ -937,7 +848,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     environment.updateAppExternalConfigMap(appConfigMap);
 
                     // Add metrics
-                    MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(
+                    DubboEventBus.publish(new ConfigCenterChangeEvent(
                             applicationModel,
                             configCenter.getConfigFile(),
                             configCenter.getGroup(),
@@ -945,7 +856,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                             ConfigChangeType.ADDED.name(),
                             configMap.size()));
                     if (isNotEmpty(appGroup)) {
-                        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(
+                        DubboEventBus.publish(new ConfigCenterChangeEvent(
                                 applicationModel,
                                 appConfigFile,
                                 appGroup,
@@ -1332,7 +1243,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         setStarted();
-        startMetricsCollector();
+        DubboEventBus.publish(new ApplicationStartedEvent(applicationModel));
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is ready.");
         }
@@ -1359,13 +1270,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         } finally {
             // complete future
             completeStartFuture(true);
-        }
-    }
-
-    private void startMetricsCollector() {
-        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
-            collector.registryDefaultSample();
         }
     }
 

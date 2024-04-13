@@ -22,8 +22,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
-import org.apache.dubbo.metrics.event.MetricsDispatcher;
-import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.event.RequestMetricsEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
@@ -75,9 +74,6 @@ class DefaultCollectorTest {
     private RpcInvocation invocation;
     private String side;
 
-    MetricsDispatcher metricsDispatcher;
-    DefaultMetricsCollector defaultCollector;
-
     MetricsFilter metricsFilter;
 
     @BeforeEach
@@ -88,9 +84,6 @@ class DefaultCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-        metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        defaultCollector.setCollectEnabled(true);
 
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
@@ -113,25 +106,23 @@ class DefaultCollectorTest {
     @Test
     void testListener() {
         DefaultMetricsCollector metricsCollector = new DefaultMetricsCollector(applicationModel);
-        RequestEvent event = RequestEvent.toRequestEvent(
+        RequestMetricsEvent event = RequestMetricsEvent.toRequestEvent(
                 applicationModel,
-                null,
                 null,
                 null,
                 invocation,
                 MetricsSupport.getSide(invocation),
                 MethodMetric.isServiceLevel(applicationModel));
-        RequestEvent beforeEvent = RequestEvent.toRequestErrorEvent(
+        RequestMetricsEvent beforeEvent = RequestMetricsEvent.toRequestErrorEvent(
                 applicationModel,
-                null,
                 null,
                 invocation,
                 MetricsSupport.getSide(invocation),
                 RpcException.FORBIDDEN_EXCEPTION,
                 MethodMetric.isServiceLevel(applicationModel));
 
-        Assertions.assertTrue(metricsCollector.isSupport(event));
-        Assertions.assertTrue(metricsCollector.isSupport(beforeEvent));
+        Assertions.assertTrue(metricsCollector.listener.support(event.getClass()));
+        Assertions.assertTrue(metricsCollector.listener.support(beforeEvent.getClass()));
     }
 
     @AfterEach
@@ -145,7 +136,6 @@ class DefaultCollectorTest {
     @Test
     void testRequestEventNoRt() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         DefaultMetricsCollector collector =
                 applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         collector.setCollectEnabled(true);
@@ -164,7 +154,7 @@ class DefaultCollectorTest {
         Result result = AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation);
         metricsFilter.onResponse(result, new TestMetricsInvoker(side), invocation);
 
-        RequestEvent eventObj = (RequestEvent) invocation.get(METRIC_FILTER_EVENT);
+        RequestMetricsEvent eventObj = (RequestMetricsEvent) invocation.get(METRIC_FILTER_EVENT);
         long c1 = eventObj.getTimePair().calc();
 
         // push finish rt +1
@@ -216,7 +206,7 @@ class DefaultCollectorTest {
         }
         metricsFilter.onError(
                 new RpcException(RpcException.TIMEOUT_EXCEPTION, "timeout"), new TestMetricsInvoker(side), invocation);
-        eventObj = (RequestEvent) invocation.get(METRIC_FILTER_EVENT);
+        eventObj = (RequestMetricsEvent) invocation.get(METRIC_FILTER_EVENT);
         long c2 = eventObj.getTimePair().calc();
         metricSamples = collector.collect();
 

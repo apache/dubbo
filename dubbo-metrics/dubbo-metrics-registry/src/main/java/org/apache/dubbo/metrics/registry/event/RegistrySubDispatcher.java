@@ -16,15 +16,23 @@
  */
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.common.event.DubboEvent;
+import org.apache.dubbo.common.event.DubboLifecycleListener;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metrics.event.TimeCounterEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
 import org.apache.dubbo.metrics.model.key.CategoryOverall;
 import org.apache.dubbo.metrics.model.key.MetricsCat;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
+import org.apache.dubbo.registry.client.event.RegistryEvent;
+import org.apache.dubbo.rpc.cluster.directory.DirectoryRefreshEvent;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_DIRECTORY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
@@ -33,19 +41,68 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 
-public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
+public final class RegistrySubDispatcher implements DubboLifecycleListener<DubboEvent> {
+
+    ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistrySubDispatcher.class);
+
+    private final RegistryMetricsCollector collector;
+
+    private final TimeCounterEventMulticaster multicaster;
+
+    private final Map<Class<?>, Boolean> eventMatchCache = new ConcurrentHashMap<>();
 
     public RegistrySubDispatcher(RegistryMetricsCollector collector) {
-
+        this.multicaster = new TimeCounterEventMulticaster();
+        this.collector = collector;
         CategorySet.ALL.forEach(categorySet -> {
-            super.addListener(categorySet.getPost().getEventFunc().apply(collector));
+            this.multicaster.addListener(categorySet.getPost().getEventFunc().apply(collector));
             if (categorySet.getFinish() != null) {
-                super.addListener(categorySet.getFinish().getEventFunc().apply(collector));
+                this.multicaster.addListener(
+                        categorySet.getFinish().getEventFunc().apply(collector));
             }
             if (categorySet.getError() != null) {
-                super.addListener(categorySet.getError().getEventFunc().apply(collector));
+                this.multicaster.addListener(
+                        categorySet.getError().getEventFunc().apply(collector));
             }
         });
+    }
+
+    @Override
+    public boolean support(Class<? extends DubboEvent> eventClass) {
+        return eventMatchCache.computeIfAbsent(
+                eventClass,
+                clazz -> RegistryEvent.class.isAssignableFrom(eventClass)
+                        || DirectoryRefreshEvent.class.isAssignableFrom(eventClass));
+    }
+
+    @Override
+    public void onEventBefore(DubboEvent event) {
+        RegistryMetricsEvent metricsEvent = RegistryMetricsEvent.convertEvent(event);
+        if (metricsEvent == null) {
+            logger.debug("Unsupported event type: {}", event.getClass().getName());
+            return;
+        }
+        this.multicaster.publishEvent(metricsEvent);
+    }
+
+    @Override
+    public void onEventFinish(DubboEvent event) {
+        RegistryMetricsEvent metricsEvent = RegistryMetricsEvent.convertEvent(event);
+        if (metricsEvent == null) {
+            logger.debug("Unsupported event type: {}", event.getClass().getName());
+            return;
+        }
+        this.multicaster.publishFinishEvent(metricsEvent);
+    }
+
+    @Override
+    public void onEventError(DubboEvent event) {
+        RegistryMetricsEvent metricsEvent = RegistryMetricsEvent.convertEvent(event);
+        if (metricsEvent == null) {
+            logger.debug("Unsupported event type: {}", event.getClass().getName());
+            return;
+        }
+        this.multicaster.publishErrorEvent(metricsEvent);
     }
 
     /**

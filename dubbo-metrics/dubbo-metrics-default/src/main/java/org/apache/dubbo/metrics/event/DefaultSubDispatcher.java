@@ -17,11 +17,11 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.event.AbstractDubboLifecycleListener;
 import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
-import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.CategoryOverall;
 import org.apache.dubbo.metrics.model.key.MetricsCat;
@@ -32,35 +32,44 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
-public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
+public final class DefaultSubDispatcher extends AbstractDubboLifecycleListener<RequestMetricsEvent> {
+
+    private final TimeCounterEventMulticaster multicaster;
+
+    private final DefaultMetricsCollector collector;
 
     public DefaultSubDispatcher(DefaultMetricsCollector collector) {
-
+        this.collector = collector;
+        multicaster = new TimeCounterEventMulticaster();
         CategoryOverall categoryOverall = initMethodRequest();
-        super.addListener(categoryOverall.getPost().getEventFunc().apply(collector));
-        super.addListener(categoryOverall.getFinish().getEventFunc().apply(collector));
-        super.addListener(categoryOverall.getError().getEventFunc().apply(collector));
+        multicaster.addListener(categoryOverall.getPost().getEventFunc().apply(collector));
+        multicaster.addListener(categoryOverall.getFinish().getEventFunc().apply(collector));
+        multicaster.addListener(categoryOverall.getError().getEventFunc().apply(collector));
+    }
 
-        super.addListener(new MetricsListener<RequestEvent>() {
+    @Override
+    public void onEventBefore(RequestMetricsEvent event) {
+        this.multicaster.publishEvent(event);
+    }
 
-            @Override
-            public boolean isSupport(MetricsEvent event) {
-                return event instanceof RequestEvent && ((RequestEvent) event).isRequestErrorEvent();
-            }
+    private final MetricsPlaceValue dynamicPlaceType =
+            MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD);
 
-            private final MetricsPlaceValue dynamicPlaceType =
-                    MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD);
+    @Override
+    public void onEventFinish(RequestMetricsEvent event) {
+        this.multicaster.publishFinishEvent(event);
+        if (event.isRequestErrorEvent()) {
+            MetricsSupport.increment(
+                    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED,
+                    dynamicPlaceType,
+                    (MethodMetricsCollector) collector,
+                    event);
+        }
+    }
 
-            @Override
-            public void onEvent(RequestEvent event) {
-                MetricsSupport.increment(
-                        METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED,
-                        dynamicPlaceType,
-                        (MethodMetricsCollector) collector,
-                        event);
-            }
-        });
+    @Override
+    public void onEventError(RequestMetricsEvent event) {
+        this.multicaster.publishErrorEvent(event);
     }
 
     private CategoryOverall initMethodRequest() {

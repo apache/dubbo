@@ -54,7 +54,7 @@ public class DefaultMetricsService implements MetricsService {
     public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(
             String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories) {
         Map<MetricsCategory, List<MetricsEntity>> result = new HashMap<>();
-        for (MetricsCollector<?> collector : collectors) {
+        for (MetricsCollector collector : collectors) {
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
                 if (categories.contains(sample.getCategory())) {

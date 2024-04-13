@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.common.event.AbstractDubboLifecycleListener;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.MetricsGlobalRegistry;
-import org.apache.dubbo.metrics.event.RequestEvent;
-import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.event.RequestMetricsEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -40,8 +41,7 @@ import io.micrometer.core.instrument.Timer;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
-public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEvent>
-        implements MetricsCollector<RequestEvent> {
+public class HistogramMetricsCollector implements MetricsCollector {
 
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private HistogramMetricRegister metricRegister;
@@ -60,7 +60,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
                 || config.getHistogram() == null
                 || config.getHistogram().getEnabled() == null
                 || Boolean.TRUE.equals(config.getHistogram().getEnabled())) {
-            registerListener();
+            DubboEventBus.addListener(applicationModel, new HistogramMetricsEventListener(this));
 
             HistogramConfig histogram;
             if (config == null || config.getHistogram() == null) {
@@ -79,41 +79,42 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
         }
     }
 
-    private void registerListener() {
-        applicationModel
-                .getBeanFactory()
-                .getBean(DefaultMetricsCollector.class)
-                .getEventMulticaster()
-                .addListener(this);
-    }
+    public static class HistogramMetricsEventListener extends AbstractDubboLifecycleListener<RequestMetricsEvent> {
 
-    @Override
-    public void onEvent(RequestEvent event) {}
+        private final HistogramMetricsCollector collector;
 
-    @Override
-    public void onEventFinish(RequestEvent event) {
-        onRTEvent(event);
-    }
+        public HistogramMetricsEventListener(HistogramMetricsCollector collector) {
+            this.collector = collector;
+        }
 
-    @Override
-    public void onEventError(RequestEvent event) {
-        onRTEvent(event);
-    }
+        @Override
+        public void onEventFinish(RequestMetricsEvent event) {
+            onRTEvent(event);
+        }
 
-    private void onRTEvent(RequestEvent event) {
-        if (metricRegister != null) {
-            MethodMetric metric = new MethodMetric(
-                    applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION), serviceLevel);
-            long responseTime = event.getTimePair().calc();
+        @Override
+        public void onEventError(RequestMetricsEvent event) {
+            onRTEvent(event);
+        }
 
-            HistogramMetricSample sample = new HistogramMetricSample(
-                    MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
-                    MetricsKey.METRIC_RT_HISTOGRAM.getDescription(),
-                    metric.getTags(),
-                    RT);
+        private void onRTEvent(RequestMetricsEvent event) {
+            if (collector.metricRegister != null) {
+                MethodMetric metric = new MethodMetric(
+                        collector.applicationModel,
+                        event.getAttachmentValue(MetricsConstants.INVOCATION),
+                        collector.serviceLevel);
+                long responseTime = event.getTimePair().calc();
 
-            Timer timer = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> metricRegister.register(sample));
-            timer.record(responseTime, TimeUnit.MILLISECONDS);
+                HistogramMetricSample sample = new HistogramMetricSample(
+                        MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
+                        MetricsKey.METRIC_RT_HISTOGRAM.getDescription(),
+                        metric.getTags(),
+                        RT);
+
+                Timer timer = ConcurrentHashMapUtils.computeIfAbsent(
+                        collector.rt, metric, k -> collector.metricRegister.register(sample));
+                timer.record(responseTime, TimeUnit.MILLISECONDS);
+            }
         }
     }
 

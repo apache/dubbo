@@ -51,12 +51,12 @@ public class RegistrySpecListener {
      * Perform auto-increment on the monitored key,
      * Can use a custom listener instead of this generic operation
      */
-    public static AbstractMetricsKeyListener onPost(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onPost(MetricsKey metricsKey, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onEvent(
                 metricsKey, event -> ((RegistryMetricsCollector) collector).incrMetricsNum(metricsKey, getRgs(event)));
     }
 
-    public static AbstractMetricsKeyListener onFinish(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onFinish(MetricsKey metricsKey, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey, event -> ((RegistryMetricsCollector) collector)
                 .incrRegisterFinishNum(
                         metricsKey,
@@ -65,7 +65,7 @@ public class RegistrySpecListener {
                         event.getTimePair().calc()));
     }
 
-    public static AbstractMetricsKeyListener onError(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onError(MetricsKey metricsKey, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onError(metricsKey, event -> ((RegistryMetricsCollector) collector)
                 .incrRegisterFinishNum(
                         metricsKey,
@@ -75,7 +75,7 @@ public class RegistrySpecListener {
     }
 
     public static AbstractMetricsKeyListener onPostOfService(
-            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey, event -> ((RegistryMetricsCollector) collector)
                 .incrServiceRegisterNum(
                         new MetricsKeyWrapper(metricsKey, placeType),
@@ -85,7 +85,7 @@ public class RegistrySpecListener {
     }
 
     public static AbstractMetricsKeyListener onFinishOfService(
-            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey, event -> ((RegistryMetricsCollector) collector)
                 .incrServiceRegisterFinishNum(
                         new MetricsKeyWrapper(metricsKey, placeType),
@@ -96,7 +96,7 @@ public class RegistrySpecListener {
     }
 
     public static AbstractMetricsKeyListener onErrorOfService(
-            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onError(metricsKey, event -> ((RegistryMetricsCollector) collector)
                 .incrServiceRegisterFinishNum(
                         new MetricsKeyWrapper(metricsKey, placeType),
@@ -110,7 +110,7 @@ public class RegistrySpecListener {
      * Every time an event is triggered, multiple serviceKey related to notify are increment
      */
     public static AbstractMetricsKeyListener onFinishOfNotify(
-            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey, event -> {
             collector.addServiceRt(
                     event.appName(), placeType.getType(), event.getTimePair().calc());
@@ -123,8 +123,7 @@ public class RegistrySpecListener {
     /**
      * Every time an event is triggered, multiple fixed key related to directory are increment, which has nothing to do with the monitored key
      */
-    public static AbstractMetricsKeyListener onPostOfDirectory(
-            MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onPostOfDirectory(MetricsKey metricsKey, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey, event -> {
             Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
             Map<String, String> otherAttachments = new HashMap<>();

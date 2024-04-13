@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.common.config.configcenter.ConfigCenterChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.config.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -34,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 class ConfigCenterMetricsCollectorTest {
 
@@ -61,8 +62,12 @@ class ConfigCenterMetricsCollectorTest {
         ConfigCenterMetricsCollector collector = new ConfigCenterMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
-        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
+        //        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
+        //        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
+        ConfigCenterChangeEvent configCenterChangeEvent = new ConfigCenterChangeEvent(
+                applicationModel, "key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
+        DubboEventBus.publish(configCenterChangeEvent);
+        DubboEventBus.publish(configCenterChangeEvent);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -83,11 +88,18 @@ class ConfigCenterMetricsCollectorTest {
 
         ConfigChangedEvent event = new ConfigChangedEvent("key", "group", null, ConfigChangeType.ADDED);
 
-        collector.increase(
-                event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
+        //        collector.increase(
+        //                event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name(),
+        // SELF_INCREMENT_SIZE);
+        //
+        //        collector.increase(
+        //                event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name(),
+        // SELF_INCREMENT_SIZE);
 
-        collector.increase(
-                event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
+        ConfigCenterChangeEvent configCenterChangeEvent = new ConfigCenterChangeEvent(
+                applicationModel, event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name());
+        DubboEventBus.publish(configCenterChangeEvent);
+        DubboEventBus.publish(configCenterChangeEvent);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

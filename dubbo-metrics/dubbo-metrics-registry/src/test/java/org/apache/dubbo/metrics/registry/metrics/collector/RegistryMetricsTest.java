@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -24,7 +25,10 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.registry.client.event.RegistryEvent;
+import org.apache.dubbo.registry.client.event.RegistryRegisterEvent;
+import org.apache.dubbo.registry.client.event.RegistryRsEvent;
+import org.apache.dubbo.registry.client.event.RegistrySubscribeEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -38,6 +42,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Lists;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,11 +58,19 @@ public class RegistryMetricsTest {
 
     String REGISTER = "register";
 
+    DubboApplicationMulticasterRegistry registry = new DubboApplicationMulticasterRegistry();
+
     @BeforeEach
     void setUp() {
         this.applicationModel = getApplicationModel();
+        registry.initializeApplicationModel(applicationModel);
         this.collector = getTestCollector(this.applicationModel);
         this.collector.setCollectEnabled(true);
+    }
+
+    @AfterEach
+    void tearDown() {
+        registry.onDestroy(applicationModel);
     }
 
     @Test
@@ -263,19 +276,19 @@ public class RegistryMetricsTest {
 
     RegistryEvent applicationRegister() {
         RegistryEvent event = registerEvent();
-        collector.onEvent(event);
+        collector.dispatcher.onEventBefore(event);
         return event;
     }
 
     RegistryEvent serviceRegister() {
         RegistryEvent event = rsEvent();
-        collector.onEvent(event);
+        collector.dispatcher.onEventBefore(event);
         return event;
     }
 
     RegistryEvent serviceSubscribe() {
         RegistryEvent event = subscribeEvent();
-        collector.onEvent(event);
+        collector.dispatcher.onEventBefore(event);
         return event;
     }
 
@@ -284,30 +297,24 @@ public class RegistryMetricsTest {
     }
 
     void eventSuccess(RegistryEvent event) {
-        collector.onEventFinish(event);
+        collector.dispatcher.onEventFinish(event);
     }
 
     void eventFailed(RegistryEvent event) {
-        collector.onEventError(event);
+        collector.dispatcher.onEventError(event);
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
-        event.setAvailable(true);
-        return event;
+        return new RegistryRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
     }
 
     RegistryEvent rsEvent() {
         List<String> rcNames = Lists.newArrayList("demo1");
-        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
-        event.setAvailable(true);
-        return event;
+        return new RegistryRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
     }
 
-    RegistryEvent subscribeEvent() {
-        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel, "registryClusterName_test");
-        event.setAvailable(true);
-        return event;
+    RegistrySubscribeEvent subscribeEvent() {
+        return new RegistrySubscribeEvent(applicationModel, "registryClusterName_test");
     }
 
     ApplicationModel getApplicationModel() {

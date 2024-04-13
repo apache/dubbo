@@ -76,18 +76,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-registry</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-default</artifactId>
-      <version>${project.parent.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-tracing-integration-test</artifactId>
       <scope>test</scope>

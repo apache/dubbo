@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
@@ -32,7 +33,6 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistrySubDispatcher;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -52,11 +52,13 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent> {
+public class RegistryMetricsCollector extends CombMetricsCollector {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
     private final RegistryStatComposite internalStat;
+
+    public final RegistrySubDispatcher dispatcher;
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -83,7 +85,8 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
                         OP_TYPE_SUBSCRIBE_SERVICE);
             }
         });
-        super.setEventMulticaster(new RegistrySubDispatcher(this));
+        dispatcher = new RegistrySubDispatcher(this);
+        DubboEventBus.addListener(applicationModel, dispatcher);
         internalStat = new RegistryStatComposite(applicationModel);
         this.applicationModel = applicationModel;
     }

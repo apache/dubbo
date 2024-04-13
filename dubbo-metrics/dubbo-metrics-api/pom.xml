@@ -38,7 +38,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-event</artifactId>
+      <artifactId>dubbo-metrics-annotation</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>

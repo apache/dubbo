@@ -1,2 +1,3 @@
 metricsClusterFilter=org.apache.dubbo.rpc.cluster.filter.support.MetricsClusterFilter
 monitor=org.apache.dubbo.monitor.support.MonitorClusterFilter
+metricsConsumerFilter=org.apache.dubbo.metrics.filter.MetricsConsumerFilter
