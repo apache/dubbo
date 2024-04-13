@@ -87,7 +87,6 @@ dubbo-rpc
 dubbo-rpc-api
 dubbo-rpc-dubbo
 dubbo-rpc-injvm
-dubbo-rpc-rest
 dubbo-rpc-triple
 dubbo-security
 dubbo-serialization
