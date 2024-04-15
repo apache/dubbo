@@ -169,7 +169,7 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.2.12-SNAPSHOT</revision>
+    <revision>3.2.13-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
