@@ -42,6 +42,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private ScheduledExecutorService executorService;
+    // Indicator of executor service ownership.
     private boolean isExternalExecutorService=false;
     private ScheduledFuture<?> scheduledFutureTask = null;
     protected FileCacheStore cacheStore;
