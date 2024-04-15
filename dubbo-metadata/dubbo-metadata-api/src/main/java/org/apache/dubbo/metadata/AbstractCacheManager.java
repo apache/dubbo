@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
@@ -41,7 +42,8 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private ScheduledExecutorService executorService;
-
+    private boolean isExternalExecutorService=false;
+    private ScheduledFuture<?> scheduledFutureTask = null;
     protected FileCacheStore cacheStore;
     protected LRUCache<String, V> cache;
 
@@ -71,11 +73,13 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             if (executorService == null) {
                 this.executorService = Executors.newSingleThreadScheduledExecutor(
                         new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
+                this.isExternalExecutorService=false;
             } else {
                 this.executorService = executorService;
+                this.isExternalExecutorService=true;
             }
-
-            this.executorService.scheduleWithFixedDelay(
+            
+            this.scheduledFutureTask = this.executorService.scheduleWithFixedDelay(
                     new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize),
                     10,
                     interval,
@@ -126,16 +130,22 @@ public abstract class AbstractCacheManager<V> implements Disposable {
 
     public void destroy() {
         if (executorService != null) {
-            executorService.shutdownNow();
-            try {
-                if (!executorService.awaitTermination(
-                        ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT), TimeUnit.MILLISECONDS)) {
-                    logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION, "", "", "Wait global executor service terminated timeout.");
-                }
-            } catch (InterruptedException e) {
-                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
-            }
+        	if(this.isExternalExecutorService) {
+        		// Just remove refresh Task from the external executor.
+        		this.scheduledFutureTask.cancel(true);
+        	} else {
+        		// Try to destroy self-created executorService instance.
+	            executorService.shutdownNow();
+	            try {
+	                if (!executorService.awaitTermination(
+	                        ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT), TimeUnit.MILLISECONDS)) {
+	                    logger.warn(
+	                            COMMON_UNEXPECTED_EXCEPTION, "", "", "Wait global executor service terminated timeout.");
+	                }
+	            } catch (InterruptedException e) {
+	                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
+	            }
+        	}
         }
         if (cacheStore != null) {
             cacheStore.destroy();
