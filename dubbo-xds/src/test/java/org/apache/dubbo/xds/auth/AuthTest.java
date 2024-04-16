@@ -39,7 +39,8 @@ public class AuthTest {
         System.setProperty("SERVICE_NAME", "httpbin");
         System.setProperty("API_SERVER_PATH", "https://127.0.0.1:6443");
         System.setProperty("SA_CA_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
-        System.setProperty("SA_TOKEN_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
+        System.setProperty(
+                "SA_TOKEN_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
 
         KubeEnv kubeEnv = new KubeEnv(applicationModel);
         kubeEnv.setNamespace("foo");
