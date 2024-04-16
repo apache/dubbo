@@ -47,7 +47,6 @@ dubbo-kubernetes
 dubbo-maven-plugin
 dubbo-metadata
 dubbo-metadata-api
-dubbo-metadata-rest
 dubbo-metadata-definition-protobuf
 dubbo-metadata-processor
 dubbo-metadata-report-nacos
