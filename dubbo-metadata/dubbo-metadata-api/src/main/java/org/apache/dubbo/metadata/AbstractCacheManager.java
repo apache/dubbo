@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -77,7 +78,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             if (executorService == null) {
                 this.executorService = Executors.newSingleThreadScheduledExecutor(
                         new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
-                registerDisposable(newExecutorDisposer(executorService));
+                registerDisposable(newExecutorDisposer(this.executorService));
             } else {
                 this.executorService = executorService;
                 usingExternalExecutorService = true;
@@ -104,6 +105,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     }
 
     private Disposable newExecutorDisposer(final ExecutorService executor) {
+        Assert.notNull(executor, "ExecutorService can not be null");
         return () -> {
             // Try to destroy self-created executorService instance.
             executor.shutdownNow();
