@@ -84,7 +84,9 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             }
 
             final ScheduledFuture<?> newFuture = this.executorService.scheduleWithFixedDelay(
-                    new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize), 10, interval,
+                    new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize),
+                    10,
+                    interval,
                     TimeUnit.MINUTES);
 
             if (usingExternalExecutorService) {
@@ -100,23 +102,23 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     protected void registerDisposable(Disposable resource) {
         this.disposableResources.add(resource);
     }
-    
+
     private Disposable newExecutorDisposer(final ExecutorService executor) {
         return () -> {
             // Try to destroy self-created executorService instance.
             executor.shutdownNow();
             try {
-                if (!executor.awaitTermination(ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT),
-                        TimeUnit.MILLISECONDS)) {
-                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "",
-                            "Wait global executor service terminated timeout.");
+                if (!executor.awaitTermination(
+                        ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT), TimeUnit.MILLISECONDS)) {
+                    logger.warn(
+                            COMMON_UNEXPECTED_EXCEPTION, "", "", "Wait global executor service terminated timeout.");
                 }
             } catch (InterruptedException e) {
                 logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
             }
         };
     }
-    
+
     protected abstract V toValueType(String value);
 
     protected abstract String getName();
