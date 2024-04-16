@@ -23,8 +23,6 @@ import org.apache.dubbo.registry.client.ReflectionBasedServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.PilotExchanger;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_INITIALIZE_XDS;
-
 public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsServiceDiscovery.class);
 
@@ -36,21 +34,21 @@ public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
     }
 
     public void doInitialize(URL registryURL) {
-        try {
-            exchanger = PilotExchanger.initialize(registryURL);
-        } catch (Throwable t) {
-            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
-        }
+        // try {
+        //     exchanger = PilotExchanger.initialize(registryURL);
+        // } catch (Throwable t) {
+        //     logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
+        // }
     }
 
     public void doDestroy() {
-        try {
-            if (exchanger == null) {
-                return;
-            }
-            exchanger.destroy();
-        } catch (Throwable t) {
-            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
-        }
+        // try {
+        //     if (exchanger == null) {
+        //         return;
+        //     }
+        //     exchanger.destroy();
+        // } catch (Throwable t) {
+        //     logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
+        // }
     }
 }

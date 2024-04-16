@@ -24,8 +24,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.istio.IstioConstant;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
-import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
 import org.apache.dubbo.xds.security.authz.rule.source.KubeRuleProvider;
+import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
 
 import org.junit.Test;
 
@@ -35,11 +35,11 @@ public class AuthTest {
     public void authZTest() throws Exception {
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        System.setProperty("NAMESPACE","foo");
-        System.setProperty("SERVICE_NAME","httpbin");
-        System.setProperty("API_SERVER_PATH","https://127.0.0.1:6443");
-        System.setProperty("SA_CA_PATH","/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
-        System.setProperty("SA_TOKEN_PATH","/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
+        System.setProperty("NAMESPACE", "foo");
+        System.setProperty("SERVICE_NAME", "httpbin");
+        System.setProperty("API_SERVER_PATH", "https://127.0.0.1:6443");
+        System.setProperty("SA_CA_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
+        System.setProperty("SA_TOKEN_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/token_foo");
 
         KubeEnv kubeEnv = new KubeEnv(applicationModel);
         kubeEnv.setNamespace("foo");
@@ -58,9 +58,9 @@ public class AuthTest {
         KubeRuleProvider provider = new KubeRuleProvider(applicationModel);
         applicationModel.getBeanFactory().registerBean(provider);
         applicationModel.getBeanFactory().registerBean(MapRuleFactory.class);
-//        List<RuleSource> source = provider.getSource(null, null);
-//
-//        List<RuleRoot> rules = defaultRuleFactory.getRules(source.get(0));
+        //        List<RuleSource> source = provider.getSource(null, null);
+        //
+        //        List<RuleRoot> rules = defaultRuleFactory.getRules(source.get(0));
 
         //        HttpBasedMeshRequestCredential credential = new HttpBasedMeshRequestCredential(
         //                "cluster.local/ns/default/sa/sleep",

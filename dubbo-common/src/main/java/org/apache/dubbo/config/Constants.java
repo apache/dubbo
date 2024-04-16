@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.config;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
@@ -156,4 +160,15 @@ public interface Constants {
     String DEFAULT_NATIVE_PROXY = "jdk";
 
     String DEFAULT_APP_NAME = "DEFAULT_DUBBO_APP";
+
+    String MESH_KEY = "mesh";
+    String SECURITY_KEY = "security";
+    String XDS_CLUSTER_KEY = "cluster";
+    String XDS_CLUSTER_VALUE = "xds";
+
+    Set<String> SUPPORT_MESH_TYPE = new HashSet<String>() {
+        {
+            addAll(Arrays.asList("istio"));
+        }
+    };
 }

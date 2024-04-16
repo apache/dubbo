@@ -25,13 +25,11 @@ import org.apache.dubbo.xds.PilotExchanger;
 
 import java.util.Collection;
 
-import static org.apache.dubbo.rpc.Constants.SUPPORT_MESH_TYPE;
+import static org.apache.dubbo.config.Constants.SUPPORT_MESH_TYPE;
 
 public class XdsApplicationDeployListener implements ApplicationDeployListener {
     @Override
-    public void onInitialize(ApplicationModel scopeModel) {
-        System.out.println("hello");
-    }
+    public void onInitialize(ApplicationModel scopeModel) {}
 
     @Override
     public void onStarting(ApplicationModel scopeModel) {
@@ -41,7 +39,7 @@ public class XdsApplicationDeployListener implements ApplicationDeployListener {
             String protocol = registryConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol) && SUPPORT_MESH_TYPE.contains(protocol)) {
                 URL url = URL.valueOf(registryConfig.getAddress());
-                url.setScopeModel(scopeModel);
+                url = url.setScopeModel(scopeModel);
                 scopeModel.getBeanFactory().registerBean(PilotExchanger.createInstance(url));
                 break;
             }
@@ -49,9 +47,7 @@ public class XdsApplicationDeployListener implements ApplicationDeployListener {
     }
 
     @Override
-    public void onStarted(ApplicationModel scopeModel) {
-        System.out.println("hello");
-    }
+    public void onStarted(ApplicationModel scopeModel) {}
 
     @Override
     public void onStopping(ApplicationModel scopeModel) {}

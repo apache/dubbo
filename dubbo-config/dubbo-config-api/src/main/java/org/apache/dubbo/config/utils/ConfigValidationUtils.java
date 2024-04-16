@@ -37,6 +37,7 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MethodConfig;
@@ -126,6 +127,8 @@ import static org.apache.dubbo.config.Constants.ORGANIZATION;
 import static org.apache.dubbo.config.Constants.OWNER;
 import static org.apache.dubbo.config.Constants.REGISTER_KEY;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
+import static org.apache.dubbo.config.Constants.XDS_CLUSTER_KEY;
+import static org.apache.dubbo.config.Constants.XDS_CLUSTER_VALUE;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
@@ -141,12 +144,9 @@ import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
 import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
-import static org.apache.dubbo.rpc.Constants.MESH_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
-import static org.apache.dubbo.rpc.Constants.SECURITY_KEY;
-import static org.apache.dubbo.rpc.Constants.SUPPORT_MESH_TYPE;
 import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -221,14 +221,6 @@ public class ConfigValidationUtils {
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
-                    String protocol = config.getProtocol();
-                    if (StringUtils.isNotEmpty(protocol) && SUPPORT_MESH_TYPE.contains(protocol)) {
-                        map.put(MESH_KEY, protocol);
-                        Map<String, String> parameters = config.getParameters();
-                        if (parameters != null && parameters.containsKey(SECURITY_KEY)) {
-                            map.put(SECURITY_KEY, parameters.get(SECURITY_KEY));
-                        }
-                    }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
                     for (URL url : urls) {
                         url = URLBuilder.from(url)
@@ -248,6 +240,17 @@ public class ConfigValidationUtils {
             }
         }
         return genCompatibleRegistries(interfaceConfig.getScopeModel(), registryList, provider);
+    }
+
+    public static void loadMeshConfig(URL url, Map<String, String> map) {
+        String registry = url.getParameter(REGISTRY_KEY);
+        if (StringUtils.isNotEmpty(registry) && Constants.SUPPORT_MESH_TYPE.contains(registry)) {
+            map.put(Constants.MESH_KEY, registry);
+            map.put(XDS_CLUSTER_KEY, XDS_CLUSTER_VALUE);
+            if (url.hasParameter(Constants.SECURITY_KEY)) {
+                map.put(Constants.SECURITY_KEY, url.getParameter(Constants.SECURITY_KEY));
+            }
+        }
     }
 
     private static List<URL> genCompatibleRegistries(ScopeModel scopeModel, List<URL> registryList, boolean provider) {

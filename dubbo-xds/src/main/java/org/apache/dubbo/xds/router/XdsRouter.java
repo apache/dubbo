@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.Constants.MESH_KEY;
+import static org.apache.dubbo.config.Constants.MESH_KEY;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> {
 
@@ -80,7 +80,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     private String matchCluster(Invocation invocation) {
         String cluster = null;
-        String serviceName = invocation.getInvoker().getUrl().getParameter("providedBy");
+        String serviceName = invocation.getInvoker().getUrl().getParameter("provided-by");
         XdsVirtualHost xdsVirtualHost = pilotExchanger.getXdsVirtualHostMap().get(serviceName);
 
         // match route
@@ -89,12 +89,12 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             String path = "/" + invocation.getInvoker().getUrl().getPath() + "/" + RpcUtils.getMethodName(invocation);
             if (xdsRoute.getRouteMatch().isMatch(path)) {
                 cluster = xdsRoute.getRouteAction().getCluster();
-
                 // if weighted cluster
                 if (cluster == null) {
                     cluster = computeWeightCluster(xdsRoute.getRouteAction().getClusterWeights());
                 }
             }
+            if (cluster != null) break;
         }
 
         return cluster;
