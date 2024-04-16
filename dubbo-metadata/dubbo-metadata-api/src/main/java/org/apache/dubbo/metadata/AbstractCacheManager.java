@@ -26,11 +26,15 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
@@ -44,6 +48,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
 
     protected FileCacheStore cacheStore;
     protected LRUCache<String, V> cache;
+	private List<Disposable> disposableResources = new ArrayList<Disposable>();
 
     protected void init(
             boolean enableFileCache,
@@ -68,23 +73,50 @@ public abstract class AbstractCacheManager<V> implements Disposable {
                 this.cache.put(key, toValueType(value));
             }
             // executorService can be empty if FileCacheStore fails
-            if (executorService == null) {
-                this.executorService = Executors.newSingleThreadScheduledExecutor(
-                        new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
-            } else {
-                this.executorService = executorService;
-            }
+			boolean usingExternalExecutorService = false;
+			if (executorService == null) {
+				this.executorService = Executors.newSingleThreadScheduledExecutor(
+						new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
+				registerDisposable(newExecutorDisposer(executorService));
+			} else {
+				this.executorService = executorService;
+				usingExternalExecutorService = true;
+			}
 
-            this.executorService.scheduleWithFixedDelay(
-                    new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize),
-                    10,
-                    interval,
-                    TimeUnit.MINUTES);
+			final ScheduledFuture<?> newFuture = this.executorService.scheduleWithFixedDelay(
+					new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize), 10, interval,
+					TimeUnit.MINUTES);
+
+			if (usingExternalExecutorService) {
+				registerDisposable(() -> {
+					newFuture.cancel(true);
+				});
+			}
         } catch (Exception e) {
             logger.error(COMMON_FAILED_LOAD_MAPPING_CACHE, "", "", "Load mapping from local cache file error ", e);
         }
     }
 
+	protected void registerDisposable(Disposable resource) {
+		this.disposableResources.add(resource);
+	}
+    
+	private Disposable newExecutorDisposer(final ExecutorService executor) {
+		return () -> {
+			// Try to destroy self-created executorService instance.
+			executor.shutdownNow();
+			try {
+				if (!executor.awaitTermination(ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT),
+						TimeUnit.MILLISECONDS)) {
+					logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "",
+							"Wait global executor service terminated timeout.");
+				}
+			} catch (InterruptedException e) {
+				logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
+			}
+		};
+	}
+    
     protected abstract V toValueType(String value);
 
     protected abstract String getName();
@@ -124,26 +156,17 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         }
     }
 
-    public void destroy() {
-        if (executorService != null) {
-            executorService.shutdownNow();
-            try {
-                if (!executorService.awaitTermination(
-                        ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT), TimeUnit.MILLISECONDS)) {
-                    logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION, "", "", "Wait global executor service terminated timeout.");
-                }
-            } catch (InterruptedException e) {
-                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
-            }
-        }
-        if (cacheStore != null) {
-            cacheStore.destroy();
-        }
-        if (cache != null) {
-            cache.clear();
-        }
-    }
+	@Override
+	public void destroy() {
+		// destroy in FILO order.
+		Disposable[] elements = this.disposableResources.toArray(new Disposable[0]);
+		for (int i = elements.length - 1; i >= 0; i--) {
+			elements[i].destroy();
+		}
+		this.disposableResources.clear();
+
+		this.executorService = null;
+	}
 
     public static class CacheRefreshTask<V> implements Runnable {
         private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
