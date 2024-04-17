@@ -63,13 +63,13 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         registerDisposable(() -> {
             this.cache.clear();
         });
-        
+
         try {
             cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName, enableFileCache);
             registerDisposable(() -> {
                 cacheStore.destroy();
             });
-            
+
             Map<String, String> properties = cacheStore.loadCache(entrySize);
             if (logger.isDebugEnabled()) {
                 logger.debug("Successfully loaded " + getName() + " cache from file " + fileName + ", entries "
@@ -170,14 +170,13 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     @Override
     public void destroy() {
         // destroy in FILO order.
-        Disposable[] elements = this.disposableResources
-                .toArray(new Disposable[0]);
-        
+        Disposable[] elements = this.disposableResources.toArray(new Disposable[0]);
+
         for (int i = elements.length - 1; i >= 0; i--) {
             elements[i].destroy();
         }
         this.disposableResources.clear();
-        
+
         this.executorService = null;
     }
 
