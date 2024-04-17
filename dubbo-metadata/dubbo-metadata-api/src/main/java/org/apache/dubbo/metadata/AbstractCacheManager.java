@@ -49,7 +49,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
 
     protected FileCacheStore cacheStore;
     protected LRUCache<String, V> cache;
-    private List<Disposable> disposableResources = new ArrayList<Disposable>();
+    private List<Disposable> disposableResources = new ArrayList<>();
 
     protected void init(
             boolean enableFileCache,
@@ -60,15 +60,11 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             int interval,
             ScheduledExecutorService executorService) {
         this.cache = new LRUCache<>(entrySize);
-        registerDisposable(() -> {
-            this.cache.clear();
-        });
+        registerDisposable(() -> this.cache.clear());
 
         try {
             cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName, enableFileCache);
-            registerDisposable(() -> {
-                cacheStore.destroy();
-            });
+            registerDisposable(() -> cacheStore.destroy());
 
             Map<String, String> properties = cacheStore.loadCache(entrySize);
             if (logger.isDebugEnabled()) {
@@ -98,9 +94,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
                     TimeUnit.MINUTES);
 
             if (usingExternalExecutorService) {
-                registerDisposable(() -> {
-                    newFuture.cancel(true);
-                });
+                registerDisposable(() -> newFuture.cancel(true));
             }
         } catch (Exception e) {
             logger.error(COMMON_FAILED_LOAD_MAPPING_CACHE, "", "", "Load mapping from local cache file error ", e);
