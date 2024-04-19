@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.config.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
@@ -49,12 +50,17 @@ import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.DUPLICATE_MAPPING;
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
     private final List<RequestMappingResolver> resolvers;
-
+    private RestConfig restConfig;
     private final RadixTree<Registration> tree = new RadixTree<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+    }
+
+    public DefaultRequestMappingRegistry(FrameworkModel frameworkModel, RestConfig restConfig) {
+        resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+        this.restConfig = frameworkModel.getAdaptiveExtension(RestConfig.class);
     }
 
     @Override
@@ -79,6 +85,33 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         methodMapping = classMapping.combine(methodMapping);
                     }
                     register0(methodMapping, buildHandlerMeta(invoker, methodMeta));
+                    // 后缀模式匹配
+                    if (restConfig.getSuffixPatternMatch()
+                            && !invoker.getUrl().getPath().contains(".")) {
+                        String newPath = invoker.getUrl().getPath() + ".*";
+                        RequestMapping suffixMapping = new RequestMapping.Builder()
+                                .name(methodMapping.getName() + "-suffix")
+                                .path(newPath)
+                                .build();
+                        if (classMapping != null) {
+                            suffixMapping = classMapping.combine(suffixMapping);
+                        }
+                        register0(suffixMapping, buildHandlerMeta(invoker, methodMeta));
+                    }
+
+                    // 斜杠结尾匹配
+                    if (restConfig.getTrailingSlashMatch()
+                            && !invoker.getUrl().getPath().endsWith("/")) {
+                        String newPath = invoker.getUrl().getPath() + "/";
+                        RequestMapping trailingSlashMapping = new RequestMapping.Builder()
+                                .name(methodMapping.getName() + "-trailingSlash")
+                                .path(newPath)
+                                .build();
+                        if (classMapping != null) {
+                            trailingSlashMapping = classMapping.combine(trailingSlashMapping);
+                        }
+                        register0(trailingSlashMapping, buildHandlerMeta(invoker, methodMeta));
+                    }
                 });
             }
         });
