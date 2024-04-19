@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.utils;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -31,10 +30,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 class ConfigValidationUtilsTest {
 
