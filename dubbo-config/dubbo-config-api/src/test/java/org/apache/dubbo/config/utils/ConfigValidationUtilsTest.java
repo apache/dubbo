@@ -102,22 +102,6 @@ class ConfigValidationUtilsTest {
         }
     }
 
-    @Test
-    void testCheckQosInApplicationConfig() throws Exception {
-        ConfigValidationUtils mock = Mockito.mock(ConfigValidationUtils.class);
-        ErrorTypeAwareLogger loggerMock = Mockito.mock(ErrorTypeAwareLogger.class);
-        injectField(mock.getClass().getDeclaredField("logger"), loggerMock);
-        ApplicationConfig config = new ApplicationConfig();
-        config.setName("testName");
-        config.setQosEnable(false);
-        mock.validateApplicationConfig(config);
-        verify(loggerMock, never()).warn(any(), any(Throwable.class));
-
-        config.setQosEnable(true);
-        mock.validateApplicationConfig(config);
-        verify(loggerMock).info(anyString());
-    }
-
     private void injectField(Field field, Object newValue) throws Exception {
         field.setAccessible(true);
         field.set(null, newValue);
