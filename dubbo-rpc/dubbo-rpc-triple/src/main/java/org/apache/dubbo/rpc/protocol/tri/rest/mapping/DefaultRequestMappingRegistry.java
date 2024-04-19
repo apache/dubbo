@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
@@ -177,8 +176,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             return null;
         }
 
-        String method = preprocessingCors(request);
-
         List<Candidate> candidates = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             Match<Registration> match = matches.get(i);
@@ -219,7 +216,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         Candidate winner = candidates.get(0);
         RequestMapping mapping = winner.mapping;
 
-        processCors(method, mapping, request, response);
+        processCors(mapping, request, response);
 
         HandlerMeta handler = winner.meta;
         request.setAttribute(RestConstants.MAPPING_ATTRIBUTE, mapping);
@@ -237,19 +234,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         return handler;
     }
 
-    private String preprocessingCors(HttpRequest request) {
-        if (CorsProcessor.isPreFlight(request)) {
-            String realMethod = request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD);
-            request.setMethod(realMethod);
-            return realMethod;
-        }
-        return null;
-    }
-
-    private void processCors(String method, RequestMapping mapping, HttpRequest request, HttpResponse response) {
-        if (method != null) {
-            request.setMethod(HttpMethods.OPTIONS.name());
-        }
+    private void processCors(RequestMapping mapping, HttpRequest request, HttpResponse response) {
         if (!corsProcessor.process(mapping.getCorsMeta(), request, response)) {
             throw new HttpResultPayloadException(HttpResult.builder()
                     .status(HttpStatus.FORBIDDEN)
