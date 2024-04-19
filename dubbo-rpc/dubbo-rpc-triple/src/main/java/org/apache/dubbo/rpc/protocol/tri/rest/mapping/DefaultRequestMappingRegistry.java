@@ -37,8 +37,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.MethodWalker;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
