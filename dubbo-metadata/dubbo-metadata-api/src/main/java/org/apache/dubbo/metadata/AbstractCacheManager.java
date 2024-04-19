@@ -45,8 +45,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
 public abstract class AbstractCacheManager<V> implements Disposable {
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    private ScheduledExecutorService executorService;
-
     protected FileCacheStore cacheStore;
     protected LRUCache<String, V> cache;
     private List<Disposable> disposableResources = new ArrayList<>();
@@ -77,25 +75,20 @@ public abstract class AbstractCacheManager<V> implements Disposable {
                 this.cache.put(key, toValueType(value));
             }
             // executorService can be empty if FileCacheStore fails
-            boolean usingExternalExecutorService = false;
             if (executorService == null) {
-                this.executorService = Executors.newSingleThreadScheduledExecutor(
+                executorService = Executors.newSingleThreadScheduledExecutor(
                         new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
-                registerDisposable(newExecutorDisposer(this.executorService));
-            } else {
-                this.executorService = executorService;
-                usingExternalExecutorService = true;
+                registerDisposable(newExecutorDisposer(executorService));
             }
 
-            final ScheduledFuture<?> newFuture = this.executorService.scheduleWithFixedDelay(
+            final ScheduledFuture<?> newFuture = executorService.scheduleWithFixedDelay(
                     new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize),
                     10,
                     interval,
                     TimeUnit.MINUTES);
 
-            if (usingExternalExecutorService) {
-                registerDisposable(() -> newFuture.cancel(true));
-            }
+            registerDisposable(() -> newFuture.cancel(true));
+
         } catch (Exception e) {
             logger.error(COMMON_FAILED_LOAD_MAPPING_CACHE, "", "", "Load mapping from local cache file error ", e);
         }
@@ -170,8 +163,6 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             elements[i].destroy();
         }
         this.disposableResources.clear();
-
-        this.executorService = null;
     }
 
     public static class CacheRefreshTask<V> implements Runnable {
