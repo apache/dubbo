@@ -98,7 +98,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         }
                         register0(suffixMapping, buildHandlerMeta(invoker, methodMeta));
                     }
-
                     // TrailingSlashMatch
                     if (restConfig.getTrailingSlashMatch()
                             && !invoker.getUrl().getPath().endsWith("/")) {
