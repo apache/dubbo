@@ -37,6 +37,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.MethodWalker;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,18 +51,13 @@ import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.DUPLICATE_MAPPING;
 
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
-    private final List<RequestMappingResolver> resolvers;
     private RestConfig restConfig;
+    private final List<RequestMappingResolver> resolvers;
     private final RadixTree<Registration> tree = new RadixTree<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
-    }
-
-    public DefaultRequestMappingRegistry(FrameworkModel frameworkModel, RestConfig restConfig) {
-        resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
-        this.restConfig = frameworkModel.getAdaptiveExtension(RestConfig.class);
     }
 
     @Override
@@ -236,6 +233,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
 
         return handler;
+    }
+
+    public void setRestConfig(RestConfig restConfig) {
+        this.restConfig = restConfig;
     }
 
     private static final class Registration {
