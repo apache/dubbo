@@ -612,7 +612,11 @@ public class PojoUtils {
                             } else if (field != null) {
                                 value = realize1(value, field.getType(), field.getGenericType(), mapGeneric, history);
                                 try {
-                                    field.set(dest, value);
+                                    if (value.getClass() == String.class) {
+                                        dest = value;
+                                    } else {
+                                        field.set(dest, value);
+                                    }
                                 } catch (IllegalAccessException e) {
                                     throw new RuntimeException(
                                             "Failed to set field " + name + " of pojo "
