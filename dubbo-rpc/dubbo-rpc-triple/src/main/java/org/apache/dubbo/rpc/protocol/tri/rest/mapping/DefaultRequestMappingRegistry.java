@@ -80,7 +80,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         methodMapping = classMapping.combine(methodMapping);
                     }
                     register0(methodMapping, buildHandlerMeta(invoker, methodMeta));
-                    // SuffixPatternMatch
+                    // UseSuffixPatternMatch
                     if (restConfig.getSuffixPatternMatch()
                             && !invoker.getUrl().getPath().contains(".")) {
                         String newPath = invoker.getUrl().getPath() + ".*";
@@ -93,7 +93,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         }
                         register0(suffixMapping, buildHandlerMeta(invoker, methodMeta));
                     }
-                    // TrailingSlashMatch
+                    // UseTrailingSlashMatch
                     if (restConfig.getTrailingSlashMatch()
                             && !invoker.getUrl().getPath().endsWith("/")) {
                         String newPath = invoker.getUrl().getPath() + "/";
