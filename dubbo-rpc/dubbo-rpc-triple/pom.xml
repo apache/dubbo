@@ -116,7 +116,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot</artifactId>
-      <version>3.2.3</version>
+      <version>2.7.18</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
