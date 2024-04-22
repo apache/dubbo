@@ -90,19 +90,19 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
-    public void onNext(Object data) {
+    public void doOnNext(Object data) throws Throwable{
         if (closed) {
             return;
         }
-        super.onNext(data);
+        super.doOnNext(data);
     }
 
     @Override
-    public void onError(Throwable throwable) {
+    public void doOnError(Throwable throwable) throws Throwable {
         if (closed) {
             return;
         }
-        super.onError(throwable);
+        super.doOnError(throwable);
     }
 
     @Override
