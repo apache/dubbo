@@ -22,7 +22,6 @@ import org.apache.dubbo.reactive.ServerTripleReactorSubscriber;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import reactor.core.publisher.Flux;
@@ -44,17 +43,17 @@ public final class ReactorServerCalls {
      */
     public static <T, R> void oneToOne(T request, StreamObserver<R> responseObserver, Function<Mono<T>, Mono<R>> func) {
         try {
-            func.apply(Mono.just(request)).subscribe(
-				res -> {
-					responseObserver.onNext(res);
-					responseObserver.onCompleted();
-				},
-				throwable -> doOnResponseHasException(throwable, responseObserver),
-				() -> doOnResponseHasException(TriRpcStatus.NOT_FOUND.asException(), responseObserver)
-			);
+            func.apply(Mono.just(request))
+                    .subscribe(
+                            res -> {
+                                responseObserver.onNext(res);
+                                responseObserver.onCompleted();
+                            },
+                            throwable -> doOnResponseHasException(throwable, responseObserver),
+                            () -> doOnResponseHasException(TriRpcStatus.NOT_FOUND.asException(), responseObserver));
         } catch (Throwable throwable) {
-			doOnResponseHasException(throwable, responseObserver);
-		}
+            doOnResponseHasException(throwable, responseObserver);
+        }
     }
 
     /**
@@ -135,7 +134,8 @@ public final class ReactorServerCalls {
     }
 
     private static void doOnResponseHasException(Throwable throwable, StreamObserver<?> responseObserver) {
-		StatusRpcException statusRpcException = TriRpcStatus.getStatus(throwable).asException();
-		responseObserver.onError(statusRpcException);
-	}
+        StatusRpcException statusRpcException =
+                TriRpcStatus.getStatus(throwable).asException();
+        responseObserver.onError(statusRpcException);
+    }
 }
