@@ -43,16 +43,18 @@ public final class ReactorServerCalls {
      * @param func service implementation
      */
     public static <T, R> void oneToOne(T request, StreamObserver<R> responseObserver, Function<Mono<T>, Mono<R>> func) {
-        func.apply(Mono.just(request)).subscribe(res -> {
-            CompletableFuture.completedFuture(res).whenComplete((r, t) -> {
-                if (t != null) {
-                    responseObserver.onError(t);
-                } else {
-                    responseObserver.onNext(r);
-                    responseObserver.onCompleted();
-                }
-            });
-        });
+        try {
+            func.apply(Mono.just(request)).subscribe(
+				res -> {
+					responseObserver.onNext(res);
+					responseObserver.onCompleted();
+				},
+				throwable -> doOnResponseHasException(throwable, responseObserver),
+				() -> doOnResponseHasException(TriRpcStatus.NOT_FOUND.asException(), responseObserver)
+			);
+        } catch (Throwable throwable) {
+			doOnResponseHasException(throwable, responseObserver);
+		}
     }
 
     /**
@@ -131,4 +133,9 @@ public final class ReactorServerCalls {
 
         return serverPublisher;
     }
+
+    private static void doOnResponseHasException(Throwable throwable, StreamObserver<?> responseObserver) {
+		StatusRpcException statusRpcException = TriRpcStatus.getStatus(throwable).asException();
+		responseObserver.onError(statusRpcException);
+	}
 }
