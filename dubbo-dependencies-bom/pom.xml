@@ -91,7 +91,7 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.33</spring_version>
-    <spring_security_version>5.8.11</spring_security_version>
+    <spring_security_version>5.8.12</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
     <bytebuddy.version>1.14.13</bytebuddy.version>
     <netty_version>3.2.10.Final</netty_version>
