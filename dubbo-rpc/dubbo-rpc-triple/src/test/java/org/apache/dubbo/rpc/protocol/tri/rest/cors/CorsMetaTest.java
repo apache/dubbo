@@ -34,16 +34,12 @@ class CorsMetaTest {
         config.setAllowedHeaders(null);
         config.setAllowedMethods(null);
         config.setExposedHeaders(null);
-        config.setAllowCredentials(null);
         config.setMaxAge(null);
-        config.setAllowPrivateNetwork(null);
         Assertions.assertNull(config.getAllowedOrigins());
         Assertions.assertNull(config.getAllowedOriginPatterns());
         Assertions.assertNull(config.getAllowedHeaders());
         Assertions.assertNull(config.getAllowedMethods());
         Assertions.assertNull(config.getExposedHeaders());
-        Assertions.assertNull(config.getAllowCredentials());
-        Assertions.assertNull(config.getAllowPrivateNetwork());
         Assertions.assertNull(config.getMaxAge());
     }
 
@@ -57,8 +53,7 @@ class CorsMetaTest {
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.addExposedHeader("*");
-        config.setAllowCredentials(true);
-        config.setAllowPrivateNetwork(true);
+
         config.setMaxAge(123L);
         Assertions.assertArrayEquals(
                 new String[] {"*"}, config.getAllowedOrigins().toArray());
@@ -71,8 +66,6 @@ class CorsMetaTest {
                 new String[] {"*"}, config.getAllowedMethods().toArray());
         Assertions.assertArrayEquals(
                 new String[] {"*"}, config.getExposedHeaders().toArray());
-        Assertions.assertTrue(config.getAllowCredentials());
-        Assertions.assertTrue(config.getAllowPrivateNetwork());
         Assertions.assertEquals(123L, config.getMaxAge().longValue());
     }
 
@@ -96,8 +89,6 @@ class CorsMetaTest {
         config.addExposedHeader("header3");
         config.addAllowedMethod(HttpMethods.GET.name());
         config.setMaxAge(123L);
-        config.setAllowCredentials(true);
-        config.setAllowPrivateNetwork(true);
         CorsMeta other = new CorsMeta();
         config = CorsMeta.combine(config, other);
         // Assert the combined config
@@ -115,8 +106,6 @@ class CorsMetaTest {
                 new String[] {HttpMethods.GET.name()},
                 config.getAllowedMethods().toArray());
         Assertions.assertEquals(123L, config.getMaxAge().longValue());
-        Assertions.assertTrue(config.getAllowCredentials());
-        Assertions.assertTrue(config.getAllowPrivateNetwork());
     }
 
     @Test
@@ -348,8 +337,6 @@ class CorsMetaTest {
         priority.addExposedHeader("header3");
         priority.addAllowedMethod(HttpMethods.GET.name());
         priority.setMaxAge(123L);
-        priority.setAllowCredentials(true);
-        priority.setAllowPrivateNetwork(true);
 
         // Create another config with some different values
         CorsMeta other = new CorsMeta();
@@ -359,8 +346,6 @@ class CorsMetaTest {
         other.addExposedHeader("header4");
         other.addAllowedMethod(HttpMethods.PUT.name());
         other.setMaxAge(456L);
-        other.setAllowCredentials(false);
-        other.setAllowPrivateNetwork(false);
 
         // Combine the configs
         priority = CorsMeta.combine(priority, other);
@@ -380,8 +365,7 @@ class CorsMetaTest {
                 new String[] {HttpMethods.GET.name(), HttpMethods.PUT.name()},
                 priority.getAllowedMethods().toArray());
         Assertions.assertEquals(Long.valueOf(123L), priority.getMaxAge());
-        Assertions.assertTrue(priority.getAllowCredentials());
-        Assertions.assertTrue(priority.getAllowPrivateNetwork());
+
         Assertions.assertArrayEquals(
                 new String[] {"http://*.domain1.com", "http://*.domain2.com"},
                 priority.getAllowedOriginPatterns().toArray());
@@ -395,7 +379,7 @@ class CorsMetaTest {
         Assertions.assertEquals("*", config.checkOrigin("https://domain.com"));
 
         // "*" does not match together with allowCredentials
-        config.setAllowCredentials(true);
+
         Assertions.assertNull(config.checkOrigin("https://domain.com"));
 
         // specific origin matches Origin header with or without trailing "/"
@@ -408,7 +392,6 @@ class CorsMetaTest {
         Assertions.assertEquals("https://domain.com", config.checkOrigin("https://domain.com"));
         Assertions.assertEquals("https://domain.com/", config.checkOrigin("https://domain.com/"));
 
-        config.setAllowCredentials(false);
         Assertions.assertEquals("https://domain.com", config.checkOrigin("https://domain.com"));
     }
 
@@ -436,7 +419,6 @@ class CorsMetaTest {
         config.applyPermitDefaultValues();
         Assertions.assertEquals("*", config.checkOrigin("https://domain.com"));
 
-        config.setAllowCredentials(true);
         Assertions.assertNull(config.checkOrigin("https://domain.com"));
         config.addAllowedOriginPattern("https://*.domain.com");
         Assertions.assertEquals("https://example.domain.com", config.checkOrigin("https://example.domain.com"));
@@ -454,7 +436,6 @@ class CorsMetaTest {
                 "https://example.specific.port.com:8081", config.checkOrigin("https://example.specific.port.com:8081"));
         Assertions.assertNull(config.checkOrigin("https://example.specific.port.com:1234"));
 
-        config.setAllowCredentials(false);
         Assertions.assertEquals("https://example.domain.com", config.checkOrigin("https://example.domain.com"));
     }
 

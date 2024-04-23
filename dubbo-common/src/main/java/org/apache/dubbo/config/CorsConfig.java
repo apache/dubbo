@@ -29,10 +29,6 @@ public class CorsConfig implements Serializable {
 
     private String exposedHeaders;
 
-    private Boolean allowCredentials;
-
-    private Boolean allowPrivateNetWork;
-
     private Long maxAge;
 
     public String getAllowedOrigins() {
@@ -67,27 +63,11 @@ public class CorsConfig implements Serializable {
         this.exposedHeaders = exposedHeaders;
     }
 
-    public Boolean getAllowCredentials() {
-        return allowCredentials;
-    }
-
-    public void setAllowCredentials(Boolean allowCredentials) {
-        this.allowCredentials = allowCredentials;
-    }
-
     public Long getMaxAge() {
         return maxAge;
     }
 
     public void setMaxAge(Long maxAge) {
         this.maxAge = maxAge;
-    }
-
-    public Boolean getAllowPrivateNetWork() {
-        return allowPrivateNetWork;
-    }
-
-    public void setAllowPrivateNetWork(Boolean allowPrivateNetWork) {
-        this.allowPrivateNetWork = allowPrivateNetWork;
     }
 }

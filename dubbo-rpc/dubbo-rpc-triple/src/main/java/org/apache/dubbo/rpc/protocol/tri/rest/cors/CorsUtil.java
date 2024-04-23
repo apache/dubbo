@@ -25,13 +25,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CorsUtil {
+    public static final String HTTP = "http";
+    public static final String HTTPS = "https";
+    public static final String WS = "ws";
+    public static final String WSS = "wss";
+
     private CorsUtil() {}
 
     public static int getPort(String scheme, int port) {
         if (port == -1) {
-            if (RestConstants.HTTP.equals(scheme) || RestConstants.WS.equals(scheme)) {
+            if (HTTP.equals(scheme) || WS.equals(scheme)) {
                 port = 80;
-            } else if (RestConstants.HTTPS.equals(scheme) || RestConstants.WSS.equals(scheme)) {
+            } else if (HTTPS.equals(scheme) || WSS.equals(scheme)) {
                 port = 443;
             }
         }
@@ -46,8 +51,6 @@ public class CorsUtil {
         String allowHeaders = config.getString(RestConstants.ALLOWED_HEADERS);
         String exposeHeaders = config.getString(RestConstants.EXPOSED_HEADERS);
         String maxAge = config.getString(RestConstants.MAX_AGE);
-        String allowCredentials = config.getString(RestConstants.ALLOW_CREDENTIALS);
-        String allowPrivateNetwork = config.getString(RestConstants.ALLOW_PRIVATE_NETWORK);
         // Create a new CorsMeta object and set the properties.
         CorsMeta meta = new CorsMeta();
         meta.setAllowedOrigins(parseList(allowOrigins));
@@ -55,8 +58,6 @@ public class CorsUtil {
         meta.setAllowedHeaders(parseList(allowHeaders));
         meta.setExposedHeaders(parseList(exposeHeaders));
         meta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
-        meta.setAllowCredentials(allowCredentials == null ? null : Boolean.valueOf(allowCredentials));
-        meta.setAllowPrivateNetwork(allowPrivateNetwork == null ? null : Boolean.valueOf(allowPrivateNetwork));
         // Return the CorsMeta object.
         return meta.applyPermitDefaultValues();
     }

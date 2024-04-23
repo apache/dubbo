@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK;
-import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK;
 import static org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtil.getPort;
 
 public class CorsProcessor {
@@ -98,15 +96,6 @@ public class CorsProcessor {
 
         if (!CollectionUtils.isEmpty(config.getExposedHeaders())) {
             response.setHeader(RestConstants.ACCESS_CONTROL_EXPOSE_HEADERS, config.getExposedHeaders());
-        }
-
-        if (Boolean.TRUE.equals(config.getAllowCredentials())) {
-            response.setHeader(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.TRUE.toString());
-        }
-
-        if (Boolean.TRUE.equals(config.getAllowPrivateNetwork())
-                && Boolean.parseBoolean(request.header(ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK))) {
-            response.setHeader(ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK, Boolean.TRUE.toString());
         }
 
         return true;

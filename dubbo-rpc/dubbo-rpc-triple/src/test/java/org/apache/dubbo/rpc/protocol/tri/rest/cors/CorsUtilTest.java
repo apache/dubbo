@@ -35,8 +35,6 @@ class CorsUtilTest {
         Mockito.when(config.getString(RestConstants.ALLOWED_HEADERS)).thenReturn("Content-Type,Authorization");
         Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn("Content-Type,Authorization");
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn("3600");
-        Mockito.when(config.getString(RestConstants.ALLOW_CREDENTIALS)).thenReturn("true");
-        Mockito.when(config.getString(RestConstants.ALLOW_PRIVATE_NETWORK)).thenReturn("true");
         Mockito.when(config.getString(CORS_CONFIG_PREFIX + RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK))
                 .thenReturn("true");
         CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
@@ -50,8 +48,6 @@ class CorsUtilTest {
         Assertions.assertTrue(meta.getExposedHeaders().contains("Content-Type"));
         Assertions.assertTrue(meta.getExposedHeaders().contains("Authorization"));
         Assertions.assertEquals(3600, meta.getMaxAge());
-        Assertions.assertTrue(meta.getAllowCredentials());
-        Assertions.assertTrue(meta.getAllowPrivateNetwork());
     }
 
     @Test
@@ -62,13 +58,9 @@ class CorsUtilTest {
         Mockito.when(config.getString(RestConstants.ALLOWED_HEADERS)).thenReturn(null);
         Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn(null);
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn(null);
-        Mockito.when(config.getString(RestConstants.ALLOW_CREDENTIALS)).thenReturn(null);
-        Mockito.when(config.getString(RestConstants.ALLOW_PRIVATE_NETWORK)).thenReturn(null);
 
         CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
         Assertions.assertEquals(CorsMeta.DEFAULT_MAX_AGE, meta.getMaxAge());
-        Assertions.assertFalse(meta.getAllowCredentials());
-        Assertions.assertFalse(meta.getAllowPrivateNetwork());
         Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_ALL, meta.getAllowedOrigins());
         Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_METHODS, meta.getAllowedMethods());
         Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_ALL, meta.getAllowedHeaders());
@@ -76,15 +68,15 @@ class CorsUtilTest {
 
     @Test
     void testGetPortWithDefaultValues() {
-        Assertions.assertEquals(80, CorsUtil.getPort(RestConstants.HTTP, -1));
-        Assertions.assertEquals(80, CorsUtil.getPort(RestConstants.WS, -1));
-        Assertions.assertEquals(443, CorsUtil.getPort(RestConstants.HTTPS, -1));
-        Assertions.assertEquals(443, CorsUtil.getPort(RestConstants.WSS, -1));
+        Assertions.assertEquals(80, CorsUtil.getPort(CorsUtil.HTTP, -1));
+        Assertions.assertEquals(80, CorsUtil.getPort(CorsUtil.WS, -1));
+        Assertions.assertEquals(443, CorsUtil.getPort(CorsUtil.HTTPS, -1));
+        Assertions.assertEquals(443, CorsUtil.getPort(CorsUtil.WSS, -1));
     }
 
     @Test
     void testGetPortWithCustomValues() {
-        Assertions.assertEquals(8080, CorsUtil.getPort(RestConstants.HTTP, 8080));
-        Assertions.assertEquals(8443, CorsUtil.getPort(RestConstants.HTTPS, 8443));
+        Assertions.assertEquals(8080, CorsUtil.getPort(CorsUtil.HTTP, 8080));
+        Assertions.assertEquals(8443, CorsUtil.getPort(CorsUtil.HTTPS, 8443));
     }
 }

@@ -132,7 +132,6 @@ class CorsProcessorTest {
         this.conf.addAllowedOrigin("https://domain1.com");
         this.conf.addAllowedOrigin("https://domain2.com");
         this.conf.addAllowedOrigin("http://domain3.example");
-        this.conf.setAllowCredentials(true);
 
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
@@ -153,7 +152,7 @@ class CorsProcessorTest {
         Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
 
         this.conf.addAllowedOrigin("*");
-        this.conf.setAllowCredentials(true);
+
         Assertions.assertFalse(this.processor.process(this.conf, this.request, this.response));
 
         this.response = new DefaultHttpResponse();
@@ -369,7 +368,6 @@ class CorsProcessorTest {
         this.conf.addAllowedOrigin("https://domain2.com");
         this.conf.addAllowedOrigin("http://domain3.example");
         this.conf.addAllowedHeader("Header1");
-        this.conf.setAllowCredentials(true);
 
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
@@ -394,7 +392,6 @@ class CorsProcessorTest {
                 .thenReturn("Header1");
         this.conf.setAllowedOrigins(Arrays.asList("https://domain1.com", "*", "http://domain3.example"));
         this.conf.addAllowedHeader("Header1");
-        this.conf.setAllowCredentials(true);
 
         Assertions.assertFalse(this.processor.process(this.conf, this.request, this.response));
 
@@ -426,7 +423,6 @@ class CorsProcessorTest {
                 .thenReturn("true");
         this.conf.setAllowedOrigins(Arrays.asList("https://domain1.com", "*", "http://domain3.example"));
         this.conf.addAllowedHeader("Header1");
-        this.conf.setAllowPrivateNetwork(true);
 
         Assertions.assertFalse(this.processor.process(this.conf, this.request, this.response));
 
@@ -603,7 +599,6 @@ class CorsProcessorTest {
                 .thenReturn("true");
         this.conf.addAllowedHeader("*");
         this.conf.addAllowedOrigin("https://domain2.com");
-        this.conf.setAllowPrivateNetwork(true);
 
         this.processor.process(this.conf, this.request, this.response);
         Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));

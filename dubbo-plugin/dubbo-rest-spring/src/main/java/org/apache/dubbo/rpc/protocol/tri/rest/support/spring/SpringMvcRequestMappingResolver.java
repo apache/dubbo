@@ -70,7 +70,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         return builder(requestMapping, responseStatus)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
-                .cors(createCorsMeta(crossOrigin))
+                .cors(buildCorsMeta(crossOrigin))
                 .build();
     }
 
@@ -92,7 +92,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
                 .name(methodMeta.getMethod().getName())
                 .contextPath(serviceMeta.getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
-                .cors(createCorsMeta(crossOrigin))
+                .cors(buildCorsMeta(crossOrigin))
                 .build();
     }
 
@@ -114,10 +114,10 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
                 .produce(requestMapping.getStringArray("produces"));
     }
 
-    private CorsMeta createCorsMeta(AnnotationMeta<?> crossOrigin) {
+    private CorsMeta buildCorsMeta(AnnotationMeta<?> crossOrigin) {
         CorsMeta meta = new CorsMeta();
         if (crossOrigin == null) {
-            return meta;
+            return null;
         }
         String[] allowedHeaders = crossOrigin.getStringArray("allowedHeaders");
         meta.setAllowedHeaders(allowedHeaders != null ? Arrays.asList(allowedHeaders) : Collections.emptyList());
@@ -129,15 +129,6 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         meta.setExposedHeaders(exposedHeaders != null ? Arrays.asList(exposedHeaders) : Collections.emptyList());
         String maxAge = crossOrigin.getString("maxAge");
         meta.setMaxAge(maxAge != null ? Long.valueOf(maxAge) : null);
-        String allowCredentials = crossOrigin.getString("allowCredentials");
-        meta.setAllowCredentials(allowCredentials != null ? Boolean.valueOf(allowCredentials) : null);
-        // Because allowPrivateNetwork does not exist in some spring versions, we need to catch the exception
-        try {
-            String allowPrivateNetwork = crossOrigin.getString("allowPrivateNetwork");
-            meta.setAllowPrivateNetwork(allowPrivateNetwork != null ? Boolean.valueOf(allowPrivateNetwork) : null);
-        } catch (IllegalArgumentException e) {
-            meta.setAllowPrivateNetwork(null);
-        }
         return meta;
     }
 }

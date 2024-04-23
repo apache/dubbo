@@ -59,10 +59,6 @@ public final class RestConstants {
     public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
     public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
-    public static final String HTTP = "http";
-    public static final String HTTPS = "https";
-    public static final String WS = "ws";
-    public static final String WSS = "wss";
     public static final String ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK = "Access-Control-Request-Private-Network";
     public static final String ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK = "Access-Control-Allow-Private-Network";
 
@@ -80,8 +76,6 @@ public final class RestConstants {
     public static final String ALLOWED_HEADERS = CORS_CONFIG_PREFIX + "allowed-headers";
     public static final String EXPOSED_HEADERS = CORS_CONFIG_PREFIX + "exposed-headers";
     public static final String MAX_AGE = CORS_CONFIG_PREFIX + "max-age";
-    public static final String ALLOW_CREDENTIALS = CORS_CONFIG_PREFIX + "allow-credentials";
-    public static final String ALLOW_PRIVATE_NETWORK = CORS_CONFIG_PREFIX + "allow-private-network";
 
     private RestConstants() {}
 }

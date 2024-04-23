@@ -73,12 +73,6 @@ public class CorsMeta {
     private List<String> exposedHeaders;
 
     @Nullable
-    private Boolean allowCredentials;
-
-    @Nullable
-    private Boolean allowPrivateNetwork;
-
-    @Nullable
     private Long maxAge;
 
     public CorsMeta() {}
@@ -90,8 +84,6 @@ public class CorsMeta {
         this.resolvedMethods = other.resolvedMethods;
         this.allowedHeaders = other.allowedHeaders;
         this.exposedHeaders = other.exposedHeaders;
-        this.allowCredentials = other.allowCredentials;
-        this.allowPrivateNetwork = other.allowPrivateNetwork;
         this.maxAge = other.maxAge;
     }
 
@@ -242,23 +234,6 @@ public class CorsMeta {
         this.exposedHeaders.add(exposedHeader);
     }
 
-    public void setAllowCredentials(@Nullable Boolean allowCredentials) {
-        this.allowCredentials = allowCredentials;
-    }
-
-    @Nullable
-    public Boolean getAllowCredentials() {
-        return this.allowCredentials;
-    }
-
-    public void setAllowPrivateNetwork(Boolean allowPrivateNetwork) {
-        this.allowPrivateNetwork = allowPrivateNetwork;
-    }
-
-    public Boolean getAllowPrivateNetwork() {
-        return this.allowPrivateNetwork;
-    }
-
     public void setMaxAge(@Nullable Long maxAge) {
         this.maxAge = maxAge;
     }
@@ -283,36 +258,7 @@ public class CorsMeta {
         if (this.maxAge == null) {
             this.maxAge = DEFAULT_MAX_AGE;
         }
-        if (this.allowCredentials == null) {
-            this.allowCredentials = false;
-        }
-        if (this.allowPrivateNetwork == null) {
-            this.allowPrivateNetwork = false;
-        }
         return this;
-    }
-
-    public boolean validateAllowCredentials() {
-        //      When allowCredentials is true, allowedOrigins cannot contain the special value \"*\"
-        //      since that cannot be set on the \"Access-Control-Allow-Origin\" response header.
-        //      To allow credentials to a set of origins, list them explicitly
-        //      or consider using \"allowedOriginPatterns\" instead.
-        return this.allowCredentials != null
-                && this.allowCredentials.equals(Boolean.TRUE)
-                && this.allowedOrigins != null
-                && this.allowedOrigins.contains(ALL);
-    }
-
-    public boolean validateAllowPrivateNetwork() {
-
-        //       When allowPrivateNetwork is true, allowedOrigins cannot contain the special value \"*\"
-        //       as it is not recommended from a security perspective.
-        //       To allow private network access to a set of origins, list them explicitly
-        //       or consider using \"allowedOriginPatterns\" instead.
-        return this.allowPrivateNetwork != null
-                && this.allowPrivateNetwork.equals(Boolean.TRUE)
-                && this.allowedOrigins != null
-                && this.allowedOrigins.contains(ALL);
     }
 
     /**
@@ -339,12 +285,6 @@ public class CorsMeta {
         config.setAllowedMethods(priority.combine(priority.getAllowedMethods(), other.getAllowedMethods()));
         config.setAllowedHeaders(priority.combine(priority.getAllowedHeaders(), other.getAllowedHeaders()));
         config.setExposedHeaders(priority.combine(priority.getExposedHeaders(), other.getExposedHeaders()));
-        if (priority.allowCredentials == null) {
-            config.setAllowCredentials(other.getAllowCredentials());
-        }
-        if (priority.allowPrivateNetwork == null) {
-            config.setAllowPrivateNetwork(other.allowPrivateNetwork);
-        }
         if (priority.maxAge == null) {
             config.setMaxAge(other.maxAge);
         }
@@ -420,7 +360,7 @@ public class CorsMeta {
     }
 
     private String allOriginAllowed() {
-        return (validateAllowCredentials() || validateAllowPrivateNetwork() ? null : ALL);
+        return ALL;
     }
 
     private boolean isOriginAllowed(String originToCheck) {
