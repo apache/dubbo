@@ -25,7 +25,7 @@ import org.mockito.Mockito;
 
 import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.CORS_CONFIG_PREFIX;
 
-class CorsUtilTest {
+class CorsUtilsTest {
 
     @Test
     void testResolveGlobalMetaInCommon() {
@@ -37,7 +37,7 @@ class CorsUtilTest {
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn("3600");
         Mockito.when(config.getString(CORS_CONFIG_PREFIX + RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK))
                 .thenReturn("true");
-        CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
+        CorsMeta meta = CorsUtils.resolveGlobalMeta(config);
         Assertions.assertTrue(meta.getAllowedOrigins().contains("http://localhost:8080"));
         Assertions.assertTrue(meta.getAllowedMethods().contains("GET"));
         Assertions.assertTrue(meta.getAllowedMethods().contains("POST"));
@@ -59,7 +59,7 @@ class CorsUtilTest {
         Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn(null);
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn(null);
 
-        CorsMeta meta = CorsUtil.resolveGlobalMeta(config);
+        CorsMeta meta = CorsUtils.resolveGlobalMeta(config);
         Assertions.assertEquals(CorsMeta.DEFAULT_MAX_AGE, meta.getMaxAge());
         Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_ALL, meta.getAllowedOrigins());
         Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_METHODS, meta.getAllowedMethods());
@@ -68,15 +68,15 @@ class CorsUtilTest {
 
     @Test
     void testGetPortWithDefaultValues() {
-        Assertions.assertEquals(80, CorsUtil.getPort(CorsUtil.HTTP, -1));
-        Assertions.assertEquals(80, CorsUtil.getPort(CorsUtil.WS, -1));
-        Assertions.assertEquals(443, CorsUtil.getPort(CorsUtil.HTTPS, -1));
-        Assertions.assertEquals(443, CorsUtil.getPort(CorsUtil.WSS, -1));
+        Assertions.assertEquals(80, CorsUtils.getPort(CorsUtils.HTTP, -1));
+        Assertions.assertEquals(80, CorsUtils.getPort(CorsUtils.WS, -1));
+        Assertions.assertEquals(443, CorsUtils.getPort(CorsUtils.HTTPS, -1));
+        Assertions.assertEquals(443, CorsUtils.getPort(CorsUtils.WSS, -1));
     }
 
     @Test
     void testGetPortWithCustomValues() {
-        Assertions.assertEquals(8080, CorsUtil.getPort(CorsUtil.HTTP, 8080));
-        Assertions.assertEquals(8443, CorsUtil.getPort(CorsUtil.HTTPS, 8443));
+        Assertions.assertEquals(8080, CorsUtils.getPort(CorsUtils.HTTP, 8080));
+        Assertions.assertEquals(8443, CorsUtils.getPort(CorsUtils.HTTPS, 8443));
     }
 }

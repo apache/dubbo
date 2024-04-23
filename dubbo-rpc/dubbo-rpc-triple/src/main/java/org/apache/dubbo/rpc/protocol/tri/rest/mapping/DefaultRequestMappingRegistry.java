@@ -35,7 +35,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsProcessor;
-import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtil;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
@@ -62,7 +62,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     private final RadixTree<Registration> tree = new RadixTree<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private CorsMeta globalCorsMeta;
     private final CorsProcessor corsProcessor;
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
@@ -81,7 +80,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     continue;
                 }
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
-                mergeGlobalCorsMeta(classMapping);
                 consumer.accept((methods) -> {
                     MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
                     RequestMapping methodMapping = resolver.resolve(methodMeta);
@@ -129,16 +127,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 serviceDescriptor);
     }
 
-    private void mergeGlobalCorsMeta(RequestMapping mapping) {
-        if (mapping != null) {
-            CorsMeta corsMeta = mapping.getCorsMeta();
-            if (corsMeta != null) {
-                mapping.setCorsMeta(CorsMeta.combine(corsMeta, getGlobalCorsMeta()));
-            } else {
-                mapping.setCorsMeta(getGlobalCorsMeta());
-            }
-        }
-    }
+
 
     @Override
     public void unregister(Invoker<?> invoker) {
@@ -244,14 +233,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
     }
 
-    private CorsMeta getGlobalCorsMeta() {
-        if (globalCorsMeta == null) {
-            Configuration globalConfiguration =
-                    ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
-            globalCorsMeta = CorsUtil.resolveGlobalMeta(globalConfiguration);
-        }
-        return globalCorsMeta;
-    }
+
 
     private static final class Registration {
         RequestMapping mapping;

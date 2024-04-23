@@ -17,20 +17,25 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CorsUtil {
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
+
+public class CorsUtils {
+    private static CorsMeta globalCorsMeta;
     public static final String HTTP = "http";
     public static final String HTTPS = "https";
     public static final String WS = "ws";
     public static final String WSS = "wss";
 
-    private CorsUtil() {}
+    private CorsUtils() {}
 
     public static int getPort(String scheme, int port) {
         if (port == -1) {
@@ -60,6 +65,15 @@ public class CorsUtil {
         meta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
         // Return the CorsMeta object.
         return meta.applyPermitDefaultValues();
+    }
+
+    public static CorsMeta getGlobalCorsMeta() {
+        if (globalCorsMeta == null) {
+            Configuration globalConfiguration =
+                    ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
+            globalCorsMeta = resolveGlobalMeta(globalConfiguration);
+        }
+        return globalCorsMeta;
     }
 
     @Nullable

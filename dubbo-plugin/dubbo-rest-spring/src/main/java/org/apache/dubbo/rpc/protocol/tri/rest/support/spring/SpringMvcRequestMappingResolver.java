@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
@@ -70,7 +71,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         return builder(requestMapping, responseStatus)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
-                .cors(buildCorsMeta(crossOrigin))
+                .cors(buildCorsMetaWithGlobal(crossOrigin))
                 .build();
     }
 
@@ -130,5 +131,12 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         String maxAge = crossOrigin.getString("maxAge");
         meta.setMaxAge(maxAge != null ? Long.valueOf(maxAge) : null);
         return meta;
+    }
+    private CorsMeta buildCorsMetaWithGlobal(AnnotationMeta<?> crossOrigin) {
+        CorsMeta corsMeta = buildCorsMeta(crossOrigin);
+        if (corsMeta != null) {
+            return  CorsMeta.combine(corsMeta, CorsUtils.getGlobalCorsMeta());
+        }
+        return CorsUtils.getGlobalCorsMeta();
     }
 }

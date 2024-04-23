@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtil.getPort;
+import static org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils.getPort;
 
 public class CorsProcessor {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CorsProcessor.class);
