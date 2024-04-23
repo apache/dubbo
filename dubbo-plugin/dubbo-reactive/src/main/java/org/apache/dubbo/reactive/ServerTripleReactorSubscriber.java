@@ -62,8 +62,8 @@ public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubsc
 
     @Override
     public void onError(Throwable throwable) {
-        completableFuture.completeExceptionally(throwable);
         super.onError(throwable);
+        completableFuture.completeExceptionally(throwable);
     }
 
     @Override
