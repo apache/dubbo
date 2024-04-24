@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.cors;
+package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
-import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestHeaderFilterAdapter;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsProcessor;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 
 @Activate(group = CommonConstants.PROVIDER, order = 1000)

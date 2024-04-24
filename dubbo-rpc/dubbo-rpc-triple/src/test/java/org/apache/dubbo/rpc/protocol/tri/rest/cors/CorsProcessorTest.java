@@ -125,7 +125,6 @@ class CorsProcessorTest {
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
-
     @Test
     void actualRequestCaseInsensitiveOriginMatch() {
         Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
@@ -309,7 +308,6 @@ class CorsProcessorTest {
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
-
     @Test
     void preflightRequestAllowedHeaders() {
         Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
@@ -423,10 +421,4 @@ class CorsProcessorTest {
         Assertions.assertTrue(
                 this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
     }
-
-
-
-
-
-
 }
