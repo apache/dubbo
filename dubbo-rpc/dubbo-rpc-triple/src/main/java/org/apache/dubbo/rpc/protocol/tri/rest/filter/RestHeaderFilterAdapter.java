@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.HeaderFilter;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -38,5 +37,6 @@ public abstract class RestHeaderFilterAdapter implements HeaderFilter {
     }
 
     protected abstract RpcInvocation invoke(
-            Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response) throws RpcException;
+            Invoker<?> invoker, RpcInvocation invocation, HttpRequest request, HttpResponse response)
+            throws RpcException;
 }

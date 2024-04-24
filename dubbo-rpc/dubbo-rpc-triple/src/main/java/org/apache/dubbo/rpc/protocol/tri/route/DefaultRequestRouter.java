@@ -52,6 +52,7 @@ public final class DefaultRequestRouter implements RequestRouter {
                 continue;
             }
             handler.setAttribute(TripleConstant.HANDLER_TYPE_KEY, mapping.getType());
+            ;
             handler.setAttribute(TripleConstant.HTTP_REQUEST_KEY, request);
             handler.setAttribute(TripleConstant.HTTP_RESPONSE_KEY, response);
             return handler;

@@ -19,9 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.HttpResult;
-import org.apache.dubbo.remoting.http12.HttpStatus;
-import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -30,7 +27,6 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
-import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsProcessor;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
@@ -57,11 +53,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     private final RadixTree<Registration> tree = new RadixTree<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final CorsProcessor corsProcessor;
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
-        corsProcessor = frameworkModel.getBeanFactory().getOrRegisterBean(CorsProcessor.class);
     }
 
     @Override
@@ -198,8 +192,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         Candidate winner = candidates.get(0);
         RequestMapping mapping = winner.mapping;
 
-        processCors(mapping, request, response);
-
         HandlerMeta handler = winner.meta;
         request.setAttribute(RestConstants.MAPPING_ATTRIBUTE, mapping);
         request.setAttribute(RestConstants.HANDLER_ATTRIBUTE, handler);
@@ -214,16 +206,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
 
         return handler;
-    }
-
-    private void processCors(RequestMapping mapping, HttpRequest request, HttpResponse response) {
-        if (!corsProcessor.process(mapping.getCorsMeta(), request, response)) {
-            throw new HttpResultPayloadException(HttpResult.builder()
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(response.body())
-                    .headers(response.headers())
-                    .build());
-        }
     }
 
     private static final class Registration {

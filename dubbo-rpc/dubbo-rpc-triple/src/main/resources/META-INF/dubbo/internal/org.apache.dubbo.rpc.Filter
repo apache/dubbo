@@ -1,2 +1,3 @@
 http-context=org.apache.dubbo.rpc.protocol.tri.HttpContextFilter
 rest-extension=org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtensionExecutionFilter
+rest-cors-extension=org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsHeaderFilterAdapter
