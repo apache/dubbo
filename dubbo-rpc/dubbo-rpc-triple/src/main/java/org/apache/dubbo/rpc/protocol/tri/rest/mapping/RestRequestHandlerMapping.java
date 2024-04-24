@@ -61,7 +61,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
     @Override
     public RequestHandler getRequestHandler(URL url, HttpRequest request, HttpResponse response) {
 
-        HandlerMeta meta = requestMappingRegistry.lookup(request, response);
+        HandlerMeta meta = requestMappingRegistry.lookup(request);
         if (meta == null) {
             return null;
         }

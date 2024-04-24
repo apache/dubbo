@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -136,7 +135,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
     }
 
-    public HandlerMeta lookup(HttpRequest request, HttpResponse response) {
+    public HandlerMeta lookup(HttpRequest request) {
         String path = PathUtils.normalize(request.rawPath());
         request.setAttribute(RestConstants.PATH_ATTRIBUTE, path);
         List<Match<Registration>> matches = new ArrayList<>();
