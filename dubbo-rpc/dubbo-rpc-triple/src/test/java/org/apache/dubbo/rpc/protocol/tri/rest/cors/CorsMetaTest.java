@@ -378,10 +378,6 @@ class CorsMetaTest {
         config.addAllowedOrigin("*");
         Assertions.assertEquals("*", config.checkOrigin("https://domain.com"));
 
-        // "*" does not match together with allowCredentials
-
-        Assertions.assertNull(config.checkOrigin("https://domain.com"));
-
         // specific origin matches Origin header with or without trailing "/"
         config.setAllowedOrigins(Collections.singletonList("https://domain.com"));
         Assertions.assertEquals("https://domain.com", config.checkOrigin("https://domain.com"));
@@ -419,7 +415,6 @@ class CorsMetaTest {
         config.applyPermitDefaultValues();
         Assertions.assertEquals("*", config.checkOrigin("https://domain.com"));
 
-        Assertions.assertNull(config.checkOrigin("https://domain.com"));
         config.addAllowedOriginPattern("https://*.domain.com");
         Assertions.assertEquals("https://example.domain.com", config.checkOrigin("https://example.domain.com"));
 

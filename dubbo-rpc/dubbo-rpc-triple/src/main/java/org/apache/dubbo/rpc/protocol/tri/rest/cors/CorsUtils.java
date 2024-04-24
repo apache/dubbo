@@ -52,10 +52,10 @@ public class CorsUtils {
         Object maxAge = config.getProperty(RestConstants.MAX_AGE);
         // Create a new CorsMeta object and set the properties.
         CorsMeta meta = new CorsMeta();
-        meta.setAllowedOrigins(Arrays.asList(allowOrigins));
-        meta.setAllowedMethods(Arrays.asList(allowMethods));
-        meta.setAllowedHeaders(Arrays.asList(allowHeaders));
-        meta.setExposedHeaders(Arrays.asList(exposeHeaders));
+        meta.setAllowedOrigins(allowOrigins == null?null:Arrays.asList(allowOrigins));
+        meta.setAllowedMethods(allowMethods == null?null:Arrays.asList(allowMethods));
+        meta.setAllowedHeaders(allowHeaders == null?null:Arrays.asList(allowHeaders));
+        meta.setExposedHeaders(exposeHeaders == null?null:Arrays.asList(exposeHeaders));
         meta.setMaxAge(maxAge == null ? null : (Long) maxAge);
         // Return the CorsMeta object.
         return meta.applyPermitDefaultValues();

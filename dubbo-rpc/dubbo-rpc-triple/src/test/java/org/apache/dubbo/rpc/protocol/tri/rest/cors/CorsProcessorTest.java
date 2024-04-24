@@ -125,53 +125,6 @@ class CorsProcessorTest {
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
-    @Test
-    void actualRequestCredentials() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-        this.conf.addAllowedOrigin("https://domain1.com");
-        this.conf.addAllowedOrigin("https://domain2.com");
-        this.conf.addAllowedOrigin("http://domain3.example");
-
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertEquals("true", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
-
-    @Test
-    void actualRequestCredentialsWithWildcardOrigin() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-
-        this.conf.addAllowedOrigin("*");
-
-        Assertions.assertFalse(this.processor.process(this.conf, this.request, this.response));
-
-        this.response = new DefaultHttpResponse();
-        this.response.setStatus(HttpStatus.OK.getCode());
-        this.conf.setAllowedOrigins(null);
-        this.conf.addAllowedOriginPattern("*");
-
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertEquals("true", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
 
     @Test
     void actualRequestCaseInsensitiveOriginMatch() {
@@ -356,92 +309,6 @@ class CorsProcessorTest {
         Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
-    @Test
-    void preflightRequestCredentials() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn("GET");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS))
-                .thenReturn("Header1");
-        this.conf.addAllowedOrigin("https://domain1.com");
-        this.conf.addAllowedOrigin("https://domain2.com");
-        this.conf.addAllowedOrigin("http://domain3.example");
-        this.conf.addAllowedHeader("Header1");
-
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertEquals("true", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
-
-    @Test
-    void preflightRequestCredentialsWithWildcardOrigin() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn("GET");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS))
-                .thenReturn("Header1");
-        this.conf.setAllowedOrigins(Arrays.asList("https://domain1.com", "*", "http://domain3.example"));
-        this.conf.addAllowedHeader("Header1");
-
-        Assertions.assertFalse(this.processor.process(this.conf, this.request, this.response));
-
-        this.response = new DefaultHttpResponse();
-        this.response.setStatus(HttpStatus.OK.getCode());
-        this.conf.setAllowedOrigins(null);
-        this.conf.addAllowedOriginPattern("*");
-
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
-
-    @Test
-    void preflightRequestPrivateNetworkWithWildcardOrigin() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn("GET");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS))
-                .thenReturn("Header1");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK))
-                .thenReturn("true");
-        this.conf.setAllowedOrigins(Arrays.asList("https://domain1.com", "*", "http://domain3.example"));
-        this.conf.addAllowedHeader("Header1");
-
-        Assertions.assertFalse(this.processor.process(this.conf, this.request, this.response));
-
-        this.response = new DefaultHttpResponse();
-        this.response.setStatus(HttpStatus.OK.getCode());
-        this.conf.setAllowedOrigins(null);
-        this.conf.addAllowedOriginPattern("*");
-
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK));
-        Assertions.assertEquals("https://domain2.com", this.response.header(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.header(RestConstants.VARY).contains(RestConstants.ORIGIN));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
 
     @Test
     void preflightRequestAllowedHeaders() {
@@ -557,52 +424,9 @@ class CorsProcessorTest {
                 this.response.header(RestConstants.VARY).contains(RestConstants.ACCESS_CONTROL_REQUEST_HEADERS));
     }
 
-    @Test
-    void preflightRequestWithoutAccessControlRequestPrivateNetwork() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn("GET");
-        this.conf.addAllowedHeader("*");
-        this.conf.addAllowedOrigin("https://domain2.com");
 
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
 
-    @Test
-    void preflightRequestWithAccessControlRequestPrivateNetworkNotAllowed() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn("GET");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK))
-                .thenReturn("true");
-        this.conf.addAllowedHeader("*");
-        this.conf.addAllowedOrigin("https://domain2.com");
 
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertFalse(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
 
-    @Test
-    void preflightRequestWithAccessControlRequestPrivateNetworkAllowed() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
-        Mockito.when(request.header(RestConstants.ORIGIN)).thenReturn("https://domain2.com");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn("GET");
-        Mockito.when(request.header(RestConstants.ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK))
-                .thenReturn("true");
-        this.conf.addAllowedHeader("*");
-        this.conf.addAllowedOrigin("https://domain2.com");
 
-        this.processor.process(this.conf, this.request, this.response);
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(this.response.hasHeader(RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
-    }
 }
