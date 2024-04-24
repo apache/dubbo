@@ -30,11 +30,11 @@ class CorsUtilsTest {
     @Test
     void testResolveGlobalMetaInCommon() {
         Configuration config = Mockito.mock(Configuration.class);
-        Mockito.when(config.getString(RestConstants.ALLOWED_ORIGINS)).thenReturn("http://localhost:8080");
-        Mockito.when(config.getString(RestConstants.ALLOWED_METHODS)).thenReturn("GET,POST,PUT,DELETE");
-        Mockito.when(config.getString(RestConstants.ALLOWED_HEADERS)).thenReturn("Content-Type,Authorization");
-        Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn("Content-Type,Authorization");
-        Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn("3600");
+        Mockito.when(config.convert(String[].class, RestConstants.ALLOWED_ORIGINS, null)).thenReturn(new String[]{"http://localhost:8080"});
+        Mockito.when(config.convert(String[].class, RestConstants.ALLOWED_METHODS, null)).thenReturn(new String[]{"GET,POST,PUT,DELETE"});
+        Mockito.when(config.convert(String[].class, RestConstants.ALLOWED_HEADERS, null)).thenReturn(new String[]{"Content-Type,Authorization"});
+        Mockito.when(config.convert(String[].class, RestConstants.EXPOSED_HEADERS, null)).thenReturn(new String[]{"Content-Type,Authorization"});
+        Mockito.when(config.getProperty(RestConstants.MAX_AGE)).thenReturn(3600);
         Mockito.when(config.getString(CORS_CONFIG_PREFIX + RestConstants.ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK))
                 .thenReturn("true");
         CorsMeta meta = CorsUtils.resolveGlobalMeta(config);

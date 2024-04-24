@@ -21,45 +21,45 @@ import java.io.Serializable;
 public class CorsConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String allowedOrigins;
+    private String[] allowedOrigins;
 
-    private String allowedMethods;
+    private String[] allowedMethods;
 
-    private String allowedHeaders;
+    private String[] allowedHeaders;
 
-    private String exposedHeaders;
+    private String[] exposedHeaders;
 
     private Long maxAge;
 
-    public String getAllowedOrigins() {
+    public String[] getAllowedOrigins() {
         return allowedOrigins;
     }
 
-    public void setAllowedOrigins(String allowedOrigins) {
+    public void setAllowedOrigins(String[] allowedOrigins) {
         this.allowedOrigins = allowedOrigins;
     }
 
-    public String getAllowedMethods() {
+    public String[] getAllowedMethods() {
         return allowedMethods;
     }
 
-    public void setAllowedMethods(String allowedMethods) {
+    public void setAllowedMethods(String[] allowedMethods) {
         this.allowedMethods = allowedMethods;
     }
 
-    public String getAllowedHeaders() {
+    public String[] getAllowedHeaders() {
         return allowedHeaders;
     }
 
-    public void setAllowedHeaders(String allowedHeaders) {
+    public void setAllowedHeaders(String[] allowedHeaders) {
         this.allowedHeaders = allowedHeaders;
     }
 
-    public String getExposedHeaders() {
+    public String[] getExposedHeaders() {
         return exposedHeaders;
     }
 
-    public void setExposedHeaders(String exposedHeaders) {
+    public void setExposedHeaders(String[] exposedHeaders) {
         this.exposedHeaders = exposedHeaders;
     }
 

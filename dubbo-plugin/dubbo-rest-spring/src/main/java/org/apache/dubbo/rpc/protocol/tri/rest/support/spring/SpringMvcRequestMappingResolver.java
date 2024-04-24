@@ -132,10 +132,11 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         meta.setMaxAge(maxAge != null ? Long.valueOf(maxAge) : null);
         return meta;
     }
+
     private CorsMeta buildCorsMetaWithGlobal(AnnotationMeta<?> crossOrigin) {
         CorsMeta corsMeta = buildCorsMeta(crossOrigin);
         if (corsMeta != null) {
-            return  CorsMeta.combine(corsMeta, CorsUtils.getGlobalCorsMeta());
+            return CorsMeta.combine(corsMeta, CorsUtils.getGlobalCorsMeta());
         }
         return CorsUtils.getGlobalCorsMeta();
     }

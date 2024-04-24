@@ -18,15 +18,10 @@ package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 
 public class CorsUtils {
     private static CorsMeta globalCorsMeta;
@@ -49,20 +44,19 @@ public class CorsUtils {
     }
 
     public static CorsMeta resolveGlobalMeta(Configuration config) {
-
         // Get the CORS configuration properties from the configuration object.
-        String allowOrigins = config.getString(RestConstants.ALLOWED_ORIGINS);
-        String allowMethods = config.getString(RestConstants.ALLOWED_METHODS);
-        String allowHeaders = config.getString(RestConstants.ALLOWED_HEADERS);
-        String exposeHeaders = config.getString(RestConstants.EXPOSED_HEADERS);
-        String maxAge = config.getString(RestConstants.MAX_AGE);
+        String[] allowOrigins = config.convert(String[].class, RestConstants.ALLOWED_ORIGINS, null);
+        String[] allowMethods = config.convert(String[].class, RestConstants.ALLOWED_METHODS, null);
+        String[] allowHeaders = config.convert(String[].class, RestConstants.ALLOWED_HEADERS, null);
+        String[] exposeHeaders = config.convert(String[].class, RestConstants.EXPOSED_HEADERS, null);
+        Object maxAge = config.getProperty(RestConstants.MAX_AGE);
         // Create a new CorsMeta object and set the properties.
         CorsMeta meta = new CorsMeta();
-        meta.setAllowedOrigins(parseList(allowOrigins));
-        meta.setAllowedMethods(parseList(allowMethods));
-        meta.setAllowedHeaders(parseList(allowHeaders));
-        meta.setExposedHeaders(parseList(exposeHeaders));
-        meta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
+        meta.setAllowedOrigins(Arrays.asList(allowOrigins));
+        meta.setAllowedMethods(Arrays.asList(allowMethods));
+        meta.setAllowedHeaders(Arrays.asList(allowHeaders));
+        meta.setExposedHeaders(Arrays.asList(exposeHeaders));
+        meta.setMaxAge(maxAge == null ? null : (Long) maxAge);
         // Return the CorsMeta object.
         return meta.applyPermitDefaultValues();
     }
@@ -74,13 +68,5 @@ public class CorsUtils {
             globalCorsMeta = resolveGlobalMeta(globalConfiguration);
         }
         return globalCorsMeta;
-    }
-
-    @Nullable
-    private static List<String> parseList(@Nullable String value) {
-        if (value == null) {
-            return null;
-        }
-        return Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 }

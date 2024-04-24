@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
@@ -26,16 +24,13 @@ import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
-import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsProcessor;
-import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
@@ -126,8 +121,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 methodDescriptor,
                 serviceDescriptor);
     }
-
-
 
     @Override
     public void unregister(Invoker<?> invoker) {
@@ -232,8 +225,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     .build());
         }
     }
-
-
 
     private static final class Registration {
         RequestMapping mapping;
