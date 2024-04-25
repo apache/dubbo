@@ -61,7 +61,8 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     public void register(Invoker<?> invoker) {
         Object service = invoker.getUrl().getServiceModel().getProxyObject();
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
-            for (RequestMappingResolver resolver : resolvers) {
+            for (int i = 0, size = resolvers.size(); i < size; i++) {
+                RequestMappingResolver resolver = resolvers.get(i);
                 RestToolKit toolKit = resolver.getRestToolKit();
                 ServiceMeta serviceMeta = new ServiceMeta(classes, service, invoker.getUrl(), toolKit);
                 if (!resolver.accept(serviceMeta)) {

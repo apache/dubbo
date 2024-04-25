@@ -62,7 +62,7 @@ public class CorsUtils {
         meta.setExposedHeaders(parseList(exposeHeaders));
         meta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
         // Return the CorsMeta object.
-        return meta.applyPermitDefaultValues();
+        return meta;
     }
 
     @Nullable

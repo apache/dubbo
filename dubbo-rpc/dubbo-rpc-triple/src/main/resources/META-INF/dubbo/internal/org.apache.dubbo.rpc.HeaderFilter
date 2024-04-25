@@ -1,1 +1,1 @@
-rest-cors-extension=org.apache.dubbo.rpc.protocol.tri.rest.filter.CorsHeaderFilterAdapter
+rest-cors=org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsHeaderFilter

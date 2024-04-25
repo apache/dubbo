@@ -57,10 +57,10 @@ class CorsUtilsTest {
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn(null);
 
         CorsMeta meta = CorsUtils.resolveGlobalMeta(config);
-        Assertions.assertEquals(CorsMeta.DEFAULT_MAX_AGE, meta.getMaxAge());
-        Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_ALL, meta.getAllowedOrigins());
-        Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_METHODS, meta.getAllowedMethods());
-        Assertions.assertEquals(CorsMeta.DEFAULT_PERMIT_ALL, meta.getAllowedHeaders());
+        Assertions.assertNull(meta.getMaxAge());
+        Assertions.assertNull(meta.getAllowedOrigins());
+        Assertions.assertNull(meta.getAllowedMethods());
+        Assertions.assertNull(meta.getAllowedHeaders());
     }
 
     @Test
