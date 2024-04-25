@@ -27,13 +27,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CorsUtils {
-    private static CorsMeta globalCorsMeta;
+    private CorsMeta globalCorsMeta;
     public static final String HTTP = "http";
     public static final String HTTPS = "https";
     public static final String WS = "ws";
     public static final String WSS = "wss";
 
-    private CorsUtils() {}
+    public CorsUtils() {}
 
     public static int getPort(String scheme, int port) {
         if (port == -1) {
@@ -46,7 +46,7 @@ public class CorsUtils {
         return port;
     }
 
-    public static CorsMeta resolveGlobalMeta(Configuration config) {
+    public CorsMeta resolveGlobalMeta(Configuration config) {
 
         // Get the CORS configuration properties from the configuration object.
         String allowOrigins = config.getString(RestConstants.ALLOWED_ORIGINS);
@@ -62,7 +62,7 @@ public class CorsUtils {
         meta.setExposedHeaders(parseList(exposeHeaders));
         meta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
         // Return the CorsMeta object.
-        return meta.applyPermitDefaultValues();
+        return meta;
     }
 
     @Nullable
@@ -73,7 +73,7 @@ public class CorsUtils {
         return Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 
-    public static CorsMeta getGlobalCorsMeta() {
+    public CorsMeta getGlobalCorsMeta() {
         if (globalCorsMeta == null) {
             Configuration globalConfiguration =
                     ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());

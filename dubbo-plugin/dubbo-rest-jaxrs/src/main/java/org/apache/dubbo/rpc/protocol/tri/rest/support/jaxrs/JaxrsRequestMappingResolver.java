@@ -33,9 +33,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 public class JaxrsRequestMappingResolver implements RequestMappingResolver {
 
     private final RestToolKit toolKit;
+    private final CorsUtils corsUtils;
 
     public JaxrsRequestMappingResolver(FrameworkModel frameworkModel) {
         toolKit = new JaxrsRestToolKit(frameworkModel);
+        corsUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CorsUtils.class);
     }
 
     @Override
@@ -70,7 +72,7 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
                 .name(methodMeta.getMethod().getName())
                 .contextPath(methodMeta.getServiceMeta().getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
-                .cors(CorsUtils.getGlobalCorsMeta())
+                .cors(corsUtils.getGlobalCorsMeta())
                 .build();
     }
 

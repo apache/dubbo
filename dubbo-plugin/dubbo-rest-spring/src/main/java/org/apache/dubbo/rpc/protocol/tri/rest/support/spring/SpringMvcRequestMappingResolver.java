@@ -40,9 +40,11 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;
     private volatile RestToolKit toolKit;
+    private final CorsUtils corsUtils;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
+        corsUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CorsUtils.class);
     }
 
     @Override
@@ -136,8 +138,8 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
     private CorsMeta buildCorsMetaWithGlobal(AnnotationMeta<?> crossOrigin) {
         CorsMeta corsMeta = buildCorsMeta(crossOrigin);
         if (corsMeta != null) {
-            return CorsMeta.combine(corsMeta, CorsUtils.getGlobalCorsMeta());
+            return CorsMeta.combine(corsMeta, corsUtils.getGlobalCorsMeta());
         }
-        return CorsUtils.getGlobalCorsMeta();
+        return corsUtils.getGlobalCorsMeta();
     }
 }
