@@ -39,7 +39,7 @@ There's a [README](https://github.com/apache/dubbo-samples/blob/389cd612f1ea57ee
 
 ```xml
 <properties>
-    <dubbo.version>3.2.11</dubbo.version>
+    <dubbo.version>3.2.13-SNAPSHOT</dubbo.version>
 </properties>
 
 <dependencies>
