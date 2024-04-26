@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
