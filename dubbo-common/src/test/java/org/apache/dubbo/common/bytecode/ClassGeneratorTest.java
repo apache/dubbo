@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import javassist.ClassPool;
 
@@ -184,7 +185,7 @@ class ClassGeneratorTest {
         fname.setAccessible(true);
 
         ClassGenerator cg = ClassGenerator.newInstance();
-        cg.setClassName(Bean.class.getName() + "$Builder");
+        cg.setClassName(Bean.class.getName() + "$Builder" + UUID.randomUUID().toString());
         cg.addInterface(Builder.class);
 
         cg.addField("public static java.lang.reflect.Field FNAME;");
