@@ -91,11 +91,11 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.33</spring_version>
-    <spring_security_version>5.8.11</spring_security_version>
+    <spring_security_version>5.8.12</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
     <bytebuddy.version>1.14.13</bytebuddy.version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.1.108.Final</netty4_version>
+    <netty4_version>4.1.109.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
@@ -121,11 +121,11 @@
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.12.4</micrometer.version>
 
-    <micrometer-tracing.version>1.2.4</micrometer-tracing.version>
+    <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
-    <reactor.version>3.6.4</reactor.version>
+    <reactor.version>3.6.5</reactor.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>3.14.9</okhttp_version>
 
@@ -144,7 +144,7 @@
     <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
     <log4j2_version>2.23.1</log4j2_version>
-    <commons_io_version>2.16.0</commons_io_version>
+    <commons_io_version>2.16.1</commons_io_version>
 
     <embedded_redis_version>0.13.0</embedded_redis_version>
 
