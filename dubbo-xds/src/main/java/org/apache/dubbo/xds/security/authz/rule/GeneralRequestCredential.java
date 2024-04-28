@@ -23,7 +23,7 @@ import java.util.Map;
 
 import com.auth0.jwt.interfaces.Claim;
 
-public class HttpRequestCredential implements RequestCredential {
+public class GeneralRequestCredential implements RequestCredential {
 
     private final Map<String, Claim> jwtClaims;
 
@@ -32,7 +32,7 @@ public class HttpRequestCredential implements RequestCredential {
      */
     private final Map<RequestAuthProperty, Object> authProperties;
 
-    public HttpRequestCredential(Map<String, Claim> jwtClaims) {
+    public GeneralRequestCredential(Map<String, Claim> jwtClaims) {
         this.jwtClaims = jwtClaims;
         this.authProperties = new HashMap<>();
     }

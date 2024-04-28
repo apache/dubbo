@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.source;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot.Action;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class MapRuleFactory implements RuleFactory<Map<String, Object>> {
 
     @Override
-    public List<RuleRoot> getRules(List<Map<String, Object>> ruleSources) {
+    public List<RuleRoot> getRules(URL url, List<Map<String, Object>> ruleSources) {
 
         List<RuleRoot> roots = new ArrayList<>();
 

@@ -222,5 +222,10 @@ public enum RequestAuthProperty {
     JWT_ISSUER,
     JWKS,
     JWT_FROM_PARAMS,
-    JWT_FROM_HEADERS
+    JWT_FROM_HEADERS,
+
+    /**
+     * Type of opposite request agent
+     */
+    OPPOSITE_AGENT;
 }

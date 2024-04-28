@@ -49,4 +49,9 @@ public class MapMatcher implements Matcher<Map<String, String>> {
     public RequestAuthProperty propType() {
         return property;
     }
+
+    @Override
+    public String toString() {
+        return "MapMatcher{" + "keyToMatchers=" + keyToMatchers + ", property=" + property + '}';
+    }
 }

@@ -40,4 +40,9 @@ public class CustomMatcher<T> implements Matcher<T> {
     public RequestAuthProperty propType() {
         return property;
     }
+
+    @Override
+    public String toString() {
+        return "CustomMatcher{" + "property=" + property + ", matchFunction=" + matchFunction + '}';
+    }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.source;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
@@ -28,6 +29,6 @@ import java.util.List;
 @SPI
 public interface RuleFactory<T> {
 
-    @Adaptive({"mesh", "authz_rule"})
-    List<RuleRoot> getRules(List<T> ruleSource);
+    @Adaptive({"authz_rule", "mesh"})
+    List<RuleRoot> getRules(URL url, List<T> ruleSource);
 }

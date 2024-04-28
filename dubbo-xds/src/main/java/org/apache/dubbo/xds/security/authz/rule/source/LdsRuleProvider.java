@@ -40,7 +40,6 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_CONNECTION_MANAGER;
 import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_VIRTUAL_INBOUND;
 
-
 @Activate
 public class LdsRuleProvider implements LdsListener, RuleProvider<HttpFilter> {
 

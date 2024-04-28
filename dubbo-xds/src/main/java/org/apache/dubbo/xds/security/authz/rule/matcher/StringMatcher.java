@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class StringMatcher implements Matcher<String> {
@@ -51,7 +52,7 @@ public class StringMatcher implements Matcher<String> {
     public boolean match(String actual) {
         boolean res;
         if (StringUtils.isEmpty(actual)) {
-            res = false;
+            return Objects.equals(condition, actual);
         } else {
             switch (matchType) {
                 case EXACT:
@@ -84,6 +85,12 @@ public class StringMatcher implements Matcher<String> {
     @Override
     public RequestAuthProperty propType() {
         return authProperty;
+    }
+
+    @Override
+    public String toString() {
+        return "StringMatcher{" + "condition='" + condition + '\'' + ", matchType=" + matchType + ", authProperty="
+                + authProperty + ", logger=" + logger + ", not=" + not + '}';
     }
 
     public enum MatchType {

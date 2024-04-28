@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.source;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -91,15 +92,15 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
     public LdsRuleFactory(ApplicationModel applicationModel) {}
 
     @Override
-    public List<RuleRoot> getRules(List<HttpFilter> ruleSource) {
+    public List<RuleRoot> getRules(URL url, List<HttpFilter> ruleSource) {
         ArrayList<RuleRoot> roots = new ArrayList<>(resolveJWT(ruleSource).values());
-        roots.addAll(resolveRbac(ruleSource).values());
+        roots.addAll(resolveRbac(ruleSource));
         return roots;
     }
 
-    public Map<String, RuleRoot> resolveRbac(List<HttpFilter> httpFilters) {
-        Map<String, RuleRoot> roots = new HashMap<>();
-        Map<RBAC.Action, RBAC> rbacMap = new HashMap<>();
+    public List<RuleRoot> resolveRbac(List<HttpFilter> httpFilters) {
+        List<RuleRoot> roots = new ArrayList<>();
+        Map<RBAC.Action, List<RBAC>> actions = new HashMap<>();
         for (HttpFilter httpFilter : httpFilters) {
             if (!httpFilter.getName().equals(LDS_RBAC_FILTER)) {
                 continue;
@@ -109,61 +110,61 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                         .getTypedConfig()
                         .unpack(io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC.class);
                 if (rbac != null) {
-                    /*There are multiple duplicates, and we only choose one of them */
-                    if (!rbacMap.containsKey(rbac.getRules().getAction())) {
-                        rbacMap.put(rbac.getRules().getAction(), rbac.getRules());
-                    }
+                    //TODO Is it possible there are multiple duplicates that have same action?
+                    actions.computeIfAbsent(rbac.getRules().getAction(), (k)-> new ArrayList<>()).add(rbac.getRules());
                 }
             } catch (InvalidProtocolBufferException e) {
                 logger.warn("", "", "", "Parsing RbacRule error", e);
             }
         }
 
-        for (Entry<RBAC.Action, RBAC> rbacEntry : rbacMap.entrySet()) {
-            RBAC.Action action = rbacEntry.getKey();
-            RBAC rbac = rbacEntry.getValue();
+        for (Entry<RBAC.Action, List<RBAC>> rbacEntry : actions.entrySet()) {
+            for(RBAC rbac : rbacEntry.getValue()) {
+                RBAC.Action action = rbacEntry.getKey();
+                RuleRoot ruleNode = new RuleRoot(AND, action.equals(RBAC.Action.ALLOW) ? Action.ALLOW : Action.DENY, "rules");
 
-            RuleRoot ruleNode =
-                    new RuleRoot(AND, action.equals(RBAC.Action.ALLOW) ? Action.ALLOW : Action.DENY, "rules");
+                // policies:  "service-admin"、"product-viewer"
+                for (Entry<String, Policy> entry : rbac.getPoliciesMap()
+                        .entrySet()) {
 
-            // policies:  "service-admin"、"product-viewer"
-            for (Entry<String, Policy> entry : rbac.getPoliciesMap().entrySet()) {
+                    // rule下的单个policy,包含一个principals Node和 permissions Node，两Node之间AND关系
+                    CompositeRuleNode policyNode = new CompositeRuleNode(entry.getKey(), AND);
 
-                // rule下的单个policy,包含一个principals Node和 permissions Node，两Node之间AND关系
-                CompositeRuleNode policyNode = new CompositeRuleNode(entry.getKey(), AND);
+                    // 每个policy下可以多个principal，之间OR关系
+                    CompositeRuleNode principalNode = new CompositeRuleNode("principals", Relation.OR);
 
-                // 每个policy下可以多个principal，之间OR关系
-                CompositeRuleNode principalNode = new CompositeRuleNode("principals", Relation.OR);
+                    List<Principal> principals = entry.getValue()
+                            .getPrincipalsList();
 
-                List<Principal> principals = entry.getValue().getPrincipalsList();
-
-                for (Principal principal : principals) {
-                    // 解析单个Principal到node
-                    RuleNode principalAnd = resolvePrincipal(principal);
-                    if (principalAnd != null) {
-                        principalNode.addChild(principalAnd);
+                    for (Principal principal : principals) {
+                        // 解析单个Principal到node
+                        RuleNode principalAnd = resolvePrincipal(principal);
+                        if (principalAnd != null) {
+                            principalNode.addChild(principalAnd);
+                        }
                     }
-                }
 
-                if (!principals.isEmpty()) {
-                    policyNode.addChild(principalNode);
-                }
-
-                CompositeRuleNode permissionNode = new CompositeRuleNode("permissions", Relation.OR);
-                List<Permission> permissions = entry.getValue().getPermissionsList();
-                for (Permission permission : permissions) {
-                    RuleNode permissionRule = resolvePermission(permission);
-                    if (permissionRule != null) {
-                        permissionNode.addChild(permissionRule);
+                    if (!principals.isEmpty()) {
+                        policyNode.addChild(principalNode);
                     }
-                }
 
-                if (!permissions.isEmpty()) {
-                    policyNode.addChild(permissionNode);
-                }
+                    CompositeRuleNode permissionNode = new CompositeRuleNode("permissions", Relation.OR);
+                    List<Permission> permissions = entry.getValue()
+                            .getPermissionsList();
+                    for (Permission permission : permissions) {
+                        RuleNode permissionRule = resolvePermission(permission);
+                        if (permissionRule != null) {
+                            permissionNode.addChild(permissionRule);
+                        }
+                    }
 
-                ruleNode.addChild(policyNode);
-                roots.put(ruleNode.getNodeName(), ruleNode);
+                    if (!permissions.isEmpty()) {
+                        policyNode.addChild(permissionNode);
+                    }
+
+                    ruleNode.addChild(policyNode);
+                    roots.add(ruleNode);
+                }
             }
         }
         return roots;
@@ -316,9 +317,19 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         }
     }
 
-    protected static final String LDS_HEADER_NAME_AUTHORITY = ":authority";
+    protected static final String HTTP2_HEADER_NAME_AUTHORITY = ":authority";
 
-    protected static final String LDS_HEADER_NAME_METHOD = ":method";
+    protected static final String HTTP2_HEADER_NAME_METHOD = ":method";
+
+    protected static final String HTTP2_HEADER_NAME_PATH = ":path";
+
+    protected static final String HTTP_HEADER_NAME_AUTHORITY = "authority";
+
+    protected static final String HTTP_HEADER_NAME_METHOD = "method";
+
+    protected static final String HTTP_HEADER_NAME_PATH = "path";
+
+    protected static final String HTTP_HEADER_USER_AGENT = "user-agent";
 
     private RuleNode handleLeafPermission(Permission permission) {
         Permission.RuleCase ruleCase = permission.getRuleCase();
@@ -360,24 +371,10 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
             case HEADER: {
                 String headerName = permission.getHeader().getName();
 
-                KeyMatcher matcher = null;
-
-                if (LDS_HEADER_NAME_AUTHORITY.equals(headerName)) {
-                    matcher = Matchers.keyMatcher(
-                            headerName, Matchers.stringMatcher(permission.getHeader(), RequestAuthProperty.HOSTS));
-                    leafRuleNode =
-                            new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.HOSTS.name());
-                } else if (LDS_HEADER_NAME_METHOD.equals(headerName)) {
-                    matcher = Matchers.keyMatcher(
-                            headerName, Matchers.stringMatcher(permission.getHeader(), RequestAuthProperty.METHODS));
-                    leafRuleNode =
-                            new LeafRuleNode(Collections.singletonList(matcher), RequestAuthProperty.METHODS.name());
-                }
-
-                if (matcher == null) {
-                    logger.warn("", "", "", "Unsupported headerName=" + headerName);
-                }
-
+                KeyMatcher  matcher = Matchers.keyMatcher(
+                        headerName, Matchers.stringMatcher(permission.getHeader(), RequestAuthProperty.HEADER));
+                leafRuleNode = new LeafRuleNode(
+                        Collections.singletonList(matcher), matcher.propType().name());
                 break;
             }
             default:

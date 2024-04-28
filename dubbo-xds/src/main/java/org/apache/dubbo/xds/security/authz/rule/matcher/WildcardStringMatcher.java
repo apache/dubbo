@@ -73,4 +73,9 @@ public class WildcardStringMatcher implements Matcher<String> {
     public RequestAuthProperty propType() {
         return authProperty;
     }
+
+    @Override
+    public String toString() {
+        return "WildcardStringMatcher{" + "value='" + value + '\'' + ", authProperty=" + authProperty + '}';
+    }
 }

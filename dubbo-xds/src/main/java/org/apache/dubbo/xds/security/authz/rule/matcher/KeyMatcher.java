@@ -39,6 +39,9 @@ public class KeyMatcher implements Matcher<Map<String, String>> {
 
     @Override
     public boolean match(Map<String, String> actual) {
+        if(actual == null){
+            return this.stringMatcher.match(null);
+        }
         String toMatch = actual.get(key);
         if (toMatch == null) {
             return false;
@@ -49,5 +52,10 @@ public class KeyMatcher implements Matcher<Map<String, String>> {
     @Override
     public RequestAuthProperty propType() {
         return this.stringMatcher.propType();
+    }
+
+    @Override
+    public String toString() {
+        return "KeyMatcher{" + "key='" + key + '\'' + ", stringMatcher=" + stringMatcher + '}';
     }
 }

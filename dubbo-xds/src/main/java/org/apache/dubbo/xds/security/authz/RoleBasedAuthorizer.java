@@ -27,7 +27,6 @@ import org.apache.dubbo.xds.security.api.RequestAuthorizer;
 import org.apache.dubbo.xds.security.authz.rule.CredentialFactory;
 import org.apache.dubbo.xds.security.authz.rule.source.RuleFactory;
 import org.apache.dubbo.xds.security.authz.rule.source.RuleProvider;
-import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 
@@ -51,13 +50,16 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
      * TODO
      * Cached rules
      * Connection Identity -> Authorization Rules
+     * Here are two problems:
+     * 1.How to identify remote connection (may we can use [protocol:port])
+     * 2.How to remove the cache when remote connection is disconnected
      */
-    private final Map<String, List<RuleNode>> rules = new ConcurrentHashMap<>();
+    private final Map<String, List<RuleRoot>> rules = new ConcurrentHashMap<>();
 
     public RoleBasedAuthorizer(ApplicationModel applicationModel) {
         this.ruleProvider = applicationModel.getAdaptiveExtension(RuleProvider.class);
         this.credentialFactory = applicationModel.getAdaptiveExtension(CredentialFactory.class);
-        this.ruleFactory = applicationModel.getBeanFactory().getBean(RuleFactory.class);
+        this.ruleFactory = applicationModel.getAdaptiveExtension(RuleFactory.class);
     }
 
     @Override
@@ -65,8 +67,8 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
     public void validate(Invocation invocation) throws AuthorizationException {
 
         List rulesSources = ruleProvider.getSource(invocation.getInvoker().getUrl(), invocation);
+        List<RuleRoot> roots = ruleFactory.getRules(invocation.getInvoker().getUrl(), rulesSources);
 
-        List<RuleRoot> roots = ruleFactory.getRules(rulesSources);
         List<RuleRoot> andRules = roots.stream()
                 .filter(root -> Relation.AND.equals(root.getRelation()))
                 .collect(Collectors.toList());

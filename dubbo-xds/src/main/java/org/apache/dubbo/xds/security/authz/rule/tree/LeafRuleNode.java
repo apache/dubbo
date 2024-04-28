@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.tree;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 import org.apache.dubbo.xds.security.authz.rule.matcher.Matcher;
 
@@ -35,6 +37,8 @@ public class LeafRuleNode implements RuleNode {
      */
     private List<Matcher> matchers;
 
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(LeafRuleNode.class);
+
     public LeafRuleNode(List<? extends Matcher> expectedConditions, String name) {
         this.matchers = (List<Matcher>) expectedConditions;
         this.rulePropName = name;
@@ -53,8 +57,10 @@ public class LeafRuleNode implements RuleNode {
             Object toValidate = context.getRequestCredential().getRequestProperty(matcher.propType());
 
             if (!matcher.match(toValidate)) {
+                LOGGER.info("principal="+toValidate+" does not match rule "+matcher);
                 return false;
             }
+            LOGGER.info("principal="+toValidate+" successful match rule"+matcher);
         }
 
         return true;

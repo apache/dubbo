@@ -16,14 +16,11 @@
  */
 package org.apache.dubbo.xds.auth;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.xds.PilotExchanger;
 import org.apache.dubbo.xds.istio.IstioConstant;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
@@ -87,28 +84,6 @@ public class AuthTest {
         //
         //        System.out.println(res);
     }
-
-
-    public void testLdsRules(){
-
-        ApplicationModel applicationModel = FrameworkModel.defaultModel().newApplication();
-        applicationModel.setModelName("test-app-1");
-        URL xdsUrl = URL.valueOf("xds://localhost:15012?secure=istio");
-        xdsUrl.setScopeModel(applicationModel);
-
-        //服务JWT
-        PilotExchanger pilotExchanger = PilotExchanger.createInstance(xdsUrl);
-
-        //LDS建立连接
-
-        //LDS更新Rule资源
-
-        //LDS
-
-
-    }
-
-
 
     static {
         System.setProperty(IstioConstant.SERVICE_NAME_KEY, "httpbin");

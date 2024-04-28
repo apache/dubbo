@@ -166,6 +166,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
             url = url.addParameter("clusterID", clusterName);
             // set load balance policy
             url = url.addParameter("loadbalance", lbPolicy);
+            url.setPath(this.serviceType.getName());
             //  cluster to invoker
             Invoker<T> invoker = this.protocol.refer(this.serviceType, url);
             invokers.add(invoker);

@@ -30,6 +30,6 @@ import java.util.List;
 @SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface RuleProvider<T> {
 
-    @Adaptive(value = {"mesh", "authz_rule"})
+    @Adaptive(value = {"authz_rule", "mesh"})
     List<T> getSource(URL url, Invocation invocation);
 }

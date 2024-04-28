@@ -24,6 +24,6 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface CertSource {
 
-    @Adaptive(value = {"mesh", "cert_source"})
+    @Adaptive(value = {"cert_source", "mesh"})
     CertPair getCert(URL url);
 }

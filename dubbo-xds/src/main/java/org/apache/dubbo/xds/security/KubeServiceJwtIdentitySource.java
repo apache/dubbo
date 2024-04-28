@@ -29,7 +29,8 @@ public class KubeServiceJwtIdentitySource implements ServiceIdentitySource {
 
     private final KubeEnv kubeEnv;
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubeServiceJwtIdentitySource.class);
+    private final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(KubeServiceJwtIdentitySource.class);
 
     public KubeServiceJwtIdentitySource(ApplicationModel applicationModel) {
         this.kubeEnv = applicationModel.getBeanFactory().getBean(KubeEnv.class);
