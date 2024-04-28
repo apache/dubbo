@@ -31,6 +31,7 @@ public class MapMatcher implements Matcher<Map<String, String>> {
 
     public MapMatcher(Map<String, Matcher<String>> matcherMap, RequestAuthProperty property) {
         this.keyToMatchers = matcherMap;
+        this.property = property;
     }
 
     @Override

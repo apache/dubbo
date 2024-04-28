@@ -90,7 +90,7 @@ public class StringMatcher implements Matcher<String> {
     @Override
     public String toString() {
         return "StringMatcher{" + "condition='" + condition + '\'' + ", matchType=" + matchType + ", authProperty="
-                + authProperty + ", logger=" + logger + ", not=" + not + '}';
+                + authProperty + ", not=" + not + '}';
     }
 
     public enum MatchType {

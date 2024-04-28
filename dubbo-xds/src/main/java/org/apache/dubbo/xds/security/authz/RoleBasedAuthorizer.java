@@ -29,11 +29,14 @@ import org.apache.dubbo.xds.security.authz.rule.source.RuleFactory;
 import org.apache.dubbo.xds.security.authz.rule.source.RuleProvider;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
+import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot.Action;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import io.micrometer.core.instrument.config.validate.ValidationException;
 
 @Activate
 public class RoleBasedAuthorizer implements RequestAuthorizer {
@@ -69,11 +72,20 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         List rulesSources = ruleProvider.getSource(invocation.getInvoker().getUrl(), invocation);
         List<RuleRoot> roots = ruleFactory.getRules(invocation.getInvoker().getUrl(), rulesSources);
 
+        List<RuleRoot> logRules = roots.stream()
+                .filter(root -> root.getAction().equals(Action.LOG))
+                .collect(Collectors.toList());
+
+        roots.removeAll(logRules);
+
         List<RuleRoot> andRules = roots.stream()
                 .filter(root -> Relation.AND.equals(root.getRelation()))
                 .collect(Collectors.toList());
         List<RuleRoot> orRules = roots.stream()
                 .filter(root -> Relation.OR.equals(root.getRelation()))
+                .collect(Collectors.toList());
+        List<RuleRoot> notRules = roots.stream()
+                .filter(root -> Relation.NOT.equals(root.getRelation()))
                 .collect(Collectors.toList());
 
         RequestCredential requestCredential =
@@ -81,12 +93,32 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
 
         AuthorizationRequestContext context = new AuthorizationRequestContext(invocation, requestCredential);
 
-        boolean andRes = true;
-        for (RuleRoot rule : andRules) {
+        if (!logRules.isEmpty()) {
+            context.startTrace();
+            context.addTraceInfo(":::Start validation trace for request ["
+                    + invocation.getInvoker().getUrl() + "], credentials=[" + invocation.getAttachments() + "] :::");
+
+            for (RuleRoot logRule : logRules) {
+                boolean result;
+                try {
+                    result = logRule.evaluate(context);
+                    context.addTraceInfo("::: Request " + (result ? "meet" : "does not meet") + " rule ["
+                            + logRule.getNodeName() + "] ::: ");
+                } catch (ValidationException e) {
+                    context.addTraceInfo(
+                            "::: Got Exception evaluating rule [" + logRule.getNodeName() + "] , exception=" + e);
+                }
+            }
+            context.addTraceInfo("::: End validation trace :::");
+            context.endTrace();
+            logger.info(context.getTraceInfo());
+        }
+
+        for (RuleRoot rule : notRules) {
             try {
-                if (!rule.evaluate(context) && rule.getAction().boolVal()) {
-                    andRes = false;
-                    break;
+                if (rule.evaluate(context) && rule.getAction().boolVal()) {
+                    throw new AuthorizationException(
+                            "Request authorization failed: request credential meet one of " + "NOT rules.");
                 }
             } catch (Exception e) {
                 logger.error(
@@ -94,7 +126,30 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
                         "",
                         "",
                         "Request authorization failed, source:" + invocation.getServiceName() + // TODO get source
-                                ", target URL:" + invocation.getInvoker().getUrl(),
+                                ", target URL:"
+                                + invocation.getInvoker().getUrl(),
+                        e.getCause());
+                if (e instanceof AuthorizationException) {
+                    throw (AuthorizationException) e;
+                }
+                throw new AuthorizationException(e);
+            }
+        }
+
+        for (RuleRoot rule : andRules) {
+            try {
+                if (!rule.evaluate(context) && rule.getAction().boolVal()) {
+                    throw new AuthorizationException(
+                            "Request authorization failed: request credential doesn't meet " + "all AND rules.");
+                }
+            } catch (Exception e) {
+                logger.error(
+                        "",
+                        "",
+                        "",
+                        "Request authorization failed, source:" + invocation.getServiceName() + // TODO get source
+                                ", target URL:"
+                                + invocation.getInvoker().getUrl(),
                         e.getCause());
                 if (e instanceof AuthorizationException) {
                     throw (AuthorizationException) e;
@@ -116,7 +171,8 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
                         "",
                         "",
                         "Request authorization failed, source:" + invocation.getServiceName() + // TODO source
-                                ", target URL:" + invocation.getInvoker().getUrl(),
+                                ", target URL:"
+                                + invocation.getInvoker().getUrl(),
                         e.getCause());
                 if (e instanceof AuthorizationException) {
                     throw (AuthorizationException) e;
@@ -127,9 +183,10 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
         if (CollectionUtils.isEmpty(orRules)) {
             orRes = true;
         }
-        if (andRes && orRes) {
+        if (orRes) {
             return;
         }
-        throw new AuthorizationException("Request authorization failed: request credential doesn't meet rules.");
+        throw new AuthorizationException(
+                "Request authorization failed: request credential doesn't meet any required " + "OR rules.");
     }
 }

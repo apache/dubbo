@@ -60,11 +60,15 @@ public class CompositeRuleNode implements RuleNode {
     @Override
     public boolean evaluate(AuthorizationRequestContext context) {
         boolean result;
+        context.depthIncrease();
+        if(context.enableTrace()){
+            context.addTraceInfo("<rules name:" + name + ">");
+        }
+
         if (relation == Relation.AND) {
             result = children.values().stream()
                     .allMatch(childList -> childList.stream().allMatch(ch -> ch.evaluate(context)));
         } else if (relation == Relation.OR) {
-            // Relation.OR
             result = children.values().stream()
                     .anyMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
         } else {
@@ -72,6 +76,11 @@ public class CompositeRuleNode implements RuleNode {
             result = children.values().stream()
                     .noneMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
         }
+        if (context.enableTrace()) {
+            String msg = "<rules name:" + name + "> " + (result ? "match " : "not match ") ;
+            context.addTraceInfo(msg);
+        }
+        context.depthDecrease();
         return result;
     }
 
@@ -81,5 +90,11 @@ public class CompositeRuleNode implements RuleNode {
 
     public String getNodeName() {
         return name;
+    }
+
+    @Override
+    public String toString() {
+        return "CompositeRuleNode{" + "name='" + name + '\'' + ", children=" + children + ", relation=" + relation
+                + '}';
     }
 }

@@ -43,6 +43,10 @@ public class RuleRoot extends CompositeRuleNode {
     @Override
     public boolean evaluate(AuthorizationRequestContext context) {
         boolean result;
+        if (context.enableTrace()) {
+            String msg = "<root> ";
+            context.addTraceInfo(msg);
+        }
         if (relation == Relation.AND) {
             result = children.values().stream()
                     .allMatch(childList -> childList.stream().allMatch(ch -> ch.evaluate(context)));
@@ -50,6 +54,10 @@ public class RuleRoot extends CompositeRuleNode {
             // Relation == OR
             result = children.values().stream()
                     .anyMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
+        }
+        if (context.enableTrace()) {
+            String msg = "<root> " + (result ? "match" : "not match, action:" + action);
+            context.addTraceInfo(msg);
         }
         return result;
     }
@@ -67,7 +75,12 @@ public class RuleRoot extends CompositeRuleNode {
         /**
          * The request must not map this policy
          */
-        DENY("DENY", false);
+        DENY("DENY", false),
+
+        /**
+         * Only log this policy, will not affect the result
+         */
+        LOG("LOG", false);
 
         private final String name;
 
@@ -85,6 +98,8 @@ public class RuleRoot extends CompositeRuleNode {
                     return ALLOW;
                 case "DENY":
                     return DENY;
+                case "LOG":
+                    return LOG;
                 default:
                     return null;
             }
@@ -93,5 +108,10 @@ public class RuleRoot extends CompositeRuleNode {
         public boolean boolVal() {
             return boolVal;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "RuleRoot{" + "action=" + action + "} " + super.toString();
     }
 }

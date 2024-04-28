@@ -39,7 +39,7 @@ public class KeyMatcher implements Matcher<Map<String, String>> {
 
     @Override
     public boolean match(Map<String, String> actual) {
-        if(actual == null){
+        if (actual == null) {
             return this.stringMatcher.match(null);
         }
         String toMatch = actual.get(key);

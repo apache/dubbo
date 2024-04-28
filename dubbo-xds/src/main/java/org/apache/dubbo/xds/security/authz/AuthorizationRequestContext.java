@@ -19,29 +19,47 @@ package org.apache.dubbo.xds.security.authz;
 import org.apache.dubbo.rpc.Invocation;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public class AuthorizationRequestContext {
 
     private final Invocation invocation;
 
-    /**
-     * 凭据
-     */
     private final RequestCredential requestCredential;
 
     private boolean failed = false;
 
     private Exception validationException;
 
-    private LinkedList<String> currentMapPath = new LinkedList<>();
+    private boolean enableTrace = false;
+
+    private List<String> validateStackTrace;
+
+    private int depth;
 
     public AuthorizationRequestContext(Invocation invocation, RequestCredential requestCredential) {
         this.invocation = invocation;
         this.requestCredential = requestCredential;
     }
 
-    public String getCurrentPath() {
-        return String.join(".", currentMapPath);
+    public void depthIncrease() {
+        this.depth++;
+    }
+
+    public void depthDecrease() {
+        this.depth--;
+    }
+
+    public void startTrace() {
+        this.enableTrace = true;
+    }
+
+    public void endTrace() {
+        this.enableTrace = false;
+    }
+
+    public boolean enableTrace() {
+        return this.enableTrace;
     }
 
     public boolean isFailed() {
@@ -62,5 +80,29 @@ public class AuthorizationRequestContext {
 
     public RequestCredential getRequestCredential() {
         return requestCredential;
+    }
+
+    public void addTraceInfo(String info) {
+        if (!enableTrace) {
+            return;
+        }
+        if (validateStackTrace == null) {
+            validateStackTrace = new LinkedList<>();
+        }
+        validateStackTrace.add(getNtab()+info);
+    }
+    ;
+
+    public String getTraceInfo() {
+        StringBuilder builder = new StringBuilder();
+        validateStackTrace.forEach(info -> builder.append(info).append("\n"));
+        return builder.toString();
+    }
+    public String getNtab(){
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < depth; i++) {
+            builder.append("    ");
+        }
+        return builder.toString();
     }
 }

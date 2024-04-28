@@ -110,8 +110,9 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                         .getTypedConfig()
                         .unpack(io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC.class);
                 if (rbac != null) {
-                    //TODO Is it possible there are multiple duplicates that have same action?
-                    actions.computeIfAbsent(rbac.getRules().getAction(), (k)-> new ArrayList<>()).add(rbac.getRules());
+                    // TODO Is it possible there are multiple duplicates that have same action?
+                    actions.computeIfAbsent(rbac.getRules().getAction(), (k) -> new ArrayList<>())
+                            .add(rbac.getRules());
                 }
             } catch (InvalidProtocolBufferException e) {
                 logger.warn("", "", "", "Parsing RbacRule error", e);
@@ -119,13 +120,13 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         }
 
         for (Entry<RBAC.Action, List<RBAC>> rbacEntry : actions.entrySet()) {
-            for(RBAC rbac : rbacEntry.getValue()) {
+            for (RBAC rbac : rbacEntry.getValue()) {
                 RBAC.Action action = rbacEntry.getKey();
-                RuleRoot ruleNode = new RuleRoot(AND, action.equals(RBAC.Action.ALLOW) ? Action.ALLOW : Action.DENY, "rules");
+                RuleRoot ruleNode =
+                        new RuleRoot(AND, action.equals(RBAC.Action.ALLOW) ? Action.ALLOW : Action.DENY, "rules");
 
                 // policies:  "service-admin"、"product-viewer"
-                for (Entry<String, Policy> entry : rbac.getPoliciesMap()
-                        .entrySet()) {
+                for (Entry<String, Policy> entry : rbac.getPoliciesMap().entrySet()) {
 
                     // rule下的单个policy,包含一个principals Node和 permissions Node，两Node之间AND关系
                     CompositeRuleNode policyNode = new CompositeRuleNode(entry.getKey(), AND);
@@ -133,8 +134,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                     // 每个policy下可以多个principal，之间OR关系
                     CompositeRuleNode principalNode = new CompositeRuleNode("principals", Relation.OR);
 
-                    List<Principal> principals = entry.getValue()
-                            .getPrincipalsList();
+                    List<Principal> principals = entry.getValue().getPrincipalsList();
 
                     for (Principal principal : principals) {
                         // 解析单个Principal到node
@@ -149,8 +149,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                     }
 
                     CompositeRuleNode permissionNode = new CompositeRuleNode("permissions", Relation.OR);
-                    List<Permission> permissions = entry.getValue()
-                            .getPermissionsList();
+                    List<Permission> permissions = entry.getValue().getPermissionsList();
                     for (Permission permission : permissions) {
                         RuleNode permissionRule = resolvePermission(permission);
                         if (permissionRule != null) {
@@ -371,7 +370,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
             case HEADER: {
                 String headerName = permission.getHeader().getName();
 
-                KeyMatcher  matcher = Matchers.keyMatcher(
+                KeyMatcher matcher = Matchers.keyMatcher(
                         headerName, Matchers.stringMatcher(permission.getHeader(), RequestAuthProperty.HEADER));
                 leafRuleNode = new LeafRuleNode(
                         Collections.singletonList(matcher), matcher.propType().name());

@@ -51,23 +51,37 @@ public class LeafRuleNode implements RuleNode {
 
     @Override
     public boolean evaluate(AuthorizationRequestContext context) {
+        context.depthIncrease();
         // If we have multiple values to validate, then every value must match at list one rule pattern
         for (Matcher matcher : matchers) {
 
             Object toValidate = context.getRequestCredential().getRequestProperty(matcher.propType());
+            boolean match = matcher.match(toValidate);
 
-            if (!matcher.match(toValidate)) {
-                LOGGER.info("principal="+toValidate+" does not match rule "+matcher);
+            if (context.enableTrace()) {
+                String msg = "<leaf name:"+rulePropName +">"+ (match ? "match" : "not match") + " for request property "
+                        + toValidate + ", " + matcher ;
+                context.addTraceInfo(msg);
+            }
+
+            if (!match) {
+                LOGGER.debug("principal=" + toValidate + " does not match rule " + matcher);
+                context.depthDecrease();
                 return false;
             }
-            LOGGER.info("principal="+toValidate+" successful match rule"+matcher);
+            LOGGER.debug("principal=" + toValidate + " successful match rule " + matcher);
         }
-
+        context.depthDecrease();
         return true;
     }
 
     @Override
     public String getNodeName() {
         return rulePropName;
+    }
+
+    @Override
+    public String toString() {
+        return "LeafRuleNode{" + "rulePropName='" + rulePropName + '\'' + ", matchers=" + matchers + '}';
     }
 }

@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.UInt32Value;
 import io.envoyproxy.envoy.config.core.v3.CidrRange;
 import io.envoyproxy.envoy.config.rbac.v3.Permission;
@@ -57,10 +56,8 @@ import org.junit.jupiter.api.Assertions;
 public class LdsRuleTest {
 
     @Test
-    public void testMatcher() throws InvalidProtocolBufferException {
+    public void testMatcher() {
 
-
-        // 创建 RBAC 配置
         RBAC sampleConfig1 = io.envoyproxy
                 .envoy
                 .extensions
@@ -96,8 +93,8 @@ public class LdsRuleTest {
                                         .build())
                                 .build())
                 .buildPartial();
-          RBAC sampleConfig2 = RBAC.newBuilder()
-                .setAction(RBAC.Action.ALLOW)
+        RBAC sampleConfig2 = RBAC.newBuilder()
+                .setAction(Action.ALLOW)
                 .putPolicies(
                         "complex-policy-2",
                         Policy.newBuilder()
@@ -153,17 +150,6 @@ public class LdsRuleTest {
                                                                                                                 .setPrefix(
                                                                                                                         "admin"))))
                                                                 .build()))
-                                                //                                        .addIds(Principal.newBuilder()
-                                                //
-                                                // .setMetadata(MetadataMatcher.newBuilder()
-                                                //
-                                                // .addMatchers(MetadataMatcher.MetadataMatcherEntry.newBuilder()
-                                                //
-                                                // .setKey(MetadataMatcher.newBuilder().setKey("envoy.lb").build())
-                                                //
-                                                // .setValueMatcher(MetadataMatcher.ValueMatcher.newBuilder().setStringMatch(StringMatcher.newBuilder().setExact("special"))))
-                                                //                                                        .build()))
-                                                //                                        .build())
                                                 .build())
                                         .build())
                                 .build())
@@ -202,39 +188,33 @@ public class LdsRuleTest {
                 .setTypedConfig(Any.pack(rbacConfig2))
                 .build();
 
-        //        // 创建 HttpConnectionManager 配置
-        //        HttpConnectionManager manager = HttpConnectionManager.newBuilder()
-        //                .setCodecType(HttpConnectionManager.CodecType.AUTO)
-        //                .setStatPrefix("ingress_http")
-        //                .addHttpFilters(rbacFilter)
-        //                .setRouteConfig(RouteConfiguration.newBuilder().setName("local_route"))
-        //                .build();
-
         LdsRuleFactory ldsRuleFactory = new LdsRuleFactory(null);
         List<RuleRoot> rules =
                 ldsRuleFactory.getRules(URL.valueOf("test://test"), Arrays.asList(rbacFilter, rbacFilter2));
 
-        //配置1 ：允许GET、来自 *CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US、源IP 11.22.33*的请求
-        //配置2: （允许访问/api 或 user-agent为Android） 且 （目标端口为443 或 目标IP为 10.1.2*） 且 （Principal = user@example.com 或  admin*） 的请求
-
-
+        // rule1: ALLOW [ method=GET AND FROM *CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US
+        // AND sourceIP = 11.22.33*]
+        // rule2: ALLOW [(path=/api OR user-agent=Android) AND (destinationPort=443 OR destinationIP=10.1.2*) AND
+        // (Principal = user@example.com OR admin*) ]
         GeneralRequestCredential credential = new GeneralRequestCredential(Collections.emptyMap());
         credential.addByType(RequestAuthProperty.HTTP_METHOD, "GET");
-        credential.addByType(RequestAuthProperty.AUTHENTICATED, "admin,CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US");
-        credential.addByType(RequestAuthProperty.URL_PATH,"/api");
+        credential.addByType(
+                RequestAuthProperty.AUTHENTICATED,
+                "admin,CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US");
+        credential.addByType(RequestAuthProperty.URL_PATH, "/api");
         HashMap<String, String> header = new HashMap<>();
-        header.put("path","/api");
-        header.put("method","GET");
-        credential.addByType(RequestAuthProperty.HEADER,header);
-        credential.addByType(RequestAuthProperty.REMOTE_IP,"33.44.55.66");
-        credential.addByType(RequestAuthProperty.DESTINATION_IP,"11.22.33.44");
-        credential.addByType(RequestAuthProperty.DESTINATION_PORT,"443");
+        header.put("path", "/api");
+        header.put("method", "GET");
+        credential.addByType(RequestAuthProperty.HEADER, header);
+        credential.addByType(RequestAuthProperty.REMOTE_IP, "33.44.55.66");
+        credential.addByType(RequestAuthProperty.DESTINATION_IP, "11.22.33.44");
+        credential.addByType(RequestAuthProperty.DESTINATION_PORT, "443");
         AuthorizationRequestContext context = new AuthorizationRequestContext(null, credential);
 
-        boolean res = rules.get(0)
-                .evaluate(context);
-
+        context.startTrace();
+        boolean res = rules.get(0).evaluate(context);
         res &= rules.get(1).evaluate(context);
         Assertions.assertTrue(res);
+        System.out.println(context.getTraceInfo());
     }
 }
