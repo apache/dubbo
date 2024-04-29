@@ -18,9 +18,6 @@ rules:
     resources: ["authorizationpolicies"]
     verbs: ["get", "list", "watch"]
 ---
-
-
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -34,6 +31,7 @@ roleRef:
   kind: Role
   name: authorizationpolicy-reader-foo
   apiGroup: rbac.authorization.k8s.io
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

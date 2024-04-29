@@ -26,6 +26,5 @@ dubbo:
     port: 12346
     host: 192.168.0.103
   registry:
-    id: zk-registry
-    address: zookeeper://127.0.0.1:2181?security=mTLS,sa_jwt
-#    address: istio://localhost:15012?security=mTLS,sa_jwt
+    id: isitod
+    address: istio://istiod.istio-system.svc:15012?security=mTLS

@@ -48,6 +48,7 @@ public class MeshCertProvider implements CertProvider {
     public boolean isSupport(URL address) {
 
         // TODO: To support multi-protocol in one port , we need more properties to indicate if opposite supports TLS
+        // TODO
         int port = address.getPort();
         TlsType type = modeRepo.getType(String.valueOf(port));
 

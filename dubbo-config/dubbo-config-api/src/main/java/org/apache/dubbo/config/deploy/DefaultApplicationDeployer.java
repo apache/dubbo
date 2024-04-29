@@ -225,8 +225,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             loadApplicationConfigs();
 
-            //
-
             initModuleDeployers();
 
             initMetricsReporter();

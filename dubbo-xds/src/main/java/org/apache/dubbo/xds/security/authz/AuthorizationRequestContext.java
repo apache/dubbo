@@ -89,7 +89,7 @@ public class AuthorizationRequestContext {
         if (validateStackTrace == null) {
             validateStackTrace = new LinkedList<>();
         }
-        validateStackTrace.add(getNtab()+info);
+        validateStackTrace.add(getNtab() + info);
     }
     ;
 
@@ -98,7 +98,8 @@ public class AuthorizationRequestContext {
         validateStackTrace.forEach(info -> builder.append(info).append("\n"));
         return builder.toString();
     }
-    public String getNtab(){
+
+    public String getNtab() {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < depth; i++) {
             builder.append("    ");

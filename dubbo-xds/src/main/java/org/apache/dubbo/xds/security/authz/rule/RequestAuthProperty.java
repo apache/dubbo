@@ -228,7 +228,6 @@ public enum RequestAuthProperty {
      * Type of opposite request agent
      */
     OPPOSITE_AGENT,
-
     /**
      * spiffe://{trust_domain}/{workload_identity}
      */

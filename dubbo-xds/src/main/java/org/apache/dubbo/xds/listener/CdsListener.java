@@ -14,25 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.springboot.demo.consumer;
+package org.apache.dubbo.xds.listener;
 
-import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.springboot.demo.DemoService2;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@DubboService(parameters = {"security", "mTLS,sa_jwt"})
-public class DemoServiceImpl2 implements DemoService2 {
-
-    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl2.class);
-
-    @Override
-    public String sayHello(String name) {
-
-        logger.info("Hello " + name + ", request from consumer: "
-                + RpcContext.getContext().getRemoteAddress());
-        return "hello," + name;
-    }
-}
+public interface CdsListener {}

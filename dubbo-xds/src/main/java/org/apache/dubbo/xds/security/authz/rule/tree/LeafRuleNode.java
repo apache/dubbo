@@ -59,8 +59,8 @@ public class LeafRuleNode implements RuleNode {
             boolean match = matcher.match(toValidate);
 
             if (context.enableTrace()) {
-                String msg = "<leaf name:"+rulePropName +">"+ (match ? "match" : "not match") + " for request property "
-                        + toValidate + ", " + matcher ;
+                String msg = "<leaf name:" + rulePropName + ">" + (match ? "match" : "not match")
+                        + " for request property " + toValidate + ", " + matcher;
                 context.addTraceInfo(msg);
             }
 

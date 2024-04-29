@@ -61,7 +61,7 @@ public class CompositeRuleNode implements RuleNode {
     public boolean evaluate(AuthorizationRequestContext context) {
         boolean result;
         context.depthIncrease();
-        if(context.enableTrace()){
+        if (context.enableTrace()) {
             context.addTraceInfo("<rules name:" + name + ">");
         }
 
@@ -77,7 +77,7 @@ public class CompositeRuleNode implements RuleNode {
                     .noneMatch(childList -> childList.stream().anyMatch(ch -> ch.evaluate(context)));
         }
         if (context.enableTrace()) {
-            String msg = "<rules name:" + name + "> " + (result ? "match " : "not match ") ;
+            String msg = "<rules name:" + name + "> " + (result ? "match " : "not match ");
             context.addTraceInfo(msg);
         }
         context.depthDecrease();
