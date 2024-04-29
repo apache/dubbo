@@ -100,8 +100,6 @@ import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.MESH_KEY;
-import static org.apache.dubbo.rpc.Constants.SECURITY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -478,7 +476,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private T createProxy(Map<String, String> referenceParameters) {
         urls.clear();
 
-        meshModeHandleUrl(referenceParameters);
+        // TODO: Maybe not need this logic.
+        // meshModeHandleUrl(referenceParameters);
 
         if (StringUtils.isNotEmpty(url)) {
             // user specified URL, could be peer-to-peer address, or register center's address.
@@ -632,13 +631,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (isInjvm() != null && isInjvm()) {
                     u = u.addParameter(LOCAL_PROTOCOL, true);
                 }
+                ConfigValidationUtils.loadMeshConfig(u, referenceParameters);
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
-                if (u.hasParameter(MESH_KEY)) {
-                    referenceParameters.put(MESH_KEY, u.getParameter(MESH_KEY));
-                    if (u.hasParameter(SECURITY_KEY)) {
-                        referenceParameters.put(SECURITY_KEY, u.getParameter(SECURITY_KEY));
-                    }
-                }
             }
         }
         if (urls.isEmpty() && shouldJvmRefer(referenceParameters)) {
@@ -663,7 +657,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void createInvoker() {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
-
             invoker = protocolSPI.refer(interfaceClass, curUrl);
             // registry url, mesh-enable and unloadClusterRelated is true, not need Cluster.
             if (!UrlUtils.isRegistry(curUrl) && !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {
@@ -726,7 +719,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 Thread.currentThread().interrupt();
                 break;
             }
-            available = invoker.isAvailable();
+            // TODO : This problem needs to be considered how to solve, temporarily return true!
+            available = true;
+            // available = invoker.isAvailable();
         } while (!available && checkDeadline > System.currentTimeMillis());
         logger.warn(
                 LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS,

@@ -53,7 +53,7 @@ public class XdsChannel {
 
     private URL url;
 
-    private static final String SECURE = "secure";
+    private static final String SECURITY = "security";
 
     private static final String PLAINTEXT = "plaintext";
 
@@ -72,7 +72,8 @@ public class XdsChannel {
         this.url = url;
         try {
             if (!url.getParameter(USE_AGENT, false)) {
-                if (PLAINTEXT.equals(url.getParameter(SECURE))) {
+                // TODO：Need to consider situation where only user sa_jwt
+                if (PLAINTEXT.equals(url.getParameter(SECURITY))) {
                     managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
                             .usePlaintext()
                             .build();

@@ -66,34 +66,6 @@ public class PilotExchanger {
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
         adsObserver = new AdsObserver(url, NodeBuilder.build());
 
-        //        // rds resources callback
-        //        Consumer<List<XdsRouteConfiguration>> rdsCallback = (xdsRouteConfigurations) -> {
-        //            xdsRouteConfigurations.forEach(xdsRouteConfiguration -> {
-        //                xdsRouteConfiguration.getVirtualHosts().forEach((serviceName, xdsVirtualHost) -> {
-        //                    this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
-        //                    // when resource update, notify subscribers
-        //                    if (rdsListeners.containsKey(serviceName)) {
-        //                        for (XdsDirectory listener : rdsListeners.get(serviceName)) {
-        //                            listener.onRdsChange(serviceName, xdsVirtualHost);
-        //                        }
-        //                    }
-        //                });
-        //            });
-        //        };
-        //
-
-        // eds resources callback
-        //        Consumer<List<XdsCluster>> edsCallback = (xdsClusters) -> {
-        //            xdsClusters.forEach(xdsCluster -> {
-        //                this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
-        //                if (cdsListeners.containsKey(xdsCluster.getName())) {
-        //                    for (XdsDirectory listener : cdsListeners.get(xdsCluster.getName())) {
-        //                        listener.onEdsChange(xdsCluster.getName(), xdsCluster);
-        //                    }
-        //                }
-        //            });
-        //        };
-
         this.rdsProtocol =
                 new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
         this.edsProtocol =

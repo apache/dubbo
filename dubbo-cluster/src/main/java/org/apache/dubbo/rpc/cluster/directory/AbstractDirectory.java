@@ -73,8 +73,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_T
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.rpc.Constants.MESH_KEY;
-import static org.apache.dubbo.rpc.Constants.SECURITY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -149,6 +147,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this(url, null, isUrlFromRegistry);
     }
 
+    public AbstractDirectory(URL url, RouterChain<T> routerChain, boolean isUrlFromRegistry, URL consumerUrl) {
+        this(addConsumerUrl(url, consumerUrl), null, isUrlFromRegistry);
+    }
+
     public AbstractDirectory(URL url, RouterChain<T> routerChain, boolean isUrlFromRegistry) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
@@ -186,13 +188,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 consumerUrlFrom = consumerUrlFrom.clearParameters();
             }
             this.consumerUrl = consumerUrlFrom.addParameters(queryMap);
-        }
-
-        if (url.getParameter(MESH_KEY) != null) {
-            this.consumerUrl = this.consumerUrl.addParameter(MESH_KEY, url.getParameter(MESH_KEY));
-            if (url.getParameter(SECURITY_KEY) != null) {
-                this.consumerUrl = this.consumerUrl.addParameter(SECURITY_KEY, url.getParameter(SECURITY_KEY));
-            }
         }
 
         this.connectivityExecutor = applicationModel
@@ -259,6 +254,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 singleChain.getLock().readLock().unlock();
             }
         }
+    }
+
+    private static URL addConsumerUrl(URL url, URL consumerUrl) {
+        Map<String, String> referMap = new HashMap<>();
+        referMap.put(CONSUMER_URL_KEY, consumerUrl.toString());
+        url = url.putAttribute(REFER_KEY, referMap);
+        return url;
     }
 
     @Override

@@ -1,2 +1,1 @@
 default=org.apache.dubbo.xds.security.authz.rule.source.KubeRuleProvider
-

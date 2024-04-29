@@ -25,7 +25,7 @@ public class IstioConstant {
     /**
      * CA and xDS services
      */
-    public static final String DEFAULT_CA_ADDR = "localhost:15012";
+    public static final String DEFAULT_CA_ADDR = "istiod.istio-system.svc:15012";
 
     /**
      * The trust domain for spiffe certificates
@@ -44,13 +44,13 @@ public class IstioConstant {
     /**
      * k8s jwt token
      */
-    public static String KUBERNETES_SA_PATH = "/Users/smzdm/hjf/xds/resources/token";
+    public static String KUBERNETES_SA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
 
-    public static final String KUBERNETES_CA_PATH = "/Users/smzdm/hjf/xds/resources/ca.crt";
+    public static final String KUBERNETES_CA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 
-    public static String ISTIO_SA_PATH = "/Users/smzdm/hjf/xds/resources/token";
+    public static String ISTIO_SA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
 
-    public static final String ISTIO_CA_PATH = "/Users/smzdm/hjf/xds/resources/ca.crt";
+    public static final String ISTIO_CA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 
     public static final String KUBERNETES_NAMESPACE_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
 

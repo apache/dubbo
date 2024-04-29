@@ -17,6 +17,8 @@
 package org.apache.dubbo.xds.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -50,7 +52,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     private final String protocolName;
 
-    PilotExchanger pilotExchanger = PilotExchanger.getInstance();
+    PilotExchanger pilotExchanger;
 
     private Protocol protocol;
 
@@ -58,12 +60,14 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     private final Map<String, XdsCluster<T>> xdsClusterMap = new ConcurrentHashMap<>();
 
+    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsDirectory.class);
+
     public XdsDirectory(Directory<T> directory) {
-        super(directory.getConsumerUrl(), true);
+        super(directory.getUrl(), null, true, directory.getConsumerUrl());
         this.serviceType = directory.getInterface();
         this.url = directory.getConsumerUrl();
         this.applicationNames = url.getParameter("provided-by").split(",");
-        this.protocolName = url.getParameter("protocol", "dubbo");
+        this.protocolName = url.getParameter("protocol", "tri");
         this.protocol = directory.getProtocol();
         super.routerChain = directory.getRouterChain();
         this.pilotExchanger =
@@ -161,7 +165,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         xdsEndpoints.forEach(e -> {
             String ip = e.getAddress();
             int port = e.getPortValue();
-            URL url = new URL(this.protocolName, ip, port);
+            URL url = new URL(this.protocolName, ip, port, this.url.getParameters());
             // set cluster name
             url = url.addParameter("clusterID", clusterName);
             // set load balance policy
@@ -172,13 +176,14 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
             invokers.add(invoker);
         });
         // TODO: Consider cases where some clients are not available
-        super.getInvokers().addAll(invokers);
-        // super.setInvokers(invokers);
+        // super.getInvokers().addAll(invokers);
+        // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor multi clusters.
+        super.setInvokers(invokers);
         xdsCluster.setInvokers(invokers);
     }
 
     @Override
     public boolean isAvailable() {
-        return false;
+        return true;
     }
 }

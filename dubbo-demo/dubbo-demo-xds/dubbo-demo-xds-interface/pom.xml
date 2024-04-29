@@ -15,32 +15,19 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-parent</artifactId>
+    <artifactId>dubbo-demo-xds</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-demo</artifactId>
-  <packaging>pom</packaging>
-  <name>${project.artifactId}</name>
-  <description>The demo module of dubbo project</description>
 
-  <modules>
-    <module>dubbo-demo-interface</module>
-    <module>dubbo-demo-xml</module>
-    <module>dubbo-demo-annotation</module>
-    <module>dubbo-demo-api</module>
-    <module>dubbo-demo-generic-call</module>
-    <module>dubbo-demo-triple</module>
-    <module>dubbo-demo-native</module>
-    <module>dubbo-demo-spring-boot</module>
-    <module>dubbo-demo-xds</module>
-  </modules>
+  <artifactId>dubbo-demo-xds-interface</artifactId>
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
   </properties>
+
 </project>

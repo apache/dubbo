@@ -14,25 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.cluster;
+package org.apache.dubbo.xds.demo;
 
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
-import org.apache.dubbo.xds.directory.XdsDirectory;
+public interface DemoService {
 
-public class XdsCluster extends AbstractCluster {
-
-    public static final String NAME = "xds";
-
-    @Override
-    protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        XdsDirectory<T> xdsDirectory = new XdsDirectory<>(directory);
-        return new XdsClusterInvoker<>(xdsDirectory);
-    }
-
-    public boolean isAvailable() {
-        return true;
-    }
+    String sayHello(String name);
 }

@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.cluster;
+package org.apache.dubbo.xds.demo.provider;
 
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
-import org.apache.dubbo.xds.directory.XdsDirectory;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
-public class XdsCluster extends AbstractCluster {
+import java.util.concurrent.CountDownLatch;
 
-    public static final String NAME = "xds";
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-    @Override
-    protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        XdsDirectory<T> xdsDirectory = new XdsDirectory<>(directory);
-        return new XdsClusterInvoker<>(xdsDirectory);
-    }
-
-    public boolean isAvailable() {
-        return true;
+@SpringBootApplication
+@EnableDubbo(scanBasePackages = {"org.apache.dubbo.xds.demo.provider"})
+public class XdsProviderApplication {
+    public static void main(String[] args) throws InterruptedException {
+        // System.setProperty(IstioConstant.PILOT_CERT_PROVIDER_KEY, "istiod");
+        SpringApplication.run(XdsProviderApplication.class, args);
+        System.out.println("dubbo service started");
+        new CountDownLatch(1).await();
     }
 }

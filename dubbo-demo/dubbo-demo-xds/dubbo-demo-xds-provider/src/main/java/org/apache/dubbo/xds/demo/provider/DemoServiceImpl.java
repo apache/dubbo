@@ -14,25 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.cluster;
+package org.apache.dubbo.xds.demo.provider;
 
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
-import org.apache.dubbo.xds.directory.XdsDirectory;
+import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.xds.demo.DemoService;
 
-public class XdsCluster extends AbstractCluster {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    public static final String NAME = "xds";
+@DubboService
+public class DemoServiceImpl implements DemoService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
 
     @Override
-    protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        XdsDirectory<T> xdsDirectory = new XdsDirectory<>(directory);
-        return new XdsClusterInvoker<>(xdsDirectory);
-    }
-
-    public boolean isAvailable() {
-        return true;
+    public String sayHello(String name) {
+        logger.info("Hello " + name + ", request from consumer: "
+                + RpcContext.getContext().getRemoteAddress());
+        return "hello" + name;
     }
 }

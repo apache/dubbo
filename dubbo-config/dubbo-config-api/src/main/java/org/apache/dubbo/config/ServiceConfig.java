@@ -114,12 +114,10 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.remoting.Constants.IS_PU_SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.MESH_KEY;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.rpc.Constants.SECURITY_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
@@ -609,6 +607,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             ProtocolConfig protocolConfig, List<URL> registryURLs, RegisterTypeEnum registerType) {
         Map<String, String> map = buildAttributes(protocolConfig);
 
+        for (URL u : registryURLs) {
+            ConfigValidationUtils.loadMeshConfig(u, map);
+        }
+
         // remove null key and null value
         map.keySet().removeIf(key -> StringUtils.isEmpty(key) || StringUtils.isEmpty(map.get(key)));
         // init serviceMetadata attachments
@@ -927,13 +929,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 String proxy = url.getParameter(PROXY_KEY);
                 if (StringUtils.isNotEmpty(proxy)) {
                     registryURL = registryURL.addParameter(PROXY_KEY, proxy);
-                }
-
-                if (registryURL.getParameter(MESH_KEY) != null) {
-                    url = url.addParameter(MESH_KEY, registryURL.getParameter(MESH_KEY));
-                    if (registryURL.getParameter(SECURITY_KEY) != null) {
-                        url = url.addParameter(SECURITY_KEY, registryURL.getParameter(SECURITY_KEY));
-                    }
                 }
 
                 if (logger.isInfoEnabled()) {
