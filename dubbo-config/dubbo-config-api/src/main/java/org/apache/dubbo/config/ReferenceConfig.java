@@ -719,9 +719,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 Thread.currentThread().interrupt();
                 break;
             }
-            // TODO : This problem needs to be considered how to solve, temporarily return true!
-            available = true;
-            // available = invoker.isAvailable();
+            available = invoker.isAvailable();
         } while (!available && checkDeadline > System.currentTimeMillis());
         logger.warn(
                 LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS,

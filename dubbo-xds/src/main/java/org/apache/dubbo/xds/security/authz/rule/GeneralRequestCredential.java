@@ -28,7 +28,7 @@ public class GeneralRequestCredential implements RequestCredential {
     private final Map<String, Claim> jwtClaims;
 
     /**
-     * path-> credential properties
+     * PropertyName -> credential properties
      */
     private final Map<RequestAuthProperty, Object> authProperties;
 

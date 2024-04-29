@@ -99,7 +99,7 @@ public class AuthorizationRequestContext {
         return builder.toString();
     }
 
-    public String getNtab() {
+    private String getNtab() {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < depth; i++) {
             builder.append("    ");
