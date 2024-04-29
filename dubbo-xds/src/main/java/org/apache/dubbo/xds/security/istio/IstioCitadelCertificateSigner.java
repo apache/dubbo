@@ -240,7 +240,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
         try {
             this.trustChain = new X509CertChains(trustChains);
         } catch (Exception e) {
-            logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "Got exception when resolving trust chains from istio", e);
+            logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "","","Got exception when resolving trust chains from istio", e);
         }
     }
 

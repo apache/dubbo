@@ -277,13 +277,13 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                         }
                         break;
                     default:
-                        logger.warn("Unsupported metadata type=" + key);
+                        logger.warn("0-0","","", "Unsupported metadata type=" + key);
                         break;
                 }
                 break;
 
             default:
-                logger.warn("Unsupported principalCase =" + principalCase);
+                logger.warn("0-0","","","Unsupported principalCase =" + principalCase);
                 break;
         }
         return valueNode;
