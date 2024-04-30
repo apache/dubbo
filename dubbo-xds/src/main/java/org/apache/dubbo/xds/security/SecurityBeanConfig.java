@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.xds.security;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -25,7 +27,12 @@ import org.apache.dubbo.xds.kubernetes.KubeEnv;
 import org.apache.dubbo.xds.security.api.MeshCertProvider;
 import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
 
+import java.io.IOException;
+
 public class SecurityBeanConfig implements ScopeModelInitializer {
+
+
+    private ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SecurityBeanConfig.class);
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
@@ -34,9 +41,18 @@ public class SecurityBeanConfig implements ScopeModelInitializer {
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
-        applicationModel.getBeanFactory().getOrRegisterBean(KubeEnv.class);
-        applicationModel.getBeanFactory().getOrRegisterBean(KubeApiClient.class);
-        applicationModel.getBeanFactory().getOrRegisterBean(MapRuleFactory.class);
+        KubeEnv env = applicationModel.getBeanFactory()
+                .getOrRegisterBean(KubeEnv.class);
+        try {
+            if (env.getServiceAccountToken().length > 0) {
+                applicationModel.getBeanFactory()
+                        .getOrRegisterBean(KubeApiClient.class);
+                applicationModel.getBeanFactory()
+                        .getOrRegisterBean(MapRuleFactory.class);
+            }
+        }catch (IOException e){
+            logger.info("SecurityBeanConfig are not initialized because SA token not found.");
+        }
     }
 
     @Override
