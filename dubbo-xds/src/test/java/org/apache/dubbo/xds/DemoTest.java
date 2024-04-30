@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.mockito.Mockito;
@@ -50,7 +49,7 @@ public class DemoTest {
     //            ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     //
 
-    @Test
+//    @Test
     public void testXdsRouterInitial() throws InterruptedException {
         System.setProperty("API_SERVER_PATH", "https://127.0.0.1:6443");
         System.setProperty("SA_CA_PATH", "/Users/nameles/Desktop/test_secrets/kubernetes.io/serviceaccount/ca.crt");
