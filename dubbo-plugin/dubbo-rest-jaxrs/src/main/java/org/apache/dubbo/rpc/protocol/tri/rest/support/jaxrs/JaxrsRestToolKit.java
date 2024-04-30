@@ -30,9 +30,12 @@ final class JaxrsRestToolKit extends DefaultRestToolKit {
 
     private final BeanArgumentBinder binder;
 
+    private final JaxrsParamConverter jaxrsParamConverter;
+
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
         binder = new BeanArgumentBinder(frameworkModel);
+        jaxrsParamConverter = new JaxrsParamConverter(frameworkModel);
     }
 
     @Override
@@ -42,6 +45,12 @@ final class JaxrsRestToolKit extends DefaultRestToolKit {
                 return value;
             }
             return typeConverter.convert(value, MultivaluedHashMap.class);
+        }
+        if (jaxrsParamConverter.canConvert(value.getClass(), parameter.getActualType())) {
+            Object convertResult = jaxrsParamConverter.convert(value.getClass(), parameter.getType(), value);
+            if (convertResult != null) {
+                return convertResult;
+            }
         }
         return super.convert(value, parameter);
     }
