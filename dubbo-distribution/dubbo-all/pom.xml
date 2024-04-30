@@ -1042,14 +1042,6 @@
                 </transformer>
 
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.api.JwkSource</resource>
-                </transformer>
-
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.api.JwkSource</resource>
-                </transformer>
-
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.api.RequestAuthorizer</resource>
                 </transformer>
 
@@ -1071,6 +1063,10 @@
 
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.authz.rule.source.RuleFactory</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.authz.rule.CredentialFactory</resource>
                 </transformer>
               </transformers>
               <filters>
