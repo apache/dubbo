@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.xds.listener;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.xds.protocol.XdsResourceListener;
 
 import io.envoyproxy.envoy.config.listener.v3.Listener;
 
-@SPI
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface LdsListener extends XdsResourceListener<Listener> {}
