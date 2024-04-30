@@ -316,20 +316,6 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         }
     }
 
-    protected static final String HTTP2_HEADER_NAME_AUTHORITY = ":authority";
-
-    protected static final String HTTP2_HEADER_NAME_METHOD = ":method";
-
-    protected static final String HTTP2_HEADER_NAME_PATH = ":path";
-
-    protected static final String HTTP_HEADER_NAME_AUTHORITY = "authority";
-
-    protected static final String HTTP_HEADER_NAME_METHOD = "method";
-
-    protected static final String HTTP_HEADER_NAME_PATH = "path";
-
-    protected static final String HTTP_HEADER_USER_AGENT = "user-agent";
-
     private RuleNode handleLeafPermission(Permission permission) {
         Permission.RuleCase ruleCase = permission.getRuleCase();
 

@@ -31,7 +31,6 @@ import java.io.IOException;
 
 public class SecurityBeanConfig implements ScopeModelInitializer {
 
-
     private ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SecurityBeanConfig.class);
 
     @Override
@@ -41,16 +40,13 @@ public class SecurityBeanConfig implements ScopeModelInitializer {
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
-        KubeEnv env = applicationModel.getBeanFactory()
-                .getOrRegisterBean(KubeEnv.class);
+        KubeEnv env = applicationModel.getBeanFactory().getOrRegisterBean(KubeEnv.class);
         try {
             if (env.getServiceAccountToken().length > 0) {
-                applicationModel.getBeanFactory()
-                        .getOrRegisterBean(KubeApiClient.class);
-                applicationModel.getBeanFactory()
-                        .getOrRegisterBean(MapRuleFactory.class);
+                applicationModel.getBeanFactory().getOrRegisterBean(KubeApiClient.class);
+                applicationModel.getBeanFactory().getOrRegisterBean(MapRuleFactory.class);
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             logger.info("SecurityBeanConfig are not initialized because SA token not found.");
         }
     }

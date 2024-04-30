@@ -29,9 +29,8 @@ import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
 
 public class AuthTest {
 
-//    @Test
+    //    @Test
     public void authZTest() throws Exception {
-
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         System.setProperty("NAMESPACE", "foo");
