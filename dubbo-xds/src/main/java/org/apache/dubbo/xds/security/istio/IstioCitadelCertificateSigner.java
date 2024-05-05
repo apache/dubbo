@@ -137,7 +137,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
 
         long min = 0;
         long max = expireAt;
-        long rand = min + (long) (Math.random() * (max - min + 1));
+        long rand = min + (new SecureRandom().nextLong() * (max - min + 1));
 
         return System.currentTimeMillis() - expireAt < (refreshBeforeCertExpireAt - rand);
     }
