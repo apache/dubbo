@@ -460,6 +460,7 @@ public abstract class AnnotationUtils {
                         classValuesAsString,
                         nestedAnnotationsAsMap);
             }
+            // test cases
         }
 
         return mergedAnnotation;
