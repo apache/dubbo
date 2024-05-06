@@ -461,6 +461,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         private void doOnData(ByteBuf data, boolean endStream) {
             if (deframer == null) {
+                ReferenceCountUtil.release(data);
                 return;
             }
             deframer.deframe(data);
