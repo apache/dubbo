@@ -459,6 +459,14 @@ public abstract class AnnotationUtils {
                         annotationType,
                         classValuesAsString,
                         nestedAnnotationsAsMap);
+            } else {
+                // fix getMergedAnnotation method signature error
+                getMergedAnnotationMethod = findMethod(
+                        annotatedElementUtilsClass, "getMergedAnnotation", AnnotatedElement.class, Class.class);
+                if (getMergedAnnotationMethod != null) {
+                    mergedAnnotation = (Annotation)
+                            invokeMethod(getMergedAnnotationMethod, null, annotatedElement, annotationType);
+                }
             }
         }
 
