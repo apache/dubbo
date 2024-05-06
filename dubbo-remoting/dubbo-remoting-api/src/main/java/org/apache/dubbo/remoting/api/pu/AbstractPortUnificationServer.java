@@ -82,7 +82,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         this.supportedHandlers.put(url.getProtocol(), handler);
     }
 
-    protected Map<String, URL> getSupportedUrls() {
+    public Map<String, URL> getSupportedUrls() {
         // this getter is just used by implementation of this class
         return supportedUrls;
     }

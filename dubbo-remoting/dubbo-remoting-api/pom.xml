@@ -41,6 +41,12 @@
       <artifactId>dubbo-serialization-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+    <!-- for http3 -->
+    <dependency>
+      <groupId>io.netty.incubator</groupId>
+      <artifactId>netty-incubator-codec-http3</artifactId>
+      <version>0.0.25.Final</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-serialization-hessian2</artifactId>

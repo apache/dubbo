@@ -37,7 +37,8 @@ public class ApiConsumer {
         referenceConfig.setCheck(false);
         referenceConfig.setProtocol(CommonConstants.TRIPLE);
         referenceConfig.setLazy(true);
-        referenceConfig.setTimeout(100000);
+        referenceConfig.setTimeout(1000 * 60 * 30);
+        referenceConfig.setRetries(0);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap

@@ -109,6 +109,12 @@ public interface Constants {
     String H2_SETTINGS_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
     String H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS = "dubbo.rpc.tri.pass-through-standard-http-headers";
 
+    String H3_SETTINGS_MAX_IDLE_TIMEOUT_KEY = "dubbo.rpc.tri.max-idle-timeout";
+    String H3_SETTINGS_INIT_MAX_DATA_KEY = "dubbo.rpc.tri.init-max-data";
+    String H3_SETTINGS_INIT_MAX_STREAM_DATA_LOCAL_KEY = "dubbo.rpc.tri.init-max-stream-data-local";
+    String H3_SETTINGS_INIT_MAX_STREAM_DATA_REMOTE_KEY = "dubbo.rpc.tri.init-max-stream-data-remote";
+    String H3_SETTINGS_INIT_MAX_STREAMS_KEY = "dubbo.rpc.tri.init-max-streams";
+
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";
 }

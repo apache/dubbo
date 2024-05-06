@@ -16,10 +16,23 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelOutboundHandler;
+
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+
+import io.netty.channel.ChannelPromise;
+
+import io.netty.channel.socket.DatagramPacket;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
@@ -30,18 +43,25 @@ import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1Codec;
 import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1ConnectionHandler;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameCodec;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2ProtocolSelectorHandler;
+import org.apache.dubbo.remoting.http3.netty4.NettyHttp3FrameCodec;
+import org.apache.dubbo.remoting.http3.netty4.NettyHttp3ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector;
 import org.apache.dubbo.rpc.protocol.tri.h12.http1.DefaultHttp11ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListenerFactory;
+import org.apache.dubbo.rpc.protocol.tri.h3.GenericHttp3ServerTransportListenerFactory;
+import org.apache.dubbo.rpc.protocol.tri.h3.TripleHttp3ProtocolDetector;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelInitializer;
@@ -56,6 +76,14 @@ import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.logging.LogLevel;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.incubator.codec.http3.Http3;
+import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
+import io.netty.incubator.codec.quic.InsecureQuicTokenHandler;
+import io.netty.incubator.codec.quic.QuicChannel;
+import io.netty.incubator.codec.quic.QuicSslContext;
+import io.netty.incubator.codec.quic.QuicSslContextBuilder;
+import io.netty.incubator.codec.quic.QuicStreamChannel;
 
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
@@ -63,6 +91,11 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_FRAME_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_INIT_MAX_DATA_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_INIT_MAX_STREAMS_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_INIT_MAX_STREAM_DATA_LOCAL_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_INIT_MAX_STREAM_DATA_REMOTE_KEY;
+import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_MAX_IDLE_TIMEOUT_KEY;
 
 @Activate
 public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeModelAware {
@@ -76,14 +109,23 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
     private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
+    // http3 settings
+    private static final int DEFAULT_IDLE_TIMEOUT = 1000 * 60 * 30;
+    private static final int DEFAULT_MAX_DATA = 10000000;
+    private static final int DEFAULT_MAX_STREAM_DATA_LOCAL = 1000000;
+    private static final int DEFAULT_MAX_STREAM_DATA_REMOTE = 1000000;
+    private static final int DEFAULT_MAX_STREAMS = Integer.MAX_VALUE;
+
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
     public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_SERVER");
 
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleHttp2Protocol.class);
+
     private FrameworkModel frameworkModel;
 
     public TripleHttp2Protocol() {
-        super(new TripleProtocolDetector());
+        super(new TripleProtocolDetector(), new TripleHttp3ProtocolDetector());
     }
 
     @Override
@@ -137,6 +179,11 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             if (TripleProtocolDetector.HttpVersion.HTTP2.getVersion().equals(httpVersion)) {
                 configurerHttp2Handlers(url, channelHandlerPretenders);
             }
+
+            // h3
+            if (TripleProtocolDetector.HttpVersion.HTTP3.getVersion().equals(httpVersion)) {
+                configurerHttp3Handlers(url, channelHandlerPretenders);
+            }
         } finally {
             operator.configChannelHandler(channelHandlerPretenders);
         }
@@ -183,5 +230,49 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new TripleServerConnectionHandler()));
         handlers.add(new ChannelHandlerPretender(handler));
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
+    }
+
+    private void configurerHttp3Handlers(URL url, List<ChannelHandler> handlers) {
+        SelfSignedCertificate cert = null;
+        try {
+            cert = new SelfSignedCertificate();
+        } catch (CertificateException e) {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error(e.getMessage());
+            }
+            return;
+        }
+
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
+        QuicSslContext sslContext = QuicSslContextBuilder.forServer(cert.key(), null, cert.cert())
+                .applicationProtocols(Http3.supportedApplicationProtocols())
+                .build();
+        io.netty.channel.ChannelHandler codec = Http3.newQuicServerCodecBuilder()
+                .sslContext(sslContext)
+                .maxIdleTimeout(config.getInt(H3_SETTINGS_MAX_IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT), TimeUnit.MILLISECONDS)
+                .initialMaxData(config.getInt(H3_SETTINGS_INIT_MAX_DATA_KEY, DEFAULT_MAX_DATA))
+                .initialMaxStreamDataBidirectionalLocal(config.getInt(H3_SETTINGS_INIT_MAX_STREAM_DATA_LOCAL_KEY, DEFAULT_MAX_STREAM_DATA_LOCAL))
+                .initialMaxStreamDataBidirectionalRemote(config.getInt(H3_SETTINGS_INIT_MAX_STREAM_DATA_REMOTE_KEY, DEFAULT_MAX_STREAM_DATA_REMOTE))
+                .initialMaxStreamsBidirectional(config.getInt(H3_SETTINGS_INIT_MAX_STREAMS_KEY, DEFAULT_MAX_STREAMS))
+                .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
+                .handler(new ChannelInitializer<QuicChannel>() {
+                    @Override
+                    protected void initChannel(QuicChannel ch) {
+                        ch.pipeline()
+                                .addLast(new Http3ServerConnectionHandler(new ChannelInitializer<QuicStreamChannel>() {
+                                    @Override
+                                    protected void initChannel(QuicStreamChannel ch) {
+                                        ch.pipeline().addLast(new NettyHttp3FrameCodec());
+                                        ch.pipeline().addLast(new HttpWriteQueueHandler());
+                                        ch.pipeline().addLast(new NettyHttp3ProtocolSelectorHandler(
+                                                url, frameworkModel, GenericHttp3ServerTransportListenerFactory.INSTANCE));
+                                    }
+                                }));
+                    }
+                })
+                .build();
+
+        handlers.add(new ChannelHandlerPretender(codec));
+        handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
     }
 }

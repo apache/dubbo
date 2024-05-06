@@ -23,14 +23,26 @@ import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 public abstract class AbstractWireProtocol implements WireProtocol {
 
     private final ProtocolDetector detector;
+    private final DatagramProtocolDetector datagramDetector;
 
     public AbstractWireProtocol(ProtocolDetector detector) {
         this.detector = detector;
+        this.datagramDetector = null;
+    }
+
+    public AbstractWireProtocol(ProtocolDetector detector, DatagramProtocolDetector datagramDetector) {
+        this.detector = detector;
+        this.datagramDetector = datagramDetector;
     }
 
     @Override
     public ProtocolDetector detector() {
         return detector;
+    }
+
+    @Override
+    public DatagramProtocolDetector datagramDetector() {
+        return datagramDetector;
     }
 
     @Override

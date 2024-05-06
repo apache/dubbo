@@ -1,2 +1,2 @@
-netty4=org.apache.dubbo.remoting.transport.netty4.NettyConnectionManager
+netty4=org.apache.dubbo.remoting.transport.netty4.NettyHttp3ConnectionManager
 netty=org.apache.dubbo.remoting.transport.netty4.NettyConnectionManager

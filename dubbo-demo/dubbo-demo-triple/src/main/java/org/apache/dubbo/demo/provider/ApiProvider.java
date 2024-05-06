@@ -30,6 +30,7 @@ public class ApiProvider {
         ServiceConfig<GreeterService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(GreeterService.class);
         serviceConfig.setRef(new GreeterServiceImpl());
+        serviceConfig.setTimeout(1000 * 60 * 30);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap

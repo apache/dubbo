@@ -22,6 +22,7 @@ import org.apache.dubbo.aot.api.TypeDescriber;
 import org.apache.dubbo.remoting.transport.netty4.NettyChannelHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyClientHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyConnectionHandler;
+import org.apache.dubbo.remoting.transport.netty4.NettyHttp3ConnectionHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyPortUnificationServerHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyServerHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
@@ -46,6 +47,7 @@ public class Netty4ReflectionTypeDescriberRegistrar implements ReflectionTypeDes
         typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyPortUnificationServerHandler.class));
         typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyChannelHandler.class));
         typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyConnectionHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyHttp3ConnectionHandler.class));
         return typeDescribers;
     }
 

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.util.concurrent.Future;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -62,11 +64,11 @@ public class NettyConnectionClient extends AbstractConnectionClient {
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(NettyConnectionClient.class);
 
-    private AtomicReference<Promise<Object>> connectingPromise;
+    protected AtomicReference<Promise<Object>> connectingPromise;
 
-    private Promise<Void> closePromise;
+    protected Promise<Void> closePromise;
 
-    private AtomicReference<io.netty.channel.Channel> channel;
+    protected AtomicReference<io.netty.channel.Channel> channel;
 
     private ConnectionListener connectionListener;
 
@@ -178,11 +180,16 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
         promise.addListener(this.connectionListener);
 
-        boolean ret = connectingPromise.get().awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
+        waitTimeoutAndHandleFailure(promise, start);
+    }
+
+    protected void waitTimeoutAndHandleFailure(Future<?> promise, long start) throws RemotingException {
+        boolean ret = connectingPromise.get().awaitUninterruptibly(1000*60, TimeUnit.MILLISECONDS);
         // destroy connectingPromise after used
         synchronized (this) {
             connectingPromise.set(null);
         }
+
         if (promise.cause() != null) {
             Throwable cause = promise.cause();
 
@@ -270,7 +277,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
     }
 
-    io.netty.channel.Channel getNettyChannel() {
+    protected io.netty.channel.Channel getNettyChannel() {
         return this.channel.get();
     }
 

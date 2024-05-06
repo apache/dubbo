@@ -27,6 +27,10 @@ public interface WireProtocol {
 
     ProtocolDetector detector();
 
+    default DatagramProtocolDetector datagramDetector() {
+        return null;
+    }
+
     void configServerProtocolHandler(URL url, ChannelOperator operator);
 
     void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
