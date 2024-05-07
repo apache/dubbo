@@ -328,9 +328,6 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.rest.NoAnnotatedParameterRequestTagProcessor</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http.factory.RestClientFactory</resource>
-                </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.ChannelHandler</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -528,10 +525,6 @@
 
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.spring.security.jackson.ObjectMapperCodecCustomer</resource>
-                </transformer>
-
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.BaseProviderParamParser</resource>
                 </transformer>
 
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
