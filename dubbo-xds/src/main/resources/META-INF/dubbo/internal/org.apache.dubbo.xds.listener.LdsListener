@@ -1,1 +1,1 @@
-tlsMode=org.apache.dubbo.xds.listener.DownstreamTlsConfigListener
+tlsDownstream=org.apache.dubbo.xds.listener.DownstreamTlsConfigListener
