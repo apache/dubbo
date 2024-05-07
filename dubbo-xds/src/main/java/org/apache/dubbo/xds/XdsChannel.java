@@ -26,6 +26,7 @@ import org.apache.dubbo.xds.security.api.CertPair;
 import org.apache.dubbo.xds.security.api.CertSource;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 import io.envoyproxy.envoy.service.discovery.v3.AggregatedDiscoveryServiceGrpc;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
@@ -84,8 +85,10 @@ public class XdsChannel {
                     SslContext context = GrpcSslContexts.forClient()
                             .trustManager(InsecureTrustManagerFactory.INSTANCE)
                             .keyManager(
-                                    new ByteArrayInputStream(certPair.getPublicKey()),
-                                    new ByteArrayInputStream(certPair.getPrivateKey()))
+                                    new ByteArrayInputStream(
+                                            certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
+                                    new ByteArrayInputStream(
+                                            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
                             .build();
                     managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
                             .sslContext(context)
