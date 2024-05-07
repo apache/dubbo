@@ -114,8 +114,7 @@ public class XdsCertProvider implements CertProvider {
                 authPolicy = AuthPolicy.CLIENT_AUTH_STRICT;
                 break;
             case PERMISSIVE:
-                // TODO use CLIENT_AUTH_PERMISSIVE later
-                authPolicy = AuthPolicy.CLIENT_AUTH_STRICT;
+                authPolicy = AuthPolicy.CLIENT_AUTH_PERMISSIVE;
                 break;
             case DISABLE:
                 authPolicy = AuthPolicy.NONE;

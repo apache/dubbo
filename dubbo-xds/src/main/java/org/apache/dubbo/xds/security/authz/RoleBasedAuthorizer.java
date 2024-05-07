@@ -55,7 +55,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
      * Connection Identity -> Authorization Rules
      * Here are two problems:
      * 1.How to identify remote connection (may we can use [protocol:port])
-     * 2.How to remove the cache when remote connection is disconnected
+     * 2.How to remove cache when remote connection is disconnected
      */
     private final Map<String, List<RuleRoot>> rules = new ConcurrentHashMap<>();
 
@@ -118,7 +118,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
             try {
                 if (rule.evaluate(context) && rule.getAction().boolVal()) {
                     throw new AuthorizationException(
-                            "Request authorization failed: request credential meet one of " + "NOT rules.");
+                            "Request authorization failed: request credential meet one of NOT rules.");
                 }
             } catch (Exception e) {
                 logger.error(
@@ -140,7 +140,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
             try {
                 if (!rule.evaluate(context) && rule.getAction().boolVal()) {
                     throw new AuthorizationException(
-                            "Request authorization failed: request credential doesn't meet " + "all AND rules.");
+                            "Request authorization failed: request credential doesn't meet all AND rules.");
                 }
             } catch (Exception e) {
                 logger.error(

@@ -128,16 +128,12 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                 // policies:  "service-admin"、"product-viewer"
                 for (Entry<String, Policy> entry : rbac.getPoliciesMap().entrySet()) {
 
-                    // rule下的单个policy,包含一个principals Node和 permissions Node，两Node之间AND关系
                     CompositeRuleNode policyNode = new CompositeRuleNode(entry.getKey(), AND);
-
-                    // 每个policy下可以多个principal，之间OR关系
                     CompositeRuleNode principalNode = new CompositeRuleNode("principals", Relation.OR);
 
                     List<Principal> principals = entry.getValue().getPrincipalsList();
 
                     for (Principal principal : principals) {
-                        // 解析单个Principal到node
                         RuleNode principalAnd = resolvePrincipal(principal);
                         if (principalAnd != null) {
                             principalNode.addChild(principalAnd);

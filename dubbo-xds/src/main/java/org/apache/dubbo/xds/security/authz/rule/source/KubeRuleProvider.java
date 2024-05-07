@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.xds.security.authz.rule.source;
 
+import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -37,6 +38,7 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.util.Watch;
 
 @Activate
+@Experimental("Unstable kubernetes rule source")
 public class KubeRuleProvider implements RuleProvider<Map<String, Object>> {
 
     protected final KubeApiClient kubeApiClient;
@@ -72,6 +74,7 @@ public class KubeRuleProvider implements RuleProvider<Map<String, Object>> {
                     try {
                         Map<String, Object> resource = getResource();
                         updateSource(resource);
+                        // TODO FIX ME
                         //                        if (watch.hasNext()) {
                         //                            Response<Object> resp = watch.next();
                         //                            if ("ADDED".equals(resp.type) || "MODIFIED".equals(resp.type)) {
@@ -87,7 +90,7 @@ public class KubeRuleProvider implements RuleProvider<Map<String, Object>> {
                     }
                 },
                 2000,
-                2000,
+                30000,
                 TimeUnit.MILLISECONDS);
     }
 
