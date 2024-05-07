@@ -29,7 +29,6 @@
   <description>The remoting module of dubbo project</description>
   <modules>
     <module>dubbo-remoting-api</module>
-    <module>dubbo-remoting-http</module>
     <module>dubbo-remoting-netty</module>
     <module>dubbo-remoting-zookeeper-curator5</module>
     <module>dubbo-remoting-netty4</module>
