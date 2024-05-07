@@ -14,6 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz;
+package org.apache.dubbo.xds;
 
-public class AuthorizationPropertySchema {}
+public class XdsException extends RuntimeException {
+
+    private Type type;
+
+    public XdsException(Type type, String message) {
+        super("[" + type + "]" + message);
+        this.type = type;
+    }
+
+    public XdsException(Type type, String message, Throwable cause) {
+        super("[" + type + "]" + message, cause);
+        this.type = type;
+    }
+
+    public XdsException(Type type, Throwable cause) {
+        super("[" + type + "]", cause);
+        this.type = type;
+    }
+
+    public enum Type {
+        EDS,
+        CDS,
+        SDS,
+        LDS,
+        RDS,
+        ADS,
+        SECURITY,
+        UNKNOWN
+    }
+}

@@ -17,12 +17,16 @@
 package org.apache.dubbo.xds.security.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.xds.security.authn.SecretConfig;
+
+import java.util.List;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface TrustSource {
-    @Adaptive(value = {"trust_source", "mesh"})
-    X509CertChains getTrustCerts(URL url);
+
+    X509CertChains getTrustCerts(URL url, SecretConfig secretConfig);
+
+    SecretConfig selectSupportedTrustConfig(URL url, List<SecretConfig> secretConfig);
 }

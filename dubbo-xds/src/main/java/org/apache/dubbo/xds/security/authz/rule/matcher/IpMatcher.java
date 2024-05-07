@@ -51,14 +51,14 @@ public class IpMatcher implements Matcher<String> {
         try {
             String[] ips = ip.split("\\.");
             if (4 != ips.length) {
-                logger.error("0-0", "", "", "Error ip=" + ip);
+                logger.error("99-0", "", "", "Error ip=" + ip);
                 return "";
             }
             long[] ipLong = new long[4];
             for (int i = 0; i < 4; ++i) {
                 ipLong[i] = Long.parseLong(ips[i]);
                 if (ipLong[i] < 0 || ipLong[i] > 255) {
-                    logger.error("0-0", "", "", "Error ip=" + ip);
+                    logger.error("99-0", "", "", "Error ip=" + ip);
                     return "";
                 }
             }

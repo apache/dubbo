@@ -63,7 +63,7 @@ public class SslContexts {
 
             if (serverTrustCertStream != null) {
                 sslClientContextBuilder.trustManager(serverTrustCertStream);
-                if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.CLIENT_AUTH) {
+                if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.CLIENT_AUTH_STRICT) {
                     sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
                 } else {
                     sslClientContextBuilder.clientAuth(ClientAuth.OPTIONAL);

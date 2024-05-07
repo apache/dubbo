@@ -46,6 +46,12 @@ public class X509CertChains {
         this.expireAt = createTime + IstioEnv.getInstance().getTrustTTL();
     }
 
+    public X509CertChains(String pemTrustChains, long createTime, long expireAt) {
+        this.trustChainBytes = pemTrustChains.getBytes(StandardCharsets.UTF_8);
+        this.createTime = createTime;
+        this.expireAt = expireAt;
+    }
+
     public List<X509Certificate> readAsCerts() throws CertificateException, IOException {
         return CertificateConvertor.readPemX509CertificateChains(
                 Collections.singletonList(new String(trustChainBytes, StandardCharsets.UTF_8)));

@@ -59,7 +59,7 @@ public class SSLConfigCertProvider implements CertProvider {
                                         ? IOUtils.toByteArray(sslConfig.getServerTrustCertCollectionPathStream())
                                         : null,
                                 sslConfig.getServerKeyPassword(),
-                                AuthPolicy.CLIENT_AUTH);
+                                AuthPolicy.CLIENT_AUTH_STRICT);
                     } catch (IOException e) {
                         logger.warn(
                                 LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED,

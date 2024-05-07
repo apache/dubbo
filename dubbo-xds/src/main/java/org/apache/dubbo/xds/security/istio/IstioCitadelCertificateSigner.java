@@ -17,15 +17,20 @@
 package org.apache.dubbo.xds.security.istio;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.xds.istio.IstioConstant;
 import org.apache.dubbo.xds.istio.IstioEnv;
 import org.apache.dubbo.xds.security.api.CertPair;
 import org.apache.dubbo.xds.security.api.CertSource;
 import org.apache.dubbo.xds.security.api.TrustSource;
 import org.apache.dubbo.xds.security.api.X509CertChains;
+import org.apache.dubbo.xds.security.authn.SecretConfig;
+import org.apache.dubbo.xds.security.authn.SecretConfig.ConfigType;
+import org.apache.dubbo.xds.security.authn.SecretConfig.Source;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -75,6 +80,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_KEY_ISTIO;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_RECEIVE_ERROR_MSG_ISTIO;
 
+@Activate
 public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
 
     private static final ErrorTypeAwareLogger logger =
@@ -98,7 +104,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
     }
 
     @Override
-    public CertPair getCert(URL url) {
+    public CertPair getCert(URL url, SecretConfig secretConfig) {
         if (certPair != null && !certPair.isExpire()) {
             return certPair;
         }
@@ -106,8 +112,36 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
     }
 
     @Override
-    public X509CertChains getTrustCerts(URL url) {
-        getCert(url);
+    public SecretConfig selectSupportedCertConfig(URL url, List<SecretConfig> secretConfigs) {
+        if (!IstioConstant.ISTIO_NAME.equals(url.getParameter("mesh"))) {
+            return null;
+        }
+        for (SecretConfig secretConfig : secretConfigs) {
+            if (secretConfig.configType().equals(ConfigType.CERT)
+                    && secretConfig.source().equals(Source.SDS)) {
+                return secretConfig;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public SecretConfig selectSupportedTrustConfig(URL url, List<SecretConfig> secretConfigs) {
+        if (!IstioConstant.ISTIO_NAME.equals(url.getParameter("mesh"))) {
+            return null;
+        }
+        for (SecretConfig secretConfig : secretConfigs) {
+            if (secretConfig.configType().equals(ConfigType.TRUST)
+                    && secretConfig.source().equals(Source.SDS)) {
+                return secretConfig;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public X509CertChains getTrustCerts(URL url, SecretConfig secretConfig) {
+        getCert(url, secretConfig);
         return trustChain;
     }
 
@@ -180,7 +214,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
                         REGISTRY_FAILED_GENERATE_KEY_ISTIO,
                         "",
                         "",
-                        "Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.",
+                        "Generate Key with SHA256WithRSA algorithm " + "failed. Please check if your system support.",
                         e);
                 throw new RpcException(e);
             }
@@ -244,7 +278,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
                     REGISTRY_FAILED_GENERATE_KEY_ISTIO,
                     "",
                     "",
-                    "Got exception when resolving trust chains from istio",
+                    "Got exception when resolving trust chains from " + "istio",
                     e);
         }
     }
@@ -278,7 +312,6 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Receive Cert chain from Istio Citadel. \n" + publicKeyBuilder);
                 }
-                ;
                 updateTrust(istioCertificateResponse.getCertChainList());
                 countDownLatch.countDown();
             }
@@ -290,7 +323,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
                         REGISTRY_RECEIVE_ERROR_MSG_ISTIO,
                         "",
                         "",
-                        "Receive error message from Istio Citadel grpc stub.",
+                        "Receive error message from Istio Citadel grpc" + " stub.",
                         throwable);
                 countDownLatch.countDown();
             }

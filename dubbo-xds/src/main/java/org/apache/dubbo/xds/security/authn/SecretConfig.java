@@ -14,34 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.listener;
+package org.apache.dubbo.xds.security.authn;
 
-import org.apache.dubbo.xds.listener.TlsModeListener.TlsType;
+public interface SecretConfig {
 
-import java.util.Collections;
-import java.util.Map;
+    /**
+     * name of this config
+     */
+    String name();
 
-public class TlsModeRepo {
+    /**
+     * this config indicates a cert or trust
+     */
+    ConfigType configType();
 
-    public TlsModeRepo() {}
+    Source source();
 
-    private Map<String, TlsType> connectionType = Collections.emptyMap();
-
-    private TlsType globalConfig;
-
-    public void update(Map<String, TlsType> connectionType) {
-        this.connectionType = connectionType;
+    enum ConfigType {
+        TRUST,
+        CERT
     }
 
-    public void setGlobalConfig(TlsType tlsType) {
-        this.globalConfig = tlsType;
-    }
-
-    public TlsType getType(String indicator) {
-        if (globalConfig != null) {
-            return globalConfig;
-        } else {
-            return connectionType.get(indicator);
-        }
+    enum Source {
+        SDS,
+        LOCAL
     }
 }

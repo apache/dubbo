@@ -16,4 +16,11 @@
  */
 package org.apache.dubbo.xds.listener;
 
-public interface CdsListener {}
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.xds.protocol.XdsResourceListener;
+
+import io.envoyproxy.envoy.config.cluster.v3.Cluster;
+
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface CdsListener extends XdsResourceListener<Cluster> {}

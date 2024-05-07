@@ -17,14 +17,25 @@
 package org.apache.dubbo.xds.security.api;
 
 public class CertPair {
+
     private final String privateKey;
     private final String publicKey;
+    private final String password;
     private final long createTime;
     private final long expireTime;
 
     public CertPair(String privateKey, String publicKey, long createTime, long expireTime) {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
+        this.createTime = createTime;
+        this.expireTime = expireTime;
+        this.password = null;
+    }
+
+    public CertPair(String privateKey, String publicKey, String password, long createTime, long expireTime) {
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
+        this.password = password;
         this.createTime = createTime;
         this.expireTime = expireTime;
     }

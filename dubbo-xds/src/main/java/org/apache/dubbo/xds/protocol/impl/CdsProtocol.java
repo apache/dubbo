@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
+import org.apache.dubbo.xds.listener.CdsListener;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 import org.apache.dubbo.xds.resource.XdsCluster;
 import org.apache.dubbo.xds.resource.XdsEndpoint;
@@ -55,6 +56,9 @@ public class CdsProtocol extends AbstractProtocol<Cluster> {
 
     public CdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
         super(adsObserver, node, checkInterval, applicationModel);
+        List<CdsListener> ldsListeners =
+                applicationModel.getExtensionLoader(CdsListener.class).getActivateExtensions();
+        ldsListeners.forEach(this::registerListen);
     }
 
     @Override

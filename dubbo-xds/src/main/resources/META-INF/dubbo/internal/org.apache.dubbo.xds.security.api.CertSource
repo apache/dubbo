@@ -1,1 +1,2 @@
 istio=org.apache.dubbo.xds.security.istio.IstioCitadelCertificateSigner
+local=org.apache.dubbo.xds.security.api.LocalSecretProvider

@@ -25,6 +25,9 @@ package org.apache.dubbo.xds.auth;
 // import envoy.type.v3.CidrRange;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.xds.listener.XdsTlsConfigRepository;
 import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
 import org.apache.dubbo.xds.security.authz.rule.GeneralRequestCredential;
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
@@ -216,5 +219,14 @@ public class LdsRuleTest {
         res &= rules.get(1).evaluate(context);
         Assertions.assertTrue(res);
         System.out.println(context.getTraceInfo());
+    }
+
+    @Test
+    public void factoryTest() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ApplicationModel applicationModel1 = frameworkModel.newApplication();
+        frameworkModel.getBeanFactory().getOrRegisterBean(XdsTlsConfigRepository.class);
     }
 }

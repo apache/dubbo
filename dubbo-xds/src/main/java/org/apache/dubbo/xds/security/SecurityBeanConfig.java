@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 import org.apache.dubbo.xds.kubernetes.KubeApiClient;
 import org.apache.dubbo.xds.kubernetes.KubeEnv;
-import org.apache.dubbo.xds.security.api.MeshCertProvider;
+import org.apache.dubbo.xds.security.api.XdsCertProvider;
 import org.apache.dubbo.xds.security.authz.rule.source.MapRuleFactory;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class SecurityBeanConfig implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        frameworkModel.getBeanFactory().getOrRegisterBean(MeshCertProvider.class);
+        frameworkModel.getBeanFactory().getOrRegisterBean(XdsCertProvider.class);
     }
 
     @Override

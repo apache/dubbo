@@ -17,13 +17,22 @@
 package org.apache.dubbo.xds.security.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.xds.security.authn.SecretConfig;
+
+import java.util.List;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface CertSource {
 
-    @Adaptive(value = {"cert_source", "mesh"})
-    CertPair getCert(URL url);
+    /**
+     * Use selected config to generate cert pair
+     */
+    CertPair getCert(URL url, SecretConfig secretConfig);
+
+    /**
+     * Select one supported cert config for CertSource. Returns null if no supported cert config found.
+     */
+    SecretConfig selectSupportedCertConfig(URL url, List<SecretConfig> secretConfig);
 }

@@ -17,6 +17,9 @@
 package org.apache.dubbo.xds.istio;
 
 public class IstioConstant {
+
+    public static final String ISTIO_NAME = "istio";
+
     /**
      * Address of the spiffe certificate provider. Defaults to discoveryAddress
      */
