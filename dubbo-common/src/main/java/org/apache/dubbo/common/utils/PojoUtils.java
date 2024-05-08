@@ -778,7 +778,8 @@ public class PojoUtils {
         for (Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
             try {
                 result = acls.getDeclaredField(fieldName);
-                if (!Modifier.isPublic(result.getModifiers())) {
+                // the field is not public and it not jdk class, we will setAccessible to true
+                if (!Modifier.isPublic(result.getModifiers()) && acls.getClassLoader() != null) {
                     result.setAccessible(true);
                 }
             } catch (NoSuchFieldException e) {
