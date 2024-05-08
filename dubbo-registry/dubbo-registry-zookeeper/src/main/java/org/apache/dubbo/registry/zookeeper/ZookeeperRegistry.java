@@ -202,7 +202,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 ChildListener zkListener = ConcurrentHashMapUtils.computeIfAbsent(
                         listeners, listener, k -> (parentPath, currentChildren) -> {
                             for (String child : currentChildren) {
-                                if (!child.startsWith("{") || !child.endsWith("}")) {
+                                if (!child.startsWith("{") && !child.startsWith("[")) {
                                     logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", child + "is not json");
                                     continue;
                                 }
