@@ -109,7 +109,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                         String[] oldAppNames = oldConfigContent.split(",");
                         if (oldAppNames.length > 0) {
                             for (String oldAppName : oldAppNames) {
-                                if (oldAppName.equals(appName)) {
+                                if (StringUtils.trim(oldAppName).equals(appName)) {
                                     succeeded = true;
                                     break;
                                 }
