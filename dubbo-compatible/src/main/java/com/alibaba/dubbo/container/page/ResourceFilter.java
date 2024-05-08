@@ -46,7 +46,7 @@ public class ResourceFilter implements Filter {
 
     private final long start = System.currentTimeMillis();
 
-    private final List<String> resources = new ArrayList<String>();
+    private final List<String> resources = new ArrayList<>();
 
     public void init(FilterConfig filterConfig) throws ServletException {
         String config = filterConfig.getInitParameter("resources");
