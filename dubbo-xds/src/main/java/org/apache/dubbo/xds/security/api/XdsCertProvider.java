@@ -126,6 +126,7 @@ public class XdsCertProvider implements CertProvider {
                 cert == null ? null : cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
                 cert == null ? null : cert.getPrivateKey().getBytes(StandardCharsets.UTF_8),
                 trust == null ? null : trust.readAsBytes(),
+                cert == null ? null : cert.getPassword(),
                 authPolicy);
     }
 
@@ -147,6 +148,7 @@ public class XdsCertProvider implements CertProvider {
                 cert == null ? null : cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
                 cert == null ? null : cert.getPrivateKey().getBytes(StandardCharsets.UTF_8),
                 trust == null ? null : trust.readAsBytes(),
+                cert == null ? null : cert.getPassword(),
                 AuthPolicy.SERVER_AUTH);
     }
 

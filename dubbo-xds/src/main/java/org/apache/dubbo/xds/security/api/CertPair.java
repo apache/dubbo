@@ -59,4 +59,8 @@ public class CertPair {
     public long getExpireTime() {
         return expireTime;
     }
+
+    public String getPassword() {
+        return password;
+    }
 }
