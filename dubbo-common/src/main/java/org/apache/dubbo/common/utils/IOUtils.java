@@ -179,7 +179,7 @@ public class IOUtils {
      * @throws IOException If an I/O error occurs
      */
     public static String[] readLines(InputStream is) throws IOException {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
             String line;
             while ((line = reader.readLine()) != null) {
