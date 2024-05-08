@@ -1067,7 +1067,7 @@ class PojoUtilsTest {
     }
 
     @Test
-    public void testPojoWithPrimitivesStringClass() {
+    void testPojoWithPrimitivesStringClass() {
         String expect = "abc123";
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("value", expect);
