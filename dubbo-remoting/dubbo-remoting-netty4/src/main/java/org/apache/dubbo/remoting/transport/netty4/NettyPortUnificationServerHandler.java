@@ -121,7 +121,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         if (providerConnectionConfig != null && isSsl(in)) {
             enableSsl(ctx, providerConnectionConfig);
         } else {
-            invokeProtocol(ctx, url, channel, in);
+            detectProtocol(ctx, url, channel, in);
         }
     }
 
@@ -140,7 +140,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                 }
                 NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
                 ByteBuf in = ctx.alloc().buffer();
-                invokeProtocol(ctx, url, channel, in);
+                detectProtocol(ctx, url, channel, in);
             }
         });
         p.remove(this);
@@ -154,7 +154,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         return false;
     }
 
-    private void invokeProtocol(ChannelHandlerContext ctx, URL url, NettyChannel channel, ByteBuf in) {
+    private void detectProtocol(ChannelHandlerContext ctx, URL url, NettyChannel channel, ByteBuf in) {
         Set<String> supportedProtocolNames = new HashSet<>(protocols.keySet());
         supportedProtocolNames.retainAll(urlMapper.keySet());
 

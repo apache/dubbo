@@ -155,11 +155,20 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new HttpServerUpgradeHandler(
                 sourceCodec,
                 protocol -> {
-                    if (!AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
-                        // Not upgrade request
-                        return null;
+                    if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
+                        Configuration config =
+                                ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
+                        return new Http2ServerUpgradeCodec(
+                                buildHttp2FrameCodec(config, url.getOrDefaultApplicationModel()),
+                                new HttpServerAfterUpgradeHandler(),
+                                new HttpWriteQueueHandler(),
+                                new FlushConsolidationHandler(64, true),
+                                new TripleServerConnectionHandler(),
+                                buildHttp2MultiplexHandler(url),
+                                new TripleTailHandler());
                     }
-                    return buildHttp2ServerUpgradeCodec(url);
+                    // Not upgrade request
+                    return null;
                 },
                 Integer.MAX_VALUE)));
         // If the upgrade was successful, remove the message from the output list
@@ -171,10 +180,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 url, frameworkModel, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
     }
 
-    private Http2ServerUpgradeCodec buildHttp2ServerUpgradeCodec(URL url) {
-        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
-        final Http2FrameCodec codec = buildHttp2FrameCodec(config, url.getOrDefaultApplicationModel());
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
+    private Http2MultiplexHandler buildHttp2MultiplexHandler(URL url) {
+        return new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
             @Override
             protected void initChannel(Http2StreamChannel ch) {
                 final ChannelPipeline p = ch.pipeline();
@@ -183,15 +190,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                         url, frameworkModel, GenericHttp2ServerTransportListenerFactory.INSTANCE));
             }
         });
-
-        return new Http2ServerUpgradeCodec(
-                codec,
-                new HttpServerAfterUpgradeHandler(),
-                new HttpWriteQueueHandler(),
-                new FlushConsolidationHandler(64, true),
-                new TripleServerConnectionHandler(),
-                handler,
-                new TripleTailHandler());
     }
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
