@@ -203,7 +203,8 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                         listeners, listener, k -> (parentPath, currentChildren) -> {
                             for (String child : currentChildren) {
                                 if (!child.startsWith("{") && !child.startsWith("[")) {
-                                    logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", child + "is not json");
+//                                    logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", child + "is not json");
+                                    continue;
                                 }
                                 child = URL.decode(child);
                                 if (!anyServices.contains(child)) {
