@@ -29,7 +29,7 @@
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
     <slf4j-log4j12.version>1.7.33</slf4j-log4j12.version>
-    <spring_version>5.3.33</spring_version>
+    <spring_version>5.3.34</spring_version>
     <!--<spring_version>4.0.9.RELEASE</spring_version>-->
     <!--<spring_version>4.1.9.RELEASE</spring_version>-->
     <!--<spring_version>4.2.4.RELEASE</spring_version>-->
