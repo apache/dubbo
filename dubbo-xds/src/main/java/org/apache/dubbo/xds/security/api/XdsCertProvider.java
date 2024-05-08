@@ -48,12 +48,9 @@ public class XdsCertProvider implements CertProvider {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsCertProvider.class);
 
     public XdsCertProvider(FrameworkModel frameworkModel) {
-        this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class)
-                .getActivateExtensions();
-        this.certSource = frameworkModel.getExtensionLoader(CertSource.class)
-                .getActivateExtensions();
-        this.configRepo = frameworkModel.getBeanFactory()
-                .getOrRegisterBean(XdsTlsConfigRepository.class);
+        this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class).getActivateExtensions();
+        this.certSource = frameworkModel.getExtensionLoader(CertSource.class).getActivateExtensions();
+        this.configRepo = frameworkModel.getBeanFactory().getOrRegisterBean(XdsTlsConfigRepository.class);
     }
 
     @Override
@@ -65,10 +62,10 @@ public class XdsCertProvider implements CertProvider {
             if (upstreamConfig == null) {
                 return false;
             }
-            List<SecretConfig> trustConfigs = upstreamConfig.getGeneralTlsConfig()
-                    .trustConfigs();
-            List<SecretConfig> certConfigs = upstreamConfig.getGeneralTlsConfig()
-                    .certConfigs();
+            List<SecretConfig> trustConfigs =
+                    upstreamConfig.getGeneralTlsConfig().trustConfigs();
+            List<SecretConfig> certConfigs =
+                    upstreamConfig.getGeneralTlsConfig().certConfigs();
 
             // At least one config provided by LDS
             return !trustConfigs.isEmpty() || !certConfigs.isEmpty();
@@ -77,10 +74,10 @@ public class XdsCertProvider implements CertProvider {
             if (downstreamConfig == null) {
                 return false;
             }
-            List<SecretConfig> secretConfigs = downstreamConfig.getGeneralTlsConfig()
-                    .certConfigs();
-            List<SecretConfig> certConfigs = downstreamConfig.getGeneralTlsConfig()
-                    .trustConfigs();
+            List<SecretConfig> secretConfigs =
+                    downstreamConfig.getGeneralTlsConfig().certConfigs();
+            List<SecretConfig> certConfigs =
+                    downstreamConfig.getGeneralTlsConfig().trustConfigs();
 
             // At least one config provided by CDS
             return !secretConfigs.isEmpty() || !certConfigs.isEmpty();
@@ -106,10 +103,10 @@ public class XdsCertProvider implements CertProvider {
             return null;
         }
 
-        CertPair cert = selectCertConfig(localAddress, config.getGeneralTlsConfig()
-                .certConfigs());
-        X509CertChains trust = selectTrustConfig(localAddress, config.getGeneralTlsConfig()
-                .trustConfigs());
+        CertPair cert =
+                selectCertConfig(localAddress, config.getGeneralTlsConfig().certConfigs());
+        X509CertChains trust =
+                selectTrustConfig(localAddress, config.getGeneralTlsConfig().trustConfigs());
 
         AuthPolicy authPolicy;
         switch (config.getTlsType()) {
@@ -125,10 +122,12 @@ public class XdsCertProvider implements CertProvider {
             default:
                 throw new IllegalStateException("Unexpected Tls type: " + config.getTlsType());
         }
-        return new ProviderCert(cert == null ? null : cert.getPublicKey()
-                .getBytes(StandardCharsets.UTF_8), cert == null ? null : cert.getPrivateKey()
-                .getBytes(StandardCharsets.UTF_8),
-                trust == null ? null : trust.readAsBytes(), cert == null ? null : cert.getPassword(), authPolicy);
+        return new ProviderCert(
+                cert == null ? null : cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
+                cert == null ? null : cert.getPrivateKey().getBytes(StandardCharsets.UTF_8),
+                trust == null ? null : trust.readAsBytes(),
+                cert == null ? null : cert.getPassword(),
+                authPolicy);
     }
 
     @Override
@@ -140,16 +139,17 @@ public class XdsCertProvider implements CertProvider {
             return null;
         }
 
-        CertPair cert = selectCertConfig(remoteAddress, downstreamConfig.getGeneralTlsConfig()
-                .certConfigs());
-        X509CertChains trust = selectTrustConfig(remoteAddress, downstreamConfig.getGeneralTlsConfig()
-                .trustConfigs());
+        CertPair cert = selectCertConfig(
+                remoteAddress, downstreamConfig.getGeneralTlsConfig().certConfigs());
+        X509CertChains trust = selectTrustConfig(
+                remoteAddress, downstreamConfig.getGeneralTlsConfig().trustConfigs());
 
-        return new ProviderCert(cert == null ? null : cert.getPublicKey()
-                .getBytes(StandardCharsets.UTF_8), cert == null ? null : cert.getPrivateKey()
-                .getBytes(StandardCharsets.UTF_8),
+        return new ProviderCert(
+                cert == null ? null : cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
+                cert == null ? null : cert.getPrivateKey().getBytes(StandardCharsets.UTF_8),
                 trust == null ? null : trust.readAsBytes(),
-                cert == null ? null : cert.getPassword(), AuthPolicy.SERVER_AUTH);
+                cert == null ? null : cert.getPassword(),
+                AuthPolicy.SERVER_AUTH);
     }
 
     private CertPair selectCertConfig(URL address, List<SecretConfig> certConfigs) {
