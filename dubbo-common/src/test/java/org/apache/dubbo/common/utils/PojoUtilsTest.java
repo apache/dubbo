@@ -1076,8 +1076,8 @@ class PojoUtilsTest {
         Class<?>[] types = new Class<?>[] {String.class};
         Type[] gtType = new Type[] {String.class};
         Object[] realize = PojoUtils.realize(objects, types, gtType);
-        assertEquals(realize.length, 1);
-        assertEquals(realize[0], expect);
+        assertEquals(1, realize.length);
+        assertEquals(expect, realize[0]);
     }
 
     public enum Day {
