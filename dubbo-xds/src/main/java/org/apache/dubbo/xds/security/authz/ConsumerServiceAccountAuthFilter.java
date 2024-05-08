@@ -46,7 +46,12 @@ public class ConsumerServiceAccountAuthFilter implements Filter {
             List<String> parts = Arrays.asList(security.split(","));
             boolean enable = parts.stream().anyMatch("serviceIdentity"::equals);
             if (enable) {
-                invocation.setObjectAttachment("serviceIdentity", serviceIdentitySource.getJwt(invoker.getUrl()));
+                String jwt = serviceIdentitySource.getJwt(invoker.getUrl());
+                if (StringUtils.isNotEmpty(jwt)) {
+                    // TODO Attach it based on protocol can work better with other systems.
+                    // like standard HTTP cookie/authorization header
+                    invocation.setObjectAttachment("serviceIdentity", jwt);
+                }
             }
         }
         return invoker.invoke(invocation);

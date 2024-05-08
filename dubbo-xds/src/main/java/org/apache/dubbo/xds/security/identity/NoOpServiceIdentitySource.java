@@ -14,19 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.api;
+package org.apache.dubbo.xds.security.identity;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.xds.security.api.ServiceIdentitySource;
 
-/**
- * Service identity source. Provided JWT will attach to request and can be used for authentication.
- */
-@SPI(value = "noOp", scope = ExtensionScope.APPLICATION)
-public interface ServiceIdentitySource {
+public class NoOpServiceIdentitySource implements ServiceIdentitySource {
 
-    @Adaptive(value = {"mesh", "serviceIdentity"})
-    String getJwt(URL url);
+    @Override
+    public String getJwt(URL url) {
+        return null;
+    }
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security;
+package org.apache.dubbo.xds.security.identity;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -41,7 +41,7 @@ public class KubeServiceJwtIdentitySource implements ServiceIdentitySource {
         try {
             return new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            logger.error("", "", "Failed to read ServiceAccount from KubeEnv.", "", e);
+            logger.error("99-1", "", "Failed to read ServiceAccount from KubeEnv.", "", e);
             return "";
         }
     }

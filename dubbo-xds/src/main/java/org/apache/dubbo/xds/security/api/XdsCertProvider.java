@@ -25,12 +25,15 @@ import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.xds.PilotExchanger;
+import org.apache.dubbo.xds.istio.IstioEnv;
 import org.apache.dubbo.xds.listener.XdsTlsConfigRepository;
 import org.apache.dubbo.xds.security.authn.DownstreamTlsConfig;
 import org.apache.dubbo.xds.security.authn.SecretConfig;
 import org.apache.dubbo.xds.security.authn.UpstreamTlsConfig;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -47,10 +50,18 @@ public class XdsCertProvider implements CertProvider {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsCertProvider.class);
 
+    private final IstioEnv istioEnv = IstioEnv.getInstance();
+
     public XdsCertProvider(FrameworkModel frameworkModel) {
+        this.configRepo = frameworkModel.getBeanFactory().getOrRegisterBean(XdsTlsConfigRepository.class);
+        if (frameworkModel.getBeanFactory().getBean(PilotExchanger.class) == null) {
+            logger.info("XdsCertProvider won't initialize because XDS Client not found.");
+            this.trustSource = Collections.emptyList();
+            this.certSource = Collections.emptyList();
+            return;
+        }
         this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class).getActivateExtensions();
         this.certSource = frameworkModel.getExtensionLoader(CertSource.class).getActivateExtensions();
-        this.configRepo = frameworkModel.getBeanFactory().getOrRegisterBean(XdsTlsConfigRepository.class);
     }
 
     @Override

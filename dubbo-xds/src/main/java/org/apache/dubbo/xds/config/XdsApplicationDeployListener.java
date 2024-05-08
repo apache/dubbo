@@ -40,7 +40,7 @@ public class XdsApplicationDeployListener implements ApplicationDeployListener {
             if (StringUtils.isNotEmpty(protocol) && SUPPORT_MESH_TYPE.contains(protocol)) {
                 URL url = URL.valueOf(registryConfig.getAddress());
                 url = url.setScopeModel(scopeModel);
-                scopeModel.getBeanFactory().registerBean(PilotExchanger.createInstance(url));
+                scopeModel.getFrameworkModel().getBeanFactory().registerBean(PilotExchanger.createInstance(url));
                 break;
             }
         }

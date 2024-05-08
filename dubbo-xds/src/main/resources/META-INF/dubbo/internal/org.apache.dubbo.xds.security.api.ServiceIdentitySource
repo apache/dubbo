@@ -1,1 +1,3 @@
-istio=org.apache.dubbo.xds.security.KubeServiceJwtIdentitySource
+istio=org.apache.dubbo.xds.security.identity.KubeServiceJwtIdentitySource
+noOp=org.apache.dubbo.xds.security.identity.NoOpIdentitySource
+remote=org.apache.dubbo.xds.security.identity.RemoteIdentitySource
