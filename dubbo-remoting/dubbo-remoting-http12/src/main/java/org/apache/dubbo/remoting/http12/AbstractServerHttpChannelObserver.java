@@ -162,8 +162,13 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             data = ((HttpResult<?>) data).getBody();
         }
         HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
-        preOutputMessage(outputMessage);
-        responseEncoder.encode(outputMessage.getBody(), data);
+        try {
+            preOutputMessage(outputMessage);
+            responseEncoder.encode(outputMessage.getBody(), data);
+        } catch (Throwable t) {
+            outputMessage.close();
+            throw t;
+        }
         return outputMessage;
     }
 
