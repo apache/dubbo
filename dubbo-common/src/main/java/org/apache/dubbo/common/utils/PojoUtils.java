@@ -612,8 +612,8 @@ public class PojoUtils {
                             } else if (field != null) {
                                 value = realize1(value, field.getType(), field.getGenericType(), mapGeneric, history);
                                 try {
-                                    if (value.getClass() == String.class) {
-                                        dest = value;
+                                    if (value.getClass() == String.class && dest.getClass() == String.class) {
+                                        return value;
                                     } else {
                                         field.set(dest, value);
                                     }
