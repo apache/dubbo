@@ -46,7 +46,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
@@ -203,7 +202,6 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                         listeners, listener, k -> (parentPath, currentChildren) -> {
                             for (String child : currentChildren) {
                                 if (!child.startsWith("{") && !child.startsWith("[")) {
-//                                    logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", child + "is not json");
                                     continue;
                                 }
                                 child = URL.decode(child);
