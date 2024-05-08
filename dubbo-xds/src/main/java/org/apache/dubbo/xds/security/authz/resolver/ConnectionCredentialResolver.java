@@ -14,35 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz.rule;
+package org.apache.dubbo.xds.security.authz.resolver;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.xds.security.authz.RequestCredential;
+import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.auth0.jwt.interfaces.Claim;
-
-public class GeneralRequestCredential implements RequestCredential {
-
-    private final Map<String, Claim> jwtClaims;
-
-    /**
-     * PropertyName -> credential properties
-     */
-    private final Map<RequestAuthProperty, Object> authProperties;
-
-    public GeneralRequestCredential(Map<String, Claim> jwtClaims) {
-        this.jwtClaims = jwtClaims;
-        this.authProperties = new HashMap<>();
-    }
-
+@Activate
+public class ConnectionCredentialResolver implements CredentialResolver {
     @Override
-    public Object getRequestProperty(RequestAuthProperty propertyType) {
-        return authProperties.get(propertyType);
-    }
-
-    public void addByType(RequestAuthProperty propertyType, Object value) {
-        this.authProperties.put(propertyType, value);
+    public void appendRequestCredential(URL url, Invocation invocation, RequestCredential requestCredential) {
+        requestCredential.add(
+                RequestAuthProperty.TARGET_VERSION,
+                invocation.getInvoker().getUrl().getVersion());
     }
 }

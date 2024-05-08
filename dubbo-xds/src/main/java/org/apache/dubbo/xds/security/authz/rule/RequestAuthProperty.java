@@ -185,19 +185,19 @@ public enum RequestAuthProperty {
      */
     REQUESTED_SERVER_NAME,
 
-    SERVICE_PRINCIPAL,
-
-    SOURCE_NAMESPACE,
-
     HTTP_METHOD,
 
-    SOURCE_SERVICE_NAME,
+    KUBE_SERVICE_PRINCIPAL,
 
-    SOURCE_POD_NAME,
+    KUBE_SOURCE_NAMESPACE,
 
-    SOURCE_POD_ID,
+    KUBE_SERVICE_NAME,
 
-    SOURCE_SERVICE_UID,
+    KUBE_POD_NAME,
+
+    KUBE_POD_ID,
+
+    KUBE_SERVICE_UID,
 
     TARGET_VERSION,
 
@@ -217,20 +217,29 @@ public enum RequestAuthProperty {
      * 1)rules:when (request.auth.audiences)
      */
     JWT_AUDIENCES,
+
     JWT_NAME,
 
     JWT_ISSUER,
+
     JWKS,
+
     JWT_FROM_PARAMS,
+
     JWT_FROM_HEADERS,
 
     /**
      * Type of opposite request agent
      */
     OPPOSITE_AGENT,
+
     /**
      * spiffe://{trust_domain}/{workload_identity}
      */
     TRUST_DOMAIN,
-    WORKLOAD_ID;
+
+    WORKLOAD_ID,
+
+    // properties for internal use
+    DECODED_JWT;
 }

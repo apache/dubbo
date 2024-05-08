@@ -14,13 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz;
+package org.apache.dubbo.xds.security.authz.rule;
 
-import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
+import org.apache.dubbo.xds.security.authz.RequestCredential;
 
-public interface RequestCredential {
+import java.util.HashMap;
+import java.util.Map;
 
-    Object get(RequestAuthProperty propertyType);
+public class CommonRequestCredential implements RequestCredential {
 
-    void add(RequestAuthProperty propertyType, Object value);
+    /**
+     * PropertyName -> credential properties
+     */
+    private final Map<RequestAuthProperty, Object> authProperties;
+
+    public CommonRequestCredential() {
+        this.authProperties = new HashMap<>();
+    }
+
+    @Override
+    public Object get(RequestAuthProperty propertyType) {
+        return authProperties.get(propertyType);
+    }
+
+    @Override
+    public void add(RequestAuthProperty propertyType, Object value) {
+        this.authProperties.put(propertyType, value);
+    }
 }

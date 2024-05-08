@@ -55,7 +55,7 @@ public class LeafRuleNode implements RuleNode {
         // If we have multiple values to validate, then every value must match at list one rule pattern
         for (Matcher matcher : matchers) {
 
-            Object toValidate = context.getRequestCredential().getRequestProperty(matcher.propType());
+            Object toValidate = context.getRequestCredential().get(matcher.propType());
             boolean match = matcher.match(toValidate);
 
             if (context.enableTrace()) {

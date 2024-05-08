@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.xds.security.api.DataSources;
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 import org.apache.dubbo.xds.security.authz.rule.matcher.CustomMatcher;
 import org.apache.dubbo.xds.security.authz.rule.matcher.IpMatcher;
@@ -412,7 +413,7 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
                 compositeRuleNode.addChild(new LeafRuleNode(matcher, RequestAuthProperty.JWT_AUDIENCES.name()));
             }
 
-            String localJwks = provider.getLocalJwks().getInlineString();
+            String localJwks = DataSources.readActualValue(provider.getLocalJwks());
             Matcher<DecodedJWT> jwkMatcher = buildJwksMatcher(localJwks);
             compositeRuleNode.addChild(new LeafRuleNode(jwkMatcher, RequestAuthProperty.JWKS.name()));
 

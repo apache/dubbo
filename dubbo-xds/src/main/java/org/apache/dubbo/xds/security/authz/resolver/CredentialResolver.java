@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authn;
+package org.apache.dubbo.xds.security.authz.resolver;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.xds.security.api.AuthorizationException;
-import org.apache.dubbo.xds.security.api.RequestAuthorizer;
+import org.apache.dubbo.xds.security.authz.RequestCredential;
 
 /**
- * TODO
+ * Resolve connection/request credential to validation context.
  */
-public class KubeJwksAuthorizer implements RequestAuthorizer {
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface CredentialResolver {
 
-    @Override
-    public void validate(Invocation invocation) throws AuthorizationException {}
+    void appendRequestCredential(URL url, Invocation invocation, RequestCredential requestCredential);
 }

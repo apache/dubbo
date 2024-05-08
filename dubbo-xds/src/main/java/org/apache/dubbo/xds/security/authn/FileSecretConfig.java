@@ -17,6 +17,7 @@
 package org.apache.dubbo.xds.security.authn;
 
 import org.apache.dubbo.common.utils.Pair;
+import org.apache.dubbo.xds.security.api.DataSources;
 
 import io.envoyproxy.envoy.config.core.v3.DataSource;
 
@@ -26,21 +27,21 @@ public class FileSecretConfig implements SecretConfig {
 
     private final ConfigType configType;
 
-    private final Pair<String, StorageType> certChain;
+    private final Pair<String, DataSources> certChain;
 
-    private final Pair<String, StorageType> privateKey;
+    private final Pair<String, DataSources> privateKey;
 
-    private final Pair<String, StorageType> password;
+    private final Pair<String, DataSources> password;
 
-    private final Pair<String, StorageType> trust;
+    private final Pair<String, DataSources> trust;
 
     public FileSecretConfig(String name, DataSource certChain, DataSource privateKey, DataSource password) {
         this.name = name;
         this.configType = ConfigType.CERT;
-        this.certChain = StorageType.resolveDataSource(certChain);
-        this.privateKey = StorageType.resolveDataSource(privateKey);
+        this.certChain = DataSources.resolveDataSource(certChain);
+        this.privateKey = DataSources.resolveDataSource(privateKey);
         if (password != null) {
-            this.password = StorageType.resolveDataSource(password);
+            this.password = DataSources.resolveDataSource(password);
         } else {
             this.password = null;
         }
@@ -50,8 +51,8 @@ public class FileSecretConfig implements SecretConfig {
     public FileSecretConfig(String name, DataSource certChain, DataSource privateKey) {
         this.name = name;
         this.configType = ConfigType.CERT;
-        this.certChain = StorageType.resolveDataSource(certChain);
-        this.privateKey = StorageType.resolveDataSource(privateKey);
+        this.certChain = DataSources.resolveDataSource(certChain);
+        this.privateKey = DataSources.resolveDataSource(privateKey);
         this.password = null;
         this.trust = null;
     }
@@ -59,7 +60,7 @@ public class FileSecretConfig implements SecretConfig {
     public FileSecretConfig(String name, DataSource trust) {
         this.name = name;
         this.configType = ConfigType.TRUST;
-        this.trust = StorageType.resolveDataSource(trust);
+        this.trust = DataSources.resolveDataSource(trust);
         this.certChain = null;
         this.password = null;
         this.privateKey = null;
@@ -84,19 +85,19 @@ public class FileSecretConfig implements SecretConfig {
         return name;
     }
 
-    public Pair<String, StorageType> getCertChain() {
+    public Pair<String, DataSources> getCertChain() {
         return certChain;
     }
 
-    public Pair<String, StorageType> getPrivateKey() {
+    public Pair<String, DataSources> getPrivateKey() {
         return privateKey;
     }
 
-    public Pair<String, StorageType> getPassword() {
+    public Pair<String, DataSources> getPassword() {
         return password;
     }
 
-    public Pair<String, StorageType> getTrust() {
+    public Pair<String, DataSources> getTrust() {
         return trust;
     }
 
@@ -109,28 +110,5 @@ public class FileSecretConfig implements SecretConfig {
     public enum DefaultNames {
         LOCAL_TRUST,
         LOCAL_CERT
-    }
-
-    public enum StorageType {
-        LOCAL_FILE,
-        ENVIRONMENT_VARIABLE,
-        INLINE_STRING,
-        INLINE_BYTES;
-
-        public static Pair<String, StorageType> resolveDataSource(DataSource dataSource) {
-            if (dataSource.hasFilename()) {
-                return new Pair<>(dataSource.getFilename(), LOCAL_FILE);
-            }
-            if (dataSource.hasEnvironmentVariable()) {
-                return new Pair<>(dataSource.getEnvironmentVariable(), ENVIRONMENT_VARIABLE);
-            }
-            if (dataSource.hasInlineString()) {
-                return new Pair<>(dataSource.getInlineString(), INLINE_STRING);
-            }
-            if (dataSource.hasInlineBytes()) {
-                return new Pair<>(dataSource.getInlineBytes().toStringUtf8(), INLINE_BYTES);
-            }
-            throw new IllegalArgumentException("Unknown data source type");
-        }
     }
 }

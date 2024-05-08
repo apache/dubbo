@@ -59,7 +59,7 @@ public class XdsCertProvider implements CertProvider {
         if (CONSUMER.equals(side)) {
             // TODO: If XDS URL can support version tag, key should be address.getServiceKey()
             UpstreamTlsConfig upstreamConfig = configRepo.getUpstreamConfig(address.getServiceInterface());
-            if (upstreamConfig == null) {
+            if (upstreamConfig == null || upstreamConfig.getGeneralTlsConfig() == null) {
                 return false;
             }
             List<SecretConfig> trustConfigs =
@@ -96,20 +96,20 @@ public class XdsCertProvider implements CertProvider {
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
-        DownstreamTlsConfig config = configRepo.getDownstreamConfig(String.valueOf(localAddress.getPort()));
+        DownstreamTlsConfig downstreamConfig = configRepo.getDownstreamConfig(String.valueOf(localAddress.getPort()));
 
-        if (config == null) {
+        if (downstreamConfig == null || downstreamConfig.getGeneralTlsConfig() == null) {
             logger.warn("99-0", "", "", "DownstreamTlsConfig is null for localAddress:" + localAddress);
             return null;
         }
 
-        CertPair cert =
-                selectCertConfig(localAddress, config.getGeneralTlsConfig().certConfigs());
-        X509CertChains trust =
-                selectTrustConfig(localAddress, config.getGeneralTlsConfig().trustConfigs());
+        CertPair cert = selectCertConfig(
+                localAddress, downstreamConfig.getGeneralTlsConfig().certConfigs());
+        X509CertChains trust = selectTrustConfig(
+                localAddress, downstreamConfig.getGeneralTlsConfig().trustConfigs());
 
         AuthPolicy authPolicy;
-        switch (config.getTlsType()) {
+        switch (downstreamConfig.getTlsType()) {
             case STRICT:
                 authPolicy = AuthPolicy.CLIENT_AUTH_STRICT;
                 break;
@@ -120,7 +120,7 @@ public class XdsCertProvider implements CertProvider {
                 authPolicy = AuthPolicy.NONE;
                 break;
             default:
-                throw new IllegalStateException("Unexpected Tls type: " + config.getTlsType());
+                throw new IllegalStateException("Unexpected Tls type: " + downstreamConfig.getTlsType());
         }
         return new ProviderCert(
                 cert == null ? null : cert.getPublicKey().getBytes(StandardCharsets.UTF_8),

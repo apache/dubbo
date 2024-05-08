@@ -29,13 +29,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.xds.listener.XdsTlsConfigRepository;
 import org.apache.dubbo.xds.security.authz.AuthorizationRequestContext;
-import org.apache.dubbo.xds.security.authz.rule.GeneralRequestCredential;
+import org.apache.dubbo.xds.security.authz.rule.CommonRequestCredential;
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 import org.apache.dubbo.xds.security.authz.rule.source.LdsRuleFactory;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -199,19 +198,19 @@ public class LdsRuleTest {
         // AND sourceIP = 11.22.33*]
         // rule2: ALLOW [(path=/api OR user-agent=Android) AND (destinationPort=443 OR destinationIP=10.1.2*) AND
         // (Principal = user@example.com OR admin*) ]
-        GeneralRequestCredential credential = new GeneralRequestCredential(Collections.emptyMap());
-        credential.addByType(RequestAuthProperty.HTTP_METHOD, "GET");
-        credential.addByType(
+        CommonRequestCredential credential = new CommonRequestCredential();
+        credential.add(RequestAuthProperty.HTTP_METHOD, "GET");
+        credential.add(
                 RequestAuthProperty.AUTHENTICATED,
                 "admin,CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US");
-        credential.addByType(RequestAuthProperty.URL_PATH, "/api");
+        credential.add(RequestAuthProperty.URL_PATH, "/api");
         HashMap<String, String> header = new HashMap<>();
         header.put("path", "/api");
         header.put("method", "GET");
-        credential.addByType(RequestAuthProperty.HEADER, header);
-        credential.addByType(RequestAuthProperty.REMOTE_IP, "33.44.55.66");
-        credential.addByType(RequestAuthProperty.DESTINATION_IP, "11.22.33.44");
-        credential.addByType(RequestAuthProperty.DESTINATION_PORT, "443");
+        credential.add(RequestAuthProperty.HEADER, header);
+        credential.add(RequestAuthProperty.REMOTE_IP, "33.44.55.66");
+        credential.add(RequestAuthProperty.DESTINATION_IP, "11.22.33.44");
+        credential.add(RequestAuthProperty.DESTINATION_PORT, "443");
         AuthorizationRequestContext context = new AuthorizationRequestContext(null, credential);
 
         context.startTrace();

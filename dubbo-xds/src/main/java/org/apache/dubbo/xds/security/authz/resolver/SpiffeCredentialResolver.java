@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.security.authz.rule;
+package org.apache.dubbo.xds.security.authz.resolver;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.xds.security.authz.RequestCredential;
 
-@SPI(scope = ExtensionScope.APPLICATION)
-public interface CredentialFactory {
+@Activate
+public class SpiffeCredentialResolver implements CredentialResolver {
 
-    @Adaptive("protocol")
-    RequestCredential getRequestCredential(URL url, Invocation invocation);
+    @Override
+    public void appendRequestCredential(URL url, Invocation invocation, RequestCredential requestCredential) {}
 }

@@ -24,7 +24,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.security.api.AuthorizationException;
 import org.apache.dubbo.xds.security.api.RequestAuthorizer;
-import org.apache.dubbo.xds.security.authz.rule.CredentialFactory;
+import org.apache.dubbo.xds.security.authz.resolver.CredentialResolver;
+import org.apache.dubbo.xds.security.authz.rule.CommonRequestCredential;
 import org.apache.dubbo.xds.security.authz.rule.source.RuleFactory;
 import org.apache.dubbo.xds.security.authz.rule.source.RuleProvider;
 import org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation;
@@ -43,7 +44,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
 
     private final RuleProvider<?> ruleProvider;
 
-    private final CredentialFactory credentialFactory;
+    private final List<CredentialResolver> credentialResolver;
 
     private final RuleFactory ruleFactory;
 
@@ -61,7 +62,7 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
 
     public RoleBasedAuthorizer(ApplicationModel applicationModel) {
         this.ruleProvider = applicationModel.getAdaptiveExtension(RuleProvider.class);
-        this.credentialFactory = applicationModel.getAdaptiveExtension(CredentialFactory.class);
+        this.credentialResolver = applicationModel.getActivateExtensions(CredentialResolver.class);
         this.ruleFactory = applicationModel.getAdaptiveExtension(RuleFactory.class);
     }
 
@@ -88,8 +89,9 @@ public class RoleBasedAuthorizer implements RequestAuthorizer {
                 .filter(root -> Relation.NOT.equals(root.getRelation()))
                 .collect(Collectors.toList());
 
-        RequestCredential requestCredential =
-                credentialFactory.getRequestCredential(invocation.getInvoker().getUrl(), invocation);
+        RequestCredential requestCredential = new CommonRequestCredential();
+        credentialResolver.forEach(resolver ->
+                resolver.appendRequestCredential(invocation.getInvoker().getUrl(), invocation, requestCredential));
 
         AuthorizationRequestContext context = new AuthorizationRequestContext(invocation, requestCredential);
 

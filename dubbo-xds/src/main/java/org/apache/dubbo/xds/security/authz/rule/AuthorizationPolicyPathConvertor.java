@@ -26,17 +26,17 @@ public class AuthorizationPolicyPathConvertor {
             case "rules.to.operation.methods":
                 return RequestAuthProperty.METHODS;
             case "rules.from.source.namespaces":
-                return RequestAuthProperty.SOURCE_NAMESPACE;
+                return RequestAuthProperty.KUBE_SOURCE_NAMESPACE;
             case "rules.source.service.name":
-                return RequestAuthProperty.SOURCE_SERVICE_NAME;
+                return RequestAuthProperty.KUBE_SERVICE_NAME;
             case "rules.source.service.uid":
-                return RequestAuthProperty.SOURCE_SERVICE_UID;
+                return RequestAuthProperty.KUBE_SERVICE_UID;
             case "rules.source.pod.name":
-                return RequestAuthProperty.SOURCE_POD_NAME;
+                return RequestAuthProperty.KUBE_POD_NAME;
             case "rules.source.pod.id":
-                return RequestAuthProperty.SOURCE_POD_ID;
+                return RequestAuthProperty.KUBE_POD_ID;
             case "rules.from.source.principals":
-                return RequestAuthProperty.SERVICE_PRINCIPAL;
+                return RequestAuthProperty.KUBE_SERVICE_PRINCIPAL;
             case "rules.to.operation.version":
                 return RequestAuthProperty.TARGET_VERSION;
             default:
