@@ -42,11 +42,16 @@ public class FileWatcher {
         registerWatch(path, 3000);
     }
 
-    public byte[] readWatchedFile(String path) throws Exception {
+    public byte[] readWatchedFile(String path) {
         Pair<byte[], FileAlterationMonitor> pair = filesToWatch.get(path);
-        if(pair == null) {
-            registerWatch(path);
-            pair = filesToWatch.get(path);
+        if (pair == null) {
+            try {
+                registerWatch(path);
+                pair = filesToWatch.get(path);
+            } catch (Exception e) {
+                logger.warn("", "", "", "Failed to register watch file in path=" + path, e);
+                return null;
+            }
         }
         return pair == null ? null : pair.getLeft();
     }
@@ -92,7 +97,6 @@ public class FileWatcher {
                     removed.getRight().stop();
                 } catch (Exception e) {
                     logger.error("", e.getCause().toString(), "", "Failed to stop watch deleted file.", e);
-                    ;
                 }
             }
         };

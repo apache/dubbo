@@ -93,6 +93,10 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
     private volatile X509CertChains trustChain;
 
     public IstioCitadelCertificateSigner() {
+        this.istioEnv = IstioEnv.getInstance();
+        if (!istioEnv.haveServiceAccount()) {
+            return;
+        }
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
         long refreshRate =
                 IstioEnv.getInstance().getSecretTTL() - IstioEnv.getInstance().getTryRefreshBeforeCertExpireAt();
@@ -100,7 +104,6 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
             refreshRate = IstioEnv.getInstance().getSecretTTL();
         }
         scheduledThreadPool.scheduleAtFixedRate(new GenerateCertTask(), 0, refreshRate, TimeUnit.SECONDS);
-        this.istioEnv = IstioEnv.getInstance();
     }
 
     @Override

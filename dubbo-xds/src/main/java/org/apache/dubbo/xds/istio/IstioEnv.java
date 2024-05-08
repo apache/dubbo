@@ -106,6 +106,8 @@ public class IstioEnv implements XdsEnv {
      */
     private String serviceAccountName;
 
+    private boolean haveServiceAccount;
+
     private IstioEnv() {
         jwtPolicy = getStringProp(JWT_POLICY, DEFAULT_JWT_POLICY);
         podName = Optional.ofNullable(getStringProp("POD_NAME", (String) null)).orElse(getStringProp("HOSTNAME", ""));
@@ -136,8 +138,8 @@ public class IstioEnv implements XdsEnv {
         pilotCertProvider = getStringProp(IstioConstant.PILOT_CERT_PROVIDER_KEY, "");
         serviceAccountName = getStringProp(IstioConstant.SERVICE_NAME_KEY, "default");
         if (getServiceAccount() == null) {
-            throw new UnsupportedOperationException("Unable to found kubernetes service account token file. "
-                    + "Please check if work in Kubernetes and mount service account token file correctly.");
+            haveServiceAccount = false;
+            logger.info("Unable to found kubernetes service account token. Some istio-XDS feature may disabled.");
         }
     }
 
@@ -263,5 +265,9 @@ public class IstioEnv implements XdsEnv {
             }
         }
         return null;
+    }
+
+    public boolean haveServiceAccount() {
+        return haveServiceAccount;
     }
 }
