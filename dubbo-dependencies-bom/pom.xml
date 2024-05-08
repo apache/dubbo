@@ -90,16 +90,16 @@
   <properties>
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
-    <spring_version>5.3.33</spring_version>
+    <spring_version>5.3.34</spring_version>
     <spring_security_version>5.8.12</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.14.13</byte-buddy_version>
+    <byte-buddy_version>1.14.14</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.109.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
-    <fastjson2_version>2.0.48</fastjson2_version>
+    <fastjson2_version>2.0.49</fastjson2_version>
     <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.1.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
@@ -119,7 +119,7 @@
     <snakeyaml_version>2.2</snakeyaml_version>
     <commons_lang3_version>3.14.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.12.4</micrometer.version>
+    <micrometer.version>1.12.5</micrometer.version>
     <opentelemetry.version>1.26.0</opentelemetry.version>
     <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
     <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
@@ -175,7 +175,7 @@
     <sofa_registry_version>5.4.3</sofa_registry_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.10.1</gson_version>
-    <jackson_version>2.17.0</jackson_version>
+    <jackson_version>2.17.1</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
