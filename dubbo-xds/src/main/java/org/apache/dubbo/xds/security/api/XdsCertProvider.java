@@ -43,14 +43,17 @@ public class XdsCertProvider implements CertProvider {
 
     private final List<CertSource> certSource;
 
-    private final XdsTlsConfigRepository modeRepo;
+    private final XdsTlsConfigRepository configRepo;
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsCertProvider.class);
 
     public XdsCertProvider(FrameworkModel frameworkModel) {
-        this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class).getActivateExtensions();
-        this.certSource = frameworkModel.getExtensionLoader(CertSource.class).getActivateExtensions();
-        this.modeRepo = frameworkModel.getBeanFactory().getBean(XdsTlsConfigRepository.class);
+        this.trustSource = frameworkModel.getExtensionLoader(TrustSource.class)
+                .getActivateExtensions();
+        this.certSource = frameworkModel.getExtensionLoader(CertSource.class)
+                .getActivateExtensions();
+        this.configRepo = frameworkModel.getBeanFactory()
+                .getOrRegisterBean(XdsTlsConfigRepository.class);
     }
 
     @Override
@@ -58,26 +61,26 @@ public class XdsCertProvider implements CertProvider {
         String side = address.getSide();
         if (CONSUMER.equals(side)) {
             // TODO: If XDS URL can support version tag, key should be address.getServiceKey()
-            UpstreamTlsConfig upstreamConfig = modeRepo.getUpstreamConfig(address.getServiceInterface());
+            UpstreamTlsConfig upstreamConfig = configRepo.getUpstreamConfig(address.getServiceInterface());
             if (upstreamConfig == null) {
                 return false;
             }
-            List<SecretConfig> trustConfigs =
-                    upstreamConfig.getGeneralTlsConfig().trustConfigs();
-            List<SecretConfig> certConfigs =
-                    upstreamConfig.getGeneralTlsConfig().certConfigs();
+            List<SecretConfig> trustConfigs = upstreamConfig.getGeneralTlsConfig()
+                    .trustConfigs();
+            List<SecretConfig> certConfigs = upstreamConfig.getGeneralTlsConfig()
+                    .certConfigs();
 
             // At least one config provided by LDS
             return !trustConfigs.isEmpty() || !certConfigs.isEmpty();
         } else if (PROVIDER.equals(side)) {
-            DownstreamTlsConfig downstreamConfig = modeRepo.getDownstreamConfig(String.valueOf(address.getPort()));
+            DownstreamTlsConfig downstreamConfig = configRepo.getDownstreamConfig(String.valueOf(address.getPort()));
             if (downstreamConfig == null) {
                 return false;
             }
-            List<SecretConfig> secretConfigs =
-                    downstreamConfig.getGeneralTlsConfig().certConfigs();
-            List<SecretConfig> certConfigs =
-                    downstreamConfig.getGeneralTlsConfig().trustConfigs();
+            List<SecretConfig> secretConfigs = downstreamConfig.getGeneralTlsConfig()
+                    .certConfigs();
+            List<SecretConfig> certConfigs = downstreamConfig.getGeneralTlsConfig()
+                    .trustConfigs();
 
             // At least one config provided by CDS
             return !secretConfigs.isEmpty() || !certConfigs.isEmpty();
@@ -96,17 +99,17 @@ public class XdsCertProvider implements CertProvider {
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
-        DownstreamTlsConfig config = modeRepo.getDownstreamConfig(String.valueOf(localAddress.getPort()));
+        DownstreamTlsConfig config = configRepo.getDownstreamConfig(String.valueOf(localAddress.getPort()));
 
         if (config == null) {
-            logger.warn("DownstreamTlsConfig is null for localAddress:" + localAddress);
+            logger.warn("99-0", "", "", "DownstreamTlsConfig is null for localAddress:" + localAddress);
             return null;
         }
 
-        CertPair cert =
-                selectCertConfig(localAddress, config.getGeneralTlsConfig().certConfigs());
-        X509CertChains trust =
-                selectTrustConfig(localAddress, config.getGeneralTlsConfig().trustConfigs());
+        CertPair cert = selectCertConfig(localAddress, config.getGeneralTlsConfig()
+                .certConfigs());
+        X509CertChains trust = selectTrustConfig(localAddress, config.getGeneralTlsConfig()
+                .trustConfigs());
 
         AuthPolicy authPolicy;
         switch (config.getTlsType()) {
@@ -122,34 +125,31 @@ public class XdsCertProvider implements CertProvider {
             default:
                 throw new IllegalStateException("Unexpected Tls type: " + config.getTlsType());
         }
-        return new ProviderCert(
-                cert == null ? null : cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
-                cert == null ? null : cert.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-                trust == null ? null : trust.readAsBytes(),
-                cert == null ? null : cert.getPassword(),
-                authPolicy);
+        return new ProviderCert(cert == null ? null : cert.getPublicKey()
+                .getBytes(StandardCharsets.UTF_8), cert == null ? null : cert.getPrivateKey()
+                .getBytes(StandardCharsets.UTF_8),
+                trust == null ? null : trust.readAsBytes(), cert == null ? null : cert.getPassword(), authPolicy);
     }
 
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
-        UpstreamTlsConfig downstreamConfig = modeRepo.getUpstreamConfig(remoteAddress.getServiceInterface());
+        UpstreamTlsConfig downstreamConfig = configRepo.getUpstreamConfig(remoteAddress.getServiceInterface());
 
         if (downstreamConfig == null) {
-            logger.warn("DownstreamTlsConfig is null for remoteUrl:" + remoteAddress);
+            logger.warn("99-0", "", "", "DownstreamTlsConfig is null for remoteUrl:" + remoteAddress);
             return null;
         }
 
-        CertPair cert = selectCertConfig(
-                remoteAddress, downstreamConfig.getGeneralTlsConfig().certConfigs());
-        X509CertChains trust = selectTrustConfig(
-                remoteAddress, downstreamConfig.getGeneralTlsConfig().trustConfigs());
+        CertPair cert = selectCertConfig(remoteAddress, downstreamConfig.getGeneralTlsConfig()
+                .certConfigs());
+        X509CertChains trust = selectTrustConfig(remoteAddress, downstreamConfig.getGeneralTlsConfig()
+                .trustConfigs());
 
-        return new ProviderCert(
-                cert == null ? null : cert.getPublicKey().getBytes(StandardCharsets.UTF_8),
-                cert == null ? null : cert.getPrivateKey().getBytes(StandardCharsets.UTF_8),
+        return new ProviderCert(cert == null ? null : cert.getPublicKey()
+                .getBytes(StandardCharsets.UTF_8), cert == null ? null : cert.getPrivateKey()
+                .getBytes(StandardCharsets.UTF_8),
                 trust == null ? null : trust.readAsBytes(),
-                cert == null ? null : cert.getPassword(),
-                AuthPolicy.SERVER_AUTH);
+                cert == null ? null : cert.getPassword(), AuthPolicy.SERVER_AUTH);
     }
 
     private CertPair selectCertConfig(URL address, List<SecretConfig> certConfigs) {

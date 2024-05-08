@@ -224,7 +224,6 @@ public class LdsRuleTest {
     @Test
     public void factoryTest() {
         FrameworkModel frameworkModel = new FrameworkModel();
-
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationModel applicationModel1 = frameworkModel.newApplication();
         frameworkModel.getBeanFactory().getOrRegisterBean(XdsTlsConfigRepository.class);
