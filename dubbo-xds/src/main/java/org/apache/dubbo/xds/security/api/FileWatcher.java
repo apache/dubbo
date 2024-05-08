@@ -19,14 +19,13 @@ package org.apache.dubbo.xds.security.api;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.Pair;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
@@ -35,16 +34,20 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 
 public class FileWatcher {
 
-    private Map<String, Pair<byte[], FileAlterationMonitor>> fileToWatch = new ConcurrentHashMap<>();
+    private final LRUCache<String, Pair<byte[], FileAlterationMonitor>> filesToWatch = new LRUCache<>(256);
 
-    private ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     public void registerWatch(String path) throws Exception {
         registerWatch(path, 3000);
     }
 
-    public byte[] readWatchedFile(String path) {
-        Pair<byte[], FileAlterationMonitor> pair = fileToWatch.get(path);
+    public byte[] readWatchedFile(String path) throws Exception {
+        Pair<byte[], FileAlterationMonitor> pair = filesToWatch.get(path);
+        if(pair == null) {
+            registerWatch(path);
+            pair = filesToWatch.get(path);
+        }
         return pair == null ? null : pair.getLeft();
     }
 
@@ -55,7 +58,7 @@ public class FileWatcher {
             @Override
             public void onStart(FileAlterationObserver observer) {
                 try {
-                    fileToWatch.put(
+                    filesToWatch.put(
                             path, new Pair<>(IOUtils.toByteArray(Files.newInputStream(Paths.get(path))), monitor));
                 } catch (IOException e) {
                     logger.warn("", "", "", "Failed to read file in path=" + path);
@@ -65,7 +68,7 @@ public class FileWatcher {
             @Override
             public void onFileChange(File file) {
                 try {
-                    fileToWatch.put(
+                    filesToWatch.put(
                             path, new Pair<>(IOUtils.toByteArray(Files.newInputStream(file.toPath())), monitor));
                 } catch (IOException e) {
                     logger.error("", e.getCause().toString(), "", "Failed to read changed file.", e);
@@ -75,7 +78,7 @@ public class FileWatcher {
             @Override
             public void onFileCreate(File file) {
                 try {
-                    fileToWatch.put(
+                    filesToWatch.put(
                             path, new Pair<>(IOUtils.toByteArray(Files.newInputStream(file.toPath())), monitor));
                 } catch (IOException e) {
                     logger.error("", e.getCause().toString(), "", "Failed to read newly create file.", e);
@@ -84,7 +87,7 @@ public class FileWatcher {
 
             @Override
             public void onFileDelete(File file) {
-                Pair<byte[], FileAlterationMonitor> removed = fileToWatch.remove(path);
+                Pair<byte[], FileAlterationMonitor> removed = filesToWatch.remove(path);
                 try {
                     removed.getRight().stop();
                 } catch (Exception e) {
