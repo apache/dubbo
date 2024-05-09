@@ -27,8 +27,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.security.api.ServiceIdentitySource;
 
-import java.util.Arrays;
-import java.util.List;
+import static org.apache.dubbo.rpc.Constants.ID_TOKEN_KEY;
 
 @Activate(group = CommonConstants.CONSUMER, order = -10000)
 public class ConsumerServiceAccountAuthFilter implements Filter {
@@ -41,18 +40,11 @@ public class ConsumerServiceAccountAuthFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        String security = invoker.getUrl().getParameter("security");
-        if (StringUtils.isNotEmpty(security)) {
-            List<String> parts = Arrays.asList(security.split(","));
-            boolean enable = parts.stream().anyMatch("serviceIdentity"::equals);
-            if (enable) {
-                String jwt = serviceIdentitySource.getJwt(invoker.getUrl());
-                if (StringUtils.isNotEmpty(jwt)) {
-                    // TODO Attach it based on protocol can work better with other systems.
-                    // like standard HTTP cookie/authorization header
-                    invocation.setObjectAttachment("serviceIdentity", jwt);
-                }
-            }
+        String token = serviceIdentitySource.getToken(invoker.getUrl());
+        if (StringUtils.isNotEmpty(token)) {
+            // TODO Attach it based on protocol can work better with other systems,
+            //  like standard HTTP cookie/authorization header
+            invocation.setObjectAttachment(ID_TOKEN_KEY, token);
         }
         return invoker.invoke(invocation);
     }

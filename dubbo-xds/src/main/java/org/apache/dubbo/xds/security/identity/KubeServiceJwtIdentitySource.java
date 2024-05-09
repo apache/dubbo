@@ -37,7 +37,7 @@ public class KubeServiceJwtIdentitySource implements ServiceIdentitySource {
     }
 
     @Override
-    public String getJwt(URL url) {
+    public String getToken(URL url) {
         try {
             return new String(kubeEnv.getServiceAccountToken(), StandardCharsets.UTF_8);
         } catch (Exception e) {

@@ -27,6 +27,8 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(value = "noOp", scope = ExtensionScope.APPLICATION)
 public interface ServiceIdentitySource {
 
-    @Adaptive(value = {"mesh", "serviceIdentity"})
-    String getJwt(URL url);
+    String SERVICE_IDENTITY_KEY = "serviceIdentity";
+
+    @Adaptive(value = {SERVICE_IDENTITY_KEY})
+    String getToken(URL url);
 }

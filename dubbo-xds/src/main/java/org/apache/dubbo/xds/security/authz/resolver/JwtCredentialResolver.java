@@ -29,6 +29,8 @@ import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import static org.apache.dubbo.rpc.Constants.ID_TOKEN_KEY;
+
 @Activate(order = -1000)
 public class JwtCredentialResolver implements CredentialResolver {
 
@@ -36,7 +38,7 @@ public class JwtCredentialResolver implements CredentialResolver {
 
     @Override
     public void appendRequestCredential(URL url, Invocation invocation, RequestCredential requestCredential) {
-        String token = (String) RpcContext.getServerAttachment().getObjectAttachment("authz");
+        String token = (String) RpcContext.getServerAttachment().getObjectAttachment(ID_TOKEN_KEY);
         if (StringUtils.isEmpty(token)) {
             return;
         }

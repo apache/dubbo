@@ -16,4 +16,40 @@
  */
 package org.apache.dubbo.xds.security.identity;
 
-public class RemoteIdentitySource {}
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.xds.security.api.ServiceIdentitySource;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request.Builder;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
+public class RemoteIdentitySource implements ServiceIdentitySource {
+
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(RemoteIdentitySource.class);
+
+    private static final String REMOTE_IDENTITY_KEY = "remoteIdentity";
+
+    private final OkHttpClient httpClient;
+
+    public RemoteIdentitySource() {
+        this.httpClient = new OkHttpClient.Builder().build();
+    }
+
+    @Override
+    public String getToken(URL url) {
+        String tokenServiceAddr = url.getParameter(REMOTE_IDENTITY_KEY);
+        try (Response response = httpClient
+                .newCall(new Builder().get().url(tokenServiceAddr).build())
+                .execute()) {
+            ResponseBody body = response.body();
+            return body == null ? null : body.string();
+        } catch (Exception e) {
+            logger.error("99-1", "", "", "Failed to get token from remote service", e);
+        }
+        return null;
+    }
+}

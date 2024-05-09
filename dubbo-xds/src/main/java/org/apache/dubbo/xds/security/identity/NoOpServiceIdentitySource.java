@@ -22,7 +22,7 @@ import org.apache.dubbo.xds.security.api.ServiceIdentitySource;
 public class NoOpServiceIdentitySource implements ServiceIdentitySource {
 
     @Override
-    public String getJwt(URL url) {
+    public String getToken(URL url) {
         return null;
     }
 }
