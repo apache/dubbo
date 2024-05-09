@@ -63,8 +63,7 @@ public enum DataSources {
             return new Pair<>(dataSource.getInlineString(), INLINE_STRING);
         }
         if (dataSource.hasInlineBytes()) {
-            return new Pair<>(dataSource.getInlineBytes()
-                    .toStringUtf8(), INLINE_BYTES);
+            return new Pair<>(dataSource.getInlineBytes().toStringUtf8(), INLINE_BYTES);
         }
         throw new IllegalArgumentException("Unknown data source type");
     }
@@ -83,13 +82,13 @@ public enum DataSources {
                             watcher.registerWatch(dataSource.getKey());
                             return new String(watcher.readWatchedFile(dataSource.getKey()));
                         } catch (Exception e) {
-                            logger.warn("99-1", "", "",
-                                    "Failed to register watch for file: " + dataSource.getKey(), e);
+                            logger.warn("99-1", "", "", "Failed to register watch for file: " + dataSource.getKey(), e);
                         }
                     }
                 }
                 try {
-                    return IOUtils.read(Files.newInputStream(Paths.get(dataSource.getKey())), StandardCharsets.UTF_8.name());
+                    return IOUtils.read(
+                            Files.newInputStream(Paths.get(dataSource.getKey())), StandardCharsets.UTF_8.name());
                 } catch (Exception e) {
                     logger.error("99-1", "", "", "Failed to read file: " + dataSource.getKey(), e);
                     return null;
@@ -98,7 +97,7 @@ public enum DataSources {
                 return System.getenv(dataSource.getKey());
             case INLINE_STRING:
             case INLINE_BYTES:
-                //bytes were read as UTF-8 string
+                // bytes were read as UTF-8 string
                 return dataSource.getKey();
             default:
                 throw new IllegalArgumentException("Unknown data source type");
