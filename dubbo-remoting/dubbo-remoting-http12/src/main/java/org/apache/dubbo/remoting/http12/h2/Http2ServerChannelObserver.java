@@ -90,7 +90,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
-    public void doOnNext(Object data) throws Throwable{
+    public void doOnNext(Object data) throws Throwable {
         if (closed) {
             return;
         }
