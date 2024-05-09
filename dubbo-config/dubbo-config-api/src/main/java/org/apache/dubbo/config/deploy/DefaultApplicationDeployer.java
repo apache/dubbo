@@ -329,7 +329,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
         }
         metadataReportInstance.init(validMetadataReportConfigs);
-        if (!metadataReportInstance.inited()) {
+        if (!metadataReportInstance.isInitialized()) {
             throw new IllegalStateException(String.format(
                     "%s MetadataConfigs found, but none of them is valid.", metadataReportConfigs.size()));
         }

@@ -43,7 +43,7 @@
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
     <log4j2_version>2.23.1</log4j2_version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
-    <byte-buddy.version>1.14.13</byte-buddy.version>
+    <byte-buddy.version>1.14.14</byte-buddy.version>
   </properties>
 
   <dependencyManagement>

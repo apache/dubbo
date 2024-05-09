@@ -28,7 +28,7 @@
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
-    <spring_version>5.3.33</spring_version>
+    <spring_version>5.3.34</spring_version>
   </properties>
 
   <dependencyManagement>
