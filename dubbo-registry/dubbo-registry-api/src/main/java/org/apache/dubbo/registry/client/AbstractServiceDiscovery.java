@@ -84,7 +84,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this(applicationModel, applicationModel.getApplicationName(), registryURL);
         MetadataReportInstance metadataReportInstance =
                 applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
-        metadataType = metadataReportInstance.getMetadataType();
+        this.metadataType = metadataReportInstance.getMetadataType();
         this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
     }
 
