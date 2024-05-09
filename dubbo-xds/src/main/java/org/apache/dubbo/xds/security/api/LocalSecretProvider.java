@@ -51,11 +51,11 @@ public class LocalSecretProvider implements CertSource, TrustSource {
             throw new IllegalStateException("PrivateKey can't be null:" + secretConfig);
         }
 
-        String certChain = DataSources.readActualValue(fileSecretConfig.getCertChain());
-        String privateKey = DataSources.readActualValue(fileSecretConfig.getPrivateKey());
+        String certChain = DataSources.readActualValue(fileSecretConfig.getCertChain(), watcher);
+        String privateKey = DataSources.readActualValue(fileSecretConfig.getPrivateKey(), watcher);
         String password;
         if (fileSecretConfig.getPassword() != null) {
-            password = DataSources.readActualValue(fileSecretConfig.getPassword());
+            password = DataSources.readActualValue(fileSecretConfig.getPassword(), watcher);
         } else {
             password = null;
         }
@@ -90,7 +90,7 @@ public class LocalSecretProvider implements CertSource, TrustSource {
         if (config.getTrust() == null) {
             throw new IllegalStateException("Trust can't be null:" + secretConfig);
         }
-        String trust = DataSources.readActualValue(config.getTrust());
+        String trust = DataSources.readActualValue(config.getTrust(), watcher);
         // TODO how to determine expire time
         return new X509CertChains(trust, System.currentTimeMillis(), Long.MAX_VALUE);
     }
