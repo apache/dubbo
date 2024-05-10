@@ -24,7 +24,7 @@ public class AuthorizationPolicyPathConvertor {
             case "rules.to.operation.paths":
                 return RequestAuthProperty.URL_PATH;
             case "rules.to.operation.methods":
-                return RequestAuthProperty.METHODS;
+                return RequestAuthProperty.HTTP_METHOD;
             case "rules.from.source.namespaces":
                 return RequestAuthProperty.KUBE_SOURCE_NAMESPACE;
             case "rules.source.service.name":

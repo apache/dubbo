@@ -22,8 +22,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.api.ChannelContextListener;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -37,10 +39,17 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
     private final URL url;
     private final ChannelHandler handler;
 
-    public NettyChannelHandler(Map<String, Channel> dubboChannels, URL url, ChannelHandler handler) {
+    private final List<ChannelContextListener> contextListeners;
+
+    public NettyChannelHandler(
+            Map<String, Channel> dubboChannels,
+            URL url,
+            ChannelHandler handler,
+            List<ChannelContextListener> listeners) {
         this.dubboChannels = dubboChannels;
         this.url = url;
         this.handler = handler;
+        this.contextListeners = listeners;
     }
 
     @Override
@@ -51,7 +60,7 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
             dubboChannels.put(
                     NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
             handler.connected(channel);
-
+            contextListeners.forEach(listener -> listener.onConnect(channel));
             if (logger.isInfoEnabled()) {
                 logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress()
                         + " is established.");
@@ -74,6 +83,7 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
                 }
             }
         } finally {
+            contextListeners.forEach(listener -> listener.onDisconnect(channel));
             NettyChannel.removeChannel(ctx.channel());
         }
     }

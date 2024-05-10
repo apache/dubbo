@@ -31,7 +31,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import static org.apache.dubbo.rpc.Constants.ID_TOKEN_KEY;
 
-@Activate(order = -1000)
+@Activate(order = -10)
 public class JwtCredentialResolver implements CredentialResolver {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JwtCredentialResolver.class);

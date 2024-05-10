@@ -43,9 +43,9 @@ public class ProviderAuthFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
 
-        String security = invoker.getUrl().getParameter("security");
-        if (StringUtils.isNotEmpty(security)) {
-            List<String> parts = Arrays.asList(security.split(","));
+        String localSecurityConfig = invoker.getUrl().getParameter("security");
+        if (StringUtils.isNotEmpty(localSecurityConfig)) {
+            List<String> parts = Arrays.asList(localSecurityConfig.split(","));
             boolean enable = parts.stream().anyMatch("sa_jwt"::equals);
             if (enable) {
                 for (RequestAuthorizer requestAuthorizer : requestAuthorizers) {

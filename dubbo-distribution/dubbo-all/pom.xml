@@ -1068,6 +1068,10 @@
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.authz.resolver.CredentialResolver</resource>
                 </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.api.ChannelContextListener</resource>
+                </transformer>
               </transformers>
               <filters>
                 <filter>

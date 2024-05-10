@@ -26,6 +26,7 @@ import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
 import java.util.Map;
 
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 @Activate
@@ -43,22 +44,25 @@ public class KubernetesCredentialResolver implements CredentialResolver {
         if (jwt == null) {
             return;
         }
-        Map<String, Object> kubeProps = jwt.getClaims().get("kubernetes.io").asMap();
-        if (kubeProps == null) {
+        Claim prop = jwt.getClaims().get("kubernetes.io");
+        if (prop == null) {
             return;
         }
+        Map<String, Object> kubeProps = prop.asMap();
 
         String namespace = (String) kubeProps.get("namespace");
         String podName = null;
         String podId = null;
         String sourceService = null;
         String uid = null;
+        @SuppressWarnings("unchecked")
         Map<String, String> serviceAccount = (Map<String, String>) kubeProps.get("serviceaccount");
 
         if (serviceAccount != null) {
             sourceService = serviceAccount.get("name");
             uid = serviceAccount.get("uid");
         }
+        @SuppressWarnings("unchecked")
         Map<String, String> pod = (Map<String, String>) kubeProps.get("pod");
         if (pod != null) {
             podName = pod.get("name");

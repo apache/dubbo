@@ -48,5 +48,7 @@ public class HttpCredentialResolver implements CredentialResolver {
 
         Map<String, List<String>> httpRequestParams = null;
         requestCredential.add(RequestAuthProperty.JWT_FROM_PARAMS, httpRequestParams);
+
+        // TODO: REMOTE_IP from X-forward header
     }
 }

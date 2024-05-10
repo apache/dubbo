@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.ChannelContextListener;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
@@ -33,6 +34,7 @@ import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -76,6 +78,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     private EventLoopGroup workerGroup;
     private final Map<String, Channel> dubboChannels = new ConcurrentHashMap<>();
 
+    private final List<ChannelContextListener> listeners;
+
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
 
@@ -84,6 +88,9 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
         // read config before destroy
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
+        listeners = url.getScopeModel()
+                .getExtensionLoader(ChannelContextListener.class)
+                .getActivateExtensions();
     }
 
     @Override
@@ -124,8 +131,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         // Do not add idle state handler here, because it should be added in the protocol handler.
                         final ChannelPipeline p = ch.pipeline();
-                        NettyChannelHandler nettyChannelHandler =
-                                new NettyChannelHandler(dubboChannels, getUrl(), NettyPortUnificationServer.this);
+                        NettyChannelHandler nettyChannelHandler = new NettyChannelHandler(
+                                dubboChannels, getUrl(), NettyPortUnificationServer.this, listeners);
                         NettyPortUnificationServerHandler puHandler = new NettyPortUnificationServerHandler(
                                 getUrl(),
                                 true,

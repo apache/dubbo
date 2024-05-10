@@ -71,9 +71,9 @@ import io.envoyproxy.envoy.type.matcher.v3.MetadataMatcher.PathSegment;
 
 import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_JWT_FILTER;
 import static org.apache.dubbo.xds.listener.ListenerConstants.LDS_RBAC_FILTER;
-import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.AUTHENTICATED;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.DIRECT_REMOTE_IP;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.HEADER;
+import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.PRINCIPAL;
 import static org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty.REMOTE_IP;
 import static org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation.AND;
 import static org.apache.dubbo.xds.security.authz.rule.tree.RuleNode.Relation.OR;
@@ -94,11 +94,20 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
 
     @Override
     public List<RuleRoot> getRules(URL url, List<HttpFilter> ruleSource) {
+        // JWT rules
         ArrayList<RuleRoot> roots = new ArrayList<>(resolveJWT(ruleSource).values());
+        // Rbac rules
         roots.addAll(resolveRbac(ruleSource));
         return roots;
     }
 
+    /**
+     * Rbac rule focus on validating generic properties, like:
+     * 1. Principals: spiffeId, etc.
+     * 2. Dubbo's properties: version, group, application, etc.
+     * 3. General connection properties: source port,source ip,destination port, destination ip, etc.
+     * 4. Protocol related metadata: http header, form data, etc.
+     */
     public List<RuleRoot> resolveRbac(List<HttpFilter> httpFilters) {
         List<RuleRoot> roots = new ArrayList<>();
         Map<RBAC.Action, List<RBAC>> actions = new HashMap<>();
@@ -201,9 +210,9 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         switch (principalCase) {
             case AUTHENTICATED:
                 StringMatcher matcher =
-                        Matchers.stringMatcher(orIdentity.getAuthenticated().getPrincipalName(), AUTHENTICATED);
+                        Matchers.stringMatcher(orIdentity.getAuthenticated().getPrincipalName(), PRINCIPAL);
                 if (matcher != null) {
-                    valueNode = new LeafRuleNode(Collections.singletonList(matcher), AUTHENTICATED.name());
+                    valueNode = new LeafRuleNode(Collections.singletonList(matcher), PRINCIPAL.name());
                 }
                 break;
 
@@ -366,6 +375,9 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
         return leafRuleNode;
     }
 
+    /**
+     * This rules basically focus on validating jwt properties.
+     */
     public Map<String, RuleRoot> resolveJWT(List<HttpFilter> httpFilters) {
         Map<String, RuleRoot> jwtRules = new HashMap<>();
 
@@ -425,7 +437,6 @@ public class LdsRuleFactory implements RuleFactory<HttpFilter> {
 
     public Matcher<DecodedJWT> buildJwksMatcher(String localJwks) {
         JSONObject jwks = JSON.parseObject(localJwks);
-
         JSONArray keys = jwks.getJSONArray("keys");
 
         return new CustomMatcher<>(RequestAuthProperty.JWKS, requestJwt -> {

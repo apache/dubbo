@@ -18,6 +18,8 @@ package org.apache.dubbo.xds.security.authz.rule;
 
 public enum RequestAuthProperty {
 
+    // Envoy LDS RbacFilter & JwtFilter props
+
     /**
      * Request header
      * Rule attribution:principal
@@ -28,6 +30,7 @@ public enum RequestAuthProperty {
      * 1)rules:when (request.headers[xxx])
      */
     HEADER,
+
     /**
      * Direct request ip address
      * Rule attribution:principal
@@ -57,6 +60,8 @@ public enum RequestAuthProperty {
      * 1)rules:when (remote.ip)
      */
     REMOTE_IP,
+
+    REMOTE_PORT,
 
     /**
      * Identity in jwt = issuer + "/" + subject
@@ -93,6 +98,7 @@ public enum RequestAuthProperty {
      * 1)rules:when (request.auth.presenter)
      */
     JWT_PRESENTERS,
+
     /**
      * What should the requester's identity be
      * Rule attribution:principal
@@ -111,7 +117,7 @@ public enum RequestAuthProperty {
      * 1)rules:when (source.principal)
      * 2)rules:when (source.namespace)
      */
-    AUTHENTICATED,
+    PRINCIPAL,
 
     /**
      * Server ip
@@ -172,7 +178,7 @@ public enum RequestAuthProperty {
      * 1)rules:to:operation:methods
      * 2)rules:to:operation:notMethods
      */
-    METHODS,
+    HTTP_METHOD,
 
     /**
      * Server sni : request.getServerName()
@@ -185,8 +191,7 @@ public enum RequestAuthProperty {
      */
     REQUESTED_SERVER_NAME,
 
-    HTTP_METHOD,
-
+    // Downstream kubernetes environment props
     KUBE_SERVICE_PRINCIPAL,
 
     KUBE_SOURCE_NAMESPACE,
@@ -205,8 +210,11 @@ public enum RequestAuthProperty {
 
     SOURCE_METADATA,
 
-    // JWT rules
+    // Dubbo properties
+    REMOTE_APPLICATION,
+    REMOTE_GROUP,
 
+    // JWT rules
     /**
      * Audience in jwt
      * Rule attribution:principal
@@ -229,17 +237,13 @@ public enum RequestAuthProperty {
     JWT_FROM_HEADERS,
 
     /**
-     * Type of opposite request agent
-     */
-    OPPOSITE_AGENT,
-
-    /**
      * spiffe://{trust_domain}/{workload_identity}
      */
+    SPIFFE_ID,
     TRUST_DOMAIN,
-
     WORKLOAD_ID,
 
     // properties for internal use
-    DECODED_JWT;
+    DECODED_JWT,
+    CONNECTION_CREDENTIAL;
 }

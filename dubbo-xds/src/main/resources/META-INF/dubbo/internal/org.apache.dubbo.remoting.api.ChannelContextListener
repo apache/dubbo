@@ -1,0 +1,1 @@
+credential=org.apache.dubbo.xds.security.authz.resolver.ConnectionCredentialResolver
