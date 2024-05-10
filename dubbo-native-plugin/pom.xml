@@ -75,8 +75,12 @@
 
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.10.2</version>
+        <version>3.13.0</version>
+        <configuration>
+          <goalPrefix>dubbo</goalPrefix>
+        </configuration>
         <executions>
           <execution>
             <id>default-addPluginArtifactMetadata</id>
