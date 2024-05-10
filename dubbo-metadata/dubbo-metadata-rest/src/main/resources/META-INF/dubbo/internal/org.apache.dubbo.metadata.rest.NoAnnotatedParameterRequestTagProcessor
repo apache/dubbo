@@ -1,3 +1,0 @@
-body-form=org.apache.dubbo.metadata.rest.springmvc.FormBodyNoAnnotatedProcessor
-body-json=org.apache.dubbo.metadata.rest.springmvc.JsonBodyNoAnnotatedProcessor
-param=org.apache.dubbo.metadata.rest.springmvc.ParamNoAnnotatedProcessor
