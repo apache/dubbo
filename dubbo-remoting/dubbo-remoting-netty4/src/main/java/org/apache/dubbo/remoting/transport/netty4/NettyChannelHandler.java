@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -32,7 +32,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
-    private static final Logger logger = LoggerFactory.getLogger(NettyChannelHandler.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyChannelHandler.class);
 
     private final Map<String, Channel> dubboChannels;
 
@@ -60,7 +60,13 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
             dubboChannels.put(
                     NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
             handler.connected(channel);
-            contextListeners.forEach(listener -> listener.onConnect(channel));
+            contextListeners.forEach(listener -> {
+                try {
+                    listener.onConnect(ctx);
+                } catch (Exception e) {
+                    logger.warn("99-1", "", "", "", "Failed to invoke listener when channel connect:", e);
+                }
+            });
             if (logger.isInfoEnabled()) {
                 logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress()
                         + " is established.");
@@ -83,8 +89,14 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
                 }
             }
         } finally {
-            contextListeners.forEach(listener -> listener.onDisconnect(channel));
             NettyChannel.removeChannel(ctx.channel());
+            contextListeners.forEach(listener -> {
+                try {
+                    listener.onDisconnect(ctx);
+                } catch (Exception e) {
+                    logger.warn("99-1", "", "", "", "Failed to invoke listener when channel disconnect:", e);
+                }
+            });
         }
     }
 }
