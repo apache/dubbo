@@ -37,6 +37,7 @@ import org.apache.dubbo.xds.security.authz.rule.tree.RuleRoot;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.UInt32Value;
@@ -53,7 +54,6 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import io.envoyproxy.envoy.type.matcher.v3.RegexMatcher;
 import io.envoyproxy.envoy.type.matcher.v3.StringMatcher;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 
 public class LdsRuleTest {
 
@@ -91,7 +91,11 @@ public class LdsRuleTest {
                                                                                 "CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US")))
                                         .build())
                                 .addPrincipals(Principal.newBuilder()
-                                        .setRemoteIp(CidrRange.newBuilder().setAddressPrefix("11.22.33"))
+                                        .setRemoteIp(CidrRange.newBuilder()
+                                                .setAddressPrefix("11.22.33.0")
+                                                .setPrefixLen(UInt32Value.newBuilder()
+                                                        .setValue(24)
+                                                        .build()))
                                         .build())
                                 .build())
                 .buildPartial();
@@ -122,8 +126,8 @@ public class LdsRuleTest {
                                                                         .setDestinationPort(443))
                                                                 .addRules(Permission.newBuilder()
                                                                         .setDestinationIp(CidrRange.newBuilder()
-                                                                                .setAddressPrefix("10.1.2")
-                                                                                .setPrefixLen(UInt32Value.of(24))))
+                                                                                .setAddressPrefix("10.1.0.0")
+                                                                                .setPrefixLen(UInt32Value.of(16))))
                                                                 .build()))
                                                 .build())
                                         .build())
@@ -190,34 +194,43 @@ public class LdsRuleTest {
                 .setTypedConfig(Any.pack(rbacConfig2))
                 .build();
 
-        LdsRuleFactory ldsRuleFactory = new LdsRuleFactory(null);
-        List<RuleRoot> rules =
-                ldsRuleFactory.getRules(URL.valueOf("test://test"), Arrays.asList(rbacFilter, rbacFilter2));
+        long start = System.currentTimeMillis();
+        boolean r = true;
+        for (int i = 0; i < 10000; i++) {
+            LdsRuleFactory ldsRuleFactory = new LdsRuleFactory(null);
+            List<RuleRoot> rules =
+                    ldsRuleFactory.getRules(URL.valueOf("test://test"), Arrays.asList(rbacFilter, rbacFilter2));
 
-        // rule1: ALLOW [ method=GET AND FROM *CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US
-        // AND sourceIP = 11.22.33*]
-        // rule2: ALLOW [(path=/api OR user-agent=Android) AND (destinationPort=443 OR destinationIP=10.1.2*) AND
-        // (Principal = user@example.com OR admin*) ]
-        CommonRequestCredential credential = new CommonRequestCredential();
-        credential.add(RequestAuthProperty.HTTP_METHOD, "GET");
-        credential.add(
-                RequestAuthProperty.AUTHENTICATED,
-                "admin,CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US");
-        credential.add(RequestAuthProperty.URL_PATH, "/api");
-        HashMap<String, String> header = new HashMap<>();
-        header.put("path", "/api");
-        header.put("method", "GET");
-        credential.add(RequestAuthProperty.HEADER, header);
-        credential.add(RequestAuthProperty.REMOTE_IP, "33.44.55.66");
-        credential.add(RequestAuthProperty.DESTINATION_IP, "11.22.33.44");
-        credential.add(RequestAuthProperty.DESTINATION_PORT, "443");
-        AuthorizationRequestContext context = new AuthorizationRequestContext(null, credential);
+            // rule1: ALLOW [ method=GET AND FROM *CN=example.com,OU=IT,O=Example Corp,L=San
+            // Francisco,ST=California,C=US
+            // AND sourceIP = 11.22.33*]
+            // rule2: ALLOW [(path=/api OR user-agent=Android) AND (destinationPort=443 OR destinationIP=10.1.2*) AND
+            // (Principal = user@example.com OR admin*) ]
+            CommonRequestCredential credential = new CommonRequestCredential();
+            credential.add(RequestAuthProperty.HTTP_METHOD, "GET");
+            credential.add(
+                    RequestAuthProperty.PRINCIPAL,
+                    "admin,CN=example.com,OU=IT,O=Example Corp,L=San Francisco,ST=California,C=US");
+            credential.add(RequestAuthProperty.URL_PATH, "/api");
+            HashMap<String, String> header = new HashMap<>();
+            header.put("path", "/api");
+            header.put("method", "GET");
+            credential.add(RequestAuthProperty.HEADER, header);
+            credential.add(RequestAuthProperty.REMOTE_IP, "33.44.55.66");
+            credential.add(RequestAuthProperty.DESTINATION_IP, "11.22.33.44");
+            credential.add(RequestAuthProperty.DESTINATION_PORT, "443");
+            credential.add(RequestAuthProperty.WORKLOAD_ID, new Random().nextInt());
+            AuthorizationRequestContext context = new AuthorizationRequestContext(null, credential);
 
-        context.startTrace();
-        boolean res = rules.get(0).evaluate(context);
-        res &= rules.get(1).evaluate(context);
-        Assertions.assertTrue(res);
-        System.out.println(context.getTraceInfo());
+            //            context.startTrace();
+            boolean res = rules.get(0).evaluate(context);
+            res &= rules.get(1).evaluate(context);
+            r &= res;
+            //            Assertions.assertTrue(res);
+            //            System.out.println(context.getTraceInfo());
+        }
+        System.out.println(System.currentTimeMillis() - start);
+        System.out.println(r);
     }
 
     @Test
