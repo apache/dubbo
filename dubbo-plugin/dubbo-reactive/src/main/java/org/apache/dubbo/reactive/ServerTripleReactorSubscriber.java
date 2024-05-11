@@ -29,8 +29,15 @@ import java.util.concurrent.CompletableFuture;
  */
 public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T> {
 
+    /**
+     * The execution future of the current task, in order to be returned to stubInvoker
+     */
+    private final CompletableFuture<List<T>> executionFuture = new CompletableFuture<>();
+    /**
+     * The result elements collected by the current task.
+     * This class is a flux subscriber, which usually means there will be multiple elements, so it is declared as a list type.
+     */
     private final List<T> collectedData = new ArrayList<>();
-    private final CompletableFuture<List<T>> completableFuture = new CompletableFuture<>();
 
     public ServerTripleReactorSubscriber() {}
 
@@ -63,16 +70,16 @@ public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubsc
     @Override
     public void onError(Throwable throwable) {
         super.onError(throwable);
-        completableFuture.completeExceptionally(throwable);
+        executionFuture.completeExceptionally(throwable);
     }
 
     @Override
     public void onComplete() {
         super.onComplete();
-        completableFuture.complete(this.collectedData);
+        executionFuture.complete(this.collectedData);
     }
 
-    public CompletableFuture<List<T>> getCompletableFuture() {
-        return completableFuture;
+    public CompletableFuture<List<T>> getExecutionFuture() {
+        return executionFuture;
     }
 }

@@ -76,7 +76,7 @@ public final class ReactorServerCalls {
             ServerTripleReactorSubscriber<R> reactorSubscriber =
                     new ServerTripleReactorSubscriber<>(serverCallToObserverAdapter);
             response.subscribeWith(reactorSubscriber).subscribe(serverCallToObserverAdapter);
-            return reactorSubscriber.getCompletableFuture();
+            return reactorSubscriber.getExecutionFuture();
         } catch (Throwable throwable) {
             doOnResponseHasException(throwable, responseObserver);
             CompletableFuture<List<R>> future = new CompletableFuture<>();
