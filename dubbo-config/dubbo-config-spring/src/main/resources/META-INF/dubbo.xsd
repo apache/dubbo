@@ -1716,6 +1716,11 @@
                 <xsd:documentation><![CDATA[ Is SSL enabled. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="preferred-protocol" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Tell consumer the preferred protocol to consume. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:anyAttribute namespace="##other" processContents="lax"/>
     </xsd:complexType>
 

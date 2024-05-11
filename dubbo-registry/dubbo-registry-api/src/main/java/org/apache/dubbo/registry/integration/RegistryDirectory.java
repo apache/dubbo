@@ -67,7 +67,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
-import static org.apache.dubbo.common.constants.CommonConstants.PRIORITIZED_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
@@ -516,7 +516,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      */
     private String getEffectiveProtocol(String queryProtocols, URL url) {
         String protocol = url.getProtocol();
-        String prioritizedProtocol = url.getParameter(PRIORITIZED_PROTOCOL, protocol);
+        String prioritizedProtocol = url.getParameter(PREFERRED_PROTOCOL, protocol);
 
         String effectiveProtocol = prioritizedProtocol;
 

@@ -601,7 +601,7 @@ public interface CommonConstants {
 
     String EXT_PROTOCOL = "ext.protocol";
 
-    String PRIORITIZED_PROTOCOL = "prioritized.protocol";
+    String PREFERRED_PROTOCOL = "preferred.protocol";
 
     String IS_EXTRA = "isExtra";
 

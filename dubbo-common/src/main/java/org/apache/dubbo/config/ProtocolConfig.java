@@ -231,6 +231,8 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private String extProtocol;
 
+    private String preferredProtocol;
+
     /**
      * JSON check level for serialization.
      */
@@ -619,6 +621,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtProtocol(String extProtocol) {
         this.extProtocol = extProtocol;
+    }
+
+    public String getPreferredProtocol() {
+        return preferredProtocol;
+    }
+
+    public void setPreferredProtocol(String preferredProtocol) {
+        this.preferredProtocol = preferredProtocol;
     }
 
     public void mergeProtocol(ProtocolConfig sourceConfig) {
