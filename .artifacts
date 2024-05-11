@@ -46,7 +46,6 @@ dubbo-kubernetes
 dubbo-maven-plugin
 dubbo-metadata
 dubbo-metadata-api
-dubbo-metadata-rest
 dubbo-metadata-definition-protobuf
 dubbo-metadata-processor
 dubbo-metadata-report-nacos
@@ -75,7 +74,6 @@ dubbo-registry-nacos
 dubbo-registry-zookeeper
 dubbo-remoting
 dubbo-remoting-api
-dubbo-remoting-http
 dubbo-remoting-http12
 dubbo-remoting-netty
 dubbo-remoting-netty4
@@ -84,7 +82,6 @@ dubbo-rpc
 dubbo-rpc-api
 dubbo-rpc-dubbo
 dubbo-rpc-injvm
-dubbo-rpc-rest
 dubbo-rpc-triple
 dubbo-security
 dubbo-serialization
