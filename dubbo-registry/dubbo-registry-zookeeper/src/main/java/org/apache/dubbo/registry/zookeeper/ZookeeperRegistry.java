@@ -42,7 +42,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
-import com.alibaba.fastjson2.JSONException;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
@@ -206,7 +208,11 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                             for (String child : currentChildren) {
                                 try {
                                     child = URL.decode(child);
-                                } catch (JSONException e) {
+                                    Object parse = JSON.parse(child);
+                                    if (!(parse instanceof JSONObject) && !(parse instanceof JSONArray)) {
+                                        throw new Exception(child + "is not json");
+                                    }
+                                } catch (Exception e) {
                                     logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", e.getMessage());
                                 }
                                 if (!anyServices.contains(child)) {
