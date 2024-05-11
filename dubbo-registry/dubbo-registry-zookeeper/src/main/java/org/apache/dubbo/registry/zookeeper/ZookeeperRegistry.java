@@ -42,10 +42,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
+import com.alibaba.fastjson2.JSONException;
+
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
@@ -201,10 +204,11 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 ChildListener zkListener = ConcurrentHashMapUtils.computeIfAbsent(
                         listeners, listener, k -> (parentPath, currentChildren) -> {
                             for (String child : currentChildren) {
-                                if (!child.startsWith("{") && !child.startsWith("[")) {
-                                    continue;
+                                try {
+                                    child = URL.decode(child);
+                                } catch (JSONException e) {
+                                    logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", e.getMessage());
                                 }
-                                child = URL.decode(child);
                                 if (!anyServices.contains(child)) {
                                     anyServices.add(child);
                                     subscribe(
