@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import javassist.ClassPool;
 
@@ -56,7 +57,8 @@ class ClassGeneratorTest {
         ClassGenerator cg = ClassGenerator.newInstance();
 
         // add className, interface, superClass
-        String className = BaseClass.class.getPackage().getName() + ".TestClass";
+        String className = BaseClass.class.getPackage().getName() + ".TestClass"
+                + UUID.randomUUID().toString().replace("-", "");
         cg.setClassName(className);
         cg.addInterface(BaseInterface.class);
         cg.setSuperClass(BaseClass.class);
@@ -184,7 +186,7 @@ class ClassGeneratorTest {
         fname.setAccessible(true);
 
         ClassGenerator cg = ClassGenerator.newInstance();
-        cg.setClassName(Bean.class.getName() + "$Builder");
+        cg.setClassName(Bean.class.getName() + "$Builder" + UUID.randomUUID().toString());
         cg.addInterface(Builder.class);
 
         cg.addField("public static java.lang.reflect.Field FNAME;");
@@ -211,7 +213,7 @@ class ClassGeneratorTest {
         fname.setAccessible(true);
 
         ClassGenerator cg = ClassGenerator.newInstance();
-        cg.setClassName(Bean.class.getName() + "$Builder2");
+        cg.setClassName(Bean.class.getName() + "$Builder2" + UUID.randomUUID().toString());
         cg.addInterface(Builder.class);
 
         cg.addField("FNAME", Modifier.PUBLIC | Modifier.STATIC, java.lang.reflect.Field.class);
