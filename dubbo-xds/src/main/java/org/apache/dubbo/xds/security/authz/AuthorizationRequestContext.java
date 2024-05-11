@@ -37,6 +37,8 @@ public class AuthorizationRequestContext {
 
     private int depth;
 
+    private static final int MAX_DEPTH = 50;
+
     public AuthorizationRequestContext(Invocation invocation, RequestCredential requestCredential) {
         this.invocation = invocation;
         this.requestCredential = requestCredential;
@@ -44,6 +46,9 @@ public class AuthorizationRequestContext {
 
     public void depthIncrease() {
         this.depth++;
+        if (depth > MAX_DEPTH) {
+            throw new IllegalStateException("Rule tree depth exceed limit:" + MAX_DEPTH);
+        }
     }
 
     public void depthDecrease() {

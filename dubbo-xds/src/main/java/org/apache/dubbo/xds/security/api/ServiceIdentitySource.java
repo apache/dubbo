@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Service identity source. Provided JWT will attach to request and can be used for authentication.
+ * Service identity source. Provided JWT will attach to request and can be used for further authentication.
  */
 @SPI(value = "noOp", scope = ExtensionScope.APPLICATION)
 public interface ServiceIdentitySource {

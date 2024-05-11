@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.api.ChannelContextListener;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -88,9 +89,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
         // read config before destroy
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
-        listeners = url.getScopeModel()
-                .getExtensionLoader(ChannelContextListener.class)
-                .getActivateExtensions();
+        listeners = (url.getScopeModel() == null
+                ? FrameworkModel.defaultModel()
+                : url.getScopeModel())
+                        .getExtensionLoader(ChannelContextListener.class)
+                        .getActivateExtensions();
     }
 
     @Override
