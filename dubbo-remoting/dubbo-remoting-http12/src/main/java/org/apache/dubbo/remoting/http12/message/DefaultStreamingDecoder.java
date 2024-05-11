@@ -16,31 +16,23 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.remoting.http12.exception.DecodeException;
-
-import java.io.InputStream;
-
-public class NoOpStreamingDecoder implements StreamingDecoder {
-
-    private FragmentListener listener;
+public class DefaultStreamingDecoder extends AbstractStreamingDecoder {
 
     @Override
-    public void request(int numMessages) {
-        // do nothing
+    protected void processMessage() {
+        listener.onFragmentMessage(accumulate);
+        pendingDeliveries--;
     }
 
     @Override
-    public void decode(InputStream inputStream) throws DecodeException {
-        listener.onFragmentMessage(inputStream);
+    protected boolean hasEnoughBytes() {
+        return accumulate.available() > 0;
     }
 
     @Override
-    public void close() {
-        this.listener.onClose();
-    }
-
-    @Override
-    public void setFragmentListener(FragmentListener listener) {
-        this.listener = listener;
+    protected void onClose() {
+        if (pendingDeliveries > 0) {
+            processMessage();
+        }
     }
 }
