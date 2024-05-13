@@ -85,7 +85,8 @@ public class CountTelnet implements BaseCommand {
         for (Exporter<?> exporter : dubboProtocol.getExporters()) {
             if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
                     || service.equals(exporter.getInvoker().getInterface().getName())
-                    || service.equals(exporter.getInvoker().getUrl().getPath())) {
+                    || service.equals(exporter.getInvoker().getUrl().getPath())
+                    || service.equals(exporter.getInvoker().getUrl().getServiceKey())) {
                 invoker = exporter.getInvoker();
                 break;
             }
@@ -154,8 +155,8 @@ public class CountTelnet implements BaseCommand {
 
     private String count(Invoker<?> invoker, String method) {
         URL url = invoker.getUrl();
-        List<List<String>> table = new ArrayList<List<String>>();
-        List<String> header = new ArrayList<String>();
+        List<List<String>> table = new ArrayList<>();
+        List<String> header = new ArrayList<>();
         header.add("method");
         header.add("total");
         header.add("failed");
@@ -187,7 +188,7 @@ public class CountTelnet implements BaseCommand {
     }
 
     private List<String> createRow(String methodName, RpcStatus count) {
-        List<String> row = new ArrayList<String>();
+        List<String> row = new ArrayList<>();
         row.add(methodName);
         row.add(String.valueOf(count.getTotal()));
         row.add(String.valueOf(count.getFailed()));

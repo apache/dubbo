@@ -30,7 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 @Deprecated
 public abstract class AbstractCacheFactory implements CacheFactory {
 
-    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
+    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
 
     @Override
     public Cache getCache(URL url, Invocation invocation) {

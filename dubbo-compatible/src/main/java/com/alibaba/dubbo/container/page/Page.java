@@ -57,8 +57,8 @@ public class Page {
     }
 
     private static List<List<String>> stringToList(String str) {
-        List<List<String>> rows = new ArrayList<List<String>>();
-        List<String> row = new ArrayList<String>();
+        List<List<String>> rows = new ArrayList<>();
+        List<String> row = new ArrayList<>();
         row.add(str);
         rows.add(row);
         return rows;
