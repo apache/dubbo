@@ -95,6 +95,9 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         if (inDelivery) {
             return;
         }
+        if (closed) {
+            return;
+        }
         inDelivery = true;
         try {
             // Process the uncompressed bytes.
