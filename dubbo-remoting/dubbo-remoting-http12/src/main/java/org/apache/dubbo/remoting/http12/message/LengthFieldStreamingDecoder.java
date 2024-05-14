@@ -16,14 +16,29 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.remoting.http12.CompositeInputStream;
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class LengthFieldStreamingDecoder extends AbstractStreamingDecoder {
+public class LengthFieldStreamingDecoder implements StreamingDecoder {
+
+    private long pendingDeliveries;
+
+    private boolean inDelivery = false;
+
+    private boolean closing;
+
+    private boolean closed;
 
     private DecodeState state = DecodeState.HEADER;
+
+    private final CompositeInputStream accumulate = new CompositeInputStream();
+
+    private FragmentListener listener;
 
     private final int lengthFieldOffset;
 
@@ -48,21 +63,69 @@ public class LengthFieldStreamingDecoder extends AbstractStreamingDecoder {
     }
 
     @Override
-    protected void processMessage() throws IOException {
-        switch (state) {
-            case HEADER:
-                processHeader();
-                break;
-            case PAYLOAD:
-                // Read the body and deliver the message.
-                processBody();
+    public final void decode(InputStream inputStream) throws DecodeException {
+        if (closing || closed) {
+            // ignored
+            return;
+        }
+        accumulate.addInputStream(inputStream);
+        deliver();
+    }
 
-                // Since we've delivered a message, decrement the number of pending
-                // deliveries remaining.
-                pendingDeliveries--;
-                break;
-            default:
-                throw new AssertionError("Invalid state: " + state);
+    @Override
+    public final void request(int numMessages) {
+        pendingDeliveries += numMessages;
+        deliver();
+    }
+
+    @Override
+    public final void close() {
+        closing = true;
+        deliver();
+    }
+
+    @Override
+    public final void setFragmentListener(FragmentListener listener) {
+        this.listener = listener;
+    }
+
+    private void deliver() {
+        // We can have reentrancy here when using a direct executor, triggered by calls to
+        // request more messages. This is safe as we simply loop until pendingDelivers = 0
+        if (inDelivery) {
+            return;
+        }
+        inDelivery = true;
+        try {
+            // Process the uncompressed bytes.
+            while (pendingDeliveries > 0 && hasEnoughBytes()) {
+                switch (state) {
+                    case HEADER:
+                        processHeader();
+                        break;
+                    case PAYLOAD:
+                        // Read the body and deliver the message.
+                        processBody();
+
+                        // Since we've delivered a message, decrement the number of pending
+                        // deliveries remaining.
+                        pendingDeliveries--;
+                        break;
+                    default:
+                        throw new AssertionError("Invalid state: " + state);
+                }
+            }
+            if (closing) {
+                if (!closed) {
+                    closed = true;
+                    accumulate.close();
+                    listener.onClose();
+                }
+            }
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        } finally {
+            inDelivery = false;
         }
     }
 
@@ -114,8 +177,7 @@ public class LengthFieldStreamingDecoder extends AbstractStreamingDecoder {
         return data;
     }
 
-    @Override
-    protected boolean hasEnoughBytes() {
+    private boolean hasEnoughBytes() {
         return requiredLength - accumulate.available() <= 0;
     }
 

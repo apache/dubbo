@@ -16,23 +16,50 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-public class DefaultStreamingDecoder extends AbstractStreamingDecoder {
+import org.apache.dubbo.remoting.http12.CompositeInputStream;
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+public class DefaultStreamingDecoder implements StreamingDecoder {
+
+    private boolean closed;
+
+    protected final CompositeInputStream accumulate = new CompositeInputStream();
+
+    protected FragmentListener listener;
 
     @Override
-    protected void processMessage() {
-        listener.onFragmentMessage(accumulate);
-        pendingDeliveries--;
+    public void request(int numMessages) {
+        // do nothing
     }
 
     @Override
-    protected boolean hasEnoughBytes() {
-        return accumulate.available() > 0;
-    }
-
-    @Override
-    protected void onClose() {
-        if (pendingDeliveries > 0) {
-            processMessage();
+    public void decode(InputStream inputStream) throws DecodeException {
+        if (closed) {
+            // ignored
+            return;
         }
+        accumulate.addInputStream(inputStream);
+    }
+
+    @Override
+    public void close() {
+        try {
+            if (!closed) {
+                closed = true;
+                listener.onFragmentMessage(accumulate);
+                accumulate.close();
+                listener.onClose();
+            }
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
+    }
+
+    @Override
+    public void setFragmentListener(FragmentListener listener) {
+        this.listener = listener;
     }
 }

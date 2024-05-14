@@ -174,6 +174,19 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     @Override
+    protected void onError(Http2InputMessage message, Throwable throwable) {
+        try {
+            message.close();
+        } catch (Exception e) {
+            throwable.addSuppressed(e);
+        }
+        onError(throwable);
+    }
+
+    @Override
+    protected void onFinally(Http2InputMessage message) {}
+
+    @Override
     public void cancelByRemote(long errorCode) {
         serverChannelObserver.cancel(new HttpStatusException((int) errorCode));
         serverCallListener.onCancel(errorCode);
