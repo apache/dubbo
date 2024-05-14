@@ -14,9 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.config.bootstrap.rest;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
+import org.apache.dubbo.config.bootstrap.rest.support.ContentType;
 
-    void onStreamClosed();
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
+@Path("users")
+@Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
+@Produces({ContentType.APPLICATION_JSON_UTF_8, ContentType.TEXT_XML_UTF_8})
+@Api(value = "UserService")
+public interface UserService {
+
+    @GET
+    @Path("{id : \\d+}")
+    @ApiOperation(value = "getUser")
+    User getUser(@ApiParam(value = "id") @PathParam("id") Long id);
 }

@@ -64,6 +64,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_DOMAIN;
@@ -161,6 +162,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @since 2.7.8
      */
     private String services;
+
+    protected final transient ReentrantLock lock = new ReentrantLock();
 
     public ReferenceConfig() {
         super();
@@ -291,103 +294,113 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
-    public synchronized void destroy() {
-        super.destroy();
-        if (destroyed) {
-            return;
-        }
-        destroyed = true;
+    public void destroy() {
+        lock.lock();
         try {
-            if (invoker != null) {
-                invoker.destroy();
+            super.destroy();
+            if (destroyed) {
+                return;
             }
-        } catch (Throwable t) {
-            logger.warn(
-                    CONFIG_FAILED_DESTROY_INVOKER,
-                    "",
-                    "",
-                    "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").",
-                    t);
-        }
-        invoker = null;
-        ref = null;
-        if (consumerModel != null) {
-            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-            repository.unregisterConsumer(consumerModel);
+            destroyed = true;
+            try {
+                if (invoker != null) {
+                    invoker.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(
+                        CONFIG_FAILED_DESTROY_INVOKER,
+                        "",
+                        "",
+                        "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").",
+                        t);
+            }
+            invoker = null;
+            ref = null;
+            if (consumerModel != null) {
+                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+                repository.unregisterConsumer(consumerModel);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
-    protected synchronized void init() {
+    protected void init() {
         init(true);
     }
 
-    protected synchronized void init(boolean check) {
-        if (initialized && ref != null) {
-            return;
-        }
+    protected void init(boolean check) {
+        lock.lock();
         try {
-            if (!this.isRefreshed()) {
-                this.refresh();
+            if (initialized && ref != null) {
+                return;
             }
-            // auto detect proxy type
-            String proxyType = getProxy();
-            if (StringUtils.isBlank(proxyType) && DubboStub.class.isAssignableFrom(interfaceClass)) {
-                setProxy(CommonConstants.NATIVE_STUB);
+            try {
+                if (!this.isRefreshed()) {
+                    this.refresh();
+                }
+                // auto detect proxy type
+                String proxyType = getProxy();
+                if (StringUtils.isBlank(proxyType) && DubboStub.class.isAssignableFrom(interfaceClass)) {
+                    setProxy(CommonConstants.NATIVE_STUB);
+                }
+
+                // init serviceMetadata
+                initServiceMetadata(consumer);
+
+                serviceMetadata.setServiceType(getServiceInterfaceClass());
+                // TODO, uncomment this line once service key is unified
+                serviceMetadata.generateServiceKey();
+
+                Map<String, String> referenceParameters = appendConfig();
+
+                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+                ServiceDescriptor serviceDescriptor;
+                if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
+                    serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
+                    repository.registerService(serviceDescriptor);
+                    setInterface(serviceDescriptor.getInterfaceName());
+                } else {
+                    serviceDescriptor = repository.registerService(interfaceClass);
+                }
+                consumerModel = new ConsumerModel(
+                        serviceMetadata.getServiceKey(),
+                        proxy,
+                        serviceDescriptor,
+                        getScopeModel(),
+                        serviceMetadata,
+                        createAsyncMethodInfo(),
+                        interfaceClassLoader);
+
+                // Compatible with dependencies on ServiceModel#getReferenceConfig() , and will be removed in a future
+                // version.
+                consumerModel.setConfig(this);
+
+                repository.registerConsumer(consumerModel);
+
+                serviceMetadata.getAttachments().putAll(referenceParameters);
+
+                ref = createProxy(referenceParameters);
+
+                serviceMetadata.setTarget(ref);
+                serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+
+                consumerModel.setDestroyRunner(getDestroyRunner());
+                consumerModel.setProxyObject(ref);
+                consumerModel.initMethodModels();
+
+                if (check) {
+                    checkInvokerAvailable(0);
+                }
+            } catch (Throwable t) {
+                logAndCleanup(t);
+
+                throw t;
             }
-
-            // init serviceMetadata
-            initServiceMetadata(consumer);
-
-            serviceMetadata.setServiceType(getServiceInterfaceClass());
-            // TODO, uncomment this line once service key is unified
-            serviceMetadata.generateServiceKey();
-
-            Map<String, String> referenceParameters = appendConfig();
-
-            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-            ServiceDescriptor serviceDescriptor;
-            if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
-                serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
-                repository.registerService(serviceDescriptor);
-                setInterface(serviceDescriptor.getInterfaceName());
-            } else {
-                serviceDescriptor = repository.registerService(interfaceClass);
-            }
-            consumerModel = new ConsumerModel(
-                    serviceMetadata.getServiceKey(),
-                    proxy,
-                    serviceDescriptor,
-                    getScopeModel(),
-                    serviceMetadata,
-                    createAsyncMethodInfo(),
-                    interfaceClassLoader);
-
-            // Compatible with dependencies on ServiceModel#getReferenceConfig() , and will be removed in a future
-            // version.
-            consumerModel.setConfig(this);
-
-            repository.registerConsumer(consumerModel);
-
-            serviceMetadata.getAttachments().putAll(referenceParameters);
-
-            ref = createProxy(referenceParameters);
-
-            serviceMetadata.setTarget(ref);
-            serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
-
-            consumerModel.setDestroyRunner(getDestroyRunner());
-            consumerModel.setProxyObject(ref);
-            consumerModel.initMethodModels();
-
-            if (check) {
-                checkInvokerAvailable(0);
-            }
-        } catch (Throwable t) {
-            logAndCleanup(t);
-
-            throw t;
+            initialized = true;
+        } finally {
+            lock.unlock();
         }
-        initialized = true;
     }
 
     /**
