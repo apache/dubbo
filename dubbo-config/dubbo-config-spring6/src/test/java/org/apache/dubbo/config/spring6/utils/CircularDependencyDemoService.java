@@ -14,13 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.config.spring6.utils;
 
-/**
- * DemoServiceImpl
- */
-public class DemoServiceImpl implements DemoService {
-    public String echo(String text) {
-        return text;
-    }
+public interface CircularDependencyDemoService {
+    String sayHello(DemoA a);
 }

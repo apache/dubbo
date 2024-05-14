@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>27</version>
+    <version>31</version>
     <relativePath />
   </parent>
 
@@ -35,7 +35,7 @@
     <maven_flatten_version>1.6.0</maven_flatten_version>
     <slf4j_version>1.7.36</slf4j_version>
     <curator5_version>5.1.0</curator5_version>
-    <zookeeper_version>3.8.3</zookeeper_version>
+    <zookeeper_version>3.8.4</zookeeper_version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>

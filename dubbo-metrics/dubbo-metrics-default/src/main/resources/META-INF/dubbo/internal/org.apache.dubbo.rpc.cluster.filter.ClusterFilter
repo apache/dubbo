@@ -1,3 +1,2 @@
-observationsender=org.apache.dubbo.rpc.cluster.filter.support.ObservationSenderFilter
 metricsClusterFilter=org.apache.dubbo.rpc.cluster.filter.support.MetricsClusterFilter
 monitor=org.apache.dubbo.monitor.support.MonitorClusterFilter

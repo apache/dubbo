@@ -14,13 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.proxy;
+package org.apache.dubbo.tracing.handler;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import org.apache.dubbo.tracing.context.DubboClientContext;
 
-public interface RemoteService extends Remote {
-    String sayHello(String name) throws RemoteException;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationHandler;
+import io.micrometer.observation.transport.SenderContext;
+import io.micrometer.tracing.Tracer;
 
-    String getThreadName() throws RemoteException;
+public class DubboClientTracingObservationHandler<T extends DubboClientContext> implements ObservationHandler<T> {
+    private final Tracer tracer;
+
+    public DubboClientTracingObservationHandler(Tracer tracer) {
+        this.tracer = tracer;
+    }
+
+    @Override
+    public void onScopeOpened(T context) {}
+
+    @Override
+    public boolean supportsContext(Observation.Context context) {
+        return context instanceof SenderContext;
+    }
 }

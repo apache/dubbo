@@ -85,7 +85,8 @@ public class CountTelnet implements BaseCommand {
         for (Exporter<?> exporter : dubboProtocol.getExporters()) {
             if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
                     || service.equals(exporter.getInvoker().getInterface().getName())
-                    || service.equals(exporter.getInvoker().getUrl().getPath())) {
+                    || service.equals(exporter.getInvoker().getUrl().getPath())
+                    || service.equals(exporter.getInvoker().getUrl().getServiceKey())) {
                 invoker = exporter.getInvoker();
                 break;
             }

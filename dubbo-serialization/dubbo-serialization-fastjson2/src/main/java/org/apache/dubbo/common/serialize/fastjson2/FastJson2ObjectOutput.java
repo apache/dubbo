@@ -89,13 +89,13 @@ public class FastJson2ObjectOutput implements ObjectOutput {
 
     @Override
     public void writeBytes(byte[] b) throws IOException {
-        os.write(b.length);
+        writeLength(b.length);
         os.write(b);
     }
 
     @Override
     public void writeBytes(byte[] b, int off, int len) throws IOException {
-        os.write(len);
+        writeLength(len);
         os.write(b, off, len);
     }
 

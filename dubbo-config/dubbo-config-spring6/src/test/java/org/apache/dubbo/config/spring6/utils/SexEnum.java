@@ -14,27 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.proxy.bytebuddy;
+package org.apache.dubbo.config.spring6.utils;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+public enum SexEnum {
+    BOY("boy"),
+    GIRL("girl");
 
-import net.bytebuddy.implementation.bind.annotation.AllArguments;
-import net.bytebuddy.implementation.bind.annotation.Origin;
-import net.bytebuddy.implementation.bind.annotation.RuntimeType;
-import net.bytebuddy.implementation.bind.annotation.This;
+    private final String desc;
 
-public class ByteBuddyInterceptor {
-
-    private final InvocationHandler handler;
-
-    ByteBuddyInterceptor(InvocationHandler handler) {
-        this.handler = handler;
+    SexEnum(String desc) {
+        this.desc = desc;
     }
 
-    @RuntimeType
-    public Object intercept(@This Object obj, @AllArguments Object[] allArguments, @Origin Method method)
-            throws Throwable {
-        return handler.invoke(obj, method, allArguments);
+    public String getDesc() {
+        return desc;
     }
 }

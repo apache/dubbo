@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.route.DefaultRequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestRouter;
@@ -47,6 +46,7 @@ import java.util.concurrent.Executor;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.REMOTE_ADDRESS_KEY;
 
 public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage>
         implements HttpTransportListener<HEADER, MESSAGE> {
@@ -65,7 +65,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private RpcInvocationBuildContext context;
     private HttpMessageListener httpMessageListener;
 
-    public AbstractServerTransportListener(FrameworkModel frameworkModel, URL url, HttpChannel httpChannel) {
+    protected AbstractServerTransportListener(FrameworkModel frameworkModel, URL url, HttpChannel httpChannel) {
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
@@ -209,9 +209,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(StreamUtils.toAttachments(httpMetadata.headers()));
-        inv.put(TripleConstant.REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
+        inv.put(REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
         inv.getAttributes().putAll(context.getAttributes());
-
+        String consumerAppName = httpMetadata.headers().getFirst(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader());
+        if (null != consumerAppName) {
+            inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY, consumerAppName);
+        }
         // customizer RpcInvocation
         headerFilters.forEach(f -> f.invoke(invoker, inv));
 
