@@ -47,8 +47,8 @@ public class MetadataServiceVersionUtils {
 
         metadataInfo.getServices().forEach((name, serviceInfo) -> servicesV2.put(name, toV2(serviceInfo)));
         return MetadataInfoV2.newBuilder()
-                .setVersion(metadataInfo.getRevision())
-                .setApp(metadataInfo.getApp())
+                .setVersion(ifNullSetEmpty(metadataInfo.getRevision()))
+                .setApp(ifNullSetEmpty(metadataInfo.getApp()))
                 .putAllServices(servicesV2)
                 .build();
     }
@@ -58,14 +58,18 @@ public class MetadataServiceVersionUtils {
             return ServiceInfoV2.newBuilder().build();
         }
         return ServiceInfoV2.newBuilder()
-                .setVersion(serviceInfo.getVersion())
-                .setGroup(serviceInfo.getGroup())
-                .setName(serviceInfo.getName())
+                .setVersion(ifNullSetEmpty(serviceInfo.getVersion()))
+                .setGroup(ifNullSetEmpty(serviceInfo.getGroup()))
+                .setName(ifNullSetEmpty(serviceInfo.getName()))
                 .setPort(serviceInfo.getPort())
-                .setPath(serviceInfo.getPath())
-                .setProtocol(serviceInfo.getProtocol())
+                .setPath(ifNullSetEmpty(serviceInfo.getPath()))
+                .setProtocol(ifNullSetEmpty(serviceInfo.getProtocol()))
                 .putAllParams(serviceInfo.getAllParams())
                 .build();
+    }
+
+    private static String ifNullSetEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     public static MetadataInfo toV1(MetadataInfoV2 metadataInfoV2) {
