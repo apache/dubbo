@@ -192,26 +192,57 @@ public enum RequestAuthProperty {
     REQUESTED_SERVER_NAME,
 
     // Downstream kubernetes environment props
+    /**
+     * consumer service account name
+     */
     KUBE_SERVICE_PRINCIPAL,
 
+    /**
+     * consumer namespace
+     */
     KUBE_SOURCE_NAMESPACE,
 
+    /**
+     * consumer service name
+     */
     KUBE_SERVICE_NAME,
 
+    /**
+     * consumer pod name
+     */
     KUBE_POD_NAME,
 
+    /**
+     * consumer pod id
+     */
     KUBE_POD_ID,
 
+    /**
+     * consumer service uid
+     */
     KUBE_SERVICE_UID,
 
+    /**
+     * consumer required provider service version
+     */
     TARGET_VERSION,
 
-    SOURCE_CLUSTER,
+    /**
+     * consumer cluster name
+     */
+    KUBE_SOURCE_CLUSTER,
 
     SOURCE_METADATA,
 
     // Dubbo properties
+    /**
+     * consumer dubbo application name
+     */
     REMOTE_APPLICATION,
+
+    /**
+     * consumer service group
+     */
     REMOTE_GROUP,
 
     // JWT rules

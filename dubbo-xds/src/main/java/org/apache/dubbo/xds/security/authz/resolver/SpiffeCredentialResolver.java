@@ -27,7 +27,7 @@ import org.apache.dubbo.xds.security.authz.resolver.ConnectionCredentialResolver
 import org.apache.dubbo.xds.security.authz.resolver.ConnectionCredentialResolver.SANType;
 import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
 
-import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -48,23 +48,21 @@ public class SpiffeCredentialResolver implements CredentialResolver {
         Object credential = requestCredential.get(RequestAuthProperty.CONNECTION_CREDENTIAL);
         if (credential != null) {
             if (credential instanceof ConnectionCredential) {
-                java.net.URL spiffe = readSpiffeId(((ConnectionCredential) credential).getCertificateCredentials());
+                java.net.URI spiffe = readSpiffeId(((ConnectionCredential) credential).getCertificateCredentials());
                 if (spiffe != null) {
-                    String path = spiffe.getPath();
-                    String[] segments = path.split("/");
+                    requestCredential.add(RequestAuthProperty.TRUST_DOMAIN, spiffe.getHost());
+                    requestCredential.add(RequestAuthProperty.KUBE_SOURCE_CLUSTER, spiffe.getHost());
+                    requestCredential.add(RequestAuthProperty.WORKLOAD_ID, spiffe.getPath());
 
-                    // spiffe://cluster.local[0]/ns[1]/default[2]/sa[3]/my-service-account[4] , len=5
+                    String hostWithPath = spiffe.getHost() + spiffe.getPath();
+                    String[] segments = hostWithPath.split("/");
+                    //  cluster.local[0]/ns[1]/default[2]/sa[3]/my-service-account[4] , len=5
                     if (segments.length == 5 && NAMESPACE.equals(segments[1]) && SERVICE_ACCOUNT.equals(segments[3])) {
-                        String trustDomain = segments[0];
                         String namespace = segments[2];
                         String serviceAccount = segments[4];
                         requestCredential.add(RequestAuthProperty.KUBE_SOURCE_NAMESPACE, namespace);
                         requestCredential.add(RequestAuthProperty.KUBE_SERVICE_PRINCIPAL, serviceAccount);
-                        requestCredential.add(RequestAuthProperty.TRUST_DOMAIN, trustDomain);
-                        requestCredential.add(RequestAuthProperty.SOURCE_CLUSTER, trustDomain);
-                        requestCredential.add(
-                                RequestAuthProperty.WORKLOAD_ID, "/ns/" + namespace + "/sa/" + serviceAccount);
-                        requestCredential.add(RequestAuthProperty.PRINCIPAL, spiffe.getHost() + spiffe.getPath());
+                        requestCredential.add(RequestAuthProperty.PRINCIPAL, hostWithPath);
                     } else {
                         logger.error("99-1", "", "", "Invalid SPIFFE ID format:" + spiffe);
                     }
@@ -82,7 +80,7 @@ public class SpiffeCredentialResolver implements CredentialResolver {
         }
     }
 
-    public java.net.URL readSpiffeId(List<CertificateCredential> credentials) {
+    public java.net.URI readSpiffeId(List<CertificateCredential> credentials) {
         for (CertificateCredential credential : credentials) {
             Map<SANType, List<Object>> subjectAltNames = credential.getSubjectAltNames();
             if (subjectAltNames != null) {
@@ -91,11 +89,11 @@ public class SpiffeCredentialResolver implements CredentialResolver {
                     for (Object o : list) {
                         if (o instanceof String) {
                             try {
-                                java.net.URL url = new java.net.URL((String) o);
-                                if (SPIFFE_KEY.equals(url.getProtocol())) {
-                                    return url;
+                                java.net.URI uri = new java.net.URI((String) o);
+                                if (SPIFFE_KEY.equals(uri.getScheme())) {
+                                    return uri;
                                 }
-                            } catch (MalformedURLException e) {
+                            } catch (URISyntaxException e) {
                                 logger.warn(
                                         "99-1",
                                         "",
