@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
-import java.util.List;
+/**
+ * 2019-02-26
+ */
+public interface DataListener {
 
-public interface ChildListener {
-
-    void childChanged(String path, List<String> children);
+    void dataChanged(String path, Object value, EventType eventType);
 }

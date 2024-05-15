@@ -38,7 +38,6 @@ dubbo-core-spi
 dubbo-dependencies
 dubbo-dependencies-all
 dubbo-dependencies-bom
-dubbo-dependencies-zookeeper
 dubbo-dependencies-zookeeper-curator5
 dubbo-distribution
 dubbo-filter-cache
@@ -78,8 +77,6 @@ dubbo-remoting-api
 dubbo-remoting-http12
 dubbo-remoting-netty
 dubbo-remoting-netty4
-dubbo-remoting-zookeeper-api
-dubbo-remoting-zookeeper
 dubbo-remoting-zookeeper-curator5
 dubbo-rpc
 dubbo-rpc-api

@@ -16,14 +16,17 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator5;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
+public interface StateListener {
 
-public class Curator5ZookeeperTransporter extends AbstractZookeeperTransporter {
+    int SESSION_LOST = 0;
 
-    @Override
-    public ZookeeperClient createZookeeperClient(URL url) {
-        return new Curator5ZookeeperClient(url);
-    }
+    int CONNECTED = 1;
+
+    int RECONNECTED = 2;
+
+    int SUSPENDED = 3;
+
+    int NEW_SESSION_CREATED = 4;
+
+    void stateChanged(int connected);
 }

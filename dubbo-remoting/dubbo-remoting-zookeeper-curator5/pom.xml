@@ -26,19 +26,26 @@
   <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
   <packaging>jar</packaging>
   <name>${project.artifactId}</name>
-  <description>The zookeeper curator5 remoting module of dubbo project</description>
+  <description>The zookeeper remoting module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <curator5_version>5.1.0</curator5_version>
     <zookeeper_version>3.7.2</zookeeper_version>
+    <curator5_version>5.1.0</curator5_version>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-zookeeper-api</artifactId>
+      <artifactId>dubbo-common</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-test-common</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-common</artifactId>

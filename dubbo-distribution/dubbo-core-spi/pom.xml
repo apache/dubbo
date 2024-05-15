@@ -358,9 +358,6 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.telnet.TelnetHandler</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter</resource>
-                </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.ExporterListener</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">

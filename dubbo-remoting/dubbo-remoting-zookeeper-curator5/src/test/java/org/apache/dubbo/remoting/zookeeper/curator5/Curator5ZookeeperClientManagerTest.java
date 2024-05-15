@@ -14,25 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper.curator;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
-@DisabledForJreRange(min = JRE.JAVA_16)
-class CuratorZookeeperTransporterTest {
+class Curator5ZookeeperClientManagerTest {
     private ZookeeperClient zookeeperClient;
-    private CuratorZookeeperTransporter curatorZookeeperTransporter;
+    private ZookeeperClientManager zookeeperClientManager;
     private static String zookeeperConnectionAddress1;
 
     @BeforeAll
@@ -41,10 +37,9 @@ class CuratorZookeeperTransporterTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
-        zookeeperClient =
-                new CuratorZookeeperTransporter().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
-        curatorZookeeperTransporter = new CuratorZookeeperTransporter();
+    public void setUp() {
+        zookeeperClient = new ZookeeperClientManager().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
+        zookeeperClientManager = new ZookeeperClientManager();
     }
 
     @Test

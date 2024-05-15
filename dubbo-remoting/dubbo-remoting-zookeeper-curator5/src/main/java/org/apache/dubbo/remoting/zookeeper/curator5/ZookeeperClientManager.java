@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,25 +32,42 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DESTROY_ZOOKEEPER;
 
-/**
- * AbstractZookeeperTransporter is abstract implements of ZookeeperTransporter.
- * <p>
- * If you want to extend this, implements createZookeeperClient.
- */
-public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
+public class ZookeeperClientManager {
+
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ZookeeperClientManager.class);
     private final Map<String, ZookeeperClient> zookeeperClientMap = new ConcurrentHashMap<>();
+    private static final Map<ApplicationModel, ZookeeperClientManager> managerMap = new ConcurrentHashMap<>();
 
     /**
-     * share connect for registry, metadata, etc..
-     * <p>
-     * Make sure the connection is connected.
-     *
-     * @param url
-     * @return
+     * Use getInstance instead of get Instance
+     * This method is made public solely for unit test purposes.
      */
-    @Override
+    public ZookeeperClientManager() {}
+
+    public static ZookeeperClientManager getInstance(ApplicationModel applicationModel) {
+        if (!managerMap.containsKey(applicationModel) || managerMap.get(applicationModel) == null) {
+            ZookeeperClientManager clientManager = new ZookeeperClientManager();
+            applicationModel.addDestroyListener(m -> {
+                // destroy zookeeper clients if any
+                try {
+                    clientManager.destroy();
+                } catch (Exception e) {
+                    logger.error(
+                            TRANSPORT_FAILED_DESTROY_ZOOKEEPER,
+                            "",
+                            "",
+                            "Error encountered while destroying ZookeeperTransporter: " + e.getMessage(),
+                            e);
+                }
+            });
+            managerMap.put(applicationModel, clientManager);
+        }
+        return managerMap.get(applicationModel);
+    }
+
     public ZookeeperClient connect(URL url) {
         ZookeeperClient zookeeperClient;
         // address format: {[username:password@]address}
@@ -68,29 +86,13 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 return zookeeperClient;
             }
 
-            zookeeperClient = createZookeeperClient(url);
+            zookeeperClient = new Curator5ZookeeperClient(url);
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
             writeToClientMap(addressList, zookeeperClient);
         }
         return zookeeperClient;
     }
 
-    /**
-     * @param url the url that will create zookeeper connection .
-     *            The url in AbstractZookeeperTransporter#connect parameter is rewritten by this one.
-     *            such as: zookeeper://127.0.0.1:2181/org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter
-     * @return
-     */
-    protected abstract ZookeeperClient createZookeeperClient(URL url);
-
-    /**
-     * get the ZookeeperClient from cache, the ZookeeperClient must be connected.
-     * <p>
-     * It is not private method for unit test.
-     *
-     * @param addressList
-     * @return
-     */
     public ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
         ZookeeperClient zookeeperClient = null;
         for (String address : addressList) {
@@ -173,7 +175,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 url.getPassword(),
                 url.getHost(),
                 url.getPort(),
-                ZookeeperTransporter.class.getName(),
+                ZookeeperClientManager.class.getName(),
                 parameterMap);
     }
 
@@ -186,7 +188,6 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         return zookeeperClientMap;
     }
 
-    @Override
     public void destroy() {
         // only destroy zk clients here
         for (ZookeeperClient client : zookeeperClientMap.values()) {

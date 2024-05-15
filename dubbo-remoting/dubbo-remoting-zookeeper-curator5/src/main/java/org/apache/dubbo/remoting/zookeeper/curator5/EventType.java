@@ -14,19 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
-public interface StateListener {
+/**
+ * 2019-02-26
+ */
+public enum EventType {
+    None(-1),
+    NodeCreated(1),
+    NodeDeleted(2),
+    NodeDataChanged(3),
+    NodeChildrenChanged(4),
+    CONNECTION_SUSPENDED(11),
+    CONNECTION_RECONNECTED(12),
+    CONNECTION_LOST(12),
+    INITIALIZED(10);
 
-    int SESSION_LOST = 0;
+    private final int intValue; // Integer representation of value
+    // for sending over wire
 
-    int CONNECTED = 1;
+    EventType(int intValue) {
+        this.intValue = intValue;
+    }
 
-    int RECONNECTED = 2;
-
-    int SUSPENDED = 3;
-
-    int NEW_SESSION_CREATED = 4;
-
-    void stateChanged(int connected);
+    public int getIntValue() {
+        return intValue;
+    }
 }
