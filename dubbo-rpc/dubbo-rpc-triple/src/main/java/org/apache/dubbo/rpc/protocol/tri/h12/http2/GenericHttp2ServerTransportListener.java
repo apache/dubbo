@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.http12.HttpMethods;
-import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
@@ -188,7 +188,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     public void cancelByRemote(long errorCode) {
-        serverChannelObserver.cancel(new HttpStatusException((int) errorCode));
+        serverChannelObserver.cancel(CancelStreamException.fromRemote(errorCode));
         serverCallListener.onCancel(errorCode);
     }
 
@@ -198,6 +198,12 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     protected final Http2ServerChannelObserver getServerChannelObserver() {
         return serverChannelObserver;
+    }
+
+    @Override
+    public void onStreamClosed() {
+        // doing on event loop thread
+        getStreamingDecoder().close();
     }
 
     private static class Http2StreamingDecodeListener implements ListeningDecoder.Listener {
