@@ -1206,12 +1206,6 @@
                 <xsd:documentation><![CDATA[ Maximum header list size. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-
-        <xsd:attribute name="pass-through-standard-http-headers" type="xsd:boolean">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ Whether to pass through standard HTTP headers, default is false ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="prometheusExporterType">
