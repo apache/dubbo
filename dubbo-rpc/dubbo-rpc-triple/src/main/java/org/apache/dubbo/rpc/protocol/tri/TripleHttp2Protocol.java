@@ -204,10 +204,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private TripleConfig getTripleConfig(URL url) {
-        return url.getOrDefaultApplicationModel()
-                .getApplicationConfigManager()
-                .getDefaultProtocols()
-                .stream()
+        return url.getOrDefaultApplicationModel().getApplicationConfigManager().getDefaultProtocols().stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("There's no default ProtocolConfig specified."))
                 .getTriple();
