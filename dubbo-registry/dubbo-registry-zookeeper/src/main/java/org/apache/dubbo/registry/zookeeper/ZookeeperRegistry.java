@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
@@ -208,8 +209,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                             for (String child : currentChildren) {
                                 try {
                                     child = URL.decode(child);
-                                    Object parse = JSON.parse(child);
-                                    if (!(parse instanceof JSONObject) && !(parse instanceof JSONArray)) {
+                                    if (!(JsonUtils.checkJson(child))) {
                                         throw new Exception(child + "is not json");
                                     }
                                 } catch (Exception e) {
