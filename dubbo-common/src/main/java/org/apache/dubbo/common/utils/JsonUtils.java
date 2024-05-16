@@ -147,5 +147,7 @@ public class JsonUtils {
         return getJson().checkStringList(rawList);
     }
 
-    public static boolean checkJson(String json) {return getJson().isJson(json);}
+    public static boolean checkJson(String json) {
+        return getJson().isJson(json);
+    }
 }
