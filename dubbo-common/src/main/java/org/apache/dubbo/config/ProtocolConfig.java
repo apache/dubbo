@@ -239,7 +239,7 @@ public class ProtocolConfig extends AbstractConfig {
     private String jsonCheckLevel;
 
     @Nested
-    private TripleConfig triple = new TripleConfig();
+    private TripleConfig triple;
 
     public ProtocolConfig() {}
 
@@ -281,6 +281,10 @@ public class ProtocolConfig extends AbstractConfig {
                             .getBeanFactory()
                             .getBean(PreferSerializationProvider.class)
                             .getPreferSerialization();
+        }
+
+        if (triple == null) {
+            triple = new TripleConfig();
         }
     }
 
