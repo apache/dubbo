@@ -108,13 +108,6 @@ class TripleBuilderTest {
     }
 
     @Test
-    void passThroughStandardHttpHeaders() {
-        TripleBuilder builder = TripleBuilder.newBuilder();
-        builder.passThroughStandardHttpHeaders(true);
-        Assertions.assertTrue(builder.build().getPassThroughStandardHttpHeaders());
-    }
-
-    @Test
     void build() {
         TripleBuilder builder = TripleBuilder.newBuilder();
         builder.maxBodySize(2048)
@@ -128,8 +121,7 @@ class TripleBuilderTest {
                 .maxConcurrentStreams(Integer.MAX_VALUE)
                 .initialWindowSize(4096)
                 .maxFrameSize(1024)
-                .maxHeaderListSize(500)
-                .passThroughStandardHttpHeaders(false);
+                .maxHeaderListSize(500);
 
         TripleConfig config = builder.build();
         TripleConfig config2 = builder.build();
@@ -146,7 +138,6 @@ class TripleBuilderTest {
         Assertions.assertEquals(4096, config.getInitialWindowSize());
         Assertions.assertEquals(1024, config.getMaxFrameSize());
         Assertions.assertEquals(500, config.getMaxHeaderListSize());
-        Assertions.assertFalse(config.getPassThroughStandardHttpHeaders());
         Assertions.assertNotSame(config, config2);
     }
 }
