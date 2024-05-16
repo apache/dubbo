@@ -61,7 +61,7 @@ public interface ServiceNameMapping extends Destroyable {
     }
 
     static String buildMappingKey(URL url) {
-        return buildGroup(url.getServiceInterface());
+        return buildGroup(url.getColonSeparatedKey());
     }
 
     static String buildGroup(String serviceInterface) {
