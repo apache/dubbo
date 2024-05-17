@@ -119,4 +119,9 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     public boolean isAutoRequestN() {
         return autoRequestN;
     }
+
+    public void onStreamClosed() {
+        closed = true;
+        streamingDecoder.onStreamClosed();
+    }
 }

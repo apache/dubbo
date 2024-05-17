@@ -85,6 +85,19 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     @Override
+    public final void onStreamClosed() {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            accumulate.close();
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
+    }
+
+    @Override
     public final void setFragmentListener(FragmentListener listener) {
         this.listener = listener;
     }
