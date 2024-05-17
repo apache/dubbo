@@ -197,14 +197,16 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return getConfig(ProtocolConfig.class, idOrName);
     }
 
-    public ProtocolConfig getOrAddProtocol(String idOrName, boolean needRefresh) {
+    public ProtocolConfig getOrAddProtocol(String idOrName) {
         Optional<ProtocolConfig> protocol = getProtocol(idOrName);
         if (protocol.isPresent()) {
             return protocol.get();
         }
         ProtocolConfig protocolConfig = new ProtocolConfig(idOrName);
         addProtocol(protocolConfig);
-        if (needRefresh && !protocolConfig.isRefreshed()) {
+        // addProtocol triggers refresh when other protocols exist in the ConfigManager.
+        // So refresh is only done when ProtocolConfig is not refreshed.
+        if (!protocolConfig.isRefreshed()) {
             protocolConfig.refresh();
         }
         return protocolConfig;

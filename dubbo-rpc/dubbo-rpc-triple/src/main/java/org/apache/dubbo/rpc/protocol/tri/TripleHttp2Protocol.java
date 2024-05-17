@@ -206,7 +206,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private TripleConfig getTripleConfig(URL url) {
         return url.getOrDefaultApplicationModel()
                 .getApplicationConfigManager()
-                .getOrAddProtocol(url.getProtocol(), true)
+                .getOrAddProtocol(url.getProtocol())
                 .getTriple();
     }
 }
