@@ -99,10 +99,10 @@ class JsonUtilsTest {
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "jackson");
         Assertions.assertTrue(
-            JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+                JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
         Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
         Assertions.assertTrue(
-            JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+                JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
         System.clearProperty("dubbo.json-framework.prefer");
     }
     @Test
