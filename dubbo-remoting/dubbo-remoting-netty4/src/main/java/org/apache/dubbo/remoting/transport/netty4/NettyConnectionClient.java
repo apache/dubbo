@@ -43,7 +43,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -75,6 +74,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     public static final AttributeKey<AbstractConnectionClient> CONNECTION = AttributeKey.valueOf("connection");
 
+    private AtomicBoolean isReconnecting;
+
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
@@ -91,6 +92,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         this.closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.init = new AtomicBoolean(false);
         this.increase();
+        this.isReconnecting = new AtomicBoolean(false);
     }
 
     @Override
@@ -158,6 +160,10 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     @Override
     protected void doConnect() throws RemotingException {
+        if (!isReconnecting.compareAndSet(false, true)) {
+            return;
+        }
+
         if (isClosed()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
@@ -230,6 +236,13 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             }
             return;
         }
+
+        // Close the existing channel before setting a new channel
+        final io.netty.channel.Channel current = getNettyChannel();
+        if (current != null) {
+            current.close();
+        }
+
         this.channel.set(nettyChannel);
         // This indicates that the connection is available.
         if (this.connectingPromise.get() != null) {
@@ -248,6 +261,10 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         }
         io.netty.channel.Channel nettyChannel = (io.netty.channel.Channel) channel;
         if (this.channel.compareAndSet(nettyChannel, null)) {
+            // Ensure the channel is closed
+            if (nettyChannel.isOpen()) {
+                nettyChannel.close();
+            }
             NettyChannel.removeChannelIfDisconnected(nettyChannel);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(String.format("%s goaway", this));
@@ -347,6 +364,11 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
         @Override
         public void operationComplete(ChannelFuture future) {
+
+            if (!isReconnecting.compareAndSet(true, false)) {
+                return;
+            }
+
             if (future.isSuccess()) {
                 return;
             }
@@ -364,8 +386,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                         "%s is reconnecting, attempt=%d cause=%s",
                         connectionClient, 0, future.cause().getMessage()));
             }
-            final EventLoop loop = future.channel().eventLoop();
-            loop.schedule(
+
+            connectivityExecutor.schedule(
                     () -> {
                         try {
                             connectionClient.doConnect();
@@ -377,8 +399,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                                     "Failed to connect to server: " + getConnectAddress());
                         }
                     },
-                    1L,
-                    TimeUnit.SECONDS);
+                    reconnectDuaration,
+                    TimeUnit.MILLISECONDS);
         }
     }
 }
