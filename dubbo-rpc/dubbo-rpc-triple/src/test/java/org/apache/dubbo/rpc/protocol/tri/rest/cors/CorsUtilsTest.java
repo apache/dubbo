@@ -35,7 +35,8 @@ class CorsUtilsTest {
         Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn("Content-Type,Authorization");
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn("3600");
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn("3600");
-        CorsMeta meta = utils.resolveGlobalMeta(config);
+        utils.resolveGlobalMeta(config);
+        CorsMeta meta = utils.getGlobalCorsMeta();
         Assertions.assertTrue(meta.getAllowedOrigins().contains("http://localhost:8080"));
         Assertions.assertTrue(meta.getAllowedMethods().contains("GET"));
         Assertions.assertTrue(meta.getAllowedMethods().contains("POST"));
@@ -57,8 +58,8 @@ class CorsUtilsTest {
         Mockito.when(config.getString(RestConstants.ALLOWED_HEADERS)).thenReturn(null);
         Mockito.when(config.getString(RestConstants.EXPOSED_HEADERS)).thenReturn(null);
         Mockito.when(config.getString(RestConstants.MAX_AGE)).thenReturn(null);
-
-        CorsMeta meta = utils.resolveGlobalMeta(config);
+        utils.resolveGlobalMeta(config);
+        CorsMeta meta = utils.getGlobalCorsMeta();
         Assertions.assertNull(meta.getMaxAge());
         Assertions.assertNull(meta.getAllowedOrigins());
         Assertions.assertNull(meta.getAllowedMethods());

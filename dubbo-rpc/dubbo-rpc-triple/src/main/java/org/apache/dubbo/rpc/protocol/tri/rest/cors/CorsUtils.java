@@ -33,7 +33,9 @@ public class CorsUtils {
     public static final String WS = "ws";
     public static final String WSS = "wss";
 
-    public CorsUtils() {}
+    public CorsUtils() {
+        globalCorsMeta = new CorsMeta();
+    }
 
     public static int getPort(String scheme, int port) {
         if (port == -1) {
@@ -46,23 +48,18 @@ public class CorsUtils {
         return port;
     }
 
-    public CorsMeta resolveGlobalMeta(Configuration config) {
-
+    public void resolveGlobalMeta(Configuration config) {
         // Get the CORS configuration properties from the configuration object.
         String allowOrigins = config.getString(RestConstants.ALLOWED_ORIGINS);
         String allowMethods = config.getString(RestConstants.ALLOWED_METHODS);
         String allowHeaders = config.getString(RestConstants.ALLOWED_HEADERS);
         String exposeHeaders = config.getString(RestConstants.EXPOSED_HEADERS);
         String maxAge = config.getString(RestConstants.MAX_AGE);
-        // Create a new CorsMeta object and set the properties.
-        CorsMeta meta = new CorsMeta();
-        meta.setAllowedOrigins(parseList(allowOrigins));
-        meta.setAllowedMethods(parseList(allowMethods));
-        meta.setAllowedHeaders(parseList(allowHeaders));
-        meta.setExposedHeaders(parseList(exposeHeaders));
-        meta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
-        // Return the CorsMeta object.
-        return meta;
+        globalCorsMeta.setAllowedOrigins(parseList(allowOrigins));
+        globalCorsMeta.setAllowedMethods(parseList(allowMethods));
+        globalCorsMeta.setAllowedHeaders(parseList(allowHeaders));
+        globalCorsMeta.setExposedHeaders(parseList(exposeHeaders));
+        globalCorsMeta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
     }
 
     @Nullable
@@ -77,7 +74,7 @@ public class CorsUtils {
         if (globalCorsMeta == null) {
             Configuration globalConfiguration =
                     ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
-            globalCorsMeta = resolveGlobalMeta(globalConfiguration);
+            resolveGlobalMeta(globalConfiguration);
         }
         return globalCorsMeta;
     }
