@@ -109,7 +109,6 @@ class JsonUtilsTest {
             .isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
         System.clearProperty("dubbo.json-framework.prefer");
     }
-
     @Test
     void testGetJson1() {
         Assertions.assertNotNull(JsonUtils.getJson());
