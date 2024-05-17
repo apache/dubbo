@@ -207,7 +207,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                                     child = URL.decode(child);
                                     if (!(JsonUtils.checkJson(child))) {
                                         throw new Exception("decode message failed, beacause " + child
-                                            + "is not json,can not be deserialized.");
+                                                + "is not json,can not be deserialized.");
                                     }
                                 } catch (Exception e) {
                                     logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", e.getMessage());
