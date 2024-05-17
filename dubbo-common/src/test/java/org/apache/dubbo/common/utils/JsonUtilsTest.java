@@ -68,48 +68,35 @@ class JsonUtilsTest {
         JsonUtils.setJson(null);
         // prefer use fastjson2
         System.setProperty("dubbo.json-framework.prefer", "fastjson2");
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
-        Assertions.assertFalse(JsonUtils.getJson()
-            .isJson("This is not a JSON string"));
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use fastjson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
-        Assertions.assertFalse(JsonUtils.getJson()
-            .isJson("This is not a JSON string"));
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use gson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "gson");
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
-        Assertions.assertFalse(JsonUtils.getJson()
-            .isJson("This is not a JSON string"));
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use jackson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "jackson");
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
-        Assertions.assertFalse(JsonUtils.getJson()
-            .isJson("This is not a JSON string"));
-        Assertions.assertTrue(JsonUtils.getJson()
-            .isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
         System.clearProperty("dubbo.json-framework.prefer");
     }
-
     @Test
     void testGetJson1() {
         Assertions.assertNotNull(JsonUtils.getJson());
@@ -117,55 +104,45 @@ class JsonUtilsTest {
 
         Map<String, String> map = new HashMap<>();
         map.put("a", "a");
-        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson()
-            .toJson(map));
-        Assertions.assertEquals(map, JsonUtils.getJson()
-            .toJavaObject("{\"a\":\"a\"}", Map.class));
-        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson()
-            .toJavaList("[{\"a\":\"a\"}]", Map.class));
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(
+                Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
 
         // prefer use fastjson2
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "fastjson2");
-        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson()
-            .toJson(map));
-        Assertions.assertEquals(map, JsonUtils.getJson()
-            .toJavaObject("{\"a\":\"a\"}", Map.class));
-        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson()
-            .toJavaList("[{\"a\":\"a\"}]", Map.class));
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(
+                Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use fastjson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
-        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson()
-            .toJson(map));
-        Assertions.assertEquals(map, JsonUtils.getJson()
-            .toJavaObject("{\"a\":\"a\"}", Map.class));
-        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson()
-            .toJavaList("[{\"a\":\"a\"}]", Map.class));
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(
+                Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use gson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "gson");
-        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson()
-            .toJson(map));
-        Assertions.assertEquals(map, JsonUtils.getJson()
-            .toJavaObject("{\"a\":\"a\"}", Map.class));
-        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson()
-            .toJavaList("[{\"a\":\"a\"}]", Map.class));
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(
+                Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use jackson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "jackson");
-        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson()
-            .toJson(map));
-        Assertions.assertEquals(map, JsonUtils.getJson()
-            .toJavaObject("{\"a\":\"a\"}", Map.class));
-        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson()
-            .toJavaList("[{\"a\":\"a\"}]", Map.class));
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(
+                Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
         System.clearProperty("dubbo.json-framework.prefer");
 
         JsonUtils.setJson(null);
@@ -234,32 +211,28 @@ class JsonUtilsTest {
             JsonUtils.setJson(null);
             System.setProperty("dubbo.json-framework.prefer", "fastjson2");
             Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
-            String fromFastjson2 = JsonUtils.getJson()
-                .toJson(obj);
+            String fromFastjson2 = JsonUtils.getJson().toJson(obj);
             System.clearProperty("dubbo.json-framework.prefer");
 
             // prefer use fastjson
             JsonUtils.setJson(null);
             System.setProperty("dubbo.json-framework.prefer", "fastjson");
             Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
-            String fromFastjson1 = JsonUtils.getJson()
-                .toJson(obj);
+            String fromFastjson1 = JsonUtils.getJson().toJson(obj);
             System.clearProperty("dubbo.json-framework.prefer");
 
             // prefer use gson
             JsonUtils.setJson(null);
             System.setProperty("dubbo.json-framework.prefer", "gson");
             Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
-            String fromGson = JsonUtils.getJson()
-                .toJson(obj);
+            String fromGson = JsonUtils.getJson().toJson(obj);
             System.clearProperty("dubbo.json-framework.prefer");
 
             // prefer use jackson
             JsonUtils.setJson(null);
             System.setProperty("dubbo.json-framework.prefer", "jackson");
             Assertions.assertInstanceOf(JacksonImpl.class, JsonUtils.getJson());
-            String fromJackson = JsonUtils.getJson()
-                .toJson(obj);
+            String fromJackson = JsonUtils.getJson().toJson(obj);
             System.clearProperty("dubbo.json-framework.prefer");
 
             JsonUtils.setJson(null);
@@ -275,13 +248,13 @@ class JsonUtilsTest {
     @Test
     void testGetJson2() {
         fastjson2Mock = Mockito.mockConstruction(FastJson2Impl.class, (mock, context) -> Mockito.when(mock.isSupport())
-            .thenAnswer(invocation -> allowFastjson2.get()));
+                .thenAnswer(invocation -> allowFastjson2.get()));
         fastjsonMock = Mockito.mockConstruction(FastJsonImpl.class, (mock, context) -> Mockito.when(mock.isSupport())
-            .thenAnswer(invocation -> allowFastjson.get()));
+                .thenAnswer(invocation -> allowFastjson.get()));
         gsonMock = Mockito.mockConstruction(GsonImpl.class, (mock, context) -> Mockito.when(mock.isSupport())
-            .thenAnswer(invocation -> allowGson.get()));
+                .thenAnswer(invocation -> allowGson.get()));
         jacksonMock = Mockito.mockConstruction(JacksonImpl.class, (mock, context) -> Mockito.when(mock.isSupport())
-            .thenAnswer(invocation -> allowJackson.get()));
+                .thenAnswer(invocation -> allowJackson.get()));
 
         // default use fastjson2
         JsonUtils.setJson(null);
