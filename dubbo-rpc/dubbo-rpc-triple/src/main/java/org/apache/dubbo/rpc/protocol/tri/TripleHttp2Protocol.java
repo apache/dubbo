@@ -42,7 +42,6 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelInitializer;
@@ -205,9 +204,9 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private TripleConfig getTripleConfig(URL url) {
-        return url.getOrDefaultApplicationModel().getApplicationConfigManager().getDefaultProtocols().stream()
-                .findFirst()
-                .flatMap(protocolConfig -> Optional.ofNullable(protocolConfig.getTriple()))
-                .orElseGet(TripleConfig::new);
+        return url.getOrDefaultApplicationModel()
+                .getApplicationConfigManager()
+                .getOrAddProtocol(url.getProtocol())
+                .getTriple();
     }
 }

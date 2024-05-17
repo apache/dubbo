@@ -30,14 +30,14 @@ public class TripleConfig implements Serializable {
      * Limits the size of request to prevent excessively large request.
      * <p>The default value is 8MiB.
      */
-    private Integer maxBodySize = 1 << 23;
+    private Integer maxBodySize;
 
     /**
      * Maximum allowed size for HTTP1 response bodies.
      * Limits the size of responses to prevent excessively large response.
      * <p>The default value is 8MiB.
      */
-    private Integer maxResponseBodySize = 1 << 23;
+    private Integer maxResponseBodySize;
 
     /**
      * Set the maximum chunk size.
@@ -46,7 +46,7 @@ public class TripleConfig implements Serializable {
      * This sets the limit, in bytes, at which Netty will send a chunk down the pipeline.
      * <p>The default value is 8MiB.
      */
-    private Integer maxChunkSize = 1 << 23;
+    private Integer maxChunkSize;
 
     /**
      * Set the maximum line length of header lines.
@@ -54,7 +54,7 @@ public class TripleConfig implements Serializable {
      * You would typically set this to the same value as {@link #setMaxInitialLineLength(Integer)}.
      * <p>The default value is 8KiB.
      */
-    private Integer maxHeaderSize = 8192;
+    private Integer maxHeaderSize;
 
     /**
      * Set the maximum length of the first line of the HTTP header.
@@ -62,43 +62,43 @@ public class TripleConfig implements Serializable {
      * You would typically set this to the same value as {@link #setMaxHeaderSize(Integer)}.
      * <p>The default value is 4096.
      */
-    private Integer maxInitialLineLength = 4096;
+    private Integer maxInitialLineLength;
 
     /**
      * Set the initial size of the temporary buffer used when parsing the lines of the HTTP headers.
      * <p>The default value is 16384 octets.
      */
-    private Integer initialBufferSize = 16384;
+    private Integer initialBufferSize;
 
     /**
      * The header table size.
      */
-    private Integer headerTableSize = 4096;
+    private Integer headerTableSize;
 
     /**
      * Whether to enable push, default is false.
      */
-    private Boolean enablePush = false;
+    private Boolean enablePush;
 
     /**
      * Maximum concurrent streams.
      */
-    private Integer maxConcurrentStreams = Integer.MAX_VALUE;
+    private Integer maxConcurrentStreams;
 
     /**
      * Initial window size.
      */
-    private Integer initialWindowSize = 1 << 23;
+    private Integer initialWindowSize;
 
     /**
      * Maximum frame size.
      */
-    private Integer maxFrameSize = 1 << 23;
+    private Integer maxFrameSize;
 
     /**
      * Maximum header list size.
      */
-    private Integer maxHeaderListSize = 1 << 15;
+    private Integer maxHeaderListSize;
 
     public Integer getMaxBodySize() {
         return maxBodySize;
@@ -194,5 +194,44 @@ public class TripleConfig implements Serializable {
 
     public void setMaxHeaderListSize(Integer maxHeaderListSize) {
         this.maxHeaderListSize = maxHeaderListSize;
+    }
+
+    public void checkDefault() {
+        if (maxBodySize == null) {
+            maxBodySize = 1 << 23;
+        }
+        if (maxResponseBodySize == null) {
+            maxResponseBodySize = 1 << 23;
+        }
+        if (maxChunkSize == null) {
+            maxChunkSize = 1 << 23;
+        }
+        if (maxHeaderSize == null) {
+            maxHeaderSize = 8192;
+        }
+        if (maxInitialLineLength == null) {
+            maxInitialLineLength = 4096;
+        }
+        if (initialBufferSize == null) {
+            initialBufferSize = 16384;
+        }
+        if (headerTableSize == null) {
+            headerTableSize = 4096;
+        }
+        if (enablePush == null) {
+            enablePush = false;
+        }
+        if (maxConcurrentStreams == null) {
+            maxConcurrentStreams = Integer.MAX_VALUE;
+        }
+        if (initialWindowSize == null) {
+            initialWindowSize = 1 << 23;
+        }
+        if (maxFrameSize == null) {
+            maxFrameSize = 1 << 23;
+        }
+        if (maxHeaderListSize == null) {
+            maxHeaderListSize = 1 << 15;
+        }
     }
 }

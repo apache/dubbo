@@ -286,6 +286,7 @@ public class ProtocolConfig extends AbstractConfig {
         if (triple == null) {
             triple = new TripleConfig();
         }
+        triple.checkDefault();
     }
 
     @Parameter(excluded = true)
