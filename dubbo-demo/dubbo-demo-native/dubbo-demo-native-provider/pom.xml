@@ -30,7 +30,7 @@
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
     <curator5_version>5.1.0</curator5_version>
-    <zookeeper_version>3.8.3</zookeeper_version>
+    <zookeeper_version>3.8.4</zookeeper_version>
   </properties>
 
   <dependencies>
@@ -134,12 +134,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-http</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
     </dependency>
@@ -157,7 +151,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.5.3</version>
+      <version>1.5.6</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -189,7 +183,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.12.1</version>
+            <version>3.13.0</version>
             <configuration>
               <source>1.8</source>
               <target>1.8</target>

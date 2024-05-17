@@ -459,7 +459,7 @@ public class RpcServiceContext extends RpcContext {
     public RpcServiceContext setInvokers(List<Invoker<?>> invokers) {
         this.invokers = invokers;
         if (CollectionUtils.isNotEmpty(invokers)) {
-            List<URL> urls = new ArrayList<URL>(invokers.size());
+            List<URL> urls = new ArrayList<>(invokers.size());
             for (Invoker<?> invoker : invokers) {
                 urls.add(invoker.getUrl());
             }
