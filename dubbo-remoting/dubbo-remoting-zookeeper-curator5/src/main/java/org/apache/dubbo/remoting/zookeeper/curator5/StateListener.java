@@ -14,9 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
+public interface StateListener {
 
-    void onStreamClosed();
+    int SESSION_LOST = 0;
+
+    int CONNECTED = 1;
+
+    int RECONNECTED = 2;
+
+    int SUSPENDED = 3;
+
+    int NEW_SESSION_CREATED = 4;
+
+    void stateChanged(int connected);
 }

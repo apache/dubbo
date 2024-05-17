@@ -14,9 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.config.bootstrap.rest;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
+import java.util.concurrent.atomic.AtomicLong;
 
-    void onStreamClosed();
+public class UserServiceImpl implements UserService {
+
+    private final AtomicLong idGen = new AtomicLong();
+
+    @Override
+    public User getUser(Long id) {
+        return new User(id, "username" + id);
+    }
 }

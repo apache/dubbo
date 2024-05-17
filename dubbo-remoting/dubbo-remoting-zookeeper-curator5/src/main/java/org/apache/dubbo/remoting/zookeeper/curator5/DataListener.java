@@ -14,9 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
+/**
+ * 2019-02-26
+ */
+public interface DataListener {
 
-    void onStreamClosed();
+    void dataChanged(String path, Object value, EventType eventType);
 }
