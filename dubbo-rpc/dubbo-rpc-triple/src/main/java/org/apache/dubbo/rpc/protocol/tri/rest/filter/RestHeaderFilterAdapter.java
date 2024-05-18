@@ -27,16 +27,15 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 public abstract class RestHeaderFilterAdapter implements HeaderFilter {
 
     @Override
-    public RpcInvocation invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException {
+    public void invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException {
         if (TripleConstant.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstant.HANDLER_TYPE_KEY))) {
             HttpRequest request = (HttpRequest) invocation.get(TripleConstant.HTTP_REQUEST_KEY);
             HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
-            return invoke(invoker, invocation, request, response);
+            invoke(invoker, invocation, request, response);
         }
-        return invocation;
     }
 
-    protected abstract RpcInvocation invoke(
+    protected abstract void invoke(
             Invoker<?> invoker, RpcInvocation invocation, HttpRequest request, HttpResponse response)
             throws RpcException;
 }

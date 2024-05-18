@@ -18,64 +18,36 @@ package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.lang.Nullable;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 
 public class CorsUtils {
-    private CorsMeta globalCorsMeta;
-    public static final String HTTP = "http";
-    public static final String HTTPS = "https";
-    public static final String WS = "ws";
-    public static final String WSS = "wss";
 
-    public CorsUtils() {
-        globalCorsMeta = new CorsMeta();
-    }
+    private CorsUtils() {}
 
-    public static int getPort(String scheme, int port) {
-        if (port == -1) {
-            if (HTTP.equals(scheme) || WS.equals(scheme)) {
-                port = 80;
-            } else if (HTTPS.equals(scheme) || WSS.equals(scheme)) {
-                port = 443;
-            }
-        }
-        return port;
-    }
+    public static CorsMeta getGlobalCorsMeta(FrameworkModel frameworkModel) {
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
 
-    public void resolveGlobalMeta(Configuration config) {
-        // Get the CORS configuration properties from the configuration object.
-        String allowOrigins = config.getString(RestConstants.ALLOWED_ORIGINS);
-        String allowMethods = config.getString(RestConstants.ALLOWED_METHODS);
-        String allowHeaders = config.getString(RestConstants.ALLOWED_HEADERS);
-        String exposeHeaders = config.getString(RestConstants.EXPOSED_HEADERS);
         String maxAge = config.getString(RestConstants.MAX_AGE);
-        globalCorsMeta.setAllowedOrigins(parseList(allowOrigins));
-        globalCorsMeta.setAllowedMethods(parseList(allowMethods));
-        globalCorsMeta.setAllowedHeaders(parseList(allowHeaders));
-        globalCorsMeta.setExposedHeaders(parseList(exposeHeaders));
-        globalCorsMeta.setMaxAge(maxAge == null ? null : Long.valueOf(maxAge));
+        return CorsMeta.builder()
+                .allowedOrigins(getValues(config, RestConstants.ALLOWED_ORIGINS))
+                .allowedMethods(getValues(config, RestConstants.ALLOWED_METHODS))
+                .allowedHeaders(getValues(config, RestConstants.ALLOWED_HEADERS))
+                .allowCredentials(config.getBoolean(RestConstants.ALLOW_CREDENTIALS))
+                .exposedHeaders(getValues(config, RestConstants.EXPOSED_HEADERS))
+                .maxAge(maxAge == null ? null : Long.valueOf(maxAge))
+                .build();
     }
 
-    @Nullable
-    private static List<String> parseList(@Nullable String value) {
-        if (value == null) {
-            return null;
-        }
-        return Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
+    private static String[] getValues(Configuration config, String key) {
+        return StringUtils.tokenize(config.getString(key), ',');
     }
 
-    public CorsMeta getGlobalCorsMeta() {
-        if (globalCorsMeta == null) {
-            Configuration globalConfiguration =
-                    ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
-            resolveGlobalMeta(globalConfiguration);
-        }
-        return globalCorsMeta;
+    public static String formatOrigin(String value) {
+        value = value.trim();
+        int last = value.length() - 1;
+        return last > -1 && value.charAt(last) == '/' ? value.substring(0, last) : value;
     }
 }
