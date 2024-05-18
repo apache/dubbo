@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -28,22 +28,19 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  */
 public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactory {
 
-    private ZookeeperTransporter zookeeperTransporter;
-
-    private ApplicationModel applicationModel;
+    private ZookeeperClientManager zookeeperClientManager;
 
     public ZookeeperMetadataReportFactory(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-        this.zookeeperTransporter = ZookeeperTransporter.getExtension(applicationModel);
+        this.zookeeperClientManager = ZookeeperClientManager.getInstance(applicationModel);
     }
 
     @DisableInject
-    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
-        this.zookeeperTransporter = zookeeperTransporter;
+    public void setZookeeperTransporter(ZookeeperClientManager zookeeperClientManager) {
+        this.zookeeperClientManager = zookeeperClientManager;
     }
 
     @Override
     public MetadataReport createMetadataReport(URL url) {
-        return new ZookeeperMetadataReport(url, zookeeperTransporter);
+        return new ZookeeperMetadataReport(url, zookeeperClientManager);
     }
 }
