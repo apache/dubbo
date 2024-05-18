@@ -90,11 +90,20 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
 
     private boolean process(CorsMeta cors, HttpRequest request, HttpResponse response) {
         List<String> varyHeaders = response.headerValues(VARY);
+
+        StringBuilder varyBuilder = new StringBuilder();
         for (String header : new String[] {ORIGIN, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_REQUEST_HEADERS}) {
             if (varyHeaders == null || !varyHeaders.contains(header)) {
-                response.addHeader(VARY, header);
+                if (varyBuilder.length() > 0) {
+                    varyBuilder.append(", ");
+                }
+                varyBuilder.append(header);
             }
         }
+        if (varyBuilder.length() > 0) {
+            response.setHeader(VARY, varyBuilder.toString());
+        }
+
 
         String origin = request.header(ORIGIN);
         if (isNotCorsRequest(request, origin)) {
