@@ -99,7 +99,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.streamChannelFuture = initHttp2StreamChannel(http2StreamChannel);
     }
 
-    public TripleClientStream(FrameworkModel frameworkModel, Executor executor, Channel parent, ClientStream.Listener listener) {
+    public TripleClientStream(
+            FrameworkModel frameworkModel, Executor executor, Channel parent, ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
