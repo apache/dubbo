@@ -40,7 +40,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -90,20 +92,16 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     }
 
     private boolean process(CorsMeta cors, HttpRequest request, HttpResponse response) {
-        List<String> varyHeaders = response.headerValues(VARY);
 
-        StringBuilder varyBuilder = new StringBuilder();
-        for (String header : new String[] {ORIGIN, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_REQUEST_HEADERS}) {
-            if (varyHeaders == null || !varyHeaders.contains(header)) {
-                if (varyBuilder.length() > 0) {
-                    varyBuilder.append(", ");
-                }
-                varyBuilder.append(header);
-            }
+        Set<String> varHeadersSet = new LinkedHashSet<>();
+        List<String> varyHeaders = response.headerValues(VARY);
+        if (varyHeaders != null) {
+            varHeadersSet.addAll(varyHeaders);
         }
-        if (varyBuilder.length() > 0) {
-            response.setHeader(VARY, varyBuilder.toString());
-        }
+        varHeadersSet.add(ORIGIN);
+        varHeadersSet.add(ACCESS_CONTROL_REQUEST_METHOD);
+        varHeadersSet.add(ACCESS_CONTROL_REQUEST_HEADERS);
+        response.setHeader(VARY, StringUtils.join(varHeadersSet, ", "));
 
         String origin = request.header(ORIGIN);
         if (isNotCorsRequest(request, origin)) {
@@ -138,7 +136,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, allowOrigin);
 
         if (ArrayUtils.isNotEmpty(cors.getExposedHeaders())) {
-            response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.join(cors.getExposedHeaders(), ","));
+            response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.join(cors.getExposedHeaders(), ", "));
         }
 
         if (Boolean.TRUE.equals(cors.getAllowCredentials())) {
@@ -146,10 +144,10 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         }
 
         if (preFlight) {
-            response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, StringUtils.join(allowMethods, ","));
+            response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, StringUtils.join(allowMethods, ", "));
 
             if (!allowHeaders.isEmpty()) {
-                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.join(allowHeaders, ","));
+                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.join(allowHeaders, ", "));
             }
             if (cors.getMaxAge() != null) {
                 response.setHeader(ACCESS_CONTROL_MAX_AGE, cors.getMaxAge().toString());
@@ -210,7 +208,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     }
 
     private static List<String> checkHeaders(CorsMeta cors, Collection<String> headers) {
-        if (headers == null) {
+        if (headers == null || headers.isEmpty()) {
             return Collections.emptyList();
         }
         String[] allowedHeaders = cors.getAllowedHeaders();

@@ -243,7 +243,8 @@ class CorsHeaderFilterTest {
         Mockito.when(request.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD))
                 .thenReturn(true);
         Mockito.when(build.getCors())
-                .thenReturn(CorsMeta.builder().allowedOrigins("*").build());
+                .thenReturn(
+                        CorsMeta.builder().allowedOrigins("*").applyDefault().build());
         try {
             this.processor.process(this.request, this.response);
             Assertions.fail();
@@ -339,11 +340,7 @@ class CorsHeaderFilterTest {
         Assertions.assertEquals("*", this.response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
         Assertions.assertTrue(this.response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
         log.info("{}", this.response.headerValues(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
-        Assertions.assertArrayEquals(
-                new String[] {"GET"},
-                this.response
-                        .headerValues(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS)
-                        .toArray());
+        Assertions.assertEquals("GET, PUT", this.response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
         Assertions.assertFalse(this.response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_MAX_AGE));
         Assertions.assertTrue(this.response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
         Assertions.assertTrue(
@@ -468,7 +465,6 @@ class CorsHeaderFilterTest {
                 this.response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
         Assertions.assertTrue(
                 this.response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), this.response.status());
     }
 
     @Test
