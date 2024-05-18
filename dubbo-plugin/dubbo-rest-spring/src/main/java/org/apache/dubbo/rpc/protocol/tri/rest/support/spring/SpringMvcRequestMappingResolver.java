@@ -117,12 +117,13 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         if (crossOrigin == null) {
             return globalCorsMeta;
         }
+        String allowCredentials = crossOrigin.getString("allowCredentials");
         CorsMeta corsMeta = CorsMeta.builder()
                 .allowedOrigins(crossOrigin.getStringArray("origins"))
                 .allowedMethods(crossOrigin.getStringArray("methods"))
                 .allowedHeaders(crossOrigin.getStringArray("allowedHeaders"))
                 .exposedHeaders(crossOrigin.getStringArray("exposedHeaders"))
-                .allowCredentials(crossOrigin.getBoolean("allowCredentials"))
+                .allowCredentials(allowCredentials == null ? null : Boolean.valueOf(allowCredentials))
                 .maxAge(crossOrigin.getNumber("maxAge"))
                 .build();
         return globalCorsMeta == null ? corsMeta : globalCorsMeta.combine(corsMeta);
