@@ -40,7 +40,7 @@ public abstract class QueuedCommand {
 
     public void run(Channel channel) {
         if (channel.isActive()) {
-            channel.write(this).addListener(future -> {
+            channel.writeAndFlush(this).addListener(future -> {
                 if (future.isSuccess()) {
                     promise.setSuccess();
                 } else {

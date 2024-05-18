@@ -16,10 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
+import io.netty.util.concurrent.Future;
+
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
@@ -32,6 +38,8 @@ import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 import io.netty.channel.Channel;
@@ -43,6 +51,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
 
 public class TripleClientCall implements ClientCall, ClientStream.Listener {
+    private static final Object EMPTY = new Object();
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
     private final AbstractConnectionClient connectionClient;
     private final Executor executor;
@@ -52,10 +61,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private ClientStream stream;
     private ClientCall.Listener listener;
     private boolean canceled;
-    private boolean headerSent;
     private boolean autoRequest = true;
     private boolean done;
     private Http2Exception.StreamException streamException;
+    private volatile boolean sendingHeader = false;
+    private volatile boolean streamCreated = false;
+    private final Queue<Runnable> pendingTasks = new ConcurrentLinkedQueue<>();
 
     public TripleClientCall(
             AbstractConnectionClient connectionClient,
@@ -63,7 +74,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             FrameworkModel frameworkModel,
             TripleWriteQueue writeQueue) {
         this.connectionClient = connectionClient;
-        this.executor = executor;
+        this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
         this.writeQueue = writeQueue;
     }
@@ -147,7 +158,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         // did not create stream
-        if (!headerSent) {
+        if (!streamCreated) {
             return;
         }
         canceled = true;
@@ -184,9 +195,70 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         } else if (canceled) {
             throw new IllegalStateException("Call already canceled");
         }
-        if (!headerSent) {
-            headerSent = true;
-            stream.sendHeader(requestMetadata.toHeaders());
+        doSendMessage(message);
+    }
+
+    private void doSendMessage(Object message) {
+        pendingTasks.offer(() -> sendData(message));
+        if (streamCreated) {
+            executor.execute(this::drainTasks);
+        }
+    }
+
+    private void sendHeader() {
+        if (sendingHeader) {
+            return;
+        }
+        if (!streamCreated) {
+            sendingHeader = true;
+            Future<?> sendHeaderFuture = stream.sendHeader(requestMetadata.toHeaders());
+            sendHeaderFuture.addListener(f -> {
+                sendingHeader = false;
+                if (!f.isSuccess()) {
+                    Throwable cause = f.cause();
+                    if (cause instanceof Http2NoMoreStreamIdsException) {
+                        // stream id used up and channel will be removed
+                        Channel lastChannel = (Channel) connectionClient.getChannel(true);
+                        if (lastChannel != null && lastChannel.isActive() && lastChannel.isOpen()) {
+                            // already reconnected
+                            start(requestMetadata, listener);
+                            return;
+                        }
+                        // blocking reconnect
+                        executor.execute(() -> {
+                            try {
+                                synchronized (connectionClient) {
+                                    Channel channel = (Channel) connectionClient.getChannel(true);
+                                    if (channel == null) {
+                                        connectionClient.reconnect();
+                                    }
+                                }
+                                start(requestMetadata, listener);
+                            } catch (RemotingException e) {
+                                pendingTasks.clear();
+                                throw new RpcException(e);
+                            }
+                        });
+                    }
+                } else {
+                    streamCreated = true;
+                    executor.execute(this::drainTasks);
+                }
+            });
+        }
+    }
+
+    private void drainTasks() {
+        Runnable r;
+        while ((r = pendingTasks.poll()) != null) {
+            r.run();
+        }
+    }
+
+    private void sendData(Object message) {
+        if (EMPTY == message) {
+            doHalfClose();
+            return;
         }
         final byte[] data;
         try {
@@ -220,7 +292,14 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void halfClose() {
-        if (!headerSent) {
+        pendingTasks.offer(this::doHalfClose);
+        if (streamCreated) {
+            executor.execute(this::drainTasks);
+        }
+    }
+
+    private void doHalfClose() {
+        if (!streamCreated) {
             return;
         }
         if (canceled) {
@@ -243,7 +322,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         this.requestMetadata = metadata;
         this.listener = responseListener;
         this.stream = new TripleClientStream(
-                frameworkModel, executor, (Channel) connectionClient.getChannel(true), this, writeQueue);
+                frameworkModel, executor, (Channel) connectionClient.getChannel(true), this);
+        this.sendHeader();
         return new ClientCallToObserverAdapter<>(this);
     }
 

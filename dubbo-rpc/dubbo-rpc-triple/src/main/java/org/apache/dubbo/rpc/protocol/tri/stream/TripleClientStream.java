@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
+
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -102,12 +104,11 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             FrameworkModel frameworkModel,
             Executor executor,
             Channel parent,
-            ClientStream.Listener listener,
-            TripleWriteQueue writeQueue) {
+            ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
-        this.writeQueue = writeQueue;
+        this.writeQueue = new TripleWriteQueue();
         this.streamChannelFuture = initHttp2StreamChannel(parent);
     }
 
@@ -138,7 +139,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(streamChannelFuture, headers);
         return writeQueue.enqueueFuture(headerCmd, parent.eventLoop()).addListener(future -> {
-            if (!future.isSuccess()) {
+            if (!future.isSuccess() && !(future.cause() instanceof Http2NoMoreStreamIdsException)) {
                 transportException(future.cause());
             }
         });
