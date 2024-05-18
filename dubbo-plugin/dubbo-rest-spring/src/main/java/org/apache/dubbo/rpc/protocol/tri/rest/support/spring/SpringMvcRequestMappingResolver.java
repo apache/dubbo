@@ -19,19 +19,16 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 import org.springframework.http.HttpStatus;
 
@@ -39,12 +36,12 @@ import org.springframework.http.HttpStatus;
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;
+    private final CorsMeta globalCorsMeta;
     private volatile RestToolKit toolKit;
-    private final CorsUtils corsUtils;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        corsUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CorsUtils.class);
+        globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
     }
 
     @Override
@@ -73,7 +70,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         return builder(requestMapping, responseStatus)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
-                .cors(buildCorsMetaWithGlobal(crossOrigin))
+                .cors(buildCorsMeta(crossOrigin))
                 .build();
     }
 
@@ -89,7 +86,6 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         }
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         AnnotationMeta<?> responseStatus = methodMeta.findMergedAnnotation(Annotations.ResponseStatus);
-
         AnnotationMeta<?> crossOrigin = methodMeta.findMergedAnnotation(Annotations.CrossOrigin);
         return builder(requestMapping, responseStatus)
                 .name(methodMeta.getMethod().getName())
@@ -118,28 +114,17 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
     }
 
     private CorsMeta buildCorsMeta(AnnotationMeta<?> crossOrigin) {
-        CorsMeta meta = new CorsMeta();
         if (crossOrigin == null) {
-            return null;
+            return globalCorsMeta;
         }
-        String[] allowedHeaders = crossOrigin.getStringArray("allowedHeaders");
-        meta.setAllowedHeaders(allowedHeaders != null ? Arrays.asList(allowedHeaders) : Collections.emptyList());
-        String[] methods = crossOrigin.getStringArray("methods");
-        meta.setAllowedMethods(methods != null ? Arrays.asList(methods) : Collections.emptyList());
-        String[] origins = crossOrigin.getStringArray("origins");
-        meta.setAllowedOrigins(origins != null ? Arrays.asList(origins) : Collections.emptyList());
-        String[] exposedHeaders = crossOrigin.getStringArray("exposedHeaders");
-        meta.setExposedHeaders(exposedHeaders != null ? Arrays.asList(exposedHeaders) : Collections.emptyList());
-        String maxAge = crossOrigin.getString("maxAge");
-        meta.setMaxAge(maxAge != null ? Long.valueOf(maxAge) : null);
-        return meta;
-    }
-
-    private CorsMeta buildCorsMetaWithGlobal(AnnotationMeta<?> crossOrigin) {
-        CorsMeta corsMeta = buildCorsMeta(crossOrigin);
-        if (corsMeta != null) {
-            return CorsMeta.combine(corsMeta, corsUtils.getGlobalCorsMeta());
-        }
-        return corsUtils.getGlobalCorsMeta();
+        CorsMeta corsMeta = CorsMeta.builder()
+                .allowedOrigins(crossOrigin.getStringArray("origins"))
+                .allowedMethods(crossOrigin.getStringArray("methods"))
+                .allowedHeaders(crossOrigin.getStringArray("allowedHeaders"))
+                .exposedHeaders(crossOrigin.getStringArray("exposedHeaders"))
+                .allowCredentials(crossOrigin.getBoolean("allowCredentials"))
+                .maxAge(crossOrigin.getNumber("maxAge"))
+                .build();
+        return globalCorsMeta == null ? corsMeta : globalCorsMeta.combine(corsMeta);
     }
 }

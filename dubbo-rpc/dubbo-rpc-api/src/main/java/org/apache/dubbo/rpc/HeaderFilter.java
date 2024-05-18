@@ -22,5 +22,5 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface HeaderFilter {
 
-    RpcInvocation invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException;
+    void invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException;
 }

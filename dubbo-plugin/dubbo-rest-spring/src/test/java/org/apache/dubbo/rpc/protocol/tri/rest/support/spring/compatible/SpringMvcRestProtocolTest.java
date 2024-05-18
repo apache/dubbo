@@ -129,7 +129,6 @@ public class SpringMvcRestProtocolTest {
         url = URL.valueOf("rest://127.0.0.1:" + port + "/a/b/c/?version=1.0.0&interface="
                 + SpringRestDemoService.class.getName());
         Invoker<SpringRestDemoService> invoker = protocol.refer(SpringRestDemoService.class, url);
-
         SpringRestDemoService client = proxy.getProxy(invoker);
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());

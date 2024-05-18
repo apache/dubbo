@@ -31,7 +31,7 @@ import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
 @Activate
 public class TokenHeaderFilter implements HeaderFilter {
     @Override
-    public RpcInvocation invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException {
+    public void invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException {
         String token = invoker.getUrl().getParameter(TOKEN_KEY);
         if (ConfigUtils.isNotEmpty(token)) {
             Class<?> serviceType = invoker.getInterface();
@@ -46,6 +46,5 @@ public class TokenHeaderFilter implements HeaderFilter {
                                 + ", consumer incorrect token is " + remoteToken);
             }
         }
-        return invocation;
     }
 }

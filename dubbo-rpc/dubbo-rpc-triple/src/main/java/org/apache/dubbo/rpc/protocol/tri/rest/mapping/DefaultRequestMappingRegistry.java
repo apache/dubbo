@@ -151,7 +151,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (size == 0) {
             return null;
         }
-
         List<Candidate> candidates = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             Match<Registration> match = matches.get(i);
@@ -191,7 +190,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
         Candidate winner = candidates.get(0);
         RequestMapping mapping = winner.mapping;
-
         HandlerMeta handler = winner.meta;
         request.setAttribute(RestConstants.MAPPING_ATTRIBUTE, mapping);
         request.setAttribute(RestConstants.HANDLER_ATTRIBUTE, handler);
