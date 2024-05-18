@@ -320,8 +320,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.listener = responseListener;
-        this.stream =
-                new TripleClientStream(frameworkModel, executor, (Channel) connectionClient.getChannel(true), this);
+        this.stream = new TripleClientStream(frameworkModel, executor, (Channel) connectionClient.getChannel(true), this);
         this.sendHeader();
         return new ClientCallToObserverAdapter<>(this);
     }
