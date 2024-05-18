@@ -122,7 +122,6 @@ public class CorsMeta {
 
     public static final class Builder {
 
-        private static final String[] DEFAULT_METHODS = new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name()};
         private static final Pattern PORTS_PATTERN = Pattern.compile("(.*):\\[(\\*|\\d+(,\\d+)*)]");
 
         private final Set<String> allowedOrigins = new LinkedHashSet<>();
@@ -193,8 +192,32 @@ public class CorsMeta {
             return this;
         }
 
+        public Builder allowCredentials(String allowCredentials) {
+            if ("true".equals(allowCredentials)) {
+                this.allowCredentials = true;
+            } else if ("false".equals(allowCredentials)) {
+                this.allowCredentials = false;
+            }
+            return this;
+        }
+
         public Builder maxAge(Long maxAge) {
-            this.maxAge = maxAge;
+            if (maxAge != null && maxAge > -1) {
+                this.maxAge = maxAge;
+            }
+            return this;
+        }
+
+        public Builder applyDefault() {
+            if (allowedOrigins.isEmpty()) {
+                allowedOrigins.add(ANY_VALUE);
+            }
+            if (allowedHeaders.isEmpty()) {
+                allowedHeaders.add(ANY_VALUE);
+            }
+            if (maxAge == null) {
+                maxAge = 1800L;
+            }
             return this;
         }
 
@@ -217,10 +240,15 @@ public class CorsMeta {
                 originsPatterns[i] = ANY_VALUE.equals(origin) ? null : initPattern(origin);
                 i++;
             }
+            if (allowedMethods.isEmpty()) {
+                allowedMethods.add(HttpMethods.GET.name());
+                allowedMethods.add(HttpMethods.HEAD.name());
+                allowedMethods.add(HttpMethods.POST.name());
+            }
             return new CorsMeta(
                     origins,
                     originsPatterns,
-                    allowedMethods.isEmpty() ? DEFAULT_METHODS : allowedMethods.toArray(EMPTY_STRING_ARRAY),
+                    allowedMethods.toArray(EMPTY_STRING_ARRAY),
                     allowedHeaders.toArray(EMPTY_STRING_ARRAY),
                     exposedHeaders.toArray(EMPTY_STRING_ARRAY),
                     allowCredentials,
