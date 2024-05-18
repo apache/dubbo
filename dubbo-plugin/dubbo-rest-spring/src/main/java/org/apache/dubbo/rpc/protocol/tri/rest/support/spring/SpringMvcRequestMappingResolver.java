@@ -36,12 +36,11 @@ import org.springframework.http.HttpStatus;
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;
-    private final CorsMeta globalCorsMeta;
+    private CorsMeta globalCorsMeta;
     private volatile RestToolKit toolKit;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
     }
 
     @Override
@@ -115,6 +114,9 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private CorsMeta buildCorsMeta(AnnotationMeta<?> crossOrigin) {
         if (crossOrigin == null) {
+            if (globalCorsMeta == null) {
+                globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+            }
             return globalCorsMeta;
         }
         String allowCredentials = crossOrigin.getString("allowCredentials");

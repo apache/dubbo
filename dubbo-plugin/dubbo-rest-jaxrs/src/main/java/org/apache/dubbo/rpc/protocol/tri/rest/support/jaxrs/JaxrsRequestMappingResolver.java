@@ -33,12 +33,13 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 @Activate(onClass = "javax.ws.rs.Path")
 public class JaxrsRequestMappingResolver implements RequestMappingResolver {
 
+    private final FrameworkModel frameworkModel;
     private final RestToolKit toolKit;
-    private final CorsMeta globalCorsMeta;
+    private CorsMeta globalCorsMeta;
 
     public JaxrsRequestMappingResolver(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
         toolKit = new JaxrsRestToolKit(frameworkModel);
-        globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
     }
 
     @Override
@@ -73,8 +74,15 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
                 .name(methodMeta.getMethod().getName())
                 .contextPath(methodMeta.getServiceMeta().getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
-                .cors(globalCorsMeta)
+                .cors(getGlobalCorsMeta())
                 .build();
+    }
+
+    private CorsMeta getGlobalCorsMeta() {
+        if (globalCorsMeta == null) {
+            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+        }
+        return globalCorsMeta;
     }
 
     private Builder builder(AnnotationSupport meta, AnnotationMeta<?> path, AnnotationMeta<?> httpMethod) {
