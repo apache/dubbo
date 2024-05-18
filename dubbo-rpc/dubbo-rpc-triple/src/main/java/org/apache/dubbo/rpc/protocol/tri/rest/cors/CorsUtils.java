@@ -35,7 +35,7 @@ public class CorsUtils {
                 .allowedOrigins(getValues(config, RestConstants.ALLOWED_ORIGINS))
                 .allowedMethods(getValues(config, RestConstants.ALLOWED_METHODS))
                 .allowedHeaders(getValues(config, RestConstants.ALLOWED_HEADERS))
-                .allowCredentials(config.getBoolean(RestConstants.ALLOW_CREDENTIALS))
+                .allowCredentials(config.getString(RestConstants.ALLOW_CREDENTIALS))
                 .exposedHeaders(getValues(config, RestConstants.EXPOSED_HEADERS))
                 .maxAge(maxAge == null ? null : Long.valueOf(maxAge))
                 .build();

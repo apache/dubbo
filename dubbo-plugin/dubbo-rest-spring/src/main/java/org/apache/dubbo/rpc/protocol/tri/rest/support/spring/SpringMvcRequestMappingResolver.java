@@ -67,10 +67,12 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         }
         AnnotationMeta<?> responseStatus = serviceMeta.findMergedAnnotation(Annotations.ResponseStatus);
         AnnotationMeta<?> crossOrigin = serviceMeta.findMergedAnnotation(Annotations.CrossOrigin);
+        String[] methods = requestMapping.getStringArray("method");
         return builder(requestMapping, responseStatus)
+                .method(methods)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
-                .cors(buildCorsMeta(crossOrigin))
+                .cors(buildCorsMeta(crossOrigin, methods))
                 .build();
     }
 
@@ -87,11 +89,13 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         AnnotationMeta<?> responseStatus = methodMeta.findMergedAnnotation(Annotations.ResponseStatus);
         AnnotationMeta<?> crossOrigin = methodMeta.findMergedAnnotation(Annotations.CrossOrigin);
+        String[] methods = requestMapping.getStringArray("method");
         return builder(requestMapping, responseStatus)
+                .method(methods)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(serviceMeta.getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
-                .cors(buildCorsMeta(crossOrigin))
+                .cors(buildCorsMeta(crossOrigin, methods))
                 .build();
     }
 
@@ -106,24 +110,25 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
             }
         }
         return builder.path(requestMapping.getValueArray())
-                .method(requestMapping.getStringArray("method"))
                 .param(requestMapping.getStringArray("params"))
                 .header(requestMapping.getStringArray("headers"))
                 .consume(requestMapping.getStringArray("consumes"))
                 .produce(requestMapping.getStringArray("produces"));
     }
 
-    private CorsMeta buildCorsMeta(AnnotationMeta<?> crossOrigin) {
+    private CorsMeta buildCorsMeta(AnnotationMeta<?> crossOrigin, String[] methods) {
         if (crossOrigin == null) {
             return globalCorsMeta;
         }
+        String[] allowedMethods = crossOrigin.getStringArray("methods");
         CorsMeta corsMeta = CorsMeta.builder()
                 .allowedOrigins(crossOrigin.getStringArray("origins"))
-                .allowedMethods(crossOrigin.getStringArray("methods"))
+                .allowedMethods(allowedMethods.length == 0 ? methods : allowedMethods)
                 .allowedHeaders(crossOrigin.getStringArray("allowedHeaders"))
                 .exposedHeaders(crossOrigin.getStringArray("exposedHeaders"))
-                .allowCredentials(crossOrigin.getBoolean("allowCredentials"))
+                .allowCredentials(crossOrigin.getString("allowCredentials"))
                 .maxAge(crossOrigin.getNumber("maxAge"))
+                .applyDefault()
                 .build();
         return globalCorsMeta == null ? corsMeta : globalCorsMeta.combine(corsMeta);
     }

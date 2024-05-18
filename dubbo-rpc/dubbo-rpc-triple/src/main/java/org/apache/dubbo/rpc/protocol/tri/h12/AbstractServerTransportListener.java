@@ -160,10 +160,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected void logError(Throwable t) {
         if (t instanceof HttpStatusException) {
             HttpStatusException e = (HttpStatusException) t;
-            if (e.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR.getCode()) {
+            if (e.getStatusCode() >= HttpStatus.BAD_REQUEST.getCode()) {
                 LOGGER.debug("http status exception", e);
-                return;
             }
+            return;
         }
         LOGGER.error(INTERNAL_ERROR, "", "", "server internal error", t);
     }

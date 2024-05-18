@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -118,9 +119,12 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
             return false;
         }
 
-        List<String> allowHeaders = checkHeaders(cors, request.headerValues(ACCESS_CONTROL_REQUEST_HEADERS));
-        if (preFlight && allowHeaders == null) {
-            return false;
+        List<String> allowHeaders = null;
+        if (preFlight) {
+            allowHeaders = checkHeaders(cors, request.headerValues(ACCESS_CONTROL_REQUEST_HEADERS));
+            if (allowHeaders == null) {
+                return false;
+            }
         }
 
         response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, allowOrigin);
@@ -191,7 +195,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         }
         for (String allowedMethod : allowedMethods) {
             if (method.equalsIgnoreCase(allowedMethod)) {
-                return Collections.singletonList(method);
+                return Arrays.asList(allowedMethods);
             }
         }
         return null;
@@ -199,9 +203,6 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
 
     private static List<String> checkHeaders(CorsMeta cors, Collection<String> headers) {
         if (headers == null) {
-            return null;
-        }
-        if (headers.isEmpty()) {
             return Collections.emptyList();
         }
         String[] allowedHeaders = cors.getAllowedHeaders();
