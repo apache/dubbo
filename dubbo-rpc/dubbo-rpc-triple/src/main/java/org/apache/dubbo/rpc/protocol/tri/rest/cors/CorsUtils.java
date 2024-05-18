@@ -29,13 +29,13 @@ public class CorsUtils {
 
     public static CorsMeta getGlobalCorsMeta(FrameworkModel frameworkModel) {
         Configuration config = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-
         String maxAge = config.getString(RestConstants.MAX_AGE);
+        String allowCredential = config.getString(RestConstants.ALLOW_CREDENTIALS);
         return CorsMeta.builder()
                 .allowedOrigins(getValues(config, RestConstants.ALLOWED_ORIGINS))
                 .allowedMethods(getValues(config, RestConstants.ALLOWED_METHODS))
                 .allowedHeaders(getValues(config, RestConstants.ALLOWED_HEADERS))
-                .allowCredentials(config.getBoolean(RestConstants.ALLOW_CREDENTIALS))
+                .allowCredentials(allowCredential == null ? null : Boolean.valueOf(allowCredential))
                 .exposedHeaders(getValues(config, RestConstants.EXPOSED_HEADERS))
                 .maxAge(maxAge == null ? null : Long.valueOf(maxAge))
                 .build();
