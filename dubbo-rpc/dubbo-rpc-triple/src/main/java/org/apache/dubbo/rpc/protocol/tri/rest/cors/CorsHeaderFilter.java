@@ -93,15 +93,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
 
     private boolean process(CorsMeta cors, HttpRequest request, HttpResponse response) {
 
-        Set<String> varHeadersSet = new LinkedHashSet<>();
-        List<String> varyHeaders = response.headerValues(VARY);
-        if (varyHeaders != null) {
-            varHeadersSet.addAll(varyHeaders);
-        }
-        varHeadersSet.add(ORIGIN);
-        varHeadersSet.add(ACCESS_CONTROL_REQUEST_METHOD);
-        varHeadersSet.add(ACCESS_CONTROL_REQUEST_HEADERS);
-        response.setHeader(VARY, StringUtils.join(varHeadersSet, ", "));
+        setVaryHeader(response);
 
         String origin = request.header(ORIGIN);
         if (isNotCorsRequest(request, origin)) {
@@ -159,6 +151,19 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         }
 
         return true;
+    }
+
+    private static void setVaryHeader(HttpResponse response){
+        Set<String> varHeadersSet = new LinkedHashSet<>();
+        List<String> varyHeaders = response.headerValues(VARY);
+        if (varyHeaders != null) {
+            varHeadersSet.addAll(varyHeaders);
+        }
+        varHeadersSet.add(ORIGIN);
+        varHeadersSet.add(ACCESS_CONTROL_REQUEST_METHOD);
+        varHeadersSet.add(ACCESS_CONTROL_REQUEST_HEADERS);
+        response.setHeader(VARY, StringUtils.join(varHeadersSet, ", "));
+
     }
 
     private static String checkOrigin(CorsMeta cors, String origin) {

@@ -41,7 +41,7 @@ public class CorsMeta {
     private final Boolean allowCredentials;
     private final Long maxAge;
 
-    public static final String[] DEFAULT_ALLOWED_METHODS = {
+    protected static final String[] DEFAULT_ALLOWED_METHODS = {
         HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()
     };
 
@@ -244,15 +244,6 @@ public class CorsMeta {
             return this;
         }
 
-        public Boolean enabledCors() {
-            return !(allowedOrigins.isEmpty()
-                    && allowedMethods.isEmpty()
-                    && allowedHeaders.isEmpty()
-                    && exposedHeaders.isEmpty()
-                    && allowCredentials == null
-                    && maxAge == null);
-        }
-
         public CorsMeta build() {
             if (allowedOrigins.isEmpty()
                     && allowedMethods.isEmpty()
@@ -285,12 +276,5 @@ public class CorsMeta {
                     maxAge);
         }
 
-        public CorsMeta buildDefault() {
-            if (enabledCors()) {
-                return applyDefault().build();
-            } else {
-                return null;
-            }
-        }
     }
 }
