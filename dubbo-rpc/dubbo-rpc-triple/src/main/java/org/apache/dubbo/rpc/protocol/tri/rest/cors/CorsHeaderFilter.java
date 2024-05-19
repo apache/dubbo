@@ -153,7 +153,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         return true;
     }
 
-    private static void setVaryHeader(HttpResponse response){
+    private static void setVaryHeader(HttpResponse response) {
         Set<String> varHeadersSet = new LinkedHashSet<>();
         List<String> varyHeaders = response.headerValues(VARY);
         if (varyHeaders != null) {
@@ -163,7 +163,6 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         varHeadersSet.add(ACCESS_CONTROL_REQUEST_METHOD);
         varHeadersSet.add(ACCESS_CONTROL_REQUEST_HEADERS);
         response.setHeader(VARY, StringUtils.join(varHeadersSet, ", "));
-
     }
 
     private static String checkOrigin(CorsMeta cors, String origin) {

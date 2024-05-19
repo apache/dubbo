@@ -275,6 +275,5 @@ public class CorsMeta {
                     allowCredentials,
                     maxAge);
         }
-
     }
 }
