@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2Detector;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -164,13 +165,6 @@ public class ServiceInstanceMetadataUtils {
     public static void setMetadataStorageType(ServiceInstance serviceInstance, String metadataType) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, metadataType);
-    }
-
-    /**
-     * Indicates the version of MetadataService
-     */
-    public static void setMetadataVersion(ServiceInstance serviceInstance) {
-        serviceInstance.getMetadata().put(METADATA_SERVICE_VERSION_NAME, MetadataServiceDelegationV2.VERSION);
     }
 
     public static String getRemoteCluster(ServiceInstance serviceInstance) {

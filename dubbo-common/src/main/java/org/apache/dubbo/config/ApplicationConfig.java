@@ -296,9 +296,10 @@ public class ApplicationConfig extends AbstractConfig {
     private String executorManagementMode;
 
     /**
-     * Only use the new version of metadataService.
-     * <br>  If set to false (default):
-     * <br>  1. Your services are using triple protocol, and {@link #metadataServiceProtocol} is not set
+     * Only use the new version of metadataService (MetadataServiceV2).
+     * <br> MetadataServiceV2 have better compatibility with other language's dubbo implement (dubbo-go).
+     * <br> If set to false (default):
+     * <br>  1. If your services are using triple protocol and {@link #metadataServiceProtocol} is not set
      * <br>     - Dubbo will export both MetadataService and MetadataServiceV2 with triple
      * <br>  2. Set {@link #metadataServiceProtocol} = tri
      * <br>     - Dubbo will export both MetadataService and MetadataServiceV2 with triple
@@ -307,8 +308,8 @@ public class ApplicationConfig extends AbstractConfig {
      * <br>  4. Your services are not using triple protocol, and {@link #metadataServiceProtocol} is not set
      * <br>     - Dubbo will only export MetadataService
      * <br>
-     * <br>  If set to true, Dubbo will try to only use MetadataServiceV2.
-     * <br>  It only activates when meet one of the following cases:
+     * <br>  If set to true, dubbo will try to only use MetadataServiceV2.
+     * <br>  It only activates when meet at least one of the following cases:
      * <br>     1. Manually set {@link #metadataServiceProtocol} = tri
      * <br>     2. Your services are using triple protocol
      * <br>

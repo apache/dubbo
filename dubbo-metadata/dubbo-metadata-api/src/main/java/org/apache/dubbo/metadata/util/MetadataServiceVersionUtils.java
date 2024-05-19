@@ -23,6 +23,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataInfoV2;
+import org.apache.dubbo.metadata.MetadataServiceV2Detector;
 import org.apache.dubbo.metadata.ServiceInfoV2;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -92,43 +93,45 @@ public class MetadataServiceVersionUtils {
     }
 
     /**
-     * judge if we should export MetadataService
+     * check if we should export MetadataService
      */
     public static boolean needExportV1(ApplicationModel applicationModel) {
-        return !onlyExportV2(applicationModel);
+        return !MetadataServiceV2Detector.support() || !onlyExportV2(applicationModel);
     }
 
     /**
-     * judge if we should export MetadataServiceV2
+     * check if we should export MetadataServiceV2
      */
     public static boolean needExportV2(ApplicationModel applicationModel) {
-        return onlyExportV2(applicationModel) || hasTripleConfig(applicationModel);
+        return MetadataServiceV2Detector.support()
+                && (onlyExportV2(applicationModel) || tripleConfigured(applicationModel));
     }
 
     /**
-     * judge if we can only export MetadataServiceV2
+     * check if we should only export MetadataServiceV2
      */
     public static boolean onlyExportV2(ApplicationModel applicationModel) {
         Optional<ApplicationConfig> applicationConfig = getApplicationConfig(applicationModel);
 
         return applicationConfig
                 .filter(config ->
-                        Boolean.TRUE.equals(config.getOnlyUseMetadataV2()) && hasTripleConfig(applicationModel))
+                        Boolean.TRUE.equals(config.getOnlyUseMetadataV2()) && tripleConfigured(applicationModel))
                 .isPresent();
     }
 
     /**
-     * check if user configured any triple protocol config
+     * check if we can use triple as MetadataService protocol
      */
-    public static boolean hasTripleConfig(ApplicationModel applicationModel) {
+    public static boolean tripleConfigured(ApplicationModel applicationModel) {
         Optional<ConfigManager> configManager = Optional.ofNullable(applicationModel.getApplicationConfigManager());
-        // check user configured metadata report protocol
-        Optional<ApplicationConfig> tripleConfig = getApplicationConfig(applicationModel)
-                .filter(config -> TRIPLE.equals(config.getMetadataServiceProtocol()));
-        if (tripleConfig.isPresent()) {
-            return true;
+
+        Optional<ApplicationConfig> appConfig = getApplicationConfig(applicationModel);
+
+        // if user configured MetadataService protocol
+        if (appConfig.isPresent() && appConfig.get().getMetadataServiceProtocol() != null) {
+            return TRIPLE.equals(appConfig.get().getMetadataServiceProtocol());
         }
-        // check other protocol configs
+        // if not specified, check all protocol configs
         if (configManager.isPresent()
                 && CollectionUtils.isNotEmpty(configManager.get().getProtocols())) {
             Collection<ProtocolConfig> protocols = configManager.get().getProtocols();

@@ -43,7 +43,7 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
 
     public MetadataServiceDelegationV2(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        registryManager = RegistryManager.getInstance(applicationModel);
+        this.registryManager = RegistryManager.getInstance(applicationModel);
     }
 
     @Override

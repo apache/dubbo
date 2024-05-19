@@ -81,46 +81,4 @@
       <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-        <version>${maven_os_plugin_version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>detect</goal>
-            </goals>
-            <phase>initialize</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-        <version>${maven_protobuf_plugin_version}</version>
-        <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
-          <protocPlugins>
-            <protocPlugin>
-              <id>dubbo</id>
-              <groupId>org.apache.dubbo</groupId>
-              <artifactId>dubbo-compiler</artifactId>
-              <version>${project.parent.version}</version>
-              <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
-            </protocPlugin>
-          </protocPlugins>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

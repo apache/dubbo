@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceV2;
+import org.apache.dubbo.metadata.MetadataServiceV2Detector;
 import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
@@ -125,7 +126,6 @@ public class MetadataUtils {
     }
 
     public static RemoteMetadataService referMetadataService(ServiceInstance instance) {
-
         URL url = buildMetadataUrl(instance);
 
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
@@ -135,12 +135,13 @@ public class MetadataUtils {
         ConsumerModel consumerModel;
 
         boolean useV2 = MetadataServiceDelegationV2.VERSION.equals(url.getAttribute(METADATA_SERVICE_VERSION_NAME));
+        if (!MetadataServiceV2Detector.support()) {
+            useV2 = false;
+        }
         boolean inNativeImage = NativeDetector.inNativeImage();
 
         if (useV2 && !inNativeImage) {
-            // If provider export both MetadataService & MetadataServiceV2, it still uses MetadataService as path
-            // Else if provider only exported MetadataServiceV2 it uses MetadataServiceV2 as path
-            // In v2 provider and consumer, we use MetadataServiceV2 in priority
+            // If provider supports, we use MetadataServiceV2 in priority
             url = url.addParameter(PROXY_KEY, NATIVE_STUB);
             url = url.setPath(MetadataServiceV2.class.getName());
             url = url.addParameter(VERSION_KEY, V2);

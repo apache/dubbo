@@ -58,7 +58,6 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isValidInstance;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataVersion;
 
 /**
  * Each service discovery is bond to one application.
@@ -360,7 +359,6 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         DefaultServiceInstance instance = new DefaultServiceInstance(serviceName, applicationModel);
         instance.setServiceMetadata(metadataInfo);
         setMetadataStorageType(instance, metadataType);
-        setMetadataVersion(instance);
         ServiceInstanceMetadataUtils.customizeInstance(instance, applicationModel);
         return instance;
     }

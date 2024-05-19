@@ -43,7 +43,11 @@ public class ServiceRepository {
                     .getSupportedExtensionInstances();
             if (CollectionUtils.isNotEmpty(builtinServices)) {
                 for (BuiltinServiceDetector service : builtinServices) {
-                    applicationModel.getInternalModule().getServiceRepository().registerService(service.getService());
+                    Class<?> serviceClass = service.getService();
+                    if (serviceClass == null) {
+                        continue;
+                    }
+                    applicationModel.getInternalModule().getServiceRepository().registerService(serviceClass);
                 }
             }
         }

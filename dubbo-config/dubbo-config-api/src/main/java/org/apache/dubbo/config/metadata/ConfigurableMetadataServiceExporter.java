@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.metadata;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -36,7 +35,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
@@ -52,9 +50,9 @@ public class ConfigurableMetadataServiceExporter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     @Deprecated
-    private MetadataServiceDelegation metadataService;
+    private final MetadataServiceDelegation metadataService;
 
-    private MetadataServiceDelegationV2 metadataServiceV2;
+    private final MetadataServiceDelegationV2 metadataServiceV2;
 
     @Deprecated
     private volatile ServiceConfig<MetadataService> serviceConfig;
@@ -139,7 +137,7 @@ public class ConfigurableMetadataServiceExporter {
         metadataServiceV2.setMetadataUrl(serviceConfigV2.getExportedUrls().get(0));
 
         if (logger.isInfoEnabled()) {
-            logger.info("The MetadataServiceV2 exports urls : " + serviceConfig.getExportedUrls());
+            logger.info("The MetadataServiceV2 exports urls : " + serviceConfigV2.getExportedUrls());
         }
     }
 
@@ -188,15 +186,5 @@ public class ConfigurableMetadataServiceExporter {
         methodConfig.setArguments(Collections.singletonList(argumentConfig));
 
         return Collections.singletonList(methodConfig);
-    }
-
-    // for unit test
-    public void setMetadataService(MetadataServiceDelegation metadataService) {
-        this.metadataService = metadataService;
-    }
-
-    // for unit test
-    public List<URL> getExportedURLs() {
-        return serviceConfig != null ? serviceConfig.getExportedUrls() : emptyList();
     }
 }

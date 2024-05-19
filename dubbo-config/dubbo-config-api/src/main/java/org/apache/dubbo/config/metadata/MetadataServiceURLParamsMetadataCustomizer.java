@@ -24,6 +24,7 @@ import org.apache.dubbo.metadata.MetadataServiceV2;
 import org.apache.dubbo.metadata.util.MetadataServiceVersionUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegationV2;
 import org.apache.dubbo.registry.client.metadata.SpringCloudMetadataServiceURLBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_VERSION_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
 
 /**
@@ -48,10 +50,22 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
 
         String propertyName = resolveMetadataPropertyName(serviceInstance);
         String propertyValue = resolveMetadataPropertyValue(applicationModel);
-
         if (!isBlank(propertyName) && !isBlank(propertyValue)) {
             metadata.put(propertyName, propertyValue);
         }
+        String version = resolveMetadataServiceVersion(applicationModel);
+        metadata.put(METADATA_SERVICE_VERSION_NAME, version);
+    }
+
+    public static String resolveMetadataServiceVersion(ApplicationModel applicationModel) {
+        boolean needExportV2 = MetadataServiceVersionUtils.needExportV2(applicationModel);
+        String version;
+        if (needExportV2) {
+            version = MetadataServiceDelegationV2.VERSION;
+        } else {
+            version = MetadataServiceDelegation.VERSION;
+        }
+        return version;
     }
 
     private String resolveMetadataPropertyName(ServiceInstance serviceInstance) {
@@ -64,7 +78,7 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
 
         String key;
 
-        if (MetadataServiceVersionUtils.onlyExportV2(applicationModel)) {
+        if (MetadataServiceVersionUtils.needExportV2(applicationModel)) {
             key = BaseServiceMetadata.buildServiceKey(
                     MetadataServiceV2.class.getName(),
                     applicationModel.getApplicationName(),
