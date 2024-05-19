@@ -18,9 +18,16 @@ package org.apache.dubbo.metadata.event;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class MetaDataSubscribeEvent extends MetaDataEvent {
+public class MetadataServiceSubscribeEvent extends MetadataEvent {
 
-    public MetaDataSubscribeEvent(ApplicationModel source) {
+    private final String serviceKey;
+
+    public MetadataServiceSubscribeEvent(ApplicationModel source, String serviceKey) {
         super(source);
+        this.serviceKey = serviceKey;
+    }
+
+    public String getServiceKey() {
+        return serviceKey;
     }
 }

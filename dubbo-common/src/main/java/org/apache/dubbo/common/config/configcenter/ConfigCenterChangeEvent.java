@@ -28,19 +28,24 @@ public class ConfigCenterChangeEvent extends DubboEvent {
 
     private final String protocol;
 
-    private final String changeType;
+    private final ConfigChangeType changeType;
 
     private final int count;
 
     private final TimePair timePair;
 
     public ConfigCenterChangeEvent(
-            ApplicationModel source, String key, String group, String protocol, String changeType) {
+            ApplicationModel source, String key, String group, String protocol, ConfigChangeType changeType) {
         this(source, key, group, protocol, changeType, 1);
     }
 
     public ConfigCenterChangeEvent(
-            ApplicationModel source, String key, String group, String protocol, String changeType, int count) {
+            ApplicationModel source,
+            String key,
+            String group,
+            String protocol,
+            ConfigChangeType changeType,
+            int count) {
         super(source);
         this.key = key;
         this.group = group;
@@ -66,7 +71,7 @@ public class ConfigCenterChangeEvent extends DubboEvent {
         return protocol;
     }
 
-    public String getChangeType() {
+    public ConfigChangeType getChangeType() {
         return changeType;
     }
 

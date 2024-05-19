@@ -32,7 +32,7 @@
 
     <dubbo:registry address="zookeeper://${zookeeper.address:127.0.0.1}:2181"/>
 
-    <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services"/>
+    <dubbo:protocol name="tri" port="8888" threads="500" contextpath="services"/>
 
 
 </beans>

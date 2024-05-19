@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
-import org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
+import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -42,10 +44,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Lists;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -58,19 +60,13 @@ public class RegistryMetricsTest {
 
     String REGISTER = "register";
 
-    DubboApplicationMulticasterRegistry registry = new DubboApplicationMulticasterRegistry();
-
     @BeforeEach
     void setUp() {
         this.applicationModel = getApplicationModel();
-        registry.initializeApplicationModel(applicationModel);
+        ScopeBeanFactory beanFactory = Mockito.mock(ScopeBeanFactory.class);
+        when(beanFactory.getBean(DubboLifecycleEventMulticaster.class)).thenReturn(new DefaultDubboEventMulticaster());
         this.collector = getTestCollector(this.applicationModel);
         this.collector.setCollectEnabled(true);
-    }
-
-    @AfterEach
-    void tearDown() {
-        registry.onDestroy(applicationModel);
     }
 
     @Test

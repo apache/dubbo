@@ -24,8 +24,8 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.event.MetaDataPushEvent;
-import org.apache.dubbo.metadata.event.MetaDataSubscribeEvent;
+import org.apache.dubbo.metadata.event.MetadataPushEvent;
+import org.apache.dubbo.metadata.event.MetadataSubscribeEvent;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
@@ -246,7 +246,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             while (triedTimes < 3) {
 
                 metadata = DubboEventBus.post(
-                        new MetaDataSubscribeEvent(applicationModel),
+                        new MetadataSubscribeEvent(applicationModel),
                         () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
                         result -> result != MetadataInfo.EMPTY);
 
@@ -384,7 +384,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                     new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata())
                     || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                DubboEventBus.post(new MetaDataPushEvent(applicationModel), () -> {
+                DubboEventBus.post(new MetadataPushEvent(applicationModel), () -> {
                     metadataReport.publishAppMetadata(identifier, metadataInfo);
                     return null;
                 });

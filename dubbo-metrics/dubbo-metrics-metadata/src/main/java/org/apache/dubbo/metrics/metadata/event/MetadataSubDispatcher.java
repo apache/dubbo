@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics.metadata.event;
 import org.apache.dubbo.common.event.AbstractDubboLifecycleListener;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metadata.event.MetaDataEvent;
+import org.apache.dubbo.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.event.TimeCounterEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
 import org.apache.dubbo.metrics.listener.MetricsServiceListener;
@@ -35,7 +35,7 @@ import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
-public final class MetadataSubDispatcher extends AbstractDubboLifecycleListener<MetaDataEvent> {
+public final class MetadataSubDispatcher extends AbstractDubboLifecycleListener<MetadataEvent> {
 
     ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataSubDispatcher.class);
 
@@ -57,7 +57,7 @@ public final class MetadataSubDispatcher extends AbstractDubboLifecycleListener<
     }
 
     @Override
-    public void onEventBefore(MetaDataEvent event) {
+    public void onEventBefore(MetadataEvent event) {
         MetadataMetricsEvent metadataMetricsEvent = MetadataMetricsEvent.convertEvent(event);
         if (metadataMetricsEvent == null) {
             logger.debug("Unsupported event type: {}", event.getClass().getName());
@@ -67,7 +67,7 @@ public final class MetadataSubDispatcher extends AbstractDubboLifecycleListener<
     }
 
     @Override
-    public void onEventFinish(MetaDataEvent event) {
+    public void onEventFinish(MetadataEvent event) {
         MetadataMetricsEvent metadataMetricsEvent = MetadataMetricsEvent.convertEvent(event);
         if (metadataMetricsEvent == null) {
             logger.debug("Unsupported event type: {}", event.getClass().getName());
@@ -77,7 +77,7 @@ public final class MetadataSubDispatcher extends AbstractDubboLifecycleListener<
     }
 
     @Override
-    public void onEventError(MetaDataEvent event) {
+    public void onEventError(MetadataEvent event) {
         MetadataMetricsEvent metadataMetricsEvent = MetadataMetricsEvent.convertEvent(event);
         if (metadataMetricsEvent == null) {
             logger.debug("Unsupported event type: {}", event.getClass().getName());

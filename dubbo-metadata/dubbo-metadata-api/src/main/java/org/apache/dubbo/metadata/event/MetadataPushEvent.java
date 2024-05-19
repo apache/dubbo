@@ -18,9 +18,9 @@ package org.apache.dubbo.metadata.event;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class MetaDataPushEvent extends MetaDataEvent {
+public class MetadataPushEvent extends MetadataEvent {
 
-    public MetaDataPushEvent(ApplicationModel source) {
+    public MetadataPushEvent(ApplicationModel source) {
         super(source);
     }
 }

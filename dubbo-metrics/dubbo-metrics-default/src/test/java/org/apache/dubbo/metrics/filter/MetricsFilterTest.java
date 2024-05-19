@@ -104,7 +104,7 @@ class MetricsFilterTest {
     @Test
     void testCollectDisabled() {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
-
+        initParam();
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
         metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());

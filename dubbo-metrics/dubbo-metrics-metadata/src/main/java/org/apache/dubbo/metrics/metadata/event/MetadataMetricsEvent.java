@@ -18,10 +18,10 @@ package org.apache.dubbo.metrics.metadata.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.utils.TimePair;
-import org.apache.dubbo.metadata.event.MetaDataEvent;
-import org.apache.dubbo.metadata.event.MetaDataPushEvent;
-import org.apache.dubbo.metadata.event.MetaDataServiceSubscribeEvent;
-import org.apache.dubbo.metadata.event.MetaDataSubscribeEvent;
+import org.apache.dubbo.metadata.event.MetadataEvent;
+import org.apache.dubbo.metadata.event.MetadataPushEvent;
+import org.apache.dubbo.metadata.event.MetadataServiceSubscribeEvent;
+import org.apache.dubbo.metadata.event.MetadataSubscribeEvent;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
@@ -89,15 +89,15 @@ public class MetadataMetricsEvent extends TimeCounterEvent {
         return metadataMetricsEvent;
     }
 
-    public static MetadataMetricsEvent convertEvent(MetaDataEvent event) {
+    public static MetadataMetricsEvent convertEvent(MetadataEvent event) {
         MetadataMetricsEvent metadataMetricsEvent;
-        if (event instanceof MetaDataPushEvent) {
+        if (event instanceof MetadataPushEvent) {
             metadataMetricsEvent = MetadataMetricsEvent.toPushEvent(event.getApplicationModel(), event.getTimePair());
-        } else if (event instanceof MetaDataSubscribeEvent) {
+        } else if (event instanceof MetadataSubscribeEvent) {
             metadataMetricsEvent =
                     MetadataMetricsEvent.toSubscribeEvent(event.getApplicationModel(), event.getTimePair());
-        } else if (event instanceof MetaDataServiceSubscribeEvent) {
-            MetaDataServiceSubscribeEvent serviceEvent = (MetaDataServiceSubscribeEvent) event;
+        } else if (event instanceof MetadataServiceSubscribeEvent) {
+            MetadataServiceSubscribeEvent serviceEvent = (MetadataServiceSubscribeEvent) event;
             metadataMetricsEvent = MetadataMetricsEvent.toServiceSubscribeEvent(
                     event.getApplicationModel(), serviceEvent.getServiceKey(), event.getTimePair());
         } else {

@@ -64,8 +64,8 @@ class ConfigCenterMetricsCollectorTest {
         String applicationName = applicationModel.getApplicationName();
         //        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
         //        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
-        ConfigCenterChangeEvent configCenterChangeEvent = new ConfigCenterChangeEvent(
-                applicationModel, "key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
+        ConfigCenterChangeEvent configCenterChangeEvent =
+                new ConfigCenterChangeEvent(applicationModel, "key", "group", "nacos", ConfigChangeType.ADDED, 1);
         DubboEventBus.publish(configCenterChangeEvent);
         DubboEventBus.publish(configCenterChangeEvent);
 
@@ -97,7 +97,7 @@ class ConfigCenterMetricsCollectorTest {
         // SELF_INCREMENT_SIZE);
 
         ConfigCenterChangeEvent configCenterChangeEvent = new ConfigCenterChangeEvent(
-                applicationModel, event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED.name());
+                applicationModel, event.getKey(), event.getGroup(), "apollo", ConfigChangeType.ADDED);
         DubboEventBus.publish(configCenterChangeEvent);
         DubboEventBus.publish(configCenterChangeEvent);
 

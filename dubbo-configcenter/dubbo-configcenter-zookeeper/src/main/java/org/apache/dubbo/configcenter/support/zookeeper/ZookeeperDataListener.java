@@ -83,6 +83,6 @@ public class ZookeeperDataListener implements DataListener {
                 configChangeEvent.getKey(),
                 configChangeEvent.getGroup(),
                 ZookeeperConstants.ZK_PROTOCOL,
-                ConfigChangeType.ADDED.name()));
+                ConfigChangeType.ADDED));
     }
 }

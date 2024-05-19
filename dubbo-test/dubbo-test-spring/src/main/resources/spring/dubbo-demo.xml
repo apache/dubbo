@@ -28,7 +28,7 @@
     <dubbo:registry address="${zookeeper.connection.address}?registry-type=service"/>
 
     <dubbo:protocol name="dubbo" port="-1"/>
-    <dubbo:protocol name="rest" port="-1"/>
+    <dubbo:protocol name="tri" port="-1"/>
 
     <!-- references -->
     <dubbo:consumer check="false" scope="remote" />
@@ -38,6 +38,6 @@
     <dubbo:reference  id="greetingService" version="1.0.0" group="greeting"
                      interface="org.apache.dubbo.test.common.api.GreetingService"/>
 
-    <dubbo:reference  id="restDemoService" version="1.0.0" protocol="rest"
+    <dubbo:reference  id="restDemoService" version="1.0.0" protocol="tri"
                       interface="org.apache.dubbo.test.common.api.RestDemoService"/>
 </beans>

@@ -16,50 +16,29 @@
  */
 package org.apache.dubbo.common.event;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelDestroyListener;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Initialize {@link DubboLifecycleEventMulticaster} for {@link ApplicationModel}
  *
- * @see DubboEventBus
  * @see DubboLifecycleEventMulticaster
  * @since 3.3.0
  */
-public class DubboApplicationMulticasterRegistry
-        implements ScopeModelInitializer, ScopeModelDestroyListener<ApplicationModel> {
-
-    private static final ConcurrentHashMap<ApplicationModel, DubboLifecycleEventMulticaster> multicasterMap =
-            new ConcurrentHashMap<>();
+public class DubboApplicationMulticasterRegistry implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
-        multicasterMap.computeIfAbsent(applicationModel, t -> new DefaultDubboEventMulticaster());
-        applicationModel.addDestroyListener(this);
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        beanFactory.registerBean(DefaultDubboEventMulticaster.class);
     }
 
     @Override
     public void initializeModuleModel(ModuleModel moduleModel) {}
-
-    @Override
-    public void onDestroy(ApplicationModel scopeModel) {
-        multicasterMap.remove(scopeModel);
-    }
-
-    @Override
-    public boolean isProtocol() {
-        return true;
-    }
-
-    public static DubboLifecycleEventMulticaster getMulticaster(ApplicationModel applicationModel) {
-        return multicasterMap.get(applicationModel);
-    }
 }

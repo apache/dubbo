@@ -744,7 +744,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 .getMetrics()
                 .map(MetricsConfig::getExportMetricsService)
                 .orElse(true);
-        if (exportMetrics) {
+        if (exportMetrics && metricsServiceExporter != null) {
             try {
                 metricsServiceExporter.export();
             } catch (Exception e) {
@@ -853,7 +853,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                             configCenter.getConfigFile(),
                             configCenter.getGroup(),
                             configCenter.getProtocol(),
-                            ConfigChangeType.ADDED.name(),
+                            ConfigChangeType.ADDED,
                             configMap.size()));
                     if (isNotEmpty(appGroup)) {
                         DubboEventBus.publish(new ConfigCenterChangeEvent(
@@ -861,7 +861,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                                 appConfigFile,
                                 appGroup,
                                 configCenter.getProtocol(),
-                                ConfigChangeType.ADDED.name(),
+                                ConfigChangeType.ADDED,
                                 appConfigMap.size()));
                     }
                 } catch (IOException e) {

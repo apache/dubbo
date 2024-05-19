@@ -27,7 +27,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
-import org.apache.dubbo.metadata.event.MetaDataServiceSubscribeEvent;
+import org.apache.dubbo.metadata.event.MetadataServiceSubscribeEvent;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -298,8 +298,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     private void storeProviderMetadataTask(
             MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
 
-        MetaDataServiceSubscribeEvent metadataEvent =
-                new MetaDataServiceSubscribeEvent(applicationModel, providerMetadataIdentifier.getUniqueServiceName());
+        MetadataServiceSubscribeEvent metadataEvent =
+                new MetadataServiceSubscribeEvent(applicationModel, providerMetadataIdentifier.getUniqueServiceName());
         DubboEventBus.post(
                 metadataEvent,
                 () -> {

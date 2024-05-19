@@ -16,18 +16,20 @@
  */
 package org.apache.dubbo.metadata.event;
 
+import org.apache.dubbo.common.event.DubboEvent;
+import org.apache.dubbo.common.utils.TimePair;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class MetaDataServiceSubscribeEvent extends MetaDataEvent {
+public abstract class MetadataEvent extends DubboEvent {
 
-    private final String serviceKey;
+    private final TimePair timePair;
 
-    public MetaDataServiceSubscribeEvent(ApplicationModel source, String serviceKey) {
+    public MetadataEvent(ApplicationModel source) {
         super(source);
-        this.serviceKey = serviceKey;
+        this.timePair = TimePair.start();
     }
 
-    public String getServiceKey() {
-        return serviceKey;
+    public TimePair getTimePair() {
+        return timePair;
     }
 }

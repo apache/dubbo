@@ -38,7 +38,7 @@
     <dubbo:registry id="registry1" address="${dubbo.registry.address}"/>
 
     <dubbo:protocol name="dubbo" port="-1"/>
-    <dubbo:protocol name="rest" port="-1"/>
+    <dubbo:protocol name="tri" port="-1"/>
 
     <bean id="demoService" class="org.apache.dubbo.config.spring.propertyconfigurer.provider.HelloServiceImpl"/>
 

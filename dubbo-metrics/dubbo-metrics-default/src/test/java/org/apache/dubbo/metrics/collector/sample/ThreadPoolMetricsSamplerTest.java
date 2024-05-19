@@ -17,7 +17,9 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
 import org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry;
+import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -35,7 +37,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,14 +56,8 @@ public class ThreadPoolMetricsSamplerTest {
 
     @BeforeEach
     void setUp() {
-        multicasterRegistry.initializeApplicationModel(applicationModel);
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         sampler = new ThreadPoolMetricsSampler(collector);
-    }
-
-    @AfterEach
-    void tearDown() {
-        multicasterRegistry.onDestroy(applicationModel);
     }
 
     @Test
@@ -145,15 +140,16 @@ public class ThreadPoolMetricsSamplerTest {
     @BeforeEach
     public void setUp2() {
         MockitoAnnotations.openMocks(this);
-        new DubboApplicationMulticasterRegistry().initializeApplicationModel(applicationModel);
+
+        when(applicationModel.getBeanFactory()).thenReturn(scopeBeanFactory);
+        when(scopeBeanFactory.getBean(DubboLifecycleEventMulticaster.class))
+                .thenReturn(new DefaultDubboEventMulticaster());
 
         collector = new DefaultMetricsCollector(applicationModel);
         sampler2 = new ThreadPoolMetricsSampler(collector);
 
         when(scopeBeanFactory.getBean(FrameworkExecutorRepository.class)).thenReturn(new FrameworkExecutorRepository());
-
         collector.collectApplication();
-        when(applicationModel.getBeanFactory()).thenReturn(scopeBeanFactory);
         when(applicationModel.getExtensionLoader(DataStore.class)).thenReturn(extensionLoader);
         when(extensionLoader.getDefaultExtension()).thenReturn(dataStore);
     }

@@ -20,9 +20,9 @@ import org.apache.dubbo.common.event.DubboEvent;
 import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.utils.TimePair;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metadata.event.MetaDataPushEvent;
-import org.apache.dubbo.metadata.event.MetaDataServiceSubscribeEvent;
-import org.apache.dubbo.metadata.event.MetaDataSubscribeEvent;
+import org.apache.dubbo.metadata.event.MetadataPushEvent;
+import org.apache.dubbo.metadata.event.MetadataServiceSubscribeEvent;
+import org.apache.dubbo.metadata.event.MetadataSubscribeEvent;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.event.MetadataSubDispatcher;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -70,10 +70,10 @@ class MetadataMetricsCollectorTest {
     @Test
     void testListener() {
         MetadataSubDispatcher dispatcher = new MetadataSubDispatcher(collector);
-        MetaDataPushEvent event = new MetaDataPushEvent(applicationModel);
-        MetaDataSubscribeEvent subscribeEvent = new MetaDataSubscribeEvent(applicationModel);
-        MetaDataServiceSubscribeEvent serviceSubscribeEvent =
-                new MetaDataServiceSubscribeEvent(applicationModel, "serviceKey");
+        MetadataPushEvent event = new MetadataPushEvent(applicationModel);
+        MetadataSubscribeEvent subscribeEvent = new MetadataSubscribeEvent(applicationModel);
+        MetadataServiceSubscribeEvent serviceSubscribeEvent =
+                new MetadataServiceSubscribeEvent(applicationModel, "serviceKey");
 
         DubboEvent otherEvent = new DubboEvent(applicationModel);
         Assertions.assertTrue(dispatcher.support(event.getClass()));
@@ -89,7 +89,7 @@ class MetadataMetricsCollectorTest {
 
     @Test
     void testPushMetrics() {
-        MetaDataPushEvent pushEvent = new MetaDataPushEvent(applicationModel);
+        MetadataPushEvent pushEvent = new MetadataPushEvent(applicationModel);
         DubboEventBus.post(pushEvent, () -> {
             List<MetricSample> metricSamples = collector.collect();
 
@@ -108,7 +108,7 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
         long c1 = pushEvent.getTimePair().calc();
 
-        pushEvent = new MetaDataPushEvent(applicationModel);
+        pushEvent = new MetadataPushEvent(applicationModel);
         TimePair lastTimePair = pushEvent.getTimePair();
         DubboEventBus.post(
                 pushEvent,
@@ -158,7 +158,7 @@ class MetadataMetricsCollectorTest {
     void testSubscribeMetrics() {
         //        MetadataMetricsCollector collector = getCollector();
 
-        MetaDataSubscribeEvent subscribeEvent = new MetaDataSubscribeEvent(applicationModel);
+        MetadataSubscribeEvent subscribeEvent = new MetadataSubscribeEvent(applicationModel);
         DubboEventBus.post(subscribeEvent, () -> {
             List<MetricSample> metricSamples = collector.collect();
 
@@ -177,7 +177,7 @@ class MetadataMetricsCollectorTest {
         // App(6) + rt(5) = 7
         Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
 
-        subscribeEvent = new MetaDataSubscribeEvent(applicationModel);
+        subscribeEvent = new MetadataSubscribeEvent(applicationModel);
         TimePair lastTimePair = subscribeEvent.getTimePair();
         DubboEventBus.post(
                 subscribeEvent,
@@ -229,7 +229,7 @@ class MetadataMetricsCollectorTest {
         //        MetadataMetricsCollector collector = getCollector();
 
         String serviceKey = "store.provider.test";
-        MetaDataServiceSubscribeEvent metadataEvent = new MetaDataServiceSubscribeEvent(applicationModel, serviceKey);
+        MetadataServiceSubscribeEvent metadataEvent = new MetadataServiceSubscribeEvent(applicationModel, serviceKey);
         DubboEventBus.post(metadataEvent, () -> {
             List<MetricSample> metricSamples = collector.collect();
 
@@ -248,7 +248,7 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 2 + 5, metricSamples.size());
 
         long c1 = metadataEvent.getTimePair().calc();
-        metadataEvent = new MetaDataServiceSubscribeEvent(applicationModel, serviceKey);
+        metadataEvent = new MetadataServiceSubscribeEvent(applicationModel, serviceKey);
         TimePair lastTimePair = metadataEvent.getTimePair();
         DubboEventBus.post(
                 metadataEvent,
@@ -305,7 +305,7 @@ class MetadataMetricsCollectorTest {
     void testMetadataPushNum() {
 
         for (int i = 0; i < 10; i++) {
-            MetaDataPushEvent event = new MetaDataPushEvent(applicationModel);
+            MetadataPushEvent event = new MetadataPushEvent(applicationModel);
             if (i % 2 == 0) {
                 DubboEventBus.post(event, () -> true, r -> r);
             } else {
@@ -328,7 +328,7 @@ class MetadataMetricsCollectorTest {
     void testSubscribeSum() {
 
         for (int i = 0; i < 10; i++) {
-            MetaDataSubscribeEvent event = new MetaDataSubscribeEvent(applicationModel);
+            MetadataSubscribeEvent event = new MetadataSubscribeEvent(applicationModel);
             if (i % 2 == 0) {
                 DubboEventBus.post(event, () -> true, r -> r);
             } else {

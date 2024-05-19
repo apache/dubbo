@@ -273,7 +273,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                         event.getKey(),
                         event.getGroup(),
                         ApolloConstants.APOLLO_PROTOCOL,
-                        ConfigChangeType.ADDED.name()));
+                        ConfigChangeType.ADDED));
             }
         }
 

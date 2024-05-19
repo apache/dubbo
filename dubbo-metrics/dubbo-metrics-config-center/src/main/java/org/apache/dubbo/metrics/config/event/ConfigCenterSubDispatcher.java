@@ -31,6 +31,10 @@ public final class ConfigCenterSubDispatcher extends AbstractDubboListener<Confi
     @Override
     public void onEvent(ConfigCenterChangeEvent event) {
         collector.increase(
-                event.getKey(), event.getGroup(), event.getProtocol(), event.getChangeType(), event.getCount());
+                event.getKey(),
+                event.getGroup(),
+                event.getProtocol(),
+                event.getChangeType().name(),
+                event.getCount());
     }
 }

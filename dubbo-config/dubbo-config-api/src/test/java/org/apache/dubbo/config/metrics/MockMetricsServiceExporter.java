@@ -14,22 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.event;
+package org.apache.dubbo.config.metrics;
 
-import org.apache.dubbo.common.event.DubboEvent;
-import org.apache.dubbo.common.utils.TimePair;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 
-public abstract class MetaDataEvent extends DubboEvent {
+/**
+ * Export metrics service
+ */
+public class MockMetricsServiceExporter implements MetricsServiceExporter {
 
-    private final TimePair timePair;
+    @Override
+    public void init() {}
 
-    public MetaDataEvent(ApplicationModel source) {
-        super(source);
-        this.timePair = TimePair.start();
+    @Override
+    public MetricsServiceExporter export() {
+        return null;
     }
 
-    public TimePair getTimePair() {
-        return timePair;
+    @Override
+    public MetricsServiceExporter unexport() {
+        return null;
     }
 }

@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.event;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -36,6 +38,9 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRI
 public class DubboEventBus {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboEventBus.class);
+
+    private static final ConcurrentHashMap<ApplicationModel, DubboLifecycleEventMulticaster> cachedMulticasterMap =
+            new ConcurrentHashMap<>();
 
     private DubboEventBus() {}
 
@@ -144,6 +149,9 @@ public class DubboEventBus {
     }
 
     private static DubboLifecycleEventMulticaster getMulticaster(ApplicationModel applicationModel) {
-        return DubboApplicationMulticasterRegistry.getMulticaster(applicationModel);
+        return cachedMulticasterMap.computeIfAbsent(applicationModel, t -> {
+            ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+            return beanFactory.getBean(DubboLifecycleEventMulticaster.class);
+        });
     }
 }

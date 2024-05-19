@@ -366,7 +366,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
                     event.getKey(),
                     event.getGroup(),
                     NacosConstants.NACOS_PROTOCOL,
-                    ConfigChangeType.ADDED.name()));
+                    ConfigChangeType.ADDED));
         }
 
         void addListener(ConfigurationListener configurationListener) {
