@@ -1,3 +1,0 @@
-servlet=org.apache.dubbo.remoting.http.servlet.ServletHttpBinder
-jetty=org.apache.dubbo.remoting.http.jetty.JettyHttpBinder
-tomcat=org.apache.dubbo.remoting.http.tomcat.TomcatHttpBinder

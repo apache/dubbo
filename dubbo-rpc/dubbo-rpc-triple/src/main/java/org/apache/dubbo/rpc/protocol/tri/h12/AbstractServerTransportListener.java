@@ -126,7 +126,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 doOnData(message);
             } catch (Throwable t) {
                 logError(t);
-                onError(t);
+                onError(message, t);
+            } finally {
+                onFinally(message);
             }
         });
     }
@@ -182,6 +184,18 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             }
         }
         throw new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR.getCode(), throwable);
+    }
+
+    protected void onError(MESSAGE message, Throwable throwable) {
+        onError(throwable);
+    }
+
+    protected void onFinally(MESSAGE message) {
+        try {
+            message.close();
+        } catch (Exception e) {
+            onError(e);
+        }
     }
 
     protected RpcInvocation buildRpcInvocation(RpcInvocationBuildContext context) {
