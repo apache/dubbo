@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,6 +40,10 @@ public class CorsMeta {
     private final String[] exposedHeaders;
     private final Boolean allowCredentials;
     private final Long maxAge;
+
+    public static final String[] DEFAULT_ALLOWED_METHODS = {
+        HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()
+    };
 
     private CorsMeta(
             String[] allowedOrigins,
@@ -89,22 +94,40 @@ public class CorsMeta {
         return maxAge;
     }
 
-    public CorsMeta combine(CorsMeta other) {
-        if (other == null) {
-            return this;
-        }
+    public CorsMeta combine(CorsMeta secondary) {
+        return secondary == null ? this : combine0(secondary).build();
+    }
+
+    public CorsMeta combineDefault(CorsMeta secondary) {
+        return secondary == null ? this : combine0(secondary).applyDefault().build();
+    }
+
+    private Builder combine0(CorsMeta secondary) {
         return builder()
-                .allowedOrigins(allowedOrigins)
-                .allowedOrigins(other.allowedOrigins)
-                .allowedMethods(allowedMethods)
-                .allowedMethods(other.allowedMethods)
-                .allowedHeaders(allowedHeaders)
-                .allowedHeaders(other.allowedHeaders)
-                .exposedHeaders(exposedHeaders)
-                .exposedHeaders(other.exposedHeaders)
-                .allowCredentials(other.allowCredentials == null ? allowCredentials : other.allowCredentials)
-                .maxAge(other.maxAge == null ? maxAge : other.maxAge)
-                .build();
+                .allowedOrigins(combine(this.allowedOrigins, secondary.allowedOrigins))
+                .allowedHeaders(combine(this.allowedHeaders, secondary.allowedHeaders))
+                .allowedMethods(combine(this.allowedMethods, secondary.allowedMethods))
+                .exposedHeaders(this.exposedHeaders)
+                .exposedHeaders(secondary.exposedHeaders)
+                .allowCredentials(
+                        secondary.allowCredentials == null ? this.allowCredentials : secondary.allowCredentials)
+                .maxAge(secondary.maxAge == null ? this.maxAge : secondary.maxAge);
+    }
+
+    private String[] combine(String[] major, String[] secondary) {
+        if (major == null || major.length == 0) {
+            return secondary == null ? new String[0] : secondary;
+        }
+        if (secondary == null
+                || secondary.length == 0
+                || Objects.equals(secondary[0], ANY_VALUE)
+                || Objects.equals(major[0], ANY_VALUE)) {
+            return major;
+        }
+        Set<String> combined = new LinkedHashSet<>(major.length + secondary.length);
+        combined.addAll(Arrays.asList(major));
+        combined.addAll(Arrays.asList(secondary));
+        return combined.toArray(new String[0]);
     }
 
     @Override
@@ -221,6 +244,15 @@ public class CorsMeta {
             return this;
         }
 
+        public Boolean enabledCors() {
+            return !(allowedOrigins.isEmpty()
+                    && allowedMethods.isEmpty()
+                    && allowedHeaders.isEmpty()
+                    && exposedHeaders.isEmpty()
+                    && allowCredentials == null
+                    && maxAge == null);
+        }
+
         public CorsMeta build() {
             if (allowedOrigins.isEmpty()
                     && allowedMethods.isEmpty()
@@ -241,9 +273,7 @@ public class CorsMeta {
                 i++;
             }
             if (allowedMethods.isEmpty()) {
-                allowedMethods.add(HttpMethods.GET.name());
-                allowedMethods.add(HttpMethods.HEAD.name());
-                allowedMethods.add(HttpMethods.POST.name());
+                allowedMethods.addAll(Arrays.asList(DEFAULT_ALLOWED_METHODS));
             }
             return new CorsMeta(
                     origins,
@@ -253,6 +283,14 @@ public class CorsMeta {
                     exposedHeaders.toArray(EMPTY_STRING_ARRAY),
                     allowCredentials,
                     maxAge);
+        }
+
+        public CorsMeta buildDefault() {
+            if (enabledCors()) {
+                return applyDefault().build();
+            } else {
+                return null;
+            }
         }
     }
 }

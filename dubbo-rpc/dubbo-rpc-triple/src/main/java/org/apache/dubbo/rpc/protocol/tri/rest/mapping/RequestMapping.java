@@ -86,7 +86,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         ConsumesCondition consumes = combine(consumesCondition, other.consumesCondition);
         ProducesCondition produces = combine(producesCondition, other.producesCondition);
         ConditionWrapper custom = combine(customCondition, other.customCondition);
-        CorsMeta cors = this.cors == null ? other.cors : this.cors.combine(other.cors);
+        CorsMeta cors = other.cors == null ? this.cors : other.cors.combineDefault(this.cors);
         ResponseMeta response = ResponseMeta.combine(this.response, other.response);
         return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, cors, response);
     }
