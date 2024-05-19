@@ -43,7 +43,7 @@ public class NacosDubboServiceConsumerBootstrap {
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class)
                         .protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class)
-                        .protocol("rest"))
+                        .protocol("tri"))
                 .start();
 
         EchoService echoService = bootstrap.getCache().get(EchoService.class);

@@ -22,8 +22,8 @@ import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
+import org.apache.dubbo.remoting.zookeeper.curator5.DataListener;
+import org.apache.dubbo.remoting.zookeeper.curator5.EventType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Set;

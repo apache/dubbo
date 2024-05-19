@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config.bootstrap.rest;
 
-import org.apache.dubbo.rpc.protocol.rest.support.ContentType;
+import org.apache.dubbo.config.bootstrap.rest.support.ContentType;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
