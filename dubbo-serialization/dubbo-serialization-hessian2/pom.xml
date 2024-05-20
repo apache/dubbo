@@ -45,5 +45,11 @@ limitations under the License.
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-native</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
   </dependencies>
 </project>
