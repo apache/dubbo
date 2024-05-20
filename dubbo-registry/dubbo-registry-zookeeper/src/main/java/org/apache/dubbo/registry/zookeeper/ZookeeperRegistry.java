@@ -206,8 +206,8 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                                 try {
                                     child = URL.decode(child);
                                     if (!(JsonUtils.checkJson(child))) {
-                                        throw new Exception("dubbo-admin subscribe "
-                                                + child + " failed,beacause " + child + "is root path in " + url);
+                                        throw new Exception("dubbo-admin subscribe " + child + " failed,beacause "
+                                                + child + "is root path in " + url);
                                     }
                                 } catch (Exception e) {
                                     logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", e.getMessage());
