@@ -70,19 +70,15 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
             return null;
         }
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
+        if (globalCorsMeta == null) {
+            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+        }
         return builder(methodMeta, path, httpMethod)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(methodMeta.getServiceMeta().getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
-                .cors(getGlobalCorsMeta())
+                .cors(globalCorsMeta)
                 .build();
-    }
-
-    private CorsMeta getGlobalCorsMeta() {
-        if (globalCorsMeta == null) {
-            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
-        }
-        return globalCorsMeta;
     }
 
     private Builder builder(AnnotationSupport meta, AnnotationMeta<?> path, AnnotationMeta<?> httpMethod) {

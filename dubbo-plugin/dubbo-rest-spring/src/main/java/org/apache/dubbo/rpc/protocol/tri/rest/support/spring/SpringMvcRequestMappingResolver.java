@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -36,8 +37,8 @@ import org.springframework.http.HttpStatus;
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;
-    private CorsMeta globalCorsMeta;
     private volatile RestToolKit toolKit;
+    private CorsMeta globalCorsMeta;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -116,21 +117,27 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
     }
 
     private CorsMeta buildCorsMeta(AnnotationMeta<?> crossOrigin, String[] methods) {
+        if (globalCorsMeta == null) {
+            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+        }
         if (crossOrigin == null) {
-            if (globalCorsMeta == null) {
-                globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
-            }
             return globalCorsMeta;
         }
         String[] allowedMethods = crossOrigin.getStringArray("methods");
+        if (allowedMethods.length == 0) {
+            allowedMethods = methods;
+            if (allowedMethods.length == 0) {
+                allowedMethods = new String[] {CommonConstants.ANY_VALUE};
+            }
+        }
         CorsMeta corsMeta = CorsMeta.builder()
                 .allowedOrigins(crossOrigin.getStringArray("origins"))
-                .allowedMethods(allowedMethods.length == 0 ? methods : allowedMethods)
+                .allowedMethods(allowedMethods)
                 .allowedHeaders(crossOrigin.getStringArray("allowedHeaders"))
                 .exposedHeaders(crossOrigin.getStringArray("exposedHeaders"))
                 .allowCredentials(crossOrigin.getString("allowCredentials"))
                 .maxAge(crossOrigin.getNumber("maxAge"))
                 .build();
-        return corsMeta == null ? globalCorsMeta : corsMeta.combine(globalCorsMeta);
+        return globalCorsMeta.combine(corsMeta);
     }
 }

@@ -63,6 +63,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+    public static final String SEP = ", ";
 
     @Override
     protected void invoke(Invoker<?> invoker, RpcInvocation invocation, HttpRequest request, HttpResponse response)
@@ -92,7 +93,6 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     }
 
     private boolean process(CorsMeta cors, HttpRequest request, HttpResponse response) {
-
         setVaryHeader(response);
 
         String origin = request.header(ORIGIN);
@@ -128,7 +128,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, allowOrigin);
 
         if (ArrayUtils.isNotEmpty(cors.getExposedHeaders())) {
-            response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.join(cors.getExposedHeaders(), ", "));
+            response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.join(cors.getExposedHeaders(), SEP));
         }
 
         if (Boolean.TRUE.equals(cors.getAllowCredentials())) {
@@ -136,10 +136,10 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         }
 
         if (preFlight) {
-            response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, StringUtils.join(allowMethods, ", "));
+            response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, StringUtils.join(allowMethods, SEP));
 
             if (!allowHeaders.isEmpty()) {
-                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.join(allowHeaders, ", "));
+                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.join(allowHeaders, SEP));
             }
             if (cors.getMaxAge() != null) {
                 response.setHeader(ACCESS_CONTROL_MAX_AGE, cors.getMaxAge().toString());
@@ -154,15 +154,18 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     }
 
     private static void setVaryHeader(HttpResponse response) {
-        Set<String> varHeadersSet = new LinkedHashSet<>();
         List<String> varyHeaders = response.headerValues(VARY);
-        if (varyHeaders != null) {
-            varHeadersSet.addAll(varyHeaders);
+        String varyValue;
+        if (varyHeaders == null) {
+            varyValue = ORIGIN + SEP + ACCESS_CONTROL_REQUEST_METHOD + SEP + ACCESS_CONTROL_REQUEST_HEADERS;
+        } else {
+            Set<String> varHeadersSet = new LinkedHashSet<>(varyHeaders);
+            varHeadersSet.add(ORIGIN);
+            varHeadersSet.add(ACCESS_CONTROL_REQUEST_METHOD);
+            varHeadersSet.add(ACCESS_CONTROL_REQUEST_HEADERS);
+            varyValue = StringUtils.join(varHeadersSet, SEP);
         }
-        varHeadersSet.add(ORIGIN);
-        varHeadersSet.add(ACCESS_CONTROL_REQUEST_METHOD);
-        varHeadersSet.add(ACCESS_CONTROL_REQUEST_HEADERS);
-        response.setHeader(VARY, StringUtils.join(varHeadersSet, ", "));
+        response.setHeader(VARY, varyValue);
     }
 
     private static String checkOrigin(CorsMeta cors, String origin) {

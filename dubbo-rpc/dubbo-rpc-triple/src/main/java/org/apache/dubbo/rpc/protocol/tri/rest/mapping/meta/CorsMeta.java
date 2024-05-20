@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Objects;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,10 +43,6 @@ public class CorsMeta {
     private final String[] exposedHeaders;
     private final Boolean allowCredentials;
     private final Long maxAge;
-
-    protected static final String[] DEFAULT_ALLOWED_METHODS = {
-        HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()
-    };
 
     private CorsMeta(
             String[] allowedOrigins,
@@ -94,40 +93,86 @@ public class CorsMeta {
         return maxAge;
     }
 
-    public CorsMeta combine(CorsMeta secondary) {
-        return secondary == null ? this : combine0(secondary).build();
+    public boolean isEmpty() {
+        return allowedOrigins.length == 0
+                && allowedMethods.length == 0
+                && allowedHeaders.length == 0
+                && exposedHeaders.length == 0
+                && allowCredentials == null
+                && maxAge == null;
     }
 
-    public CorsMeta combineDefault(CorsMeta secondary) {
-        return secondary == null ? this : combine0(secondary).applyDefault().build();
-    }
-
-    private Builder combine0(CorsMeta secondary) {
-        return builder()
-                .allowedOrigins(combine(this.allowedOrigins, secondary.allowedOrigins))
-                .allowedHeaders(combine(this.allowedHeaders, secondary.allowedHeaders))
-                .allowedMethods(combine(this.allowedMethods, secondary.allowedMethods))
-                .exposedHeaders(this.exposedHeaders)
-                .exposedHeaders(secondary.exposedHeaders)
-                .allowCredentials(
-                        secondary.allowCredentials == null ? this.allowCredentials : secondary.allowCredentials)
-                .maxAge(secondary.maxAge == null ? this.maxAge : secondary.maxAge);
-    }
-
-    private String[] combine(String[] major, String[] secondary) {
-        if (major == null || major.length == 0) {
-            return secondary == null ? new String[0] : secondary;
+    public CorsMeta applyDefault() {
+        String[] allowedOrigins = null;
+        Pattern[] allowedOriginsPatterns = null;
+        if (this.allowedOrigins.length == 0) {
+            allowedOrigins = new String[] {ANY_VALUE};
+            allowedOriginsPatterns = new Pattern[] {null};
         }
-        if (secondary == null
-                || secondary.length == 0
-                || Objects.equals(secondary[0], ANY_VALUE)
-                || Objects.equals(major[0], ANY_VALUE)) {
-            return major;
+        String[] allowedMethods = null;
+        if (this.allowedMethods.length == 0) {
+            allowedMethods = new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()};
         }
-        Set<String> combined = new LinkedHashSet<>(major.length + secondary.length);
-        combined.addAll(Arrays.asList(major));
-        combined.addAll(Arrays.asList(secondary));
-        return combined.toArray(new String[0]);
+        String[] allowedHeaders = null;
+        if (this.allowedHeaders.length == 0) {
+            allowedHeaders = new String[] {ANY_VALUE};
+        }
+        Long maxAge = null;
+        if (this.maxAge == null) {
+            maxAge = 1800L;
+        }
+        if (allowedOrigins == null && allowedMethods == null && allowedHeaders == null && maxAge == null) {
+            return this;
+        }
+        return new CorsMeta(
+                allowedOrigins == null ? this.allowedOrigins : allowedOrigins,
+                allowedOriginsPatterns == null ? this.allowedOriginsPatterns : allowedOriginsPatterns,
+                allowedMethods == null ? this.allowedMethods : allowedMethods,
+                allowedHeaders == null ? this.allowedHeaders : allowedHeaders,
+                exposedHeaders,
+                allowCredentials,
+                maxAge);
+    }
+
+    public CorsMeta combine(CorsMeta other) {
+        if (other == null || other.isEmpty()) {
+            return this;
+        }
+        return new CorsMeta(
+                combine(allowedOrigins, other.allowedOrigins), merge(allowedOriginsPatterns,
+                other.allowedOriginsPatterns).toArray(new Pattern[0]),
+                combine(allowedMethods, other.allowedMethods),
+                combine(allowedHeaders, other.allowedHeaders),
+                combine(exposedHeaders, other.exposedHeaders),
+                other.allowCredentials == null ? allowCredentials : other.allowCredentials,
+                other.maxAge == null ? maxAge : other.maxAge);
+    }
+
+    private static String[] combine(String[] source, String[] other) {
+        if (other.length == 0) {
+            return source;
+        }
+        if (source.length == 0) {
+            return other;
+        }
+        if (source[0].equals(ANY_VALUE)) {
+            return other;
+        }
+        if (other[0].equals(ANY_VALUE)) {
+            return source;
+        }
+        return merge(source, other).toArray(EMPTY_STRING_ARRAY);
+    }
+
+    private static <T> Set<T> merge(T[] source, T[] other) {
+        int size = source.length + other.length;
+        if (size == 0) {
+            return Collections.emptySet();
+        }
+        Set<T> merged = CollectionUtils.newLinkedHashSet(size);
+        Collections.addAll(merged, source);
+        Collections.addAll(merged, other);
+        return merged;
     }
 
     @Override
@@ -231,44 +276,20 @@ public class CorsMeta {
             return this;
         }
 
-        public Builder applyDefault() {
-            if (allowedOrigins.isEmpty()) {
-                allowedOrigins.add(ANY_VALUE);
-            }
-            if (allowedHeaders.isEmpty()) {
-                allowedHeaders.add(ANY_VALUE);
-            }
-            if (maxAge == null) {
-                maxAge = 1800L;
-            }
-            return this;
-        }
-
         public CorsMeta build() {
-            if (allowedOrigins.isEmpty()
-                    && allowedMethods.isEmpty()
-                    && allowedHeaders.isEmpty()
-                    && exposedHeaders.isEmpty()
-                    && allowCredentials == null
-                    && maxAge == null) {
-                return null;
-            }
-
             int len = allowedOrigins.size();
             String[] origins = new String[len];
-            Pattern[] originsPatterns = new Pattern[len];
+            List<Pattern> originsPatterns = new ArrayList<>(len);
             int i = 0;
             for (String origin : allowedOrigins) {
-                origins[i] = origin;
-                originsPatterns[i] = ANY_VALUE.equals(origin) ? null : initPattern(origin);
-                i++;
-            }
-            if (allowedMethods.isEmpty()) {
-                allowedMethods.addAll(Arrays.asList(DEFAULT_ALLOWED_METHODS));
+                origins[i++] = origin;
+                if (ANY_VALUE.equals(origin)) {
+                    continue;
+                }
+                originsPatterns.add(initPattern(origin));
             }
             return new CorsMeta(
-                    origins,
-                    originsPatterns,
+                    origins, originsPatterns.toArray(new Pattern[0]),
                     allowedMethods.toArray(EMPTY_STRING_ARRAY),
                     allowedHeaders.toArray(EMPTY_STRING_ARRAY),
                     exposedHeaders.toArray(EMPTY_STRING_ARRAY),
