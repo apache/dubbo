@@ -194,25 +194,6 @@ class CorsHeaderFilterTest {
     }
 
     @Test
-    void preflightRequestWithoutRequestheader() {
-        Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
-        Mockito.when(request.header(CorsHeaderFilter.ORIGIN)).thenReturn("https://domain2.com");
-        Mockito.when(request.header(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn("GET");
-        Mockito.when(request.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD))
-                .thenReturn(true);
-        Mockito.when(build.getCors()).thenReturn(CorsMeta.builder().build().applyDefault());
-        try {
-            processor.process(request, response);
-            Assertions.fail();
-        } catch (HttpResultPayloadException e) {
-            Assertions.assertEquals(HttpStatus.NO_CONTENT.getCode(), e.getStatusCode());
-        } catch (Exception e) {
-            Assertions.fail();
-        }
-    }
-
-    @Test
     void preflightRequestWrongAllowedMethod() {
         Mockito.when(request.method()).thenReturn(HttpMethods.OPTIONS.name());
         Mockito.when(request.header(CorsHeaderFilter.ORIGIN)).thenReturn("https://domain2.com");

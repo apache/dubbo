@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 
@@ -26,10 +27,9 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING_ARRAY;
@@ -224,19 +224,18 @@ public class CorsMeta {
                 return;
             }
             for (String value : values) {
-                if (value == null) {
-                    continue;
+                if (StringUtils.isNotEmpty(value)) {
+                    value = fn.apply(value);
+                    if (value.isEmpty()) {
+                        continue;
+                    }
+                    if (ANY_VALUE.equals(value)) {
+                        set.clear();
+                        set.add(ANY_VALUE);
+                        return;
+                    }
+                    set.add(value);
                 }
-                value = fn.apply(value);
-                if (value.isEmpty()) {
-                    continue;
-                }
-                if (ANY_VALUE.equals(value)) {
-                    set.clear();
-                    set.add(ANY_VALUE);
-                    return;
-                }
-                set.add(value);
             }
         }
 
