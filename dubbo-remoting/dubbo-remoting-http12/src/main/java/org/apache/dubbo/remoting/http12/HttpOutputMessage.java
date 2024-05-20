@@ -17,9 +17,10 @@
 package org.apache.dubbo.remoting.http12;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
-public interface HttpOutputMessage {
+public interface HttpOutputMessage extends AutoCloseable {
 
     HttpOutputMessage EMPTY_MESSAGE = new HttpOutputMessage() {
 
@@ -32,4 +33,9 @@ public interface HttpOutputMessage {
     };
 
     OutputStream getBody();
+
+    @Override
+    default void close() throws IOException {
+        getBody().close();
+    }
 }
