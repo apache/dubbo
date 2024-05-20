@@ -148,18 +148,15 @@ public class CorsMeta {
                 other.maxAge == null ? maxAge : other.maxAge);
     }
 
+    /**
+     * Merge two arrays of CORS config values, with the other array having higher priority.
+     */
     private static String[] combine(String[] source, String[] other) {
         if (other.length == 0) {
             return source;
         }
-        if (source.length == 0) {
+        if (source.length == 0 || source[0].equals(ANY_VALUE) || other[0].equals(ANY_VALUE)) {
             return other;
-        }
-        if (source[0].equals(ANY_VALUE)) {
-            return other;
-        }
-        if (other[0].equals(ANY_VALUE)) {
-            return source;
         }
         return merge(source, other).toArray(EMPTY_STRING_ARRAY);
     }
