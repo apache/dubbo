@@ -16,4 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {}
+public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
+
+    void onStreamClosed();
+}

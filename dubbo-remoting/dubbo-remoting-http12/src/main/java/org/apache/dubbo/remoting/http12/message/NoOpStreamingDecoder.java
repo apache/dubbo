@@ -40,6 +40,11 @@ public class NoOpStreamingDecoder implements StreamingDecoder {
     }
 
     @Override
+    public void onStreamClosed() {
+        // do nothing
+    }
+
+    @Override
     public void setFragmentListener(FragmentListener listener) {
         this.listener = listener;
     }

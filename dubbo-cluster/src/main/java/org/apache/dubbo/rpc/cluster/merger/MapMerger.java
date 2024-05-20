@@ -32,7 +32,7 @@ public class MapMerger implements Merger<Map<?, ?>> {
         if (ArrayUtils.isEmpty(items)) {
             return Collections.emptyMap();
         }
-        Map<Object, Object> result = new HashMap<Object, Object>();
+        Map<Object, Object> result = new HashMap<>();
         Stream.of(items).filter(Objects::nonNull).forEach(result::putAll);
         return result;
     }

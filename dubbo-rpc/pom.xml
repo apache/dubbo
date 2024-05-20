@@ -31,7 +31,6 @@
     <module>dubbo-rpc-api</module>
     <module>dubbo-rpc-dubbo</module>
     <module>dubbo-rpc-injvm</module>
-    <module>dubbo-rpc-rest</module>
     <module>dubbo-rpc-triple</module>
   </modules>
   <properties>

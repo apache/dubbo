@@ -353,7 +353,7 @@ public class RpcContext {
                 final T o = callable.call();
                 // local invoke will return directly
                 if (o != null) {
-                    FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
+                    FutureTask<T> f = new FutureTask<>(new Callable<T>() {
                         @Override
                         public T call() throws Exception {
                             return o;

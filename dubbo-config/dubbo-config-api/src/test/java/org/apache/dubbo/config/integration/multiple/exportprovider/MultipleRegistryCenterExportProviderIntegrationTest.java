@@ -239,7 +239,6 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        PROVIDER_APPLICATION_NAME = null;
         serviceConfig = null;
         // The exported service has been unexported
         Assertions.assertTrue(serviceListener.getExportedServices().isEmpty());
