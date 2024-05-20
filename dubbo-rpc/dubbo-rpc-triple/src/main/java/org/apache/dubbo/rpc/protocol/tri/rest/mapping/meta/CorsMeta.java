@@ -139,8 +139,8 @@ public class CorsMeta {
             return this;
         }
         return new CorsMeta(
-                combine(allowedOrigins, other.allowedOrigins), merge(allowedOriginsPatterns,
-                other.allowedOriginsPatterns).toArray(new Pattern[0]),
+                combine(allowedOrigins, other.allowedOrigins),
+                merge(allowedOriginsPatterns, other.allowedOriginsPatterns).toArray(new Pattern[0]),
                 combine(allowedMethods, other.allowedMethods),
                 combine(allowedHeaders, other.allowedHeaders),
                 combine(exposedHeaders, other.exposedHeaders),
@@ -289,7 +289,8 @@ public class CorsMeta {
                 originsPatterns.add(initPattern(origin));
             }
             return new CorsMeta(
-                    origins, originsPatterns.toArray(new Pattern[0]),
+                    origins,
+                    originsPatterns.toArray(new Pattern[0]),
                     allowedMethods.toArray(EMPTY_STRING_ARRAY),
                     allowedHeaders.toArray(EMPTY_STRING_ARRAY),
                     exposedHeaders.toArray(EMPTY_STRING_ARRAY),
