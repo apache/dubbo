@@ -20,6 +20,9 @@ import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
 
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +76,9 @@ public class HessianReflectionTypeDescriberRegistrar implements ReflectionTypeDe
         typeDescribers.add(buildTypeDescriberWithDeclared(ZonedDateTimeSerializer.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(Object.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(StackTraceElement.class));
+        typeDescribers.add(buildTypeDescriberWithDeclared(Date.class));
+        typeDescribers.add(buildTypeDescriberWithDeclared(Time.class));
+        typeDescribers.add(buildTypeDescriberWithDeclared(Timestamp.class));
         typeDescribers.add(buildTypeDescriberWithDeclared("sun.misc.Unsafe"));
 
         return typeDescribers;
