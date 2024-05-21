@@ -74,12 +74,9 @@ public class HessianReflectionTypeDescriberRegistrar implements ReflectionTypeDe
         typeDescribers.add(buildTypeDescriberWithDeclared(ZoneIdSerializer.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(ZoneOffsetSerializer.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(ZonedDateTimeSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(Object.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(StackTraceElement.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(Date.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(Time.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(Timestamp.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared("sun.misc.Unsafe"));
 
         return typeDescribers;
     }
