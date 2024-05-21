@@ -60,7 +60,15 @@ public class DefaultStreamingDecoder implements StreamingDecoder {
 
     @Override
     public void onStreamClosed() {
-        // do nothing
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            accumulate.close();
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
     }
 
     @Override
