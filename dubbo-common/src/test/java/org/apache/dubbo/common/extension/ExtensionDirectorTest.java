@@ -45,8 +45,7 @@ class ExtensionDirectorTest {
         // 2. Child ExtensionDirector can get extension instance from parent
         // 3. Parent ExtensionDirector can't get extension instance from child
 
-        ExtensionDirector fwExtensionDirector =
-                new ExtensionDirector(null, ExtensionScope.FRAMEWORK, FrameworkModel.defaultModel());
+        ExtensionDirector fwExtensionDirector = FrameworkModel.defaultModel().getExtensionDirector();
         ExtensionDirector appExtensionDirector =
                 new ExtensionDirector(fwExtensionDirector, ExtensionScope.APPLICATION, ApplicationModel.defaultModel());
         ExtensionDirector moduleExtensionDirector = new ExtensionDirector(
