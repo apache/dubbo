@@ -310,20 +310,20 @@ class CorsHeaderFilterTest {
             Assertions.fail();
         } catch (HttpResultPayloadException e) {
             Assertions.assertEquals(HttpStatus.NO_CONTENT.getCode(), e.getStatusCode());
+            Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
+            Assertions.assertEquals("*", response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
+            Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
+            log.info("{}", response.headerValues(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
+            Assertions.assertEquals("GET, PUT", response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
+            Assertions.assertFalse(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_MAX_AGE));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
         } catch (Exception e) {
             Assertions.fail();
         }
-        Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertEquals("*", response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
-        log.info("{}", response.headerValues(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
-        Assertions.assertEquals("GET, PUT", response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_METHODS));
-        Assertions.assertFalse(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_MAX_AGE));
-        Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
     }
 
     @Test
@@ -349,23 +349,23 @@ class CorsHeaderFilterTest {
             Assertions.fail();
         } catch (HttpResultPayloadException e) {
             Assertions.assertEquals(HttpStatus.NO_CONTENT.getCode(), e.getStatusCode());
+            Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
+            Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS)
+                    .contains("Header1"));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS)
+                    .contains("Header2"));
+            Assertions.assertFalse(response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS)
+                    .contains("Header3"));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
+            Assertions.assertEquals(HttpStatus.OK.getCode(), response.status());
         } catch (Exception e) {
             Assertions.fail();
         }
-        Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS).contains("Header1"));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS).contains("Header2"));
-        Assertions.assertFalse(
-                response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS).contains("Header3"));
-        Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
-        Assertions.assertEquals(HttpStatus.OK.getCode(), response.status());
     }
 
     @Test
@@ -390,22 +390,22 @@ class CorsHeaderFilterTest {
             Assertions.fail();
         } catch (HttpResultPayloadException e) {
             Assertions.assertEquals(HttpStatus.NO_CONTENT.getCode(), e.getStatusCode());
+            Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
+            Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS)
+                    .contains("Header1"));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS)
+                    .contains("Header2"));
+            Assertions.assertFalse(response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS)
+                    .contains("*"));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
         } catch (Exception e) {
             Assertions.fail();
         }
-        Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS).contains("Header1"));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS).contains("Header2"));
-        Assertions.assertFalse(
-                response.header(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS).contains("*"));
-        Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
     }
 
     @Test
@@ -429,16 +429,16 @@ class CorsHeaderFilterTest {
             Assertions.fail();
         } catch (HttpResultPayloadException e) {
             Assertions.assertEquals(HttpStatus.NO_CONTENT.getCode(), e.getStatusCode());
+            Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
+            Assertions.assertFalse(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS));
+            Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
+            Assertions.assertTrue(
+                    response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
         } catch (Exception e) {
             Assertions.fail();
         }
-        Assertions.assertTrue(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_ORIGIN));
-        Assertions.assertFalse(response.hasHeader(CorsHeaderFilter.ACCESS_CONTROL_ALLOW_HEADERS));
-        Assertions.assertTrue(response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ORIGIN));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_METHOD));
-        Assertions.assertTrue(
-                response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
     }
 
     @Test
