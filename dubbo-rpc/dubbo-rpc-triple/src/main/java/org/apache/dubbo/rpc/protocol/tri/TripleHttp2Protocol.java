@@ -32,7 +32,6 @@ import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2ProtocolSelectorHand
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
-import org.apache.dubbo.rpc.protocol.tri.h12.HttpServerAfterUpgradeHandler;
 import org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector;
 import org.apache.dubbo.rpc.protocol.tri.h12.http1.DefaultHttp11ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListenerFactory;
@@ -144,7 +143,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
                         return new Http2ServerUpgradeCodec(
                                 buildHttp2FrameCodec(url),
-                                new HttpServerAfterUpgradeHandler(),
                                 new HttpWriteQueueHandler(),
                                 new FlushConsolidationHandler(64, true),
                                 new TripleServerConnectionHandler(),
