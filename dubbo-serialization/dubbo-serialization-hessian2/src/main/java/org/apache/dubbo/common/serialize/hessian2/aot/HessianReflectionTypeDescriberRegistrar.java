@@ -98,7 +98,6 @@ public class HessianReflectionTypeDescriberRegistrar implements ReflectionTypeDe
         memberCategories.add(MemberCategory.INVOKE_DECLARED_METHODS);
         memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
         memberCategories.add(MemberCategory.DECLARED_FIELDS);
-        return new TypeDescriber(
-                cl, null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(cl, null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }
