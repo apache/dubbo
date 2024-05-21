@@ -209,7 +209,7 @@ class CorsHeaderFilterTest {
         Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
         Mockito.when(request.header(CorsHeaderFilter.ORIGIN)).thenReturn("https://domain2.com");
         Mockito.doReturn(CorsMeta.builder()
-                        .allowedOrigins( "https://domain1.com","https://domain2.com")
+                        .allowedOrigins("https://domain1.com", "https://domain2.com")
                         .allowCredentials(true)
                         .build()
                         .applyDefault())
@@ -400,8 +400,13 @@ class CorsHeaderFilterTest {
         Mockito.when(request.header(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS))
                 .thenReturn("Header1");
         Mockito.doReturn(CorsMeta.builder()
-                .allowedOrigins("https://domain1.com", "https://domain2.com", "http://domain3.example")
-                .allowedHeaders("Header1").allowCredentials(true).build().applyDefault()).when(build).getCors();
+                        .allowedOrigins("https://domain1.com", "https://domain2.com", "http://domain3.example")
+                        .allowedHeaders("Header1")
+                        .allowCredentials(true)
+                        .build()
+                        .applyDefault())
+                .when(build)
+                .getCors();
         processor.preLightProcess(request, response, HttpStatus.NO_CONTENT.getCode());
     }
 
@@ -419,6 +424,4 @@ class CorsHeaderFilterTest {
         Assertions.assertTrue(
                 response.header(CorsHeaderFilter.VARY).contains(CorsHeaderFilter.ACCESS_CONTROL_REQUEST_HEADERS));
     }
-
-
 }
