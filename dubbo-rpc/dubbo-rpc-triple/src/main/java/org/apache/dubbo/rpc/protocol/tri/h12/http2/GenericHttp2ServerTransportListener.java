@@ -203,7 +203,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     public void onStreamClosed() {
         // doing on event loop thread
-        getStreamingDecoder().close();
+        getServerChannelObserver().onStreamClosed();
     }
 
     private static class Http2StreamingDecodeListener implements ListeningDecoder.Listener {
