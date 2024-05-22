@@ -119,7 +119,7 @@
     <snakeyaml_version>2.2</snakeyaml_version>
     <commons_lang3_version>3.14.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.12.5</micrometer.version>
+    <micrometer.version>1.13.0</micrometer.version>
 
     <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
