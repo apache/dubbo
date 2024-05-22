@@ -31,10 +31,9 @@ import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -43,6 +42,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 
 /**
  * Utilities for manipulating configurations from different sources
@@ -57,18 +57,18 @@ public final class ConfigurationUtils {
     }
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigurationUtils.class);
-    private static final List<String> securityKey;
+    private static final Set<String> securityKey;
 
     private static volatile long expectedShutdownTime = Long.MAX_VALUE;
 
     static {
-        List<String> keys = new LinkedList<>();
+        Set<String> keys = new HashSet<>();
         keys.add("accesslog");
         keys.add("router");
         keys.add("rule");
         keys.add("runtime");
         keys.add("type");
-        securityKey = Collections.unmodifiableList(keys);
+        securityKey = Collections.unmodifiableSet(keys);
     }
 
     /**
@@ -213,11 +213,15 @@ public final class ConfigurationUtils {
             properties.load(new StringReader(content));
             properties.stringPropertyNames().forEach(k -> {
                 boolean deny = false;
-                for (String key : securityKey) {
-                    if (k.contains(key)) {
-                        deny = true;
-                        break;
-                    }
+                // check whether property name is safe or not based on the last fragment kebab-case comparison.
+                String[] fragments = k.split("\\.");
+                if (securityKey.contains(StringUtils.convertToSplitName(fragments[fragments.length - 1], "-"))) {
+                    deny = true;
+                    logger.warn(
+                            COMMON_PROPERTY_TYPE_MISMATCH,
+                            "security properties are not allowed to be set",
+                            "",
+                            String.format("'%s' is not allowed to be set as it is on the security key list.", k));
                 }
                 if (!deny) {
                     map.put(k, properties.getProperty(k));

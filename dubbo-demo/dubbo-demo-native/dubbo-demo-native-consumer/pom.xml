@@ -232,7 +232,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.10.1</version>
+            <version>0.10.2</version>
             <configuration>
               <classesDirectory>${project.build.outputDirectory}</classesDirectory>
               <metadataRepository>
