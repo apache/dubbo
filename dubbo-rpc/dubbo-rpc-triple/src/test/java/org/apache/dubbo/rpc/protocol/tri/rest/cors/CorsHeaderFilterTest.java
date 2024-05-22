@@ -32,12 +32,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class CorsHeaderFilterTest {
-
-    private static final Logger log = LoggerFactory.getLogger(CorsHeaderFilterTest.class);
 
     private HttpRequest request;
 
@@ -225,7 +221,7 @@ class CorsHeaderFilterTest {
     }
 
     @Test
-    void actualRequestCredentialsWithWildcardOrigin() throws Exception {
+    void actualRequestCredentialsWithWildcardOrigin() {
         Mockito.when(request.method()).thenReturn(HttpMethods.GET.name());
         Mockito.when(request.header(CorsHeaderFilter.ORIGIN)).thenReturn("https://domain2.com");
         Mockito.doReturn(CorsMeta.builder()

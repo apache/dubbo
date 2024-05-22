@@ -103,35 +103,44 @@ public class CorsMeta {
     }
 
     public CorsMeta applyDefault() {
-        String[] allowedOrigins = null;
-        Pattern[] allowedOriginsPatterns = null;
+        String[] allowedOriginArray = null;
+        Pattern[] allowedOriginPatternArray = null;
         if (this.allowedOrigins.length == 0) {
-            allowedOrigins = new String[] {ANY_VALUE};
-            allowedOriginsPatterns = new Pattern[] {null};
+            allowedOriginArray = new String[] {ANY_VALUE};
+            allowedOriginPatternArray = new Pattern[] {null};
         }
-        String[] allowedMethods = null;
+
+        String[] allowedMethodArray = null;
         if (this.allowedMethods.length == 0) {
-            allowedMethods = new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()};
+            allowedMethodArray =
+                    new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()};
         }
-        String[] allowedHeaders = null;
+
+        String[] allowedHeaderArray = null;
         if (this.allowedHeaders.length == 0) {
-            allowedHeaders = new String[] {ANY_VALUE};
+            allowedHeaderArray = new String[] {ANY_VALUE};
         }
-        Long maxAge = null;
+
+        Long maxAgeValue = null;
         if (this.maxAge == null) {
-            maxAge = 1800L;
+            maxAgeValue = 1800L;
         }
-        if (allowedOrigins == null && allowedMethods == null && allowedHeaders == null && maxAge == null) {
+
+        if (allowedOriginArray == null
+                && allowedMethodArray == null
+                && allowedHeaderArray == null
+                && maxAgeValue == null) {
             return this;
         }
+
         return new CorsMeta(
-                allowedOrigins == null ? this.allowedOrigins : allowedOrigins,
-                allowedOriginsPatterns == null ? this.allowedOriginsPatterns : allowedOriginsPatterns,
-                allowedMethods == null ? this.allowedMethods : allowedMethods,
-                allowedHeaders == null ? this.allowedHeaders : allowedHeaders,
+                allowedOriginArray == null ? this.allowedOrigins : allowedOriginArray,
+                allowedOriginPatternArray == null ? this.allowedOriginsPatterns : allowedOriginPatternArray,
+                allowedMethodArray == null ? this.allowedMethods : allowedMethodArray,
+                allowedHeaderArray == null ? this.allowedHeaders : allowedHeaderArray,
                 exposedHeaders,
                 allowCredentials,
-                maxAge);
+                maxAgeValue);
     }
 
     public CorsMeta combine(CorsMeta other) {
