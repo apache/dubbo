@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
@@ -46,6 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
@@ -201,7 +203,15 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 ChildListener zkListener = ConcurrentHashMapUtils.computeIfAbsent(
                         listeners, listener, k -> (parentPath, currentChildren) -> {
                             for (String child : currentChildren) {
-                                child = URL.decode(child);
+                                try {
+                                    child = URL.decode(child);
+                                    if (!(JsonUtils.checkJson(child))) {
+                                        throw new Exception("dubbo-admin subscribe " + child + " failed,beacause "
+                                                + child + "is root path in " + url);
+                                    }
+                                } catch (Exception e) {
+                                    logger.warn(PROTOCOL_ERROR_DESERIALIZE, "", "", e.getMessage());
+                                }
                                 if (!anyServices.contains(child)) {
                                     anyServices.add(child);
                                     subscribe(

@@ -64,6 +64,49 @@ class JsonUtilsTest {
     }
 
     @Test
+    void testIsJson() {
+        JsonUtils.setJson(null);
+        // prefer use fastjson2
+        System.setProperty("dubbo.json-framework.prefer", "fastjson2");
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        System.clearProperty("dubbo.json-framework.prefer");
+
+        // prefer use fastjson
+        JsonUtils.setJson(null);
+        System.setProperty("dubbo.json-framework.prefer", "fastjson");
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        System.clearProperty("dubbo.json-framework.prefer");
+
+        // prefer use gson
+        JsonUtils.setJson(null);
+        System.setProperty("dubbo.json-framework.prefer", "gson");
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        System.clearProperty("dubbo.json-framework.prefer");
+
+        // prefer use jackson
+        JsonUtils.setJson(null);
+        System.setProperty("dubbo.json-framework.prefer", "jackson");
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("{\"title\":\"Java Programming\",\"author\":\"John Doe\",\"pages\":300}"));
+        Assertions.assertFalse(JsonUtils.getJson().isJson("This is not a JSON string"));
+        Assertions.assertTrue(
+                JsonUtils.getJson().isJson("[{\"title\":\"Java Programming\"}, {\"title\":\"Python Programming\"}]"));
+        System.clearProperty("dubbo.json-framework.prefer");
+    }
+
+    @Test
     void testGetJson1() {
         Assertions.assertNotNull(JsonUtils.getJson());
         Assertions.assertEquals(JsonUtils.getJson(), JsonUtils.getJson());

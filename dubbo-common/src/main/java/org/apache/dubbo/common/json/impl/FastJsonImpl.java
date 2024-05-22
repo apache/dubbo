@@ -24,6 +24,16 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 public class FastJsonImpl extends AbstractJSONImpl {
 
     @Override
+    public boolean isJson(String json) {
+        try {
+            Object obj = com.alibaba.fastjson.JSON.parse(json);
+            return obj instanceof com.alibaba.fastjson.JSONObject || obj instanceof com.alibaba.fastjson.JSONArray;
+        } catch (com.alibaba.fastjson.JSONException e) {
+            return false;
+        }
+    }
+
+    @Override
     public <T> T toJavaObject(String json, Type type) {
         return com.alibaba.fastjson.JSON.parseObject(json, type);
     }
