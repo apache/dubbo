@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,6 +72,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGO
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.NACOE_REGISTER_COMPATIBLE;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_CONSUMER_URL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
@@ -107,9 +109,8 @@ public class NacosRegistry extends FailbackRegistry {
     private static final String UP = "UP";
 
     /**
-     * The separator for service name
-     * Change a constant to be configurable, it's designed for Windows file name that is compatible with old
-     * Nacos binary release(< 0.6.1)
+     * The separator for service name Change a constant to be configurable, it's designed for Windows file name that is
+     * compatible with old Nacos binary release(< 0.6.1)
      */
     private static final String SERVICE_NAME_SEPARATOR = System.getProperty("nacos.service.name.separator", ":");
 
@@ -174,18 +175,33 @@ public class NacosRegistry extends FailbackRegistry {
     public void doRegister(URL url) {
         try {
             if (PROVIDER_SIDE.equals(url.getSide()) || getUrl().getParameter(REGISTER_CONSUMER_URL_KEY, false)) {
-                String serviceName = getServiceName(url);
                 Instance instance = createInstance(url);
+
+                Set<String> serviceNames = new HashSet<>();
+                // by default servicename is "org.apache.dubbo.xxService:1.0.0:"
+                String serviceName = getServiceName(url, false);
+                serviceNames.add(serviceName);
+
+                // in https://github.com/apache/dubbo/issues/14075
+                if (getUrl().getParameter(NACOE_REGISTER_COMPATIBLE, false)) {
+                    // servicename is "org.apache.dubbo.xxService:1.0.0"
+                    String compatibleServiceName = getServiceName(url, true);
+                    serviceNames.add(compatibleServiceName);
+                }
+
                 /**
-                 *  namingService.registerInstance with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
+                 *  namingService.registerInstance with
+                 *  {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
                  *  default {@link DEFAULT_GROUP}
                  *
                  * in https://github.com/apache/dubbo/issues/5978
                  */
-                namingService.registerInstance(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP), instance);
+                for (String service : serviceNames) {
+                    namingService.registerInstance(service, getUrl().getGroup(Constants.DEFAULT_GROUP), instance);
+                }
             } else {
-                logger.info(
-                        "Please set 'dubbo.registry.parameters.register-consumer-url=true' to turn on consumer url registration.");
+                logger.info("Please set 'dubbo.registry.parameters.register-consumer-url=true' to turn on consumer "
+                        + "url registration.");
             }
         } catch (SkipFailbackWrapperException exception) {
             throw exception;
@@ -198,10 +214,24 @@ public class NacosRegistry extends FailbackRegistry {
     @Override
     public void doUnregister(final URL url) {
         try {
-            String serviceName = getServiceName(url);
             Instance instance = createInstance(url);
-            namingService.deregisterInstance(
-                    serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP), instance.getIp(), instance.getPort());
+
+            Set<String> serviceNames = new HashSet<>();
+            // by default servicename is "org.apache.dubbo.xxService:1.0.0:"
+            String serviceName = getServiceName(url, false);
+            serviceNames.add(serviceName);
+
+            // in https://github.com/apache/dubbo/issues/14075
+            if (getUrl().getParameter(NACOE_REGISTER_COMPATIBLE, false)) {
+                // servicename is "org.apache.dubbo.xxService:1.0.0"
+                String serviceName1 = getServiceName(url, true);
+                serviceNames.add(serviceName1);
+            }
+
+            for (String service : serviceNames) {
+                namingService.deregisterInstance(
+                        service, getUrl().getGroup(Constants.DEFAULT_GROUP), instance.getIp(), instance.getPort());
+            }
         } catch (SkipFailbackWrapperException exception) {
             throw exception;
         } catch (Exception cause) {
@@ -230,7 +260,8 @@ public class NacosRegistry extends FailbackRegistry {
                  * Get all instances with serviceNames to avoid instance overwrite and but with empty instance mentioned
                  * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
                  *
-                 * namingService.getAllInstances with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
+                 * namingService.getAllInstances with
+                 * {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
                  * default {@link DEFAULT_GROUP}
                  *
                  * in https://github.com/apache/dubbo/issues/5978
@@ -268,8 +299,8 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     /**
-     * Since 2.7.6 the legacy service name will be added to serviceNames
-     * to fix bug with https://github.com/apache/dubbo/issues/5442
+     * Since 2.7.6 the legacy service name will be added to serviceNames to fix bug with
+     * https://github.com/apache/dubbo/issues/5442
      *
      * @param url
      * @return
@@ -290,7 +321,8 @@ public class NacosRegistry extends FailbackRegistry {
                         "",
                         "",
                         String.format(
-                                "No aggregate listener found for url %s, this service might have already been unsubscribed.",
+                                "No aggregate listener found for url %s, "
+                                        + "this service might have already been unsubscribed.",
                                 url));
                 return;
             }
@@ -581,7 +613,8 @@ public class NacosRegistry extends FailbackRegistry {
                     REGISTRY_NACOS_EXCEPTION,
                     "",
                     "",
-                    "Received empty url address list and empty protection is disabled, will clear current available addresses");
+                    "Received empty url address list and empty protection is "
+                            + "disabled, will clear current available addresses");
             URL empty = URLBuilder.from(consumerURL)
                     .setProtocol(EMPTY_PROTOCOL)
                     .addParameter(CATEGORY_KEY, DEFAULT_CATEGORY)
@@ -697,12 +730,19 @@ public class NacosRegistry extends FailbackRegistry {
         return valueOf(url);
     }
 
-    private String getServiceName(URL url) {
+    private String getServiceName(URL url, boolean needCompatible) {
+        if (needCompatible) {
+            return getCompatibleServiceName(url, url.getCategory(DEFAULT_CATEGORY));
+        }
         return getServiceName(url, url.getCategory(DEFAULT_CATEGORY));
     }
 
     private String getServiceName(URL url, String category) {
         return category + SERVICE_NAME_SEPARATOR + url.getColonSeparatedKey();
+    }
+
+    private String getCompatibleServiceName(URL url, String category) {
+        return category + SERVICE_NAME_SEPARATOR + url.getCompatibleColonSeparatedKey();
     }
 
     private void filterEnabledInstances(Collection<Instance> instances) {

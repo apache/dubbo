@@ -53,7 +53,7 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
         if (downstream == null) {
             throw new NullPointerException();
         }
-        if (this.downstream == null && SUBSCRIBED.compareAndSet(false, true)) {
+        if (SUBSCRIBED.compareAndSet(false, true)) {
             this.downstream = downstream;
             subscription.request(1);
         }

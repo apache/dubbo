@@ -53,9 +53,9 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
     /**
      * The monitor centers Map<RegistryAddress, Registry>
      */
-    private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
+    private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<>();
 
-    private static final Map<String, Future<Monitor>> FUTURES = new ConcurrentHashMap<String, Future<Monitor>>();
+    private static final Map<String, Future<Monitor>> FUTURES = new ConcurrentHashMap<>();
 
     /**
      * The monitor create executor

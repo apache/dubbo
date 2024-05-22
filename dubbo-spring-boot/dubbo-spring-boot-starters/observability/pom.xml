@@ -36,8 +36,8 @@
   </modules>
 
   <properties>
-    <micrometer.version>1.12.4</micrometer.version>
-    <micrometer-tracing.version>1.2.4</micrometer-tracing.version>
+    <micrometer.version>1.12.5</micrometer.version>
+    <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
     <opentelemetry.version>1.34.1</opentelemetry.version>
     <zipkin-reporter.version>2.17.2</zipkin-reporter.version>
     <prometheus-client.version>0.16.0</prometheus-client.version>

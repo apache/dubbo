@@ -20,7 +20,9 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -30,6 +32,16 @@ public class JacksonImpl extends AbstractJSONImpl {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private volatile Object jacksonCache = null;
+
+    @Override
+    public boolean isJson(String json) {
+        try {
+            JsonNode node = objectMapper.readTree(json);
+            return node.isObject() || node.isArray();
+        } catch (JsonProcessingException e) {
+            return false;
+        }
+    }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {
