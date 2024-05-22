@@ -415,7 +415,7 @@ class ProtocolConfigTest {
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.checkDefault();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo("fastjson2,hessian2"));
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("hessian2,fastjson2"));
 
         protocolConfig = new ProtocolConfig();
         protocolConfig.setSerialization("x-serialization");
@@ -431,7 +431,7 @@ class ProtocolConfigTest {
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.refresh();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo("fastjson2,hessian2"));
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("hessian2,fastjson2"));
 
         protocolConfig = new ProtocolConfig();
         protocolConfig.setSerialization("x-serialization");
