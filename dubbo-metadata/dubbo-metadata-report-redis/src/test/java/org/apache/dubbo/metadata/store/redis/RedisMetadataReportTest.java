@@ -250,7 +250,8 @@ class RedisMetadataReportTest {
             if (e.getCause() instanceof JedisConnectionException
                     && e.getCause().getCause() instanceof JedisDataException) {
                 Assertions.assertEquals(
-                        "ERR invalid password", e.getCause().getCause().getMessage());
+                        "WRONGPASS invalid username-password pair or user is disabled.",
+                        e.getCause().getCause().getMessage());
             } else {
                 Assertions.fail("no invalid password exception!");
             }
