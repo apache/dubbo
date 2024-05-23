@@ -17,9 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
@@ -31,7 +30,6 @@ import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1ConnectionHandler;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameCodec;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector;
@@ -47,6 +45,7 @@ import java.util.List;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpDecoderConfig;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerUpgradeHandler;
@@ -62,24 +61,8 @@ import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.util.AsciiString;
 
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_FRAME_SIZE_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY;
-
 @Activate
 public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeModelAware {
-
-    // 1 MiB
-    private static final int MIB_1 = 1 << 20;
-    private static final int MIB_8 = 1 << 23;
-    private static final int KIB_32 = 1 << 15;
-    private static final int DEFAULT_MAX_HEADER_LIST_SIZE = KIB_32;
-    private static final int DEFAULT_SETTING_HEADER_LIST_SIZE = 4096;
-    private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
-    private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
@@ -103,18 +86,16 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @Override
     public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
-        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
+        TripleConfig tripleConfig = getTripleConfig(url);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
-                        .headerTableSize(
-                                config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
-                        .pushEnabled(config.getBoolean(H2_SETTINGS_ENABLE_PUSH_KEY, false))
-                        .maxConcurrentStreams(config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                        .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
-                        .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
-                        .maxHeaderListSize(
-                                config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, DEFAULT_MAX_HEADER_LIST_SIZE)))
+                        .headerTableSize(tripleConfig.getHeaderTableSize())
+                        .pushEnabled(tripleConfig.getEnablePush())
+                        .maxConcurrentStreams(tripleConfig.getMaxConcurrentStreams())
+                        .initialWindowSize(tripleConfig.getInitialWindowSize())
+                        .maxFrameSize(tripleConfig.getMaxFrameSize())
+                        .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
                 .frameLogger(CLIENT_LOGGER)
                 .build();
         //        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
@@ -148,17 +129,20 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp1Handlers(URL url, List<ChannelHandler> handlers) {
-        final HttpServerCodec sourceCodec = new HttpServerCodec();
+        TripleConfig tripleConfig = getTripleConfig(url);
+        final HttpServerCodec sourceCodec = new HttpServerCodec(new HttpDecoderConfig()
+                .setMaxChunkSize(tripleConfig.getMaxChunkSize())
+                .setMaxHeaderSize(tripleConfig.getMaxHeaderSize())
+                .setMaxInitialLineLength(tripleConfig.getMaxInitialLineLength())
+                .setInitialBufferSize(tripleConfig.getInitialBufferSize()));
         handlers.add(new ChannelHandlerPretender(sourceCodec));
         // Triple protocol http1 upgrade support
         handlers.add(new ChannelHandlerPretender(new HttpServerUpgradeHandler(
                 sourceCodec,
                 protocol -> {
                     if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
-                        Configuration config =
-                                ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
                         return new Http2ServerUpgradeCodec(
-                                buildHttp2FrameCodec(config, url.getOrDefaultApplicationModel()),
+                                buildHttp2FrameCodec(url),
                                 new HttpWriteQueueHandler(),
                                 new FlushConsolidationHandler(64, true),
                                 new TripleServerConnectionHandler(),
@@ -172,7 +156,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         // If the upgrade was successful, remove the message from the output list
         // so that it's not propagated to the next handler. This request will
         // be propagated as a user event instead.
-        handlers.add(new ChannelHandlerPretender(new HttpObjectAggregator(Integer.MAX_VALUE)));
+        handlers.add(new ChannelHandlerPretender(new HttpObjectAggregator(tripleConfig.getMaxBodySize())));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1Codec()));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1ConnectionHandler(
                 url, frameworkModel, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
@@ -191,8 +175,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
-        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
-        final Http2FrameCodec codec = buildHttp2FrameCodec(config, url.getOrDefaultApplicationModel());
+        final Http2FrameCodec codec = buildHttp2FrameCodec(url);
         final Http2MultiplexHandler handler = buildHttp2MultiplexHandler(url);
         handlers.add(new ChannelHandlerPretender(new HttpWriteQueueHandler()));
         handlers.add(new ChannelHandlerPretender(codec));
@@ -202,21 +185,26 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
     }
 
-    private Http2FrameCodec buildHttp2FrameCodec(Configuration config, ApplicationModel applicationModel) {
+    private Http2FrameCodec buildHttp2FrameCodec(URL url) {
+        TripleConfig tripleConfig = getTripleConfig(url);
         return TripleHttp2FrameCodecBuilder.forServer()
-                .customizeConnection((connection) -> connection
-                        .remote()
-                        .flowController(new TriHttp2RemoteFlowController(connection, applicationModel)))
+                .customizeConnection((connection) ->
+                        connection.remote().flowController(new TriHttp2RemoteFlowController(connection, tripleConfig)))
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
-                        .headerTableSize(
-                                config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
-                        .maxConcurrentStreams(config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                        .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
-                        .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
-                        .maxHeaderListSize(
-                                config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, DEFAULT_MAX_HEADER_LIST_SIZE)))
+                        .headerTableSize(tripleConfig.getHeaderTableSize())
+                        .maxConcurrentStreams(tripleConfig.getMaxConcurrentStreams())
+                        .initialWindowSize(tripleConfig.getInitialWindowSize())
+                        .maxFrameSize(tripleConfig.getMaxFrameSize())
+                        .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
                 .frameLogger(SERVER_LOGGER)
                 .build();
+    }
+
+    private TripleConfig getTripleConfig(URL url) {
+        return url.getOrDefaultApplicationModel()
+                .getApplicationConfigManager()
+                .getOrAddProtocol(url.getProtocol())
+                .getTriple();
     }
 }
