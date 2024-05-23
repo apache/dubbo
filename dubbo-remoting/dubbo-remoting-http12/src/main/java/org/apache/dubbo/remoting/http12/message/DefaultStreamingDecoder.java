@@ -16,13 +16,19 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
+import java.io.IOException;
 import java.io.InputStream;
 
-public class NoOpStreamingDecoder implements StreamingDecoder {
+public class DefaultStreamingDecoder implements StreamingDecoder {
 
-    private FragmentListener listener;
+    private boolean closed;
+
+    protected final CompositeInputStream accumulate = new CompositeInputStream();
+
+    protected FragmentListener listener;
 
     @Override
     public void request(int numMessages) {
@@ -31,17 +37,38 @@ public class NoOpStreamingDecoder implements StreamingDecoder {
 
     @Override
     public void decode(InputStream inputStream) throws DecodeException {
-        listener.onFragmentMessage(inputStream);
+        if (closed) {
+            // ignored
+            return;
+        }
+        accumulate.addInputStream(inputStream);
     }
 
     @Override
     public void close() {
-        this.listener.onClose();
+        try {
+            if (!closed) {
+                closed = true;
+                listener.onFragmentMessage(accumulate);
+                accumulate.close();
+                listener.onClose();
+            }
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
     }
 
     @Override
     public void onStreamClosed() {
-        // do nothing
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            accumulate.close();
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
     }
 
     @Override
