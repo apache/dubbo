@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
-import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 
 import java.io.InputStream;
 

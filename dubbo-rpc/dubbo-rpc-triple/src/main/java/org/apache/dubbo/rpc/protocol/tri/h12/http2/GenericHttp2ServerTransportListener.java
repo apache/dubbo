@@ -47,8 +47,8 @@ import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.StreamingHttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
-import org.apache.dubbo.rpc.protocol.tri.h12.grpc.StreamingHttpMessageListener;
 
 import java.io.ByteArrayInputStream;
 import java.util.concurrent.Executor;
