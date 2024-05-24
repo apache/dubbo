@@ -62,10 +62,16 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private int timeout;
     private String password;
 
+    protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
+
     public RedisMetadataReport(URL url) {
         super(url);
         timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         password = url.getPassword();
+        if (url.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
+            // ttl default is twice the cycle-report time
+            jedisSetParams.ex(ONE_DAY_IN_MILLISECONDS * 2);
+        }
         if (url.getParameter(CLUSTER_KEY, false)) {
             jedisClusterNodes = new HashSet<>();
             List<URL> urls = url.getBackupUrls();
@@ -133,10 +139,9 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private void storeMetadataInCluster(BaseMetadataIdentifier metadataIdentifier, String v) {
         try (JedisCluster jedisCluster =
                 new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
-            jedisCluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
+            jedisCluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v,jedisSetParams);
         } catch (Throwable e) {
-            String msg =
-                    "Failed to put " + metadataIdentifier + " to redis cluster " + v + ", cause: " + e.getMessage();
+            String msg = "Failed to put " + metadataIdentifier + " to redis cluster " + v + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
@@ -144,7 +149,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     private void storeMetadataStandalone(BaseMetadataIdentifier metadataIdentifier, String v) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.set(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), v);
+            jedis.set(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), v,jedisSetParams);
         } catch (Throwable e) {
             String msg = "Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
