@@ -389,6 +389,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         Optional<MetricsConfig> configOptional = configManager.getMetrics();
         // If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
+        if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) && !MetricsSupportUtil.isSupportPrometheus()) {
+            return;
+        }
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
             metricsConfig.setProtocol(
                     MetricsSupportUtil.isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
