@@ -41,12 +41,15 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.params.SetParams;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
 
 /**
  * RedisMetadataReport
@@ -62,8 +65,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private int timeout;
     private String password;
 
-    protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
-
+    private SetParams jedisSetParams=SetParams.setParams();
     public RedisMetadataReport(URL url) {
         super(url);
         timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
