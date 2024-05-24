@@ -29,6 +29,7 @@ public class FastJson2Impl extends AbstractJsonUtilImpl {
         JSONValidator validator = JSONValidator.from(json);
         return validator.validate();
     }
+
     @Override
     public <T> T toJavaObject(String json, Type type) {
         return com.alibaba.fastjson2.JSON.parseObject(json, type);

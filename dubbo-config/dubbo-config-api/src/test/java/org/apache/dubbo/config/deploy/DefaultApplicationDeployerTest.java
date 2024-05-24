@@ -36,8 +36,8 @@ class DefaultApplicationDeployerTest {
     void isImportPrometheus() {
         MetricsConfig metricsConfig = new MetricsConfig();
         metricsConfig.setProtocol("prometheus");
-        boolean importPrometheus = PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())
-                && !MetricsSupportUtil.isSupportPrometheus();
+        boolean importPrometheus =
+                PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) && !MetricsSupportUtil.isSupportPrometheus();
         Assert.assertTrue(!importPrometheus, " should return false");
     }
 }
