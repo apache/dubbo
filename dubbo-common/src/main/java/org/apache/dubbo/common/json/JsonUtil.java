@@ -26,6 +26,8 @@ import java.util.Map;
 public interface JsonUtil {
     boolean isSupport();
 
+    boolean isJson(String json);
+
     <T> T toJavaObject(String json, Type type);
 
     <T> List<T> toJavaList(String json, Class<T> clazz);
