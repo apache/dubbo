@@ -159,7 +159,7 @@ public class ConfigurableMetadataServiceExporter {
     }
 
     public boolean isExported() {
-        return v1Exported() && v2Exported();
+        return v1Exported() || v2Exported();
     }
 
     private ApplicationConfig getApplicationConfig() {
