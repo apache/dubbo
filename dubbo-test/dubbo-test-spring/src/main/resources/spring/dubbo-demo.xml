@@ -38,6 +38,6 @@
     <dubbo:reference  id="greetingService" version="1.0.0" group="greeting"
                      interface="org.apache.dubbo.test.common.api.GreetingService"/>
 
-    <dubbo:reference  id="restDemoService" version="1.0.0" protocol="rest"
+    <dubbo:reference  id="restDemoService" version="1.0.0" protocol="tri"
                       interface="org.apache.dubbo.test.common.api.RestDemoService"/>
 </beans>

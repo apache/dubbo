@@ -28,7 +28,6 @@
   <packaging>pom</packaging>
   <modules>
     <module>dubbo-metadata-api</module>
-    <module>dubbo-metadata-rest</module>
     <module>dubbo-metadata-definition-protobuf</module>
     <module>dubbo-metadata-processor</module>
     <module>dubbo-metadata-report-zookeeper</module>

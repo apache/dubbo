@@ -1295,6 +1295,19 @@ public /*final**/ class URL implements Serializable {
         return serviceNameBuilder.toString();
     }
 
+    /**
+     * The format is "{interface}:[version]"
+     *
+     * @return
+     */
+    public String getCompatibleColonSeparatedKey() {
+        StringBuilder serviceNameBuilder = new StringBuilder();
+        serviceNameBuilder.append(this.getServiceInterface());
+        compatibleAppend(serviceNameBuilder, VERSION_KEY);
+        compatibleAppend(serviceNameBuilder, GROUP_KEY);
+        return serviceNameBuilder.toString();
+    }
+
     private void append(StringBuilder target, String parameterName, boolean first) {
         String parameterValue = this.getParameter(parameterName);
         if (!isBlank(parameterValue)) {
@@ -1304,6 +1317,14 @@ public /*final**/ class URL implements Serializable {
             target.append(parameterValue);
         } else {
             target.append(':');
+        }
+    }
+
+    private void compatibleAppend(StringBuilder target, String parameterName) {
+        String parameterValue = this.getParameter(parameterName);
+        if (!isBlank(parameterValue)) {
+            target.append(':');
+            target.append(parameterValue);
         }
     }
 
@@ -1374,6 +1395,10 @@ public /*final**/ class URL implements Serializable {
 
     public String toServiceString() {
         return buildString(true, false, true, true);
+    }
+
+    public String toServiceString(String... parameters) {
+        return buildString(true, true, true, true, parameters);
     }
 
     @Deprecated

@@ -87,7 +87,7 @@ public abstract class AnnotationUtils {
 
         Set<String> ignoreAttributeNamesSet = new HashSet<>(Arrays.asList(ignoreAttributeNames));
 
-        Map<String, Object> actualAttributes = new LinkedHashMap<String, Object>();
+        Map<String, Object> actualAttributes = new LinkedHashMap<>();
 
         for (Map.Entry<String, Object> annotationAttribute : annotationAttributes.entrySet()) {
 
@@ -143,7 +143,7 @@ public abstract class AnnotationUtils {
 
         if (ignoreDefaultValue && !isEmpty(annotationAttributes)) {
 
-            List<String> attributeNamesToIgnore = new LinkedList<String>(asList(ignoreAttributeNames));
+            List<String> attributeNamesToIgnore = new LinkedList<>(asList(ignoreAttributeNames));
 
             for (Map.Entry<String, Object> annotationAttribute : annotationAttributes.entrySet()) {
                 String attributeName = annotationAttribute.getKey();
@@ -444,21 +444,11 @@ public abstract class AnnotationUtils {
                 (_k) -> ClassUtils.isPresent(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader))) {
             Class<?> annotatedElementUtilsClass = resolveClassName(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader);
             // getMergedAnnotation method appears in the Spring Framework 4.2
-            Method getMergedAnnotationMethod = findMethod(
-                    annotatedElementUtilsClass,
-                    "getMergedAnnotation",
-                    AnnotatedElement.class,
-                    Class.class,
-                    boolean.class,
-                    boolean.class);
+            Method getMergedAnnotationMethod =
+                    findMethod(annotatedElementUtilsClass, "getMergedAnnotation", AnnotatedElement.class, Class.class);
             if (getMergedAnnotationMethod != null) {
-                mergedAnnotation = (Annotation) invokeMethod(
-                        getMergedAnnotationMethod,
-                        null,
-                        annotatedElement,
-                        annotationType,
-                        classValuesAsString,
-                        nestedAnnotationsAsMap);
+                mergedAnnotation =
+                        (Annotation) invokeMethod(getMergedAnnotationMethod, null, annotatedElement, annotationType);
             }
         }
 

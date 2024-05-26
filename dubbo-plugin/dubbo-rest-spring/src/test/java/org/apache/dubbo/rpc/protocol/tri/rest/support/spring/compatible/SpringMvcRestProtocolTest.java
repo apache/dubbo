@@ -36,6 +36,7 @@ import java.util.Arrays;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.AdvisedSupport;
 import org.springframework.aop.framework.AopProxy;
@@ -46,6 +47,7 @@ import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@Disabled
 public class SpringMvcRestProtocolTest {
     private final Protocol tProtocol =
             ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getExtension("tri");

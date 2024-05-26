@@ -181,7 +181,7 @@ public class UrlUtils {
             throw new IllegalArgumentException(
                     "Addresses is not allowed to be empty, please re-enter."); // here won't be empty
         }
-        List<URL> registries = new ArrayList<URL>();
+        List<URL> registries = new ArrayList<>();
         for (String addr : addresses) {
             registries.add(parseURL(addr, defaults));
         }

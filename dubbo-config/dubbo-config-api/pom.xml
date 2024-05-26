@@ -107,11 +107,20 @@
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rpc-rest</artifactId>
-      <version>${project.parent.version}</version>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.ws.rs</groupId>
+          <artifactId>jsr311-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxrs</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -242,7 +251,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.19.7</version>
+      <version>1.19.8</version>
       <scope>test</scope>
     </dependency>
 

@@ -18,12 +18,14 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationSupport;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -31,9 +33,12 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 @Activate(onClass = "javax.ws.rs.Path")
 public class JaxrsRequestMappingResolver implements RequestMappingResolver {
 
+    private final FrameworkModel frameworkModel;
     private final RestToolKit toolKit;
+    private CorsMeta globalCorsMeta;
 
     public JaxrsRequestMappingResolver(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
         toolKit = new JaxrsRestToolKit(frameworkModel);
     }
 
@@ -65,10 +70,14 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
             return null;
         }
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
+        if (globalCorsMeta == null) {
+            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+        }
         return builder(methodMeta, path, httpMethod)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(methodMeta.getServiceMeta().getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
+                .cors(globalCorsMeta)
                 .build();
     }
 

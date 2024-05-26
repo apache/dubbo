@@ -38,7 +38,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +77,7 @@ class RedisMetadataReportTest {
                 redisServer = newRedisServer()
                         .port(redisPort)
                         // set maxheap to fix Windows error 0x70 while starting redis
-                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                        // .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
                         .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
                         .build();
                 this.redisServer.start();
@@ -259,7 +258,8 @@ class RedisMetadataReportTest {
             if (e.getCause() instanceof JedisConnectionException
                     && e.getCause().getCause() instanceof JedisDataException) {
                 Assertions.assertEquals(
-                        "ERR invalid password", e.getCause().getCause().getMessage());
+                        "WRONGPASS invalid username-password pair or user is disabled.",
+                        e.getCause().getCause().getMessage());
             } else {
                 Assertions.fail("no invalid password exception!");
             }

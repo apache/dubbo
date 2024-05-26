@@ -1,2 +1,3 @@
-jvalidation=org.apache.dubbo.validation.support.jvalidation.JValidation
-jvalidationNew=org.apache.dubbo.validation.support.jvalidation.JValidationNew
+jvalidation=org.apache.dubbo.validation.support.jvalidation.AdapterValidation
+jvalidation-javax=org.apache.dubbo.validation.support.jvalidation.JValidation
+jvalidation-jakarta=org.apache.dubbo.validation.support.jvalidation.JValidationNew
