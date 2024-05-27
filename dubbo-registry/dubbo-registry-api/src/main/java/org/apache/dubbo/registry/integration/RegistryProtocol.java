@@ -53,7 +53,6 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
-import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -89,6 +88,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MERGEABLE_CLUSTER_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -539,7 +539,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         String group = qs.get(GROUP_KEY);
         if (StringUtils.isNotEmpty(group)) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
-                return doRefer(Cluster.getCluster(url.getScopeModel(), MergeableCluster.NAME), registry, type, url, qs);
+                return doRefer(
+                        Cluster.getCluster(url.getScopeModel(), MERGEABLE_CLUSTER_NAME), registry, type, url, qs);
             }
         }
 
@@ -952,10 +953,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public ProviderConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);
             this.moduleModel = moduleModel;
-            if (moduleModel
-                    .modelEnvironment()
-                    .getConfiguration()
-                    .convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (moduleModel.modelEnvironment().getConfiguration().getBoolean(ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }

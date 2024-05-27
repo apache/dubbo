@@ -41,5 +41,10 @@ limitations under the License.
       <groupId>com.alibaba.fastjson2</groupId>
       <artifactId>fastjson2</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

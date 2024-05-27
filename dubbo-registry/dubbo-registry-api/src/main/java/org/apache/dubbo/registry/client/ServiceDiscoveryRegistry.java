@@ -133,6 +133,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return factory.getServiceDiscovery(registryURL);
     }
 
+    @Override
     protected boolean shouldRegister(URL providerURL) {
 
         String side = providerURL.getSide();

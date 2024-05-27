@@ -78,6 +78,10 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
         super.channelInactive(ctx);
         // reset all active stream on connection close
         forEachActiveStream(stream -> {
+            // ignore remote side close
+            if (!stream.state().remoteSideOpen()) {
+                return true;
+            }
             DefaultHttp2ResetFrame resetFrame = new DefaultHttp2ResetFrame(Http2Error.NO_ERROR).stream(stream);
             ctx.fireChannelRead(resetFrame);
             return true;

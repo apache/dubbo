@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -145,6 +146,10 @@ public class MetadataUtils {
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
 
         url = url.setServiceModel(consumerModel);
+
+        if (NativeDetector.inNativeImage()) {
+            url = url.addParameter("proxy", "jdk");
+        }
 
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
 

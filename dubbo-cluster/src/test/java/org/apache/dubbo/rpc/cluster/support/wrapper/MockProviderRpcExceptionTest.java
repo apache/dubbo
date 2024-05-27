@@ -62,7 +62,7 @@ class MockProviderRpcExceptionTest {
                 .addParameter("invoke_return_error", "true")
                 .addParameter(
                         REFER_KEY,
-                        URL.encode(PATH_KEY + "=" + MockProviderRpcExceptionTest.IHelloRpcService.class.getName()
+                        URL.encode(PATH_KEY + "=" + IHelloRpcService.class.getName()
                                 + "&" + "mock=true"
                                 + "&" + "proxy=jdk"));
         Invoker<IHelloRpcService> cluster = getClusterInvoker(url);

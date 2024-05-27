@@ -18,9 +18,11 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Parameter;
@@ -41,11 +43,12 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.USER_HOME;
 import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
- * ReferenceConfig
+ * Base configuration for the service reference.
  *
  * @export
  */
@@ -56,23 +59,23 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     private static final String ORIGIN_CONFIG = "ORIGIN_CONFIG";
 
     /**
-     * The interface class of the reference service
+     * The interface class of the reference service.
      */
     protected Class<?> interfaceClass;
 
     /**
-     * The url for peer-to-peer invocation
+     * The URL for peer-to-peer invocation.
      */
     protected String url;
 
     /**
-     * The consumer config (default)
+     * The default consumer configuration.
      */
     protected ConsumerConfig consumer;
 
     /**
-     * In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
-     * Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar.
+     * In mesh mode, this flag uninstalls the directory, router, and load balancing configurations related to the cluster in the currently invoked invoker.
+     * It delegates retry, load balancing, timeout, and other traffic management capabilities to Sidecar.
      */
     protected Boolean unloadClusterRelated;
 
@@ -310,9 +313,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {
-            resolveFile = System.getProperty("dubbo.resolve.file");
+            resolveFile = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_RESOLVE_FILE);
             if (StringUtils.isEmpty(resolveFile)) {
-                File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
+                File userResolveFile = new File(
+                        new File(SystemPropertyConfigUtils.getSystemProperty(USER_HOME)), "dubbo-resolve.properties");
                 if (userResolveFile.exists()) {
                     resolveFile = userResolveFile.getAbsolutePath();
                 }

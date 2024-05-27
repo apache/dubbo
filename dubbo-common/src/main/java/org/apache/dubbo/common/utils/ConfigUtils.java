@@ -164,9 +164,9 @@ public class ConfigUtils {
      * @return
      */
     public static Properties getProperties(Set<ClassLoader> classLoaders) {
-        String path = System.getProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
+        String path = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
         if (StringUtils.isEmpty(path)) {
-            path = System.getenv(CommonConstants.DUBBO_PROPERTIES_KEY);
+            path = System.getenv(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
             if (StringUtils.isEmpty(path)) {
                 path = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
             }

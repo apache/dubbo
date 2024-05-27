@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,8 +79,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.IS_EXTRA;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -101,7 +105,6 @@ import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
@@ -233,7 +236,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             exporters.clear();
         }
         unexported = true;
-        onUnexpoted();
+        onUnExported();
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         repository.unregisterProvider(providerModel);
     }
@@ -333,7 +336,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     doDelayExport();
                 } else if (Integer.valueOf(-1).equals(getDelay())
                         && Boolean.parseBoolean(ConfigurationUtils.getProperty(
-                                getScopeModel(), CommonConstants.DUBBO_MANUAL_REGISTER_KEY, "false"))) {
+                                getScopeModel(), CommonConstants.DubboProperty.DUBBO_MANUAL_REGISTER_KEY, "false"))) {
                     // should not register by default
                     doExport(RegisterTypeEnum.MANUAL_REGISTER);
                 } else {
@@ -401,7 +404,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 mapServiceName(url, serviceNameMapping, scheduledExecutor);
             }
         });
+
         onExported();
+
+        if (hasRegistrySpecified()) {
+            getScopeModel().getDeployer().getApplicationDeployer().exportMetadataService();
+        }
+    }
+
+    public boolean hasRegistrySpecified() {
+        return CollectionUtils.isNotEmpty(this.getRegistries())
+                || CollectionUtils.isNotEmpty(getScopeModel()
+                        .getApplicationModel()
+                        .getApplicationConfigManager()
+                        .getRegistries());
     }
 
     protected void mapServiceName(
@@ -515,7 +531,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.checkMock(interfaceClass, this);
         ConfigValidationUtils.validateServiceConfig(this);
         postProcessConfig();
     }
@@ -570,7 +585,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         providerModel.setDestroyRunner(getDestroyRunner());
         repository.registerProvider(providerModel);
 
-        List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
+        List<URL> registryURLs = !Boolean.FALSE.equals(isRegister())
+                ? ConfigValidationUtils.loadRegistries(this, true)
+                : Collections.emptyList();
 
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(
@@ -599,6 +616,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         processServiceExecutor(url);
 
+        if (CollectionUtils.isEmpty(registryURLs)) {
+            registerType = RegisterTypeEnum.NEVER_REGISTER;
+        }
         exportUrl(url, registryURLs, registerType);
 
         initServiceMethodMetrics(url);
@@ -843,14 +863,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 // export to extra protocol is used in remote export
-                String extProtocol = url.getParameter("ext.protocol", "");
+                String extProtocol = url.getParameter(EXT_PROTOCOL, "");
                 List<String> protocols = new ArrayList<>();
 
                 if (StringUtils.isNotBlank(extProtocol)) {
                     // export original url
                     url = URLBuilder.from(url)
                             .addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString())
-                            .removeParameter("ext.protocol")
                             .build();
                 }
 
@@ -866,8 +885,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 // export extra protocols
                 for (String protocol : protocols) {
                     if (StringUtils.isNotBlank(protocol)) {
-                        URL localUrl =
-                                URLBuilder.from(url).setProtocol(protocol).build();
+                        URL localUrl = URLBuilder.from(url)
+                                .setProtocol(protocol)
+                                .addParameter(IS_EXTRA, Boolean.TRUE.toString())
+                                .removeParameter(EXT_PROTOCOL)
+                                .build();
                         localUrl = exportRemote(localUrl, registryURLs, registerType);
                         if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                             MetadataUtils.publishServiceDefinition(
@@ -978,7 +1000,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
+        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(
+                        CommonConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+
+        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+
+        // merge common and old config
+        allConfigPostProcessor.addAll(commonConfigPostProcessors);
+        allConfigPostProcessor.addAll(configPostProcessors);
+
+        allConfigPostProcessor.forEach(component -> component.postProcessServiceConfig(this));
     }
 
     public void addServiceListener(ServiceListener listener) {
@@ -991,7 +1023,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    protected void onUnexpoted() {
+    protected void onUnExported() {
         for (ServiceListener serviceListener : this.serviceListeners) {
             serviceListener.unexported(this);
         }

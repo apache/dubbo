@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;

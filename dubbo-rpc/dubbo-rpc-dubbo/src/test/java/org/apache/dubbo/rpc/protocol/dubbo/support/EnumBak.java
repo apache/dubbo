@@ -181,6 +181,7 @@ public class EnumBak {
         Thread.sleep(Integer.MAX_VALUE);
     }
 
+    @Disabled
     @Test
     public void testGenericEnum() throws InterruptedException {
         int port = NetUtils.getAvailablePort();

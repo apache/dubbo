@@ -28,6 +28,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
@@ -54,6 +55,12 @@ public class ServiceBean<T> extends ServiceConfig<T>
     private transient String beanName;
 
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    public ServiceBean(ModuleModel moduleModel) {
+        super(moduleModel);
+        this.service = null;
+    }
 
     public ServiceBean(ApplicationContext applicationContext) {
         super();

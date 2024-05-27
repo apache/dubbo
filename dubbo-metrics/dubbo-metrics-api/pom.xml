@@ -38,6 +38,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-metrics-event</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rpc-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
@@ -50,8 +55,8 @@
       <artifactId>t-digest</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-tracing-integration-test</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

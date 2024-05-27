@@ -22,6 +22,7 @@ import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -34,6 +35,7 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.metadata.ExporterDeployListener;
+import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataService;
@@ -56,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -95,13 +98,15 @@ class DubboBootstrapTest {
     public static void setUp(@TempDir Path folder) {
         DubboBootstrap.reset();
         zkServerAddress = System.getProperty("zookeeper.connection.address.1");
-        dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
-        System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
+        dubboProperties = folder.resolve(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY)
+                .toFile();
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
     public static void tearDown() {
-        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
     }
 
     @AfterEach
@@ -376,7 +381,7 @@ class DubboBootstrapTest {
                 .start();
 
         Assertions.assertTrue(bootstrap.isInitialized());
-        Assertions.assertTrue(bootstrap.isStarted());
+        Assertions.assertTrue(bootstrap.isCompletion());
         Assertions.assertFalse(bootstrap.isStopped());
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();
@@ -467,6 +472,50 @@ class DubboBootstrapTest {
                     .service(service)
                     .start();
         });
+    }
+
+    @Test
+    void testDefaultTriple() {
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+
+        TripleConfig triple = new TripleConfig();
+        triple.setMaxBodySize(50);
+        triple.setMaxResponseBodySize(100);
+
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1);
+        protocolConfig.setTriple(triple);
+
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+        bootstrap
+                .application(new ApplicationConfig("bootstrap-test"))
+                .registry(new RegistryConfig(zkServerAddress))
+                .protocol(protocolConfig)
+                .service(service)
+                .start();
+
+        TripleConfig tripleConfig = bootstrap
+                .getConfigManager()
+                .getProtocol(protocolConfig.getName())
+                .flatMap(protocol -> Optional.of(protocol.getTriple()))
+                .orElse(null);
+
+        // check custom value
+        Assertions.assertEquals(50, tripleConfig.getMaxBodySize());
+        Assertions.assertEquals(100, tripleConfig.getMaxResponseBodySize());
+
+        // check default value
+        Assertions.assertEquals(1 << 23, tripleConfig.getMaxChunkSize());
+        Assertions.assertEquals(8192, tripleConfig.getMaxHeaderSize());
+        Assertions.assertEquals(4096, tripleConfig.getMaxInitialLineLength());
+        Assertions.assertEquals(16384, tripleConfig.getInitialBufferSize());
+        Assertions.assertEquals(4096, tripleConfig.getHeaderTableSize());
+        Assertions.assertFalse(tripleConfig.getEnablePush());
+        Assertions.assertEquals(Integer.MAX_VALUE, tripleConfig.getMaxConcurrentStreams());
+        Assertions.assertEquals(1 << 23, tripleConfig.getInitialWindowSize());
+        Assertions.assertEquals(1 << 23, tripleConfig.getMaxFrameSize());
+        Assertions.assertEquals(1 << 15, tripleConfig.getMaxHeaderListSize());
     }
 
     private ExporterDeployListener getListener(ApplicationModel model) {

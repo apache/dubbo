@@ -30,7 +30,6 @@
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
-    <slf4j-log4j12.version>1.7.33</slf4j-log4j12.version>
   </properties>
 
   <dependencies>
@@ -104,17 +103,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j-log4j12.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
   </dependencies>
 

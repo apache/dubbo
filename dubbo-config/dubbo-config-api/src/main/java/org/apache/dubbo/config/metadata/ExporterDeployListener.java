@@ -40,6 +40,9 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
     public synchronized void onStarted(ApplicationModel applicationModel) {}
 
     @Override
+    public void onCompletion(ApplicationModel scopeModel) {}
+
+    @Override
     public synchronized void onStopping(ApplicationModel scopeModel) {}
 
     private String getMetadataType(ApplicationModel applicationModel) {

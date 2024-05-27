@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
+import org.apache.dubbo.config.spring.context.DubboContextPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboDeployApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboSpringInitContext;
@@ -66,11 +68,15 @@ public interface DubboBeanUtils {
 
         registerInfrastructureBean(registry, ServicePackagesHolder.BEAN_NAME, ServicePackagesHolder.class);
 
+        registerInfrastructureBean(registry, DubboContextPostProcessor.BEAN_NAME, DubboContextPostProcessor.class);
+
         registerInfrastructureBean(registry, ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
 
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
         registerInfrastructureBean(
-                registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
+                registry,
+                SpringCompatUtils.referenceAnnotationBeanPostProcessor().getName(),
+                SpringCompatUtils.referenceAnnotationBeanPostProcessor());
 
         // TODO Whether DubboConfigAliasPostProcessor can be removed ?
         // Since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
@@ -94,7 +100,9 @@ public interface DubboBeanUtils {
 
         // register infra bean if not exists later
         registerInfrastructureBean(
-                registry, DubboInfraBeanRegisterPostProcessor.BEAN_NAME, DubboInfraBeanRegisterPostProcessor.class);
+                registry,
+                DubboInfraBeanRegisterPostProcessor.BEAN_NAME,
+                SpringCompatUtils.dubboInfraBeanRegisterPostProcessor());
     }
 
     /**
@@ -214,6 +222,14 @@ public interface DubboBeanUtils {
         String beanName = ModuleModel.class.getName();
         if (beanFactory != null && beanFactory.containsBean(beanName)) {
             return beanFactory.getBean(beanName, ModuleModel.class);
+        }
+        return null;
+    }
+
+    static ConfigManager getConfigManager(BeanFactory beanFactory) {
+        String beanName = ConfigManager.BEAN_NAME;
+        if (beanFactory.containsBean(beanName)) {
+            return beanFactory.getBean(beanName, ConfigManager.class);
         }
         return null;
     }

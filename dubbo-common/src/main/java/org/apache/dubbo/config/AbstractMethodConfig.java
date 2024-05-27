@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * AbstractMethodConfig
+ * Abstract configuration for the method.
  *
  * @export
  */
@@ -37,68 +37,63 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     private static final long serialVersionUID = 5809761483000878437L;
 
     /**
-     * The timeout for remote invocation in milliseconds
+     * Timeout for remote invocation in milliseconds.
      */
     protected Integer timeout;
 
     /**
-     * The retry times
+     * Retry times for failed invocations.
      */
     protected Integer retries;
 
     /**
-     * max concurrent invocations
+     * Maximum concurrent invocations allowed.
      */
     protected Integer actives;
 
     /**
-     * The load balance
+     * Load balancing strategy for service invocation.
      */
     protected String loadbalance;
 
     /**
-     * Whether to async
-     * note that: it is an unreliable asynchronous that ignores return values and does not block threads.
+     * Enable asynchronous invocation. Note that it is unreliable asynchronous, ignoring return values and not blocking threads.
      */
     protected Boolean async;
 
     /**
-     * Whether to ack async-sent
+     * Acknowledge asynchronous-sent invocations.
      */
     protected Boolean sent;
 
     /**
-     * The name of mock class which gets called when a service fails to execute
-     * <p>
-     * note that: the mock doesn't support on the provider side，and the mock is executed when a non-business exception
-     * occurs after a remote service call
+     * Mock class name to be called when a service fails to execute. The mock doesn't support on the provider side,
+     * and it is executed when a non-business exception occurs after a remote service call.
      */
     protected String mock;
 
     /**
-     * Merger
+     * Merger for result data.
      */
     protected String merger;
 
     /**
-     * Cache the return result with the call parameter as key, the following options are available: lru, threadlocal,
-     * jcache, etc.
+     * Cache provider for caching return results. available options: lru, threadlocal, jcache etc.
      */
     protected String cache;
 
     /**
-     * Whether JSR303 standard annotation validation is enabled or not, if enabled, annotations on method parameters will
-     * be validated
+     * Enable JSR303 standard annotation validation for method parameters.
      */
     protected String validation;
 
     /**
-     * The customized parameters
+     * Customized parameters for configuration.
      */
     protected Map<String, String> parameters;
 
     /**
-     * Forks for forking cluster
+     * Forks for forking cluster.
      */
     protected Integer forks;
 

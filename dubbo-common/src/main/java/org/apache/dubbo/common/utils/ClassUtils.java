@@ -215,6 +215,19 @@ public class ClassUtils {
     }
 
     /**
+     *  find class and don`t expect to throw exception
+     * @param name
+     * @return
+     */
+    public static Class<?> forNameAndTryCatch(String name) {
+        try {
+            return forName(name, getClassLoader());
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    /**
      * Replacement for <code>Class.forName()</code> that also returns Class
      * instances for primitives (like "int") and array class names (like
      * "String[]").
@@ -312,6 +325,10 @@ public class ClassUtils {
      */
     public static boolean isPrimitive(Class<?> type) {
         return type != null && (type.isPrimitive() || isSimpleType(type));
+    }
+
+    public static boolean isPrimitiveWrapper(Class<?> type) {
+        return PRIMITIVE_WRAPPER_TYPE_MAP.containsKey(type);
     }
 
     /**

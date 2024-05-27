@@ -22,7 +22,7 @@ import java.util.List;
 import com.alibaba.fastjson2.JSONValidator;
 import com.alibaba.fastjson2.JSONWriter;
 
-public class FastJson2Impl extends AbstractJSONImpl {
+public class FastJson2Impl extends AbstractJsonUtilImpl {
 
     @Override
     public boolean isJson(String json) {
@@ -43,5 +43,15 @@ public class FastJson2Impl extends AbstractJSONImpl {
     @Override
     public String toJson(Object obj) {
         return com.alibaba.fastjson2.JSON.toJSONString(obj, JSONWriter.Feature.WriteEnumsUsingName);
+    }
+
+    @Override
+    public Object convertObject(Object obj, Type type) {
+        return com.alibaba.fastjson2.util.TypeUtils.cast(obj, type);
+    }
+
+    @Override
+    public Object convertObject(Object obj, Class<?> clazz) {
+        return com.alibaba.fastjson2.util.TypeUtils.cast(obj, clazz);
     }
 }

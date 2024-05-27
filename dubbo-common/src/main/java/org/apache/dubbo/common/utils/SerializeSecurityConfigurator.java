@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialization.ClassHolder;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -40,9 +42,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
-import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL;
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_ALLOW_LIST_FILE_PATH;
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_BLOCKED_LIST_FILE_PATH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
@@ -55,6 +54,8 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     private final ModuleModel moduleModel;
 
+    private final ClassHolder classHolder;
+
     private volatile boolean autoTrustSerializeClass = true;
 
     private volatile int trustSerializeClassLevel = Integer.MAX_VALUE;
@@ -65,6 +66,8 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
         FrameworkModel frameworkModel = moduleModel.getApplicationModel().getFrameworkModel();
         serializeSecurityManager = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
+        classHolder =
+                NativeDetector.inNativeImage() ? frameworkModel.getBeanFactory().getBean(ClassHolder.class) : null;
 
         refreshStatus();
         refreshCheck();
@@ -102,10 +105,12 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void refreshConfig() {
-        String allowedClassList =
-                System.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim();
-        String blockedClassList =
-                System.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim();
+        String allowedClassList = SystemPropertyConfigUtils.getSystemProperty(
+                        CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST, "")
+                .trim();
+        String blockedClassList = SystemPropertyConfigUtils.getSystemProperty(
+                        CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, "")
+                .trim();
 
         if (StringUtils.isNotEmpty(allowedClassList)) {
             String[] classStrings = allowedClassList.trim().split(",");
@@ -184,11 +189,13 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         SerializeCheckStatus checkStatus = null;
 
         if (StringUtils.isEmpty(statusString)) {
-            String openCheckClass = System.getProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "true");
+            String openCheckClass = SystemPropertyConfigUtils.getSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_OPEN_CHECK, "true");
             if (!Boolean.parseBoolean(openCheckClass)) {
                 checkStatus = SerializeCheckStatus.DISABLE;
             }
-            String blockAllClassExceptAllow = System.getProperty(CLASS_DESERIALIZE_BLOCK_ALL, "false");
+            String blockAllClassExceptAllow = SystemPropertyConfigUtils.getSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCK_ALL, "false");
             if (Boolean.parseBoolean(blockAllClassExceptAllow)) {
                 checkStatus = SerializeCheckStatus.STRICT;
             }
@@ -209,7 +216,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         Set<Type> markedClass = new HashSet<>();
         checkClass(markedClass, clazz);
 
-        addToAllow(clazz.getName());
+        addToAllow(clazz);
 
         Method[] methodsToExport = clazz.getMethods();
 
@@ -290,7 +297,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        addToAllow(clazz.getName());
+        addToAllow(clazz);
 
         if (ClassUtils.isSimpleType(clazz) || clazz.isPrimitive() || clazz.isArray()) {
             return;
@@ -336,11 +343,17 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void addToAllow(String className) {
+    private void addToAllow(Class<?> clazz) {
+        if (classHolder != null) {
+            classHolder.storeClass(clazz);
+        }
+
+        String className = clazz.getName();
         // ignore jdk
         if (className.startsWith("java.")
                 || className.startsWith("javax.")
                 || className.startsWith("com.sun.")
+                || className.startsWith("jakarta.")
                 || className.startsWith("sun.")
                 || className.startsWith("jdk.")) {
             serializeSecurityManager.addToAllowed(className);

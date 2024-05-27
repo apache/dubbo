@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
+
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,7 +57,9 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
 
         setResourceLoader(resourceLoader);
 
-        registerAnnotationConfigProcessors(registry);
+        if (!AotWithSpringDetector.useGeneratedArtifacts()) {
+            registerAnnotationConfigProcessors(registry);
+        }
     }
 
     public DubboClassPathBeanDefinitionScanner(

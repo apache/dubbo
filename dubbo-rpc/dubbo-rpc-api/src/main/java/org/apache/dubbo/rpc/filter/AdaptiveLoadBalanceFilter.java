@@ -42,7 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 
 /**
  * if the load balance is adaptive ,set attachment to get the metrics of the server
- * @see org.apache.dubbo.rpc.Filter
+ * @see Filter
  * @see org.apache.dubbo.rpc.RpcContext
  */
 @Activate(

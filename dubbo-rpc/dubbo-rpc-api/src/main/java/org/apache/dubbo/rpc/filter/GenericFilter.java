@@ -335,6 +335,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 }
                 appResponse.setException(appException);
             }
+            if (ProtocolUtils.isGenericReturnRawResult(generic)) {
+                return;
+            }
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {
                     UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
@@ -366,8 +369,8 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                             "Generic serialization [" + GENERIC_SERIALIZATION_PROTOBUF + "] serialize result failed.",
                             e);
                 }
-            } else if (ProtocolUtils.isGenericReturnRawResult(generic)) {
-                return;
+            } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
+                appResponse.setValue(GsonUtils.toJson(appResponse.getValue()));
             } else {
                 appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));
             }

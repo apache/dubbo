@@ -89,6 +89,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             p.addLast(new HttpProcessHandler(frameworkModel, qosConfiguration));
             p.remove(this);
         } else {
+            p.addLast(new CtrlCHandler());
             p.addLast(new LineBasedFrameDecoder(2048));
             p.addLast(new StringDecoder(CharsetUtil.UTF_8));
             p.addLast(new StringEncoder(CharsetUtil.UTF_8));

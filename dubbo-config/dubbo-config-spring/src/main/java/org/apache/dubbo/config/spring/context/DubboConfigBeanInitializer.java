@@ -34,6 +34,7 @@ import org.apache.dubbo.config.context.AbstractConfigManager;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
@@ -44,8 +45,6 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 /**
@@ -65,11 +64,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
 
-    @Autowired
     private ConfigManager configManager;
-
-    @Autowired
-    @Qualifier("org.apache.dubbo.rpc.model.ModuleModel")
     private ModuleModel moduleModel;
 
     @Override
@@ -85,6 +80,8 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private void init() {
         if (initialized.compareAndSet(false, true)) {
             referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+            configManager = DubboBeanUtils.getConfigManager(beanFactory);
+            moduleModel = DubboBeanUtils.getModuleModel(beanFactory);
             try {
                 prepareDubboConfigBeans();
                 referenceBeanManager.prepareReferenceBeans();

@@ -18,6 +18,7 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.Extension;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.compact.Dubbo2ActivateUtils;
 import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
@@ -35,7 +36,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.Holder;
-import org.apache.dubbo.common.utils.NativeUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -75,6 +75,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -120,6 +121,7 @@ public class ExtensionLoader<T> {
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
+    private final ReentrantLock loadExtensionClassesLock = new ReentrantLock();
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = Collections.synchronizedMap(new LinkedHashMap<>());
@@ -951,7 +953,8 @@ public class ExtensionLoader<T> {
     private Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if (classes == null) {
-            synchronized (cachedClasses) {
+            loadExtensionClassesLock.lock();
+            try {
                 classes = cachedClasses.get();
                 if (classes == null) {
                     try {
@@ -968,6 +971,8 @@ public class ExtensionLoader<T> {
                     }
                     cachedClasses.set(classes);
                 }
+            } finally {
+                loadExtensionClassesLock.unlock();
             }
         }
         return classes;
@@ -1451,7 +1456,7 @@ public class ExtensionLoader<T> {
         // Adaptive Classes' ClassLoader should be the same with Real SPI interface classes' ClassLoader
         ClassLoader classLoader = type.getClassLoader();
         try {
-            if (NativeUtils.isNative()) {
+            if (NativeDetector.inNativeImage()) {
                 return classLoader.loadClass(type.getName() + "$Adaptive");
             }
         } catch (Throwable ignore) {

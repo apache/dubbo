@@ -18,6 +18,8 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
@@ -148,6 +150,9 @@ class DefaultCollectorTest {
                 applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         collector.setCollectEnabled(true);
 
+        ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultCollectorTest.class);
+        logger.warn("0-99", "", "", "Test error code message.");
+
         metricsFilter.invoke(new TestMetricsInvoker(side), invocation);
         try {
             Thread.sleep(50);
@@ -164,8 +169,8 @@ class DefaultCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        // num(total+success+processing) + rt(5) = 8
-        Assertions.assertEquals(8, metricSamples.size());
+        // num(total+success+processing) + rt(5) + error code = 9
+        Assertions.assertEquals(metricSamples.size(), 9);
         List<String> metricsNames =
                 metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
@@ -215,8 +220,8 @@ class DefaultCollectorTest {
         long c2 = eventObj.getTimePair().calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error+total_error+processing) + rt(5) = 5
-        Assertions.assertEquals(10, metricSamples.size());
+        // num(total+success+error+total_error+processing) + rt(5) + error code = 11
+        Assertions.assertEquals(11, metricSamples.size());
 
         String TIMEOUT = new MetricsKeyWrapper(
                         METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(side, MetricsLevel.SERVICE))

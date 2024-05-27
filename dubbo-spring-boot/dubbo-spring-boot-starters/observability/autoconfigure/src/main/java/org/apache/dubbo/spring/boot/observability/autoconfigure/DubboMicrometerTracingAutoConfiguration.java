@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
+import org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
+import org.apache.dubbo.tracing.handler.DubboClientTracingObservationHandler;
+import org.apache.dubbo.tracing.handler.DubboServerTracingObservationHandler;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -40,7 +43,9 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
             "io.micrometer.tracing.Tracer",
             "io.micrometer.tracing.propagation.Propagator"
         })
-@AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration")
+@AutoConfigureAfter(
+        name = "org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration",
+        value = DubboAutoConfiguration.class)
 public class DubboMicrometerTracingAutoConfiguration {
 
     /**
@@ -81,5 +86,23 @@ public class DubboMicrometerTracingAutoConfiguration {
             propagatingReceiverTracingObservationHandler(
                     io.micrometer.tracing.Tracer tracer, io.micrometer.tracing.propagation.Propagator propagator) {
         return new io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<>(tracer, propagator);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean({io.micrometer.tracing.Tracer.class})
+    @Order(SENDER_TRACING_OBSERVATION_HANDLER_ORDER)
+    public DubboClientTracingObservationHandler<?> dubboClientTracingObservationHandler(
+            io.micrometer.tracing.Tracer tracer) {
+        return new DubboClientTracingObservationHandler<>(tracer);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean({io.micrometer.tracing.Tracer.class})
+    @Order(RECEIVER_TRACING_OBSERVATION_HANDLER_ORDER)
+    public DubboServerTracingObservationHandler<?> dubboServerTracingObservationHandler(
+            io.micrometer.tracing.Tracer tracer) {
+        return new DubboServerTracingObservationHandler<>(tracer);
     }
 }

@@ -63,7 +63,7 @@ class ReadyTest {
         Mockito.when(applicationModel.getModuleModels()).thenReturn(Arrays.asList(moduleModel));
         Mockito.when(applicationModel.getApplicationConfigManager()).thenReturn(manager);
         Mockito.when(moduleModel.getDeployer()).thenReturn(moduleDeployer);
-        Mockito.when(moduleDeployer.isStarted()).thenReturn(true);
+        Mockito.when(moduleDeployer.isCompletion()).thenReturn(true);
 
         ExtensionLoader loader = Mockito.mock(ExtensionLoader.class);
         Mockito.when(frameworkModel.getExtensionLoader(ReadinessProbe.class)).thenReturn(loader);
@@ -83,7 +83,7 @@ class ReadyTest {
         Assertions.assertEquals("true", result);
         Assertions.assertEquals(commandContext.getHttpCode(), 200);
 
-        Mockito.when(moduleDeployer.isStarted()).thenReturn(false);
+        Mockito.when(moduleDeployer.isCompletion()).thenReturn(false);
         result = ready.execute(commandContext, new String[0]);
         Assertions.assertEquals("false", result);
         Assertions.assertEquals(commandContext.getHttpCode(), 503);

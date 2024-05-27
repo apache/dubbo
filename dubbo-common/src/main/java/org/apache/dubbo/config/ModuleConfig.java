@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The module info
+ * Configuration for the module.
  *
  * @export
  */
@@ -36,22 +36,22 @@ public class ModuleConfig extends AbstractConfig {
     private static final long serialVersionUID = 5508512956753757169L;
 
     /**
-     * Module name
+     * The module name
      */
     private String name;
 
     /**
-     * Module version
+     * The module version
      */
     private String version;
 
     /**
-     * Module owner
+     * The module owner
      */
     private String owner;
 
     /**
-     * Module's organization
+     * The module's organization
      */
     private String organization;
 
@@ -66,35 +66,35 @@ public class ModuleConfig extends AbstractConfig {
     private MonitorConfig monitor;
 
     /**
-     * Whether start module in background.
-     * If start in background, do not await finish on Spring ContextRefreshedEvent.
+     * Whether to start the module in the background.
+     * If started in the background, it does not await finish on Spring ContextRefreshedEvent.
      *
      * @see org.apache.dubbo.config.spring.context.DubboDeployApplicationListener
      */
     private Boolean background;
 
     /**
-     * Weather the reference is referred asynchronously
+     * Whether the reference is referred asynchronously.
      */
     private Boolean referAsync;
 
     /**
-     * Thread num for asynchronous refer pool size
+     * The thread number for asynchronous reference pool size.
      */
     private Integer referThreadNum;
 
     /**
-     * Weather the service is export asynchronously
+     * Whether the service is exported asynchronously.
      */
     private Boolean exportAsync;
 
     /**
-     * Thread num for asynchronous export pool size
+     * The thread number for asynchronous export pool size.
      */
     private Integer exportThreadNum;
 
     /**
-     * The timeout to check references
+     * The timeout to check references.
      */
     private Long checkReferenceTimeout;
 

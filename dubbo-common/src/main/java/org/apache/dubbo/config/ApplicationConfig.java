@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -67,192 +68,230 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.config.Constants.DEFAULT_APP_NAME;
+import static org.apache.dubbo.config.Constants.DEFAULT_NATIVE_COMPILER;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
 
 /**
- * The application info
+ * Configuration for the dubbo application.
  *
  * @export
  */
 public class ApplicationConfig extends AbstractConfig {
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ApplicationConfig.class);
 
     private static final long serialVersionUID = 5508512956753757169L;
 
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ApplicationConfig.class);
+
     /**
-     * Application name
+     * The Application name.
      */
     private String name;
 
     /**
-     * The application version
+     * The application version.
      */
     private String version;
 
     /**
-     * Application owner
+     * The application owner.
      */
     private String owner;
 
     /**
-     * Application's organization (BU)
+     * The application's organization (BU).
      */
     private String organization;
 
     /**
-     * Architecture layer
+     * Architecture layer.
      */
     private String architecture;
 
     /**
-     * Environment, e.g. dev, test or production
+     * Environment, e.g., dev, test, or production.
      */
     private String environment;
 
     /**
-     * Java compiler
+     * Java compiler.
      */
     private String compiler;
 
     /**
-     * The type of the log access
+     * The type of log access.
      */
     private String logger;
 
     /**
-     * Registry centers
+     * Registry centers.
      */
     private List<RegistryConfig> registries;
 
+    /**
+     * The comma-separated list of registry IDs to which the service will be registered.
+     */
     private String registryIds;
 
     /**
-     * Monitor center
+     * Monitor center.
      */
     private MonitorConfig monitor;
 
     /**
-     * Directory for saving thread dump
+     * Directory for saving thread dump.
      */
     private String dumpDirectory;
 
     /**
-     * Whether to enable saving thread dump or not
+     * Whether to enable saving thread dump or not.
      */
     private Boolean dumpEnable;
 
     /**
-     * Whether to enable qos or not
+     * Whether to enable Quality of Service (QoS) or not.
      */
     private Boolean qosEnable;
 
     /**
-     * Whether qos should start success or not, will check qosEnable first
+     * Whether QoS should start successfully or not, will check qosEnable first.
      */
     private Boolean qosCheck;
 
     /**
-     * The qos host to listen
+     * The QoS host to listen.
      */
     private String qosHost;
 
     /**
-     * The qos port to listen
+     * The QoS port to listen.
      */
     private Integer qosPort;
 
     /**
-     * Should we accept foreign ip or not?
+     * Should we accept foreign IP or not?
      */
     private Boolean qosAcceptForeignIp;
 
     /**
-     * When we disable accept foreign ip, support specify foreign ip in the whitelist
+     * When we disable accepting foreign IP, support specifying foreign IPs in the whitelist.
      */
     private String qosAcceptForeignIpWhitelist;
 
     /**
-     * the anonymous(any foreign ip) access permission level, default is NONE, can not access any cmd
+     * The anonymous (any foreign IP) access permission level, default is NONE, which means no access to any command.
      */
     private String qosAnonymousAccessPermissionLevel;
 
     /**
-     * the anonymous(any foreign ip) allow commands, default is empty, can not access any cmd
+     * The anonymous (any foreign IP) allowed commands, default is empty, which means no access to any command.
      */
     private String qosAnonymousAllowCommands;
 
     /**
-     * Customized parameters
+     * Customized parameters.
      */
     private Map<String, String> parameters;
 
     /**
-     * Config the shutdown.wait
+     * Config the shutdown wait.
      */
     private String shutwait;
 
+    /**
+     * Hostname.
+     */
     private String hostname;
 
     /**
-     * Metadata type, local or remote, if choose remote, you need to further specify metadata center.
+     * Metadata type, local or remote. If 'remote' is chosen, you need to specify a metadata center further.
      */
     private String metadataType;
 
     /**
-     * Used to control whether register instance to registry or not. Set to 'false' only when instance is pure consumer.
+     * Used to control whether to register the instance with the registry or not. Set to 'false' only when the instance is a pure consumer.
      */
     private Boolean registerConsumer;
 
+    /**
+     * Repository.
+     */
     private String repository;
 
+    /**
+     * Whether to enable file caching.
+     */
     private Boolean enableFileCache;
 
     /**
-     * The preferred protocol(name) of this application
-     * convenient for places where it's hard to determine which is the preferred protocol
+     * The preferred protocol (name) of this application, convenient for places where it's hard to determine the preferred protocol.
      */
     private String protocol;
 
     /**
-     * The protocol used for peer-to-peer metadata transmission
+     * The protocol used for peer-to-peer metadata transmission.
      */
     private String metadataServiceProtocol;
 
     /**
-     * Metadata Service, used in Service Discovery
+     * Metadata Service, used in Service Discovery.
      */
     private Integer metadataServicePort;
 
     /**
-     * The retry interval of service name mapping
+     * The retry interval of service name mapping.
      */
     private Integer mappingRetryInterval;
 
     /**
-     * used to set extensions of probe in qos
+     * Used to set extensions of the probe in QoS.
      */
     private String livenessProbe;
 
+    /**
+     * The probe for checking the readiness of the application.
+     */
     private String readinessProbe;
 
+    /**
+     * The probe for checking the startup of the application.
+     */
     private String startupProbe;
 
+    /**
+     * Register mode.
+     */
     private String registerMode;
 
+    /**
+     * Whether to enable protection against empty objects.
+     */
     private Boolean enableEmptyProtection;
 
+    /**
+     * The status of class serialization checking.
+     */
     private String serializeCheckStatus;
 
+    /**
+     * Whether to automatically trust serialized classes.
+     */
     private Boolean autoTrustSerializeClass;
 
+    /**
+     * The trust level for serialized classes.
+     */
     private Integer trustSerializeClassLevel;
 
+    /**
+     * Whether to check serializable.
+     */
     private Boolean checkSerializable;
 
     /**
-     * thread pool management: default/isolation
+     * Thread pool management mode: 'default' or 'isolation'.
      */
     private String executorManagementMode;
 
@@ -397,12 +436,22 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public String getCompiler() {
-        return compiler;
+        if (NativeDetector.inNativeImage()) {
+            return DEFAULT_NATIVE_COMPILER;
+        } else {
+            return compiler;
+        }
     }
 
     public void setCompiler(String compiler) {
-        this.compiler = compiler;
-        AdaptiveCompiler.setDefaultCompiler(compiler);
+
+        if (NativeDetector.inNativeImage()) {
+            this.compiler = DEFAULT_NATIVE_COMPILER;
+            AdaptiveCompiler.setDefaultCompiler(DEFAULT_NATIVE_COMPILER);
+        } else {
+            this.compiler = compiler;
+            AdaptiveCompiler.setDefaultCompiler(compiler);
+        }
     }
 
     public String getLogger() {
@@ -507,7 +556,6 @@ public class ApplicationConfig extends AbstractConfig {
     /**
      * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
      *
-     * @return
      */
     @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true, attribute = false)
     public Boolean getQosEnableCompatible() {
@@ -750,6 +798,16 @@ public class ApplicationConfig extends AbstractConfig {
     public void refresh() {
         super.refresh();
         appendEnvironmentProperties();
+        if (StringUtils.isEmpty(getName())) {
+            this.setName(DEFAULT_APP_NAME);
+            LOGGER.warn(
+                    COMMON_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    "No application name was set, '" + DEFAULT_APP_NAME
+                            + "' will be used as the default application name,"
+                            + " it's highly recommended to set a unique and customized name for it can be critical for some service governance features.");
+        }
     }
 
     private void appendEnvironmentProperties() {

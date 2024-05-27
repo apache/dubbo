@@ -32,6 +32,11 @@ public class Log4j2Logger implements Logger {
     }
 
     @Override
+    public void trace(String msg, Object... arguments) {
+        logger.trace(msg, arguments);
+    }
+
+    @Override
     public void trace(Throwable e) {
         logger.trace(e == null ? null : e.getMessage(), e);
     }
@@ -44,6 +49,11 @@ public class Log4j2Logger implements Logger {
     @Override
     public void debug(String msg) {
         logger.debug(msg);
+    }
+
+    @Override
+    public void debug(String msg, Object... arguments) {
+        logger.debug(msg, arguments);
     }
 
     @Override
@@ -62,6 +72,11 @@ public class Log4j2Logger implements Logger {
     }
 
     @Override
+    public void info(String msg, Object... arguments) {
+        logger.info(msg, arguments);
+    }
+
+    @Override
     public void info(Throwable e) {
         logger.info(e == null ? null : e.getMessage(), e);
     }
@@ -77,6 +92,11 @@ public class Log4j2Logger implements Logger {
     }
 
     @Override
+    public void warn(String msg, Object... arguments) {
+        logger.warn(msg, arguments);
+    }
+
+    @Override
     public void warn(Throwable e) {
         logger.warn(e == null ? null : e.getMessage(), e);
     }
@@ -89,6 +109,11 @@ public class Log4j2Logger implements Logger {
     @Override
     public void error(String msg) {
         logger.error(msg);
+    }
+
+    @Override
+    public void error(String msg, Object... arguments) {
+        logger.error(msg, arguments);
     }
 
     @Override
@@ -124,5 +149,10 @@ public class Log4j2Logger implements Logger {
     @Override
     public boolean isErrorEnabled() {
         return logger.isErrorEnabled();
+    }
+
+    // test purpose only
+    public org.apache.logging.log4j.Logger getLogger() {
+        return logger;
     }
 }

@@ -1,0 +1,1 @@
+jaxrs-response=org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JaxrsResponseRestFilter

@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -28,8 +29,8 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -720,7 +721,7 @@ class URLTest {
 
     @Test
     void test_windowAbsolutePathBeginWithSlashIsValid() throws Exception {
-        final String osProperty = System.getProperties().getProperty(OS_NAME_KEY);
+        final String osProperty = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME);
         if (!osProperty.toLowerCase().contains(OS_WIN_PREFIX)) return;
 
         System.out.println("Test Windows valid path string.");

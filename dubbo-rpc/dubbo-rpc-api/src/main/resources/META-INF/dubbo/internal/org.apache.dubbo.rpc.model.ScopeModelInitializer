@@ -1,1 +1,2 @@
 rpc=org.apache.dubbo.rpc.RpcScopeModelInitializer
+adaptive=org.apache.dubbo.rpc.AdaptiveScopeModelInitializer

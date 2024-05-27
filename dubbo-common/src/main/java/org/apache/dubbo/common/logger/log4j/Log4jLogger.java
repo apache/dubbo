@@ -20,6 +20,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
 import org.apache.log4j.Level;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
 public class Log4jLogger implements Logger {
 
@@ -34,6 +36,12 @@ public class Log4jLogger implements Logger {
     @Override
     public void trace(String msg) {
         logger.log(FQCN, Level.TRACE, msg, null);
+    }
+
+    @Override
+    public void trace(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.log(FQCN, Level.TRACE, ft.getMessage(), ft.getThrowable());
     }
 
     @Override
@@ -52,6 +60,12 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
+    public void debug(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.log(FQCN, Level.DEBUG, ft.getMessage(), ft.getThrowable());
+    }
+
+    @Override
     public void debug(Throwable e) {
         logger.log(FQCN, Level.DEBUG, e == null ? null : e.getMessage(), e);
     }
@@ -64,6 +78,12 @@ public class Log4jLogger implements Logger {
     @Override
     public void info(String msg) {
         logger.log(FQCN, Level.INFO, msg, null);
+    }
+
+    @Override
+    public void info(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.log(FQCN, Level.INFO, ft.getMessage(), ft.getThrowable());
     }
 
     @Override
@@ -82,6 +102,12 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
+    public void warn(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.log(FQCN, Level.WARN, ft.getMessage(), ft.getThrowable());
+    }
+
+    @Override
     public void warn(Throwable e) {
         logger.log(FQCN, Level.WARN, e == null ? null : e.getMessage(), e);
     }
@@ -94,6 +120,12 @@ public class Log4jLogger implements Logger {
     @Override
     public void error(String msg) {
         logger.log(FQCN, Level.ERROR, msg, null);
+    }
+
+    @Override
+    public void error(String msg, Object... arguments) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
+        logger.log(FQCN, Level.ERROR, ft.getMessage(), ft.getThrowable());
     }
 
     @Override
@@ -129,10 +161,5 @@ public class Log4jLogger implements Logger {
     @Override
     public boolean isErrorEnabled() {
         return logger.isEnabledFor(Level.ERROR);
-    }
-
-    // test purpose only
-    public org.apache.log4j.Logger getLogger() {
-        return logger;
     }
 }

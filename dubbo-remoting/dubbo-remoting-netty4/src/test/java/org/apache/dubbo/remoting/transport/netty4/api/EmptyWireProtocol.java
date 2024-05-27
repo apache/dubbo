@@ -17,11 +17,13 @@
 package org.apache.dubbo.remoting.transport.netty4.api;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 
+@Activate
 public class EmptyWireProtocol implements WireProtocol {
     @Override
     public ProtocolDetector detector() {

@@ -79,12 +79,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-monitor-default</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rpc-dubbo</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
@@ -98,12 +92,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rpc-injvm</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rpc-rest</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
@@ -162,15 +150,20 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>org.junit.vintage</groupId>
-          <artifactId>junit-vintage-engine</artifactId>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
         </exclusion>
-        <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
         <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-api</artifactId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!-- Zookeeper dependencies for testing -->
@@ -256,7 +249,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkCount>1</forkCount>
-          <!--<reuseForks>false</reuseForks>-->
         </configuration>
       </plugin>
     </plugins>

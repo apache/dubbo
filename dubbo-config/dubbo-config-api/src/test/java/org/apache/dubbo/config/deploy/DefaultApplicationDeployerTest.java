@@ -18,7 +18,7 @@ package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 
 import org.junit.jupiter.api.Test;
 
@@ -28,17 +28,16 @@ class DefaultApplicationDeployerTest {
 
     @Test
     void isSupportPrometheus() {
-        boolean supportPrometheus =
-                new DefaultApplicationDeployer(ApplicationModel.defaultModel()).isSupportPrometheus();
-        Assert.assertTrue(supportPrometheus, "DefaultApplicationDeployer.isSupportPrometheus() should return true");
+        boolean supportPrometheus = MetricsSupportUtil.isSupportPrometheus();
+        Assert.assertTrue(supportPrometheus, "MetricsSupportUtil.isSupportPrometheus() should return true");
     }
 
     @Test
     void isImportPrometheus() {
         MetricsConfig metricsConfig = new MetricsConfig();
         metricsConfig.setProtocol("prometheus");
-        boolean importPrometheus = PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())
-                && !DefaultApplicationDeployer.isSupportPrometheus();
+        boolean importPrometheus =
+                PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) && !MetricsSupportUtil.isSupportPrometheus();
         Assert.assertTrue(!importPrometheus, " should return false");
     }
 }

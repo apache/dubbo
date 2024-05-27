@@ -27,8 +27,6 @@
   <artifactId>dubbo-test-check</artifactId>
 
   <properties>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
     <skip_maven_deploy>true</skip_maven_deploy>
     <curator.test.version>4.2.0</curator.test.version>
     <zookeeper.version>3.7.2</zookeeper.version>
@@ -92,7 +90,7 @@
       </activation>
       <properties>
         <curator.test.version>5.1.0</curator.test.version>
-        <zookeeper.version>3.6.0</zookeeper.version>
+        <zookeeper.version>3.7.2</zookeeper.version>
         <curator5.version>5.1.0</curator5.version>
       </properties>
     </profile>

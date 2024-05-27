@@ -38,8 +38,8 @@
     <module>dubbo-demo-native</module>
     <module>dubbo-demo-spring-boot</module>
   </modules>
+
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
   </properties>
-
 </project>

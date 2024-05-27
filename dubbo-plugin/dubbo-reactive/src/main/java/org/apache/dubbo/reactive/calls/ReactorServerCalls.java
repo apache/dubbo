@@ -22,7 +22,6 @@ import org.apache.dubbo.reactive.ServerTripleReactorSubscriber;
 import org.apache.dubbo.rpc.StatusRpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -70,12 +69,11 @@ public final class ReactorServerCalls {
     public static <T, R> CompletableFuture<List<R>> oneToMany(
             T request, StreamObserver<R> responseObserver, Function<Mono<T>, Flux<R>> func) {
         try {
-            ServerCallToObserverAdapter<R> serverCallToObserverAdapter =
-                    (ServerCallToObserverAdapter<R>) responseObserver;
+            CallStreamObserver<R> callStreamObserver = (CallStreamObserver<R>) responseObserver;
             Flux<R> response = func.apply(Mono.just(request));
             ServerTripleReactorSubscriber<R> reactorSubscriber =
-                    new ServerTripleReactorSubscriber<>(serverCallToObserverAdapter);
-            response.subscribeWith(reactorSubscriber).subscribe(serverCallToObserverAdapter);
+                    new ServerTripleReactorSubscriber<>(callStreamObserver);
+            response.subscribeWith(reactorSubscriber).subscribe(callStreamObserver);
             return reactorSubscriber.getExecutionFuture();
         } catch (Throwable throwable) {
             doOnResponseHasException(throwable, responseObserver);

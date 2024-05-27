@@ -58,24 +58,29 @@ import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_DOMAIN;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLUSTER_DOMAIN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_MESH_PORT;
+import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.POD_NAMESPACE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
@@ -92,7 +97,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -158,6 +162,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @since 2.7.8
      */
     private String services;
+
+    protected final transient ReentrantLock lock = new ReentrantLock();
 
     public ReferenceConfig() {
         super();
@@ -288,103 +294,113 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
-    public synchronized void destroy() {
-        super.destroy();
-        if (destroyed) {
-            return;
-        }
-        destroyed = true;
+    public void destroy() {
+        lock.lock();
         try {
-            if (invoker != null) {
-                invoker.destroy();
+            super.destroy();
+            if (destroyed) {
+                return;
             }
-        } catch (Throwable t) {
-            logger.warn(
-                    CONFIG_FAILED_DESTROY_INVOKER,
-                    "",
-                    "",
-                    "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").",
-                    t);
-        }
-        invoker = null;
-        ref = null;
-        if (consumerModel != null) {
-            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-            repository.unregisterConsumer(consumerModel);
+            destroyed = true;
+            try {
+                if (invoker != null) {
+                    invoker.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(
+                        CONFIG_FAILED_DESTROY_INVOKER,
+                        "",
+                        "",
+                        "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").",
+                        t);
+            }
+            invoker = null;
+            ref = null;
+            if (consumerModel != null) {
+                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+                repository.unregisterConsumer(consumerModel);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
-    protected synchronized void init() {
+    protected void init() {
         init(true);
     }
 
-    protected synchronized void init(boolean check) {
-        if (initialized && ref != null) {
-            return;
-        }
+    protected void init(boolean check) {
+        lock.lock();
         try {
-            if (!this.isRefreshed()) {
-                this.refresh();
+            if (initialized && ref != null) {
+                return;
             }
-            // auto detect proxy type
-            String proxyType = getProxy();
-            if (StringUtils.isBlank(proxyType) && DubboStub.class.isAssignableFrom(interfaceClass)) {
-                setProxy(CommonConstants.NATIVE_STUB);
+            try {
+                if (!this.isRefreshed()) {
+                    this.refresh();
+                }
+                // auto detect proxy type
+                String proxyType = getProxy();
+                if (StringUtils.isBlank(proxyType) && DubboStub.class.isAssignableFrom(interfaceClass)) {
+                    setProxy(CommonConstants.NATIVE_STUB);
+                }
+
+                // init serviceMetadata
+                initServiceMetadata(consumer);
+
+                serviceMetadata.setServiceType(getServiceInterfaceClass());
+                // TODO, uncomment this line once service key is unified
+                serviceMetadata.generateServiceKey();
+
+                Map<String, String> referenceParameters = appendConfig();
+
+                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+                ServiceDescriptor serviceDescriptor;
+                if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
+                    serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
+                    repository.registerService(serviceDescriptor);
+                    setInterface(serviceDescriptor.getInterfaceName());
+                } else {
+                    serviceDescriptor = repository.registerService(interfaceClass);
+                }
+                consumerModel = new ConsumerModel(
+                        serviceMetadata.getServiceKey(),
+                        proxy,
+                        serviceDescriptor,
+                        getScopeModel(),
+                        serviceMetadata,
+                        createAsyncMethodInfo(),
+                        interfaceClassLoader);
+
+                // Compatible with dependencies on ServiceModel#getReferenceConfig() , and will be removed in a future
+                // version.
+                consumerModel.setConfig(this);
+
+                repository.registerConsumer(consumerModel);
+
+                serviceMetadata.getAttachments().putAll(referenceParameters);
+
+                ref = createProxy(referenceParameters);
+
+                serviceMetadata.setTarget(ref);
+                serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+
+                consumerModel.setDestroyRunner(getDestroyRunner());
+                consumerModel.setProxyObject(ref);
+                consumerModel.initMethodModels();
+
+                if (check) {
+                    checkInvokerAvailable(0);
+                }
+            } catch (Throwable t) {
+                logAndCleanup(t);
+
+                throw t;
             }
-
-            // init serviceMetadata
-            initServiceMetadata(consumer);
-
-            serviceMetadata.setServiceType(getServiceInterfaceClass());
-            // TODO, uncomment this line once service key is unified
-            serviceMetadata.generateServiceKey();
-
-            Map<String, String> referenceParameters = appendConfig();
-
-            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-            ServiceDescriptor serviceDescriptor;
-            if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
-                serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
-                repository.registerService(serviceDescriptor);
-                setInterface(serviceDescriptor.getInterfaceName());
-            } else {
-                serviceDescriptor = repository.registerService(interfaceClass);
-            }
-            consumerModel = new ConsumerModel(
-                    serviceMetadata.getServiceKey(),
-                    proxy,
-                    serviceDescriptor,
-                    getScopeModel(),
-                    serviceMetadata,
-                    createAsyncMethodInfo(),
-                    interfaceClassLoader);
-
-            // Compatible with dependencies on ServiceModel#getReferenceConfig() , and will be removed in a future
-            // version.
-            consumerModel.setConfig(this);
-
-            repository.registerConsumer(consumerModel);
-
-            serviceMetadata.getAttachments().putAll(referenceParameters);
-
-            ref = createProxy(referenceParameters);
-
-            serviceMetadata.setTarget(ref);
-            serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
-
-            consumerModel.setDestroyRunner(getDestroyRunner());
-            consumerModel.setProxyObject(ref);
-            consumerModel.initMethodModels();
-
-            if (check) {
-                checkInvokerAvailable(0);
-            }
-        } catch (Throwable t) {
-            logAndCleanup(t);
-
-            throw t;
+            initialized = true;
+        } finally {
+            lock.unlock();
         }
-        initialized = true;
     }
 
     /**
@@ -528,7 +544,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         // get pod namespace from env if annotation not present the provider namespace
         if (StringUtils.isEmpty(podNamespace)) {
-            if (StringUtils.isEmpty(System.getenv("POD_NAMESPACE"))) {
+            if (StringUtils.isEmpty(System.getenv(POD_NAMESPACE))) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(
                             CONFIG_FAILED_LOAD_ENV_VARIABLE,
@@ -539,7 +555,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
                 podNamespace = "default";
             } else {
-                podNamespace = System.getenv("POD_NAMESPACE");
+                podNamespace = System.getenv(POD_NAMESPACE);
             }
         }
 
@@ -547,7 +563,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         String providedBy = referenceParameters.get(PROVIDED_BY);
         // cluster_domain default is 'cluster.local',generally unchanged.
         String clusterDomain =
-                Optional.ofNullable(System.getenv("CLUSTER_DOMAIN")).orElse(DEFAULT_CLUSTER_DOMAIN);
+                Optional.ofNullable(System.getenv(CLUSTER_DOMAIN)).orElse(DEFAULT_CLUSTER_DOMAIN);
         // By VirtualService and DestinationRule, envoy will generate a new route rule,such as
         // 'demo.default.svc.cluster.local:80',the default port is 80.
         Integer meshPort = Optional.ofNullable(getProviderPort()).orElse(DEFAULT_MESH_PORT);
@@ -802,7 +818,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.checkMock(interfaceClass, this);
 
         if (StringUtils.isEmpty(url)) {
             checkRegistry();
@@ -856,7 +871,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
-        configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
+        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(
+                        CommonConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+
+        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+
+        // merge common and old config
+        allConfigPostProcessor.addAll(commonConfigPostProcessors);
+        allConfigPostProcessor.addAll(configPostProcessors);
+
+        allConfigPostProcessor.forEach(component -> component.postProcessReferConfig(this));
     }
 
     /**

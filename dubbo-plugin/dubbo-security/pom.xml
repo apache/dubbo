@@ -29,8 +29,6 @@
 
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <protobuf-java.version>3.22.2</protobuf-java.version>
-    <grpc.version>1.55.1</grpc.version>
   </properties>
 
   <dependencies>
@@ -102,11 +100,11 @@
       <plugin>
         <groupId>org.xolstice.maven.plugins</groupId>
         <artifactId>protobuf-maven-plugin</artifactId>
-        <version>0.6.1</version>
+        <version>${maven_protobuf_plugin_version}</version>
         <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}</protocArtifact>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
-          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc_version}:exe:${os.detected.classifier}</pluginArtifact>
         </configuration>
         <executions>
           <execution>
@@ -116,6 +114,14 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <!-- Override the maven-javadoc-plugin configuration that depends on the pass -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
       </plugin>
     </plugins>
     <extensions>

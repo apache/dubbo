@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
+import java.io.OutputStream;
+
 /**
  * Default compressor
  * <p>
@@ -35,6 +37,11 @@ public class Identity implements Compressor, DeCompressor {
     @Override
     public byte[] compress(byte[] payloadByteArr) {
         return payloadByteArr;
+    }
+
+    @Override
+    public OutputStream decorate(OutputStream outputStream) {
+        return outputStream;
     }
 
     @Override

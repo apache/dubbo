@@ -27,21 +27,22 @@
   <artifactId>dubbo-test-common</artifactId>
 
   <properties>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
     <skip_maven_deploy>true</skip_maven_deploy>
   </properties>
 
   <dependencies>
+    <!-- JAX-RS API -->
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
 
     <dependency>
@@ -52,11 +53,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rpc-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rpc-rest</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

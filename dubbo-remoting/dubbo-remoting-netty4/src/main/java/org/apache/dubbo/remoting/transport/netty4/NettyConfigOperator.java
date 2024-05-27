@@ -24,17 +24,21 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.pu.DefaultCodec;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 
+import java.util.Collection;
 import java.util.List;
 
 public class NettyConfigOperator implements ChannelOperator {
 
     private final Channel channel;
     private ChannelHandler handler;
+
+    private ProtocolDetector.Result detectResult;
 
     public NettyConfigOperator(NettyChannel channel, ChannelHandler handler) {
         this.channel = channel;
@@ -79,10 +83,7 @@ public class NettyConfigOperator implements ChannelOperator {
         for (ChannelHandler handler : handlerList) {
             if (handler instanceof ChannelHandlerPretender) {
                 Object realHandler = ((ChannelHandlerPretender) handler).getRealHandler();
-                if (realHandler instanceof io.netty.channel.ChannelHandler) {
-                    ((NettyChannel) channel).getNioChannel().pipeline().addLast((io.netty.channel.ChannelHandler)
-                            realHandler);
-                }
+                addRealHandler(realHandler);
             }
         }
 
@@ -93,6 +94,34 @@ public class NettyConfigOperator implements ChannelOperator {
             NettyServerHandler sh = new NettyServerHandler(channel.getUrl(), handler);
             ((NettyChannel) channel).getNioChannel().pipeline().addLast(sh);
         }
+    }
+
+    private void addRealHandler(Object realHandler) {
+        if (realHandler instanceof Collection) {
+            Collection realHandlers = (Collection) realHandler;
+
+            for (Object handler : realHandlers) {
+                addChannelHandler(handler);
+            }
+        } else {
+            addChannelHandler(realHandler);
+        }
+    }
+
+    private void addChannelHandler(Object channelHandler) {
+        if (!(channelHandler instanceof io.netty.channel.ChannelHandler)) {
+            return;
+        }
+        ((NettyChannel) channel).getNioChannel().pipeline().addLast((io.netty.channel.ChannelHandler) channelHandler);
+    }
+
+    public void setDetectResult(ProtocolDetector.Result detectResult) {
+        this.detectResult = detectResult;
+    }
+
+    @Override
+    public ProtocolDetector.Result detectResult() {
+        return detectResult;
     }
 
     private boolean isClientSide(Channel channel) {

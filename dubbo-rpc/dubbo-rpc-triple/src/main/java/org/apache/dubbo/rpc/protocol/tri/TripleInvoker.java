@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -75,6 +76,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.remoting.http12.message.MediaType.APPLICATION_GRPC_PROTO;
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.model.MethodDescriptor.RpcType.UNARY;
@@ -93,8 +95,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final String acceptEncodings;
     private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
 
-    private static final boolean setFutureWhenSync =
-            Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
     private final PackableMethodFactory packableMethodFactory;
     private final Map<MethodDescriptor, PackableMethod> packableMethodCache = new ConcurrentHashMap<>();
 
@@ -289,7 +291,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
             meta.packableMethod = packableMethodCache.computeIfAbsent(
-                    methodDescriptor, (md) -> packableMethodFactory.create(md, url, TripleConstant.CONTENT_PROTO));
+                    methodDescriptor, (md) -> packableMethodFactory.create(md, url, APPLICATION_GRPC_PROTO.getName()));
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;

@@ -122,6 +122,11 @@
       <artifactId>dubbo-serialization-fastjson2</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-serialization-hessian2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -133,52 +138,15 @@
       <artifactId>dubbo-filter-validation</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-http</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.alibaba</groupId>
-      <artifactId>fastjson</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-native</artifactId>
       <version>${project.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.36</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.33</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
     </dependency>
 
     <dependency>
@@ -228,7 +196,6 @@
               </compilerArguments>
             </configuration>
           </plugin>
-
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
@@ -242,11 +209,8 @@
               <mainClass>org.apache.dubbo.demo.graalvm.consumer.Application</mainClass>
             </configuration>
           </plugin>
-
         </plugins>
       </build>
     </profile>
-
   </profiles>
-
 </project>

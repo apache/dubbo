@@ -39,7 +39,7 @@ import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 /**
- * MetadataReportConfig
+ * Configuration for the metadata report.
  *
  * @export
  */
@@ -47,80 +47,95 @@ public class MetadataReportConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 55233L;
 
+    /**
+     * The protocol for the metadata center.
+     */
     private String protocol;
 
     /**
-     * metadata center address
+     * The address of the metadata center.
      */
     private String address;
 
     /**
-     * Default port for metadata center
+     * The default port for the metadata center.
      */
     private Integer port;
 
     /**
-     * Username to login metadata center
+     * The username used to log in to the metadata center.
      */
     private String username;
 
     /**
-     * Password to login metadata center
+     * The password used to log in to the metadata center.
      */
     private String password;
 
     /**
-     * Request timeout in milliseconds for metadata center
+     * The request timeout in milliseconds for the metadata center.
      */
     private Integer timeout;
 
     /**
-     * The group the metadata in . It is the same as registry
+     * The group for the metadata center, which is similar to the registry group.
      */
     private String group;
 
     /**
-     * Customized parameters
+     * Customized parameters for the metadata center.
      */
     private Map<String, String> parameters;
 
+    /**
+     * The number of retry times when connecting to the metadata center.
+     */
     private Integer retryTimes;
 
-    private Integer retryPeriod;
     /**
-     * By default, the metadata store will store full metadata repeatedly every day .
+     * The retry period in milliseconds when connecting to the metadata center.
+     */
+    private Integer retryPeriod;
+
+    /**
+     * By default, the metadata store will store full metadata repeatedly every day.
      */
     private Boolean cycleReport;
 
     /**
-     * Sync report, default async
+     * Synchronization report, with the default value as asynchronous.
      */
     private Boolean syncReport;
 
     /**
-     * cluster
+     * Whether to use a cluster configuration for the metadata center.
      */
     private Boolean cluster;
 
     /**
-     * registry id
+     * The registry ID for the metadata center.
      */
     private String registry;
 
     /**
-     * File for saving metadata center dynamic list
+     * The file path for saving the metadata center's dynamic list.
      */
     private String file;
 
     /**
-     * Decide the behaviour when initial connection try fails,
-     * 'true' means interrupt the whole process once fail.
-     * The default value is true
+     * Decide the behavior when the initial connection attempt fails, where 'true' means interrupt the whole process once it fails.
+     * The default value is true.
      */
     private Boolean check;
 
+    /**
+     * Whether to report metadata.
+     */
     private Boolean reportMetadata;
 
+    /**
+     * Whether to report definition.
+     */
     private Boolean reportDefinition;
 
     public MetadataReportConfig() {}

@@ -22,11 +22,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
@@ -95,7 +97,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
      */
-    public static final String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
+    public static final String BEAN_NAME = ReferenceAnnotationBeanPostProcessor.class.getName();
 
     /**
      * Cache size
@@ -110,10 +112,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private final ConcurrentMap<InjectionMetadata.InjectedElement, String> injectedMethodReferenceBeanCache =
             new ConcurrentHashMap<>(CACHE_SIZE);
 
-    private ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
-    private ReferenceBeanManager referenceBeanManager;
-    private BeanDefinitionRegistry beanDefinitionRegistry;
+    protected ReferenceBeanManager referenceBeanManager;
+    protected BeanDefinitionRegistry beanDefinitionRegistry;
 
     /**
      * {@link com.alibaba.dubbo.config.annotation.Reference @com.alibaba.dubbo.config.annotation.Reference} has been supported since 2.7.3
@@ -228,7 +230,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @param beanName
      * @param beanDefinition
      */
-    private void processReferenceAnnotatedBeanDefinition(String beanName, AnnotatedBeanDefinition beanDefinition) {
+    protected void processReferenceAnnotatedBeanDefinition(String beanName, AnnotatedBeanDefinition beanDefinition) {
 
         MethodMetadata factoryMethodMetadata = SpringCompatUtils.getFactoryMethodMetadata(beanDefinition);
 
@@ -341,6 +343,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
      * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
      * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     *
      * @see #postProcessProperties
      */
     public PropertyValues postProcessPropertyValues(
@@ -350,6 +353,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     /**
      * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     *
      * @see #postProcessPropertyValues
      */
     @Override
@@ -540,6 +544,12 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
 
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME, interfaceName);
+
+        if (AotWithSpringDetector.isAotProcessing()) {
+            beanDefinition.getPropertyValues().add("referencePropsJson", JsonUtils.toJson(attributes));
+        }
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of
         // ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()

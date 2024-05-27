@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.json.JsonUtil;
 import org.apache.dubbo.common.json.impl.FastJson2Impl;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
@@ -24,6 +26,7 @@ import org.apache.dubbo.common.utils.json.TestEnum;
 import org.apache.dubbo.common.utils.json.TestObjectA;
 import org.apache.dubbo.common.utils.json.TestObjectB;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -119,42 +122,46 @@ class JsonUtilsTest {
                 Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
 
         // prefer use fastjson2
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "fastjson2");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson2");
         Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
         Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
         Assertions.assertEquals(
                 Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
         // prefer use fastjson
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "fastjson");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
         Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
         Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
         Assertions.assertEquals(
                 Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
         // prefer use gson
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "gson");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "gson");
         Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
         Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
         Assertions.assertEquals(
                 Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
         // prefer use jackson
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "jackson");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "jackson");
         Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
         Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
         Assertions.assertEquals(
                 Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
-        JsonUtils.setJson(null);
+        setJson(null);
     }
 
     @Test
@@ -217,34 +224,42 @@ class JsonUtilsTest {
         for (Object obj : objs) {
 
             // prefer use fastjson2
-            JsonUtils.setJson(null);
-            System.setProperty("dubbo.json-framework.prefer", "fastjson2");
+            setJson(null);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson2");
             Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
             String fromFastjson2 = JsonUtils.getJson().toJson(obj);
-            System.clearProperty("dubbo.json-framework.prefer");
+            SystemPropertyConfigUtils.clearSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
             // prefer use fastjson
-            JsonUtils.setJson(null);
-            System.setProperty("dubbo.json-framework.prefer", "fastjson");
+            setJson(null);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
             Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
             String fromFastjson1 = JsonUtils.getJson().toJson(obj);
-            System.clearProperty("dubbo.json-framework.prefer");
+            SystemPropertyConfigUtils.clearSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
             // prefer use gson
-            JsonUtils.setJson(null);
-            System.setProperty("dubbo.json-framework.prefer", "gson");
+            setJson(null);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "gson");
             Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
             String fromGson = JsonUtils.getJson().toJson(obj);
-            System.clearProperty("dubbo.json-framework.prefer");
+            SystemPropertyConfigUtils.clearSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
             // prefer use jackson
-            JsonUtils.setJson(null);
-            System.setProperty("dubbo.json-framework.prefer", "jackson");
+            setJson(null);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "jackson");
             Assertions.assertInstanceOf(JacksonImpl.class, JsonUtils.getJson());
             String fromJackson = JsonUtils.getJson().toJson(obj);
-            System.clearProperty("dubbo.json-framework.prefer");
+            SystemPropertyConfigUtils.clearSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
-            JsonUtils.setJson(null);
+            setJson(null);
 
             Assertions.assertEquals(fromFastjson1, fromFastjson2);
             Assertions.assertEquals(fromFastjson1, fromGson);
@@ -266,39 +281,43 @@ class JsonUtilsTest {
                 .thenAnswer(invocation -> allowJackson.get()));
 
         // default use fastjson2
-        JsonUtils.setJson(null);
+        setJson(null);
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
 
         // prefer use fastjson2
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "fastjson2");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson2");
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
 
         // prefer use fastjson
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "fastjson");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
         // prefer use gson
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "gson");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "gson");
         Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
         // prefer use not found
-        JsonUtils.setJson(null);
-        System.setProperty("dubbo.json-framework.prefer", "notfound");
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "notfound");
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found fastjson2
         allowFastjson2.set(false);
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
         allowFastjson2.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found fastjson2, fastjson
         allowFastjson2.set(false);
         allowFastjson.set(false);
@@ -306,7 +325,7 @@ class JsonUtilsTest {
         allowFastjson.set(true);
         allowFastjson2.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found fastjson2, fastjson, gson
         allowFastjson2.set(false);
         allowFastjson.set(false);
@@ -316,39 +335,43 @@ class JsonUtilsTest {
         allowFastjson.set(true);
         allowFastjson2.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found fastjson2, prefer use fastjson2
         allowFastjson2.set(false);
-        System.setProperty("dubbo.json-framework.prefer", "fastjson2");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson2");
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
         allowFastjson2.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found fastjson, prefer use fastjson
         allowFastjson.set(false);
-        System.setProperty("dubbo.json-framework.prefer", "fastjson");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
         allowFastjson.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found gson, prefer use gson
         allowGson.set(false);
-        System.setProperty("dubbo.json-framework.prefer", "gson");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "gson");
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
         allowGson.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found jackson, prefer use jackson
         allowJackson.set(false);
-        System.setProperty("dubbo.json-framework.prefer", "jackson");
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "jackson");
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
         allowJackson.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
         // TCCL not found fastjson, gson
         allowFastjson2.set(false);
         allowFastjson.set(false);
@@ -360,6 +383,22 @@ class JsonUtilsTest {
         allowFastjson2.set(true);
         allowJackson.set(true);
 
-        JsonUtils.setJson(null);
+        setJson(null);
+    }
+
+    private static Field jsonFieldCache;
+
+    private static void setJson(JsonUtil json) {
+        try {
+            if (jsonFieldCache == null) {
+                jsonFieldCache = JsonUtils.class.getDeclaredField("jsonUtil");
+                jsonFieldCache.setAccessible(true);
+            }
+
+            jsonFieldCache.set(null, json);
+
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

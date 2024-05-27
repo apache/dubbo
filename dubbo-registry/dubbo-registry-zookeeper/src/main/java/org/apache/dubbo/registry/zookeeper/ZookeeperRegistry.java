@@ -27,10 +27,10 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.curator5.StateListener;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     private ZookeeperClient zkClient;
 
-    public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
+    public ZookeeperRegistry(URL url, ZookeeperClientManager zookeeperClientManager) {
         super(url);
 
         if (url.isAnyHost()) {
@@ -87,7 +87,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         }
 
         this.root = group;
-        this.zkClient = zookeeperTransporter.connect(url);
+        this.zkClient = zookeeperClientManager.connect(url);
 
         this.zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {

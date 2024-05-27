@@ -25,7 +25,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-public class GsonImpl extends AbstractJSONImpl {
+public class GsonImpl extends AbstractJsonUtilImpl {
     // weak reference of com.google.gson.Gson, prevent throw exception when init
     private volatile Object gsonCache = null;
 
@@ -53,6 +53,18 @@ public class GsonImpl extends AbstractJSONImpl {
     @Override
     public String toJson(Object obj) {
         return getGson().toJson(obj);
+    }
+
+    @Override
+    public Object convertObject(Object obj, Type type) {
+        Gson gson = getGson();
+        return gson.fromJson(gson.toJsonTree(obj), type);
+    }
+
+    @Override
+    public Object convertObject(Object obj, Class<?> clazz) {
+        Gson gson = getGson();
+        return gson.fromJson(gson.toJsonTree(obj), clazz);
     }
 
     private Gson getGson() {

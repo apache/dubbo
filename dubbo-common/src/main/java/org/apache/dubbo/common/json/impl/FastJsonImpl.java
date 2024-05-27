@@ -19,9 +19,10 @@ package org.apache.dubbo.common.json.impl;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
-public class FastJsonImpl extends AbstractJSONImpl {
+public class FastJsonImpl extends AbstractJsonUtilImpl {
 
     @Override
     public boolean isJson(String json) {
@@ -46,5 +47,15 @@ public class FastJsonImpl extends AbstractJSONImpl {
     @Override
     public String toJson(Object obj) {
         return com.alibaba.fastjson.JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
+    }
+
+    @Override
+    public Object convertObject(Object obj, Type type) {
+        return com.alibaba.fastjson.util.TypeUtils.cast(obj, type, ParserConfig.getGlobalInstance());
+    }
+
+    @Override
+    public Object convertObject(Object obj, Class<?> clazz) {
+        return com.alibaba.fastjson.util.TypeUtils.cast(obj, clazz, ParserConfig.getGlobalInstance());
     }
 }

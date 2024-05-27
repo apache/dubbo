@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
@@ -29,6 +30,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
@@ -46,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
@@ -96,7 +99,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  * A {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes and annotated bean in java config classes.
  * It's also the infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbo:annotation /&gt;
  *
- *
  * @see AnnotationBeanDefinitionParser
  * @see BeanDefinitionRegistryPostProcessor
  * @since 2.7.7
@@ -146,7 +148,7 @@ public class ServiceAnnotationPostProcessor
 
     private BeanDefinitionRegistry registry;
 
-    private ServicePackagesHolder servicePackagesHolder;
+    protected ServicePackagesHolder servicePackagesHolder;
 
     private volatile boolean scanned = false;
 
@@ -154,12 +156,8 @@ public class ServiceAnnotationPostProcessor
         this(asList(packagesToScan));
     }
 
-    public ServiceAnnotationPostProcessor(Collection<String> packagesToScan) {
-        this(new LinkedHashSet<>(packagesToScan));
-    }
-
-    public ServiceAnnotationPostProcessor(Set<String> packagesToScan) {
-        this.packagesToScan = packagesToScan;
+    public ServiceAnnotationPostProcessor(Collection<?> packagesToScan) {
+        this.packagesToScan = (Set<String>) packagesToScan.stream().collect(Collectors.toSet());
     }
 
     @Override
@@ -240,6 +238,9 @@ public class ServiceAnnotationPostProcessor
                 continue;
             }
 
+            if (AotWithSpringDetector.useGeneratedArtifacts()) {
+                scanner.setIncludeAnnotationConfig(false);
+            }
             // Registers @Service Bean first
             scanner.scan(packageToScan);
 
@@ -404,7 +405,7 @@ public class ServiceAnnotationPostProcessor
      * Generates the bean name of {@link ServiceBean}
      *
      * @param serviceAnnotationAttributes
-     * @param serviceInterface              the class of interface annotated {@link Service}
+     * @param serviceInterface            the class of interface annotated {@link Service}
      * @return ServiceBean@interfaceClassName#annotatedServiceBeanName
      * @since 2.7.3
      */
@@ -442,7 +443,6 @@ public class ServiceAnnotationPostProcessor
 
     /**
      * Build the {@link AbstractBeanDefinition Bean Definition}
-     *
      *
      * @param serviceAnnotationAttributes
      * @param serviceInterface
@@ -487,7 +487,13 @@ public class ServiceAnnotationPostProcessor
         // Add methods parameters
         List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
         if (!methodConfigs.isEmpty()) {
-            builder.addPropertyValue("methods", methodConfigs);
+            if (AotWithSpringDetector.isAotProcessing()) {
+                List<String> methodsJson = new ArrayList<>();
+                methodConfigs.forEach(methodConfig -> methodsJson.add(JsonUtils.toJson(methodConfig)));
+                builder.addPropertyValue("methodsJson", methodsJson);
+            } else {
+                builder.addPropertyValue("methods", methodConfigs);
+            }
         }
 
         // convert provider to providerIds
@@ -563,6 +569,7 @@ public class ServiceAnnotationPostProcessor
 
     /**
      * Get dubbo service annotation class at java-config @bean method
+     *
      * @return return service annotation attributes map if found, or return null if not found.
      */
     private Map<String, Object> getServiceAnnotationAttributes(BeanDefinition beanDefinition) {
@@ -601,6 +608,7 @@ public class ServiceAnnotationPostProcessor
      *
      * }
      * </pre>
+     *
      * @param refServiceBeanName
      * @param refServiceBeanDefinition
      * @param attributes

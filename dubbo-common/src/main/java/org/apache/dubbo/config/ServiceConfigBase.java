@@ -43,7 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
- * ServiceConfig
+ * Base configuration for service.
  *
  * @export
  */
@@ -52,32 +52,33 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     private static final long serialVersionUID = 3033787999037024738L;
 
     /**
-     * The interface class of the exported service
+     * The interface class of the exported service.
      */
     protected Class<?> interfaceClass;
 
     /**
-     * The reference of the interface implementation
+     * The reference to the interface implementation.
      */
     protected transient T ref;
 
     /**
-     * The service name
+     * The service name, which is used to uniquely identify the service.
      */
     protected String path;
 
     /**
-     * The provider configuration
+     * The provider configuration for this service.
      */
     protected ProviderConfig provider;
 
     /**
-     * The providerIds
+     * A comma-separated list of provider IDs.
      */
     protected String providerIds;
 
     /**
-     * whether it is a GenericService
+     * Indicates whether the service is a GenericService.
+     * If set, this means that the service is a generic service that can handle multiple types.
      */
     protected volatile String generic;
 

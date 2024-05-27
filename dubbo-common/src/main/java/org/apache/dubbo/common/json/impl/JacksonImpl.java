@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-public class JacksonImpl extends AbstractJSONImpl {
+public class JacksonImpl extends AbstractJsonUtilImpl {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private volatile Object jacksonCache = null;
@@ -69,6 +69,17 @@ public class JacksonImpl extends AbstractJSONImpl {
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    @Override
+    public Object convertObject(Object obj, Type type) {
+        JsonMapper mapper = getJackson();
+        return mapper.convertValue(obj, mapper.constructType(type));
+    }
+
+    @Override
+    public Object convertObject(Object obj, Class<?> clazz) {
+        return getJackson().convertValue(obj, clazz);
     }
 
     private JsonMapper getJackson() {

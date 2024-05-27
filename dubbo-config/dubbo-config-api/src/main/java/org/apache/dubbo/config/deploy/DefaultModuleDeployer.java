@@ -88,6 +88,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private Boolean background;
     private Boolean exportAsync;
     private Boolean referAsync;
+
+    private boolean registryInteracted;
+
     private CompletableFuture<?> exportFuture;
     private CompletableFuture<?> referFuture;
 
@@ -162,7 +165,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
 
         try {
-            if (isStarting() || isStarted()) {
+            if (isStarting() || isStarted() || isCompletion()) {
                 return startFuture;
             }
 
@@ -193,6 +196,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 // check reference config
                 checkReferences();
 
+                // publish module completion event
+                onModuleCompletion();
+
                 // complete module start future after application state changed
                 completeStartFuture(true);
             } else {
@@ -200,6 +206,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     try {
                         // wait for export finish
                         waitExportFinish();
+
                         // wait for refer finish
                         waitReferFinish();
 
@@ -211,6 +218,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
                         // check reference config
                         checkReferences();
+
+                        // publish module completion event
+                        onModuleCompletion();
                     } catch (Throwable e) {
                         logger.warn(
                                 CONFIG_FAILED_WAIT_EXPORT_REFER,
@@ -240,7 +250,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private boolean hasExportedServices() {
-        return configManager.getServices().size() > 0;
+        return !configManager.getServices().isEmpty();
     }
 
     @Override
@@ -364,6 +374,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
     }
 
+    private void onModuleCompletion() {
+        if (isStarted()) {
+            setCompletion();
+            logger.info(getIdentifier() + " has completed.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.COMPLETION);
+        }
+    }
+
     private void onModuleFailed(String msg, Throwable ex) {
         try {
             try {
@@ -477,6 +495,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 sc.export(RegisterTypeEnum.AUTO_REGISTER_BY_DEPLOYER);
                 exportedServices.add(sc);
             }
+        }
+
+        if (serviceConfig.hasRegistrySpecified()) {
+            registryInteracted = true;
         }
     }
 
@@ -637,5 +659,15 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     public void prepare() {
         applicationDeployer.initialize();
         this.initialize();
+    }
+
+    @Override
+    public boolean hasRegistryInteraction() {
+        return registryInteracted;
+    }
+
+    @Override
+    public ApplicationDeployer getApplicationDeployer() {
+        return applicationDeployer;
     }
 }

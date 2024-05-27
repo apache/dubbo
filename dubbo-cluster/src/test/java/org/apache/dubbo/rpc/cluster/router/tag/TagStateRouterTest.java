@@ -18,12 +18,10 @@ package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
@@ -32,10 +30,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,6 @@ class TagStateRouterTest {
     private URL url;
     private ModuleModel originModel;
     private ModuleModel moduleModel;
-    private Set<TracingContextProvider> tracingContextProviders;
 
     @BeforeEach
     public void setup() {
@@ -58,11 +57,6 @@ class TagStateRouterTest {
         ScopeBeanFactory originBeanFactory = originModel.getBeanFactory();
         ScopeBeanFactory beanFactory = Mockito.spy(originBeanFactory);
         when(moduleModel.getBeanFactory()).thenReturn(beanFactory);
-
-        ExtensionLoader<TracingContextProvider> extensionLoader = Mockito.mock(ExtensionLoader.class);
-        tracingContextProviders = new HashSet<>();
-        when(extensionLoader.getSupportedExtensionInstances()).thenReturn(tracingContextProviders);
-        when(moduleModel.getExtensionLoader(TracingContextProvider.class)).thenReturn(extensionLoader);
 
         url = URL.valueOf("test://localhost/DemoInterface").setScopeModel(moduleModel);
     }
@@ -263,5 +257,45 @@ class TagStateRouterTest {
 
         TagRouterRule tagRouterRule = TagRuleParser.parse(tagRouterRuleConfig);
         return tagRouterRule;
+    }
+
+    @Test
+    public void tagMultiLevelTest() {
+        String tagSelector = "beta|team1|partner1";
+        Set<String> address1 = Sets.newHashSet("192.168.5.1:20880");
+        Map<String, Set<String>> tagAddresses = new HashMap<>();
+        tagAddresses.put("beta", address1);
+        Assertions.assertEquals(address1, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+
+        Set<String> address2 = Sets.newHashSet("192.168.5.2:20880");
+        tagAddresses.put("beta|team1", address2);
+        Assertions.assertEquals(address2, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+
+        Set<String> address3 = Sets.newHashSet("192.168.5.3:20880");
+        tagAddresses.put("beta|team1|partner1", address3);
+        Assertions.assertEquals(address3, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+
+        tagSelector = "beta";
+        Assertions.assertEquals(address1, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+        tagSelector = "beta|team1";
+        Assertions.assertEquals(address2, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+        tagSelector = "beta|team1|partner1";
+        Assertions.assertEquals(address3, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+
+        tagSelector = "beta2";
+        Assertions.assertNull(TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+        tagSelector = "beta|team2";
+        Assertions.assertEquals(address1, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+        tagSelector = "beta|team1|partner2";
+        Assertions.assertEquals(address2, TagStateRouter.selectAddressByTagLevel(tagAddresses, tagSelector, false));
+    }
+
+    @Test
+    public void tagLevelForceTest() {
+        Set<String> addresses = Sets.newHashSet("192.168.1.223:20880");
+        Map<String, Set<String>> tagAddresses = new HashMap<>();
+        tagAddresses.put("beta", addresses);
+        Set<String> selectedAddresses = TagStateRouter.selectAddressByTagLevel(tagAddresses, "beta", true);
+        Assertions.assertEquals(addresses, selectedAddresses);
     }
 }

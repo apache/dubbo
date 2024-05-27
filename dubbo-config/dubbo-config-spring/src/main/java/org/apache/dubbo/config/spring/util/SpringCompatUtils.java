@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
+import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -30,7 +34,7 @@ import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.StandardMethodMetadata;
 
 /**
- * Spring Compatibility Utils for spring 3.x/4.x/5.x
+ * Spring Compatibility Utils for spring 3.x/4.x/5.x/6.x
  */
 public class SpringCompatUtils {
 
@@ -126,5 +130,31 @@ public class SpringCompatUtils {
             }
         }
         return null;
+    }
+
+    public static Class<?> referenceAnnotationBeanPostProcessor() {
+        try {
+            return Class.forName(
+                    "org.apache.dubbo.config.spring6.beans.factory.annotation.ReferenceAnnotationWithAotBeanPostProcessor");
+        } catch (ClassNotFoundException e) {
+            return ReferenceAnnotationBeanPostProcessor.class;
+        }
+    }
+
+    public static Class<?> serviceAnnotationPostProcessor() {
+        try {
+            return Class.forName(
+                    "org.apache.dubbo.config.spring6.beans.factory.annotation.ServiceAnnotationWithAotPostProcessor");
+        } catch (ClassNotFoundException e) {
+            return ServiceAnnotationPostProcessor.class;
+        }
+    }
+
+    public static Class<?> dubboInfraBeanRegisterPostProcessor() {
+        try {
+            return Class.forName("org.apache.dubbo.config.spring6.context.DubboInfraBeanRegisterPostProcessor");
+        } catch (ClassNotFoundException e) {
+            return DubboInfraBeanRegisterPostProcessor.class;
+        }
     }
 }

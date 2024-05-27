@@ -17,7 +17,9 @@
 package com.alibaba.dubbo.container.page.pages;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
 import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
@@ -60,25 +62,30 @@ public class SystemPageHandler implements PageHandler {
 
         row = new ArrayList<>();
         row.add("OS");
-        row.add(System.getProperty("os.name") + " " + System.getProperty("os.version"));
+        row.add(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.SYSTEM_OS_NAME) + " "
+                + SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.SYSTEM_OS_VERSION));
         rows.add(row);
 
         row = new ArrayList<>();
         row.add("JVM");
-        row.add(System.getProperty("java.runtime.name") + " " + System.getProperty("java.runtime.version") + ",<br/>"
-                + System.getProperty("java.vm.name") + " " + System.getProperty("java.vm.version") + " "
-                + System.getProperty("java.vm.info", ""));
+        row.add(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.JAVA_RUNTIME_NAME) + " "
+                + SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.JAVA_RUNTIME_VERSION)
+                + ",<br/>"
+                + SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.JAVA_VM_NAME) + " "
+                + SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.JAVA_VM_VERSION) + " "
+                + SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.JAVA_VM_INFO, ""));
         rows.add(row);
 
         row = new ArrayList<>();
         row.add("CPU");
-        row.add(System.getProperty("os.arch", "") + ", "
+        row.add(SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.OS_ARCH, "") + ", "
                 + String.valueOf(Runtime.getRuntime().availableProcessors()) + " cores");
         rows.add(row);
 
         row = new ArrayList<>();
         row.add("Locale");
-        row.add(Locale.getDefault().toString() + "/" + System.getProperty("file.encoding"));
+        row.add(Locale.getDefault().toString() + "/"
+                + SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.SYSTEM_FILE_ENCODING));
         rows.add(row);
 
         row = new ArrayList<>();

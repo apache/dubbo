@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collection;
@@ -30,7 +29,7 @@ import static org.apache.dubbo.common.utils.PathUtils.normalize;
 /**
  * An abstract implementation of {@link DynamicConfiguration} is like "tree-structure" path :
  * <ul>
- *     <li>{@link FileSystemDynamicConfiguration "file"}</li>
+ *     <li>{@link org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration "file"}</li>
  *     <li>{@link org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfiguration "zookeeper"}</li>
  * </ul>
  *

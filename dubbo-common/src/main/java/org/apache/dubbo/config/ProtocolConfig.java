@@ -19,6 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.serialization.PreferSerializationProvider;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.nested.TripleConfig;
+import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -27,12 +29,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.JSON_CHECK_LEVEL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
- * ProtocolConfig
+ * Configuration for the protocol.
  *
  * @export
  */
@@ -41,192 +44,202 @@ public class ProtocolConfig extends AbstractConfig {
     private static final long serialVersionUID = 6913423882496634749L;
 
     /**
-     * Protocol name
+     * The name of the protocol.
      */
     private String name;
 
     /**
-     * Service ip address (when there are multiple network cards available)
+     * The service's IP address (useful when there are multiple network cards available).
      */
     private String host;
 
     /**
-     * Service port
+     * The service's port number.
      */
     private Integer port;
 
     /**
-     * Context path
+     * The context path for the service.
      */
     private String contextpath;
 
     /**
-     * Thread pool
+     * The name of the thread pool.
      */
     private String threadpool;
 
     /**
-     * Thread pool name
-     */
-    private String threadname;
-
-    /**
-     * Thread pool core thread size
+     * The core thread size of the thread pool.
      */
     private Integer corethreads;
 
     /**
-     * Thread pool size (fixed size)
+     * The fixed size of the thread pool.
      */
     private Integer threads;
 
     /**
-     * IO thread pool size (fixed size)
+     * The fixed size of the IO thread pool.
      */
     private Integer iothreads;
 
     /**
-     * Thread pool keepAliveTime, default unit TimeUnit.MILLISECONDS
+     * The keep-alive time for threads in the thread pool (default unit is TimeUnit.MILLISECONDS).
      */
     private Integer alive;
 
     /**
-     * Thread pool's queue length
+     * The length of the thread pool's queue.
      */
     private Integer queues;
 
     /**
-     * Thread pool exhausted listeners
+     * Listeners for exhausted thread pool.
      */
     private String threadPoolExhaustedListeners;
 
     /**
-     * Max acceptable connections
+     * The maximum acceptable connections.
      */
     private Integer accepts;
 
     /**
-     * Protocol codec
+     * The protocol codec.
      */
     private String codec;
 
     /**
-     * Serialization
+     * The serialization method.
      */
     private String serialization;
 
     /**
-     * If the parameter has a value, the consumer will read the parameter first.
+     * Specifies the preferred serialization method for the consumer.
+     *  If specified, the consumer will use this parameter first.
      * If the Dubbo Sdk you are using contains the serialization type, the serialization method specified by the argument is used.
      * <p>
      * When this parameter is null or the serialization type specified by this parameter does not exist in the Dubbo SDK, the serialization type specified by serialization is used.
      * If the Dubbo SDK if still does not exist, the default type of the Dubbo SDK is used.
      * For Dubbo SDK >= 3.2, <code>preferSerialization</code> takes precedence over <code>serialization</code>
      * <p>
-     * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
+     * Supports multiple values separated by commas, e.g., "fastjson2,fastjson,hessian2".
      */
     private String preferSerialization; // default:fastjson2,hessian2
 
     /**
-     * Charset
+     * The character set used for communication.
      */
     private String charset;
 
     /**
-     * Payload max length
+     * The maximum payload length.
      */
     private Integer payload;
 
     /**
-     * Buffer size
+     * The buffer size.
      */
     private Integer buffer;
 
     /**
-     * Heartbeat interval
+     * The interval for sending heartbeats.
      */
     private Integer heartbeat;
 
     /**
-     * Access log
+     * The access log configuration.
      */
     private String accesslog;
 
     /**
-     * Transporter
+     * The transporter used for communication.
      */
     private String transporter;
 
     /**
-     * How information is exchanged
+     * The method of information exchange.
      */
     private String exchanger;
 
     /**
-     * Thread dispatch mode
+     * The thread dispatch mode.
      */
     private String dispatcher;
 
     /**
-     * Networker
+     * The networker implementation.
      */
     private String networker;
 
     /**
-     * Sever impl
+     * The server implementation.
      */
     private String server;
 
     /**
-     * Client impl
+     * The client implementation.
      */
     private String client;
 
     /**
-     * Supported telnet commands, separated with comma.
+     * Supported Telnet commands, separated by commas.
      */
     private String telnet;
 
     /**
-     * Command line prompt
+     * The command line prompt.
      */
     private String prompt;
 
     /**
-     * Status check
+     * The status check configuration.
      */
     private String status;
 
     /**
-     * Whether to register
+     * Indicates whether the service should be registered.
      */
     private Boolean register;
 
+    // TODO: Move this property to the provider configuration.
     /**
-     * whether it is a persistent connection
+     * Indicates whether it is a persistent connection.
      */
-    // TODO add this to provider config
     private Boolean keepAlive;
 
-    // TODO add this to provider config
+    // TODO: Move this property to the provider configuration.
+    /**
+     * The optimizer used for dubbo protocol.
+     */
     private String optimizer;
 
     /**
-     * The extension
+     * Additional extensions.
      */
     private String extension;
 
     /**
-     * The customized parameters
+     * Custom parameters.
      */
     private Map<String, String> parameters;
 
+    /**
+     * Indicates whether SSL is enabled.
+     */
     private Boolean sslEnabled;
 
-    /*
-     * Extra Protocol for this service, using Port Unification Server
+    /**
+     * Extra protocol for this service, using Port Unification Server.
      */
     private String extProtocol;
+
+    /**
+     * JSON check level for serialization.
+     */
+    private String jsonCheckLevel;
+
+    @Nested
+    private TripleConfig triple;
 
     public ProtocolConfig() {}
 
@@ -269,6 +282,11 @@ public class ProtocolConfig extends AbstractConfig {
                             .getBean(PreferSerializationProvider.class)
                             .getPreferSerialization();
         }
+
+        if (triple == null) {
+            triple = new TripleConfig();
+        }
+        triple.checkDefault();
     }
 
     @Parameter(excluded = true)
@@ -326,12 +344,13 @@ public class ProtocolConfig extends AbstractConfig {
         this.threadpool = threadpool;
     }
 
-    public String getThreadname() {
-        return threadname;
+    @Parameter(key = JSON_CHECK_LEVEL_KEY)
+    public String getJsonCheckLevel() {
+        return jsonCheckLevel;
     }
 
-    public void setThreadname(String threadname) {
-        this.threadname = threadname;
+    public void setJsonCheckLevel(String jsonCheckLevel) {
+        this.jsonCheckLevel = jsonCheckLevel;
     }
 
     @Parameter(key = THREAD_POOL_EXHAUSTED_LISTENERS_KEY)
@@ -610,6 +629,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtProtocol(String extProtocol) {
         this.extProtocol = extProtocol;
+    }
+
+    public TripleConfig getTriple() {
+        return triple;
+    }
+
+    public void setTriple(TripleConfig triple) {
+        this.triple = triple;
     }
 
     public void mergeProtocol(ProtocolConfig sourceConfig) {

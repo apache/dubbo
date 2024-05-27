@@ -28,7 +28,7 @@
   <packaging>pom</packaging>
 
   <name>dubbo-plugin</name>
-  <description>The registry module of dubbo project</description>
+  <description>The plugins of dubbo project</description>
   <modules>
     <module>dubbo-qos</module>
     <module>dubbo-auth</module>
@@ -36,6 +36,13 @@
     <module>dubbo-security</module>
     <module>dubbo-spring-security</module>
     <module>dubbo-qos-api</module>
+    <module>dubbo-native</module>
+    <module>dubbo-compiler</module>
+    <module>dubbo-filter-cache</module>
+    <module>dubbo-filter-validation</module>
+    <module>dubbo-rest-jaxrs</module>
+    <module>dubbo-rest-servlet</module>
+    <module>dubbo-rest-spring</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
@@ -48,5 +55,28 @@
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>loom</id>
+      <activation>
+        <jdk>[21,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-plugin-loom</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>release</id>
+      <modules>
+        <module>dubbo-plugin-loom</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

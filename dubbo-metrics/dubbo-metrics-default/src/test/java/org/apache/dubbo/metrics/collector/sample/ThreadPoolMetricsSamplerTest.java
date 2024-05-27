@@ -170,7 +170,7 @@ public class ThreadPoolMetricsSamplerTest {
         f.setAccessible(true);
         Map<String, ThreadPoolExecutor> executors = (Map<String, ThreadPoolExecutor>) f.get(sampler2);
 
-        Assertions.assertEquals(3, executors.size());
+        Assertions.assertEquals(8, executors.size());
         Assertions.assertTrue(executors.containsKey("DubboServerHandler-server1"));
         Assertions.assertTrue(executors.containsKey("DubboClientHandler-client1"));
         Assertions.assertTrue(executors.containsKey("sharedExecutor"));

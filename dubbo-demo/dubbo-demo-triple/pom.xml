@@ -127,6 +127,10 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -149,44 +153,24 @@
         <artifactId>protobuf-maven-plugin</artifactId>
         <version>${maven_protobuf_plugin_version}</version>
         <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf-java_version}:exe:${os.detected.classifier}</protocArtifact>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>triple-java</pluginId>
-          <outputDirectory>build/generated/source/proto/main/java</outputDirectory>
         </configuration>
         <executions>
           <execution>
             <goals>
               <goal>compile</goal>
-              <goal>test-compile</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
+      <!-- Override the maven-javadoc-plugin configuration that depends on the pass -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin.version}</version>
+        <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <source>${source.level}</source>
-          <target>${target.level}</target>
+          <skip>true</skip>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <sources>
-                <source>build/generated/source/proto/main/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

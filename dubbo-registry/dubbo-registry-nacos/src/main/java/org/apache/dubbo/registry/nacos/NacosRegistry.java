@@ -18,11 +18,13 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -112,7 +114,8 @@ public class NacosRegistry extends FailbackRegistry {
      * The separator for service name Change a constant to be configurable, it's designed for Windows file name that is
      * compatible with old Nacos binary release(< 0.6.1)
      */
-    private static final String SERVICE_NAME_SEPARATOR = System.getProperty("nacos.service.name.separator", ":");
+    private static final String SERVICE_NAME_SEPARATOR = SystemPropertyConfigUtils.getSystemProperty(
+            CommonConstants.ThirdPartyProperty.NACOS_SERVICE_NAME_SEPARATOR, ":");
 
     /**
      * The pagination size of query for Nacos service names(only for Dubbo-OPS)
@@ -141,7 +144,7 @@ public class NacosRegistry extends FailbackRegistry {
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
         this.namingService = namingService;
-        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", true);
+        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", false);
     }
 
     @Override

@@ -78,6 +78,11 @@ public class DubboDeployApplicationListener
             }
 
             @Override
+            public void onCompletion(ApplicationModel scopeModel) {
+                publishApplicationEvent(DeployState.COMPLETION);
+            }
+
+            @Override
             public void onStopping(ApplicationModel scopeModel) {
                 publishApplicationEvent(DeployState.STOPPING);
             }
@@ -101,6 +106,11 @@ public class DubboDeployApplicationListener
             @Override
             public void onStarted(ModuleModel scopeModel) {
                 publishModuleEvent(DeployState.STARTED);
+            }
+
+            @Override
+            public void onCompletion(ModuleModel scopeModel) {
+                publishModuleEvent(DeployState.COMPLETION);
             }
 
             @Override

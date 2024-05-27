@@ -93,14 +93,14 @@
     <spring_version>5.3.35</spring_version>
     <spring_security_version>5.8.12</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <bytebuddy.version>1.14.15</bytebuddy.version>
+    <byte-buddy_version>1.14.15</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.109.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83</fastjson_version>
     <fastjson2_version>2.0.49</fastjson2_version>
-    <zookeeper_version>3.7.0</zookeeper_version>
+    <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.1.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
     <jedis_version>3.10.0</jedis_version>
@@ -120,7 +120,8 @@
     <commons_lang3_version>3.14.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.13.0</micrometer.version>
-
+    <opentelemetry.version>1.26.0</opentelemetry.version>
+    <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
     <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
@@ -134,9 +135,12 @@
     <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
     <tomcat_embed_version>8.5.100</tomcat_embed_version>
     <nacos_version>2.3.2</nacos_version>
+    <sentinel.version>1.8.6</sentinel.version>
+    <seata.version>1.6.1</seata.version>
     <grpc.version>1.64.0</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
+    <mustache_version>0.9.10</mustache_version>
     <!-- Log libs -->
     <slf4j_version>1.7.36</slf4j_version>
     <jcl_version>1.3.2</jcl_version>
@@ -145,20 +149,30 @@
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
     <log4j2_version>2.23.1</log4j2_version>
     <commons_io_version>2.16.1</commons_io_version>
+    <commons-codec_version>1.16.0</commons-codec_version>
 
     <embedded_redis_version>1.1.0</embedded_redis_version>
 
     <!-- Alibaba -->
     <alibaba_spring_context_support_version>1.0.11</alibaba_spring_context_support_version>
 
+    <!-- Test libs -->
+    <junit_jupiter_version>5.9.3</junit_jupiter_version>
+    <junit_version>4.13.2</junit_version>
+    <awaitility_version>4.2.0</awaitility_version>
+    <hamcrest_version>2.2</hamcrest_version>
+    <cglib_version>2.2.2</cglib_version>
+    <mockito_version>4.11.0</mockito_version>
+
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
     <test_container_version>1.19.8</test_container_version>
-    <hessian_lite_version>3.2.13</hessian_lite_version>
+    <hessian_lite_version>4.0.0</hessian_lite_version>
     <swagger_version>1.6.14</swagger_version>
 
     <snappy_java_version>1.1.10.5</snappy_java_version>
     <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
+    <sofa_registry_version>5.4.3</sofa_registry_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.11.0</gson_version>
     <jackson_version>2.17.1</jackson_version>
@@ -170,7 +184,10 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.2.13-SNAPSHOT</revision>
+    <revision>3.3.0-beta.3-SNAPSHOT</revision>
+    <open_feign_version>3.1.5</open_feign_version>
+    <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
+    <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>
   </properties>
 
   <dependencyManagement>
@@ -212,6 +229,20 @@
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>${opentelemetry.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.zipkin.reporter2</groupId>
+        <artifactId>zipkin-reporter-bom</artifactId>
+        <version>${zipkin-reporter.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
         <version>${netty4_version}</version>
@@ -224,7 +255,13 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>${bytebuddy.version}</version>
+        <version>${byte-buddy_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy-agent</artifactId>
+        <version>${byte-buddy_version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.netty</groupId>
@@ -257,8 +294,32 @@
         <version>${zookeeper_version}</version>
         <exclusions>
           <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.yetus</groupId>
+            <artifactId>audience-annotations</artifactId>
+          </exclusion>
+          <exclusion>
             <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>*</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -303,7 +364,7 @@
         <version>${hessian_version}</version>
       </dependency>
       <dependency>
-        <groupId>com.alibaba</groupId>
+        <groupId>org.apache.dubbo</groupId>
         <artifactId>hessian-lite</artifactId>
         <version>${hessian_lite_version}</version>
       </dependency>
@@ -486,6 +547,11 @@
         <version>${commons_io_version}</version>
       </dependency>
       <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons-codec_version}</version>
+      </dependency>
+      <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
         <version>${log4j_version}</version>
@@ -503,6 +569,16 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
+        <version>${log4j2_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>${log4j2_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j2-impl</artifactId>
         <version>${log4j2_version}</version>
       </dependency>
       <dependency>
@@ -576,29 +652,80 @@
         <version>${swagger_version}</version>
       </dependency>
 
+      <!-- for dubbo-registry-sofa -->
       <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-core-api</artifactId>
-        <version>${metrics_version}</version>
+        <groupId>com.alipay.sofa</groupId>
+        <artifactId>registry-client-all</artifactId>
+        <version>${sofa_registry_version}</version>
       </dependency>
       <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-core-impl</artifactId>
-        <version>${metrics_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-common</artifactId>
-        <version>${metrics_version}</version>
+        <groupId>com.alipay.sofa</groupId>
+        <artifactId>registry-test</artifactId>
+        <version>${sofa_registry_version}</version>
+        <scope>test</scope>
       </dependency>
 
+      <!-- Test libs -->
       <dependency>
-        <groupId>com.alibaba.middleware</groupId>
-        <artifactId>metrics-rest</artifactId>
-        <version>${metrics_version}</version>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
       </dependency>
-
-      <!-- Test lib -->
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit_jupiter_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>${hamcrest_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-inline</artifactId>
+        <version>${mockito_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>cglib</groupId>
+        <artifactId>cglib-nodep</artifactId>
+        <version>${cglib_version}</version>
+        <scope>test</scope>
+      </dependency>
       <dependency>
         <groupId>com.github.codemonstur</groupId>
         <artifactId>embedded-redis</artifactId>
@@ -611,6 +738,7 @@
         <version>${spring_version}</version>
         <scope>test</scope>
       </dependency>
+
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
@@ -650,6 +778,34 @@
         <groupId>com.alibaba.nacos</groupId>
         <artifactId>nacos-client</artifactId>
         <version>${nacos_version}</version>
+      </dependency>
+      <!-- sentinel related dependencies -->
+      <dependency>
+        <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-apache-dubbo3-adapter</artifactId>
+        <version>${sentinel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-transport-simple-http</artifactId>
+        <version>${sentinel.version}</version>
+      </dependency>
+      <!-- seata related dependencies -->
+      <dependency>
+        <groupId>io.seata</groupId>
+        <artifactId>seata-spring-boot-starter</artifactId>
+        <version>${seata.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.seata</groupId>
+            <artifactId>seata-core</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>io.seata</groupId>
+        <artifactId>seata-core</artifactId>
+        <version>${seata.version}</version>
       </dependency>
       <!-- grpc related dependencies -->
       <dependency>
@@ -697,6 +853,11 @@
         <artifactId>jprotoc</artifactId>
         <version>${jprotoc_version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.github.spullara.mustache.java</groupId>
+        <artifactId>compiler</artifactId>
+        <version>${mustache_version}</version>
+      </dependency>
       <!-- tri compress support-->
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -741,6 +902,21 @@
         <artifactId>rxjava</artifactId>
         <version>${rxjava.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-openfeign-core</artifactId>
+        <version>${open_feign_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jakarta.xml.bind-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb-runtime.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -753,6 +929,12 @@
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>bom</flattenMode>
+          <pomElements>
+            <dependencyManagement>expand</dependencyManagement>
+            <properties>remove</properties>
+            <repositories>remove</repositories>
+            <profiles>remove</profiles>
+          </pomElements>
         </configuration>
         <executions>
           <execution>
