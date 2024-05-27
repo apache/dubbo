@@ -1397,6 +1397,10 @@ public /*final**/ class URL implements Serializable {
         return buildString(true, false, true, true);
     }
 
+    public String toServiceString(String... parameters) {
+        return buildString(true, true, true, true, parameters);
+    }
+
     @Deprecated
     public String getServiceName() {
         return getServiceInterface();

@@ -481,7 +481,7 @@ class ConfigManagerTest {
     public static class TestPreferSerializationProvider implements PreferSerializationProvider {
         @Override
         public String getPreferSerialization() {
-            return "fastjson2,hessian2";
+            return "hessian2";
         }
     }
 }

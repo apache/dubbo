@@ -30,7 +30,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.RestConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
-import org.apache.dubbo.config.TripleConfig;
+import org.apache.dubbo.config.nested.TripleConfig;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
