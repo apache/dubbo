@@ -463,7 +463,7 @@
       <artifactId>snakeyaml</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.alibaba</groupId>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>hessian-lite</artifactId>
     </dependency>
     <dependency>

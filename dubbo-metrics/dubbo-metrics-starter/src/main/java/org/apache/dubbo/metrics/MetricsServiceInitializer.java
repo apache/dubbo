@@ -69,12 +69,11 @@ public class MetricsServiceInitializer {
             public void onEvent(ApplicationLoadedEvent event) {
 
                 if (MetricsSupportUtil.isSupportMetrics()) {
-
                     MetricsConfig metricsConfig = initMetricsConfig();
-
-                    initDefaultMetricsCollector(metricsConfig);
-
-                    initMetricsReporter(metricsConfig);
+                    if (!PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) || MetricsSupportUtil.isSupportPrometheus()) {
+                        initDefaultMetricsCollector(metricsConfig);
+                        initMetricsReporter(metricsConfig);
+                    }
                 }
 
                 initMetricsService();

@@ -17,15 +17,27 @@
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 
 import org.junit.jupiter.api.Test;
 
-public class MetricsSupportPrometheusTest {
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
+
+class DefaultApplicationDeployerTest {
 
     @Test
     void isSupportPrometheus() {
         boolean supportPrometheus = MetricsSupportUtil.isSupportPrometheus();
         Assert.assertTrue(supportPrometheus, "MetricsSupportUtil.isSupportPrometheus() should return true");
+    }
+
+    @Test
+    void isImportPrometheus() {
+        MetricsConfig metricsConfig = new MetricsConfig();
+        metricsConfig.setProtocol("prometheus");
+        boolean importPrometheus =
+                PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) && !MetricsSupportUtil.isSupportPrometheus();
+        Assert.assertTrue(!importPrometheus, " should return false");
     }
 }

@@ -14,25 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.common.serialize.hessian2.aot;
 
-import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
-import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
+import org.apache.dubbo.aot.api.ResourceBundleDescriber;
+import org.apache.dubbo.aot.api.ResourceDescriberRegistrar;
+import org.apache.dubbo.aot.api.ResourcePatternDescriber;
 
-import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
-public class StreamingHttpMessageListener implements HttpMessageListener {
-
-    private StreamingDecoder streamingDecoder;
-
-    public StreamingHttpMessageListener() {}
-
-    public StreamingHttpMessageListener(StreamingDecoder streamingDecoder) {
-        this.streamingDecoder = streamingDecoder;
+public class HessianResourceDescriberRegistrar implements ResourceDescriberRegistrar {
+    @Override
+    public List<ResourcePatternDescriber> getResourcePatternDescribers() {
+        return Collections.singletonList(new ResourcePatternDescriber("DENY_CLASS", null));
     }
 
     @Override
-    public void onMessage(InputStream inputStream) {
-        streamingDecoder.decode(inputStream);
+    public List<ResourceBundleDescriber> getResourceBundleDescribers() {
+        return Collections.emptyList();
     }
 }

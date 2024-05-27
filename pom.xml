@@ -265,7 +265,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <groupId>org.fusesource.hawtjni</groupId>
@@ -571,6 +571,7 @@
                                         **/org/apache/dubbo/test/common/utils/TestSocketUtils.java,
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
+                                        **/org/apache/dubbo/rpc/protocol/tri/rest/cors/CorsHeaderFilter.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java,
                                         **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
@@ -842,6 +843,7 @@
                   <exclude>src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/test/common/utils/TestSocketUtils.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java</exclude>
+                  <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/rest/cors/CorsHeaderFilter.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java</exclude>
