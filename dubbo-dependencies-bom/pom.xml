@@ -90,7 +90,7 @@
   <properties>
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
-    <spring_version>5.3.35</spring_version>
+    <spring_version>5.3.36</spring_version>
     <spring_security_version>5.8.12</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
     <bytebuddy.version>1.14.15</bytebuddy.version>
