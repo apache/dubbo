@@ -70,7 +70,8 @@ public class MetricsServiceInitializer {
 
                 if (MetricsSupportUtil.isSupportMetrics()) {
                     MetricsConfig metricsConfig = initMetricsConfig();
-                    if (!PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) || MetricsSupportUtil.isSupportPrometheus()) {
+                    if (!PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())
+                            || MetricsSupportUtil.isSupportPrometheus()) {
                         initDefaultMetricsCollector(metricsConfig);
                         initMetricsReporter(metricsConfig);
                     }
