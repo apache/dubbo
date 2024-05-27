@@ -242,7 +242,6 @@ class RedisMetadataReportTest {
 
     @Test
     void testWrongAuthRedisMetadata() throws ClassNotFoundException {
-        registryUrl = registryUrl.setPassword("123456");
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
         try {
             testStoreProvider(redisMetadataReport, "1.0.0.redis.md.p1", 3000);
