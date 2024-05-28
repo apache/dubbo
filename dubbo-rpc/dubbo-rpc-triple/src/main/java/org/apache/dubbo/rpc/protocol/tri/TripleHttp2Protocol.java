@@ -159,7 +159,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new HttpObjectAggregator(tripleConfig.getMaxBodySize())));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1Codec()));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1ConnectionHandler(
-                url, frameworkModel, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
+                url, frameworkModel, tripleConfig, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
     }
 
     private Http2MultiplexHandler buildHttp2MultiplexHandler(URL url) {

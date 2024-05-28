@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
@@ -85,8 +86,12 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
         // process status
         List<String> statusHeaders = msg.headers().remove(HttpHeaderNames.STATUS.getName());
         HttpResponseStatus status = HttpResponseStatus.OK;
-        if (!(statusHeaders == null || statusHeaders.isEmpty())) {
-            status = HttpResponseStatus.valueOf(Integer.parseInt(statusHeaders.get(0)));
+        if (CollectionUtils.isNotEmpty(statusHeaders)) {
+            if (statusHeaders.size() == 1) {
+                status = HttpResponseStatus.valueOf(Integer.parseInt(statusHeaders.get(0)));
+            } else {
+                status = new HttpResponseStatus(Integer.parseInt(statusHeaders.get(0)), statusHeaders.get(1));
+            }
         }
         // process normal headers
         DefaultHttpResponse defaultHttpResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);

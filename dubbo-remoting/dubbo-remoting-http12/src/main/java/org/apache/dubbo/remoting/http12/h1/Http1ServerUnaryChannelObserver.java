@@ -20,8 +20,11 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.exception.HttpOverPayloadException;
 
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import io.netty.buffer.ByteBufOutputStream;
 
@@ -40,6 +43,10 @@ public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver 
 
     @Override
     protected void doOnError(Throwable throwable) throws Throwable {
+        if (throwable instanceof HttpOverPayloadException) {
+            handleOverPayload((HttpOverPayloadException) throwable);
+            return;
+        }
         String statusCode = resolveStatusCode(throwable);
         Object data = buildErrorResponse(statusCode, throwable);
         HttpOutputMessage httpOutputMessage = buildMessage(data);
@@ -54,5 +61,14 @@ public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver 
             int contentLength = ((ByteBufOutputStream) body).writtenBytes();
             httpMetadata.headers().set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(contentLength));
         }
+    }
+
+    private void handleOverPayload(HttpOverPayloadException overPayloadException) {
+        HttpMetadata httpMetadata = encodeHttpMetadata();
+        List<String> overPayloadStatus =
+                Arrays.asList(String.valueOf(overPayloadException.getStatusCode()), overPayloadException.getMessage());
+        httpMetadata.headers().put(HttpHeaderNames.STATUS.getName(), overPayloadStatus);
+        httpMetadata.headers().set(HttpHeaderNames.CONTENT_LENGTH.getName(), "0");
+        sendHeader(httpMetadata);
     }
 }

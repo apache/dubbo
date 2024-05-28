@@ -20,6 +20,7 @@ import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +55,8 @@ public final class JsonPbCodec extends JsonCodec {
                 JsonFormat.parser().ignoringUnknownFields().merge(StreamUtils.toString(is, charset), newBuilder);
                 return newBuilder.build();
             }
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }
@@ -67,6 +70,8 @@ public final class JsonPbCodec extends JsonCodec {
                 // protobuf only support one parameter
                 return new Object[] {decode(is, targetTypes[0], charset)};
             }
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }
