@@ -56,7 +56,9 @@ public class Ls implements BaseCommand {
                 frameworkModel.getServiceRepository().allProviderModels();
 
         // fix: Fix: Originally, providers were stored in ConcurrentHashMap, Disordered display of servicekey list
-        providerModelList = providerModelList.stream().sorted(Comparator.comparing(ProviderModel::getServiceKey)).collect(Collectors.toList());
+        providerModelList = providerModelList.stream()
+                .sorted(Comparator.comparing(ProviderModel::getServiceKey))
+                .collect(Collectors.toList());
 
         TTable tTable = new TTable(new TTable.ColumnDefine[] {
             new TTable.ColumnDefine(TTable.Align.MIDDLE), new TTable.ColumnDefine(TTable.Align.MIDDLE)
@@ -87,7 +89,9 @@ public class Ls implements BaseCommand {
                 frameworkModel.getServiceRepository().allConsumerModels();
 
         // fix: Fix: Originally, consumers were stored in ConcurrentHashMap, Disordered display of servicekey list
-        consumerModelList = consumerModelList.stream().sorted(Comparator.comparing(ConsumerModel::getServiceKey)).collect(Collectors.toList());
+        consumerModelList = consumerModelList.stream()
+                .sorted(Comparator.comparing(ConsumerModel::getServiceKey))
+                .collect(Collectors.toList());
 
         TTable tTable = new TTable(new TTable.ColumnDefine[] {
             new TTable.ColumnDefine(TTable.Align.MIDDLE), new TTable.ColumnDefine(TTable.Align.MIDDLE)

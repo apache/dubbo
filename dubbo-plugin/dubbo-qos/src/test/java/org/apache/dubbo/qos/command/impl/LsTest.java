@@ -105,4 +105,7 @@ class LsTest {
                 referenceConfig.getInterfaceClassLoader());
         repository.registerConsumer(consumerModel);
     }
+
+    @Test
+    public void testExecute() {
 }
