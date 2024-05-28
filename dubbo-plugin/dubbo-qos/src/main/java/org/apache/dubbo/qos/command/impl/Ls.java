@@ -55,7 +55,7 @@ public class Ls implements BaseCommand {
         Collection<ProviderModel> providerModelList =
                 frameworkModel.getServiceRepository().allProviderModels();
 
-        // fix: Fix: Originally, providers were stored in ConcurrentHashMap, Disordered display of servicekey list
+        // Fix: Originally, providers were stored in ConcurrentHashMap, Disordered display of servicekey list
         providerModelList = providerModelList.stream()
                 .sorted(Comparator.comparing(ProviderModel::getServiceKey))
                 .collect(Collectors.toList());
@@ -88,7 +88,7 @@ public class Ls implements BaseCommand {
         Collection<ConsumerModel> consumerModelList =
                 frameworkModel.getServiceRepository().allConsumerModels();
 
-        // fix: Fix: Originally, consumers were stored in ConcurrentHashMap, Disordered display of servicekey list
+        // Fix: Originally, consumers were stored in ConcurrentHashMap, Disordered display of servicekey list
         consumerModelList = consumerModelList.stream()
                 .sorted(Comparator.comparing(ConsumerModel::getServiceKey))
                 .collect(Collectors.toList());
