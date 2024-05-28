@@ -110,7 +110,7 @@ class VersionTest {
         ClassLoader classLoader = new ClassLoader(originClassLoader) {
             @Override
             public Class<?> loadClass(String name) throws ClassNotFoundException {
-                if (name.equals("org.apache.dubbo.common.Version")) {
+                if ("org.apache.dubbo.common.Version".equals(name)) {
                     return findClass(name);
                 }
                 return super.loadClass(name);
@@ -145,15 +145,13 @@ class VersionTest {
 
             @Override
             public Enumeration<URL> getResources(String name) throws IOException {
-
-                if (name.equals("META-INF/versions/dubbo-common")) {
+                if (name.equals("META-INF/dubbo-versions/dubbo-common")) {
                     return super.getResources("META-INF/test-versions/dubbo-common");
                 }
                 return super.getResources(name);
             }
         };
-        Class<?> versionClass = classLoader.loadClass("org.apache.dubbo.common.Version");
-        return versionClass;
+        return classLoader.loadClass("org.apache.dubbo.common.Version");
     }
 
     @Test

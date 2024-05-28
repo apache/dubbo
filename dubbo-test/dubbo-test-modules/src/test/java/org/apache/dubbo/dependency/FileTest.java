@@ -133,7 +133,7 @@ class FileTest {
         List<String> artifactIdsInRoot = IOUtils.readLines(
                 this.getClass()
                         .getClassLoader()
-                        .getResource("META-INF/versions/.artifacts")
+                        .getResource("META-INF/dubbo-versions/.artifacts")
                         .openStream(),
                 StandardCharsets.UTF_8);
         artifactIdsInRoot.removeIf(s -> s.startsWith("#"));

@@ -253,7 +253,7 @@
         </includes>
       </resource>
       <resource>
-        <targetPath>META-INF/versions</targetPath>
+        <targetPath>META-INF/dubbo-versions</targetPath>
         <filtering>false</filtering>
         <directory>${maven.multiModuleProjectDirectory}</directory>
         <includes>
@@ -430,7 +430,7 @@
             <configuration>
               <failOnError>true</failOnError>
               <target>
-                <property name="version_file" value="${project.build.outputDirectory}/META-INF/versions/${project.artifactId}" />
+                <property name="version_file" value="${project.build.outputDirectory}/META-INF/dubbo-versions/${project.artifactId}" />
                 <!-- get the current version of dubbo -->
                 <echo file="${version_file}" message="revision=${revision}${line.separator}" />
                 <!-- attach the artifact id -->
