@@ -315,8 +315,10 @@ public class RedisMetadataReport extends AbstractMetadataReport {
                 Transaction transaction = jedis.multi();
                 transaction.hset(key, field, value);
                 List<Object> result = transaction.exec();
-                jedis.publish(buildPubSubKey(), field);
-                return null != result;
+                if (null != result) {
+                    jedis.publish(buildPubSubKey(), field);
+                    return true;
+                }
             }
             jedis.unwatch();
         } catch (Throwable e) {
