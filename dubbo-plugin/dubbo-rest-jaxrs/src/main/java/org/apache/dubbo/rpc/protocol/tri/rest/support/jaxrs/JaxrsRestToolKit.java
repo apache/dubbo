@@ -22,22 +22,25 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.DefaultRestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.ParamConverter;
 
 final class JaxrsRestToolKit extends DefaultRestToolKit {
 
     private final BeanArgumentBinder binder;
 
-    private final JaxrsParamConverter jaxrsParamConverter;
+    private final ParamConverterFactory paramConverterFactory;
 
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
         binder = new BeanArgumentBinder(frameworkModel);
-        jaxrsParamConverter = new JaxrsParamConverter(frameworkModel);
+        paramConverterFactory = new ParamConverterFactory();
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Object convert(Object value, ParameterMeta parameter) {
         if (MultivaluedMap.class.isAssignableFrom(parameter.getType())) {
@@ -46,12 +49,24 @@ final class JaxrsRestToolKit extends DefaultRestToolKit {
             }
             return typeConverter.convert(value, MultivaluedHashMap.class);
         }
-        if (jaxrsParamConverter.canConvert(value.getClass(), parameter.getActualType())) {
-            Object convertResult = jaxrsParamConverter.convert(value.getClass(), parameter.getType(), value);
-            if (convertResult != null) {
-                return convertResult;
+
+        ParamConverter paramConverter = paramConverterFactory.getParamConverter(
+                parameter.getType(), parameter.getGenericType(), parameter.getRealAnnotations());
+        if (paramConverter != null) {
+            Class<?> type = TypeUtils.getSuperGenericType(paramConverter.getClass(), 0);
+            Object result = null;
+            if (value.getClass().isAssignableFrom(String.class)
+                    && parameter.getType().isAssignableFrom(type)) {
+                result = paramConverter.fromString((String) value);
+            } else if (value.getClass().isAssignableFrom(type)
+                    && parameter.getType().isAssignableFrom(String.class)) {
+                result = paramConverter.toString(value);
+            }
+            if (result != null) {
+                return result;
             }
         }
+
         return super.convert(value, parameter);
     }
 

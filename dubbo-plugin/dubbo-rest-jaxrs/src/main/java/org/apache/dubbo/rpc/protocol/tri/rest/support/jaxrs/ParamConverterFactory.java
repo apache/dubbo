@@ -16,95 +16,43 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.ServiceLoader.Provider;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SuppressWarnings({"rawtypes"})
-public class ParamConverterFatcory {
+public class ParamConverterFactory {
 
-    private final Map<Pair<Class<?>, Class<?>>, ParamConverter> cache = CollectionUtils.newConcurrentHashMap();
+    private final Map<Pair<Pair<Class<?>, Type>, Annotation[]>, ParamConverter> cache =
+            CollectionUtils.newConcurrentHashMap();
+    private final List<ParamConverterProvider> providers = new ArrayList<>();
 
-//    private final List<ParamConverter> converters;
-    private List<ParamConverterProvider> providers;
-    ParamConverterFatcory(FrameworkModel frameworkModel) {
-         this.providers = ServiceLoader.load(ParamConverterProvider.class)
-                .stream()
-                .map(Provider::get)
-                .collect(Collectors.toList());
+    ParamConverterFactory() {
+        ServiceLoader.load(ParamConverterProvider.class).forEach(providers::add);
     }
 
-//    boolean canConvert(Class<?> sourceType, Class<?> targetType) {
-//        return getConvert(sourceType, targetType) != null;
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    Object convert(Class<?> sourceType, Class<?> targetType, Object value) {
-//        ParamConverter paramConverter = getConvert(sourceType, targetType);
-//        if (paramConverter == null) {
-//            return null;
-//        }
-//
-//        Class<?> type = TypeUtils.getSuperGenericType(paramConverter.getClass(), 0);
-//        Object result = null;
-//        if (sourceType.isAssignableFrom(String.class) && targetType.isAssignableFrom(type)) {
-//            result = paramConverter.fromString((String) value);
-//        } else if (targetType.isAssignableFrom(String.class) && sourceType.isAssignableFrom(type)) {
-//            result = paramConverter.toString(value);
-//        }
-//        return result;
-//    }
-
-    private ParamConverter getParamConverter(Class<?> sourceType, Class<?> targetType) {
-        ParamConverter converter = cacheConverter.get(Pair.of(sourceType, targetType));
-        if (converter != null) {
-            return converter;
+    public <T> ParamConverter getParamConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
+        Pair<Pair<Class<?>, Type>, Annotation[]> pair = Pair.of(Pair.of(rawType, genericType), annotations);
+        ParamConverter paramConverter = cache.get(pair);
+        if (paramConverter != null) {
+            return paramConverter;
         }
-
-        return cacheConverter.computeIfAbsent(Pair.of(sourceType, targetType), k -> {
-            for (ParamConverter paramConverter : converters) {
-                Class<?> supportType = TypeUtils.getSuperGenericType(paramConverter.getClass(), 0);
-                if (supportType == null) {
-                    continue;
-                }
-                if (sourceType == String.class && targetType.isAssignableFrom(supportType)) {
-                    return paramConverter;
-                }
+        for (ParamConverterProvider provider : providers) {
+            paramConverter = provider.getConverter(rawType, genericType, annotations);
+            if (paramConverter != null) {
+                cache.put(pair, paramConverter);
+                return paramConverter;
             }
-            return null;
-        });
+        }
+        return null;
     }
-
-//    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> converterClass, FrameworkModel frameworkModel) {
-//        ExtensionLoader<T> instance = null;
-//        try {
-//            Class<ExtensionLoader> clazz = ExtensionLoader.class;
-//            Constructor<ExtensionLoader> constructor =
-//                    clazz.getDeclaredConstructor(Class.class, ExtensionDirector.class, ScopeModel.class);
-//            constructor.setAccessible(true);
-//            instance = constructor.newInstance(converterClass, frameworkModel.getExtensionDirector(), frameworkModel);
-//
-//        } catch (NoSuchMethodException
-//                | InstantiationException
-//                | IllegalAccessException
-//                | InvocationTargetException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return instance;
-//    }
 }

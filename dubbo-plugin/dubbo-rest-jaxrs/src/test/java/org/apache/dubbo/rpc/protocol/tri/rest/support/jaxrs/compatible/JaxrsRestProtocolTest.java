@@ -39,6 +39,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.Anot
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.AnotherUserRestServiceImpl;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.HttpMethodService;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.HttpMethodServiceImpl;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.ParamConverterService;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.ParamConverterServiceImpl;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.RestDemoForTestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.RestDemoService;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest.RestDemoServiceImpl;
@@ -559,5 +561,25 @@ class JaxrsRestProtocolTest {
         ProviderModel providerModel = new ProviderModel(url.getServiceKey(), impl, serviceDescriptor, null, null);
         repository.registerProvider(providerModel);
         return url.setServiceModel(providerModel);
+    }
+
+    @Test
+    void testParamConverter() {
+        ParamConverterService service = new ParamConverterServiceImpl();
+        URL exportUrl = URL.valueOf(
+                "tri://127.0.0.1:" + availablePort + "/rest?interface=" + ParamConverterService.class.getName());
+
+        URL nettyUrl = this.registerProvider(exportUrl, service, ParamConverterService.class);
+
+        tProtocol.export(proxy.getInvoker(service, ParamConverterService.class, nettyUrl));
+
+        ParamConverterService paramConverterService =
+                this.proxy.getProxy(protocol.refer(ParamConverterService.class, nettyUrl));
+
+        User user = paramConverterService.convert(User.getInstance());
+        User u = new User();
+        u.setAge(20);
+        u.setId(1L);
+        Assertions.assertEquals(u, user);
     }
 }
