@@ -184,7 +184,7 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.3.0-beta.3-SNAPSHOT</revision>
+    <revision>3.3.0-beta.3</revision>
     <open_feign_version>3.1.5</open_feign_version>
     <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.3.3-b02</jaxb-runtime.version>
