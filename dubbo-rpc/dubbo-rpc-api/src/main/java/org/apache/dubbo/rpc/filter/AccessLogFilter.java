@@ -108,7 +108,7 @@ public class AccessLogFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         String accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
         boolean isFixedPath = invoker.getUrl().getParameter(ACCESS_LOG_FIXED_PATH_KEY, true);
-        if (StringUtils.isEmpty(accessLogKey)) {
+        if (StringUtils.isEmpty(accessLogKey) || "false".equalsIgnoreCase(accessLogKey)) {
             // Notice that disable accesslog of one service may cause the whole application to stop collecting
             // accesslog.
             // It's recommended to use application level configuration to enable or disable accesslog if dynamically
