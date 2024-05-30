@@ -43,6 +43,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -54,6 +56,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static redis.embedded.RedisServer.newRedisServer;
 
+@DisabledOnOs(OS.WINDOWS)
 class RedisMetadataReportTest {
 
     private static final String REDIS_URL_TEMPLATE = "redis://%slocalhost:%d",
