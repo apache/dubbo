@@ -53,9 +53,11 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
@@ -64,6 +66,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
 import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
 
 /**
  * RedisMetadataReport
@@ -80,12 +83,17 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private String password;
     private final String root;
     private final ConcurrentHashMap<String, MappingDataListener> mappingDataListenerMap = new ConcurrentHashMap<>();
+    private SetParams jedisParams = SetParams.setParams();
 
     public RedisMetadataReport(URL url) {
         super(url);
         timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         password = url.getPassword();
         this.root = url.getGroup(DEFAULT_ROOT);
+        if (url.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
+            // ttl default is twice the cycle-report time
+            jedisParams.ex(ONE_DAY_IN_MILLISECONDS * 2);
+        }
         if (url.getParameter(CLUSTER_KEY, false)) {
             jedisClusterNodes = new HashSet<>();
             List<URL> urls = url.getBackupUrls();
@@ -153,7 +161,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private void storeMetadataInCluster(BaseMetadataIdentifier metadataIdentifier, String v) {
         try (JedisCluster jedisCluster =
                 new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
-            jedisCluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
+            jedisCluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v, jedisParams);
         } catch (Throwable e) {
             String msg =
                     "Failed to put " + metadataIdentifier + " to redis cluster " + v + ", cause: " + e.getMessage();
@@ -164,7 +172,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     private void storeMetadataStandalone(BaseMetadataIdentifier metadataIdentifier, String v) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.set(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), v);
+            jedis.set(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), v, jedisParams);
         } catch (Throwable e) {
             String msg = "Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
@@ -272,7 +280,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     private boolean storeMappingInCluster(String key, String field, String value, String ticket) {
         try (JedisCluster jedisCluster =
                 new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig<>())) {
-            Jedis jedis = jedisCluster.getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
+            Jedis jedis = new Jedis(jedisCluster.getConnectionFromSlot(JedisClusterCRC16.getSlot(key)));
             jedis.watch(key);
             String oldValue = jedis.hget(key, field);
             if (null == oldValue || null == ticket || oldValue.equals(ticket)) {
@@ -286,6 +294,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             } else {
                 jedis.unwatch();
             }
+            jedis.close();
         } catch (Throwable e) {
             String msg = "Failed to put " + key + ":" + field + " to redis " + value + ", cause: " + e.getMessage();
             logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
@@ -305,9 +314,11 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             if (null == oldValue || null == ticket || oldValue.equals(ticket)) {
                 Transaction transaction = jedis.multi();
                 transaction.hset(key, field, value);
-                transaction.publish(buildPubSubKey(), field);
                 List<Object> result = transaction.exec();
-                return null != result;
+                if (null != result) {
+                    jedis.publish(buildPubSubKey(), field);
+                    return true;
+                }
             }
             jedis.unwatch();
         } catch (Throwable e) {

@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 @Cmd(
         name = "ls",
@@ -52,6 +54,11 @@ public class Ls implements BaseCommand {
         stringBuilder.append("As Provider side:" + System.lineSeparator());
         Collection<ProviderModel> providerModelList =
                 frameworkModel.getServiceRepository().allProviderModels();
+
+        // Fix: Originally, providers were stored in ConcurrentHashMap, Disordered display of servicekey list
+        providerModelList = providerModelList.stream()
+                .sorted(Comparator.comparing(ProviderModel::getServiceKey))
+                .collect(Collectors.toList());
 
         TTable tTable = new TTable(new TTable.ColumnDefine[] {
             new TTable.ColumnDefine(TTable.Align.MIDDLE), new TTable.ColumnDefine(TTable.Align.MIDDLE)
@@ -80,6 +87,11 @@ public class Ls implements BaseCommand {
         stringBuilder.append("As Consumer side:" + System.lineSeparator());
         Collection<ConsumerModel> consumerModelList =
                 frameworkModel.getServiceRepository().allConsumerModels();
+
+        // Fix: Originally, consumers were stored in ConcurrentHashMap, Disordered display of servicekey list
+        consumerModelList = consumerModelList.stream()
+                .sorted(Comparator.comparing(ConsumerModel::getServiceKey))
+                .collect(Collectors.toList());
 
         TTable tTable = new TTable(new TTable.ColumnDefine[] {
             new TTable.ColumnDefine(TTable.Align.MIDDLE), new TTable.ColumnDefine(TTable.Align.MIDDLE)
