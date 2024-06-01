@@ -34,7 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.HttpServer;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -80,13 +80,9 @@ class PrometheusMetricsReporterTest {
         reporter.init();
 
         PrometheusMeterRegistry prometheusRegistry = reporter.getPrometheusRegistry();
-        Double d1 = prometheusRegistry.getPrometheusRegistry().getSampleValue("none_exist_metric");
-        Double d2 = prometheusRegistry
-                .getPrometheusRegistry()
-                .getSampleValue(
-                        "jvm_gc_memory_promoted_bytes_total", new String[] {"application_name"}, new String[] {name});
-        Assertions.assertNull(d1);
-        Assertions.assertNull(d2);
+        boolean jvmMetrics = prometheusRegistry.getMeters().stream()
+                .anyMatch(meter -> meter.getId().getName().startsWith("jvm."));
+        Assertions.assertTrue(jvmMetrics);
     }
 
     @Test

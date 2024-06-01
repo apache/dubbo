@@ -425,10 +425,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     public static boolean isSupportPrometheus() {
-        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
-                && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
-                && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
-                && isClassPresent("io.prometheus.client.exporter.PushGateway");
+        return isClassPresent("io.micrometer.prometheusmetrics.PrometheusConfig")
+                && isClassPresent("io.micrometer.prometheusmetrics.PrometheusMeterRegistry")
+                && isClassPresent("io.prometheus.metrics.exporter.pushgateway.PushGateway");
     }
 
     private static boolean isClassPresent(String className) {
