@@ -84,8 +84,8 @@ public class MetadataServiceVersionUtils {
         ServiceInfo serviceInfo = new ServiceInfo();
         serviceInfo.setGroup(serviceInfoV2.getGroup());
         serviceInfo.setVersion(serviceInfoV2.getVersion());
-        serviceInfo.setName(serviceInfo.getName());
-        serviceInfo.setPort(serviceInfo.getPort());
+        serviceInfo.setName(serviceInfoV2.getName());
+        serviceInfo.setPort(serviceInfoV2.getPort());
         serviceInfo.setParams(serviceInfoV2.getParamsMap());
         serviceInfo.setProtocol(serviceInfoV2.getProtocol());
         serviceInfo.setPath(serviceInfoV2.getPath());
