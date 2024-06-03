@@ -112,7 +112,6 @@ public class MetadataServiceVersionUtils {
      */
     public static boolean onlyExportV2(ApplicationModel applicationModel) {
         Optional<ApplicationConfig> applicationConfig = getApplicationConfig(applicationModel);
-
         return applicationConfig
                 .filter(config ->
                         Boolean.TRUE.equals(config.getOnlyUseMetadataV2()) && tripleConfigured(applicationModel))
