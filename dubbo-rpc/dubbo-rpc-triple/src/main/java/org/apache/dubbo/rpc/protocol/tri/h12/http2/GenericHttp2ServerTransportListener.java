@@ -19,7 +19,9 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMethods;
+import org.apache.dubbo.remoting.http12.exception.HttpOverPayloadException;
 import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
@@ -42,6 +44,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -74,6 +77,17 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         serverChannelObserver = new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
         serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
         serverChannelObserver.setStreamingDecoder(streamingDecoder);
+        serverChannelObserver.setTrailersCustomizer(this::httpTrailersCustomize);
+    }
+
+    private void httpTrailersCustomize(HttpHeaders httpHeaders, Throwable throwable) {
+        if (throwable instanceof HttpOverPayloadException) {
+            HttpOverPayloadException exception = (HttpOverPayloadException) throwable;
+            httpHeaders.set(TripleHeaderEnum.TRI_STATUS.getHeader(), String.valueOf(exception.getStatusCode()));
+            httpHeaders.set(TripleHeaderEnum.TRI_MESSAGE.getHeader(), exception.getMessage());
+        } else {
+            httpHeaders.set(TripleHeaderEnum.TRI_STATUS.getHeader(), "0");
+        }
     }
 
     protected StreamingDecoder newStreamingDecoder() {

@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -42,14 +43,18 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
 
     private final FrameworkModel frameworkModel;
 
+    private final TripleConfig tripleConfig;
+
     private final Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
 
     public NettyHttp2ProtocolSelectorHandler(
             URL url,
             FrameworkModel frameworkModel,
+            TripleConfig tripleConfig,
             Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory) {
         this.url = url;
         this.frameworkModel = frameworkModel;
+        this.tripleConfig = tripleConfig;
         this.defaultHttp2ServerTransportListenerFactory = defaultHttp2ServerTransportListenerFactory;
     }
 
@@ -61,7 +66,7 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
         if (factory == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) ctx.channel());
+        H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) ctx.channel(), tripleConfig);
         HttpWriteQueueHandler writeQueueHandler =
                 ctx.channel().parent().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {

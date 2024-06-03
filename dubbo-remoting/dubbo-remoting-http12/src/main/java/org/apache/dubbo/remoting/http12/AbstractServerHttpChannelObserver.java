@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpOverPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
@@ -34,6 +35,8 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     private HttpMessageEncoder responseEncoder;
 
     private boolean headerSent;
+
+    private boolean completed;
 
     protected AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
@@ -87,7 +90,11 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     public final void onError(Throwable throwable) {
         if (throwable instanceof HttpResultPayloadException) {
             onNext(((HttpResultPayloadException) throwable).getResult());
-            doOnCompleted(null);
+            onCompleted(null);
+            return;
+        }
+        if (throwable instanceof HttpOverPayloadException) {
+            onCompleted(throwable);
             return;
         }
         try {
@@ -95,7 +102,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         } catch (Throwable ex) {
             throwable = new EncodeException(ex);
         } finally {
-            doOnCompleted(throwable);
+            onCompleted(throwable);
         }
     }
 
@@ -110,7 +117,14 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public final void onCompleted() {
-        doOnCompleted(null);
+        onCompleted(null);
+    }
+
+    private void onCompleted(Throwable throwable) {
+        if (!completed) {
+            doOnCompleted(throwable);
+            completed = true;
+        }
     }
 
     protected void doOnCompleted(Throwable throwable) {

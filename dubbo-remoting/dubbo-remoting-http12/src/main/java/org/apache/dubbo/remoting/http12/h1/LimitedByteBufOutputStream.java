@@ -27,12 +27,13 @@ public class LimitedByteBufOutputStream extends ByteBufOutputStream {
 
     private final int capacity;
 
-    private int writeIndex;
-
     public LimitedByteBufOutputStream(ByteBuf byteBuf, int capacity) {
-        super(byteBuf);
+        this(byteBuf, false, capacity);
+    }
+
+    public LimitedByteBufOutputStream(ByteBuf byteBuf, boolean releaseOnClose, int capacity) {
+        super(byteBuf, releaseOnClose);
         this.capacity = capacity == 0 ? Integer.MAX_VALUE : capacity;
-        this.writeIndex = 0;
     }
 
     @Override
@@ -54,8 +55,7 @@ public class LimitedByteBufOutputStream extends ByteBufOutputStream {
     }
 
     private void ensureCapacity(int len) {
-        writeIndex += len;
-        if (writeIndex > capacity) {
+        if (writtenBytes() + len > capacity) {
             throw new HttpOverPayloadException("Response Entity Too Large");
         }
     }

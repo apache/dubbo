@@ -27,7 +27,9 @@ public enum HttpHeaderNames {
 
     TE("te"),
 
-    ACCEPT("accept");
+    ACCEPT("accept"),
+
+    ERROR_MESSAGE("error-message");
 
     private final String name;
 

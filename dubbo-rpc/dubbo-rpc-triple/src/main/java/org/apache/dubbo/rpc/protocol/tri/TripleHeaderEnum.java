@@ -46,7 +46,8 @@ public enum TripleHeaderEnum {
     SERVICE_TIMEOUT("tri-service-timeout"),
     TRI_HEADER_CONVERT("tri-header-convert"),
     TRI_EXCEPTION_CODE("tri-exception-code"),
-    ;
+    TRI_STATUS("tri-status"),
+    TRI_MESSAGE("tri-message");
 
     static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
 
