@@ -48,13 +48,11 @@ public final class ReactorServerCalls {
     public static <T, R> void oneToOne(T request, StreamObserver<R> responseObserver, Function<Mono<T>, Mono<R>> func) {
         try {
             func.apply(Mono.just(request))
+                    .switchIfEmpty(Mono.error(TriRpcStatus.NOT_FOUND.asException()))
                     .subscribe(
-                            res -> {
-                                responseObserver.onNext(res);
-                                responseObserver.onCompleted();
-                            },
+                            responseObserver::onNext,
                             throwable -> doOnResponseHasException(throwable, responseObserver),
-                            () -> doOnResponseHasException(TriRpcStatus.NOT_FOUND.asException(), responseObserver));
+                            responseObserver::onCompleted);
         } catch (Throwable throwable) {
             doOnResponseHasException(throwable, responseObserver);
         }
