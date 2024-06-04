@@ -18,8 +18,8 @@ package org.apache.dubbo.metrics.aggregate;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TimeWindowAggregatorTest {
     @Test
