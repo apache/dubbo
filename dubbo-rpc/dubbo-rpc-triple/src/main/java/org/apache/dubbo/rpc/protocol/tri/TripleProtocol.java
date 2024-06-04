@@ -23,6 +23,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
@@ -159,7 +161,13 @@ public class TripleProtocol extends AbstractProtocol {
         ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
 
-        PortUnificationExchanger.bind(url, new DefaultPuHandler());
+        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
+        if (Boolean.TRUE.equals(tripleConfig.getEnableServlet())) {
+            ServletExchanger.bind(url);
+        } else {
+            PortUnificationExchanger.bind(url, new DefaultPuHandler());
+        }
+
         optimizeSerialization(url);
         return exporter;
     }

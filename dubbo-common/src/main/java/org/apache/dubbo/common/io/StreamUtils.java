@@ -258,7 +258,7 @@ public class StreamUtils {
         if (in.getClass() == ByteArrayInputStream.class) {
             return readBytes((ByteArrayInputStream) in);
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
         byte[] buffer = new byte[4096];
         int bytesRead;
         while ((bytesRead = in.read(buffer)) != -1) {

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
@@ -70,6 +71,10 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
                         ConfigCenterConfig.class,
                         MetadataReportConfig.class,
                         TracingConfig.class));
+    }
+
+    public static ProtocolConfig getProtocol(URL url) {
+        return url.getOrDefaultApplicationModel().getApplicationConfigManager().getOrAddProtocol(url.getProtocol());
     }
 
     // ApplicationConfig correlative methods

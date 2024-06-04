@@ -14,24 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
+package org.apache.dubbo.spring.boot.autoconfigure;
 
-import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
+import org.springframework.boot.SpringBootVersion;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
-/**
- * RequestMappingRegistry used for registering and unregistering rest request mappings.
- */
-public interface RequestMappingRegistry {
+public class SpringBoot3Condition implements Condition {
 
-    void register(Invoker<?> invoker);
+    public static boolean IS_SPRING_BOOT_3 = SpringBootVersion.getVersion().charAt(0) >= 3;
 
-    void unregister(Invoker<?> invoker);
-
-    HandlerMeta lookup(HttpRequest request);
-
-    boolean exists(String path, String method);
-
-    void destroy();
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        return IS_SPRING_BOOT_3;
+    }
 }

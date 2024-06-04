@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
+package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
+import org.apache.dubbo.common.URL;
 
-/**
- * RequestMappingRegistry used for registering and unregistering rest request mappings.
- */
-public interface RequestMappingRegistry {
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
-    void register(Invoker<?> invoker);
+public final class ServletExchanger {
 
-    void unregister(Invoker<?> invoker);
+    private static final AtomicReference<URL> defaultUrl = new AtomicReference<>();
 
-    HandlerMeta lookup(HttpRequest request);
+    private ServletExchanger() {}
 
-    boolean exists(String path, String method);
+    public static void bind(URL url) {
+        defaultUrl.compareAndSet(null, url);
+    }
 
-    void destroy();
+    public static URL getUrl() {
+        return Objects.requireNonNull(defaultUrl.get(), "ServletExchanger not bound to triple protocol");
+    }
 }
