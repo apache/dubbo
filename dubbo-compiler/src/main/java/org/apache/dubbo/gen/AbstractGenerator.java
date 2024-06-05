@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Strings;
-import com.google.common.io.Files;
 import com.google.common.html.HtmlEscapers;
+import com.google.common.io.Files;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
@@ -98,10 +98,11 @@ public abstract class AbstractGenerator extends Generator {
                 serviceContext.protoName = fileProto.getName();
                 serviceContext.packageName = extractPackageName(fileProto);
                 String protoBaseName = Files.getNameWithoutExtension(fileProto.getName());
-                if (!Strings.isNullOrEmpty(fileProto.getOptions().getJavaOuterClassname()) {
+                if (!Strings.isNullOrEmpty(fileProto.getOptions().getJavaOuterClassname())) {
                     serviceContext.outerClassName = fileProto.getOptions().getJavaOuterClassname();
                 } else if (!fileProto.getName().equals(serviceContext.serviceName)) {
-                    serviceContext.outerClassName = protoBaseName.substring(0, 1).toUpperCase() + protoBaseName.substring(1);
+                    serviceContext.outerClassName =
+                            protoBaseName.substring(0, 1).toUpperCase() + protoBaseName.substring(1);
                 }
                 serviceContext.commonPackageName = extractCommonPackageName(fileProto);
                 serviceContext.multipleFiles = fileProto.getOptions().getJavaMultipleFiles();
