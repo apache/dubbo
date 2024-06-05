@@ -64,7 +64,6 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         this.restConfig = new RestConfig();
     }
 
-
     @Override
     public void register(Invoker<?> invoker) {
         Object service = invoker.getUrl().getServiceModel().getProxyObject();
