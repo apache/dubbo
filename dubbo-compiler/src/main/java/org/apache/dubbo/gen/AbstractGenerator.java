@@ -100,8 +100,8 @@ public abstract class AbstractGenerator extends Generator {
                 String protoBaseName = Files.getNameWithoutExtension(fileProto.getName());
                 if (!Strings.isNullOrEmpty(fileProto.getOptions().getJavaOuterClassname())) {
                     serviceContext.outerClassName = fileProto.getOptions().getJavaOuterClassname();
-                } else if(!fileProto.getName().equals(serviceContext.serviceName)){
-                    serviceContext.outerClassName=protoBaseName.substring(0, 1).toUpperCase() + protoBaseName.substring(1);
+                } else if (!fileProto.getName().equals(serviceContext.serviceName)) {
+                    serviceContext.outerClassName = protoBaseName.substring(0, 1).toUpperCase() + protoBaseName.substring(1);
                 }
                 serviceContext.commonPackageName = extractCommonPackageName(fileProto);
                 serviceContext.multipleFiles = fileProto.getOptions().getJavaMultipleFiles();
