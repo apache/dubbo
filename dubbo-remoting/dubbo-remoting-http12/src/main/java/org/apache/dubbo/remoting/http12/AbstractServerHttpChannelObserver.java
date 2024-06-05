@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.exception.HttpOverPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
@@ -37,6 +36,8 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     private boolean headerSent;
 
     private boolean completed;
+
+    private boolean closed;
 
     protected AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
@@ -72,6 +73,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public final void onNext(Object data) {
+        if (closed) {
+            return;
+        }
         try {
             doOnNext(data);
         } catch (Throwable e) {
@@ -88,13 +92,12 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public final void onError(Throwable throwable) {
+        if (closed) {
+            return;
+        }
         if (throwable instanceof HttpResultPayloadException) {
             onNext(((HttpResultPayloadException) throwable).getResult());
             onCompleted(null);
-            return;
-        }
-        if (throwable instanceof HttpOverPayloadException) {
-            onCompleted(throwable);
             return;
         }
         try {
@@ -117,6 +120,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public final void onCompleted() {
+        if (closed) {
+            return;
+        }
         onCompleted(null);
     }
 
@@ -211,5 +217,14 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     protected final void sendHeader(HttpMetadata httpMetadata) {
         getHttpChannel().writeHeader(httpMetadata);
         headerSent = true;
+    }
+
+    @Override
+    public void close() throws Exception {
+        closed();
+    }
+
+    protected final void closed() {
+        closed = true;
     }
 }

@@ -81,6 +81,9 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     @Override
+    protected void onUnary() {}
+
+    @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         super.onMetadataCompletion(metadata);
         processGrpcHeaders(metadata);

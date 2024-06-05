@@ -75,7 +75,7 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
         }
         ChannelPipeline pipeline = ctx.pipeline();
         Http2TransportListener http2TransportListener = factory.newInstance(h2StreamChannel, url, frameworkModel);
-        ctx.channel().closeFuture().addListener(future -> http2TransportListener.onStreamClosed());
+        ctx.channel().closeFuture().addListener(future -> http2TransportListener.close());
         pipeline.addLast(new NettyHttp2FrameHandler(h2StreamChannel, http2TransportListener));
         pipeline.remove(this);
         ctx.fireChannelRead(metadata);

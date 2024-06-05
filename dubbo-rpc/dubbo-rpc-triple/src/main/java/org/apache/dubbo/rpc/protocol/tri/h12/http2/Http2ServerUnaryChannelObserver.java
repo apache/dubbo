@@ -14,45 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
-import org.apache.dubbo.remoting.http12.HttpChannel;
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
-import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.io.OutputStream;
+public class Http2ServerUnaryChannelObserver extends Http2ServerCallToObserverAdapter {
 
-import io.netty.buffer.ByteBufOutputStream;
-
-public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver {
-
-    public Http1ServerUnaryChannelObserver(HttpChannel httpChannel) {
-        super(httpChannel);
+    public Http2ServerUnaryChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        super(frameworkModel, h2StreamChannel);
     }
 
     @Override
-    protected void doOnNext(Object data) throws Throwable {
+    public void doOnNext(Object data) throws Throwable {
         HttpOutputMessage httpOutputMessage = buildMessage(data);
         sendHeader(buildMetadata(resolveStatusCode(data), data, httpOutputMessage));
         sendMessage(httpOutputMessage);
     }
 
     @Override
-    protected void doOnError(Throwable throwable) throws Throwable {
+    public void doOnError(Throwable throwable) throws Throwable {
         String statusCode = resolveStatusCode(throwable);
         Object data = buildErrorResponse(statusCode, throwable);
         HttpOutputMessage httpOutputMessage = buildMessage(data);
         sendHeader(buildMetadata(statusCode, data, httpOutputMessage));
         sendMessage(httpOutputMessage);
-    }
-
-    @Override
-    protected void preMetadata(HttpMetadata httpMetadata, HttpOutputMessage outputMessage) {
-        OutputStream body = outputMessage.getBody();
-        if (body instanceof ByteBufOutputStream) {
-            int contentLength = ((ByteBufOutputStream) body).writtenBytes();
-            httpMetadata.headers().set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(contentLength));
-        }
     }
 }
