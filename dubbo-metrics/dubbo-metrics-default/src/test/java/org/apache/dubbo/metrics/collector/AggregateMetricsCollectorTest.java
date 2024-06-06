@@ -19,9 +19,10 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
+import org.apache.dubbo.common.event.CompositeDubboEventMulticaster;
+import org.apache.dubbo.common.event.CompositeDubboLifecycleEventMulticaster;
+import org.apache.dubbo.common.event.DefaultDubboLifecycleEventMulticaster;
 import org.apache.dubbo.common.event.DubboEventBus;
-import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
 import org.apache.dubbo.common.event.DubboListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectionUtils;
@@ -212,7 +213,12 @@ class AggregateMetricsCollectorTest {
 
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-        when(beanFactory.getBean(DubboLifecycleEventMulticaster.class)).thenReturn(new DefaultDubboEventMulticaster());
+        when(beanFactory.getBean(CompositeDubboEventMulticaster.class))
+                .thenReturn(new CompositeDubboEventMulticaster(
+                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
+        when(beanFactory.getBean(CompositeDubboLifecycleEventMulticaster.class))
+                .thenReturn(new CompositeDubboLifecycleEventMulticaster(
+                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
         DefaultMetricsCollector defaultMetricsCollector = new DefaultMetricsCollector(applicationModel);
         when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(defaultMetricsCollector);
         when(configManager.getMetrics()).thenReturn(Optional.of(metricsConfig));

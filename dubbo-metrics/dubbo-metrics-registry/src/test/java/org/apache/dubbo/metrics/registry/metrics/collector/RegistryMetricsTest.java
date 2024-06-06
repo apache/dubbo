@@ -17,8 +17,9 @@
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
-import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
+import org.apache.dubbo.common.event.CompositeDubboEventMulticaster;
+import org.apache.dubbo.common.event.CompositeDubboLifecycleEventMulticaster;
+import org.apache.dubbo.common.event.DefaultDubboLifecycleEventMulticaster;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -34,6 +35,7 @@ import org.apache.dubbo.registry.client.event.RegistrySubscribeEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -64,7 +66,12 @@ public class RegistryMetricsTest {
     void setUp() {
         this.applicationModel = getApplicationModel();
         ScopeBeanFactory beanFactory = Mockito.mock(ScopeBeanFactory.class);
-        when(beanFactory.getBean(DubboLifecycleEventMulticaster.class)).thenReturn(new DefaultDubboEventMulticaster());
+        when(beanFactory.getBean(CompositeDubboEventMulticaster.class))
+                .thenReturn(new CompositeDubboEventMulticaster(
+                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
+        when(beanFactory.getBean(CompositeDubboLifecycleEventMulticaster.class))
+                .thenReturn(new CompositeDubboLifecycleEventMulticaster(
+                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
         this.collector = getTestCollector(this.applicationModel);
         this.collector.setCollectEnabled(true);
     }

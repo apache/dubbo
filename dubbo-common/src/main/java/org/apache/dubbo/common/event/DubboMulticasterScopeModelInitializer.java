@@ -17,10 +17,14 @@
 package org.apache.dubbo.common.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Initialize {@link DubboLifecycleEventMulticaster} for {@link ApplicationModel}
@@ -28,7 +32,7 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
  * @see DubboLifecycleEventMulticaster
  * @since 3.3.0
  */
-public class DubboApplicationMulticasterRegistry implements ScopeModelInitializer {
+public class DubboMulticasterScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
@@ -36,7 +40,27 @@ public class DubboApplicationMulticasterRegistry implements ScopeModelInitialize
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(DefaultDubboEventMulticaster.class);
+
+        List<DubboLifecycleEventMulticaster> lifecycleEventMulticasters = new ArrayList<>();
+        CompositeDubboLifecycleEventMulticaster lifecycleEventMulticaster =
+                new CompositeDubboLifecycleEventMulticaster(lifecycleEventMulticasters);
+
+        List<DubboEventMulticaster> eventMulticasters = new ArrayList<>();
+        CompositeDubboEventMulticaster dubboEventMulticaster = new CompositeDubboEventMulticaster(eventMulticasters);
+
+        ExtensionLoader<DubboEventMulticaster> extensionLoader =
+                applicationModel.getExtensionLoader(DubboEventMulticaster.class);
+        if (extensionLoader != null) {
+            for (DubboEventMulticaster eventMulticaster : extensionLoader.getActivateExtensions()) {
+                eventMulticasters.add(eventMulticaster);
+                if (eventMulticaster instanceof DubboLifecycleEventMulticaster) {
+                    lifecycleEventMulticasters.add((DubboLifecycleEventMulticaster) eventMulticaster);
+                }
+            }
+        }
+
+        beanFactory.registerBean(lifecycleEventMulticaster);
+        beanFactory.registerBean(dubboEventMulticaster);
     }
 
     @Override

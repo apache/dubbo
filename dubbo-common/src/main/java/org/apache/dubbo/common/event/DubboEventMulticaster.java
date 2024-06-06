@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.event;
 
+import org.apache.dubbo.common.extension.SPI;
+
 /**
  * Dispatches events to listeners, and provides ways for listeners to register themselves.
  *
@@ -23,6 +25,7 @@ package org.apache.dubbo.common.event;
  * @see DubboEvent
  * @see DubboListener
  */
+@SPI
 public interface DubboEventMulticaster {
 
     /**

@@ -1,2 +1,2 @@
 dubbo-common=org.apache.dubbo.common.CommonScopeModelInitializer
-application-multicaster-registry=org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry
+dubbo-multicaster-init=org.apache.dubbo.common.event.DubboMulticasterScopeModelInitializer
