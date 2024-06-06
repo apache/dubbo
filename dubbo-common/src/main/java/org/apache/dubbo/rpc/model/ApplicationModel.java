@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.OrderedObjectCompareUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -123,9 +124,9 @@ public class ApplicationModel extends ScopeModel {
             ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader =
                     this.getExtensionLoader(ScopeModelInitializer.class);
             Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-            for (ScopeModelInitializer initializer : initializers) {
-                initializer.initializeApplicationModel(this);
-            }
+            initializers.stream()
+                    .sorted(OrderedObjectCompareUtils::compareByOrder)
+                    .forEach(initializer -> initializer.initializeApplicationModel(this));
 
             Assert.notNull(getApplicationServiceRepository(), "ApplicationServiceRepository can not be null");
             Assert.notNull(getApplicationConfigManager(), "ApplicationConfigManager can not be null");

@@ -54,9 +54,17 @@ public class DubboEventBus {
      */
     public static void addListener(ApplicationModel applicationModel, DubboListener<?> listener) {
         if (listener instanceof DubboLifecycleListener) {
-            getLifecycleMulticaster(applicationModel).addListener(listener);
+            DubboLifecycleEventMulticaster lifecycleEventMulticaster = getLifecycleMulticaster(applicationModel);
+            if (lifecycleEventMulticaster == null) {
+                throw new RuntimeException("DubboLifecycleEventMulticaster has not been initialized");
+            }
+            lifecycleEventMulticaster.addListener(listener);
         }
-        getMulticaster(applicationModel).addListener(listener);
+        DubboEventMulticaster multicaster = getMulticaster(applicationModel);
+        if (multicaster == null) {
+            throw new RuntimeException("DubboEventMulticaster has not been initialized");
+        }
+        multicaster.addListener(listener);
     }
 
     /**
