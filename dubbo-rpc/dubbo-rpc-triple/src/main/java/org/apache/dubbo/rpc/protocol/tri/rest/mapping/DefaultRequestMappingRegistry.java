@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.config.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
@@ -49,12 +50,18 @@ import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.DUPLICATE_MAPPING;
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
     private final List<RequestMappingResolver> resolvers;
-
     private final RadixTree<Registration> tree = new RadixTree<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final RestConfig restConfig;
+
+    public DefaultRequestMappingRegistry(FrameworkModel frameworkModel, RestConfig restConfig) {
+        this.resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+        this.restConfig = restConfig;
+    }
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
-        resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+        this.resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+        this.restConfig = new RestConfig();
     }
 
     @Override
@@ -137,8 +144,17 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     public HandlerMeta lookup(HttpRequest request) {
+
         String path = PathUtils.normalize(request.rawPath());
         request.setAttribute(RestConstants.PATH_ATTRIBUTE, path);
+        // getTrailingSlashMatch and getSuffixPatternMatch
+        if (restConfig.getTrailingSlashMatch() != null && restConfig.getTrailingSlashMatch()) {
+            path = removeTrailingSlash(path);
+        }
+        if (restConfig.getSuffixPatternMatch() != null && restConfig.getSuffixPatternMatch()) {
+            path = removeSuffix(path);
+        }
+
         List<Match<Registration>> matches = new ArrayList<>();
         lock.readLock().lock();
         try {
@@ -170,8 +186,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             return null;
         }
         if (size > 1) {
+            String finalPath = path;
             candidates.sort((c1, c2) -> {
-                int comparison = c1.expression.compareTo(c2.expression, path);
+                int comparison = c1.expression.compareTo(c2.expression, finalPath);
                 if (comparison != 0) {
                     return comparison;
                 }
@@ -204,6 +221,20 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
 
         return handler;
+    }
+
+    private String removeTrailingSlash(String url) {
+        if (url != null && url.endsWith("/")) {
+            return url.substring(0, url.length() - 1);
+        }
+        return url;
+    }
+
+    private String removeSuffix(String url) {
+        if (url != null && url.contains(".")) {
+            return url.substring(0, url.lastIndexOf('.'));
+        }
+        return url;
     }
 
     private static final class Registration {
