@@ -1,0 +1,1 @@
+rest-cors=org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsHeaderFilter

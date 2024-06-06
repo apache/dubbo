@@ -16,9 +16,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.config.nested.TripleConfig;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2Connection;
@@ -37,7 +35,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import static io.netty.handler.codec.http2.Http2CodecUtil.DEFAULT_WINDOW_SIZE;
 import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_WEIGHT;
 import static io.netty.handler.codec.http2.Http2CodecUtil.MIN_WEIGHT;
 import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
@@ -49,47 +46,43 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
 
 /**
  * This design is learning from {@see io.netty.handler.codec.http2.DefaultHttp2RemoteFlowController} which is in Netty.
  */
 @UnstableApi
 public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
-    private static final InternalLogger logger =
-        InternalLoggerFactory.getInstance(TriHttp2RemoteFlowController.class);
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(TriHttp2RemoteFlowController.class);
     private static final int MIN_WRITABLE_CHUNK = 32 * 1024;
     private final Http2Connection connection;
     private final Http2Connection.PropertyKey stateKey;
     private final StreamByteDistributor streamByteDistributor;
     private final FlowState connectionState;
-    private final Configuration config;
     private int initialWindowSize;
     private WritabilityMonitor monitor;
     private ChannelHandlerContext ctx;
 
-    public TriHttp2RemoteFlowController(Http2Connection connection, ApplicationModel applicationModel) {
-        this(connection, (Listener) null, applicationModel);
+    public TriHttp2RemoteFlowController(Http2Connection connection, TripleConfig config) {
+        this(connection, (Listener) null, config);
     }
 
-    public TriHttp2RemoteFlowController(Http2Connection connection,
-                                        StreamByteDistributor streamByteDistributor,
-                                        ApplicationModel applicationModel) {
-        this(connection, streamByteDistributor, null, applicationModel);
+    public TriHttp2RemoteFlowController(
+            Http2Connection connection, StreamByteDistributor streamByteDistributor, TripleConfig config) {
+        this(connection, streamByteDistributor, null, config);
     }
 
-    public TriHttp2RemoteFlowController(Http2Connection connection, final Listener listener, ApplicationModel applicationModel) {
-        this(connection, new WeightedFairQueueByteDistributor(connection), listener, applicationModel);
+    public TriHttp2RemoteFlowController(Http2Connection connection, final Listener listener, TripleConfig config) {
+        this(connection, new WeightedFairQueueByteDistributor(connection), listener, config);
     }
 
-    public TriHttp2RemoteFlowController(Http2Connection connection,
-                                        StreamByteDistributor streamByteDistributor,
-                                        final Listener listener,
-                                        ApplicationModel applicationModel) {
+    public TriHttp2RemoteFlowController(
+            Http2Connection connection,
+            StreamByteDistributor streamByteDistributor,
+            final Listener listener,
+            TripleConfig config) {
         this.connection = checkNotNull(connection, "connection");
         this.streamByteDistributor = checkNotNull(streamByteDistributor, "streamWriteDistributor");
-        this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
-        this.initialWindowSize = config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
+        this.initialWindowSize = config.getInitialWindowSize();
 
         // Add a flow state for the connection.
         stateKey = connection.newKey();
@@ -414,9 +407,9 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                 if (cancelled) {
                     cancel(INTERNAL_ERROR, cause);
                 }
-                if(monitor.isOverFlowControl()){
+                if (monitor.isOverFlowControl()) {
                     cause = new Throwable();
-                    cancel(FLOW_CONTROL_ERROR,cause);
+                    cancel(FLOW_CONTROL_ERROR, cause);
                 }
             }
             return writtenBytes;
@@ -427,8 +420,7 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
          */
         int incrementStreamWindow(int delta) throws Http2Exception {
             if (delta > 0 && Integer.MAX_VALUE - delta < window) {
-                throw streamError(stream.id(), FLOW_CONTROL_ERROR,
-                    "Window size overflow for stream: %d", stream.id());
+                throw streamError(stream.id(), FLOW_CONTROL_ERROR, "Window size overflow for stream: %d", stream.id());
             }
             window += delta;
             streamByteDistributor.updateStreamableBytes(this);
@@ -499,8 +491,8 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
             FlowControlled frame = pendingWriteQueue.poll();
             if (frame != null) {
                 // Only create exception once and reuse to reduce overhead of filling in the stacktrace.
-                final Http2Exception exception = streamError(stream.id(), error, cause,
-                    "Stream closed before write could take place");
+                final Http2Exception exception =
+                        streamError(stream.id(), error, cause, "Stream closed before write could take place");
                 do {
                     writeError(frame, exception);
                     frame = pendingWriteQueue.poll();
@@ -572,13 +564,13 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
          * Called when the writability of the underlying channel changes.
          * @throws Http2Exception If a write occurs and an exception happens in the write operation.
          */
-        void channelWritabilityChange() throws Http2Exception { }
+        void channelWritabilityChange() throws Http2Exception {}
 
         /**
          * Called when the state is cancelled.
          * @param state the state that was cancelled.
          */
-        void stateCancelled(FlowState state) { }
+        void stateCancelled(FlowState state) {}
 
         /**
          * Set the initial window size for {@code state}.
@@ -644,10 +636,10 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                 int bytesToWrite = writableBytes();
                 // Make sure we always write at least once, regardless if we have bytesToWrite or not.
                 // This ensures that zero-length frames will always be written.
-                for (;;) {
-                    if (!streamByteDistributor.distribute(bytesToWrite, this) ||
-                        (bytesToWrite = writableBytes()) <= 0 ||
-                        !isChannelWritable0()) {
+                for (; ; ) {
+                    if (!streamByteDistributor.distribute(bytesToWrite, this)
+                            || (bytesToWrite = writableBytes()) <= 0
+                            || !isChannelWritable0()) {
                         break;
                     }
                 }
@@ -680,9 +672,9 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
         }
 
         final boolean isOverFlowControl() {
-            if(connectionState.windowSize() == 0){
+            if (connectionState.windowSize() == 0) {
                 return true;
-            }else {
+            } else {
                 return false;
             }
         }
@@ -785,9 +777,12 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                 checkAllWritabilityChanged();
             } else if (isWritable(state) != state.markedWritability()) {
                 notifyWritabilityChanged(state);
-            }else if(isOverFlowControl()){
-                throw streamError(state.stream().id(), FLOW_CONTROL_ERROR,
-                    "TotalPendingBytes size overflow for stream: %d", state.stream().id());
+            } else if (isOverFlowControl()) {
+                throw streamError(
+                        state.stream().id(),
+                        FLOW_CONTROL_ERROR,
+                        "TotalPendingBytes size overflow for stream: %d",
+                        state.stream().id());
             }
         }
 
@@ -798,4 +793,3 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
         }
     }
 }
-

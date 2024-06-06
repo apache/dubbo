@@ -85,6 +85,19 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     @Override
+    public final void onStreamClosed() {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            accumulate.close();
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
+    }
+
+    @Override
     public final void setFragmentListener(FragmentListener listener) {
         this.listener = listener;
     }
@@ -93,6 +106,9 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         // We can have reentrancy here when using a direct executor, triggered by calls to
         // request more messages. This is safe as we simply loop until pendingDelivers = 0
         if (inDelivery) {
+            return;
+        }
+        if (closed) {
             return;
         }
         inDelivery = true;

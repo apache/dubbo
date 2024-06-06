@@ -52,7 +52,7 @@ public class NettyHttp1Channel implements HttpChannel {
 
     @Override
     public HttpOutputMessage newOutputMessage() {
-        return new Http1OutputMessage(new ByteBufOutputStream(channel.alloc().buffer()));
+        return new Http1OutputMessage(new ByteBufOutputStream(channel.alloc().buffer(), true));
     }
 
     @Override

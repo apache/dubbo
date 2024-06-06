@@ -141,9 +141,9 @@ See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) 
 * Fix bugs reported on [issues](https://github.com/apache/dubbo/issues), and send us a pull request.
 * Review the existing [pull request](https://github.com/apache/dubbo/pulls).
 * Improve the [website](https://github.com/apache/dubbo-website), typically we need
-  * blog post
-  * translation on documentation
-  * use cases around the integration of Dubbo in enterprise systems.
+    * blog post
+    * translation on documentation
+    * use cases around the integration of Dubbo in enterprise systems.
 * Improve the [dubbo-admin/dubbo-monitor](https://github.com/apache/dubbo-admin).
 * Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
 * Other forms of contribution not explicitly enumerated above.

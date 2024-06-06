@@ -20,10 +20,30 @@ import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 /**
  * The Subscriber in server to passing the data produced by user publisher to responseStream.
  */
 public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T> {
+
+    /**
+     * The execution future of the current task, in order to be returned to stubInvoker
+     */
+    private final CompletableFuture<List<T>> executionFuture = new CompletableFuture<>();
+    /**
+     * The result elements collected by the current task.
+     * This class is a flux subscriber, which usually means there will be multiple elements, so it is declared as a list type.
+     */
+    private final List<T> collectedData = new ArrayList<>();
+
+    public ServerTripleReactorSubscriber() {}
+
+    public ServerTripleReactorSubscriber(CallStreamObserver<T> streamObserver) {
+        this.downstream = streamObserver;
+    }
 
     @Override
     public void subscribe(CallStreamObserver<T> downstream) {
@@ -39,5 +59,27 @@ public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubsc
             }
             context.addListener(ctx -> super.cancel());
         }
+    }
+
+    @Override
+    public void onNext(T t) {
+        super.onNext(t);
+        collectedData.add(t);
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        super.onError(throwable);
+        executionFuture.completeExceptionally(throwable);
+    }
+
+    @Override
+    public void onComplete() {
+        super.onComplete();
+        executionFuture.complete(this.collectedData);
+    }
+
+    public CompletableFuture<List<T>> getExecutionFuture() {
+        return executionFuture;
     }
 }

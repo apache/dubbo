@@ -236,6 +236,13 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             }
             return;
         }
+
+        // Close the existing channel before setting a new channel
+        final io.netty.channel.Channel current = getNettyChannel();
+        if (current != null) {
+            current.close();
+        }
+
         this.channel.set(nettyChannel);
         // This indicates that the connection is available.
         if (this.connectingPromise.get() != null) {
@@ -254,6 +261,10 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         }
         io.netty.channel.Channel nettyChannel = (io.netty.channel.Channel) channel;
         if (this.channel.compareAndSet(nettyChannel, null)) {
+            // Ensure the channel is closed
+            if (nettyChannel.isOpen()) {
+                nettyChannel.close();
+            }
             NettyChannel.removeChannelIfDisconnected(nettyChannel);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(String.format("%s goaway", this));

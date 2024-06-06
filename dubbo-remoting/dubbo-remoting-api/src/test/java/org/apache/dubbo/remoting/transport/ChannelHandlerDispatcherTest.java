@@ -24,11 +24,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class ChannelHandlerDispatcherTest {
+
+    @AfterEach
+    public void tearDown() {
+        MockChannelHandler.reset();
+    }
 
     @Test
     void test() {
@@ -137,5 +143,13 @@ class MockChannelHandler extends ChannelHandlerAdapter {
 
     public static int getCaughtCount() {
         return caughtCount;
+    }
+
+    public static void reset() {
+        sentCount = 0;
+        connectedCount = 0;
+        disconnectedCount = 0;
+        receivedCount = 0;
+        caughtCount = 0;
     }
 }

@@ -1,0 +1,1 @@
+hessian=org.apache.dubbo.common.serialize.hessian2.aot.HessianReflectionTypeDescriberRegistrar

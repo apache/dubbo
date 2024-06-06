@@ -122,6 +122,11 @@
       <artifactId>dubbo-serialization-fastjson2</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-serialization-hessian2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -132,16 +137,6 @@
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-filter-validation</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-http</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.alibaba</groupId>
-      <artifactId>fastjson</artifactId>
     </dependency>
 
     <dependency>
@@ -157,7 +152,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.5.3</version>
+      <version>1.5.6</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -204,7 +199,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.10.1</version>
+            <version>0.10.2</version>
             <configuration>
               <classesDirectory>${project.build.outputDirectory}</classesDirectory>
               <metadataRepository>
