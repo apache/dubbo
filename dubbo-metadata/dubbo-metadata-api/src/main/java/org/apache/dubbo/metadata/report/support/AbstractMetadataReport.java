@@ -85,7 +85,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected static final String DEFAULT_ROOT = "dubbo";
 
-    private static final int ONE_DAY_IN_MILLISECONDS = 60 * 24 * 60 * 1000;
+    protected static final int ONE_DAY_IN_MILLISECONDS = 60 * 24 * 60 * 1000;
     private static final int FOUR_HOURS_IN_MILLISECONDS = 60 * 4 * 60 * 1000;
     // Log output
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
