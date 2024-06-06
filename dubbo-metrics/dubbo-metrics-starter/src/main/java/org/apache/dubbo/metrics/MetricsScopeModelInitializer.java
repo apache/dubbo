@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metrics;
 
+import org.apache.dubbo.common.Ordered;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.event.DubboListener;
@@ -28,7 +29,7 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 import java.util.List;
 
-public class MetricsScopeModelInitializer implements ScopeModelInitializer {
+public class MetricsScopeModelInitializer implements ScopeModelInitializer, Ordered {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
@@ -51,4 +52,9 @@ public class MetricsScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeModuleModel(ModuleModel moduleModel) {}
+
+    @Override
+    public int getOrder() {
+        return 1;
+    }
 }
