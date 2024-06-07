@@ -28,11 +28,7 @@ public class LimitedByteBufOutputStream extends ByteBufOutputStream {
     private final int capacity;
 
     public LimitedByteBufOutputStream(ByteBuf byteBuf, int capacity) {
-        this(byteBuf, false, capacity);
-    }
-
-    public LimitedByteBufOutputStream(ByteBuf byteBuf, boolean releaseOnClose, int capacity) {
-        super(byteBuf, releaseOnClose);
+        super(byteBuf);
         this.capacity = capacity == 0 ? Integer.MAX_VALUE : capacity;
     }
 
