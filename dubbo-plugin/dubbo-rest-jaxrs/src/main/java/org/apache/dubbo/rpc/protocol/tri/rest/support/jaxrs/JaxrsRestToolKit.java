@@ -22,11 +22,12 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.DefaultRestToolKit;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ParamConverter;
+
+import java.util.Optional;
 
 final class JaxrsRestToolKit extends DefaultRestToolKit {
 
@@ -50,18 +51,13 @@ final class JaxrsRestToolKit extends DefaultRestToolKit {
             return typeConverter.convert(value, MultivaluedHashMap.class);
         }
 
-        ParamConverter paramConverter = paramConverterFactory.getParamConverter(
+        Optional<ParamConverter> optional = paramConverterFactory.getParamConverter(
                 parameter.getType(), parameter.getGenericType(), parameter.getRealAnnotations());
-        if (paramConverter != null) {
-            Class<?> type = TypeUtils.getSuperGenericType(paramConverter.getClass(), 0);
-            Object result = null;
-            if (value.getClass().isAssignableFrom(String.class)
-                    && parameter.getType().isAssignableFrom(type)) {
-                result = paramConverter.fromString((String) value);
-            } else if (value.getClass().isAssignableFrom(type)
-                    && parameter.getType().isAssignableFrom(String.class)) {
-                result = paramConverter.toString(value);
-            }
+        if (optional.isPresent()) {
+            ParamConverter paramConverter = optional.get();
+            Object result = value.getClass() == String.class
+                    ? paramConverter.fromString((String) value)
+                    : paramConverter.toString(value);
             if (result != null) {
                 return result;
             }

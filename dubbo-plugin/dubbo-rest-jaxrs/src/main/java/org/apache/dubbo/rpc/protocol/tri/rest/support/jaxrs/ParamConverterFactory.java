@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
 
@@ -25,34 +27,44 @@ import javax.ws.rs.ext.ParamConverterProvider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 @SuppressWarnings({"rawtypes"})
 public class ParamConverterFactory {
 
-    private final Map<Pair<Pair<Class<?>, Type>, Annotation[]>, ParamConverter> cache =
+    public static final Logger logger = LoggerFactory.getLogger(ParamConverterFactory.class);
+    private final Map<Pair<Pair<Class<?>, Type>, Annotation[]>, Optional<ParamConverter>> cache =
             CollectionUtils.newConcurrentHashMap();
     private final List<ParamConverterProvider> providers = new ArrayList<>();
 
     ParamConverterFactory() {
-        ServiceLoader.load(ParamConverterProvider.class).forEach(providers::add);
-    }
-
-    public <T> ParamConverter getParamConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
-        Pair<Pair<Class<?>, Type>, Annotation[]> pair = Pair.of(Pair.of(rawType, genericType), annotations);
-        ParamConverter paramConverter = cache.get(pair);
-        if (paramConverter != null) {
-            return paramConverter;
-        }
-        for (ParamConverterProvider provider : providers) {
-            paramConverter = provider.getConverter(rawType, genericType, annotations);
-            if (paramConverter != null) {
-                cache.put(pair, paramConverter);
-                return paramConverter;
+        ServiceLoader<ParamConverterProvider> serviceLoader = ServiceLoader.load(ParamConverterProvider.class);
+        Iterator<ParamConverterProvider> iterator = serviceLoader.iterator();
+        while (iterator.hasNext()) {
+            try {
+                ParamConverterProvider paramConverterProvider = iterator.next();
+                providers.add(paramConverterProvider);
+            } catch (Throwable e) {
+                logger.error("Spi Fail to load :" + e.getMessage());
             }
         }
-        return null;
+    }
+
+    public <T> Optional<ParamConverter> getParamConverter(
+            Class<T> rawType, Type genericType, Annotation[] annotations) {
+        Pair<Pair<Class<?>, Type>, Annotation[]> pair = Pair.of(Pair.of(rawType, genericType), annotations);
+        return cache.computeIfAbsent(pair, k -> {
+            for (ParamConverterProvider provider : providers) {
+                ParamConverter converter = provider.getConverter(rawType, genericType, annotations);
+                if (converter != null) {
+                    return Optional.of(converter);
+                }
+            }
+            return Optional.empty();
+        });
     }
 }
