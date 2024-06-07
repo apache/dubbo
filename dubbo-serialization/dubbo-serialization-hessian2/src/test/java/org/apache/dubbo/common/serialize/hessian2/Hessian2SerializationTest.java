@@ -206,7 +206,7 @@ class Hessian2SerializationTest {
     }
 
     @Test
-    void testReadByte() throws IOException {
+    void testReadByte() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
                 frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
@@ -217,6 +217,19 @@ class Hessian2SerializationTest {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
             objectOutput.writeObject((byte) 11);
+            objectOutput.flushBuffer();
+
+            byte[] bytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+            Assertions.assertEquals((byte) 11, objectInput.readObject());
+        }
+
+        // write byte, read byte
+        {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeByte((byte) 11);
             objectOutput.flushBuffer();
 
             byte[] bytes = outputStream.toByteArray();

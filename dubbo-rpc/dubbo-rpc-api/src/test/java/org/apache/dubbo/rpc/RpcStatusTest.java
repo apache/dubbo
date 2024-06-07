@@ -39,6 +39,10 @@ class RpcStatusTest {
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 91031, DemoService.class.getName());
         String methodName = "testBeginCountEndCount";
         int max = 2;
+
+        RpcStatus.removeStatus(url);
+        RpcStatus.removeStatus(url, methodName);
+
         boolean flag = RpcStatus.beginCount(url, methodName, max);
         RpcStatus urlRpcStatus = RpcStatus.getStatus(url);
         RpcStatus methodRpcStatus = RpcStatus.getStatus(url, methodName);
@@ -65,6 +69,10 @@ class RpcStatusTest {
     void testBeginCountEndCountInMultiThread() throws Exception {
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 91032, DemoService.class.getName());
         String methodName = "testBeginCountEndCountInMultiThread";
+
+        RpcStatus.removeStatus(url);
+        RpcStatus.removeStatus(url, methodName);
+
         int max = 50;
         int threadNum = 10;
         AtomicInteger successCount = new AtomicInteger();
@@ -99,6 +107,10 @@ class RpcStatusTest {
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 91033, DemoService.class.getName());
         String methodName = "testStatistics";
         int max = 0;
+
+        RpcStatus.removeStatus(url);
+        RpcStatus.removeStatus(url, methodName);
+
         RpcStatus.beginCount(url, methodName, max);
         RpcStatus.beginCount(url, methodName, max);
         RpcStatus.beginCount(url, methodName, max);

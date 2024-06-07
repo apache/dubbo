@@ -87,6 +87,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     public final void onError(Throwable throwable) {
         if (throwable instanceof HttpResultPayloadException) {
             onNext(((HttpResultPayloadException) throwable).getResult());
+            doOnCompleted(null);
             return;
         }
         try {
@@ -162,8 +163,13 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
             data = ((HttpResult<?>) data).getBody();
         }
         HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
-        preOutputMessage(outputMessage);
-        responseEncoder.encode(outputMessage.getBody(), data);
+        try {
+            preOutputMessage(outputMessage);
+            responseEncoder.encode(outputMessage.getBody(), data);
+        } catch (Throwable t) {
+            outputMessage.close();
+            throw t;
+        }
         return outputMessage;
     }
 

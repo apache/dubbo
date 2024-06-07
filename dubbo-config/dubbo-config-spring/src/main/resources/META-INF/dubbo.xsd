@@ -1134,6 +1134,80 @@
         </xsd:attribute>
     </xsd:complexType>
 
+    <xsd:complexType name="tripleType">
+        <xsd:attribute name="max-body-size" type="xsd:integer" default="8388608">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Maximum allowed size for HTTP1 request bodies. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="max-response-body-size" type="xsd:integer" default="8388608">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Maximum allowed size for HTTP1 response bodies. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="max-chunk-size" type="xsd:integer" default="8388608">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Set the maximum chunk size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="max-header-size" type="xsd:integer" default="8192">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Set the maximum line length of header lines. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="max-initial-line-length" type="xsd:integer" default="4096">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Set the maximum length of the first line of the HTTP header. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="initial-buffer-size" type="xsd:integer" default="16384">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Set the initial size of the temporary buffer used when parsing the lines of the HTTP headers. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="header-table-size" type="xsd:integer" default="4096">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The header table size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-push" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether to enable push, default is false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="max-concurrent-streams" type="xsd:integer" default="2147483647">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Maximum concurrent streams ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="initial-window-size" type="xsd:integer" default="8388608">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether to enable push, default is false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="max-frame-size" type="xsd:integer" default="8388608">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Maximum concurrent streams ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="max-header-list-size" type="xsd:integer" default="32768">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Maximum header list size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
     <xsd:complexType name="prometheusExporterType">
         <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
@@ -1508,6 +1582,7 @@
     <xsd:complexType name="protocolType">
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="triple" minOccurs="0" />
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:ID">
             <xsd:annotation>
@@ -2174,6 +2249,17 @@
             <xsd:appinfo>
                 <tool:annotation>
                     <tool:exports type="org.apache.dubbo.config.TracingConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="triple" type="tripleType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The triple config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.nested.TripleConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>

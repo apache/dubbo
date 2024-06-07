@@ -166,7 +166,7 @@ public final class HttpUtils {
                 HttpMethod.POST,
                 request.uri(),
                 data,
-                new DefaultHttpHeaders(),
+                new DefaultHttpHeaders(false),
                 new DefaultHttpHeaders(false));
         request.headers().forEach(nRequest.headers()::set);
         if (charset == null) {

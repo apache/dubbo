@@ -41,7 +41,6 @@ public class Constants
                 org.apache.dubbo.common.serialize.Constants,
                 org.apache.dubbo.common.config.configcenter.Constants,
                 org.apache.dubbo.metadata.report.support.Constants,
-                org.apache.dubbo.rpc.protocol.rest.Constants,
                 org.apache.dubbo.registry.Constants {
     public static final String PROVIDER = "provider";
 

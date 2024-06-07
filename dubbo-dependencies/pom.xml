@@ -27,7 +27,6 @@
   <artifactId>dubbo-dependencies</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>dubbo-dependencies-zookeeper</module>
     <module>dubbo-dependencies-zookeeper-curator5</module>
   </modules>
 

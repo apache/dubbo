@@ -23,8 +23,8 @@ import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
@@ -51,7 +51,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     private final ApplicationModel applicationModel;
 
     ZookeeperDynamicConfiguration(
-            URL url, ZookeeperTransporter zookeeperTransporter, ApplicationModel applicationModel) {
+            URL url, ZookeeperClientManager zookeeperClientManager, ApplicationModel applicationModel) {
         super(url);
 
         this.cacheListener = new CacheListener();
@@ -67,7 +67,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
                 new NamedThreadFactory(threadName, true),
                 new AbortPolicyWithReport(threadName, url));
 
-        zkClient = zookeeperTransporter.connect(url);
+        zkClient = zookeeperClientManager.connect(url);
         boolean isConnected = zkClient.isConnected();
         if (!isConnected) {
 

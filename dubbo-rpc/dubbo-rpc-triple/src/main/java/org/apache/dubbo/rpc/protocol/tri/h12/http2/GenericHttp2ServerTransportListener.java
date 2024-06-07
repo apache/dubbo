@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.http12.HttpMethods;
-import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
@@ -28,9 +28,9 @@ import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
+import org.apache.dubbo.remoting.http12.message.DefaultStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
-import org.apache.dubbo.remoting.http12.message.NoOpStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -47,8 +47,8 @@ import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.StreamingHttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
-import org.apache.dubbo.rpc.protocol.tri.h12.grpc.StreamingHttpMessageListener;
 
 import java.io.ByteArrayInputStream;
 import java.util.concurrent.Executor;
@@ -77,8 +77,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     protected StreamingDecoder newStreamingDecoder() {
-        // default no op
-        return new NoOpStreamingDecoder();
+        return new DefaultStreamingDecoder();
     }
 
     @Override
@@ -86,6 +85,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         return new SerializingExecutor(executorSupport.getExecutor(metadata));
     }
 
+    @Override
     protected void doOnMetadata(Http2Header metadata) {
         if (metadata.isEndStream()) {
             if (!HttpMethods.supportBody(metadata.method())) {
@@ -164,7 +164,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onDataCompletion(Http2InputMessage message) {
         if (message.isEndStream()) {
-            serverCallListener.onComplete();
+            getStreamingDecoder().close();
         }
     }
 
@@ -174,8 +174,21 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     @Override
+    protected void onError(Http2InputMessage message, Throwable throwable) {
+        try {
+            message.close();
+        } catch (Exception e) {
+            throwable.addSuppressed(e);
+        }
+        onError(throwable);
+    }
+
+    @Override
+    protected void onFinally(Http2InputMessage message) {}
+
+    @Override
     public void cancelByRemote(long errorCode) {
-        serverChannelObserver.cancel(new HttpStatusException((int) errorCode));
+        serverChannelObserver.cancel(CancelStreamException.fromRemote(errorCode));
         serverCallListener.onCancel(errorCode);
     }
 
@@ -185,6 +198,12 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     protected final Http2ServerChannelObserver getServerChannelObserver() {
         return serverChannelObserver;
+    }
+
+    @Override
+    public void onStreamClosed() {
+        // doing on event loop thread
+        getServerChannelObserver().onStreamClosed();
     }
 
     private static class Http2StreamingDecodeListener implements ListeningDecoder.Listener {

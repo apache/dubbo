@@ -19,6 +19,9 @@ package org.apache.dubbo.aot.generate;
 import org.apache.dubbo.aot.api.JdkProxyDescriber;
 import org.apache.dubbo.aot.api.ProxyDescriberRegistrar;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
+import org.apache.dubbo.aot.api.ResourceBundleDescriber;
+import org.apache.dubbo.aot.api.ResourceDescriberRegistrar;
+import org.apache.dubbo.aot.api.ResourcePatternDescriber;
 import org.apache.dubbo.aot.api.TypeDescriber;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -46,6 +49,12 @@ public class AotProcessor {
                 ResourceScanner.INSTANCE.distinctSpiResource().toArray(new String[] {}));
         resourceRepository.registerIncludesPatterns(
                 ResourceScanner.INSTANCE.distinctSecurityResource().toArray(new String[] {}));
+        for (ResourcePatternDescriber resourcePatternDescriber : getResourcePatternDescribers()) {
+            resourceRepository.registerIncludesPattern(resourcePatternDescriber);
+        }
+        for (ResourceBundleDescriber resourceBundleDescriber : getResourceBundleDescribers()) {
+            resourceRepository.registerBundles(resourceBundleDescriber);
+        }
         writer.writeResourceConfig(resourceRepository);
 
         ReflectConfigMetadataRepository reflectRepository = new ReflectConfigMetadataRepository();
@@ -87,6 +96,52 @@ public class AotProcessor {
                 });
 
         return typeDescribers;
+    }
+
+    private static List<ResourcePatternDescriber> getResourcePatternDescribers() {
+        List<ResourcePatternDescriber> resourcePatternDescribers = new ArrayList<>();
+        FrameworkModel.defaultModel()
+                .defaultApplication()
+                .getExtensionLoader(ResourceDescriberRegistrar.class)
+                .getSupportedExtensionInstances()
+                .forEach(reflectionTypeDescriberRegistrar -> {
+                    List<ResourcePatternDescriber> describers = new ArrayList<>();
+                    try {
+                        describers = reflectionTypeDescriberRegistrar.getResourcePatternDescribers();
+                    } catch (Throwable e) {
+                        // The ResourceDescriberRegistrar implementation classes are shaded, causing some unused
+                        // classes to be loaded.
+                        // When loading a dependent class may appear that cannot be found, it does not affect.
+                        // ignore
+                    }
+
+                    resourcePatternDescribers.addAll(describers);
+                });
+
+        return resourcePatternDescribers;
+    }
+
+    private static List<ResourceBundleDescriber> getResourceBundleDescribers() {
+        List<ResourceBundleDescriber> resourceBundleDescribers = new ArrayList<>();
+        FrameworkModel.defaultModel()
+                .defaultApplication()
+                .getExtensionLoader(ResourceDescriberRegistrar.class)
+                .getSupportedExtensionInstances()
+                .forEach(reflectionTypeDescriberRegistrar -> {
+                    List<ResourceBundleDescriber> describers = new ArrayList<>();
+                    try {
+                        describers = reflectionTypeDescriberRegistrar.getResourceBundleDescribers();
+                    } catch (Throwable e) {
+                        // The ResourceDescriberRegistrar implementation classes are shaded, causing some unused
+                        // classes to be loaded.
+                        // When loading a dependent class may appear that cannot be found, it does not affect.
+                        // ignore
+                    }
+
+                    resourceBundleDescribers.addAll(describers);
+                });
+
+        return resourceBundleDescribers;
     }
 
     private static List<JdkProxyDescriber> getProxyDescribers() {

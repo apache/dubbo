@@ -1,1 +1,0 @@
-curatorZookeeper=org.apache.dubbo.remoting.zookeeper.curator.aot.CuratorZookeeperReflectionTypeDescriberRegistrar

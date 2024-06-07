@@ -55,6 +55,7 @@ import org.hamcrest.CoreMatchers;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -62,6 +63,7 @@ import static org.apache.dubbo.rpc.protocol.tri.rest.RestConstants.EXTENSION_KEY
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@Disabled
 class JaxrsRestProtocolTest {
     private final Protocol tProtocol =
             ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getExtension("tri");

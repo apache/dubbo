@@ -444,21 +444,11 @@ public abstract class AnnotationUtils {
                 (_k) -> ClassUtils.isPresent(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader))) {
             Class<?> annotatedElementUtilsClass = resolveClassName(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader);
             // getMergedAnnotation method appears in the Spring Framework 4.2
-            Method getMergedAnnotationMethod = findMethod(
-                    annotatedElementUtilsClass,
-                    "getMergedAnnotation",
-                    AnnotatedElement.class,
-                    Class.class,
-                    boolean.class,
-                    boolean.class);
+            Method getMergedAnnotationMethod =
+                    findMethod(annotatedElementUtilsClass, "getMergedAnnotation", AnnotatedElement.class, Class.class);
             if (getMergedAnnotationMethod != null) {
-                mergedAnnotation = (Annotation) invokeMethod(
-                        getMergedAnnotationMethod,
-                        null,
-                        annotatedElement,
-                        annotationType,
-                        classValuesAsString,
-                        nestedAnnotationsAsMap);
+                mergedAnnotation =
+                        (Annotation) invokeMethod(getMergedAnnotationMethod, null, annotatedElement, annotationType);
             }
         }
 

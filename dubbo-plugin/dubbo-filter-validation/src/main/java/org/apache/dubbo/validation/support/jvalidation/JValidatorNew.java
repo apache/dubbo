@@ -309,6 +309,16 @@ public class JValidatorNew implements Validator {
         }
     }
 
+    @Override
+    public boolean isSupport() {
+        Class<?> cls = null;
+        try {
+            cls = jakarta.validation.Validation.class;
+        } catch (Throwable ignore) {
+        }
+        return cls != null;
+    }
+
     private Class<?> methodClass(String methodName) {
         Class<?> methodClass = null;
         String methodClassName = clazz.getName() + "$" + toUpperMethodName(methodName);
