@@ -97,6 +97,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                         .maxFrameSize(tripleConfig.getMaxFrameSize())
                         .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
                 .frameLogger(CLIENT_LOGGER)
+                .validateHeaders(false)
                 .build();
         //        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         List<ChannelHandler> handlers = new ArrayList<>();
@@ -198,6 +199,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                         .maxFrameSize(tripleConfig.getMaxFrameSize())
                         .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
                 .frameLogger(SERVER_LOGGER)
+                .validateHeaders(false)
                 .build();
     }
 

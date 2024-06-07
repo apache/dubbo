@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.remoting.http12.exception.HttpOverPayloadException;
 

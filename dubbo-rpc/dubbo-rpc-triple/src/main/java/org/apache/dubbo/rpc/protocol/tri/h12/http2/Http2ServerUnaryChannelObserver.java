@@ -41,4 +41,12 @@ public class Http2ServerUnaryChannelObserver extends Http2ServerCallToObserverAd
         sendHeader(buildMetadata(statusCode, data, httpOutputMessage));
         sendMessage(httpOutputMessage);
     }
+
+    @Override
+    protected void doOnCompleted(Throwable throwable) {}
+
+    @Override
+    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
+        return getHttpChannel().newOutputMessage(true);
+    }
 }

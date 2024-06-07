@@ -21,7 +21,7 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h1.Http1OutputMessage;
-import org.apache.dubbo.remoting.http12.h1.LimitedByteBufOutputStream;
+import org.apache.dubbo.remoting.http12.LimitedByteBufOutputStream;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
 import java.net.SocketAddress;
