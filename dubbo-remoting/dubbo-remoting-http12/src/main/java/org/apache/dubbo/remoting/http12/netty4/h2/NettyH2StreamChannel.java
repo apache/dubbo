@@ -63,7 +63,7 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         ByteBuf buffer = http2StreamChannel.alloc().buffer();
         ByteBufOutputStream outputStream =
-                new LimitedByteBufOutputStream(buffer, true, tripleConfig.getMaxResponseBodySize());
+                new LimitedByteBufOutputStream(buffer, tripleConfig.getMaxResponseBodySize());
         return new Http2OutputMessageFrame(outputStream, endStream);
     }
 
