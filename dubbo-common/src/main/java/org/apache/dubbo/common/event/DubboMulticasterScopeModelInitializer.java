@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
  * @see DubboLifecycleEventMulticaster
  * @since 3.3.0
  */
-public class DubboApplicationMulticasterRegistry implements ScopeModelInitializer {
+public class DubboMulticasterScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {}

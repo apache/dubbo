@@ -18,7 +18,7 @@ package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
-import org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry;
+import org.apache.dubbo.common.event.DubboMulticasterScopeModelInitializer;
 import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.store.DataStore;
@@ -52,7 +52,7 @@ public class ThreadPoolMetricsSamplerTest {
 
     ThreadPoolMetricsSampler sampler;
 
-    private DubboApplicationMulticasterRegistry multicasterRegistry = new DubboApplicationMulticasterRegistry();
+    private DubboMulticasterScopeModelInitializer multicasterRegistry = new DubboMulticasterScopeModelInitializer();
 
     @BeforeEach
     void setUp() {
