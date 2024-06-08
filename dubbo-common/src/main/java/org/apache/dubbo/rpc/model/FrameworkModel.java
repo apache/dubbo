@@ -24,7 +24,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.OrderedObjectCompareUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 
@@ -95,9 +94,9 @@ public class FrameworkModel extends ScopeModel {
                 ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader =
                         this.getExtensionLoader(ScopeModelInitializer.class);
                 Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-                initializers.stream()
-                        .sorted(OrderedObjectCompareUtils::compareByOrder)
-                        .forEach(initializer -> initializer.initializeFrameworkModel(this));
+                for (ScopeModelInitializer initializer : initializers) {
+                    initializer.initializeFrameworkModel(this);
+                }
 
                 internalApplicationModel = new ApplicationModel(this, true);
                 internalApplicationModel
