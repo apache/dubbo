@@ -39,11 +39,8 @@ public class DubboEventBus {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboEventBus.class);
 
-    private static final ConcurrentHashMap<ApplicationModel, DubboEventMulticaster> cachedMulticasterMap =
+    private static final ConcurrentHashMap<ApplicationModel, DubboLifecycleEventMulticaster> cachedMulticasterMap =
             new ConcurrentHashMap<>();
-
-    private static final ConcurrentHashMap<ApplicationModel, DubboLifecycleEventMulticaster>
-            cachedLifecycleMulticasterMap = new ConcurrentHashMap<>();
 
     private DubboEventBus() {}
 
@@ -53,9 +50,6 @@ public class DubboEventBus {
      * @param listener object whose subscriber methods should be registered.
      */
     public static void addListener(ApplicationModel applicationModel, DubboListener<?> listener) {
-        if (listener instanceof DubboLifecycleListener) {
-            getLifecycleMulticaster(applicationModel).addListener(listener);
-        }
         getMulticaster(applicationModel).addListener(listener);
     }
 
@@ -66,9 +60,6 @@ public class DubboEventBus {
      * @throws IllegalArgumentException if the object was not previously registered.
      */
     public static void removeListener(ApplicationModel applicationModel, DubboListener<?> listener) {
-        if (listener instanceof DubboLifecycleListener) {
-            getLifecycleMulticaster(applicationModel).removeListener(listener);
-        }
         getMulticaster(applicationModel).removeListener(listener);
     }
 
@@ -140,7 +131,7 @@ public class DubboEventBus {
      * eventSaveRunner saves the event, so that the calculation rt is introverted
      */
     public static void before(DubboEvent event) {
-        tryInvoke(() -> getLifecycleMulticaster(event.getApplicationModel()).publishBeforeEvent(event));
+        tryInvoke(() -> getMulticaster(event.getApplicationModel()).publishBeforeEvent(event));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -149,25 +140,18 @@ public class DubboEventBus {
             if (event instanceof CustomAfterPost) {
                 ((CustomAfterPost) event).customAfterPost(result);
             }
-            getLifecycleMulticaster(event.getApplicationModel()).publishEvent(event);
+            getMulticaster(event.getApplicationModel()).publishEvent(event);
         });
     }
 
     public static void error(DubboEvent event) {
-        tryInvoke(() -> getLifecycleMulticaster(event.getApplicationModel()).publishErrorEvent(event));
+        tryInvoke(() -> getMulticaster(event.getApplicationModel()).publishErrorEvent(event));
     }
 
-    private static DubboEventMulticaster getMulticaster(ApplicationModel applicationModel) {
+    private static DubboLifecycleEventMulticaster getMulticaster(ApplicationModel applicationModel) {
         return cachedMulticasterMap.computeIfAbsent(applicationModel, t -> {
             ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-            return beanFactory.getBean(CompositeDubboEventMulticaster.class);
-        });
-    }
-
-    private static DubboLifecycleEventMulticaster getLifecycleMulticaster(ApplicationModel applicationModel) {
-        return cachedLifecycleMulticasterMap.computeIfAbsent(applicationModel, t -> {
-            ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-            return beanFactory.getBean(CompositeDubboLifecycleEventMulticaster.class);
+            return beanFactory.getBean(DubboLifecycleEventMulticaster.class);
         });
     }
 }

@@ -16,16 +16,13 @@
  */
 package org.apache.dubbo.common.event;
 
-import org.apache.dubbo.common.extension.Activate;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-@Activate
-public class DefaultDubboLifecycleEventMulticaster implements DubboLifecycleEventMulticaster {
+public class DefaultDubboEventMulticaster implements DubboLifecycleEventMulticaster {
 
     /**
      * All registered subscribers, indexed by event type.

@@ -17,9 +17,8 @@
 package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.event.CompositeDubboEventMulticaster;
-import org.apache.dubbo.common.event.CompositeDubboLifecycleEventMulticaster;
-import org.apache.dubbo.common.event.DefaultDubboLifecycleEventMulticaster;
+import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
+import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -55,12 +54,7 @@ public class DefaultMetricsServiceTest {
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
         when(beanFactory.getBeansOfType(MetricsCollector.class))
                 .thenReturn(Collections.singletonList(metricsCollector));
-        when(beanFactory.getBean(CompositeDubboEventMulticaster.class))
-                .thenReturn(new CompositeDubboEventMulticaster(
-                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
-        when(beanFactory.getBean(CompositeDubboLifecycleEventMulticaster.class))
-                .thenReturn(new CompositeDubboLifecycleEventMulticaster(
-                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
+        when(beanFactory.getBean(DubboLifecycleEventMulticaster.class)).thenReturn(new DefaultDubboEventMulticaster());
 
         defaultMetricsService = new DefaultMetricsService(applicationModel);
     }

@@ -17,10 +17,9 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.event.CompositeDubboEventMulticaster;
-import org.apache.dubbo.common.event.CompositeDubboLifecycleEventMulticaster;
-import org.apache.dubbo.common.event.DefaultDubboLifecycleEventMulticaster;
-import org.apache.dubbo.common.event.DubboMulticasterScopeModelInitializer;
+import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
+import org.apache.dubbo.common.event.DubboApplicationMulticasterRegistry;
+import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -31,7 +30,6 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +52,7 @@ public class ThreadPoolMetricsSamplerTest {
 
     ThreadPoolMetricsSampler sampler;
 
-    private DubboMulticasterScopeModelInitializer multicasterInitializer = new DubboMulticasterScopeModelInitializer();
+    private DubboApplicationMulticasterRegistry multicasterRegistry = new DubboApplicationMulticasterRegistry();
 
     @BeforeEach
     void setUp() {
@@ -144,12 +142,8 @@ public class ThreadPoolMetricsSamplerTest {
         MockitoAnnotations.openMocks(this);
 
         when(applicationModel.getBeanFactory()).thenReturn(scopeBeanFactory);
-        when(scopeBeanFactory.getBean(CompositeDubboEventMulticaster.class))
-                .thenReturn(new CompositeDubboEventMulticaster(
-                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
-        when(scopeBeanFactory.getBean(CompositeDubboLifecycleEventMulticaster.class))
-                .thenReturn(new CompositeDubboLifecycleEventMulticaster(
-                        Collections.singletonList(new DefaultDubboLifecycleEventMulticaster())));
+        when(scopeBeanFactory.getBean(DubboLifecycleEventMulticaster.class))
+                .thenReturn(new DefaultDubboEventMulticaster());
 
         collector = new DefaultMetricsCollector(applicationModel);
         sampler2 = new ThreadPoolMetricsSampler(collector);
