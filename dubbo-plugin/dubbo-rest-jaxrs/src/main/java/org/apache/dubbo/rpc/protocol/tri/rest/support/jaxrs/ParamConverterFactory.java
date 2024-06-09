@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
@@ -33,10 +33,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_LOAD_EXTENSION;
+
 @SuppressWarnings({"rawtypes"})
 public class ParamConverterFactory {
 
-    public static final Logger logger = LoggerFactory.getLogger(ParamConverterFactory.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(ParamConverterFactory.class);
     private final Map<Pair<Pair<Class<?>, Type>, Annotation[]>, Optional<ParamConverter>> cache =
             CollectionUtils.newConcurrentHashMap();
     private final List<ParamConverterProvider> providers = new ArrayList<>();
@@ -49,7 +52,7 @@ public class ParamConverterFactory {
                 ParamConverterProvider paramConverterProvider = iterator.next();
                 providers.add(paramConverterProvider);
             } catch (Throwable e) {
-                logger.error("Spi Fail to load :" + e.getMessage());
+                logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Spi Fail to load ParamConverterProvider");
             }
         }
     }
