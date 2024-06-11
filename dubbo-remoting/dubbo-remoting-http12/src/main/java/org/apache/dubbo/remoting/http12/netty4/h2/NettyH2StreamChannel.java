@@ -57,7 +57,7 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         ByteBuf buffer = http2StreamChannel.alloc().buffer();
-        ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer, true);
+        ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer);
         return new Http2OutputMessageFrame(outputStream, endStream);
     }
 
