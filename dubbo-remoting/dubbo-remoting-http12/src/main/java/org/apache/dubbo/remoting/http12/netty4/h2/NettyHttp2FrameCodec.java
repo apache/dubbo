@@ -91,7 +91,7 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
 
     private Http2HeadersFrame encodeHttp2HeadersFrame(Http2Header http2Header) {
         HttpHeaders headers = http2Header.headers();
-        DefaultHttp2Headers http2Headers = new DefaultHttp2Headers();
+        DefaultHttp2Headers http2Headers = new DefaultHttp2Headers(false);
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
             String name = entry.getKey();
             List<String> value = entry.getValue();

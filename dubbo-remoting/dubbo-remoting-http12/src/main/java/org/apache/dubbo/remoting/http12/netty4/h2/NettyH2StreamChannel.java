@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
+import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.LimitedByteBufOutputStream;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessageFrame;
@@ -35,8 +37,11 @@ public class NettyH2StreamChannel implements H2StreamChannel {
 
     private final Http2StreamChannel http2StreamChannel;
 
-    public NettyH2StreamChannel(Http2StreamChannel http2StreamChannel) {
+    private final TripleConfig tripleConfig;
+
+    public NettyH2StreamChannel(Http2StreamChannel http2StreamChannel, TripleConfig tripleConfig) {
         this.http2StreamChannel = http2StreamChannel;
+        this.tripleConfig = tripleConfig;
     }
 
     @Override
@@ -57,7 +62,8 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         ByteBuf buffer = http2StreamChannel.alloc().buffer();
-        ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer);
+        ByteBufOutputStream outputStream =
+                new LimitedByteBufOutputStream(buffer, tripleConfig.getMaxResponseBodySize());
         return new Http2OutputMessageFrame(outputStream, endStream);
     }
 
