@@ -14,6 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.remoting.http12.exception;
 
-public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {}
+public class HttpOverPayloadException extends HttpStatusException {
+
+    public HttpOverPayloadException(String message) {
+        super(500, message);
+    }
+}

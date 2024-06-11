@@ -97,6 +97,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                         .maxFrameSize(tripleConfig.getMaxFrameSize())
                         .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
                 .frameLogger(CLIENT_LOGGER)
+                .validateHeaders(false)
                 .build();
         //        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         List<ChannelHandler> handlers = new ArrayList<>();
@@ -142,11 +143,11 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 protocol -> {
                     if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
                         return new Http2ServerUpgradeCodec(
-                                buildHttp2FrameCodec(url),
+                                buildHttp2FrameCodec(tripleConfig),
                                 new HttpWriteQueueHandler(),
                                 new FlushConsolidationHandler(64, true),
                                 new TripleServerConnectionHandler(),
-                                buildHttp2MultiplexHandler(url),
+                                buildHttp2MultiplexHandler(url, tripleConfig),
                                 new TripleTailHandler());
                     }
                     // Not upgrade request
@@ -159,24 +160,25 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new HttpObjectAggregator(tripleConfig.getMaxBodySize())));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1Codec()));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1ConnectionHandler(
-                url, frameworkModel, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
+                url, frameworkModel, tripleConfig, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
     }
 
-    private Http2MultiplexHandler buildHttp2MultiplexHandler(URL url) {
+    private Http2MultiplexHandler buildHttp2MultiplexHandler(URL url, TripleConfig tripleConfig) {
         return new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
             @Override
             protected void initChannel(Http2StreamChannel ch) {
                 final ChannelPipeline p = ch.pipeline();
                 p.addLast(new NettyHttp2FrameCodec());
                 p.addLast(new NettyHttp2ProtocolSelectorHandler(
-                        url, frameworkModel, GenericHttp2ServerTransportListenerFactory.INSTANCE));
+                        url, frameworkModel, tripleConfig, GenericHttp2ServerTransportListenerFactory.INSTANCE));
             }
         });
     }
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
-        final Http2FrameCodec codec = buildHttp2FrameCodec(url);
-        final Http2MultiplexHandler handler = buildHttp2MultiplexHandler(url);
+        TripleConfig tripleConfig = getTripleConfig(url);
+        final Http2FrameCodec codec = buildHttp2FrameCodec(tripleConfig);
+        final Http2MultiplexHandler handler = buildHttp2MultiplexHandler(url, tripleConfig);
         handlers.add(new ChannelHandlerPretender(new HttpWriteQueueHandler()));
         handlers.add(new ChannelHandlerPretender(codec));
         handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
@@ -185,8 +187,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
     }
 
-    private Http2FrameCodec buildHttp2FrameCodec(URL url) {
-        TripleConfig tripleConfig = getTripleConfig(url);
+    private Http2FrameCodec buildHttp2FrameCodec(TripleConfig tripleConfig) {
         return TripleHttp2FrameCodecBuilder.forServer()
                 .customizeConnection((connection) ->
                         connection.remote().flowController(new TriHttp2RemoteFlowController(connection, tripleConfig)))
@@ -198,6 +199,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                         .maxFrameSize(tripleConfig.getMaxFrameSize())
                         .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
                 .frameLogger(SERVER_LOGGER)
+                .validateHeaders(false)
                 .build();
     }
 

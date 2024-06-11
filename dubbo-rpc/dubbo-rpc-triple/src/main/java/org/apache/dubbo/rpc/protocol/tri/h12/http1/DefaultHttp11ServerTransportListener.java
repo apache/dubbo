@@ -108,6 +108,11 @@ public class DefaultHttp11ServerTransportListener
         serverChannelObserver.onError(throwable);
     }
 
+    @Override
+    public void close() throws Exception {
+        serverChannelObserver.close();
+    }
+
     private static class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {
 
         public AutoCompleteUnaryServerCallListener(
