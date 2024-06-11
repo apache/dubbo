@@ -66,9 +66,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -648,10 +650,14 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 if (overriddenURL == null) {
                     String appName = interfaceAddressURL.getApplication();
                     String side = interfaceAddressURL.getSide();
+                    String group = interfaceAddressURL.getGroup();
+                    String version = interfaceAddressURL.getVersion();
                     overriddenURL = URLBuilder.from(interfaceAddressURL)
                             .clearParameters()
                             .addParameter(APPLICATION_KEY, appName)
                             .addParameter(SIDE_KEY, side)
+                            .addParameter(GROUP_KEY, group)
+                            .addParameter(VERSION_KEY, version)
                             .build();
                 }
                 for (Configurator configurator : configurators) {
