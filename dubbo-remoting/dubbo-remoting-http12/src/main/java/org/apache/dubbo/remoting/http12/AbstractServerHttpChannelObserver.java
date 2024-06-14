@@ -138,6 +138,11 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         if (httpMetadata == null) {
             return;
         }
+        if (!headerSent) {
+            HttpHeaders headers = httpMetadata.headers();
+            headers.set(HttpHeaderNames.STATUS.getName(), resolveStatusCode(throwable));
+            headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), responseEncoder.contentType());
+        }
         trailersCustomizer.accept(httpMetadata.headers(), throwable);
         getHttpChannel().writeHeader(httpMetadata);
     }
