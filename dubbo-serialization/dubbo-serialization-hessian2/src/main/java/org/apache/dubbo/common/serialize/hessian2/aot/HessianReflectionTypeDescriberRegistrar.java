@@ -20,65 +20,48 @@ import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
 
+import java.net.URL;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
-
-import com.alibaba.com.caucho.hessian.io.BigDecimalDeserializer;
-import com.alibaba.com.caucho.hessian.io.FileDeserializer;
-import com.alibaba.com.caucho.hessian.io.HessianRemote;
-import com.alibaba.com.caucho.hessian.io.LocaleSerializer;
-import com.alibaba.com.caucho.hessian.io.ObjectNameDeserializer;
-import com.alibaba.com.caucho.hessian.io.StringValueSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.DurationSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.InstantSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.LocalDateSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.LocalDateTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.LocalTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.MonthDaySerializer;
-import com.alibaba.com.caucho.hessian.io.java8.OffsetDateTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.OffsetTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.PeriodSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.YearMonthSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.YearSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.ZoneIdSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.ZoneOffsetSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.ZonedDateTimeSerializer;
 
 public class HessianReflectionTypeDescriberRegistrar implements ReflectionTypeDescriberRegistrar {
 
     @Override
     public List<TypeDescriber> getTypeDescribers() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
-        typeDescribers.add(buildTypeDescriberWithDeclared(BigDecimalDeserializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(FileDeserializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(HessianRemote.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(LocaleSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(ObjectNameDeserializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(StringValueSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(DurationSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(InstantSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(LocalDateSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(LocalDateTimeSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(LocalTimeSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(MonthDaySerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(OffsetDateTimeSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(OffsetTimeSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(PeriodSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(YearMonthSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(YearSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(ZoneIdSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(ZoneOffsetSerializer.class));
-        typeDescribers.add(buildTypeDescriberWithDeclared(ZonedDateTimeSerializer.class));
+
+        loadFile("META-INF/dubbo/hessian/deserializers", typeDescribers);
+        loadFile("META-INF/dubbo/hessian/serializers", typeDescribers);
+
         typeDescribers.add(buildTypeDescriberWithDeclared(Date.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(Time.class));
         typeDescribers.add(buildTypeDescriberWithDeclared(Timestamp.class));
 
         return typeDescribers;
+    }
+
+    private void loadFile(String path, List<TypeDescriber> typeDescribers) {
+        try {
+            Enumeration<URL> resources = this.getClass().getClassLoader().getResources(path);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                Properties props = new Properties();
+                props.load(url.openStream());
+                for (Object value : props.values()) {
+                    String className = (String) value;
+                    typeDescribers.add(buildTypeDescriberWithDeclared(className));
+                }
+            }
+        } catch (Throwable t) {
+            // ignore
+        }
     }
 
     private TypeDescriber buildTypeDescriberWithDeclared(Class<?> cl) {
