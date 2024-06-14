@@ -21,7 +21,6 @@ import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
 
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -31,29 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import com.alibaba.com.caucho.hessian.io.BigDecimalDeserializer;
-import com.alibaba.com.caucho.hessian.io.FileDeserializer;
-import com.alibaba.com.caucho.hessian.io.HessianRemote;
-import com.alibaba.com.caucho.hessian.io.LocaleSerializer;
-import com.alibaba.com.caucho.hessian.io.ObjectNameDeserializer;
-import com.alibaba.com.caucho.hessian.io.StringValueSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.DurationSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.InstantSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.LocalDateSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.LocalDateTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.LocalTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.MonthDaySerializer;
-import com.alibaba.com.caucho.hessian.io.java8.OffsetDateTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.OffsetTimeSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.PeriodSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.YearMonthSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.YearSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.ZoneIdSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.ZoneOffsetSerializer;
-import com.alibaba.com.caucho.hessian.io.java8.ZonedDateTimeSerializer;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 public class HessianReflectionTypeDescriberRegistrar implements ReflectionTypeDescriberRegistrar {
 
@@ -73,9 +49,7 @@ public class HessianReflectionTypeDescriberRegistrar implements ReflectionTypeDe
 
     private void loadFile(String path, List<TypeDescriber> typeDescribers) {
         try {
-            Enumeration<URL> resources = this.getClass()
-                    .getClassLoader()
-                    .getResources(path);
+            Enumeration<URL> resources = this.getClass().getClassLoader().getResources(path);
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
                 Properties props = new Properties();
