@@ -101,6 +101,12 @@ public class TripleConfig implements Serializable {
     private Integer maxHeaderListSize;
 
     /**
+     * Enable http3 support
+     * <p>The default value is false.
+     */
+    private Boolean enableHttp3;
+
+    /**
      * See <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_data">set_initial_max_data</a>.
      * <p>The default value is 8MiB.
      */
@@ -281,6 +287,14 @@ public class TripleConfig implements Serializable {
 
     public void setMaxHeaderListSize(Integer maxHeaderListSize) {
         this.maxHeaderListSize = maxHeaderListSize;
+    }
+
+    public Boolean getEnableHttp3() {
+        return enableHttp3;
+    }
+
+    public void setEnableHttp3(Boolean enableHttp3) {
+        this.enableHttp3 = enableHttp3;
     }
 
     public Integer getHttp3InitialMaxData() {
