@@ -91,20 +91,22 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
             }
         } else if (msg instanceof Http2OutputMessage) {
             Http2OutputMessage outputMessage = (Http2OutputMessage) msg;
-            if (outputMessage.isEndStream()) {
-                ctx.close();
-                return;
-            }
-            OutputStream body = outputMessage.getBody();
-            if (body == null) {
-                Http3DataFrame frame = new DefaultHttp3DataFrame(Unpooled.EMPTY_BUFFER);
-                ctx.write(frame, promise);
-                return;
-            }
-            if (body instanceof ByteBufOutputStream) {
-                Http3DataFrame frame = new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer());
-                ctx.write(frame, promise);
-                return;
+            try {
+                OutputStream body = outputMessage.getBody();
+                if (body == null) {
+                    Http3DataFrame frame = new DefaultHttp3DataFrame(Unpooled.EMPTY_BUFFER);
+                    ctx.write(frame, promise);
+                    return;
+                }
+                if (body instanceof ByteBufOutputStream) {
+                    Http3DataFrame frame = new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer());
+                    ctx.write(frame, promise);
+                    return;
+                }
+            } finally {
+                if (outputMessage.isEndStream()) {
+                    ctx.close();
+                }
             }
             throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
         } else {

@@ -30,11 +30,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 
-public class NettyH3StreamChannel implements H2StreamChannel {
+public class NettyHttp3StreamChannel implements H2StreamChannel {
 
     private final QuicStreamChannel http3StreamChannel;
 
-    public NettyH3StreamChannel(QuicStreamChannel http3StreamChannel) {
+    public NettyHttp3StreamChannel(QuicStreamChannel http3StreamChannel) {
         this.http3StreamChannel = http3StreamChannel;
     }
 

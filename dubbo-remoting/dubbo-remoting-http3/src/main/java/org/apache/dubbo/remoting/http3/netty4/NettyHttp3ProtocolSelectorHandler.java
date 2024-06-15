@@ -55,16 +55,16 @@ public class NettyHttp3ProtocolSelectorHandler extends SimpleChannelInboundHandl
             throw new UnsupportedMediaTypeException(contentType);
         }
 
-        H2StreamChannel h3StreamChannel = new NettyH3StreamChannel((QuicStreamChannel) ctx.channel());
+        H2StreamChannel streamChannel = new NettyHttp3StreamChannel((QuicStreamChannel) ctx.channel());
         HttpWriteQueueHandler writeQueueHandler = ctx.channel().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {
             HttpWriteQueue writeQueue = writeQueueHandler.getWriteQueue();
-            h3StreamChannel = new Http2WriteQueueChannel(h3StreamChannel, writeQueue);
+            streamChannel = new Http2WriteQueueChannel(streamChannel, writeQueue);
         }
 
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast(
-                new NettyHttp2FrameHandler(h3StreamChannel, factory.newInstance(h3StreamChannel, url, frameworkModel)));
+                new NettyHttp2FrameHandler(streamChannel, factory.newInstance(streamChannel, url, frameworkModel)));
         pipeline.remove(this);
         ctx.fireChannelRead(metadata);
     }
