@@ -17,16 +17,13 @@
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
-import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
@@ -57,8 +54,6 @@ import java.util.concurrent.Executor;
 
 public class GenericHttp2ServerTransportListener extends AbstractServerTransportListener<Http2Header, Http2InputMessage>
         implements Http2TransportListener {
-
-    private static final Http2InputMessage END_MESSAGE = new Http2InputMessageFrame(StreamUtils.EMPTY, true);
 
     private final ExecutorSupport executorSupport;
     private final StreamingDecoder streamingDecoder;
@@ -92,18 +87,6 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected Executor initializeExecutor(Http2Header metadata) {
         return new SerializingExecutor(executorSupport.getExecutor(metadata));
-    }
-
-    @Override
-    protected void doOnMetadata(Http2Header metadata) {
-        if (metadata.isEndStream()) {
-            if (!HttpMethods.supportBody(metadata.method())) {
-                super.doOnMetadata(metadata);
-                doOnData(END_MESSAGE);
-            }
-            return;
-        }
-        super.doOnMetadata(metadata);
     }
 
     @Override
@@ -189,6 +172,9 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     protected void onMetadataCompletion(Http2Header metadata) {
         serverChannelObserver.setResponseEncoder(getContext().getHttpMessageEncoder());
         serverChannelObserver.request(1);
+        if (metadata.isEndStream()) {
+            getStreamingDecoder().close();
+        }
     }
 
     @Override
