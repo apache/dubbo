@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
+import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
@@ -76,14 +77,23 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     @Override
+    protected Http2ServerChannelObserver newHttp2ServerChannelObserver(
+            FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        return new GrpcServerChannelObserver(frameworkModel, h2StreamChannel);
+    }
+
+    @Override
     protected HttpMessageListener buildHttpMessageListener() {
         return getContext().isHasStub() ? super.buildHttpMessageListener() : new LazyFindMethodListener();
     }
 
     @Override
+    protected void onUnary() {}
+
+    @Override
     protected void onMetadataCompletion(Http2Header metadata) {
-        super.onMetadataCompletion(metadata);
         processGrpcHeaders(metadata);
+        super.onMetadataCompletion(metadata);
     }
 
     private void processGrpcHeaders(Http2Header metadata) {
