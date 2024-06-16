@@ -94,6 +94,7 @@ dubbo-spring-boot
 dubbo-spring-boot-actuator
 dubbo-spring-boot-actuator-compatible
 dubbo-spring-boot-autoconfigure
+dubbo-spring-boot-3-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
 dubbo-spring-boot-compatible
 dubbo-observability-spring-boot-starters
@@ -117,4 +118,4 @@ dubbo-plugin-loom
 dubbo-rest-jaxrs
 dubbo-rest-servlet
 dubbo-rest-spring
-
+dubbo-triple-servlet

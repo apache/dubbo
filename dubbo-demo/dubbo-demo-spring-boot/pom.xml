@@ -65,4 +65,14 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <profiles>
+    <profile>
+      <id>spring-boot-3</id>
+      <properties>
+        <spring-boot.version>3.2.1</spring-boot.version>
+        <spring-boot-maven-plugin.version>3.2.1</spring-boot-maven-plugin.version>
+      </properties>
+    </profile>
+  </profiles>
 </project>

@@ -193,6 +193,25 @@ public class TripleConfig implements Serializable {
      */
     private String http3CcAlgorithm;
 
+    /**
+     * Enable servlet support, requests are transport through the servlet container,
+     * which only supports unary calls due to protocol limitations
+     * <p>The default value is false.
+     */
+    private Boolean enableServlet;
+
+    /**
+     * The URL patterns that the servlet filter will be registered for.
+     * <p>The default value is '/*'.
+     */
+    private String[] servletFilterUrlPatterns;
+
+    /**
+     * The order of the servlet filter.
+     * <p>The default value is -1000000.
+     */
+    private Integer servletFilterOrder;
+
     public Integer getMaxBodySize() {
         return maxBodySize;
     }
@@ -401,6 +420,30 @@ public class TripleConfig implements Serializable {
         this.http3CcAlgorithm = http3CcAlgorithm;
     }
 
+    public Boolean getEnableServlet() {
+        return enableServlet;
+    }
+
+    public void setEnableServlet(Boolean enableServlet) {
+        this.enableServlet = enableServlet;
+    }
+
+    public String[] getServletFilterUrlPatterns() {
+        return servletFilterUrlPatterns;
+    }
+
+    public void setServletFilterUrlPatterns(String[] servletFilterUrlPatterns) {
+        this.servletFilterUrlPatterns = servletFilterUrlPatterns;
+    }
+
+    public Integer getServletFilterOrder() {
+        return servletFilterOrder;
+    }
+
+    public void setServletFilterOrder(Integer servletFilterOrder) {
+        this.servletFilterOrder = servletFilterOrder;
+    }
+
     public void checkDefault() {
         if (maxBodySize == null) {
             maxBodySize = 1 << 23;
@@ -437,21 +480,6 @@ public class TripleConfig implements Serializable {
         }
         if (maxHeaderListSize == null) {
             maxHeaderListSize = 1 << 15;
-        }
-        if (http3InitialMaxData == null) {
-            http3InitialMaxData = 1 << 23;
-        }
-        if (http3InitialMaxStreamDataBidiLocal == null) {
-            http3InitialMaxStreamDataBidiLocal = 1 << 20;
-        }
-        if (http3InitialMaxStreamDataBidiRemote == null) {
-            http3InitialMaxStreamDataBidiRemote = 1 << 20;
-        }
-        if (http3InitialMaxStreamsBidi == null) {
-            http3InitialMaxStreamsBidi = (long) 1 << 30;
-        }
-        if (http3InitialMaxStreamsUni == null) {
-            http3InitialMaxStreamsUni = (long) 1 << 30;
         }
     }
 }
