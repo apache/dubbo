@@ -46,16 +46,16 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.event.ApplicationLoadedEvent;
 import org.apache.dubbo.config.deploy.event.ApplicationStartedEvent;
+import org.apache.dubbo.config.deploy.event.PreDestroyApplicationInstanceEvent;
+import org.apache.dubbo.config.deploy.event.PrepareApplicationInstanceEvent;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -684,7 +684,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
 
         // export MetricsService
-        exportMetricsService();
+        DubboEventBus.publish(new PrepareApplicationInstanceEvent(applicationModel));
 
         if (moduleModel.getDeployer().hasRegistryInteraction()) {
             ApplicationConfig applicationConfig = configManager.getApplicationOrElseThrow();
@@ -732,40 +732,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                             "wait for internal module startup failed: " + e.getMessage(),
                             e);
                 }
-            }
-        }
-    }
-
-    private void exportMetricsService() {
-        MetricsServiceExporter metricsServiceExporter =
-                applicationModel.getBeanFactory().getBean(MetricsServiceExporter.class);
-        boolean exportMetrics = applicationModel
-                .getApplicationConfigManager()
-                .getMetrics()
-                .map(MetricsConfig::getExportMetricsService)
-                .orElse(true);
-        if (exportMetrics && metricsServiceExporter != null) {
-            try {
-                metricsServiceExporter.export();
-            } catch (Exception e) {
-                logger.error(
-                        LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION,
-                        "",
-                        "",
-                        "exportMetricsService an exception occurred when handle starting event",
-                        e);
-            }
-        }
-    }
-
-    private void unexportMetricsService() {
-        MetricsServiceExporter metricsServiceExporter =
-                applicationModel.getBeanFactory().getBean(MetricsServiceExporter.class);
-        if (metricsServiceExporter != null) {
-            try {
-                metricsServiceExporter.unexport();
-            } catch (Exception ignored) {
-                // ignored
             }
         }
     }
@@ -1002,7 +968,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             unregisterServiceInstance();
 
-            unexportMetricsService();
+            DubboEventBus.publish(new PreDestroyApplicationInstanceEvent(applicationModel));
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {

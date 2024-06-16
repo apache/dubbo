@@ -14,25 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.metrics;
+package org.apache.dubbo.config.deploy.event;
 
-import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.common.event.DubboEvent;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-/**
- * Export metrics service
- */
-public class MockMetricsServiceExporter implements MetricsServiceExporter {
+public class PreDestroyApplicationInstanceEvent extends DubboEvent {
 
-    @Override
-    public void init() {}
-
-    @Override
-    public MetricsServiceExporter export() {
-        return null;
-    }
-
-    @Override
-    public MetricsServiceExporter unexport() {
-        return null;
+    public PreDestroyApplicationInstanceEvent(ApplicationModel source) {
+        super(source);
     }
 }

@@ -237,7 +237,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-metrics-annotation</artifactId>
+        <artifactId>dubbo-metrics-monitor</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -268,11 +268,6 @@
       <dependency>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-metrics-netty</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-metrics-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
 

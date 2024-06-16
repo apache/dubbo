@@ -25,6 +25,8 @@ import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.deploy.event.ApplicationLoadedEvent;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.listener.PreDestroyApplicationInstanceEventListener;
+import org.apache.dubbo.metrics.listener.PrepareApplicationInstanceEventListener;
 import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
@@ -64,25 +66,28 @@ public class MetricsServiceInitializer {
         this.metricsServiceExporter = applicationModel
                 .getExtensionLoader(MetricsServiceExporter.class)
                 .getDefaultExtension();
-        dubboListeners = Arrays.asList(new AbstractDubboListener<ApplicationLoadedEvent>() {
-            @Override
-            public void onEvent(ApplicationLoadedEvent event) {
+        dubboListeners = Arrays.asList(
+                new AbstractDubboListener<ApplicationLoadedEvent>() {
+                    @Override
+                    public void onEvent(ApplicationLoadedEvent event) {
 
-                if (MetricsSupportUtil.isSupportMetrics()) {
-                    MetricsConfig metricsConfig = initMetricsConfig();
-                    if (!PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())
-                            || MetricsSupportUtil.isSupportPrometheus()) {
-                        initDefaultMetricsCollector(metricsConfig);
-                        initMetricsReporter(metricsConfig);
+                        if (MetricsSupportUtil.isSupportMetrics()) {
+                            MetricsConfig metricsConfig = initMetricsConfig();
+                            if (!PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())
+                                    || MetricsSupportUtil.isSupportPrometheus()) {
+                                initDefaultMetricsCollector(metricsConfig);
+                                initMetricsReporter(metricsConfig);
+                            }
+                        }
+
+                        initMetricsService();
+
+                        // @since 3.2.3
+                        initObservationRegistry();
                     }
-                }
-
-                initMetricsService();
-
-                // @since 3.2.3
-                initObservationRegistry();
-            }
-        });
+                },
+                new PrepareApplicationInstanceEventListener(),
+                new PreDestroyApplicationInstanceEventListener());
     }
 
     public List<DubboListener<?>> getDubboListeners() {
@@ -149,8 +154,8 @@ public class MetricsServiceInitializer {
     private void initObservationRegistry() {
         if (!ObservationSupportUtil.isSupportObservation()) {
             if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "Not found micrometer-observation or plz check the version of micrometer-observation version if already introduced, need > 1.10.0");
+                logger.debug("Not found micrometer-observation or plz check the version of micrometer-observation "
+                        + "version if already introduced, need > 1.10.0");
             }
             return;
         }

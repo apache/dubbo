@@ -174,7 +174,7 @@
     <!-- metrics -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-annotation</artifactId>
+      <artifactId>dubbo-metrics-monitor</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -189,13 +189,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metrics-default</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-starter</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -475,10 +468,9 @@
                   <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
                   <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                   <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
-                  <include>org.apache.dubbo:dubbo-metrics-annotation</include>
+                  <include>org.apache.dubbo:dubbo-metrics-monitor</include>
                   <include>org.apache.dubbo:dubbo-metrics-api</include>
                   <include>org.apache.dubbo:dubbo-metrics-default</include>
-                  <include>org.apache.dubbo:dubbo-metrics-starter</include>
                   <include>org.apache.dubbo:dubbo-metrics-registry</include>
                   <include>org.apache.dubbo:dubbo-metrics-metadata</include>
                   <include>org.apache.dubbo:dubbo-metrics-config-center</include>
