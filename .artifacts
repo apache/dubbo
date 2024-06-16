@@ -94,7 +94,6 @@ dubbo-serialization
 dubbo-serialization-api
 dubbo-serialization-fastjson2
 dubbo-serialization-hessian2
-dubbo-serialization-jdk
 dubbo-spring-boot
 dubbo-spring-boot-actuator
 dubbo-spring-boot-actuator-compatible
