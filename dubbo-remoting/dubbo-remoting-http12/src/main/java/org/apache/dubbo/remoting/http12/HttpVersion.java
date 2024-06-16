@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.autoconfigure;
+package org.apache.dubbo.remoting.http12;
 
-import org.springframework.boot.SpringBootVersion;
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.core.type.AnnotatedTypeMetadata;
+public enum HttpVersion {
+    HTTP1("http1", "HTTP/1.1"),
+    HTTP2("http2", "HTTP/2.0");
 
-public class SpringBoot3Condition implements Condition {
+    private final String version;
+    private final String protocol;
 
-    public static boolean IS_SPRING_BOOT_3 = SpringBootVersion.getVersion().charAt(0) >= '3';
+    HttpVersion(String version, String protocol) {
+        this.version = version;
+        this.protocol = protocol;
+    }
 
-    @Override
-    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        return IS_SPRING_BOOT_3;
+    public String getVersion() {
+        return version;
+    }
+
+    public String getProtocol() {
+        return protocol;
     }
 }

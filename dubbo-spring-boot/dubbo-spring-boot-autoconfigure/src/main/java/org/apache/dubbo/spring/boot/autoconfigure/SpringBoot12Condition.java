@@ -23,7 +23,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 
 public class SpringBoot12Condition implements Condition {
 
-    public static boolean IS_SPRING_BOOT_12 = SpringBootVersion.getVersion().charAt(0) < 3;
+    public static boolean IS_SPRING_BOOT_12 = SpringBootVersion.getVersion().charAt(0) < '3';
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {

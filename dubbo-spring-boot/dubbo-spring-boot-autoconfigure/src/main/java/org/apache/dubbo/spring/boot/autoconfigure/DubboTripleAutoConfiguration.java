@@ -16,9 +16,13 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
+import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
 import org.apache.dubbo.rpc.protocol.tri.servlet.TripleFilter;
 
+import javax.servlet.Filter;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
@@ -34,6 +38,7 @@ public class DubboTripleAutoConfiguration {
     public static final String PREFIX = "dubbo.protocol.triple";
 
     @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
     @ConditionalOnProperty(prefix = PREFIX, name = "enable-servlet")
     public static class TripleServletConfiguration {
@@ -41,7 +46,9 @@ public class DubboTripleAutoConfiguration {
         @Bean
         public FilterRegistrationBean<TripleFilter> tripleProtocolFilter(
                 @Value("${" + PREFIX + ".servlet-filter-url-patterns:/*}") String[] urlPatterns,
-                @Value("${" + PREFIX + ".servlet-filter-order:-1000000}") int order) {
+                @Value("${" + PREFIX + ".servlet-filter-order:-1000000}") int order,
+                @Value("${server.port:8080}") int serverPort) {
+            ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleFilter> registrationBean = new FilterRegistrationBean<>();
             registrationBean.setFilter(new TripleFilter());
             registrationBean.addUrlPatterns(urlPatterns);

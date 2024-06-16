@@ -23,15 +23,24 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public final class ServletExchanger {
 
-    private static final AtomicReference<URL> defaultUrl = new AtomicReference<>();
+    private static final AtomicReference<URL> url = new AtomicReference<>();
+    private static final AtomicReference<Integer> serverPort = new AtomicReference<>();
 
     private ServletExchanger() {}
 
     public static void bind(URL url) {
-        defaultUrl.compareAndSet(null, url);
+        ServletExchanger.url.compareAndSet(null, url);
+    }
+
+    public static void bindServerPort(int serverPort) {
+        ServletExchanger.serverPort.compareAndSet(null, serverPort);
     }
 
     public static URL getUrl() {
-        return Objects.requireNonNull(defaultUrl.get(), "ServletExchanger not bound to triple protocol");
+        return Objects.requireNonNull(url.get(), "ServletExchanger not bound to triple protocol");
+    }
+
+    public static Integer getServerPort() {
+        return serverPort.get();
     }
 }

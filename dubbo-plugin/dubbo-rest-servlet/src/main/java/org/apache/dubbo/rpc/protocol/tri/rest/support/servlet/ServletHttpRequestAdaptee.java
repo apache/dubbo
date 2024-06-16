@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.HttpVersion;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpRequest;
 
 import javax.servlet.AsyncContext;
@@ -319,7 +320,7 @@ public class ServletHttpRequestAdaptee extends DefaultHttpRequest implements Htt
 
     @Override
     public String getProtocol() {
-        return isHttp2() ? "HTTP/2.0" : "HTTP/1.1";
+        return isHttp2() ? HttpVersion.HTTP2.getProtocol() : HttpVersion.HTTP1.getProtocol();
     }
 
     @Override

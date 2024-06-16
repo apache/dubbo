@@ -62,7 +62,7 @@ public class TripleFilter implements Filter {
 
     private PathResolver pathResolver;
     private RequestMappingRegistry mappingRegistry;
-    private int defaultTimeout = 30_000;
+    private int defaultTimeout;
 
     @Override
     public void init(FilterConfig config) {
@@ -70,7 +70,7 @@ public class TripleFilter implements Filter {
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
         mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
         String timeoutString = config.getInitParameter("timeout");
-        defaultTimeout = timeoutString == null ? 30000 : Integer.parseInt(timeoutString);
+        defaultTimeout = timeoutString == null ? 180_000 : Integer.parseInt(timeoutString);
     }
 
     @Override

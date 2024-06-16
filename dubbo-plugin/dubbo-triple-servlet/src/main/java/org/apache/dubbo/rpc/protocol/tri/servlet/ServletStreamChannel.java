@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.HttpVersion;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
@@ -126,7 +127,7 @@ final class ServletStreamChannel implements H2StreamChannel {
         try {
             ByteArrayOutputStream bos = (ByteArrayOutputStream) httpOutputMessage.getBody();
             ServletOutputStream out = response.getOutputStream();
-            if (!"HTTP/2.0".equals(request.getProtocol())) {
+            if (!HttpVersion.HTTP2.getProtocol().equals(request.getProtocol())) {
                 response.setContentLength(bos.size());
             }
             bos.writeTo(out);
