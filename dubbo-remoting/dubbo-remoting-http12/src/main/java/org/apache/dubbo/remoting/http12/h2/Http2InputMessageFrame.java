@@ -20,7 +20,7 @@ import java.io.InputStream;
 
 public class Http2InputMessageFrame implements Http2InputMessage {
 
-    private int id;
+    private long id;
 
     private final InputStream body;
 
@@ -39,7 +39,7 @@ public class Http2InputMessageFrame implements Http2InputMessage {
         this.endStream = endStream;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -54,7 +54,7 @@ public class Http2InputMessageFrame implements Http2InputMessage {
     }
 
     @Override
-    public int id() {
+    public long id() {
         return id;
     }
 

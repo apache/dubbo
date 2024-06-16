@@ -72,8 +72,8 @@ final class HttpMetadataAdapter implements Http2Header {
     }
 
     @Override
-    public int id() {
-        return -1;
+    public long id() {
+        return -1L;
     }
 
     @Override

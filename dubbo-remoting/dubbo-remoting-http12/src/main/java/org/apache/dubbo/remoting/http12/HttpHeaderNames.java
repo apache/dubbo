@@ -27,6 +27,8 @@ public enum HttpHeaderNames {
 
     TE("te"),
 
+    ALT_SVC("alt-svc"),
+
     ACCEPT("accept");
 
     private final String name;

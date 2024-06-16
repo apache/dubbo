@@ -150,12 +150,12 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public InetSocketAddress getLocalAddress() {
-        return (InetSocketAddress) channel.localAddress();
+        return AddressUtils.getLocalAddress(channel);
     }
 
     @Override
     public InetSocketAddress getRemoteAddress() {
-        return (InetSocketAddress) channel.remoteAddress();
+        return AddressUtils.getRemoteAddress(channel);
     }
 
     @Override

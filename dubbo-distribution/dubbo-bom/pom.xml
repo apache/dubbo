@@ -402,6 +402,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-remoting-http3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-remoting-netty</artifactId>
         <version>${project.version}</version>
       </dependency>
