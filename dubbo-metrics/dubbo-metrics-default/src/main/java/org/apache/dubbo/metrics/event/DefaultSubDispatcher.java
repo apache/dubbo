@@ -49,6 +49,9 @@ public final class DefaultSubDispatcher extends AbstractDubboLifecycleListener<R
 
     @Override
     public void onEventBefore(RequestMetricsEvent event) {
+        if (!event.isAvailable()) {
+            return;
+        }
         this.multicaster.publishEvent(event);
     }
 
@@ -57,7 +60,9 @@ public final class DefaultSubDispatcher extends AbstractDubboLifecycleListener<R
 
     @Override
     public void onEventFinish(RequestMetricsEvent event) {
-        this.multicaster.publishFinishEvent(event);
+        if (event.isAvailable()) {
+            this.multicaster.publishFinishEvent(event);
+        }
         if (event.isRequestErrorEvent()) {
             MetricsSupport.increment(
                     METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED,
@@ -69,6 +74,9 @@ public final class DefaultSubDispatcher extends AbstractDubboLifecycleListener<R
 
     @Override
     public void onEventError(RequestMetricsEvent event) {
+        if (!event.isAvailable()) {
+            return;
+        }
         this.multicaster.publishErrorEvent(event);
     }
 

@@ -98,6 +98,9 @@ public class HistogramMetricsCollector implements MetricsCollector {
         }
 
         private void onRTEvent(RequestMetricsEvent event) {
+            if (!event.isAvailable()) {
+                return;
+            }
             if (collector.metricRegister != null) {
                 MethodMetric metric = new MethodMetric(
                         collector.applicationModel,
