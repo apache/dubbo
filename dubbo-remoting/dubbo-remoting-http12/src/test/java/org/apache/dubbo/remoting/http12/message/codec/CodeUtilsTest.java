@@ -41,14 +41,14 @@ public class CodeUtilsTest {
         HttpMessageDecoder decoder =
                 codecUtils.determineHttpMessageDecoder(null, FrameworkModel.defaultModel(), headers.getContentType());
         Assertions.assertNotNull(decoder);
-        Assertions.assertEquals(JsonCodec.class, decoder.getClass());
+        Assertions.assertEquals(JsonPbCodec.class, decoder.getClass());
 
         HttpMessageEncoder encoder;
         // If no Accept header provided, use Content-Type to find encoder
         encoder = codecUtils.determineHttpMessageEncoder(
                 null, FrameworkModel.defaultModel(), MediaType.APPLICATION_JSON.getName());
         Assertions.assertNotNull(encoder);
-        Assertions.assertEquals(JsonCodec.class, encoder.getClass());
+        Assertions.assertEquals(JsonPbCodec.class, encoder.getClass());
 
         HttpHeaders headers1 = new HttpHeaders();
         headers1.put(
@@ -67,6 +67,6 @@ public class CodeUtilsTest {
         encoder = codecUtils.determineHttpMessageEncoder(
                 null, FrameworkModel.defaultModel(), MediaType.APPLICATION_JSON.getName());
         Assertions.assertNotNull(encoder);
-        Assertions.assertEquals(JsonCodec.class, encoder.getClass());
+        Assertions.assertEquals(JsonPbCodec.class, encoder.getClass());
     }
 }

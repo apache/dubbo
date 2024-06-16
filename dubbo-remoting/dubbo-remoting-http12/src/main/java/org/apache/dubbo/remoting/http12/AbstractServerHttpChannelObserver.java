@@ -33,6 +33,8 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     private HttpMessageEncoder responseEncoder;
 
+    private String altSvc;
+
     private boolean headerSent;
 
     private boolean completed;
@@ -61,6 +63,10 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     @Override
     public void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer) {
         this.errorResponseCustomizer = errorResponseCustomizer;
+    }
+
+    public void setAltSvc(String altSvc) {
+        this.altSvc = altSvc;
     }
 
     public HttpMessageEncoder getResponseEncoder() {
@@ -208,6 +214,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         HttpHeaders headers = httpMetadata.headers();
         headers.set(HttpHeaderNames.STATUS.getName(), statusCode);
         headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), responseEncoder.contentType());
+        if (altSvc != null) {
+            headers.set(HttpHeaderNames.ALT_SVC.getName(), altSvc);
+        }
         if (data instanceof HttpResult) {
             HttpResult<?> result = (HttpResult<?>) data;
             if (result.getHeaders() != null) {

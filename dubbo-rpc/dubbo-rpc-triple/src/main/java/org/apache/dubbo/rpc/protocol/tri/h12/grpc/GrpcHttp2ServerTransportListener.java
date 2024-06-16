@@ -59,8 +59,9 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     private void grpcTrailersCustomize(HttpHeaders httpHeaders, Throwable throwable) {
-        httpHeaders.set(GrpcHeaderNames.GRPC_STATUS.getName(), "0");
-        if (throwable != null) {
+        if (throwable == null) {
+            httpHeaders.set(GrpcHeaderNames.GRPC_STATUS.getName(), "0");
+        } else {
             httpHeaders.set(GrpcHeaderNames.GRPC_STATUS.getName(), httpStatusToGrpcStatus(throwable));
             httpHeaders.set(GrpcHeaderNames.GRPC_MESSAGE.getName(), throwable.getMessage());
         }
