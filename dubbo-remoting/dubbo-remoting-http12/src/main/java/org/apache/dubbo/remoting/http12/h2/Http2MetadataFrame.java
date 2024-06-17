@@ -20,7 +20,7 @@ import org.apache.dubbo.remoting.http12.HttpHeaders;
 
 public class Http2MetadataFrame implements Http2Header {
 
-    private final int streamId;
+    private final long streamId;
 
     private final HttpHeaders headers;
 
@@ -31,10 +31,10 @@ public class Http2MetadataFrame implements Http2Header {
     }
 
     public Http2MetadataFrame(HttpHeaders headers, boolean endStream) {
-        this(-1, headers, endStream);
+        this(-1L, headers, endStream);
     }
 
-    public Http2MetadataFrame(int streamId, HttpHeaders headers, boolean endStream) {
+    public Http2MetadataFrame(long streamId, HttpHeaders headers, boolean endStream) {
         this.streamId = streamId;
         this.headers = headers;
         this.endStream = endStream;
@@ -46,7 +46,7 @@ public class Http2MetadataFrame implements Http2Header {
     }
 
     @Override
-    public int id() {
+    public long id() {
         return streamId;
     }
 

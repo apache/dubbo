@@ -1,0 +1,2 @@
+default=org.apache.dubbo.rpc.protocol.tri.h3.GenericHttp3ServerTransportListenerFactory
+grpc=org.apache.dubbo.rpc.protocol.tri.h3.grpc.GrpcHttp3ServerTransportListenerFactory

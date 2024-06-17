@@ -18,12 +18,14 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.ssl.ContextOperator;
+import org.apache.dubbo.remoting.http12.HttpVersion;
 import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
 import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1Codec;
 import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1ConnectionHandler;
@@ -86,7 +88,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @Override
     public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
-        TripleConfig tripleConfig = getTripleConfig(url);
+        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
@@ -115,13 +117,13 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         List<ChannelHandler> channelHandlerPretenders = new ArrayList<>();
         try {
             // h1
-            if (TripleProtocolDetector.HttpVersion.HTTP1.getVersion().equals(httpVersion)) {
+            if (HttpVersion.HTTP1.getVersion().equals(httpVersion)) {
                 configurerHttp1Handlers(url, channelHandlerPretenders);
                 return;
             }
 
             // h2
-            if (TripleProtocolDetector.HttpVersion.HTTP2.getVersion().equals(httpVersion)) {
+            if (HttpVersion.HTTP2.getVersion().equals(httpVersion)) {
                 configurerHttp2Handlers(url, channelHandlerPretenders);
             }
         } finally {
@@ -130,7 +132,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp1Handlers(URL url, List<ChannelHandler> handlers) {
-        TripleConfig tripleConfig = getTripleConfig(url);
+        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
         final HttpServerCodec sourceCodec = new HttpServerCodec(new HttpDecoderConfig()
                 .setMaxChunkSize(tripleConfig.getMaxChunkSize())
                 .setMaxHeaderSize(tripleConfig.getMaxHeaderSize())
@@ -176,7 +178,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
-        TripleConfig tripleConfig = getTripleConfig(url);
+        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
         final Http2FrameCodec codec = buildHttp2FrameCodec(tripleConfig);
         final Http2MultiplexHandler handler = buildHttp2MultiplexHandler(url, tripleConfig);
         handlers.add(new ChannelHandlerPretender(new HttpWriteQueueHandler()));
@@ -201,12 +203,5 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 .frameLogger(SERVER_LOGGER)
                 .validateHeaders(false)
                 .build();
-    }
-
-    private TripleConfig getTripleConfig(URL url) {
-        return url.getOrDefaultApplicationModel()
-                .getApplicationConfigManager()
-                .getOrAddProtocol(url.getProtocol())
-                .getTriple();
     }
 }

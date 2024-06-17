@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -84,7 +85,8 @@ public final class Version {
     }
 
     private static void tryLoadVersionFromResource() throws IOException {
-        Enumeration<URL> configLoader = Version.class.getClassLoader().getResources("META-INF/versions/dubbo-common");
+        Enumeration<URL> configLoader =
+                Version.class.getClassLoader().getResources(CommonConstants.DUBBO_VERSIONS_KEY + "/dubbo-common");
         if (configLoader.hasMoreElements()) {
             URL url = configLoader.nextElement();
             try (BufferedReader reader =
@@ -312,7 +314,7 @@ public final class Version {
 
     private static void checkArtifact(String artifactId) throws IOException {
         Enumeration<URL> artifactEnumeration =
-                Version.class.getClassLoader().getResources("META-INF/versions/" + artifactId);
+                Version.class.getClassLoader().getResources(CommonConstants.DUBBO_VERSIONS_KEY + artifactId);
         while (artifactEnumeration.hasMoreElements()) {
             URL url = artifactEnumeration.nextElement();
             try (BufferedReader reader =
@@ -348,7 +350,7 @@ public final class Version {
 
     private static Set<String> loadArtifactIds() throws IOException {
         Enumeration<URL> artifactsEnumeration =
-                Version.class.getClassLoader().getResources("META-INF/versions/.artifacts");
+                Version.class.getClassLoader().getResources(CommonConstants.DUBBO_VERSIONS_KEY + "/.artifacts");
         Set<String> artifactIds = new HashSet<>();
         while (artifactsEnumeration.hasMoreElements()) {
             URL url = artifactsEnumeration.nextElement();
