@@ -137,7 +137,8 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
 
     @Override
     protected void onSettingMethodDescriptor(MethodDescriptor methodDescriptor) {
-        GrpcCompositeCodec grpcCompositeCodec = (GrpcCompositeCodec) getContext().getHttpMessageDecoder();
+        GrpcCompositeCodec grpcCompositeCodec =
+                (GrpcCompositeCodec) getContext().getHttpMessageDecoder();
         grpcCompositeCodec.loadPackableMethod(methodDescriptor);
         super.onSettingMethodDescriptor(methodDescriptor);
     }
