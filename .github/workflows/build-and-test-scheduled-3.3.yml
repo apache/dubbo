@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 21
       - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
