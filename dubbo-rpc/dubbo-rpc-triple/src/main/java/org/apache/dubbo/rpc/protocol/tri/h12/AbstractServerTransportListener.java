@@ -204,6 +204,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             methodDescriptor = DescriptorUtils.findMethodDescriptor(
                     context.getServiceDescriptor(), context.getMethodName(), context.isHasStub());
             context.setMethodDescriptor(methodDescriptor);
+            onSettingMethodDescriptor(methodDescriptor);
         }
         MethodMetadata methodMetadata = context.getMethodMetadata();
         if (methodMetadata == null) {
@@ -280,4 +281,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected void setHttpMessageListener(HttpMessageListener httpMessageListener) {
         this.httpMessageListener = httpMessageListener;
     }
+
+    protected void onSettingMethodDescriptor(MethodDescriptor methodDescriptor) {}
 }

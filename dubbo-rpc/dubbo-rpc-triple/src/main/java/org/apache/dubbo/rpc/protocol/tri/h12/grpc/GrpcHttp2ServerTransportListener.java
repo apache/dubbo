@@ -135,6 +135,13 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         return (GrpcStreamingDecoder) super.getStreamingDecoder();
     }
 
+    @Override
+    protected void onSettingMethodDescriptor(MethodDescriptor methodDescriptor) {
+        GrpcCompositeCodec grpcCompositeCodec = (GrpcCompositeCodec) getContext().getHttpMessageDecoder();
+        grpcCompositeCodec.loadPackableMethod(methodDescriptor);
+        super.onSettingMethodDescriptor(methodDescriptor);
+    }
+
     private class LazyFindMethodListener implements HttpMessageListener {
 
         private final StreamingDecoder streamingDecoder;
@@ -166,13 +173,9 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                     MethodDescriptor methodDescriptor = DescriptorUtils.findTripleMethodDescriptor(
                             context.getServiceDescriptor(), context.getMethodName(), rawMessage);
                     context.setMethodDescriptor(methodDescriptor);
+                    onSettingMethodDescriptor(methodDescriptor);
 
                     setHttpMessageListener(GrpcHttp2ServerTransportListener.super.buildHttpMessageListener());
-
-                    // replace decoder
-                    GrpcCompositeCodec grpcCompositeCodec = (GrpcCompositeCodec) context.getHttpMessageDecoder();
-                    grpcCompositeCodec.loadPackableMethod(methodDescriptor);
-                    getServerChannelObserver().setResponseEncoder(grpcCompositeCodec);
                 }
 
                 getStreamingDecoder().invokeListener(rawMessage);
