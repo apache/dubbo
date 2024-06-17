@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -162,33 +163,36 @@ final class TestRunnerImpl implements TestRunner {
 
         listener.onMetadata(request.toMetadata());
         RpcInvocationBuildContext context = listener.getContext();
-        HttpMessageEncoder encoder = context.getHttpMessageEncoder();
-        HttpMessageDecoder decoder = context.getHttpMessageDecoder();
-        HttpRequest hRequest = (HttpRequest) context.getAttributes().get(TripleConstant.HTTP_REQUEST_KEY);
-        if (CollectionUtils.isEmpty(request.getBodies())) {
-            if (HttpMethods.supportBody(hRequest.method())) {
+        HttpMessageDecoder decoder = JsonCodec.INSTANCE;
+        if (context != null) {
+            HttpMessageEncoder encoder = context.getHttpMessageEncoder();
+            decoder = context.getHttpMessageDecoder();
+            HttpRequest hRequest = (HttpRequest) context.getAttributes().get(TripleConstant.HTTP_REQUEST_KEY);
+            if (CollectionUtils.isEmpty(request.getBodies())) {
+                if (HttpMethods.supportBody(hRequest.method())) {
+                    listener.onData(END);
+                }
+            } else {
+                for (Object body : request.getBodies()) {
+                    byte[] bytes;
+                    if (body instanceof String) {
+                        bytes = ((String) body).getBytes(StandardCharsets.UTF_8);
+                    } else {
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream(256);
+                        encoder.encode(bos, body);
+                        bytes = bos.toByteArray();
+                    }
+                    listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(bytes)));
+                }
                 listener.onData(END);
             }
-        } else {
-            for (Object body : request.getBodies()) {
-                byte[] bytes;
-                if (body instanceof String) {
-                    bytes = ((String) body).getBytes(StandardCharsets.UTF_8);
-                } else {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream(256);
-                    encoder.encode(bos, body);
-                    bytes = bos.toByteArray();
-                }
-                listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(bytes)));
-            }
-            listener.onData(END);
-        }
 
-        if (encoder instanceof RestHttpMessageCodec) {
-            encoder = ((RestHttpMessageCodec) encoder).getMessageEncoder();
-        }
-        if (encoder instanceof HttpMessageDecoder) {
-            decoder = (HttpMessageDecoder) encoder;
+            if (encoder instanceof RestHttpMessageCodec) {
+                encoder = ((RestHttpMessageCodec) encoder).getMessageEncoder();
+            }
+            if (encoder instanceof HttpMessageDecoder) {
+                decoder = (HttpMessageDecoder) encoder;
+            }
         }
         return new TestResponse(channel.getHttpMetadata().headers(), channel.getBodies(), decoder);
     }

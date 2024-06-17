@@ -42,12 +42,16 @@ public class TestResponse {
         this.decoder = decoder;
     }
 
-    public int getStatus() {
-        return Integer.parseInt(headers.getFirst(Http2Headers.STATUS.getName()));
+    public HttpHeaders getHeaders() {
+        return headers;
     }
 
     public String getHeader(String name) {
         return headers.getFirst(name);
+    }
+
+    public int getStatus() {
+        return Integer.parseInt(headers.getFirst(Http2Headers.STATUS.getName()));
     }
 
     public String getContentType() {

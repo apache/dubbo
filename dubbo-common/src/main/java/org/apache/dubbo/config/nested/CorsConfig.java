@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.config.nested;
 
 import java.io.Serializable;
 
 public class CorsConfig implements Serializable {
-    private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = -7106481576053641726L;
 
     /**
      * A list of origins for which cross-origin requests are allowed. Values may be a specific domain, e.g.

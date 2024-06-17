@@ -21,23 +21,30 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationEnum;
 import java.lang.annotation.Annotation;
 
 public enum Annotations implements AnnotationEnum {
-    Mapping(org.apache.dubbo.remoting.http12.rest.Mapping.class),
-    Param(org.apache.dubbo.remoting.http12.rest.Param.class),
-    Nonnull(javax.annotation.Nonnull.class);
+    Mapping,
+    Param,
+    Nonnull("javax.annotation.Nonnull");
 
-    private final Class<Annotation> type;
+    private final String className;
+    private Class<Annotation> type;
 
-    @SuppressWarnings("unchecked")
-    Annotations(Class<? extends Annotation> type) {
-        this.type = (Class<Annotation>) type;
+    Annotations(String className) {
+        this.className = className;
+    }
+
+    Annotations() {
+        className = "org.apache.dubbo.remoting.http12.rest." + name();
     }
 
     public String className() {
-        return type.getName();
+        return className;
     }
 
     @Override
     public Class<Annotation> type() {
+        if (type == null) {
+            type = loadType();
+        }
         return type;
     }
 }

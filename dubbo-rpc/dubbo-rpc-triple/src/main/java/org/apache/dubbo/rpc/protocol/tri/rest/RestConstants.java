@@ -50,9 +50,7 @@ public final class RestConstants {
             "org.springframework.web.servlet.HandlerMapping.producibleMediaTypes";
 
     /* Configuration Key */
-    public static final String CONFIG_PREFIX = "dubbo.rpc.rest.";
-    public static final String MAX_BODY_SIZE_KEY = CONFIG_PREFIX + "max-body-size";
-    public static final String MAX_RESPONSE_BODY_SIZE_KEY = CONFIG_PREFIX + "max-response-body-size";
+    public static final String CONFIG_PREFIX = "dubbo.protocol.triple.rest.";
     public static final String SUFFIX_PATTERN_MATCH_KEY = CONFIG_PREFIX + "suffix-pattern-match";
     public static final String TRAILING_SLASH_MATCH_KEY = CONFIG_PREFIX + "trailing-slash-match";
     public static final String CASE_SENSITIVE_MATCH_KEY = CONFIG_PREFIX + "case-sensitive-match";

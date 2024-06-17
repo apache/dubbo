@@ -23,6 +23,8 @@ import java.io.Serializable;
  */
 public class PropagationConfig implements Serializable {
 
+    private static final long serialVersionUID = -2570106396211532046L;
+
     public static final String B3 = "B3";
 
     public static final String W3C = "W3C";

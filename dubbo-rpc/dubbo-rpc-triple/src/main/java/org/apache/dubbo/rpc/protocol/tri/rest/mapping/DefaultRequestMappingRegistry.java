@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
-import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
@@ -44,22 +46,31 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.AMBIGUOUS_MAPPING;
-import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.DUPLICATE_MAPPING;
 
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
+    private final FrameworkModel frameworkModel;
     private final List<RequestMappingResolver> resolvers;
+    private final ContentNegotiator contentNegotiator;
 
     private final RadixTree<Registration> tree = new RadixTree<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    private RestConfig restConfig;
+
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+        contentNegotiator = frameworkModel.getBeanFactory().getOrRegisterBean(ContentNegotiator.class);
     }
 
     @Override
     public void register(Invoker<?> invoker) {
         Object service = invoker.getUrl().getServiceModel().getProxyObject();
+        ServiceDescriptor serviceDescriptor = DescriptorUtils.getReflectionServiceDescriptor(invoker.getUrl());
+        if (serviceDescriptor == null) {
+            return;
+        }
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
             for (int i = 0, size = resolvers.size(); i < size; i++) {
                 RequestMappingResolver resolver = resolvers.get(i);
@@ -70,6 +81,12 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 }
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
                 consumer.accept((methods) -> {
+                    Method method = methods.get(0);
+                    MethodDescriptor methodDescriptor =
+                            serviceDescriptor.getMethod(method.getName(), method.getParameterTypes());
+                    if (methodDescriptor == null) {
+                        return;
+                    }
                     MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
                     RequestMapping methodMapping = resolver.resolve(methodMeta);
                     if (methodMapping == null) {
@@ -78,7 +95,14 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     if (classMapping != null) {
                         methodMapping = classMapping.combine(methodMapping);
                     }
-                    register0(methodMapping, buildHandlerMeta(invoker, methodMeta));
+                    register0(
+                            methodMapping,
+                            new HandlerMeta(
+                                    invoker,
+                                    methodMeta,
+                                    MethodMetadata.fromMethodDescriptor(methodDescriptor),
+                                    methodDescriptor,
+                                    serviceDescriptor));
                 });
             }
         });
@@ -91,29 +115,11 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             registration.mapping = mapping;
             registration.meta = handler;
             for (PathExpression path : mapping.getPathCondition().getExpressions()) {
-                Registration exists = tree.addPath(path, registration);
-                if (exists != null) {
-                    throw new RestInitializeException(DUPLICATE_MAPPING, path.getPath(), mapping, exists.mapping);
-                }
+                tree.addPath(path, registration);
             }
         } finally {
             lock.writeLock().unlock();
         }
-    }
-
-    private HandlerMeta buildHandlerMeta(Invoker<?> invoker, MethodMeta methodMeta) {
-        ServiceDescriptor serviceDescriptor = DescriptorUtils.getReflectionServiceDescriptor(invoker.getUrl());
-        String serviceInterface = invoker.getUrl().getServiceInterface();
-        Assert.notNull(serviceDescriptor, "ServiceDescriptor for [%s] can't be null", serviceInterface);
-        Method method = methodMeta.getMethod();
-        MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(method.getName(), method.getParameterTypes());
-        Assert.notNull(methodDescriptor, "MethodDescriptor for [%s] can't be null", method);
-        return new HandlerMeta(
-                invoker,
-                methodMeta,
-                MethodMetadata.fromMethodDescriptor(methodDescriptor),
-                methodDescriptor,
-                serviceDescriptor);
     }
 
     @Override
@@ -139,33 +145,29 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     public HandlerMeta lookup(HttpRequest request) {
         String path = PathUtils.normalize(request.rawPath());
         request.setAttribute(RestConstants.PATH_ATTRIBUTE, path);
-        List<Match<Registration>> matches = new ArrayList<>();
-        lock.readLock().lock();
-        try {
-            tree.match(path, matches);
-        } finally {
-            lock.readLock().unlock();
-        }
+        List<Candidate> candidates = new ArrayList<>();
 
-        int size = matches.size();
-        if (size == 0) {
-            return null;
-        }
-        List<Candidate> candidates = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            Match<Registration> match = matches.get(i);
-            RequestMapping mapping = match.getValue().mapping.match(request, match.getExpression());
-            if (mapping != null) {
-                Candidate candidate = new Candidate();
-                candidate.mapping = mapping;
-                candidate.meta = match.getValue().meta;
-                candidate.expression = match.getExpression();
-                candidate.variableMap = match.getVariableMap();
-                candidates.add(candidate);
+        tryMatch(request, path, candidates);
+
+        if (candidates.isEmpty()) {
+            RestConfig restConfig = getRestConfig();
+            if (restConfig.isTrailingSlashMatch()) {
+                int end = path.length() - 1;
+                if (end > 0 && path.charAt(end) == '/') {
+                    tryMatch(request, path.substring(0, end), candidates);
+                }
+            }
+            if (candidates.isEmpty()) {
+                if (restConfig.isSuffixPatternMatch()) {
+                    int index = path.lastIndexOf('.');
+                    if (index > -1 && contentNegotiator.supportExtension(path.substring(index + 1))) {
+                        tryMatch(request, path.substring(0, index), candidates);
+                    }
+                }
             }
         }
 
-        size = candidates.size();
+        int size = candidates.size();
         if (size == 0) {
             return null;
         }
@@ -206,8 +208,73 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         return handler;
     }
 
+    private RestConfig getRestConfig() {
+        RestConfig restConfig = this.restConfig;
+        if (restConfig == null) {
+            Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
+            restConfig = new RestConfig();
+            restConfig.setSuffixPatternMatch(conf.getBoolean(RestConstants.SUFFIX_PATTERN_MATCH_KEY, true));
+            restConfig.setTrailingSlashMatch(conf.getBoolean(RestConstants.TRAILING_SLASH_MATCH_KEY, true));
+            restConfig.setCaseSensitiveMatch(conf.getBoolean(RestConstants.CASE_SENSITIVE_MATCH_KEY, true));
+            this.restConfig = restConfig;
+        }
+        return restConfig;
+    }
+
+    private void tryMatch(HttpRequest request, String path, List<Candidate> candidates) {
+        List<Match<Registration>> matches = new ArrayList<>();
+
+        lock.readLock().lock();
+        try {
+            tree.match(path, matches);
+        } finally {
+            lock.readLock().unlock();
+        }
+
+        int size = matches.size();
+        if (size == 0) {
+            return;
+        }
+        for (int i = 0; i < size; i++) {
+            Match<Registration> match = matches.get(i);
+            RequestMapping mapping = match.getValue().mapping.match(request, match.getExpression());
+            if (mapping != null) {
+                Candidate candidate = new Candidate();
+                candidate.mapping = mapping;
+                candidate.meta = match.getValue().meta;
+                candidate.expression = match.getExpression();
+                candidate.variableMap = match.getVariableMap();
+                candidates.add(candidate);
+            }
+        }
+    }
+
     @Override
     public boolean exists(String path, String method) {
+        if (tryExists(path, method)) {
+            return true;
+        }
+
+        RestConfig restConfig = getRestConfig();
+        if (restConfig.isTrailingSlashMatch()) {
+            int end = path.length() - 1;
+            if (end > 0 && path.charAt(end) == '/') {
+                if (tryExists(path.substring(0, end), method)) {
+                    return true;
+                }
+            }
+        }
+
+        if (restConfig.isSuffixPatternMatch()) {
+            int index = path.lastIndexOf('.');
+            if (index > -1 && contentNegotiator.supportExtension(path.substring(index + 1))) {
+                return tryExists(path.substring(0, index), method);
+            }
+        }
+        return false;
+    }
+
+    private boolean tryExists(String path, String method) {
         List<Match<Registration>> matches = new ArrayList<>();
         lock.readLock().lock();
         try {
@@ -224,6 +291,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     private static final class Registration {
+
         RequestMapping mapping;
         HandlerMeta meta;
 
@@ -245,6 +313,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     private static final class Candidate {
+
         RequestMapping mapping;
         HandlerMeta meta;
         PathExpression expression;

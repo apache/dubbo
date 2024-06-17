@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.config.nested;
 
 import org.apache.dubbo.config.support.Nested;
 
@@ -25,35 +25,14 @@ import java.io.Serializable;
  */
 public class RestConfig implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * Maximum allowed size for request bodies.
-     * Limits the size of request to prevent excessively large request.
-     * <p>The default value is 8MiB.
-     */
-    private Integer maxBodySize;
-
-    /**
-     * Maximum allowed size for response bodies.
-     * Limits the size of responses to prevent excessively large response.
-     * <p>The default value is 8MiB.
-     */
-    private Integer maxResponseBodySize;
+    private static final long serialVersionUID = -8068568976367034755L;
 
     /**
      * Whether path matching should be match paths with a trailing slash.
      * If enabled, a method mapped to "/users" also matches to "/users/".
      * <p>The default value is {@code true}.
      */
-    private Boolean trailingSlashMatch;
-
-    /**
-     * Whether path matching should be case-sensitive.
-     * If enabled, a method mapped to "/users" won't match to "/Users/".
-     * <p>The default value is {@code false}.
-     */
-    private Boolean caseSensitiveMatch;
+    private boolean trailingSlashMatch;
 
     /**
      * Whether path matching uses suffix pattern matching (".*").
@@ -62,7 +41,14 @@ public class RestConfig implements Serializable {
      * inferred from the URL suffix, e.g., ".json" for "application/json".
      * <p>The default value is {@code true}.
      */
-    private Boolean suffixPatternMatch;
+    private boolean suffixPatternMatch;
+
+    /**
+     * Whether path matching should be case-sensitive.
+     * If enabled, a method mapped to "/users" won't match to "/Users/".
+     * <p>The default value is {@code true}.
+     */
+    private boolean caseSensitiveMatch;
 
     /**
      * The parameter name that can be used to specify the response format.
@@ -71,49 +57,33 @@ public class RestConfig implements Serializable {
     private String formatParameterName;
 
     /**
-     *  The config is used to set the Global CORS configuration properties.
+     *  The cors configuration.
      */
     @Nested
     private CorsConfig cors;
 
-    public Integer getMaxBodySize() {
-        return maxBodySize;
-    }
-
-    public void setMaxBodySize(Integer maxBodySize) {
-        this.maxBodySize = maxBodySize;
-    }
-
-    public Integer getMaxResponseBodySize() {
-        return maxResponseBodySize;
-    }
-
-    public void setMaxResponseBodySize(Integer maxResponseBodySize) {
-        this.maxResponseBodySize = maxResponseBodySize;
-    }
-
-    public Boolean getTrailingSlashMatch() {
+    public boolean isTrailingSlashMatch() {
         return trailingSlashMatch;
     }
 
-    public void setTrailingSlashMatch(Boolean trailingSlashMatch) {
+    public void setTrailingSlashMatch(boolean trailingSlashMatch) {
         this.trailingSlashMatch = trailingSlashMatch;
     }
 
-    public Boolean getCaseSensitiveMatch() {
-        return caseSensitiveMatch;
-    }
-
-    public void setCaseSensitiveMatch(Boolean caseSensitiveMatch) {
-        this.caseSensitiveMatch = caseSensitiveMatch;
-    }
-
-    public Boolean getSuffixPatternMatch() {
+    public boolean isSuffixPatternMatch() {
         return suffixPatternMatch;
     }
 
-    public void setSuffixPatternMatch(Boolean suffixPatternMatch) {
+    public void setSuffixPatternMatch(boolean suffixPatternMatch) {
         this.suffixPatternMatch = suffixPatternMatch;
+    }
+
+    public boolean isCaseSensitiveMatch() {
+        return caseSensitiveMatch;
+    }
+
+    public void setCaseSensitiveMatch(boolean caseSensitiveMatch) {
+        this.caseSensitiveMatch = caseSensitiveMatch;
     }
 
     public String getFormatParameterName() {

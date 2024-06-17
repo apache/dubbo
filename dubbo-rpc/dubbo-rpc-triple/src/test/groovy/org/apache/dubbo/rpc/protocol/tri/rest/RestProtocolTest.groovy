@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.rest
 
+import org.apache.dubbo.remoting.http12.HttpMethods
+import org.apache.dubbo.remoting.http12.message.MediaType
 import org.apache.dubbo.rpc.protocol.tri.rest.service.Book
 import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl
 import org.apache.dubbo.rpc.protocol.tri.rest.test.BaseServiceTest
@@ -32,17 +34,19 @@ class RestProtocolTest extends BaseServiceTest {
 
     def "Hello world"() {
         given:
-            def request = new TestRequest(path: path)
+            def request = new TestRequest(path)
         expect:
             runner.run(request, String.class) == output
         where:
-            path                | output
-            '/hello?name=world' | 'hello world'
+            path                    | output
+            '/hello?name=world'     | 'hello world'
+            '/hello/?name=world'    | 'hello world'
+            '/hello.yml?name=world' | 'hello world'
     }
 
     def "post test"() {
         given:
-            def request = new TestRequest(path: path).post(body)
+            def request = new TestRequest(path).post(body)
         expect:
             runner.run(request, String.class) == output
         where:
@@ -55,12 +59,30 @@ class RestProtocolTest extends BaseServiceTest {
 
     def "bean test"() {
         given:
-            def request = new TestRequest(path: path).post(body)
+            def request = new TestRequest(path).post(body)
         expect:
             runner.run(request, Book.class).name == output
         where:
             path   | body                                                                  | output
             '/buy' | [new Book(name: "Dubbo", price: 80, publishDate: new Date())]         | 'Dubbo'
             '/buy' | ['book': new Book(name: "Dubbo", price: 80, publishDate: new Date())] | 'Dubbo'
+    }
+
+    def "urlEncodeForm test"() {
+        given:
+            def request = new TestRequest(
+                method: HttpMethods.POST,
+                path: path,
+                contentType: MediaType.APPLICATION_FROM_URLENCODED,
+                params: [
+                    'name': 'Sam',
+                    'age' : 8
+                ]
+            )
+        expect:
+            runner.run(request, String.class) == output
+        where:
+            path        | body          | output
+            '/postTest' | '["Sam","8"]' | 'Sam is 8 years old'
     }
 }
