@@ -41,6 +41,11 @@ public final class RequestUtils {
 
     private RequestUtils() {}
 
+    public static boolean isMultiPart(HttpRequest request) {
+        String contentType = request.contentType();
+        return contentType != null && contentType.startsWith(MediaType.MULTIPART_FORM_DATA.getName());
+    }
+
     public static boolean isFormOrMultiPart(HttpRequest request) {
         String contentType = request.contentType();
         if (contentType == null) {
@@ -170,6 +175,28 @@ public final class RequestUtils {
         if (value == null) {
             if (decoder.mediaType() == MediaType.TEXT_PLAIN) {
                 type = String.class;
+            }
+            value = decoder.decode(request.inputStream(), type, request.charsetOrDefault());
+            request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
+        }
+        return value;
+    }
+
+    public static Object decodeBody(HttpRequest request) {
+        HttpMessageDecoder decoder = request.attribute(RestConstants.BODY_DECODER_ATTRIBUTE);
+        if (decoder == null) {
+            return null;
+        }
+        Object value = request.attribute(RestConstants.BODY_ATTRIBUTE);
+        if (value == null) {
+            Class<?> type;
+            MediaType mediaType = decoder.mediaType();
+            if (mediaType == MediaType.APPLICATION_JSON || mediaType == MediaType.APPLICATION_YAML) {
+                type = Object.class;
+            } else if (mediaType.isPureText()) {
+                type = String.class;
+            } else {
+                return null;
             }
             value = decoder.decode(request.inputStream(), type, request.charsetOrDefault());
             request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);

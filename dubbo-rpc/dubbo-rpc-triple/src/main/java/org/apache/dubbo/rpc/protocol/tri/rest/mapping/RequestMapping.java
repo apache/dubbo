@@ -86,10 +86,9 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         ConsumesCondition consumes = combine(consumesCondition, other.consumesCondition);
         ProducesCondition produces = combine(producesCondition, other.producesCondition);
         ConditionWrapper custom = combine(customCondition, other.customCondition);
-        CorsMeta corsMeta = combine(this.cors, other.cors);
+        CorsMeta cors = combine(this.cors, other.cors);
         ResponseMeta response = ResponseMeta.combine(this.response, other.response);
-        return new RequestMapping(
-                name, paths, methods, params, headers, consumes, produces, custom, corsMeta, response);
+        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, cors, response);
     }
 
     private <T extends Condition<T, HttpRequest>> T combine(T source, T other) {
@@ -327,7 +326,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         private String[] consumes;
         private String[] produces;
         private Condition<?, HttpRequest> customCondition;
-        private CorsMeta corsMeta;
+        private CorsMeta cors;
         private Integer responseStatus;
         private String responseReason;
 
@@ -376,8 +375,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             return this;
         }
 
-        public Builder cors(CorsMeta corsMeta) {
-            this.corsMeta = corsMeta;
+        public Builder cors(CorsMeta cors) {
+            this.cors = cors;
             return this;
         }
 
@@ -401,7 +400,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                     isEmpty(consumes) ? null : new ConsumesCondition(consumes),
                     isEmpty(produces) ? null : new ProducesCondition(produces),
                     customCondition,
-                    corsMeta == null ? null : corsMeta,
+                    cors == null ? null : cors,
                     responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason));
         }
     }

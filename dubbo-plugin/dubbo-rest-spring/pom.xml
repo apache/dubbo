@@ -39,8 +39,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rest-servlet</artifactId>
+      <artifactId>dubbo-triple-servlet</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>

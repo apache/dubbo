@@ -109,7 +109,7 @@
     <protobuf-java_version>3.25.3</protobuf-java_version>
     <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
     <servlet_version>3.1.0</servlet_version>
-    <servlet6_version>6.1.0</servlet6_version>
+    <jakarta_servlet_version>6.1.0</jakarta_servlet_version>
     <jetty_version>9.4.54.v20240208</jetty_version>
     <validation_new_version>3.1.0</validation_new_version>
     <validation_version>1.1.0.Final</validation_version>
@@ -152,8 +152,7 @@
     <log4j2_version>2.23.1</log4j2_version>
     <commons_io_version>2.16.1</commons_io_version>
     <commons-codec_version>1.16.0</commons-codec_version>
-
-    <embedded_redis_version>1.4.3</embedded_redis_version>
+    <groovy_version>4.0.21</groovy_version>
 
     <!-- Alibaba -->
     <alibaba_spring_context_support_version>1.0.11</alibaba_spring_context_support_version>
@@ -164,7 +163,9 @@
     <awaitility_version>4.2.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
+    <embedded_redis_version>1.4.3</embedded_redis_version>
     <mockito_version>4.11.0</mockito_version>
+    <spock_version>2.3-groovy-4.0</spock_version>
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
@@ -416,7 +417,7 @@
       <dependency>
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
-        <version>${servlet6_version}</version>
+        <version>${jakarta_servlet_version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -624,6 +625,11 @@
         <artifactId>api</artifactId>
         <version>${envoy_api_version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.groovy</groupId>
+        <artifactId>groovy</artifactId>
+        <version>${groovy_version}</version>
+      </dependency>
 
       <!-- for dubbo-rpc-webservice -->
       <dependency>
@@ -748,6 +754,24 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
         <version>${spring_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.spockframework</groupId>
+        <artifactId>spock-core</artifactId>
+        <version>${spock_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.spockframework</groupId>
+        <artifactId>spock-spring</artifactId>
+        <version>${spock_version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.spockframework</groupId>
+        <artifactId>spock-junit4</artifactId>
+        <version>${spock_version}</version>
         <scope>test</scope>
       </dependency>
 

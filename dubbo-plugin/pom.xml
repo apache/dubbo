@@ -41,7 +41,6 @@
     <module>dubbo-filter-cache</module>
     <module>dubbo-filter-validation</module>
     <module>dubbo-rest-jaxrs</module>
-    <module>dubbo-rest-servlet</module>
     <module>dubbo-rest-spring</module>
     <module>dubbo-triple-servlet</module>
   </modules>

@@ -133,6 +133,9 @@ public final class PathSegment implements Comparable<PathSegment> {
     private boolean matchPattern(String path, Map<String, String> variableMap) {
         Matcher matcher = getPattern().matcher(path);
         if (matcher.matches()) {
+            if (variables == null) {
+                return true;
+            }
             for (int i = 0, size = variables.size(); i < size; i++) {
                 String variable = variables.get(i);
                 variableMap.put(variable, matcher.group(variable));
@@ -183,7 +186,7 @@ public final class PathSegment implements Comparable<PathSegment> {
         }
         int size = variables == null ? 0 : variables.size();
         int otherSize = other.variables == null ? 0 : other.variables.size();
-        return size - otherSize;
+        return otherSize - size;
     }
 
     public enum Type {

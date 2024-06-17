@@ -278,13 +278,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rest-servlet</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rest-spring</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
@@ -541,7 +534,6 @@
                   <include>org.apache.dubbo:dubbo-rpc-injvm</include>
                   <include>org.apache.dubbo:dubbo-rpc-triple</include>
                   <include>org.apache.dubbo:dubbo-rest-jaxrs</include>
-                  <include>org.apache.dubbo:dubbo-rest-servlet</include>
                   <include>org.apache.dubbo:dubbo-rest-spring</include>
                   <include>org.apache.dubbo:dubbo-triple-servlet</include>
                   <include>org.apache.dubbo:dubbo-serialization-api</include>

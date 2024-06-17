@@ -73,6 +73,10 @@ public final class RadixTree<T> {
         return null;
     }
 
+    public T addPath(String path, T value) {
+        return addPath(PathExpression.parse(PathUtils.normalize(path)), value);
+    }
+
     private static <T> Node<T> getChild(Node<T> current, PathSegment segment) {
         Node<T> child;
         if (segment.getType() == Type.LITERAL) {

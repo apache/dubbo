@@ -48,7 +48,7 @@ public abstract class NamedValueArgumentResolverSupport {
         }
 
         if (arg != null) {
-            return StringUtils.EMPTY_STRING.equals(arg) ? meta.defaultValue() : arg;
+            return StringUtils.EMPTY_STRING.equals(arg) ? emptyDefaultValue(meta) : arg;
         }
         arg = meta.defaultValue();
         if (arg != null) {
@@ -80,6 +80,10 @@ public abstract class NamedValueArgumentResolverSupport {
         }
         meta.setParameterMeta(parameterMeta);
         return meta;
+    }
+
+    protected String emptyDefaultValue(NamedValueMeta meta) {
+        return meta.defaultValue();
     }
 
     protected abstract Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response);

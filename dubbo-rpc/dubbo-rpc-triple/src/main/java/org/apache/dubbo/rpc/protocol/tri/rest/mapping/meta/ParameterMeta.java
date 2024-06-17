@@ -101,6 +101,10 @@ public abstract class ParameterMeta extends AnnotationSupport {
         return getToolKit().bind(this, request, response);
     }
 
+    public int getIndex() {
+        return -1;
+    }
+
     public String getDescription() {
         return name;
     }

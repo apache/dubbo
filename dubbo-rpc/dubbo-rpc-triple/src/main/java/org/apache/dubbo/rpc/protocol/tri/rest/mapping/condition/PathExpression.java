@@ -38,6 +38,10 @@ public final class PathExpression implements Comparable<PathExpression> {
         return new PathExpression(path, PathParser.parse(path));
     }
 
+    public static boolean match(@Nonnull String path, String value) {
+        return value != null && parse(path).match(value) != null;
+    }
+
     public String getPath() {
         return path;
     }
@@ -85,6 +89,9 @@ public final class PathExpression implements Comparable<PathExpression> {
     public int compareTo(PathExpression other) {
         int size = segments.length;
         int otherSize = other.segments.length;
+        if (isDirect() && other.isDirect()) {
+            return other.path.length() - path.length();
+        }
         for (int i = 0; i < size && i < otherSize; i++) {
             int result = segments[i].compareTo(other.segments[i]);
             if (result != 0) {
@@ -112,13 +119,21 @@ public final class PathExpression implements Comparable<PathExpression> {
 
     @Override
     public String toString() {
+        if (isDirect()) {
+            return path;
+        }
         StringBuilder sb = new StringBuilder(32);
         for (PathSegment segment : segments) {
             sb.append('/');
+            String value = segment.getValue();
             if (segment.getType() == Type.VARIABLE) {
-                sb.append('{').append(segment.getValue()).append('}');
+                if (value.isEmpty()) {
+                    sb.append('*');
+                } else {
+                    sb.append('{').append(value).append('}');
+                }
             } else {
-                sb.append(segment.getValue());
+                sb.append(value);
             }
         }
         return sb.toString();

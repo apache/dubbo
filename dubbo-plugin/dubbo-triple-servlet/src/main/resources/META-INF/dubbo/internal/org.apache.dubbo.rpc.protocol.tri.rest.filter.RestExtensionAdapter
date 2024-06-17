@@ -1,0 +1,2 @@
+servlet-filter=org.apache.dubbo.rpc.protocol.tri.rest.support.servlet.FilterAdapter
+jakarta-servlet-filter=org.apache.dubbo.rpc.protocol.tri.rest.support.servlet.jakarta.FilterAdapter
