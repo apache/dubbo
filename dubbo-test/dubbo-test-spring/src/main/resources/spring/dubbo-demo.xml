@@ -28,7 +28,7 @@
     <dubbo:registry address="${zookeeper.connection.address}?registry-type=service"/>
 
     <dubbo:protocol name="dubbo" port="-1"/>
-    <dubbo:protocol name="tri" port="-1"/>
+    <dubbo:protocol name="rest" port="-1"/>
 
     <!-- references -->
     <dubbo:consumer check="false" scope="remote" />
