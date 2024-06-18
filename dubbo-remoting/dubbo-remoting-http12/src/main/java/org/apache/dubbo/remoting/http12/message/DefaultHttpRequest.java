@@ -81,6 +81,10 @@ public class DefaultHttpRequest implements HttpRequest {
         }
     }
 
+    public HttpMetadata getMetadata() {
+        return metadata;
+    }
+
     @Override
     public boolean isHttp2() {
         return metadata instanceof Http2Header;
@@ -434,6 +438,11 @@ public class DefaultHttpRequest implements HttpRequest {
     @Override
     public Collection<String> queryParameterNames() {
         return getDecoder().parameters().keySet();
+    }
+
+    @Override
+    public Map<String, List<String>> queryParameters() {
+        return getDecoder().parameters();
     }
 
     @Override

@@ -32,7 +32,7 @@ class RestProtocolTest extends BaseServiceTest {
         builder.provider(new DemoServiceImpl())
     }
 
-    def "Hello world"() {
+    def "hello world"() {
         given:
             def request = new TestRequest(path)
         expect:
@@ -84,5 +84,30 @@ class RestProtocolTest extends BaseServiceTest {
         where:
             path        | body          | output
             '/postTest' | '["Sam","8"]' | 'Sam is 8 years old'
+    }
+
+    def "override mapping test"() {
+        given:
+            def request = new TestRequest(path: path)
+        expect:
+            runner.run(request, String.class) == output
+        where:
+            path                          | output
+            '/say?name=sam&count=2'       | '2'
+            '/say?name=sam'               | '1'
+            '/say~SL'                     | '2'
+            '/say~S'                      | '1'
+            '/say~S?name=sam&count=2'     | '1'
+            '/say~S.yml?name=sam&count=2' | '1'
+    }
+
+    def "ambiguous mapping test"() {
+        given:
+            def request = new TestRequest(path: path)
+        expect:
+            runner.run(request, String.class) contains "Ambiguous mapping"
+        where:
+            path   | output
+            '/say' | '1'
     }
 }

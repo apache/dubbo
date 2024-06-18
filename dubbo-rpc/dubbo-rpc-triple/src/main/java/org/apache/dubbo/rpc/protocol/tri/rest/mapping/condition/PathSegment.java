@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.PathParserException;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.KeyString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +106,7 @@ public final class PathSegment implements Comparable<PathSegment> {
         return type == Type.WILDCARD_TAIL || type == Type.PATTERN_MULTI;
     }
 
-    public boolean match(String path, int start, int end, Map<String, String> variableMap) {
+    public boolean match(KeyString path, int start, int end, Map<String, String> variableMap) {
         switch (type) {
             case SLASH:
             case LITERAL:
@@ -118,16 +118,20 @@ public final class PathSegment implements Comparable<PathSegment> {
                 return true;
             case VARIABLE:
                 if (variables != null) {
-                    variableMap.put(getVariable(), StringUtils.substring(path, start, end));
+                    variableMap.put(getVariable(), path.substring(start, end));
                 }
                 return true;
             case PATTERN:
-                return matchPattern(StringUtils.substring(path, start, end), variableMap);
+                return matchPattern(path.substring(start, end), variableMap);
             case PATTERN_MULTI:
                 return matchPattern(path.substring(start), variableMap);
             default:
                 return false;
         }
+    }
+
+    public boolean match(String path, int start, int end, Map<String, String> variableMap) {
+        return match(new KeyString(path), start, end, variableMap);
     }
 
     private boolean matchPattern(String path, Map<String, String> variableMap) {

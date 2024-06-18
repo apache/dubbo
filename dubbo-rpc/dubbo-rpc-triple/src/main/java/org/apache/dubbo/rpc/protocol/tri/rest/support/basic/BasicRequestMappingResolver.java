@@ -30,6 +30,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.DefaultRestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
+
+import java.lang.reflect.Method;
 
 @Activate
 public class BasicRequestMappingResolver implements RequestMappingResolver {
@@ -50,41 +53,65 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
 
     @Override
     public RequestMapping resolve(ServiceMeta serviceMeta) {
-        return builder(serviceMeta.findAnnotation(Annotations.Mapping), serviceMeta.getServiceInterface())
-                .name(serviceMeta.getType().getSimpleName())
+        AnnotationMeta<?> mapping = serviceMeta.findAnnotation(Annotations.Mapping);
+        Builder builder = builder(mapping);
+
+        String[] paths = getPaths(mapping);
+        if (paths.length == 0) {
+            builder.path(serviceMeta.getServiceInterface());
+        } else {
+            builder.path(paths);
+        }
+
+        return builder.name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
                 .build();
     }
 
     @Override
     public RequestMapping resolve(MethodMeta methodMeta) {
+        Method method = methodMeta.getMethod();
+        AnnotationMeta<?> mapping = methodMeta.findAnnotation(Annotations.Mapping);
+        Builder builder = builder(mapping);
+
+        String[] paths = getPaths(mapping);
+        if (paths.length == 0) {
+            builder.path(method.getName()).sig(TypeUtils.buildSig(method));
+        } else {
+            builder.path(paths);
+        }
+
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         if (globalCorsMeta == null) {
             globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
         }
-        String name = methodMeta.getMethod().getName();
-        return builder(methodMeta.findAnnotation(Annotations.Mapping), name)
-                .name(name)
+        return builder.name(method.getName())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
                 .cors(globalCorsMeta)
                 .build();
     }
 
-    private Builder builder(AnnotationMeta<?> mapping, String defaultPath) {
+    private Builder builder(AnnotationMeta<?> mapping) {
         Builder builder = RequestMapping.builder();
-        String[] paths = StringUtils.EMPTY_STRING_ARRAY;
-        if (mapping != null) {
-            builder.method(mapping.getStringArray("method"))
-                    .param(mapping.getStringArray("params"))
-                    .header(mapping.getStringArray("headers"))
-                    .consume(mapping.getStringArray("consumes"))
-                    .produce(mapping.getStringArray("produces"));
-
-            paths = mapping.getStringArray("path");
-            if (paths.length == 0) {
-                paths = mapping.getValueArray();
-            }
+        if (mapping == null) {
+            return builder;
         }
-        return paths.length == 0 ? builder.path(defaultPath) : builder.path(paths);
+        builder.method(mapping.getStringArray("method"))
+                .param(mapping.getStringArray("params"))
+                .header(mapping.getStringArray("headers"))
+                .consume(mapping.getStringArray("consumes"))
+                .produce(mapping.getStringArray("produces"));
+        return builder;
+    }
+
+    private static String[] getPaths(AnnotationMeta<?> mapping) {
+        if (mapping == null) {
+            return StringUtils.EMPTY_STRING_ARRAY;
+        }
+        String[] paths = mapping.getStringArray("path");
+        if (paths.length > 0) {
+            return paths;
+        }
+        return mapping.getValueArray();
     }
 }

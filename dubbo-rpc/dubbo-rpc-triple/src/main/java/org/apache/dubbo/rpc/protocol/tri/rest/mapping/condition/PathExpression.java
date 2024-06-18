@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment.Type;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.KeyString;
 
 import javax.annotation.Nonnull;
 
@@ -64,7 +65,7 @@ public final class PathExpression implements Comparable<PathExpression> {
             if (end != -1) {
                 start = end + 1;
                 end = path.indexOf('/', start);
-                if (segment.match(path, start, end, variableMap)) {
+                if (segment.match(new KeyString(path), start, end, variableMap)) {
                     continue;
                 }
             }

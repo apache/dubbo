@@ -62,44 +62,49 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
     @Override
     public RequestMapping resolve(ServiceMeta serviceMeta) {
         AnnotationMeta<?> requestMapping = serviceMeta.findMergedAnnotation(Annotations.RequestMapping);
-        if (requestMapping == null) {
+        AnnotationMeta<?> httpExchange = serviceMeta.findMergedAnnotation(Annotations.HttpExchange);
+        if (requestMapping == null && httpExchange == null) {
             return null;
         }
-        AnnotationMeta<?> responseStatus = serviceMeta.findMergedAnnotation(Annotations.ResponseStatus);
-        AnnotationMeta<?> crossOrigin = serviceMeta.findMergedAnnotation(Annotations.CrossOrigin);
-        String[] methods = requestMapping.getStringArray("method");
-        return builder(requestMapping, responseStatus)
+
+        String[] methods = requestMapping == null
+                ? httpExchange.getStringArray("method")
+                : requestMapping.getStringArray("method");
+        return builder(requestMapping, httpExchange, serviceMeta.findMergedAnnotation(Annotations.ResponseStatus))
                 .method(methods)
                 .name(serviceMeta.getType().getSimpleName())
                 .contextPath(serviceMeta.getContextPath())
-                .cors(buildCorsMeta(crossOrigin, methods))
+                .cors(buildCorsMeta(serviceMeta.findMergedAnnotation(Annotations.CrossOrigin), methods))
                 .build();
     }
 
     @Override
     public RequestMapping resolve(MethodMeta methodMeta) {
         AnnotationMeta<?> requestMapping = methodMeta.findMergedAnnotation(Annotations.RequestMapping);
-        if (requestMapping == null) {
+        AnnotationMeta<?> httpExchange = methodMeta.findMergedAnnotation(Annotations.HttpExchange);
+        if (requestMapping == null && httpExchange == null) {
             AnnotationMeta<?> exceptionHandler = methodMeta.getAnnotation(Annotations.ExceptionHandler);
             if (exceptionHandler != null) {
                 methodMeta.getServiceMeta().addExceptionHandler(methodMeta);
             }
             return null;
         }
+
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
-        AnnotationMeta<?> responseStatus = methodMeta.findMergedAnnotation(Annotations.ResponseStatus);
-        AnnotationMeta<?> crossOrigin = methodMeta.findMergedAnnotation(Annotations.CrossOrigin);
-        String[] methods = requestMapping.getStringArray("method");
-        return builder(requestMapping, responseStatus)
+        String[] methods = requestMapping == null
+                ? httpExchange.getStringArray("method")
+                : requestMapping.getStringArray("method");
+        return builder(requestMapping, httpExchange, methodMeta.findMergedAnnotation(Annotations.ResponseStatus))
                 .method(methods)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(serviceMeta.getContextPath())
                 .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
-                .cors(buildCorsMeta(crossOrigin, methods))
+                .cors(buildCorsMeta(methodMeta.findMergedAnnotation(Annotations.CrossOrigin), methods))
                 .build();
     }
 
-    private Builder builder(AnnotationMeta<?> requestMapping, AnnotationMeta<?> responseStatus) {
+    private Builder builder(
+            AnnotationMeta<?> requestMapping, AnnotationMeta<?> httpExchange, AnnotationMeta<?> responseStatus) {
         Builder builder = RequestMapping.builder();
         if (responseStatus != null) {
             HttpStatus value = responseStatus.getEnum("value");
@@ -108,6 +113,11 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
             if (StringUtils.isNotEmpty(reason)) {
                 builder.responseReason(reason);
             }
+        }
+        if (requestMapping == null) {
+            return builder.path(httpExchange.getValueArray())
+                    .consume(httpExchange.getStringArray("contentType"))
+                    .produce(httpExchange.getStringArray("accept"));
         }
         return builder.path(requestMapping.getValueArray())
                 .param(requestMapping.getStringArray("params"))

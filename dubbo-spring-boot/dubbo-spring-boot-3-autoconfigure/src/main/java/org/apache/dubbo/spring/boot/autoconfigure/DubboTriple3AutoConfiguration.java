@@ -36,12 +36,12 @@ import org.springframework.context.annotation.Configuration;
 @Conditional(SpringBoot3Condition.class)
 public class DubboTriple3AutoConfiguration {
 
-    public static final String PREFIX = "dubbo.protocol.triple";
+    public static final String PREFIX = "dubbo.protocol.triple.servlet";
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enable-servlet")
+    @ConditionalOnProperty(prefix = PREFIX, name = "enable")
     public static class TripleServletConfiguration {
 
         @Bean

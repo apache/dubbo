@@ -29,4 +29,8 @@ public interface DemoService {
 
     @Mapping("/buy")
     Book buy(Book book);
+
+    String say(String name, Long count);
+
+    String say(String name);
 }

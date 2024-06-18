@@ -41,6 +41,7 @@ public final class RestConstants {
     /* Request Attribute */
     public static final String BODY_ATTRIBUTE = HttpRequest.class.getName() + ".body";
     public static final String BODY_DECODER_ATTRIBUTE = HttpMessageDecoder.class.getName() + ".body";
+    public static final String SIG_ATTRIBUTE = RequestMapping.class.getName() + ".sig";
     public static final String MAPPING_ATTRIBUTE = RequestMapping.class.getName();
     public static final String HANDLER_ATTRIBUTE = HandlerMeta.class.getName();
     public static final String PATH_ATTRIBUTE = "org.springframework.web.util.UrlPathHelper.PATH";

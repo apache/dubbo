@@ -24,7 +24,8 @@ dubbo:
     qos-enable: false
   protocol:
     name: tri
-    port: ${server.port}
+    port: -1
+    #port: ${server.port}
     triple:
       servlet:
         enable: true

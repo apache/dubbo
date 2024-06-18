@@ -146,7 +146,7 @@ public class TestRequest {
         return cookies;
     }
 
-    public TestRequest setParam(String name, Object value) {
+    public TestRequest param(String name, Object value) {
         params.put(name, value);
         return this;
     }

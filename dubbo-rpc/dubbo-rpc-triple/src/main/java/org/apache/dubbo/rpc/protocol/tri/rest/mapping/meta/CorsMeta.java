@@ -65,6 +65,12 @@ public class CorsMeta {
         return new Builder();
     }
 
+    public static CorsMeta combine(CorsMeta source, CorsMeta other) {
+        return source == null || source.isEmpty()
+                ? other == null || other.isEmpty() ? null : other.applyDefault()
+                : source.combine(other).applyDefault();
+    }
+
     public String[] getAllowedOrigins() {
         return allowedOrigins;
     }
@@ -158,7 +164,7 @@ public class CorsMeta {
     }
 
     /**
-     * Merge two arrays of CORS config values, with the other array having higher priority.
+     * Merge two arrays of CORS config values, the other array having higher priority.
      */
     private static String[] combine(String[] source, String[] other) {
         if (other.length == 0) {
