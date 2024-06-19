@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import java.io.Serializable;
+import java.net.URLClassLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Assertions;
@@ -77,6 +78,7 @@ class InjvmDeepCopyTest {
                 ClassUtils.getClassLoader(DemoInterface.class));
         URL consumerUrl = url.setScopeModel(moduleModel).setServiceModel(consumerModel);
 
+        Thread.currentThread().setContextClassLoader(new URLClassLoader(new java.net.URL[] {}));
         DemoInterface stub = proxyFactory.getProxy(protocol.refer(DemoInterface.class, consumerUrl));
 
         Data request = new Data();
