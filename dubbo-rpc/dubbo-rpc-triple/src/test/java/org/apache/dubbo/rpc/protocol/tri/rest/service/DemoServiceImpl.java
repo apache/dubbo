@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.service;
 
+import org.apache.dubbo.remoting.http12.rest.Mapping;
+
 public class DemoServiceImpl implements DemoService {
 
     @Override
@@ -46,5 +48,14 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public String say(String name) {
         return "1";
+    }
+
+    @Mapping
+    public String noInterface() {
+        return "ok";
+    }
+
+    public String noInterfaceAndMapping() {
+        return "ok";
     }
 }

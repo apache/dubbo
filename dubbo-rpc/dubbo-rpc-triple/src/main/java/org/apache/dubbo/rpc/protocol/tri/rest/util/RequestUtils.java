@@ -200,11 +200,15 @@ public final class RequestUtils {
         if (decoder == null) {
             return null;
         }
+        MediaType mediaType = decoder.mediaType();
+        if (mediaType == MediaType.APPLICATION_FROM_URLENCODED || mediaType == MediaType.MULTIPART_FORM_DATA) {
+            return null;
+        }
 
         try {
             InputStream input = request.inputStream();
             if (single) {
-                if (decoder.mediaType().isPureText()) {
+                if (mediaType.isPureText()) {
                     type = String.class;
                 }
                 int available = input.available();
@@ -225,7 +229,6 @@ public final class RequestUtils {
 
             Object value = request.attribute(RestConstants.BODY_ATTRIBUTE);
             if (value == null) {
-                MediaType mediaType = decoder.mediaType();
                 if (mediaType == MediaType.APPLICATION_JSON || mediaType == MediaType.APPLICATION_YAML) {
                     type = Object.class;
                 } else if (mediaType.isPureText()) {
@@ -234,11 +237,9 @@ public final class RequestUtils {
                     return null;
                 }
                 int available = input.available();
-                if (available == 0) {
-                    return emptyDefault(type);
+                if (available != 0) {
+                    value = decoder.decode(input, type, request.charsetOrDefault());
                 }
-
-                value = decoder.decode(input, type, request.charsetOrDefault());
                 request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
             }
             return value;

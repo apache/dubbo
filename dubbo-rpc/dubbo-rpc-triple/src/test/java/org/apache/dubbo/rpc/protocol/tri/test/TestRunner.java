@@ -22,5 +22,45 @@ public interface TestRunner {
 
     <T> T run(TestRequest request, Class<T> type);
 
+    <T> T get(TestRequest request, Class<T> type);
+
+    String get(TestRequest request);
+
+    <T> T get(String path, Class<T> type);
+
+    String get(String path);
+
+    <T> T post(TestRequest request, Class<T> type);
+
+    String post(TestRequest request);
+
+    <T> T post(String path, Object body, Class<T> type);
+
+    String post(String path, Object body);
+
+    <T> T put(TestRequest request, Class<T> type);
+
+    String put(TestRequest request);
+
+    <T> T put(String path, Object body, Class<T> type);
+
+    String put(String path, Object body);
+
+    <T> T patch(TestRequest request, Class<T> type);
+
+    String patch(TestRequest request);
+
+    <T> T patch(String path, Object body, Class<T> type);
+
+    String patch(String path, Object body);
+
+    <T> T delete(TestRequest request, Class<T> type);
+
+    String delete(TestRequest request);
+
+    <T> T delete(String path, Class<T> type);
+
+    String delete(String path);
+
     void destroy();
 }

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.basic;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
@@ -49,6 +50,11 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
     @Override
     public RestToolKit getRestToolKit() {
         return toolKit;
+    }
+
+    @Override
+    public boolean accept(MethodMeta methodMeta, MethodDescriptor methodDescriptor) {
+        return methodDescriptor != null || methodMeta.findAnnotation(Annotations.Mapping) != null;
     }
 
     @Override

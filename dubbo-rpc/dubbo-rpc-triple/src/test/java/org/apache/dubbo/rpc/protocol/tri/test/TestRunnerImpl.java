@@ -203,6 +203,106 @@ final class TestRunnerImpl implements TestRunner {
     }
 
     @Override
+    public <T> T get(TestRequest request, Class<T> type) {
+        return run(request.setMethod(HttpMethods.GET.name()), type);
+    }
+
+    @Override
+    public String get(TestRequest request) {
+        return get(request, String.class);
+    }
+
+    @Override
+    public <T> T get(String path, Class<T> type) {
+        return get(new TestRequest(path), type);
+    }
+
+    @Override
+    public String get(String path) {
+        return get(new TestRequest(path));
+    }
+
+    @Override
+    public <T> T post(TestRequest request, Class<T> type) {
+        return run(request.setMethod(HttpMethods.POST.name()), type);
+    }
+
+    @Override
+    public String post(TestRequest request) {
+        return post(request, String.class);
+    }
+
+    @Override
+    public <T> T post(String path, Object body, Class<T> type) {
+        return post(new TestRequest(path).setBody(body), type);
+    }
+
+    @Override
+    public String post(String path, Object body) {
+        return post(new TestRequest(path).setBody(body));
+    }
+
+    @Override
+    public <T> T put(TestRequest request, Class<T> type) {
+        return run(request.setMethod(HttpMethods.PUT.name()), type);
+    }
+
+    @Override
+    public String put(TestRequest request) {
+        return put(request, String.class);
+    }
+
+    @Override
+    public <T> T put(String path, Object body, Class<T> type) {
+        return put(new TestRequest(path).setBody(body), type);
+    }
+
+    @Override
+    public String put(String path, Object body) {
+        return post(new TestRequest(path).setBody(body));
+    }
+
+    @Override
+    public <T> T patch(TestRequest request, Class<T> type) {
+        return run(request.setMethod(HttpMethods.PATCH.name()), type);
+    }
+
+    @Override
+    public String patch(TestRequest request) {
+        return patch(request, String.class);
+    }
+
+    @Override
+    public <T> T patch(String path, Object body, Class<T> type) {
+        return patch(new TestRequest(path).setBody(body), type);
+    }
+
+    @Override
+    public String patch(String path, Object body) {
+        return patch(new TestRequest(path).setBody(body));
+    }
+
+    @Override
+    public <T> T delete(TestRequest request, Class<T> type) {
+        return run(request.setMethod(HttpMethods.DELETE.name()), type);
+    }
+
+    @Override
+    public String delete(TestRequest request) {
+        return delete(request, String.class);
+    }
+
+    @Override
+    public <T> T delete(String path, Class<T> type) {
+        return patch(new TestRequest(path), type);
+    }
+
+    @Override
+    public String delete(String path) {
+        return delete(new TestRequest(path));
+    }
+
+    @Override
     public void destroy() {
         applicationModel.destroy();
     }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.config.nested.RestConfig;
@@ -24,6 +25,8 @@ import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
+import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
@@ -37,7 +40,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.KeyString;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.MethodWalker;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -89,42 +91,44 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             }
         }
 
-        Object service = invoker.getUrl().getServiceModel().getProxyObject();
-        ServiceDescriptor serviceDescriptor = DescriptorUtils.getReflectionServiceDescriptor(invoker.getUrl());
-        if (serviceDescriptor == null) {
+        URL url = invoker.getUrl();
+        Object service = url.getServiceModel().getProxyObject();
+        ServiceDescriptor sd = DescriptorUtils.getReflectionServiceDescriptor(url);
+        if (sd == null) {
             return;
         }
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
             for (int i = 0, size = resolvers.size(); i < size; i++) {
                 RequestMappingResolver resolver = resolvers.get(i);
-                RestToolKit toolKit = resolver.getRestToolKit();
-                ServiceMeta serviceMeta = new ServiceMeta(classes, service, invoker.getUrl(), toolKit);
-                if (!resolver.accept(serviceMeta)) {
+                ServiceMeta serviceMeta = new ServiceMeta(classes, service, url, resolver.getRestToolKit());
+                if (!resolver.accept(serviceMeta, sd)) {
                     continue;
                 }
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
                 consumer.accept((methods) -> {
-                    Method m = methods.get(0);
-                    MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(m.getName(), m.getParameterTypes());
-                    if (methodDescriptor == null) {
+                    Method method = methods.get(0);
+                    MethodDescriptor md = sd.getMethod(method.getName(), method.getParameterTypes());
+                    MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
+                    if (!resolver.accept(methodMeta, md)) {
                         return;
                     }
-                    MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
                     RequestMapping methodMapping = resolver.resolve(methodMeta);
                     if (methodMapping == null) {
                         return;
                     }
+                    if (md == null) {
+                        if (!(sd instanceof ReflectionServiceDescriptor)) {
+                            return;
+                        }
+                        md = new ReflectionMethodDescriptor(method);
+                        ((ReflectionServiceDescriptor) sd).addMethod(md);
+                    }
                     if (classMapping != null) {
                         methodMapping = classMapping.combine(methodMapping);
                     }
-                    register0(
-                            methodMapping,
-                            new HandlerMeta(
-                                    invoker,
-                                    methodMeta,
-                                    MethodMetadata.fromMethodDescriptor(methodDescriptor),
-                                    methodDescriptor,
-                                    serviceDescriptor));
+                    methodMeta.initParameters();
+                    MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(md);
+                    register0(methodMapping, new HandlerMeta(invoker, methodMeta, methodMetadata, md, sd));
                 });
             }
         });

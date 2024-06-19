@@ -19,10 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.basic;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
@@ -34,14 +31,6 @@ import java.util.Map;
 
 @Activate(order = Integer.MAX_VALUE - 10000)
 public class FallbackArgumentResolver extends AbstractArgumentResolver {
-
-    private final FrameworkModel frameworkModel;
-    private final CodecUtils codecUtils;
-
-    public FallbackArgumentResolver(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
-        codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
-    }
 
     @Override
     public boolean accept(ParameterMeta param) {
@@ -81,14 +70,6 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                     if (value != null) {
                         return value;
                     }
-                }
-            }
-            if (RequestUtils.isMultiPart(request)) {
-                FileUpload fu = request.part(meta.name());
-                if (fu != null) {
-                    return codecUtils
-                            .determineHttpMessageDecoder(null, frameworkModel, fu.contentType())
-                            .decode(fu.inputStream(), meta.type(), request.charsetOrDefault());
                 }
             }
         }

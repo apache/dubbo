@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -27,11 +29,15 @@ public interface RequestMappingResolver {
 
     RestToolKit getRestToolKit();
 
-    default boolean accept(ServiceMeta serviceMeta) {
+    default boolean accept(ServiceMeta serviceMeta, ServiceDescriptor serviceDescriptor) {
         return true;
     }
 
     RequestMapping resolve(ServiceMeta serviceMeta);
+
+    default boolean accept(MethodMeta methodMeta, MethodDescriptor methodDescriptor) {
+        return true;
+    }
 
     RequestMapping resolve(MethodMeta methodMeta);
 }

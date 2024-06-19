@@ -27,18 +27,17 @@ public final class MethodMeta extends AnnotationSupport {
 
     private final List<Method> hierarchy;
     private final Method method;
-    private final ParameterMeta[] parameters;
+    private ParameterMeta[] parameters;
     private final ServiceMeta serviceMeta;
 
     public MethodMeta(List<Method> hierarchy, ServiceMeta serviceMeta) {
         super(serviceMeta.getToolKit());
         this.hierarchy = hierarchy;
         method = hierarchy.get(0);
-        parameters = initParameters(method, hierarchy);
         this.serviceMeta = serviceMeta;
     }
 
-    private ParameterMeta[] initParameters(Method method, List<Method> hierarchy) {
+    public void initParameters() {
         int count = method.getParameterCount();
         List<List<Parameter>> parameterHierarchies = new ArrayList<>(count);
         for (int i = 0, len = hierarchy.size(); i < len; i++) {
@@ -62,7 +61,7 @@ public final class MethodMeta extends AnnotationSupport {
             String parameterName = parameterNames == null ? null : parameterNames[i];
             parameters[i] = new MethodParameterMeta(parameterHierarchies.get(i), parameterName, i, this);
         }
-        return parameters;
+        this.parameters = parameters;
     }
 
     public List<Method> getHierarchy() {

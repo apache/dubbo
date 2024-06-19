@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.rest
 
-import org.apache.dubbo.remoting.http12.HttpMethods
+
 import org.apache.dubbo.remoting.http12.message.MediaType
 import org.apache.dubbo.rpc.protocol.tri.rest.service.Book
 import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl
@@ -33,10 +33,8 @@ class RestProtocolTest extends BaseServiceTest {
     }
 
     def "hello world"() {
-        given:
-            def request = new TestRequest(path)
         expect:
-            runner.run(request, String.class) == output
+            runner.get(path) == output
         where:
             path                    | output
             '/hello?name=world'     | 'hello world'
@@ -45,10 +43,8 @@ class RestProtocolTest extends BaseServiceTest {
     }
 
     def "post test"() {
-        given:
-            def request = new TestRequest(path).post(body)
         expect:
-            runner.run(request, String.class) == output
+            runner.post(path, body) == output
         where:
             path                 | body                        | output
             '/postTest'          | '["Sam","8"]'               | 'Sam is 8 years old'
@@ -58,10 +54,8 @@ class RestProtocolTest extends BaseServiceTest {
     }
 
     def "bean test"() {
-        given:
-            def request = new TestRequest(path).post(body)
         expect:
-            runner.run(request, Book.class).name == output
+            runner.post(path, body, Book.class).name == output
         where:
             path    | body                                      | output
             '/buy'  | new Book(name: "Dubbo")                   | 'Dubbo'
@@ -73,7 +67,6 @@ class RestProtocolTest extends BaseServiceTest {
     def "urlEncodeForm test"() {
         given:
             def request = new TestRequest(
-                method: HttpMethods.POST,
                 path: path,
                 contentType: MediaType.APPLICATION_FROM_URLENCODED,
                 params: [
@@ -82,17 +75,15 @@ class RestProtocolTest extends BaseServiceTest {
                 ]
             )
         expect:
-            runner.run(request, String.class) == output
+            runner.post(request) == output
         where:
-            path        | body          | output
-            '/postTest' | '["Sam","8"]' | 'Sam is 8 years old'
+            path        | output
+            '/postTest' | 'Sam is 8 years old'
     }
 
     def "override mapping test"() {
-        given:
-            def request = new TestRequest(path: path)
         expect:
-            runner.run(request, String.class) == output
+            runner.get(path) == output
         where:
             path                          | output
             '/say?name=sam&count=2'       | '2'
@@ -104,12 +95,19 @@ class RestProtocolTest extends BaseServiceTest {
     }
 
     def "ambiguous mapping test"() {
-        given:
-            def request = new TestRequest(path: path)
         expect:
-            runner.run(request, String.class) contains "Ambiguous mapping"
+            runner.get(path) contains "Ambiguous mapping"
         where:
-            path   | output
-            '/say' | '1'
+            path   | _
+            '/say' | _
+    }
+
+    def "no interface method test"() {
+        expect:
+            runner.get(path) contains output
+        where:
+            path                     | output
+            '/noInterface'           | 'ok'
+            '/noInterfaceAndMapping' | '404'
     }
 }
