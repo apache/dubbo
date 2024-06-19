@@ -23,9 +23,9 @@ import java.util.Map;
 
 public class MultiDestCondition {
     private int priority;
-    private Map<String,String> from = new HashMap<>();
+    private Map<String, String> from = new HashMap<>();
     private boolean trafficDisable;
-    private List<Map<String,String>> to = new ArrayList<>();
+    private List<Map<String, String>> to = new ArrayList<>();
     private boolean force;
     private int ratio;
 
@@ -53,11 +53,11 @@ public class MultiDestCondition {
         this.trafficDisable = trafficDisable;
     }
 
-    public List<Map<String,String>> getTo() {
+    public List<Map<String, String>> getTo() {
         return to;
     }
 
-    public void setTo(List<Map<String,String>> to) {
+    public void setTo(List<Map<String, String>> to) {
         this.to = to;
     }
 

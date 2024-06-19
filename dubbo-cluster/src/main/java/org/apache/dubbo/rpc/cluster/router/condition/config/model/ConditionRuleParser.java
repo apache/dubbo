@@ -45,24 +45,23 @@ import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V31;
 public class ConditionRuleParser {
 
     public static AbstractRouterRule parse(String rawRule) {
-        AbstractRouterRule rule ;
+        AbstractRouterRule rule;
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawRule);
         String confVersion = (String) map.get(CONFIG_VERSION_KEY);
 
         if (confVersion != null && confVersion.startsWith(RULE_VERSION_V31)) {
             rule = MultiDestConditionRouterRule.parseFromMap(map);
-            if (CollectionUtils.isEmpty(((MultiDestConditionRouterRule)rule).getConditions())) {
+            if (CollectionUtils.isEmpty(((MultiDestConditionRouterRule) rule).getConditions())) {
                 rule.setValid(false);
             }
-        }else {
+        } else {
             rule = ConditionRouterRule.parseFromMap(map);
-            if (CollectionUtils.isEmpty(((ConditionRouterRule)rule).getConditions())) {
+            if (CollectionUtils.isEmpty(((ConditionRouterRule) rule).getConditions())) {
                 rule.setValid(false);
             }
         }
         rule.setRawRule(rawRule);
-
 
         return rule;
     }

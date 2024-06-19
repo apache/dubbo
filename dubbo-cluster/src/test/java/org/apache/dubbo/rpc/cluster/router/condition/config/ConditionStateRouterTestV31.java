@@ -25,17 +25,18 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 public class ConditionStateRouterTestV31 {
 
     private static BitList<Invoker<String>> invokers;
+
     @BeforeAll
     public static void setUp() {
 
@@ -79,79 +80,83 @@ public class ConditionStateRouterTestV31 {
                 "dubbo://dubbo.apache.org/com.foo.BarService?region=hangzhou&env=gray",
                 "dubbo://dubbo.apache.org/com.foo.BarService?region=hangzhou&env=normal",
                 "dubbo://dubbo.apache.org/com.foo.BarService?region=hangzhou&env=normal",
-                "dubbo://dubbo.apache.org/com.foo.BarService?region=hangzhou&env=normal"
-        );
+                "dubbo://dubbo.apache.org/com.foo.BarService?region=hangzhou&env=normal");
 
         List<Invoker<String>> invokerList = providerUrls.stream()
                 .map(url -> new MockInvoker<String>(URL.valueOf(url)))
                 .collect(Collectors.toList());
 
         invokers = new BitList<>(invokerList);
-
     }
 
     @Test
     public void testConditionRoutePriority() throws Exception {
-//        String config = "configVersion: v3.1\n" +
-//                "scope: service\n" +
-//                "force: false\n" +
-//                "runtime: true\n" +
-//                "enabled: true\n" +
-//                "key: shop\n" +
-//                "conditions:\n" +
-//                "  - from:\n" +
-//                "      match:\n" +
-//                "    to:\n" +
-//                "      - match: region=beijing & version=v1\n" +
-//                "      - match: region=beijing & version=v2\n" +
-//                "        weight: 200\n" +
-//                "      - match: region=beijing & version=v3\n" +
-//                "        weight: 300\n" +
-//                "    force: false\n" +
-//                "    ratio: 20\n" +
-//                "    priority: 20\n" +
-//                "  - from:\n" +
-//                "      match: region=beijing & version=v1\n" +
-//                "    to:\n" +
-//                "      - match: env=gray & region=beijing\n" +
-//                "    force: false\n" +
-//                "    priority: 100\n";
-        String config = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "key: shop\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    to:\n" +
-                "      - match: region=$region & version=v1\n" +
-                "      - match: region=$region & version=v2\n" +
-                "        weight: 200\n" +
-                "      - match: region=$region & version=v3\n" +
-                "        weight: 300\n" +
-                "    force: false\n" +
-                "    ratio: 20\n" +
-                "    priority: 20\n" +
-                "  - from:\n" +
-                "      match: region=beijing & version=v1\n" +
-                "    to:\n" +
-                "      - match: env=$env & region=beijing\n" +
-                "    force: false\n" +
-                "    priority: 100\n";
+        //        String config = "configVersion: v3.1\n" +
+        //                "scope: service\n" +
+        //                "force: false\n" +
+        //                "runtime: true\n" +
+        //                "enabled: true\n" +
+        //                "key: shop\n" +
+        //                "conditions:\n" +
+        //                "  - from:\n" +
+        //                "      match:\n" +
+        //                "    to:\n" +
+        //                "      - match: region=beijing & version=v1\n" +
+        //                "      - match: region=beijing & version=v2\n" +
+        //                "        weight: 200\n" +
+        //                "      - match: region=beijing & version=v3\n" +
+        //                "        weight: 300\n" +
+        //                "    force: false\n" +
+        //                "    ratio: 20\n" +
+        //                "    priority: 20\n" +
+        //                "  - from:\n" +
+        //                "      match: region=beijing & version=v1\n" +
+        //                "    to:\n" +
+        //                "      - match: env=gray & region=beijing\n" +
+        //                "    force: false\n" +
+        //                "    priority: 100\n";
+        String config = "configVersion: v3.1\n" + "scope: service\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "key: shop\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    to:\n"
+                + "      - match: region=$region & version=v1\n"
+                + "      - match: region=$region & version=v2\n"
+                + "        weight: 200\n"
+                + "      - match: region=$region & version=v3\n"
+                + "        weight: 300\n"
+                + "    force: false\n"
+                + "    ratio: 20\n"
+                + "    priority: 20\n"
+                + "  - from:\n"
+                + "      match: region=beijing & version=v1\n"
+                + "    to:\n"
+                + "      - match: env=$env & region=beijing\n"
+                + "    force: false\n"
+                + "    priority: 100\n";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"));
-        router.process(new ConfigChangedEvent("com.foo.BarService","",config, ConfigChangeType.ADDED));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"),
+                invocation,
+                false,
+                new Holder<>());
 
         int expectedLen = 0;
         for (Invoker<?> invoker : invokers) {
-            if ("beijing".equals(invoker.getUrl().getParameter("region")) && "gray".equals(invoker.getUrl().getParameter("env"))) {
+            if ("beijing".equals(invoker.getUrl().getParameter("region"))
+                    && "gray".equals(invoker.getUrl().getParameter("env"))) {
                 expectedLen++;
             }
         }
@@ -167,87 +172,110 @@ public class ConditionStateRouterTestV31 {
 
     @Test
     public void testConditionRouteTrafficDisable() throws Exception {
-        String config = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "force: true\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "key: shop\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    to:\n" +
-                "      - match: region=$region & version=v1\n" +
-                "      - match: region=$region & version=v2\n" +
-                "        weight: 200\n" +
-                "      - match: region=$region & version=v3\n" +
-                "        weight: 300\n" +
-                "    force: false\n" +
-                "    ratio: 20\n" +
-                "    priority: 20\n" +
-                "  - from:\n" +
-                "      match: region=beijing & version=v1\n" +
-                "    to:\n" +
-                "    force: true\n" +
-                "    ratio: 20\n" +
-                "    priority: 100\n";
+        String config = "configVersion: v3.1\n" + "scope: service\n"
+                + "force: true\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "key: shop\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    to:\n"
+                + "      - match: region=$region & version=v1\n"
+                + "      - match: region=$region & version=v2\n"
+                + "        weight: 200\n"
+                + "      - match: region=$region & version=v3\n"
+                + "        weight: 300\n"
+                + "    force: false\n"
+                + "    ratio: 20\n"
+                + "    priority: 20\n"
+                + "  - from:\n"
+                + "      match: region=beijing & version=v1\n"
+                + "    to:\n"
+                + "    force: true\n"
+                + "    ratio: 20\n"
+                + "    priority: 100\n";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"));
-        router.process(new ConfigChangedEvent("com.foo.BarService","",config, ConfigChangeType.ADDED));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("echo");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"),
+                invocation,
+                false,
+                new Holder<>());
 
         Assertions.assertEquals(0, result.size());
     }
 
     @Test
     public void testConditionRouteRegionPriority() throws Exception {
-        String config = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "force: true\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "key: shop\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    to:\n" +
-                "      - match: region=$region & env=$env\n";
+        String config = "configVersion: v3.1\n" + "scope: service\n"
+                + "force: true\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "key: shop\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    to:\n"
+                + "      - match: region=$region & env=$env\n";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"));
-        router.process(new ConfigChangedEvent("com.foo.BarService","",config, ConfigChangeType.ADDED));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"),
+                invocation,
+                false,
+                new Holder<>());
 
         int expectedLen = 0;
         for (Invoker<?> invoker : invokers) {
-            if ("gray".equals(invoker.getUrl().getParameter("env")) && "beijing".equals(invoker.getUrl().getParameter("region"))) {
+            if ("gray".equals(invoker.getUrl().getParameter("env"))
+                    && "beijing".equals(invoker.getUrl().getParameter("region"))) {
                 expectedLen++;
             }
         }
 
         Assertions.assertEquals(expectedLen, result.size());
 
-        result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=hangzhou"), invocation, false, new Holder<>());
+        result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=hangzhou"),
+                invocation,
+                false,
+                new Holder<>());
         expectedLen = 0;
         for (Invoker<?> invoker : invokers) {
-            if ("gray".equals(invoker.getUrl().getParameter("env")) && "hangzhou".equals(invoker.getUrl().getParameter("region"))) {
+            if ("gray".equals(invoker.getUrl().getParameter("env"))
+                    && "hangzhou".equals(invoker.getUrl().getParameter("region"))) {
                 expectedLen++;
             }
         }
 
         Assertions.assertEquals(expectedLen, result.size());
 
-        result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=normal&region=shanghai"), invocation, false, new Holder<>());
+        result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=normal&region=shanghai"),
+                invocation,
+                false,
+                new Holder<>());
         expectedLen = 0;
         for (Invoker<?> invoker : invokers) {
-            if ("normal".equals(invoker.getUrl().getParameter("env")) && "shanghai".equals(invoker.getUrl().getParameter("region"))) {
+            if ("normal".equals(invoker.getUrl().getParameter("env"))
+                    && "shanghai".equals(invoker.getUrl().getParameter("region"))) {
                 expectedLen++;
             }
         }
@@ -255,125 +283,144 @@ public class ConditionStateRouterTestV31 {
         Assertions.assertEquals(expectedLen, result.size());
     }
 
-
     @Test
     public void testConditionRouteRegionPriorityFail() throws Exception {
-        String config = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "force: true\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "key: shop\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    to:\n" +
-                "      - match: region=$region & env=$env\n" +
-                "    ratio: 100\n";
+        String config = "configVersion: v3.1\n" + "scope: service\n"
+                + "force: true\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "key: shop\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    to:\n"
+                + "      - match: region=$region & env=$env\n"
+                + "    ratio: 100\n";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
-        router.process(new ConfigChangedEvent("com.foo.BarService","",config, ConfigChangeType.ADDED));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         Assertions.assertEquals(0, result.size());
     }
 
     @Test
     public void testConditionRouteMatchFail() throws Exception {
-        String config = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "key: shop\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    to:\n" +
-                "      - match: region=$region & env=$env & err-tag=Err-tag\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    trafficDisable: true\n" +
-                "    to:\n" +
-                "      - match:\n";
+        String config = "configVersion: v3.1\n" + "scope: service\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "key: shop\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    to:\n"
+                + "      - match: region=$region & env=$env & err-tag=Err-tag\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    trafficDisable: true\n"
+                + "    to:\n"
+                + "      - match:\n";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
-        router.process(new ConfigChangedEvent("com.foo.BarService","",config, ConfigChangeType.ADDED));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("errMethod");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         Assertions.assertEquals(0, result.size());
     }
 
     @Test
     public void testConditionRouteBanSpecialTraffic() throws Exception {
-        String config = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "force: true\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "key: shop\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match:\n" +
-                "    force: true\n" +
-                "    priority: 100\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    to:\n" +
-                "      - match:\n" +
-                "    force: true\n" +
-                "    priority: 100\n";
+        String config = "configVersion: v3.1\n" + "scope: service\n"
+                + "force: true\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "key: shop\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match:\n"
+                + "    force: true\n"
+                + "    priority: 100\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    to:\n"
+                + "      - match:\n"
+                + "    force: true\n"
+                + "    priority: 100\n";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
-        router.process(new ConfigChangedEvent("com.foo.BarService","",config, ConfigChangeType.ADDED));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("errMethod");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         Assertions.assertEquals(invokers.size(), result.size());
     }
 
     @Test
     public void testApplicationConditionRouteBanSpecialTraffic() throws Exception {
-        String config = "configVersion: v3.1\n" +
-                "scope: application\n" +
-                "force: true\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "key: shop\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match:\n" +
-                "    force: true\n" +
-                "    priority: 100\n" +
-                "  - from:\n" +
-                "      match:\n" +
-                "    to:\n" +
-                "      - match:\n" +
-                "    force: true\n" +
-                "    priority: 100\n";
+        String config = "configVersion: v3.1\n" + "scope: application\n"
+                + "force: true\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "key: shop\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match:\n"
+                + "    force: true\n"
+                + "    priority: 100\n"
+                + "  - from:\n"
+                + "      match:\n"
+                + "    to:\n"
+                + "      - match:\n"
+                + "    force: true\n"
+                + "    priority: 100\n";
 
-        AppStateRouter<String> router = new AppStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
-        router.process(new ConfigChangedEvent("com.foo.BarService","",config, ConfigChangeType.ADDED));
+        AppStateRouter<String> router =
+                new AppStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("errMethod");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         Assertions.assertEquals(invokers.size(), result.size());
     }

@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
-import org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcher;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,12 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.rpc.cluster.Constants.CONDITIONS_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.DefaultRoutePriority;
-import static org.apache.dubbo.rpc.cluster.Constants.DefaultRouteRatio;
-import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RATIO_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.TRAFFIC_DISABLE_KEY;
 
 public class MultiDestConditionRouterRule extends AbstractRouterRule {
 
@@ -41,7 +34,7 @@ public class MultiDestConditionRouterRule extends AbstractRouterRule {
 
         MultiDestConditionRouterRule multiDestConditionRouterRule = new MultiDestConditionRouterRule();
         multiDestConditionRouterRule.parseFromMap0(map);
-        List<Map<String,String>> conditions = (List<Map<String,String>>)map.get(CONDITIONS_KEY);
+        List<Map<String, String>> conditions = (List<Map<String, String>>) map.get(CONDITIONS_KEY);
         List<MultiDestCondition> multiDestConditions = new ArrayList<>();
 
         for (Map<String, String> condition : conditions) {

@@ -27,8 +27,7 @@ public class ConditionSubSet {
     private Map<String, ConditionMatcher> condition = new HashMap<>();
     private Integer subSetWeight;
 
-    public ConditionSubSet() {
-    }
+    public ConditionSubSet() {}
 
     public ConditionSubSet(Map<String, ConditionMatcher> condition, Integer subSetWeight) {
         this.condition = condition;
@@ -36,7 +35,6 @@ public class ConditionSubSet {
         if (subSetWeight <= 0) {
             this.subSetWeight = DefaultRouteConditionSubSetWeight;
         }
-
     }
 
     public Map<String, ConditionMatcher> getCondition() {
