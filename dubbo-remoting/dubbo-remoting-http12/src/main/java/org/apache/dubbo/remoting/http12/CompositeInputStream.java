@@ -61,6 +61,42 @@ public class CompositeInputStream extends InputStream {
     }
 
     @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (b == null) {
+            throw new NullPointerException();
+        } else if (off < 0 || len < 0 || len > b.length - off) {
+            throw new IndexOutOfBoundsException();
+        } else if (len == 0) {
+            return 0;
+        }
+
+        int total = 0;
+        InputStream inputStream;
+        while ((inputStream = inputStreams.peek()) != null) {
+            int available = inputStream.available();
+            if (available == 0) {
+                releaseHeadStream();
+                continue;
+            }
+
+            int read = inputStream.read(b, off + total, Math.min(len - total, available));
+            if (read != -1) {
+                total += read;
+                readIndex += read;
+                releaseIfNecessary(inputStream);
+
+                if (total == len) {
+                    return total;
+                }
+            } else {
+                releaseHeadStream();
+            }
+        }
+
+        return total > 0 ? total : -1;
+    }
+
+    @Override
     public int available() {
         return totalAvailable - readIndex;
     }
@@ -81,7 +117,6 @@ public class CompositeInputStream extends InputStream {
     private void releaseIfNecessary(InputStream inputStream) throws IOException {
         int available = inputStream.available();
         if (available == 0) {
-            inputStream.close();
             releaseHeadStream();
         }
     }

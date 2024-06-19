@@ -63,9 +63,11 @@ class RestProtocolTest extends BaseServiceTest {
         expect:
             runner.run(request, Book.class).name == output
         where:
-            path   | body                                                                  | output
-            '/buy' | [new Book(name: "Dubbo", price: 80, publishDate: new Date())]         | 'Dubbo'
-            '/buy' | ['book': new Book(name: "Dubbo", price: 80, publishDate: new Date())] | 'Dubbo'
+            path    | body                                      | output
+            '/buy'  | new Book(name: "Dubbo")                   | 'Dubbo'
+            '/buy'  | [new Book(name: "Dubbo")]                 | 'Dubbo'
+            '/buy2' | [new Book(name: "Dubbo"), 2]              | 'Dubbo'
+            '/buy2' | [book: new Book(name: "Dubbo"), count: 2] | 'Dubbo'
     }
 
     def "urlEncodeForm test"() {

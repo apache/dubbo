@@ -34,6 +34,11 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
+    public Book buy(Book book, int count) {
+        return book;
+    }
+
+    @Override
     public String say(String name, Long count) {
         return "2";
     }

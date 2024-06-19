@@ -21,14 +21,14 @@ import org.apache.dubbo.remoting.http12.rest.Mapping;
 @Mapping("/")
 public interface DemoService {
 
-    @Mapping("/hello")
     String hello(String name);
 
-    @Mapping("/postTest")
     String postTest(String name, int age);
 
-    @Mapping("/buy")
     Book buy(Book book);
+
+    @Mapping("/buy2")
+    Book buy(Book book, int count);
 
     String say(String name, Long count);
 

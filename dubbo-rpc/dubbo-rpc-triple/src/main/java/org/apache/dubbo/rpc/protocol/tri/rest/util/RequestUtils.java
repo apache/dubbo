@@ -25,6 +25,9 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -173,34 +176,84 @@ public final class RequestUtils {
         }
         Object value = request.attribute(RestConstants.BODY_ATTRIBUTE);
         if (value == null) {
-            if (decoder.mediaType() == MediaType.TEXT_PLAIN) {
+            if (decoder.mediaType().isPureText()) {
                 type = String.class;
             }
-            value = decoder.decode(request.inputStream(), type, request.charsetOrDefault());
+            InputStream input = request.inputStream();
+            try {
+                int available = input.available();
+                if (available == 0) {
+                    return emptyDefault(type);
+                }
+            } catch (IOException e) {
+                throw new DecodeException("Error reading input", e);
+            }
+
+            value = decoder.decode(input, type, request.charsetOrDefault());
             request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
         }
         return value;
     }
 
-    public static Object decodeBody(HttpRequest request) {
+    public static Object decodeBody(HttpRequest request, Class<?> type, boolean single) {
         HttpMessageDecoder decoder = request.attribute(RestConstants.BODY_DECODER_ATTRIBUTE);
         if (decoder == null) {
             return null;
         }
-        Object value = request.attribute(RestConstants.BODY_ATTRIBUTE);
-        if (value == null) {
-            Class<?> type;
-            MediaType mediaType = decoder.mediaType();
-            if (mediaType == MediaType.APPLICATION_JSON || mediaType == MediaType.APPLICATION_YAML) {
-                type = Object.class;
-            } else if (mediaType.isPureText()) {
-                type = String.class;
-            } else {
-                return null;
+
+        try {
+            InputStream input = request.inputStream();
+            if (single) {
+                if (decoder.mediaType().isPureText()) {
+                    type = String.class;
+                }
+                int available = input.available();
+                if (available == 0) {
+                    return emptyDefault(type);
+                }
+                if (!input.markSupported()) {
+                    byte[] bytes = new byte[available];
+                    input.read(bytes);
+                    input = new ByteArrayInputStream(bytes);
+                }
+                try {
+                    return decoder.decode(input, type, request.charsetOrDefault());
+                } catch (Throwable t) {
+                    input.reset();
+                }
             }
-            value = decoder.decode(request.inputStream(), type, request.charsetOrDefault());
-            request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
+
+            Object value = request.attribute(RestConstants.BODY_ATTRIBUTE);
+            if (value == null) {
+                MediaType mediaType = decoder.mediaType();
+                if (mediaType == MediaType.APPLICATION_JSON || mediaType == MediaType.APPLICATION_YAML) {
+                    type = Object.class;
+                } else if (mediaType.isPureText()) {
+                    type = String.class;
+                } else {
+                    return null;
+                }
+                int available = input.available();
+                if (available == 0) {
+                    return emptyDefault(type);
+                }
+
+                value = decoder.decode(input, type, request.charsetOrDefault());
+                request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
+            }
+            return value;
+        } catch (IOException e) {
+            throw new DecodeException("Error reading input", e);
         }
-        return value;
+    }
+
+    private static Object emptyDefault(Class<?> type) {
+        if (type == String.class) {
+            return StringUtils.EMPTY_STRING;
+        }
+        if (type == byte[].class) {
+            return new byte[0];
+        }
+        return null;
     }
 }

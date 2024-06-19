@@ -46,6 +46,11 @@ public final class MethodParameterMeta extends ParameterMeta {
     }
 
     @Override
+    public boolean isSingle() {
+        return methodMeta.getMethod().getParameterCount() == 1;
+    }
+
+    @Override
     public int getIndex() {
         return index;
     }

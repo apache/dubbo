@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.basic;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
@@ -55,11 +54,6 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
     }
 
     @Override
-    protected String emptyDefaultValue(NamedValueMeta meta) {
-        return StringUtils.EMPTY_STRING;
-    }
-
-    @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
         return doResolveValue(meta, request, true);
     }
@@ -71,11 +65,14 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     protected Object doResolveValue(NamedValueMeta meta, HttpRequest request, boolean single) {
         if (HttpMethods.supportBody(request.method())) {
-            Object body = RequestUtils.decodeBody(request);
+            ParameterMeta parameterMeta = meta.parameterMeta();
+            Object body = RequestUtils.decodeBody(request, parameterMeta.getType(), parameterMeta.isSingle());
             if (body != null) {
-                if (body instanceof List) {
+                if (parameterMeta.getType().isInstance(body)) {
+                    return body;
+                } else if (body instanceof List) {
                     List<?> list = (List<?>) body;
-                    int index = meta.parameterMeta().getIndex();
+                    int index = parameterMeta.getIndex();
                     if (index >= 0 && list.size() > index) {
                         return list.get(index);
                     }

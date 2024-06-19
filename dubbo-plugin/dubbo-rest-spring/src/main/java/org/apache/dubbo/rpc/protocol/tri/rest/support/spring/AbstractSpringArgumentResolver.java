@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractAnnotationBaseArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
@@ -28,5 +29,10 @@ public abstract class AbstractSpringArgumentResolver extends AbstractAnnotationB
     @Override
     protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
         return new NamedValueMeta(ann.getValue(), Helper.isRequired(ann), Helper.defaultValue(ann));
+    }
+
+    @Override
+    protected Object filterValue(Object value, NamedValueMeta meta) {
+        return StringUtils.EMPTY_STRING.equals(value) ? meta.defaultValue() : value;
     }
 }

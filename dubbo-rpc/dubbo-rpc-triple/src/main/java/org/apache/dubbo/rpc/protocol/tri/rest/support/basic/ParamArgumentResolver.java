@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.basic;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
@@ -86,6 +87,11 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
                 return RequestUtils.decodeBody(request, meta.type());
         }
         return null;
+    }
+
+    @Override
+    protected Object filterValue(Object value, NamedValueMeta meta) {
+        return StringUtils.EMPTY_STRING.equals(value) ? meta.defaultValue() : value;
     }
 
     @Override
