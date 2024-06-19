@@ -29,10 +29,13 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouter;
+import org.apache.dubbo.rpc.cluster.router.condition.MultiDestConditionRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRouterRule;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
+import org.apache.dubbo.rpc.cluster.router.condition.config.model.MultiDestConditionRouterRule;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
@@ -42,6 +45,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RULE_PARSING;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V31;
 
 /**
  * Abstract router which listens to dynamic configuration
@@ -52,8 +56,11 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
-    private volatile ConditionRouterRule routerRule;
+    private volatile AbstractRouterRule routerRule;
     private volatile List<ConditionStateRouter<T>> conditionRouters = Collections.emptyList();
+
+    //    for v3.1
+    private volatile List<MultiDestConditionRouter<T>> multiDestConditionRouters = Collections.emptyList();
     private final String ruleKey;
 
     public ListenableStateRouter(URL url, String ruleKey) {
@@ -73,6 +80,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             routerRule = null;
             conditionRouters = Collections.emptyList();
+
+            multiDestConditionRouters = Collections.emptyList();
         } else {
             try {
                 routerRule = ConditionRuleParser.parse(event.getContent());
@@ -97,9 +106,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             Invocation invocation,
             boolean needToPrintMessage,
             Holder<RouterSnapshotNode<T>> nodeHolder,
-            Holder<String> messageHolder)
-            throws RpcException {
-        if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0) {
+            Holder<String> messageHolder) throws RpcException {
+        if (CollectionUtils.isEmpty(invokers) || (conditionRouters.size() == 0 && multiDestConditionRouters.size() == 0)) {
             if (needToPrintMessage) {
                 messageHolder.set(
                         "Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty.");
@@ -112,11 +120,28 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (needToPrintMessage) {
             resultMessage = new StringBuilder();
         }
-        for (AbstractStateRouter<T> router : conditionRouters) {
-            invokers = router.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
-            if (needToPrintMessage) {
-                resultMessage.append(messageHolder.get());
+
+        BitList<Invoker<T>> routeResult;
+        if (routerRule instanceof MultiDestConditionRouterRule || routerRule.getVersion() != null &&routerRule.getVersion()
+                .startsWith(RULE_VERSION_V31)) {
+            for (MultiDestConditionRouter<T> multiDestConditionRouter : multiDestConditionRouters) {
+                routeResult = multiDestConditionRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+                if (invokers == routeResult) {
+                    continue;
+                }else if (routeResult.size() == 0 && !multiDestConditionRouter.isTrafficDisable() && !multiDestConditionRouter.isForce()){
+                    continue;
+                }else {
+                    break;
+                }
             }
+        }else {
+            for (AbstractStateRouter<T> router : conditionRouters) {
+                invokers = router.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+            }
+        }
+
+        if (needToPrintMessage) {
+            resultMessage.append(messageHolder.get());
         }
 
         if (needToPrintMessage) {
@@ -135,13 +160,27 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         return routerRule != null && routerRule.isValid() && routerRule.isRuntime();
     }
 
-    private void generateConditions(ConditionRouterRule rule) {
-        if (rule != null && rule.isValid()) {
-            this.conditionRouters = rule.getConditions().stream()
-                    .map(condition ->
-                            new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled()))
+    private void generateConditions(AbstractRouterRule rule) {
+        if (rule == null || !rule.isValid()) {return;}
+
+        if (rule instanceof ConditionRouterRule) {
+            this.conditionRouters = ((ConditionRouterRule) rule).getConditions()
+                    .stream()
+                    .map(condition -> new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(),
+                            rule.isEnabled()))
                     .collect(Collectors.toList());
+
             for (ConditionStateRouter<T> conditionRouter : this.conditionRouters) {
+                conditionRouter.setNextRouter(TailStateRouter.getInstance());
+            }
+        } else if (rule instanceof MultiDestConditionRouterRule) {
+            this.multiDestConditionRouters = ((MultiDestConditionRouterRule)rule).getConditions()
+                    .stream()
+                    .map(condition -> new MultiDestConditionRouter<T>(getUrl(),condition,rule.isEnabled(),rule.isForce()))
+                    .sorted((a,b) -> a.getPriority() - b.getPriority())
+                    .collect(Collectors.toList());
+
+            for (MultiDestConditionRouter<T> conditionRouter : this.multiDestConditionRouters) {
                 conditionRouter.setNextRouter(TailStateRouter.getInstance());
             }
         }

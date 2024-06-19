@@ -1,0 +1,55 @@
+#
+#
+#   Licensed to the Apache Software Foundation (ASF) under one or more
+#   contributor license agreements.  See the NOTICE file distributed with
+#   this work for additional information regarding copyright ownership.
+#   The ASF licenses this file to You under the Apache License, Version 2.0
+#   (the "License"); you may not use this file except in compliance with
+#   the License.  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+#
+
+configVersion: v3.1 # be v3.1 or V3.1 to use this
+scope: service      # must be 'service' or 'application'
+key: org.apache.dubbo.samples.CommentService # [service name] or [application name]
+force: false        # decide hole condition route an empty set, return err Or ignore this rule
+runtime: true       # decide is use cache
+enabled: true       # decide is the rule enabled
+conditions:         # contains by many conditions, sort by condition.priority
+
+  - priority: 10    # default 0, expect > 0
+    from:           # match consumer-side url, match fail jump next condition, match success to match provider-side urls
+      match: region=$region & version=v1    # string, use '&' to separate rules
+    trafficDisable: false # default true, if set true & from match successfully,
+    # it will ignore ./{'to','force','ratio'} value AND ../../{'force'} value, return empty.
+    to:             # match provider-side urls, contains by many destination-subsets
+      - match: env=$env & region=shanghai   # if match fail, ignore subset
+        weight: 100                         # int, default 100, Max INT_MAX, Min 0
+      - match: env=$env & region=beijing
+        weight: 200
+      - match: env=$env & region=hangzhou
+        weight: 300
+    force: false    # here [force] decide to jump next or return empty, when get empty peer-set or ratio check false
+    ratio: 20       # default 0, Max 100, Min 0 -- e.g. expect $result/$all-peers >= 20% -- fail to jump next(or return empty [decide by key(force)])
+
+  # e.g. this condition rule will ban all traffic which sent from version=1
+  - priority: 5
+    from:
+      match: version=v1
+    trafficDisable: true
+
+  # e.g. this condition rule will show how to set region priority
+  - priority: 20
+    from:
+      match:
+    to:
+      - match: region=$region
+    ratio: 20

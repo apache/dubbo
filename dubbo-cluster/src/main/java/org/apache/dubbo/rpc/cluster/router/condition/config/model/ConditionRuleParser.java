@@ -17,12 +17,16 @@
 package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
 import java.util.Map;
 
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+
+import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V31;
 
 /**
  * %YAML1.2
@@ -40,14 +44,25 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
  */
 public class ConditionRuleParser {
 
-    public static ConditionRouterRule parse(String rawRule) {
+    public static AbstractRouterRule parse(String rawRule) {
+        AbstractRouterRule rule ;
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawRule);
-        ConditionRouterRule rule = ConditionRouterRule.parseFromMap(map);
-        rule.setRawRule(rawRule);
-        if (CollectionUtils.isEmpty(rule.getConditions())) {
-            rule.setValid(false);
+        String confVersion = (String) map.get(CONFIG_VERSION_KEY);
+
+        if (confVersion != null && confVersion.startsWith(RULE_VERSION_V31)) {
+            rule = MultiDestConditionRouterRule.parseFromMap(map);
+            if (CollectionUtils.isEmpty(((MultiDestConditionRouterRule)rule).getConditions())) {
+                rule.setValid(false);
+            }
+        }else {
+            rule = ConditionRouterRule.parseFromMap(map);
+            if (CollectionUtils.isEmpty(((ConditionRouterRule)rule).getConditions())) {
+                rule.setValid(false);
+            }
         }
+        rule.setRawRule(rawRule);
+
 
         return rule;
     }
