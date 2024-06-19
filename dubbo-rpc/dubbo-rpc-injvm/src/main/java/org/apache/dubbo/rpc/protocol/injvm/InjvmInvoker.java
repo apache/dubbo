@@ -324,7 +324,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             ClassLoader consumerClassLoader = contextClassLoader;
             ServiceModel serviceModel = getUrl().getServiceModel();
             // 2. If there is a ConsumerModel in the url, the classloader of the ConsumerModel is consumerLoader
-            if (serviceModel instanceof ConsumerModel) {
+            if (Objects.nonNull(serviceModel) && serviceModel instanceof ConsumerModel) {
                 consumerClassLoader = serviceModel.getClassLoader();
             }
             // 3. request result copy
