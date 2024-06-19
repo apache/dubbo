@@ -45,6 +45,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -317,25 +318,23 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
 
         Object value = originValue;
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        try {
-            ServiceModel consumerServiceModel = getUrl().getServiceModel();
-            if (consumerServiceModel != null) {
-                Thread.currentThread().setContextClassLoader(consumerServiceModel.getClassLoader());
-                Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
-                if (returnTypes == null) {
-                    return originValue;
-                }
-                if (returnTypes.length == 1) {
-                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0]);
-                } else if (returnTypes.length == 2) {
-                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0], returnTypes[1]);
-                }
+        ClassLoader consumerClassLoader = Thread.currentThread().getContextClassLoader();
+        ServiceModel providerServiceModel = getUrl().getServiceModel();
+        ClassLoader providerClassLoader = Optional.ofNullable(providerServiceModel)
+                .map(ServiceModel::getClassLoader)
+                .orElse(null);
+        if (Objects.nonNull(providerClassLoader) && !Objects.equals(consumerClassLoader, providerClassLoader)) {
+            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+            if (returnTypes == null) {
+                return originValue;
             }
-            return value;
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
+            if (returnTypes.length == 1) {
+                value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0]);
+            } else if (returnTypes.length == 2) {
+                value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0], returnTypes[1]);
+            }
         }
+        return value;
     }
 
     private boolean isAsync(URL remoteUrl, URL localUrl) {
