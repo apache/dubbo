@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -45,7 +46,6 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -318,23 +318,32 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
 
         Object value = originValue;
-        ClassLoader consumerClassLoader = Thread.currentThread().getContextClassLoader();
-        ServiceModel providerServiceModel = getUrl().getServiceModel();
-        ClassLoader providerClassLoader = Optional.ofNullable(providerServiceModel)
-                .map(ServiceModel::getClassLoader)
-                .orElse(null);
-        if (Objects.nonNull(providerClassLoader) && !Objects.equals(consumerClassLoader, providerClassLoader)) {
-            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
-            if (returnTypes == null) {
-                return originValue;
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            // 1. By default, the classloader of the current Thread is the consumer class loader.
+            ClassLoader consumerClassLoader = contextClassLoader;
+            ServiceModel serviceModel = getUrl().getServiceModel();
+            // 2. If there is a ConsumerModel in the url, the classloader of the ConsumerModel is consumerLoader
+            if (serviceModel instanceof ConsumerModel) {
+                consumerClassLoader = serviceModel.getClassLoader();
             }
-            if (returnTypes.length == 1) {
-                value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0]);
-            } else if (returnTypes.length == 2) {
-                value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0], returnTypes[1]);
+            // 3. request result copy
+            if (Objects.nonNull(consumerClassLoader)) {
+                Thread.currentThread().setContextClassLoader(consumerClassLoader);
+                Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+                if (returnTypes == null) {
+                    return originValue;
+                }
+                if (returnTypes.length == 1) {
+                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0]);
+                } else if (returnTypes.length == 2) {
+                    value = paramDeepCopyUtil.copy(consumerUrl, originValue, (Class<?>) returnTypes[0], returnTypes[1]);
+                }
             }
+            return value;
+        } finally {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
         }
-        return value;
     }
 
     private boolean isAsync(URL remoteUrl, URL localUrl) {
