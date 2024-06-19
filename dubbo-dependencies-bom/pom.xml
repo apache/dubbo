@@ -878,7 +878,7 @@
       </dependency>
       <dependency>
         <groupId>io.prometheus</groupId>
-        <artifactId>simpleclient</artifactId>
+        <artifactId>prometheus-metrics-core</artifactId>
         <version>${prometheus-metrics-core.version}</version>
       </dependency>
       <dependency>
