@@ -20,8 +20,8 @@ import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import zipkin2.Span;
-import zipkin2.codec.BytesEncoder;
-import zipkin2.codec.SpanBytesEncoder;
+import zipkin2.reporter.BytesEncoder;
+import zipkin2.reporter.SpanBytesEncoder;
 
 /**
  * Zipkin span exporter for OTel.
@@ -30,8 +30,9 @@ public class ZipkinSpanExporter {
 
     public static io.opentelemetry.sdk.trace.export.SpanExporter getSpanExporter(
             ApplicationModel applicationModel, ExporterConfig.ZipkinConfig zipkinConfig) {
+        BytesEncoder<Span> spanBytesEncoder = getSpanBytesEncoder(applicationModel);
         return io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.builder()
-                .setEncoder(getSpanBytesEncoder(applicationModel))
+                .setEncoder(spanBytesEncoder)
                 .setEndpoint(zipkinConfig.getEndpoint())
                 .setReadTimeout(zipkinConfig.getReadTimeout())
                 .build();
