@@ -231,7 +231,7 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: ThenCondition is empty.");
                 }
-                return BitList.emptyList();
+                return returnByForce(invokers, !this.isForce(), true);
             }
 
             DestinationSet destinations = new DestinationSet();
@@ -263,9 +263,9 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
                     if (needToPrintMessage) {
                         messageHolder.set("Empty return. Reason: Ratio not match.");
                     }
-                    return BitList.emptyList();
+                    return returnByForce(invokers, !this.isForce(), true);
                 }
-            } else if (this.isForce()) {
+            } else {
                 logger.warn(
                         CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,
                         "execute condition state router result list is empty. and force=true",
@@ -276,10 +276,8 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: Empty result from condition and condition is force.");
                 }
-                return BitList.emptyList();
-            } else {
-                //                The original invoker is returned in order to proceed to the next conditional route
-                return BitList.emptyList();
+
+                return returnByForce(invokers, !this.isForce(), true);
             }
 
         } catch (Throwable t) {
@@ -295,7 +293,19 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
         if (needToPrintMessage) {
             messageHolder.set("Directly return. Reason: Error occurred .");
         }
-        return invokers;
+        return invokers.clone();
+    }
+
+    public BitList<Invoker<T>> returnByForce(BitList<Invoker<T>> invokers,boolean canContinue,boolean empty) {
+        if (canContinue && empty) {
+            return BitList.emptyList();
+        }else if (canContinue && !empty){
+            return invokers;
+        }else if (empty){
+            return BitList.emptyList();
+        }else {
+            return invokers.clone();
+        }
     }
 
     public void covert(MultiDestCondition multiDestCondition, MultiDestConditionRouter multiDestConditionRouter) {
