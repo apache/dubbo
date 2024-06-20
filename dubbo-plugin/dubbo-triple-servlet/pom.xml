@@ -56,52 +56,60 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-sources</id>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <copy overwrite="true" todir="${sources_directory}">
-                  <fileset dir="src/main/java/org/apache/dubbo/rpc/protocol/tri/servlet" />
-                </copy>
-                <replace token="tri.servlet;" value="tri.servlet.jakarta;">
-                  <fileset dir="${sources_directory}" />
-                </replace>
-                <replace token="javax.servlet" value="jakarta.servlet">
-                  <fileset dir="${sources_directory}" />
-                </replace>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-sources</id>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+  <profiles>
+    <profile>
+      <id>jdk-version-ge-17</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-sources</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <copy overwrite="true" todir="${sources_directory}">
+                      <fileset dir="src/main/java/org/apache/dubbo/rpc/protocol/tri/servlet" />
+                    </copy>
+                    <replace token="tri.servlet;" value="tri.servlet.jakarta;">
+                      <fileset dir="${sources_directory}" />
+                    </replace>
+                    <replace token="javax.servlet" value="jakarta.servlet">
+                      <fileset dir="${sources_directory}" />
+                    </replace>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-sources</id>
+                <goals>
+                  <goal>add-source</goal>
+                </goals>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <sources>
+                    <source>${project.build.directory}/generated-sources/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
