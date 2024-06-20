@@ -28,7 +28,7 @@ import java.util.List;
 
 public class CredentialResolvingTest {
 
-//    @Test
+    //    @Test
     public void testResolveSpiffe() throws Exception {
         SpiffeCredentialResolver spiffeCredentialResolver = new SpiffeCredentialResolver();
         URI spiffeId =
@@ -37,7 +37,10 @@ public class CredentialResolvingTest {
 
     private ConnectionCredential getConnectionCredential() throws Exception {
         List<CertificateCredential> certs = new ArrayList<>();
-        CertificateCredential certificateCredential = new CertificateCredential(new X509CertChains(Collections.singletonList(testCert)).readAsCerts().get(0));
+        CertificateCredential certificateCredential =
+                new CertificateCredential(new X509CertChains(Collections.singletonList(testCert))
+                        .readAsCerts()
+                        .get(0));
         certs.add(certificateCredential);
         ConnectionCredential connectionCredential = new ConnectionCredential(certs, "http/2", "my.application.app1");
         return connectionCredential;

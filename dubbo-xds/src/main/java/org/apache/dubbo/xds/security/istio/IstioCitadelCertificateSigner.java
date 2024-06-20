@@ -122,7 +122,7 @@ public class IstioCitadelCertificateSigner implements CertSource, TrustSource {
         for (SecretConfig secretConfig : secretConfigs) {
             if (secretConfig.configType().equals(ConfigType.CERT)
                     && secretConfig.source().equals(Source.SDS)) {
-                //TODO currently simply choose first SDS cert config.
+                // TODO currently simply choose first SDS cert config.
                 // consider there may have more different SDS cert source
                 return secretConfig;
             }
