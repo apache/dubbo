@@ -24,12 +24,19 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.GreeterService;
 import org.apache.dubbo.demo.GreeterServiceImpl;
+import org.apache.dubbo.rpc.Constants;
+
+import java.util.Collections;
 
 public class ApiProvider {
-    public static void main(String[] args) throws InterruptedException {
+
+    public static void main(String[] args) {
         ServiceConfig<GreeterService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(GreeterService.class);
         serviceConfig.setRef(new GreeterServiceImpl());
+        if (args.length > 0 && Constants.HTTP3_KEY.equals(args[0])) {
+            serviceConfig.setParameters(Collections.singletonMap(Constants.HTTP3_KEY, "true"));
+        }
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap

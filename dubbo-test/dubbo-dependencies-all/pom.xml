@@ -261,6 +261,11 @@
       <artifactId>dubbo-rest-spring</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-triple-servlet</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- registry -->
     <dependency>
@@ -298,6 +303,11 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-http12</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-http3</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -370,6 +380,11 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-spring-boot-3-autoconfigure</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

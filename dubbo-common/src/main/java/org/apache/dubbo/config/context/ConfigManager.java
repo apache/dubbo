@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
@@ -72,13 +73,14 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
                         TracingConfig.class));
     }
 
+    public static ProtocolConfig getProtocol(URL url) {
+        return url.getOrDefaultApplicationModel().getApplicationConfigManager().getOrAddProtocol(url.getProtocol());
+    }
+
     // ApplicationConfig correlative methods
 
     /**
      * Set application config
-     *
-     * @param application
-     * @return current application config instance
      */
     @DisableInject
     public void setApplication(ApplicationConfig application) {
@@ -147,7 +149,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         if (CollectionUtils.isEmpty(defaults)) {
             defaults = getConfigCenters();
         }
-        return Optional.ofNullable(defaults);
+        return ofNullable(defaults);
     }
 
     public Optional<ConfigCenterConfig> getConfigCenter(String id) {
@@ -217,6 +219,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
     @Override
+    @SuppressWarnings("RedundantMethodOverride")
     public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
         return getDefaultConfigs(getConfigsMap(getTagName(cls)));
     }
@@ -289,7 +292,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // load dubbo.metadata-report.xxx
         loadConfigsOfTypeFromProps(MetadataReportConfig.class);
 
-        // config centers has bean loaded before starting config center
+        // config centers has been loaded before starting config center
         // loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
         refreshAll();
@@ -319,7 +322,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
 
         // check port conflicts
         Map<Integer, ProtocolConfig> protocolPortMap = new LinkedHashMap<>();
-        for (ProtocolConfig protocol : this.getProtocols()) {
+        for (ProtocolConfig protocol : getProtocols()) {
             Integer port = protocol.getPort();
             if (port == null || port == -1) {
                 continue;

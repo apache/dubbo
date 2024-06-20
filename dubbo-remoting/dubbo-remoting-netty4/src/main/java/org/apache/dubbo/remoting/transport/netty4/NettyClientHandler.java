@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -54,26 +55,34 @@ public class NettyClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        Channel ch = ctx.channel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         handler.connected(channel);
         if (logger.isInfoEnabled()) {
-            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
-                    + " is established.");
+            logger.info(
+                    "The connection {} of {} -> {} is established.",
+                    ch,
+                    AddressUtils.getLocalAddressKey(ch),
+                    AddressUtils.getRemoteAddressKey(ch));
         }
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        Channel ch = ctx.channel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         try {
             handler.disconnected(channel);
         } finally {
-            NettyChannel.removeChannel(ctx.channel());
+            NettyChannel.removeChannel(ch);
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
-                    + " is disconnected.");
+            logger.info(
+                    "The connection {} of {} -> {} is disconnected.",
+                    ch,
+                    AddressUtils.getLocalAddressKey(ch),
+                    AddressUtils.getRemoteAddressKey(ch));
         }
     }
 

@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
@@ -48,6 +49,8 @@ public class HtmlCodec implements HttpMessageCodec {
             if (targetType == String.class) {
                 return StreamUtils.toString(is, charset);
             }
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Exception e) {
             throw new DecodeException(e);
         }

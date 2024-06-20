@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
@@ -37,6 +38,7 @@ import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.DefaultHttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -106,6 +108,18 @@ public class DefaultHttp11ServerTransportListener
     @Override
     protected void onError(Throwable throwable) {
         serverChannelObserver.onError(throwable);
+    }
+
+    @Override
+    protected void initializeAltSvc(URL url) {
+        String protocolId = TripleProtocol.isHttp3Enabled(url) ? "h3" : "h2";
+        int bindPort = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+        serverChannelObserver.setAltSvc(protocolId + "=\":" + bindPort + "\"");
+    }
+
+    @Override
+    public void close() throws Exception {
+        serverChannelObserver.close();
     }
 
     private static class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {

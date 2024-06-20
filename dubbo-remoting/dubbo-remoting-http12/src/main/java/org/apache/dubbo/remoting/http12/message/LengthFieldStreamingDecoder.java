@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
@@ -46,7 +47,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     private int requiredLength;
 
-    private InputStream dataHeader = new ByteArrayInputStream(new byte[0]);
+    private InputStream dataHeader = StreamUtils.EMPTY;
 
     public LengthFieldStreamingDecoder() {
         this(4);

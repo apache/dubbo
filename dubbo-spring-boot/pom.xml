@@ -32,6 +32,7 @@
   <modules>
     <module>dubbo-spring-boot-actuator</module>
     <module>dubbo-spring-boot-autoconfigure</module>
+    <module>dubbo-spring-boot-3-autoconfigure</module>
     <module>dubbo-spring-boot-compatible</module>
     <module>dubbo-spring-boot-starter</module>
     <module>dubbo-spring-boot-starters</module>
@@ -41,7 +42,7 @@
   <properties>
     <spring-boot.version>2.7.18</spring-boot.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
-    <byte-buddy.version>1.14.15</byte-buddy.version>
+    <byte-buddy.version>1.14.17</byte-buddy.version>
     <mockito_version>4.11.0</mockito_version>
   </properties>
 

@@ -37,8 +37,6 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     private boolean autoRequestN = true;
 
-    private boolean closed = false;
-
     public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
         super(h2StreamChannel);
     }
@@ -78,7 +76,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     public void cancel(Throwable throwable) {
         if (throwable instanceof CancelStreamException) {
             if (((CancelStreamException) throwable).isCancelByRemote()) {
-                closed = true;
+                closed();
             }
         }
         this.cancellationContext.cancel(throwable);
@@ -87,22 +85,6 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
             errorCode = ((ErrorCodeHolder) throwable).getErrorCode();
         }
         getHttpChannel().writeResetFrame(errorCode);
-    }
-
-    @Override
-    public void doOnNext(Object data) throws Throwable {
-        if (closed) {
-            return;
-        }
-        super.doOnNext(data);
-    }
-
-    @Override
-    public void doOnError(Throwable throwable) throws Throwable {
-        if (closed) {
-            return;
-        }
-        super.doOnError(throwable);
     }
 
     @Override
@@ -120,8 +102,9 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
         return autoRequestN;
     }
 
-    public void onStreamClosed() {
-        closed = true;
+    @Override
+    public void close() throws Exception {
+        super.close();
         streamingDecoder.onStreamClosed();
     }
 }

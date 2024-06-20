@@ -43,6 +43,7 @@
     <module>dubbo-rest-jaxrs</module>
     <module>dubbo-rest-servlet</module>
     <module>dubbo-rest-spring</module>
+    <module>dubbo-triple-servlet</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
