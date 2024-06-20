@@ -26,7 +26,7 @@ public interface Http2OutputMessage extends HttpOutputMessage, Http2StreamFrame 
     }
 
     @Override
-    default int id() {
+    default long id() {
         return -1;
     }
 }

@@ -61,13 +61,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     private final boolean needReconnect;
 
+    private final FrameworkModel frameworkModel;
+
     protected volatile ExecutorService executor;
 
     protected volatile ScheduledExecutorService connectivityExecutor;
 
-    private FrameworkModel frameworkModel;
-
-    protected long reconnectDuaration;
+    protected long reconnectDuration;
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -78,7 +78,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
         initExecutor(url);
 
-        reconnectDuaration = getReconnectDuration(url);
+        reconnectDuration = getReconnectDuration(url);
 
         try {
             doOpen();

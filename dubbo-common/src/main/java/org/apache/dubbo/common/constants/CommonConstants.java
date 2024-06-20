@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 public interface CommonConstants {
+
     String DUBBO = "dubbo";
 
     String TRIPLE = "tri";
@@ -263,12 +264,14 @@ public interface CommonConstants {
     String $INVOKE = "$invoke";
 
     String $INVOKE_ASYNC = "$invokeAsync";
+
     String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     /**
      * echo call
      */
     String $ECHO = "$echo";
+
     /**
      * package version in the manifest
      */
@@ -279,13 +282,21 @@ public interface CommonConstants {
     int MAX_PROXY_COUNT = 65535;
 
     String MONITOR_KEY = "monitor";
+
     String BACKGROUND_KEY = "background";
+
     String CLUSTER_KEY = "cluster";
+
     String MERGEABLE_CLUSTER_NAME = "mergeable";
+
     String USERNAME_KEY = "username";
+
     String PASSWORD_KEY = "password";
+
     String HOST_KEY = "host";
+
     String PORT_KEY = "port";
+
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
 
     /**
@@ -297,21 +308,29 @@ public interface CommonConstants {
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
 
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
+
     String DUBBO_PROTOCOL = "dubbo";
 
     String DUBBO_LABELS = "dubbo.labels";
+
     String DUBBO_ENV_KEYS = "dubbo.env.keys";
 
     String CONFIG_CONFIGFILE_KEY = "config-file";
+
     String CONFIG_ENABLE_KEY = "highest-priority";
+
     String CONFIG_NAMESPACE_KEY = "namespace";
+
     String CHECK_KEY = "check";
 
     String BACKLOG_KEY = "backlog";
 
     String HEARTBEAT_EVENT = null;
+
     String MOCK_HEARTBEAT_EVENT = "H";
+
     String READONLY_EVENT = "R";
+
     String WRITEABLE_EVENT = "W";
 
     String REFERENCE_FILTER_KEY = "reference.filter";
@@ -442,6 +461,7 @@ public interface CommonConstants {
     String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
 
     String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
+
     String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
 
     String CLUSTER_INTERCEPTOR_COMPATIBLE_KEY = "dubbo.application.cluster.interceptor.compatible";
@@ -575,10 +595,18 @@ public interface CommonConstants {
     String SERVICE_EXECUTOR = "service-executor";
 
     String EXECUTOR_MANAGEMENT_MODE = "executor-management-mode";
+
     String EXECUTOR_MANAGEMENT_MODE_DEFAULT = "default";
+
     String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
 
+    /**
+     * used in JVMUtil.java ,Control stack print lines, default is 32 lines
+     */
+    String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
+
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
+
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
 
     String PAYLOAD = "payload";
@@ -602,6 +630,10 @@ public interface CommonConstants {
     String EXT_PROTOCOL = "ext.protocol";
 
     String IS_EXTRA = "isExtra";
+
+    String ZOOKEEPER_ENSEMBLE_TRACKER_KEY = "zookeeper.ensemble.tracker";
+
+    String DUBBO_VERSIONS_KEY = "META-INF/dubbo-versions";
 
     /**
      * System-related VM properties
@@ -687,16 +719,16 @@ public interface CommonConstants {
         String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 
         /**
-         * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
-         * the Dubbo application will be ignored
+         * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that the Dubbo
+         * application will be ignored
          *
          * @since 2.7.6
          */
         String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
 
         /**
-         * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
-         * the Dubbo application prefers
+         * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that the Dubbo
+         * application prefers
          *
          * @since 2.7.6
          */

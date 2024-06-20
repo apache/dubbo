@@ -97,11 +97,16 @@ public interface Constants {
     String INVOCATION_KEY = "invocation";
     String SERIALIZATION_ID_KEY = "serialization_id";
 
+    String HTTP3_KEY = "http3";
+
     String H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
     String H2_SETTINGS_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
     String H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";
     String H2_SETTINGS_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
     String H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS = "dubbo.rpc.tri.pass-through-standard-http-headers";
+
+    String H3_SETTINGS_HTTP3_ENABLE = "dubbo.protocol.triple.enable-http3";
+    String H3_SETTINGS_SERVLET_ENABLE = "dubbo.protocol.triple.enable-servlet";
 
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";

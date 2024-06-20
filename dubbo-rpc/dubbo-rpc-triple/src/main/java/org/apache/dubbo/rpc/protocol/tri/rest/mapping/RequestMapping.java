@@ -106,6 +106,10 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return doMatch(request, new PathCondition(path));
     }
 
+    public boolean matchMethod(String method) {
+        return methodsCondition == null || methodsCondition.getMethods().contains(method);
+    }
+
     @Override
     public RequestMapping match(HttpRequest request) {
         return doMatch(request, null);
