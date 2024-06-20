@@ -91,30 +91,6 @@ public class ConditionStateRouterTestV31 {
 
     @Test
     public void testConditionRoutePriority() throws Exception {
-        //        String config = "configVersion: v3.1\n" +
-        //                "scope: service\n" +
-        //                "force: false\n" +
-        //                "runtime: true\n" +
-        //                "enabled: true\n" +
-        //                "key: shop\n" +
-        //                "conditions:\n" +
-        //                "  - from:\n" +
-        //                "      match:\n" +
-        //                "    to:\n" +
-        //                "      - match: region=beijing & version=v1\n" +
-        //                "      - match: region=beijing & version=v2\n" +
-        //                "        weight: 200\n" +
-        //                "      - match: region=beijing & version=v3\n" +
-        //                "        weight: 300\n" +
-        //                "    force: false\n" +
-        //                "    ratio: 20\n" +
-        //                "    priority: 20\n" +
-        //                "  - from:\n" +
-        //                "      match: region=beijing & version=v1\n" +
-        //                "    to:\n" +
-        //                "      - match: env=gray & region=beijing\n" +
-        //                "    force: false\n" +
-        //                "    priority: 100\n";
         String config = "configVersion: v3.1\n" + "scope: service\n"
                 + "force: false\n"
                 + "runtime: true\n"

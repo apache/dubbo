@@ -60,14 +60,12 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
     private int ratio;
     private int priority;
     private boolean force;
-    private boolean scopFroce;
     protected List<ConditionMatcherFactory> matcherFactories;
     private boolean enabled;
 
     public MultiDestConditionRouter(
-            URL url, MultiDestCondition multiDestCondition, boolean enabled, boolean scopFroce) {
+            URL url, MultiDestCondition multiDestCondition, boolean enabled) {
         super(url);
-        this.scopFroce = scopFroce;
         this.enabled = enabled;
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
@@ -76,10 +74,10 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
     }
 
     public void init(Map<String, String> from, List<Map<String, String>> to) {
-        if (from == null || to == null) {
-            throw new IllegalArgumentException("Illegal route rule!");
-        }
         try {
+            if (from == null || to == null) {
+                throw new IllegalArgumentException("Illegal route rule!");
+            }
             String whenRule = from.get("match");
             Map<String, ConditionMatcher> when =
                     StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<>() : parseRule(whenRule);
@@ -279,21 +277,9 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
                     messageHolder.set("Empty return. Reason: Empty result from condition and condition is force.");
                 }
                 return BitList.emptyList();
-            } else if (this.isScopFroce()) {
-                logger.warn(
-                        CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,
-                        "execute condition state router result list is empty. and config-force=true",
-                        "",
-                        "The route result is empty and force execute. consumer: " + NetUtils.getLocalHost()
-                                + ", service: " + url.getServiceKey() + ", router: "
-                                + url.getParameterAndDecoded(RULE_KEY));
-                if (needToPrintMessage) {
-                    messageHolder.set("Empty return. Reason: Empty result from condition and config-force is force.");
-                }
-                return BitList.emptyList();
             } else {
                 //                The original invoker is returned in order to proceed to the next conditional route
-                return invokers;
+                return BitList.emptyList();
             }
 
         } catch (Throwable t) {
@@ -394,14 +380,6 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
 
     public List<ConditionSubSet> getThenCondition() {
         return thenCondition;
-    }
-
-    public boolean isScopFroce() {
-        return scopFroce;
-    }
-
-    public void setScopFroce(boolean scopFroce) {
-        this.scopFroce = scopFroce;
     }
 
     public List<ConditionMatcherFactory> getMatcherFactories() {

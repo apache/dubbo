@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.MultiDestConditionRouter;
@@ -80,7 +81,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             routerRule = null;
             conditionRouters = Collections.emptyList();
-
+//          for v3.1
             multiDestConditionRouters = Collections.emptyList();
         } else {
             try {
@@ -123,24 +124,32 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             resultMessage = new StringBuilder();
         }
 
-        BitList<Invoker<T>> routeResult;
+        BitList<Invoker<T>> routeResult = invokers;
         if (routerRule instanceof MultiDestConditionRouterRule
                 || routerRule.getVersion() != null && routerRule.getVersion().startsWith(RULE_VERSION_V31)) {
+            boolean trafficDisable = false;
             for (MultiDestConditionRouter<T> multiDestConditionRouter : multiDestConditionRouters) {
                 routeResult = multiDestConditionRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
                 if (invokers == routeResult) {
+//                    not match or disable to continue next multiDestConditionRouter
                     continue;
                 } else if (routeResult.size() == 0
                         && !multiDestConditionRouter.isTrafficDisable()
-                        && !multiDestConditionRouter.isForce()) {
+                        && !multiDestConditionRouter.isForce() ) {
+//                    empty but can continue to next multiDestConditionRouter
                     continue;
                 } else {
+                    trafficDisable = multiDestConditionRouter.isTrafficDisable();
                     break;
                 }
             }
+//            if trafficDisable ignore root.force
+            if (routeResult.size() == 0 && !routerRule.isForce() && !trafficDisable) {
+                routeResult = invokers;
+            }
         } else {
             for (AbstractStateRouter<T> router : conditionRouters) {
-                invokers = router.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+                routeResult = router.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
             }
         }
 
@@ -152,7 +161,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             messageHolder.set(resultMessage.toString());
         }
 
-        return invokers;
+        return routeResult;
     }
 
     @Override
@@ -183,7 +192,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             this.multiDestConditionRouters = ((MultiDestConditionRouterRule) rule)
                     .getConditions().stream()
                             .map(condition -> new MultiDestConditionRouter<T>(
-                                    getUrl(), condition, rule.isEnabled(), rule.isForce()))
+                                    getUrl(), condition, rule.isEnabled()))
                             .sorted((a, b) -> a.getPriority() - b.getPriority())
                             .collect(Collectors.toList());
 
