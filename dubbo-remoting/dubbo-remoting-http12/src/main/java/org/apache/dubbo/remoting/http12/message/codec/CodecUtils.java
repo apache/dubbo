@@ -50,10 +50,18 @@ public final class CodecUtils {
                 .createCodec(url, frameworkModel, mediaType);
     }
 
+    public HttpMessageDecoder determineHttpMessageDecoder(String mediaType) {
+        return determineHttpMessageDecoder(null, null, mediaType);
+    }
+
     public HttpMessageEncoder determineHttpMessageEncoder(URL url, FrameworkModel frameworkModel, String mediaType) {
         return determineHttpMessageEncoderFactory(mediaType)
                 .orElseThrow(() -> new UnsupportedMediaTypeException(mediaType))
                 .createCodec(url, frameworkModel, mediaType);
+    }
+
+    public HttpMessageEncoder determineHttpMessageEncoder(String mediaType) {
+        return determineHttpMessageEncoder(null, null, mediaType);
     }
 
     public Optional<HttpMessageDecoderFactory> determineHttpMessageDecoderFactory(String mediaType) {

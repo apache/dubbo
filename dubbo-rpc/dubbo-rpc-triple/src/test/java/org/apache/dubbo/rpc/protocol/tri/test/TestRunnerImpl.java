@@ -218,8 +218,18 @@ final class TestRunnerImpl implements TestRunner {
     }
 
     @Override
+    public <T> List<T> gets(String path, Class<T> type) {
+        return run(new TestRequest(path).setMethod(HttpMethods.GET.name())).getBodies(type);
+    }
+
+    @Override
     public String get(String path) {
         return get(new TestRequest(path));
+    }
+
+    @Override
+    public List<String> gets(String path) {
+        return gets(path, String.class);
     }
 
     @Override
@@ -238,8 +248,19 @@ final class TestRunnerImpl implements TestRunner {
     }
 
     @Override
+    public <T> List<T> posts(String path, Object body, Class<T> type) {
+        return run(new TestRequest(path).setMethod(HttpMethods.POST.name()).setBody(body))
+                .getBodies(type);
+    }
+
+    @Override
     public String post(String path, Object body) {
         return post(new TestRequest(path).setBody(body));
+    }
+
+    @Override
+    public List<String> posts(String path, Object body) {
+        return posts(path, body, String.class);
     }
 
     @Override

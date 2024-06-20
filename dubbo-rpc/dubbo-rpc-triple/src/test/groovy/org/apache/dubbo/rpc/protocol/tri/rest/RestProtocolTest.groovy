@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.rest
 
-
 import org.apache.dubbo.remoting.http12.message.MediaType
 import org.apache.dubbo.rpc.protocol.tri.rest.service.Book
 import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl
@@ -42,15 +41,37 @@ class RestProtocolTest extends BaseServiceTest {
             '/hello.yml?name=world' | 'hello world'
     }
 
-    def "post test"() {
+    def "argument test"() {
         expect:
             runner.post(path, body) == output
         where:
-            path                 | body                        | output
-            '/postTest'          | '["Sam","8"]'               | 'Sam is 8 years old'
-            '/postTest'          | '{"name": "Sam", "age": 8}' | 'Sam is 8 years old'
-            '/postTest?name=Sam' | '{"age": 8}'                | 'Sam is 8 years old'
-            '/postTest?name=Sam' | '{"age": 8}'                | 'Sam is 8 years old'
+            path                | body                        | output
+            '/argTest'          | '["Sam","8"]'               | 'Sam is 8 years old'
+            '/argTest'          | '{"name": "Sam", "age": 8}' | 'Sam is 8 years old'
+            '/argTest?name=Sam' | '{"age": 8}'                | 'Sam is 8 years old'
+    }
+
+    def "bean argument get test"() {
+        expect:
+            runner.get(path, Book.class).price == output
+        where:
+            path                                     | output
+            '/beanArgTest'                           | 0
+            '/beanArgTest?quote=5'                   | 0
+            '/beanArgTest?book={"price": 6}'         | 6
+            '/beanArgTest?book={"price": 6}&quote=5' | 5
+    }
+
+    def "bean argument post test"() {
+        expect:
+            runner.post(path, body, Book.class).price == output
+        where:
+            path           | body                                 | output
+            '/beanArgTest' | []                                   | 0
+            '/beanArgTest' | [quote: 5]                           | 0
+            '/beanArgTest' | [book: new Book(price: 6)]           | 6
+            '/beanArgTest' | [book: new Book(price: 6), quote: 5] | 5
+            '/beanArgTest' | [price: 6, quote: 5]                 | 0
     }
 
     def "bean test"() {
@@ -77,8 +98,8 @@ class RestProtocolTest extends BaseServiceTest {
         expect:
             runner.post(request) == output
         where:
-            path        | output
-            '/postTest' | 'Sam is 8 years old'
+            path       | output
+            '/argTest' | 'Sam is 8 years old'
     }
 
     def "override mapping test"() {
@@ -109,5 +130,30 @@ class RestProtocolTest extends BaseServiceTest {
             path                     | output
             '/noInterface'           | 'ok'
             '/noInterfaceAndMapping' | '404'
+    }
+
+    def "use interface argument name test"() {
+        expect:
+            runner.get(path) contains output
+        where:
+            path                    | output
+            '/argNameTest?name=Sam' | 'Sam'
+    }
+
+    def "pb server stream test"() {
+        expect:
+            runner.posts(path, body).size() == output
+        where:
+            path              | body               | output
+            '/pbServerStream' | '{"service": "3"}' | 3
+            '/pbServerStream' | '{}'               | 0
+    }
+
+    def "pb server stream get test"() {
+        expect:
+            runner.gets(path).size() == output
+        where:
+            path                                       | output
+            '/pbServerStream?request={"service": "3"}' | 3
     }
 }

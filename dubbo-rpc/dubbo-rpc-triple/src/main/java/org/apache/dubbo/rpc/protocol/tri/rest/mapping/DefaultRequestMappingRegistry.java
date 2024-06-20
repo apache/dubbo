@@ -100,16 +100,16 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
             for (int i = 0, size = resolvers.size(); i < size; i++) {
                 RequestMappingResolver resolver = resolvers.get(i);
-                ServiceMeta serviceMeta = new ServiceMeta(classes, service, url, resolver.getRestToolKit());
-                if (!resolver.accept(serviceMeta, sd)) {
+                ServiceMeta serviceMeta = new ServiceMeta(classes, sd, service, url, resolver.getRestToolKit());
+                if (!resolver.accept(serviceMeta)) {
                     continue;
                 }
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
                 consumer.accept((methods) -> {
                     Method method = methods.get(0);
                     MethodDescriptor md = sd.getMethod(method.getName(), method.getParameterTypes());
-                    MethodMeta methodMeta = new MethodMeta(methods, serviceMeta);
-                    if (!resolver.accept(methodMeta, md)) {
+                    MethodMeta methodMeta = new MethodMeta(methods, md, serviceMeta);
+                    if (!resolver.accept(methodMeta)) {
                         return;
                     }
                     RequestMapping methodMapping = resolver.resolve(methodMeta);
@@ -122,6 +122,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         }
                         md = new ReflectionMethodDescriptor(method);
                         ((ReflectionServiceDescriptor) sd).addMethod(md);
+                        methodMeta.setMethodDescriptor(md);
                     }
                     if (classMapping != null) {
                         methodMapping = classMapping.combine(methodMapping);

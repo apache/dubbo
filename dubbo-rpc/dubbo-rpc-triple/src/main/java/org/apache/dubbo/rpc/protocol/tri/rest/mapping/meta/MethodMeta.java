@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -27,13 +29,15 @@ public final class MethodMeta extends AnnotationSupport {
 
     private final List<Method> hierarchy;
     private final Method method;
+    private MethodDescriptor methodDescriptor;
     private ParameterMeta[] parameters;
     private final ServiceMeta serviceMeta;
 
-    public MethodMeta(List<Method> hierarchy, ServiceMeta serviceMeta) {
+    public MethodMeta(List<Method> hierarchy, MethodDescriptor methodDescriptor, ServiceMeta serviceMeta) {
         super(serviceMeta.getToolKit());
         this.hierarchy = hierarchy;
-        method = hierarchy.get(0);
+        method = methodDescriptor == null ? hierarchy.get(0) : methodDescriptor.getMethod();
+        this.methodDescriptor = methodDescriptor;
         this.serviceMeta = serviceMeta;
     }
 
@@ -70,6 +74,14 @@ public final class MethodMeta extends AnnotationSupport {
 
     public Method getMethod() {
         return method;
+    }
+
+    public MethodDescriptor getMethodDescriptor() {
+        return methodDescriptor;
+    }
+
+    public void setMethodDescriptor(MethodDescriptor methodDescriptor) {
+        this.methodDescriptor = methodDescriptor;
     }
 
     public ParameterMeta[] getParameters() {

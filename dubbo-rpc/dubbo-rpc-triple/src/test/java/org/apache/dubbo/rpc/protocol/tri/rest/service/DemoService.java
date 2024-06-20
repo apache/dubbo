@@ -16,14 +16,20 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.service;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
+
+import io.grpc.health.v1.HealthCheckRequest;
+import io.grpc.health.v1.HealthCheckResponse;
 
 @Mapping("/")
 public interface DemoService {
 
     String hello(String name);
 
-    String postTest(String name, int age);
+    String argTest(String name, int age);
+
+    Book beanArgTest(Book book, Integer quote);
 
     Book buy(Book book);
 
@@ -33,4 +39,8 @@ public interface DemoService {
     String say(String name, Long count);
 
     String say(String name);
+
+    String argNameTest(String name);
+
+    void pbServerStream(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver);
 }

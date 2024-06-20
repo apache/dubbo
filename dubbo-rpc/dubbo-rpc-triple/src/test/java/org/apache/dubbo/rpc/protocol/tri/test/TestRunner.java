@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.test;
 
+import java.util.List;
+
 public interface TestRunner {
 
     TestResponse run(TestRequest request);
@@ -28,7 +30,11 @@ public interface TestRunner {
 
     <T> T get(String path, Class<T> type);
 
+    <T> List<T> gets(String path, Class<T> type);
+
     String get(String path);
+
+    List<String> gets(String path);
 
     <T> T post(TestRequest request, Class<T> type);
 
@@ -36,7 +42,11 @@ public interface TestRunner {
 
     <T> T post(String path, Object body, Class<T> type);
 
+    <T> List<T> posts(String path, Object body, Class<T> type);
+
     String post(String path, Object body);
+
+    List<String> posts(String path, Object body);
 
     <T> T put(TestRequest request, Class<T> type);
 
