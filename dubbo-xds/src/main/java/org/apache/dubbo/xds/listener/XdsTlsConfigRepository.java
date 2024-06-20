@@ -28,11 +28,13 @@ public class XdsTlsConfigRepository {
 
     /**
      * inbound ports -> configs
+     * Indicates the TLS configuration for inbound connections.
      */
     private volatile Map<String, DownstreamTlsConfig> downstreamConfigs = Collections.emptyMap();
 
     /**
      * clusterName -> configs
+     * Indicates the TLS configuration for outbound connection to certain cluster.
      */
     private volatile Map<String, UpstreamTlsConfig> upstreamConfigs = Collections.emptyMap();
 

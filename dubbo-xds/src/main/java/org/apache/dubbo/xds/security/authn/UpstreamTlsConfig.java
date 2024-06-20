@@ -17,7 +17,7 @@
 package org.apache.dubbo.xds.security.authn;
 
 /**
- * Tls config for outbound request
+ * Tls config for outbound connection
  */
 public class UpstreamTlsConfig {
 
