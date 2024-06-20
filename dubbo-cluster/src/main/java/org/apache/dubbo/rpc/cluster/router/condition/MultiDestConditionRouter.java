@@ -63,8 +63,7 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
     protected List<ConditionMatcherFactory> matcherFactories;
     private boolean enabled;
 
-    public MultiDestConditionRouter(
-            URL url, MultiDestCondition multiDestCondition, boolean enabled) {
+    public MultiDestConditionRouter(URL url, MultiDestCondition multiDestCondition, boolean enabled) {
         super(url);
         this.enabled = enabled;
         matcherFactories =
@@ -296,14 +295,14 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
         return invokers.clone();
     }
 
-    public BitList<Invoker<T>> returnByForce(BitList<Invoker<T>> invokers,boolean canContinue,boolean empty) {
+    public BitList<Invoker<T>> returnByForce(BitList<Invoker<T>> invokers, boolean canContinue, boolean empty) {
         if (canContinue && empty) {
             return BitList.emptyList();
-        }else if (canContinue && !empty){
+        } else if (canContinue && !empty) {
             return invokers;
-        }else if (empty){
+        } else if (empty) {
             return BitList.emptyList();
-        }else {
+        } else {
             return invokers.clone();
         }
     }

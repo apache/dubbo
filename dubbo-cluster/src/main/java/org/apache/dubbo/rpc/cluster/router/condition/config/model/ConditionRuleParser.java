@@ -20,10 +20,8 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
-import org.apache.dubbo.rpc.cluster.router.condition.config.ListenableStateRouter;
 
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -48,8 +46,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V31;
  */
 public class ConditionRuleParser {
 
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(ConditionRuleParser.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConditionRuleParser.class);
 
     public static AbstractRouterRule parse(String rawRule) {
         AbstractRouterRule rule;
@@ -62,12 +59,13 @@ public class ConditionRuleParser {
             if (CollectionUtils.isEmpty(((MultiDestConditionRouterRule) rule).getConditions())) {
                 rule.setValid(false);
             }
-        } else if (confVersion != null && confVersion.compareToIgnoreCase(RULE_VERSION_V31) > 0){
-            logger.warn("Invalid condition config version number.Ignore this configuration. Only "+ RULE_VERSION_V31 +" and below are supported in this release");
+        } else if (confVersion != null && confVersion.compareToIgnoreCase(RULE_VERSION_V31) > 0) {
+            logger.warn("Invalid condition config version number.Ignore this configuration. Only " + RULE_VERSION_V31
+                    + " and below are supported in this release");
             rule = new ConditionRouterRule();
             rule.setValid(false);
-        }else {
-//            for under v3.1
+        } else {
+            //            for under v3.1
             rule = ConditionRouterRule.parseFromMap(map);
             if (CollectionUtils.isEmpty(((ConditionRouterRule) rule).getConditions())) {
                 rule.setValid(false);
