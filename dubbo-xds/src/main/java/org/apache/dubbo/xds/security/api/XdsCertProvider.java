@@ -67,7 +67,7 @@ public class XdsCertProvider implements CertProvider {
     @Override
     public boolean isSupport(URL address) {
         String side = address.getSide();
-        if (CONSUMER.equals(side)) {
+        if (PROVIDER.equals(side)) {
             // TODO: If XDS URL can support version tag, key should be address.getServiceKey()
             UpstreamTlsConfig upstreamConfig = configRepo.getUpstreamConfig(address.getServiceInterface());
             if (upstreamConfig == null || upstreamConfig.getGeneralTlsConfig() == null) {
@@ -80,7 +80,7 @@ public class XdsCertProvider implements CertProvider {
 
             // At least one config provided by LDS
             return !trustConfigs.isEmpty() || !certConfigs.isEmpty();
-        } else if (PROVIDER.equals(side)) {
+        } else if (CONSUMER.equals(side)) {
             DownstreamTlsConfig downstreamConfig = configRepo.getDownstreamConfig(String.valueOf(address.getPort()));
             if (downstreamConfig == null) {
                 return false;
@@ -94,15 +94,6 @@ public class XdsCertProvider implements CertProvider {
             return !secretConfigs.isEmpty() || !certConfigs.isEmpty();
         }
         throw new IllegalStateException("Can't determine side for url:" + address);
-
-        // seems we don't need url to check here anymore
-        //        if (TlsType.PERMISSIVE.equals(type)) {
-        //            String security = address.getParameter("security");
-        //            String mesh = address.getParameter("mesh");
-        //            return mesh != null
-        //                    && security != null
-        //                    && Arrays.asList(security.split(",")).contains("mTLS");
-        //        }
     }
 
     @Override
