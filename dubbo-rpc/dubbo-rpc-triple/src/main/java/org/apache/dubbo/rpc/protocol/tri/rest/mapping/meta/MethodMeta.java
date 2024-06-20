@@ -36,9 +36,17 @@ public final class MethodMeta extends AnnotationSupport {
     public MethodMeta(List<Method> hierarchy, MethodDescriptor methodDescriptor, ServiceMeta serviceMeta) {
         super(serviceMeta.getToolKit());
         this.hierarchy = hierarchy;
-        method = methodDescriptor == null ? hierarchy.get(0) : methodDescriptor.getMethod();
+        method = initMethod(hierarchy, methodDescriptor);
         this.methodDescriptor = methodDescriptor;
         this.serviceMeta = serviceMeta;
+    }
+
+    private Method initMethod(List<Method> hierarchy, MethodDescriptor methodDescriptor) {
+        Method method = null;
+        if (methodDescriptor != null) {
+            method = methodDescriptor.getMethod();
+        }
+        return method == null ? hierarchy.get(hierarchy.size() - 1) : method;
     }
 
     public void initParameters() {

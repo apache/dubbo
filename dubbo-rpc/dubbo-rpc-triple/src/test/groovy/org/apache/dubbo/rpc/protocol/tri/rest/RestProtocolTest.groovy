@@ -156,4 +156,5 @@ class RestProtocolTest extends BaseServiceTest {
             path                                       | output
             '/pbServerStream?request={"service": "3"}' | 3
     }
+
 }
