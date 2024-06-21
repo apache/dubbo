@@ -21,7 +21,7 @@ import org.apache.dubbo.demo.consumer.ZKTools;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -46,12 +46,12 @@ public class DemoServiceIT {
     @Test
     public void testDemoService() throws Exception {
         String result = demoService.sayHello("world");
-        Assert.assertTrue(result.contains("20880"));
+        Assert.assertTrue(result.contains("20881"));
     }
 
     @Test
     public void testDemoService2() throws Exception {
         String result = greetingService.hello();
-        Assert.assertTrue(result.contains("20881"));
+        Assert.assertTrue(result.contains("20880"));
     }
 }

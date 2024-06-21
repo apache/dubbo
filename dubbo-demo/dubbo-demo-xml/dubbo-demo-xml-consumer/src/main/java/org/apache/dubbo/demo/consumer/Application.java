@@ -40,8 +40,6 @@ public class Application {
         context.start();
         DemoService demoService = context.getBean("demoService", DemoService.class);
         GreetingService greetingService = context.getBean("greetingService", GreetingService.class);
-        RestDemoService restDemoService = context.getBean("restDemoService", RestDemoService.class);
-        TripleService tripleService = context.getBean("tripleService", TripleService.class);
 
         new Thread(() -> {
                     while (true) {
@@ -50,36 +48,6 @@ public class Application {
                             System.out.println(greetings + " from separated thread.");
                         } catch (Exception e) {
                             //                    e.printStackTrace();
-                        }
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                })
-                .start();
-
-        new Thread(() -> {
-                    while (true) {
-                        try {
-                            Object restResult = restDemoService.sayHello("rest");
-                            System.out.println(restResult + " from separated thread.");
-                            restResult = restDemoService.testBody5(TestPO.getInstance());
-                            System.out.println(restResult + " from separated thread.");
-
-                            restResult = restDemoService.hello(1, 2);
-                            System.out.println(restResult + " from separated thread.");
-
-                            String form1 = restDemoService.testForm1("form1");
-                            System.out.println(form1);
-
-                            MultivaluedHashMap multivaluedHashMap = new MultivaluedHashMap();
-                            multivaluedHashMap.put("1", Arrays.asList("1"));
-                            multivaluedHashMap.put("2", Arrays.asList("2"));
-                            MultivaluedMap form2 = restDemoService.testForm2(multivaluedHashMap);
-                            System.out.println(form2);
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
                         try {
                             Thread.sleep(1000);

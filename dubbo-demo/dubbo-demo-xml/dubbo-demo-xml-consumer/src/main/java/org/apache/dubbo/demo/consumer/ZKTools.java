@@ -39,6 +39,7 @@ public class ZKTools {
         String str = "" +
                 "---\n" +
                 "scope: application\n" +
+                "configVersion: v3.0\n" +
                 "force: true\n" +
                 "runtime: true\n" +
                 "enabled: true\n" +

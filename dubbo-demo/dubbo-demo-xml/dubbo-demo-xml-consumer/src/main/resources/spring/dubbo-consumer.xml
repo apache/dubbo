@@ -34,10 +34,4 @@
     <dubbo:reference version="1.0.0" group="greeting" id="greetingService" check="false"
                      interface="org.apache.dubbo.demo.GreetingService"/>
 
-    <dubbo:reference version="1.0.0" id="restDemoService" check="false"
-                     interface="org.apache.dubbo.demo.RestDemoService"/>
-
-    <dubbo:reference version="1.0.0" id="tripleService" check="false"
-                     interface="org.apache.dubbo.demo.TripleService"/>
-
 </beans>
