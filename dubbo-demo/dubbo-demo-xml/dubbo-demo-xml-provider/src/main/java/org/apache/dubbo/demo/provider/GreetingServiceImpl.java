@@ -17,6 +17,7 @@
 package org.apache.dubbo.demo.provider;
 
 import org.apache.dubbo.demo.GreetingService;
+import org.apache.dubbo.rpc.RpcContext;
 
 /**
  *
@@ -24,6 +25,6 @@ import org.apache.dubbo.demo.GreetingService;
 public class GreetingServiceImpl implements GreetingService {
     @Override
     public String hello() {
-        return "Greetings!";
+        return "Greetings!" + RpcContext.getServiceContext().getLocalPort();
     }
 }

@@ -37,7 +37,7 @@ public class DemoServiceImpl implements DemoService {
             e.printStackTrace();
         }
         return "Hello " + name + ", response from provider: "
-                + RpcContext.getServiceContext().getLocalAddress();
+                + RpcContext.getServiceContext().getLocalAddress() + RpcContext.getServiceContext().getLocalPort();
     }
 
     @Override
