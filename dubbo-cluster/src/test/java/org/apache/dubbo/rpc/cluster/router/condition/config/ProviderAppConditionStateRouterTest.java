@@ -41,7 +41,8 @@ public class ProviderAppConditionStateRouterTest {
 
     private static GovernanceRuleRepository ruleRepository;
     private URL url = URL.valueOf("consumer://1.1.1.1/com.foo.BarService");
-    private String rawRule = "---\n" + "configVersion: v3.0\n"
+    private String rawRule = "---\n"
+//            + "configVersion: v3.0\n"
             + "scope: application\n"
             + "force: true\n"
             + "runtime: false\n"
