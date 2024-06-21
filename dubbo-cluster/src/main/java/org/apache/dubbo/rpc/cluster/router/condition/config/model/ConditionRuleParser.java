@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
@@ -46,7 +46,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V31;
  */
 public class ConditionRuleParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConditionRuleParser.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConditionRuleParser.class);
 
     public static AbstractRouterRule parse(String rawRule) {
         AbstractRouterRule rule;
