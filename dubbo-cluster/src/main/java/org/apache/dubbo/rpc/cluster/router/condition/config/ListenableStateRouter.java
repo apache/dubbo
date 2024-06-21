@@ -148,7 +148,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             }
         } else {
             for (AbstractStateRouter<T> router : conditionRouters) {
-                routeResult = router.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+                routeResult = router.route(routeResult, url, invocation, needToPrintMessage, nodeHolder);
             }
         }
 
