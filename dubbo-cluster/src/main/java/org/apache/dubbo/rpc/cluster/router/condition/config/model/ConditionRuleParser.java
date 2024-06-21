@@ -27,6 +27,7 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RULE_PARSING;
 import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V31;
 
@@ -60,8 +61,11 @@ public class ConditionRuleParser {
                 rule.setValid(false);
             }
         } else if (confVersion != null && confVersion.compareToIgnoreCase(RULE_VERSION_V31) > 0) {
-            logger.warn("Invalid condition config version number.Ignore this configuration. Only " + RULE_VERSION_V31
-                    + " and below are supported in this release");
+            logger.warn(
+                    CLUSTER_FAILED_RULE_PARSING,
+                    "Invalid condition config version number.",
+                    "",
+                    "Ignore this configuration. Only " + RULE_VERSION_V31 + " and below are supported in this release");
             rule = new ConditionRouterRule();
             rule.setValid(false);
         } else {
