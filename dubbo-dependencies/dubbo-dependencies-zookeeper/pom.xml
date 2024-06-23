@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <revision>3.2.13-SNAPSHOT</revision>
+    <revision>3.2.15-SNAPSHOT</revision>
     <maven_flatten_version>1.6.0</maven_flatten_version>
     <curator_version>4.3.0</curator_version>
     <zookeeper_version>3.4.14</zookeeper_version>

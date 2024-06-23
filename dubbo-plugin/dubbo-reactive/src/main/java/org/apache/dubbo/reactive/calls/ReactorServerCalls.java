@@ -19,9 +19,12 @@ package org.apache.dubbo.reactive.calls;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.ServerTripleReactorPublisher;
 import org.apache.dubbo.reactive.ServerTripleReactorSubscriber;
+import org.apache.dubbo.rpc.StatusRpcException;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -43,16 +46,16 @@ public final class ReactorServerCalls {
      * @param func service implementation
      */
     public static <T, R> void oneToOne(T request, StreamObserver<R> responseObserver, Function<Mono<T>, Mono<R>> func) {
-        func.apply(Mono.just(request)).subscribe(res -> {
-            CompletableFuture.completedFuture(res).whenComplete((r, t) -> {
-                if (t != null) {
-                    responseObserver.onError(t);
-                } else {
-                    responseObserver.onNext(r);
-                    responseObserver.onCompleted();
-                }
-            });
-        });
+        try {
+            func.apply(Mono.just(request))
+                    .switchIfEmpty(Mono.error(TriRpcStatus.NOT_FOUND.asException()))
+                    .subscribe(
+                            responseObserver::onNext,
+                            throwable -> doOnResponseHasException(throwable, responseObserver),
+                            responseObserver::onCompleted);
+        } catch (Throwable throwable) {
+            doOnResponseHasException(throwable, responseObserver);
+        }
     }
 
     /**
@@ -62,14 +65,21 @@ public final class ReactorServerCalls {
      * @param responseObserver response StreamObserver
      * @param func service implementation
      */
-    public static <T, R> void oneToMany(
+    public static <T, R> CompletableFuture<List<R>> oneToMany(
             T request, StreamObserver<R> responseObserver, Function<Mono<T>, Flux<R>> func) {
         try {
+            ServerCallToObserverAdapter<R> serverCallToObserverAdapter =
+                    (ServerCallToObserverAdapter<R>) responseObserver;
             Flux<R> response = func.apply(Mono.just(request));
-            ServerTripleReactorSubscriber<R> subscriber = response.subscribeWith(new ServerTripleReactorSubscriber<>());
-            subscriber.subscribe((ServerCallToObserverAdapter<R>) responseObserver);
+            ServerTripleReactorSubscriber<R> reactorSubscriber =
+                    new ServerTripleReactorSubscriber<>(serverCallToObserverAdapter);
+            response.subscribeWith(reactorSubscriber).subscribe(serverCallToObserverAdapter);
+            return reactorSubscriber.getExecutionFuture();
         } catch (Throwable throwable) {
-            responseObserver.onError(throwable);
+            doOnResponseHasException(throwable, responseObserver);
+            CompletableFuture<List<R>> future = new CompletableFuture<>();
+            future.completeExceptionally(throwable);
+            return future;
         }
     }
 
@@ -130,5 +140,11 @@ public final class ReactorServerCalls {
         }
 
         return serverPublisher;
+    }
+
+    private static void doOnResponseHasException(Throwable throwable, StreamObserver<?> responseObserver) {
+        StatusRpcException statusRpcException =
+                TriRpcStatus.getStatus(throwable).asException();
+        responseObserver.onError(statusRpcException);
     }
 }
