@@ -82,7 +82,12 @@ public class SimpleDataStore implements DataStore {
                 listener.onUpdate(componentName, key, value);
             } catch (Throwable t) {
                 logger.warn(
-                        LoggerCodeConstants.INTERNAL_ERROR, "", "", "Failed to notify data store update listener", t);
+                        LoggerCodeConstants.INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to notify data store update listener. " + "ComponentName: " + componentName + " Key: "
+                                + key,
+                        t);
             }
         }
     }

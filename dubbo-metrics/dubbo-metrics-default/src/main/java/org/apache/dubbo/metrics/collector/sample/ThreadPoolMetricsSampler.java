@@ -43,8 +43,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
-import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
+import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_PREFIX;
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_PREFIX;
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
 public class ThreadPoolMetricsSampler implements MetricsSampler, DataStoreUpdateListener {
@@ -66,11 +67,11 @@ public class ThreadPoolMetricsSampler implements MetricsSampler, DataStoreUpdate
     public void onUpdate(String componentName, String key, Object value) {
         if (EXECUTOR_SERVICE_COMPONENT_KEY.equals(componentName)) {
             if (value instanceof ThreadPoolExecutor) {
-                addExecutors(SERVER_THREAD_POOL_NAME + "-" + key, (ThreadPoolExecutor) value);
+                addExecutors(SERVER_THREAD_POOL_PREFIX + key, (ThreadPoolExecutor) value);
             }
         } else if (CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY.equals(componentName)) {
             if (value instanceof ThreadPoolExecutor) {
-                addExecutors(CLIENT_THREAD_POOL_NAME + "-" + key, (ThreadPoolExecutor) value);
+                addExecutors(CLIENT_THREAD_POOL_PREFIX + key, (ThreadPoolExecutor) value);
             }
         }
     }
@@ -173,14 +174,14 @@ public class ThreadPoolMetricsSampler implements MetricsSampler, DataStoreUpdate
             for (Map.Entry<String, Object> entry : executors.entrySet()) {
                 ExecutorService executor = (ExecutorService) entry.getValue();
                 if (executor instanceof ThreadPoolExecutor) {
-                    this.addExecutors(SERVER_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
+                    this.addExecutors(SERVER_THREAD_POOL_PREFIX + entry.getKey(), executor);
                 }
             }
             executors = dataStore.get(CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY);
             for (Map.Entry<String, Object> entry : executors.entrySet()) {
                 ExecutorService executor = (ExecutorService) entry.getValue();
                 if (executor instanceof ThreadPoolExecutor) {
-                    this.addExecutors(CLIENT_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
+                    this.addExecutors(CLIENT_THREAD_POOL_PREFIX + entry.getKey(), executor);
                 }
             }
 
