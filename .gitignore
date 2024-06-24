@@ -11,6 +11,8 @@ target/
 .settings/
 .project
 .classpath
+.externalToolBuilders
+maven-eclipse.xml
 
 # idea ignore
 .idea/
