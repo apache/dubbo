@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -140,11 +141,15 @@ public class OKHttpRestClient implements RestClient {
     }
 
     public OkHttpClient createHttpClient(HttpClientConfig httpClientConfig) {
-        OkHttpClient client = new OkHttpClient.Builder()
+
+        return new OkHttpClient.Builder()
                 .readTimeout(httpClientConfig.getReadTimeout(), TimeUnit.SECONDS)
                 .writeTimeout(httpClientConfig.getWriteTimeout(), TimeUnit.SECONDS)
                 .connectTimeout(httpClientConfig.getConnectTimeout(), TimeUnit.SECONDS)
+                .connectionPool(new ConnectionPool(
+                        httpClientConfig.getMaxIdleConnections(),
+                        httpClientConfig.getKeepAliveDuration(),
+                        TimeUnit.SECONDS))
                 .build();
-        return client;
     }
 }

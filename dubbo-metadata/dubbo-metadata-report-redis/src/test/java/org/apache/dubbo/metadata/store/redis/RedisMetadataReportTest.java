@@ -30,12 +30,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -46,6 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
 import static redis.embedded.RedisServer.newRedisServer;
 
+@DisabledOnOs(OS.WINDOWS)
 class RedisMetadataReportTest {
 
     private static final String REDIS_URL_TEMPLATE = "redis://%slocalhost:%d",
@@ -69,7 +71,7 @@ class RedisMetadataReportTest {
                 redisServer = newRedisServer()
                         .port(redisPort)
                         // set maxheap to fix Windows error 0x70 while starting redis
-                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                        // .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
                         .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
                         .build();
                 this.redisServer.start();
@@ -250,7 +252,8 @@ class RedisMetadataReportTest {
             if (e.getCause() instanceof JedisConnectionException
                     && e.getCause().getCause() instanceof JedisDataException) {
                 Assertions.assertEquals(
-                        "ERR invalid password", e.getCause().getCause().getMessage());
+                        "WRONGPASS invalid username-password pair or user is disabled.",
+                        e.getCause().getCause().getMessage());
             } else {
                 Assertions.fail("no invalid password exception!");
             }

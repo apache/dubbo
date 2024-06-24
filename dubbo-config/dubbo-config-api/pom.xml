@@ -236,7 +236,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.19.7</version>
+      <version>1.19.8</version>
       <scope>test</scope>
     </dependency>
 

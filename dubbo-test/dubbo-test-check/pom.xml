@@ -33,7 +33,7 @@
     <curator.test.version>4.2.0</curator.test.version>
     <zookeeper.version>3.7.2</zookeeper.version>
     <curator5.version>4.2.0</curator5.version>
-    <commons.compress.version>1.26.1</commons.compress.version>
+    <commons.compress.version>1.26.2</commons.compress.version>
     <junit.platform.launcher.version>1.9.3</junit.platform.launcher.version>
     <commons.exec.version>1.4.0</commons.exec.version>
     <async.http.client.version>2.12.3</async.http.client.version>
