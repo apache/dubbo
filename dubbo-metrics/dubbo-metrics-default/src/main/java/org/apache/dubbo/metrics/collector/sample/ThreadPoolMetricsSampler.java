@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.collector.sample;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.store.DataStoreUpdateListener;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
@@ -42,11 +43,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
-import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
+import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_PREFIX;
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_PREFIX;
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
-public class ThreadPoolMetricsSampler implements MetricsSampler {
+public class ThreadPoolMetricsSampler implements MetricsSampler, DataStoreUpdateListener {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ThreadPoolMetricsSampler.class);
 
@@ -61,14 +63,28 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         this.collector = collector;
     }
 
+    @Override
+    public void onUpdate(String componentName, String key, Object value) {
+        if (EXECUTOR_SERVICE_COMPONENT_KEY.equals(componentName)) {
+            if (value instanceof ThreadPoolExecutor) {
+                addExecutors(SERVER_THREAD_POOL_PREFIX + key, (ThreadPoolExecutor) value);
+            }
+        } else if (CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY.equals(componentName)) {
+            if (value instanceof ThreadPoolExecutor) {
+                addExecutors(CLIENT_THREAD_POOL_PREFIX + key, (ThreadPoolExecutor) value);
+            }
+        }
+    }
+
     public void addExecutors(String name, ExecutorService executorService) {
         Optional.ofNullable(executorService)
                 .filter(Objects::nonNull)
                 .filter(e -> e instanceof ThreadPoolExecutor)
                 .map(e -> (ThreadPoolExecutor) e)
                 .ifPresent(threadPoolExecutor -> {
-                    sampleThreadPoolExecutor.put(name, threadPoolExecutor);
-                    samplesChanged.set(true);
+                    if (sampleThreadPoolExecutor.put(name, threadPoolExecutor) == null) {
+                        samplesChanged.set(true);
+                    }
                 });
     }
 
@@ -152,18 +168,20 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         }
 
         if (dataStore != null) {
+            dataStore.addListener(this);
+
             Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
             for (Map.Entry<String, Object> entry : executors.entrySet()) {
                 ExecutorService executor = (ExecutorService) entry.getValue();
                 if (executor instanceof ThreadPoolExecutor) {
-                    this.addExecutors(SERVER_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
+                    this.addExecutors(SERVER_THREAD_POOL_PREFIX + entry.getKey(), executor);
                 }
             }
             executors = dataStore.get(CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY);
             for (Map.Entry<String, Object> entry : executors.entrySet()) {
                 ExecutorService executor = (ExecutorService) entry.getValue();
                 if (executor instanceof ThreadPoolExecutor) {
-                    this.addExecutors(CLIENT_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
+                    this.addExecutors(CLIENT_THREAD_POOL_PREFIX + entry.getKey(), executor);
                 }
             }
 
