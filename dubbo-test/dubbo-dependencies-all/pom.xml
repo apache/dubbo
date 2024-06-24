@@ -365,11 +365,6 @@
       <artifactId>dubbo-serialization-fastjson2</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-serialization-jdk</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <!-- spring-boot -->
     <dependency>
