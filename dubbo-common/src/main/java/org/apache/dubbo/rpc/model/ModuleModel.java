@@ -188,7 +188,8 @@ public class ModuleModel extends ScopeModel {
         this.moduleEnvironment = moduleEnvironment;
     }
 
-    public ConsumerModel registerInternalConsumer(Class<?> internalService, URL url) {
+    public ConsumerModel registerInternalConsumer(
+            Class<?> internalService, URL url, ServiceDescriptor serviceDescriptor, Object proxyObject) {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setVersion(url.getVersion());
         serviceMetadata.setGroup(url.getGroup());
@@ -197,11 +198,12 @@ public class ModuleModel extends ScopeModel {
         serviceMetadata.setServiceType(internalService);
         String serviceKey = URL.buildKey(internalService.getName(), url.getGroup(), url.getVersion());
         serviceMetadata.setServiceKey(serviceKey);
-
         ConsumerModel consumerModel = new ConsumerModel(
                 serviceMetadata.getServiceKey(),
-                "jdk",
-                serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName()),
+                proxyObject,
+                serviceDescriptor == null
+                        ? serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName())
+                        : serviceDescriptor,
                 this,
                 serviceMetadata,
                 new HashMap<>(0),
@@ -210,6 +212,15 @@ public class ModuleModel extends ScopeModel {
         logger.info("Dynamically registering consumer model " + serviceKey + " into model " + this.getDesc());
         serviceRepository.registerConsumer(consumerModel);
         return consumerModel;
+    }
+
+    public ConsumerModel registerInternalConsumer(
+            Class<?> internalService, URL url, ServiceDescriptor serviceDescriptor) {
+        return registerInternalConsumer(internalService, url, serviceDescriptor, null);
+    }
+
+    public ConsumerModel registerInternalConsumer(Class<?> internalService, URL url) {
+        return registerInternalConsumer(internalService, url, null, null);
     }
 
     public boolean isLifeCycleManagedExternally() {
