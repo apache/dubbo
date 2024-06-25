@@ -277,9 +277,14 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
-        return ConcurrentHashMapUtils.computeIfAbsent(
-                metadataServiceProxies, computeKey(instance), k -> MetadataUtils.referProxy(instance)
-                        .getProxy());
+        Object internalProxy = MetadataUtils.referMetadataService(instance).getInternalProxy();
+
+        if (internalProxy instanceof MetadataService) {
+            return ConcurrentHashMapUtils.computeIfAbsent(
+                    metadataServiceProxies, computeKey(instance), k -> (MetadataService) internalProxy);
+        }
+        throw new RuntimeException("Service " + instance.getServiceName() + " at " + instance.getHost() + ":"
+                + instance.getPort() + "are using MetadataServiceV2, which is not support ");
     }
 
     private synchronized void destroyMetadataServiceProxy(ServiceInstance instance) {
