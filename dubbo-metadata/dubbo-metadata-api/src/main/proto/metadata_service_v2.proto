@@ -1,0 +1,47 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+package org.apache.dubbo.metadata;
+
+option go_package = "dubbo.apache.org/dubbo-go/v3/metadata/triple_api";
+option java_package = "org.apache.dubbo.metadata";
+option java_multiple_files = true;
+
+service MetadataServiceV2{
+    rpc GetMetadataInfo(Revision) returns (MetadataInfoV2);
+}
+
+message Revision{
+    string value = 1;
+}
+
+message MetadataInfoV2{
+    string app = 1;
+    string version = 2;
+    map<string,ServiceInfoV2> services = 3;
+}
+
+message ServiceInfoV2{
+    string name = 1;
+    string group = 2;
+    string version = 3;
+    string protocol = 4;
+    int32 port = 5;
+    string path = 6;
+    map<string,string> params = 7;
+}
