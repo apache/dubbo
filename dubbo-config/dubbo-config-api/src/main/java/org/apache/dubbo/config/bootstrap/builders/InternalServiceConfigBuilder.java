@@ -61,6 +61,7 @@ public class InternalServiceConfigBuilder<T> {
     private Class<T> interfaceClass;
     private Executor executor;
     private T ref;
+    private String version;
 
     private InternalServiceConfigBuilder(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -100,6 +101,11 @@ public class InternalServiceConfigBuilder<T> {
         }
         this.protocol = StringUtils.isNotEmpty(protocol) ? protocol : getRelatedOrDefaultProtocol();
 
+        return getThis();
+    }
+
+    public InternalServiceConfigBuilder<T> version(String version) {
+        this.version = version;
         return getThis();
     }
 
@@ -296,7 +302,12 @@ public class InternalServiceConfigBuilder<T> {
         serviceConfig.setInterface(interfaceClass);
         serviceConfig.setRef(this.ref);
         serviceConfig.setGroup(applicationConfig.getName());
-        serviceConfig.setVersion("1.0.0");
+
+        if (StringUtils.isNotEmpty(version)) {
+            serviceConfig.setVersion(version);
+        } else {
+            serviceConfig.setVersion("1.0.0");
+        }
         serviceConfig.setFilter("-default");
 
         serviceConfig.setExecutor(executor);
