@@ -147,6 +147,50 @@ public class ConditionStateRouterTestV31 {
     }
 
     @Test
+    public void compatibilityWithHigherVersion() throws Exception {
+        String config = "configVersion: v3.2\n" + "scope: service\n"
+                //                + "force: false\n"
+                //                + "runtime: true\n"
+                //                + "enabled: true\n"
+                //                + "key: shop\n"
+                //                + "conditions:\n"
+                //                + "  - from:\n"
+                //                + "      match:\n"
+                //                + "    to:\n"
+                //                + "      - match: region=$region & version=v1\n"
+                //                + "      - match: region=$region & version=v2\n"
+                //                + "        weight: 200\n"
+                //                + "      - match: region=$region & version=v3\n"
+                //                + "        weight: 300\n"
+                //                + "    force: false\n"
+                //                + "    ratio: 20\n"
+                //                + "    priority: 20\n"
+                //                + "  - from:\n"
+                //                + "      match: region=beijing & version=v1\n"
+                //                + "    to:\n"
+                //                + "      - match: env=$env & region=beijing\n"
+                //                + "    force: false\n"
+                //                + "    priority: 100\n"
+                ;
+
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"));
+        router.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("getComment");
+
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"),
+                invocation,
+                false,
+                new Holder<>());
+
+        Assertions.assertEquals(invokers.size(), result.size());
+    }
+
+    @Test
     public void testConditionRouteTrafficDisable() throws Exception {
         String config = "configVersion: v3.1\n" + "scope: service\n"
                 + "force: true\n"

@@ -66,8 +66,7 @@ public class ConditionRuleParser {
                     "Invalid condition config version number.",
                     "",
                     "Ignore this configuration. Only " + RULE_VERSION_V31 + " and below are supported in this release");
-            rule = ConditionRouterRule.parseFromMap(map);
-            rule.setValid(false);
+            rule = null;
         } else {
             //            for under v3.1
             rule = ConditionRouterRule.parseFromMap(map);
@@ -75,7 +74,10 @@ public class ConditionRuleParser {
                 rule.setValid(false);
             }
         }
-        rule.setRawRule(rawRule);
+
+        if (rule != null) {
+            rule.setRawRule(rawRule);
+        }
 
         return rule;
     }
