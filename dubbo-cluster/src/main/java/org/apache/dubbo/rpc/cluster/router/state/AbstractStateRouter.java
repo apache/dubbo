@@ -125,7 +125,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
 
         routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
         if (routeResult != invokers) {
-            routeResult = routeResult.and(invokers);
+            routeResult = invokers.clone().and(routeResult);
         }
         // check if router support call continue route by itself
         if (!supportContinueRoute()) {
