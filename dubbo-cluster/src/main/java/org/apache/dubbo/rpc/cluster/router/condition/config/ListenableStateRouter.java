@@ -129,6 +129,9 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             boolean trafficDisable = false;
             for (MultiDestConditionRouter<T> multiDestConditionRouter : multiDestConditionRouters) {
                 routeResult = multiDestConditionRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+                if (needToPrintMessage) {
+                    resultMessage.append(messageHolder.get());
+                }
                 if (invokers == routeResult) {
                     //                    not match or disable to continue next multiDestConditionRouter
                     continue;
@@ -149,11 +152,10 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         } else {
             for (AbstractStateRouter<T> router : conditionRouters) {
                 routeResult = router.route(routeResult, url, invocation, needToPrintMessage, nodeHolder);
+                if (needToPrintMessage) {
+                    resultMessage.append(messageHolder.get());
+                }
             }
-        }
-
-        if (needToPrintMessage) {
-            resultMessage.append(messageHolder.get());
         }
 
         if (needToPrintMessage) {
