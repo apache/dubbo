@@ -82,14 +82,14 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED
  *     }
  * }
  * </pre>
- *
+ * <p>
  * Or register ReferenceBean in xml:
  * <pre class="code">
  * &lt;dubbo:reference id="helloService" interface="org.apache.dubbo.config.spring.api.HelloService"/&gt;
  * &lt;!-- As GenericService --&gt;
  * &lt;dubbo:reference id="genericHelloService" interface="org.apache.dubbo.config.spring.api.HelloService" generic="true"/&gt;
  * </pre>
- *
+ * <p>
  * Step 2: Inject ReferenceBean by @Autowired
  * <pre class="code">
  * public class FooController {
@@ -100,7 +100,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED
  *     private GenericService genericHelloService;
  * }
  * </pre>
- *
  *
  * @see org.apache.dubbo.config.annotation.DubboReference
  * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
@@ -148,7 +147,7 @@ public class ReferenceBean<T>
     private MutablePropertyValues propertyValues;
 
     // actual reference config
-    private ReferenceConfig referenceConfig;
+    private volatile ReferenceConfig referenceConfig;
 
     // ReferenceBeanManager
     private ReferenceBeanManager referenceBeanManager;
@@ -184,23 +183,20 @@ public class ReferenceBean<T>
      *
      * <p></p>
      * Why we need a lazy proxy?
-     *
+     * <p>
      * <p/>
-     * When Spring searches beans by type, if Spring cannot determine the type of a factory bean, it may try to initialize it.
-     * The ReferenceBean is also a FactoryBean.
-     * <br/>
-     * (This has already been resolved by decorating the BeanDefinition: {@link DubboBeanDefinitionParser#configReferenceBean})
-     *
+     * When Spring searches beans by type, if Spring cannot determine the type of a factory bean, it may try to
+     * initialize it. The ReferenceBean is also a FactoryBean. <br/> (This has already been resolved by decorating the
+     * BeanDefinition: {@link DubboBeanDefinitionParser#configReferenceBean})
+     * <p>
      * <p/>
-     * In addition, if some ReferenceBeans are dependent on beans that are initialized very early,
-     * and dubbo config beans are not ready yet, there will be many unexpected problems if initializing the dubbo reference immediately.
-     *
+     * In addition, if some ReferenceBeans are dependent on beans that are initialized very early, and dubbo config
+     * beans are not ready yet, there will be many unexpected problems if initializing the dubbo reference immediately.
+     * <p>
      * <p/>
-     * When it is initialized, only a lazy proxy object will be created,
-     * and dubbo reference-related resources will not be initialized.
-     * <br/>
-     * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
-     *
+     * When it is initialized, only a lazy proxy object will be created, and dubbo reference-related resources will not
+     * be initialized. <br/> In this way, the influence of Spring is eliminated, and the dubbo configuration
+     * initialization is controllable.
      *
      * @see DubboConfigBeanInitializer
      * @see ReferenceBeanManager#initReferenceBean(ReferenceBean)
@@ -284,6 +280,7 @@ public class ReferenceBean<T>
 
     /**
      * The interface of this ReferenceBean, for injection purpose
+     *
      * @return
      */
     public Class<?> getInterfaceClass() {
@@ -414,7 +411,7 @@ public class ReferenceBean<T>
                     PROXY_FAILED,
                     "",
                     "",
-                    "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. "
+                    "Failed to generate proxy by Javassist failed. Fmvnallback to use JDK proxy is also failed. "
                             + "Interfaces: " + interfaces + " JDK Error.",
                     fromJdk);
             throw fromJdk;
@@ -423,15 +420,22 @@ public class ReferenceBean<T>
 
     private Object getCallProxy() throws Exception {
         if (referenceConfig == null) {
-            referenceBeanManager.initReferenceBean(this);
-            applicationContext
-                    .getBean(DubboConfigApplicationListener.class.getName(), DubboConfigApplicationListener.class)
-                    .init();
-            logger.warn(
-                    CONFIG_DUBBO_BEAN_INITIALIZER,
-                    "",
-                    "",
-                    "ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
+            synchronized (LockUtils.getSingletonMutex(applicationContext)) {
+                if (referenceConfig == null) {
+                    referenceBeanManager.initReferenceBean(this);
+                    applicationContext
+                            .getBean(
+                                    DubboConfigApplicationListener.class.getName(),
+                                    DubboConfigApplicationListener.class)
+                            .init();
+                    logger.warn(
+                            CONFIG_DUBBO_BEAN_INITIALIZER,
+                            "",
+                            "",
+                            "ReferenceBean is not ready yet, please make sure to "
+                                    + "call reference interface method after dubbo is started.");
+                }
+            }
         }
         // get reference proxy
         // Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation
