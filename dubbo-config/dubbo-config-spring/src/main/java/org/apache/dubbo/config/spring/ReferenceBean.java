@@ -148,7 +148,7 @@ public class ReferenceBean<T>
     private MutablePropertyValues propertyValues;
 
     // actual reference config
-    private ReferenceConfig referenceConfig;
+    private volatile ReferenceConfig referenceConfig;
 
     // ReferenceBeanManager
     private ReferenceBeanManager referenceBeanManager;
