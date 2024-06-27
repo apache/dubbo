@@ -206,6 +206,23 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         return handler;
     }
 
+    @Override
+    public boolean exists(String path, String method) {
+        List<Match<Registration>> matches = new ArrayList<>();
+        lock.readLock().lock();
+        try {
+            tree.match(path, matches);
+        } finally {
+            lock.readLock().unlock();
+        }
+        for (int i = 0, size = matches.size(); i < size; i++) {
+            if (matches.get(i).getValue().mapping.matchMethod(method)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static final class Registration {
         RequestMapping mapping;
         HandlerMeta meta;

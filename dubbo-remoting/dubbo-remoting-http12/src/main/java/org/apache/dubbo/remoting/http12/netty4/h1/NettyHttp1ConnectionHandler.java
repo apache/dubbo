@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.h1.Http1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
@@ -33,12 +34,16 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
 
     private final Http1ServerTransportListenerFactory http1ServerTransportListenerFactory;
 
+    private final TripleConfig tripleConfig;
+
     public NettyHttp1ConnectionHandler(
             URL url,
             FrameworkModel frameworkModel,
+            TripleConfig tripleConfig,
             Http1ServerTransportListenerFactory http1ServerTransportListenerFactory) {
         this.url = url;
         this.frameworkModel = frameworkModel;
+        this.tripleConfig = tripleConfig;
         this.http1ServerTransportListenerFactory = http1ServerTransportListenerFactory;
     }
 
@@ -47,8 +52,9 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
      */
     protected void channelRead0(ChannelHandlerContext ctx, Http1Request http1Request) {
         Http1ServerTransportListener http1TransportListener = http1ServerTransportListenerFactory.newInstance(
-                new NettyHttp1Channel(ctx.channel()), url, frameworkModel);
+                new NettyHttp1Channel(ctx.channel(), tripleConfig), url, frameworkModel);
         http1TransportListener.onMetadata(http1Request);
         http1TransportListener.onData(http1Request);
+        ctx.channel().closeFuture().addListener(future -> http1TransportListener.close());
     }
 }

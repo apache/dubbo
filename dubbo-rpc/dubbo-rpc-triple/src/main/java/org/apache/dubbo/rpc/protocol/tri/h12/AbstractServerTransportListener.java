@@ -232,8 +232,15 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         // customizer RpcInvocation
         headerFilters.forEach(f -> f.invoke(invoker, inv));
 
+        initializeAltSvc(url);
+
         return onBuildRpcInvocationCompletion(inv);
     }
+
+    /**
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Alt-Svc">Alt-Svc</a>
+     */
+    protected void initializeAltSvc(URL url) {}
 
     protected RpcInvocation onBuildRpcInvocationCompletion(RpcInvocation invocation) {
         String timeoutString = httpMetadata.headers().getFirst(TripleHeaderEnum.SERVICE_TIMEOUT.getHeader());

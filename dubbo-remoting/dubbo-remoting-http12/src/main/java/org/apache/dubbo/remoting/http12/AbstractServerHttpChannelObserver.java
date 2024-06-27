@@ -33,7 +33,13 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     private HttpMessageEncoder responseEncoder;
 
+    private String altSvc;
+
     private boolean headerSent;
+
+    private boolean completed;
+
+    private boolean closed;
 
     protected AbstractServerHttpChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
@@ -59,6 +65,10 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         this.errorResponseCustomizer = errorResponseCustomizer;
     }
 
+    public void setAltSvc(String altSvc) {
+        this.altSvc = altSvc;
+    }
+
     public HttpMessageEncoder getResponseEncoder() {
         return responseEncoder;
     }
@@ -69,6 +79,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public final void onNext(Object data) {
+        if (closed) {
+            return;
+        }
         try {
             doOnNext(data);
         } catch (Throwable e) {
@@ -85,9 +98,12 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public final void onError(Throwable throwable) {
+        if (closed) {
+            return;
+        }
         if (throwable instanceof HttpResultPayloadException) {
             onNext(((HttpResultPayloadException) throwable).getResult());
-            doOnCompleted(null);
+            onCompleted(null);
             return;
         }
         try {
@@ -95,7 +111,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         } catch (Throwable ex) {
             throwable = new EncodeException(ex);
         } finally {
-            doOnCompleted(throwable);
+            onCompleted(throwable);
         }
     }
 
@@ -110,13 +126,28 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
 
     @Override
     public final void onCompleted() {
-        doOnCompleted(null);
+        if (closed) {
+            return;
+        }
+        onCompleted(null);
+    }
+
+    private void onCompleted(Throwable throwable) {
+        if (!completed) {
+            doOnCompleted(throwable);
+            completed = true;
+        }
     }
 
     protected void doOnCompleted(Throwable throwable) {
         HttpMetadata httpMetadata = encodeTrailers(throwable);
         if (httpMetadata == null) {
             return;
+        }
+        if (!headerSent) {
+            HttpHeaders headers = httpMetadata.headers();
+            headers.set(HttpHeaderNames.STATUS.getName(), resolveStatusCode(throwable));
+            headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), responseEncoder.contentType());
         }
         trailersCustomizer.accept(httpMetadata.headers(), throwable);
         getHttpChannel().writeHeader(httpMetadata);
@@ -183,6 +214,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         HttpHeaders headers = httpMetadata.headers();
         headers.set(HttpHeaderNames.STATUS.getName(), statusCode);
         headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), responseEncoder.contentType());
+        if (altSvc != null) {
+            headers.set(HttpHeaderNames.ALT_SVC.getName(), altSvc);
+        }
         if (data instanceof HttpResult) {
             HttpResult<?> result = (HttpResult<?>) data;
             if (result.getHeaders() != null) {
@@ -197,5 +231,14 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     protected final void sendHeader(HttpMetadata httpMetadata) {
         getHttpChannel().writeHeader(httpMetadata);
         headerSent = true;
+    }
+
+    @Override
+    public void close() throws Exception {
+        closed();
+    }
+
+    protected final void closed() {
+        closed = true;
     }
 }

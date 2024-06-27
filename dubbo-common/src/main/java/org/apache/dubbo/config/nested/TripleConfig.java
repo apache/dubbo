@@ -100,6 +100,118 @@ public class TripleConfig implements Serializable {
      */
     private Integer maxHeaderListSize;
 
+    /**
+     * Enable http3 support
+     * <p>The default value is false.
+     */
+    private Boolean enableHttp3;
+
+    /**
+     * See <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_data">set_initial_max_data</a>.
+     * <p>The default value is 8MiB.
+     */
+    private Integer http3InitialMaxData;
+
+    /**
+     * If configured this will enable <a href="https://tools.ietf.org/html/draft-ietf-quic-datagram-01">Datagram support.</a>
+     */
+    private Integer http3RecvQueueLen;
+
+    /**
+     * If configured this will enable <a href="https://tools.ietf.org/html/draft-ietf-quic-datagram-01">Datagram support.</a>
+     */
+    private Integer http3SendQueueLen;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_stream_data_bidi_local">set_initial_max_stream_data_bidi_local</a>.
+     * <p>The default value is 1MiB.
+     */
+    private Integer http3InitialMaxStreamDataBidiLocal;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_stream_data_bidi_remote">set_initial_max_stream_data_bidi_remote</a>.
+     * <p>The default value is 1MiB.
+     */
+    private Integer http3InitialMaxStreamDataBidiRemote;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_stream_data_uni">set_initial_max_stream_data_uni</a>.
+     * <p>The default value is 0.
+     */
+    private Integer http3InitialMaxStreamDataUni;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_streams_bidi">set_initial_max_streams_bidi</a>.
+     * <p>The default value is 1B(2^30).
+     */
+    private Long http3InitialMaxStreamsBidi;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_streams_uni">set_initial_max_streams_uni</a>.
+     * <p>
+     * <p>The default value is 1B(2^30).
+     */
+    private Long http3InitialMaxStreamsUni;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_ack_delay_exponent">set_ack_delay_exponent</a>.
+     * <p>The default value is 3.
+     */
+    private Integer http3MaxAckDelayExponent;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_max_ack_delay">set_max_ack_delay</a>.
+     * <p>The default value is 25 milliseconds.
+     */
+    private Integer http3MaxAckDelay;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_disable_active_migration">set_disable_active_migration</a>.
+     * <p>The default value is {@code false}.
+     */
+    private Boolean http3DisableActiveMigration;
+
+    /**
+     * See
+     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.enable_hystart">enable_hystart</a>.
+     * <p>The default value is {@code true}.
+     */
+    private Boolean http3EnableHystart;
+
+    /**
+     * Sets the congestion control algorithm to use.
+     * <p>Supported algorithms are {@code "RENO"} or {@code "CUBIC"} or {@code "BBR"}.
+     * <p>The default value is {@code "CUBIC"}.
+     */
+    private String http3CcAlgorithm;
+
+    /**
+     * Enable servlet support, requests are transport through the servlet container,
+     * which only supports unary calls due to protocol limitations
+     * <p>The default value is false.
+     */
+    private Boolean enableServlet;
+
+    /**
+     * The URL patterns that the servlet filter will be registered for.
+     * <p>The default value is '/*'.
+     */
+    private String[] servletFilterUrlPatterns;
+
+    /**
+     * The order of the servlet filter.
+     * <p>The default value is -1000000.
+     */
+    private Integer servletFilterOrder;
+
     public Integer getMaxBodySize() {
         return maxBodySize;
     }
@@ -194,6 +306,142 @@ public class TripleConfig implements Serializable {
 
     public void setMaxHeaderListSize(Integer maxHeaderListSize) {
         this.maxHeaderListSize = maxHeaderListSize;
+    }
+
+    public Boolean getEnableHttp3() {
+        return enableHttp3;
+    }
+
+    public void setEnableHttp3(Boolean enableHttp3) {
+        this.enableHttp3 = enableHttp3;
+    }
+
+    public Integer getHttp3InitialMaxData() {
+        return http3InitialMaxData;
+    }
+
+    public void setHttp3InitialMaxData(Integer http3InitialMaxData) {
+        this.http3InitialMaxData = http3InitialMaxData;
+    }
+
+    public Integer getHttp3RecvQueueLen() {
+        return http3RecvQueueLen;
+    }
+
+    public void setHttp3RecvQueueLen(Integer http3RecvQueueLen) {
+        this.http3RecvQueueLen = http3RecvQueueLen;
+    }
+
+    public Integer getHttp3SendQueueLen() {
+        return http3SendQueueLen;
+    }
+
+    public void setHttp3SendQueueLen(Integer http3SendQueueLen) {
+        this.http3SendQueueLen = http3SendQueueLen;
+    }
+
+    public Integer getHttp3InitialMaxStreamDataBidiLocal() {
+        return http3InitialMaxStreamDataBidiLocal;
+    }
+
+    public void setHttp3InitialMaxStreamDataBidiLocal(Integer http3InitialMaxStreamDataBidiLocal) {
+        this.http3InitialMaxStreamDataBidiLocal = http3InitialMaxStreamDataBidiLocal;
+    }
+
+    public Integer getHttp3InitialMaxStreamDataBidiRemote() {
+        return http3InitialMaxStreamDataBidiRemote;
+    }
+
+    public void setHttp3InitialMaxStreamDataBidiRemote(Integer http3InitialMaxStreamDataBidiRemote) {
+        this.http3InitialMaxStreamDataBidiRemote = http3InitialMaxStreamDataBidiRemote;
+    }
+
+    public Integer getHttp3InitialMaxStreamDataUni() {
+        return http3InitialMaxStreamDataUni;
+    }
+
+    public void setHttp3InitialMaxStreamDataUni(Integer http3InitialMaxStreamDataUni) {
+        this.http3InitialMaxStreamDataUni = http3InitialMaxStreamDataUni;
+    }
+
+    public Long getHttp3InitialMaxStreamsBidi() {
+        return http3InitialMaxStreamsBidi;
+    }
+
+    public void setHttp3InitialMaxStreamsBidi(Long http3InitialMaxStreamsBidi) {
+        this.http3InitialMaxStreamsBidi = http3InitialMaxStreamsBidi;
+    }
+
+    public Long getHttp3InitialMaxStreamsUni() {
+        return http3InitialMaxStreamsUni;
+    }
+
+    public void setHttp3InitialMaxStreamsUni(Long http3InitialMaxStreamsUni) {
+        this.http3InitialMaxStreamsUni = http3InitialMaxStreamsUni;
+    }
+
+    public Integer getHttp3MaxAckDelayExponent() {
+        return http3MaxAckDelayExponent;
+    }
+
+    public void setHttp3MaxAckDelayExponent(Integer http3MaxAckDelayExponent) {
+        this.http3MaxAckDelayExponent = http3MaxAckDelayExponent;
+    }
+
+    public Integer getHttp3MaxAckDelay() {
+        return http3MaxAckDelay;
+    }
+
+    public void setHttp3MaxAckDelay(Integer http3MaxAckDelay) {
+        this.http3MaxAckDelay = http3MaxAckDelay;
+    }
+
+    public Boolean getHttp3DisableActiveMigration() {
+        return http3DisableActiveMigration;
+    }
+
+    public void setHttp3DisableActiveMigration(Boolean http3DisableActiveMigration) {
+        this.http3DisableActiveMigration = http3DisableActiveMigration;
+    }
+
+    public Boolean getHttp3EnableHystart() {
+        return http3EnableHystart;
+    }
+
+    public void setHttp3EnableHystart(Boolean http3EnableHystart) {
+        this.http3EnableHystart = http3EnableHystart;
+    }
+
+    public String getHttp3CcAlgorithm() {
+        return http3CcAlgorithm;
+    }
+
+    public void setHttp3CcAlgorithm(String http3CcAlgorithm) {
+        this.http3CcAlgorithm = http3CcAlgorithm;
+    }
+
+    public Boolean getEnableServlet() {
+        return enableServlet;
+    }
+
+    public void setEnableServlet(Boolean enableServlet) {
+        this.enableServlet = enableServlet;
+    }
+
+    public String[] getServletFilterUrlPatterns() {
+        return servletFilterUrlPatterns;
+    }
+
+    public void setServletFilterUrlPatterns(String[] servletFilterUrlPatterns) {
+        this.servletFilterUrlPatterns = servletFilterUrlPatterns;
+    }
+
+    public Integer getServletFilterOrder() {
+        return servletFilterOrder;
+    }
+
+    public void setServletFilterOrder(Integer servletFilterOrder) {
+        this.servletFilterOrder = servletFilterOrder;
     }
 
     public void checkDefault() {

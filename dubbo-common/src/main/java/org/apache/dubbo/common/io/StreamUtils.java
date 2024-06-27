@@ -27,7 +27,10 @@ import java.nio.charset.StandardCharsets;
 /**
  * Stream utils.
  */
-public class StreamUtils {
+public final class StreamUtils {
+
+    public static final ByteArrayInputStream EMPTY = new ByteArrayInputStream(new byte[0]);
+
     private StreamUtils() {}
 
     public static InputStream limitedInputStream(final InputStream is, final int limit) throws IOException {
@@ -258,7 +261,7 @@ public class StreamUtils {
         if (in.getClass() == ByteArrayInputStream.class) {
             return readBytes((ByteArrayInputStream) in);
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
         byte[] buffer = new byte[4096];
         int bytesRead;
         while ((bytesRead = in.read(buffer)) != -1) {

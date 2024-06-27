@@ -31,5 +31,7 @@ public interface RequestMappingRegistry {
 
     HandlerMeta lookup(HttpRequest request);
 
+    boolean exists(String path, String method);
+
     void destroy();
 }

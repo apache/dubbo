@@ -24,7 +24,9 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
 
 import java.io.ByteArrayInputStream;
@@ -112,6 +114,8 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
             }
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper =
                     TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(bos.toByteArray());
+            final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+            CodecSupport.checkSerialization(serializeType, url);
             setSerializeType(wrapper.getSerializeType());
             Object[] ret = new Object[wrapper.getArgs().size()];
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
@@ -139,5 +143,12 @@ public class WrapperHttpMessageCodec implements HttpMessageCodec {
         outputStream.write(((length >> 16) & 0xFF));
         outputStream.write(((length >> 8) & 0xFF));
         outputStream.write((length & 0xFF));
+    }
+
+    private static String convertHessianFromWrapper(String serializeType) {
+        if (TripleConstant.HESSIAN4.equals(serializeType)) {
+            return TripleConstant.HESSIAN2;
+        }
+        return serializeType;
     }
 }

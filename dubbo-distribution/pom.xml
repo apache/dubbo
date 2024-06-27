@@ -115,5 +115,11 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>skip-spotless</id>
+      <properties>
+        <spotless.skip>true</spotless.skip>
+      </properties>
+    </profile>
   </profiles>
 </project>

@@ -23,9 +23,8 @@ import org.apache.dubbo.common.extension.SPI;
  * 2019/12/30
  * it will be instead of CommonConfigPostProcessor
  */
-@Deprecated
 @SPI(scope = ExtensionScope.MODULE)
-public interface ConfigPostProcessor extends CommonConfigPostProcessor {
+public interface ConfigPostProcessor {
 
     default void postProcessReferConfig(ReferenceConfig referenceConfig) {}
 

@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-/**
- * it  will be call when reference or service config refresh
- */
-@SPI(scope = ExtensionScope.MODULE)
-public interface CommonConfigPostProcessor {
+import java.net.InetSocketAddress;
 
-    default void postProcessReferConfig(ReferenceConfigBase referenceConfig) {}
+import io.netty.channel.Channel;
 
-    default void postProcessServiceConfig(ServiceConfigBase serviceConfig) {}
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ChannelAddressAccessor {
+
+    String getProtocol();
+
+    InetSocketAddress getRemoteAddress(Channel channel);
+
+    InetSocketAddress getLocalAddress(Channel channel);
 }
