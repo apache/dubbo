@@ -104,7 +104,7 @@ class AbstractDynamicConfigurationTest {
             }
         };
 
-        ThreadPoolExecutor threadPoolExecutor = configuration.getWorkersThreadPool();
+        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) configuration.getWorkersThreadPool();
         ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
 
         Thread thread = threadFactory.newThread(() -> {});
