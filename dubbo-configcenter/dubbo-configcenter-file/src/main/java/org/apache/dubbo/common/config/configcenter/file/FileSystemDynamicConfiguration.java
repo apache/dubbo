@@ -553,7 +553,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     }
 
     protected ThreadPoolExecutor getWorkersThreadPool() {
-        return super.getWorkersThreadPool();
+        return (ThreadPoolExecutor) super.getWorkersThreadPool();
     }
 
     private <V> V executeMutually(final Object mutex, Callable<V> callable) {
