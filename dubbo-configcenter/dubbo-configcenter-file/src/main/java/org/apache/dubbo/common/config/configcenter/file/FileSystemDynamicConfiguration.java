@@ -53,6 +53,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -552,8 +553,8 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
         return WATCH_EVENTS_LOOP_THREAD_POOL;
     }
 
-    protected ThreadPoolExecutor getWorkersThreadPool() {
-        return (ThreadPoolExecutor) super.getWorkersThreadPool();
+    protected ExecutorService getWorkersThreadPool() {
+        return super.getWorkersThreadPool();
     }
 
     private <V> V executeMutually(final Object mutex, Callable<V> callable) {
