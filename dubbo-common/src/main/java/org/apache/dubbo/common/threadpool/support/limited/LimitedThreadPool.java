@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.threadpool.support.limited;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
@@ -26,7 +26,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
@@ -62,13 +61,13 @@ public class LimitedThreadPool implements ThreadPool {
             blockingQueue = new LinkedBlockingQueue<>(queues);
         }
 
-        return new ThreadPoolExecutor(
+        return ExecutorsUtil.newExecutorService(
                 cores,
                 threads,
                 Long.MAX_VALUE,
                 TimeUnit.MILLISECONDS,
                 blockingQueue,
-                new NamedInternalThreadFactory(name, true),
+                name,
                 new AbortPolicyWithReport(name, url));
     }
 }

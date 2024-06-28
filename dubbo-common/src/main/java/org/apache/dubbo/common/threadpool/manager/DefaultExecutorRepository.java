@@ -22,10 +22,10 @@ import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -42,9 +42,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -298,8 +299,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 int coreSize = getExportThreadNum();
                 String applicationName = applicationModel.tryGetApplicationName();
                 applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
-                serviceExportExecutor = Executors.newScheduledThreadPool(
-                        coreSize, new NamedThreadFactory("Dubbo-" + applicationName + "-service-export", true));
+                serviceExportExecutor = ExecutorsUtil.newScheduledExecutorService(
+                        coreSize, "Dubbo-" + applicationName + "-service-export");
             }
         }
         return serviceExportExecutor;
@@ -327,8 +328,13 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 int coreSize = getReferThreadNum();
                 String applicationName = applicationModel.tryGetApplicationName();
                 applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
-                serviceReferExecutor = Executors.newFixedThreadPool(
-                        coreSize, new NamedThreadFactory("Dubbo-" + applicationName + "-service-refer", true));
+                serviceReferExecutor = ExecutorsUtil.newExecutorService(
+                        coreSize,
+                        coreSize,
+                        0L,
+                        TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<>(),
+                        "Dubbo-" + applicationName + "-service-refer");
             }
         }
         return serviceReferExecutor;

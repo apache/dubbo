@@ -22,14 +22,13 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRUCache;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -69,8 +68,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             }
             // executorService can be empty if FileCacheStore fails
             if (executorService == null) {
-                this.executorService = Executors.newSingleThreadScheduledExecutor(
-                        new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
+                this.executorService = ExecutorsUtil.newScheduledExecutorService(1, "Dubbo-cache-refreshing-scheduler");
             } else {
                 this.executorService = executorService;
             }

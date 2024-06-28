@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
 
@@ -35,8 +35,7 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
 
     private final int heartbeat;
 
-    HeartbeatTimerTask(
-            ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long heartbeatTick, int heartbeat) {
+    HeartbeatTimerTask(ChannelProvider channelProvider, Timer hashedWheelTimer, Long heartbeatTick, int heartbeat) {
         super(channelProvider, hashedWheelTimer, heartbeatTick);
         this.heartbeat = heartbeat;
     }

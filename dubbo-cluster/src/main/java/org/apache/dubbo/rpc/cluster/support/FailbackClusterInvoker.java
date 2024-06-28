@@ -19,11 +19,10 @@ package org.apache.dubbo.rpc.cluster.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -91,12 +90,8 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (failTimer == null) {
             synchronized (this) {
                 if (failTimer == null) {
-                    failTimer = new HashedWheelTimer(
-                            new NamedThreadFactory("failback-cluster-timer", true),
-                            1,
-                            TimeUnit.SECONDS,
-                            32,
-                            failbackTasks);
+                    failTimer =
+                            ExecutorsUtil.newTimer("failback-cluster-timer", 1, TimeUnit.SECONDS, 32, failbackTasks);
                 }
             }
         }

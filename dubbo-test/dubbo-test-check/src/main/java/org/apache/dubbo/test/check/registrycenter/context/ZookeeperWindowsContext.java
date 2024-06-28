@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.test.check.registrycenter.context;
 
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,13 +35,13 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
     /**
      * The default executor service to manage the lifecycle of zookeeper.
      */
-    private final ExecutorService DEFAULT_EXECUTOR_SERVICE = new ThreadPoolExecutor(
+    private final ExecutorService DEFAULT_EXECUTOR_SERVICE = ExecutorsUtil.newExecutorService(
             2,
             2,
             0,
             TimeUnit.MILLISECONDS,
             new SynchronousQueue<>(),
-            new NamedInternalThreadFactory("mocked-zookeeper", true),
+            "mocked-zookeeper",
             new ThreadPoolExecutor.AbortPolicy());
 
     /**

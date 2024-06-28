@@ -23,12 +23,12 @@ import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -160,11 +160,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     protected ProxyFactory proxyFactory;
 
     private ConcurrentMap<URL, ReExportTask> reExportFailedTasks = new ConcurrentHashMap<>();
-    private HashedWheelTimer retryTimer = new HashedWheelTimer(
-            new NamedThreadFactory("DubboReexportTimer", true),
-            DEFAULT_REGISTRY_RETRY_PERIOD,
-            TimeUnit.MILLISECONDS,
-            128);
+    private final Timer retryTimer =
+            ExecutorsUtil.newTimer("DubboReexportTimer", DEFAULT_REGISTRY_RETRY_PERIOD, TimeUnit.MILLISECONDS, 128);
     private FrameworkModel frameworkModel;
     private ExporterFactory exporterFactory;
 

@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.remoting.Channel;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
@@ -33,8 +33,7 @@ public class CloseTimerTask extends AbstractTimerTask {
 
     private final int closeTimeout;
 
-    public CloseTimerTask(
-            ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long tick, int closeTimeout) {
+    public CloseTimerTask(ChannelProvider channelProvider, Timer hashedWheelTimer, Long tick, int closeTimeout) {
         super(channelProvider, hashedWheelTimer, tick);
         this.closeTimeout = closeTimeout;
     }
