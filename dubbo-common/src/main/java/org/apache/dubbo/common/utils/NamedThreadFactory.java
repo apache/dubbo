@@ -54,6 +54,7 @@ public class NamedThreadFactory implements ThreadFactory {
         String name = mPrefix + mThreadNum.getAndIncrement();
         Thread ret = new Thread(mGroup, runnable, name, 0);
         ret.setDaemon(mDaemon);
+        ret.setUncaughtExceptionHandler(DubboUncaughtExceptionHandler.getInstance());
         return ret;
     }
 
