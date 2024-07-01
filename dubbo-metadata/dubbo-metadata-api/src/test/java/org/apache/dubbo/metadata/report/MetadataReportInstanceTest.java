@@ -22,8 +22,6 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -40,11 +38,9 @@ import static org.mockito.Mockito.when;
 class MetadataReportInstanceTest {
     private MetadataReportInstance metadataReportInstance;
     private MetadataReportConfig metadataReportConfig;
-    private MetadataReportConfig nacosMetadataReportConfig;
     private ConfigManager configManager;
 
     private final String registryId = "9103";
-    private final String nacosRegistryId = "9104";
 
     @BeforeEach
     public void setUp() {
@@ -67,15 +63,6 @@ class MetadataReportInstanceTest {
         when(applicationModel.getApplicationConfigManager().getApplicationOrElseThrow())
                 .thenReturn(new ApplicationConfig("test"));
         when(applicationModel.getCurrentConfig()).thenReturn(new ApplicationConfig("test"));
-
-
-        URL nacosUrl = URL.valueOf("metadata://127.0.0.1:20880/TestService?version=1.0.0&metadata=JTest&namespace=dubbo_nacos");
-        nacosMetadataReportConfig = mock(MetadataReportConfig.class);
-        when(nacosMetadataReportConfig.toUrl()).thenReturn(nacosUrl);
-        when(nacosMetadataReportConfig.getRegistry()).thenReturn(nacosRegistryId);
-        when(nacosMetadataReportConfig.getApplicationModel()).thenReturn(applicationModel);
-        when(nacosMetadataReportConfig.getScopeModel()).thenReturn(applicationModel);
-
     }
 
     @Test
@@ -84,7 +71,7 @@ class MetadataReportInstanceTest {
                 metadataReportInstance.getMetadataReport(registryId), "the metadata report was not initialized.");
         assertThat(metadataReportInstance.getMetadataReports(true), Matchers.anEmptyMap());
 
-        metadataReportInstance.init(Arrays.asList(metadataReportConfig,nacosMetadataReportConfig));
+        metadataReportInstance.init(Collections.singletonList(metadataReportConfig));
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryId);
         Assertions.assertNotNull(metadataReport);
 
@@ -92,15 +79,10 @@ class MetadataReportInstanceTest {
         Assertions.assertEquals(metadataReport, metadataReport2);
 
         Map<String, MetadataReport> metadataReports = metadataReportInstance.getMetadataReports(true);
-        Assertions.assertEquals(metadataReports.size(), 2);
+        Assertions.assertEquals(metadataReports.size(), 1);
         Assertions.assertEquals(metadataReports.get(registryId), metadataReport);
 
         Assertions.assertEquals(metadataReportConfig.getUsername(), "username");
         Assertions.assertEquals(metadataReportConfig.getPassword(), "password");
-
-        MetadataReport nacosMetadataReport = metadataReportInstance.getMetadataReport(nacosRegistryId);
-        Assertions.assertNotNull(nacosMetadataReport);
-        Assertions.assertNotEquals(nacosMetadataReport,metadataReport);
-
     }
 }

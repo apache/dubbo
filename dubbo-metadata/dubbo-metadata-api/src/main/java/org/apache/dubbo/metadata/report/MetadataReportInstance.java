@@ -63,8 +63,6 @@ public class MetadataReportInstance implements Disposable {
     private final ApplicationModel applicationModel;
     private final NopMetadataReport nopMetadataReport;
 
-    private List<MetadataReportConfig> metadataReportConfigs;
-
     public MetadataReportInstance(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.nopMetadataReport = new NopMetadataReport();
@@ -82,8 +80,6 @@ public class MetadataReportInstance implements Disposable {
         if (metadataType == null) {
             this.metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         }
-
-        this.metadataReportConfigs = metadataReportConfigs;
 
         MetadataReportFactory metadataReportFactory =
                 applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
@@ -120,6 +116,9 @@ public class MetadataReportInstance implements Disposable {
     private String getRelatedRegistryId(MetadataReportConfig config, URL url) {
         String relatedRegistryId = config.getRegistry();
         if (isEmpty(relatedRegistryId)) {
+            relatedRegistryId = config.getId();
+        }
+        if (isEmpty(relatedRegistryId)) {
             relatedRegistryId = DEFAULT_KEY;
         }
         String namespace = url.getParameter(NAMESPACE_KEY);
@@ -129,26 +128,12 @@ public class MetadataReportInstance implements Disposable {
         return relatedRegistryId;
     }
 
-    private String getRelatedRegistryId(String registry) {
-        if (metadataReportConfigs != null && !metadataReportConfigs.isEmpty()
-                && StringUtils.isNotEmpty(registry)) {
-            for (MetadataReportConfig metadataReportConfig : this.metadataReportConfigs) {
-                if (registry.equals(metadataReportConfig.getRegistry())
-                        || registry.equals(metadataReportConfig.getId())) {
-                    return getRelatedRegistryId(metadataReportConfig, metadataReportConfig.toUrl());
-                }
-            }
-        }
-        return registry;
-    }
-
     public Map<String, MetadataReport> getMetadataReports(boolean checked) {
         return metadataReports;
     }
 
     public MetadataReport getMetadataReport(String registryKey) {
-        String relatedRegistryId = getRelatedRegistryId(registryKey);
-        MetadataReport metadataReport = metadataReports.get(relatedRegistryId);
+        MetadataReport metadataReport = metadataReports.get(registryKey);
         if (metadataReport == null && metadataReports.size() > 0) {
             metadataReport = metadataReports.values().iterator().next();
         }
