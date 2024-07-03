@@ -30,8 +30,6 @@ import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 
-import com.alibaba.spring.beans.factory.annotation.EnableConfigurationBeanBinding;
-import com.alibaba.spring.beans.factory.annotation.EnableConfigurationBeanBindings;
 import org.springframework.context.annotation.Configuration;
 
 /**
