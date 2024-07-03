@@ -17,6 +17,7 @@
 package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
+import org.apache.dubbo.rpc.protocol.tri.javax.websocket.TripleWebSocketFilter;
 import org.apache.dubbo.rpc.protocol.tri.servlet.TripleFilter;
 
 import javax.servlet.Filter;
@@ -51,6 +52,26 @@ public class DubboTripleAutoConfiguration {
             ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleFilter> registrationBean = new FilterRegistrationBean<>();
             registrationBean.setFilter(new TripleFilter());
+            registrationBean.addUrlPatterns(urlPatterns);
+            registrationBean.setOrder(order);
+            return registrationBean;
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(Filter.class)
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnProperty(prefix = PREFIX, name = "enable-websocket")
+    public static class TripleWebSocketConfiguration {
+
+        @Bean
+        public FilterRegistrationBean<TripleWebSocketFilter> tripleWebSocketFilter(
+                @Value("${" + PREFIX + ".websocket-filter-url-patterns:/*}") String[] urlPatterns,
+                @Value("${" + PREFIX + ".websocket-filter-order:-1000000}") int order,
+                @Value("${server.port:8080}") int serverPort) {
+            ServletExchanger.bindServerPort(serverPort);
+            FilterRegistrationBean<TripleWebSocketFilter> registrationBean = new FilterRegistrationBean<>();
+            registrationBean.setFilter(new TripleWebSocketFilter());
             registrationBean.addUrlPatterns(urlPatterns);
             registrationBean.setOrder(order);
             return registrationBean;

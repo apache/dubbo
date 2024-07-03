@@ -19,23 +19,14 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-parent</artifactId>
+    <artifactId>dubbo-remoting</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-remoting</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>dubbo-remoting-websocket</artifactId>
+  <packaging>jar</packaging>
   <name>${project.artifactId}</name>
-  <description>The remoting module of dubbo project</description>
-  <modules>
-    <module>dubbo-remoting-api</module>
-    <module>dubbo-remoting-netty</module>
-    <module>dubbo-remoting-zookeeper-curator5</module>
-    <module>dubbo-remoting-netty4</module>
-    <module>dubbo-remoting-http12</module>
-    <module>dubbo-remoting-http3</module>
-    <module>dubbo-remoting-websocket</module>
-  </modules>
+  <description>The websocket remoting module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
@@ -43,9 +34,8 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-test-check</artifactId>
+      <artifactId>dubbo-remoting-http12</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

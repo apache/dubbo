@@ -176,9 +176,10 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     }
 
     protected final String resolveStatusCode(Throwable throwable) {
-        return throwable instanceof HttpStatusException
-                ? String.valueOf(((HttpStatusException) throwable).getStatusCode())
-                : HttpStatus.INTERNAL_SERVER_ERROR.getStatusString();
+        if (throwable instanceof HttpStatusException) {
+            return String.valueOf(((HttpStatusException) throwable).getStatusCode());
+        }
+        return throwable != null ? HttpStatus.INTERNAL_SERVER_ERROR.getStatusString() : HttpStatus.OK.getStatusString();
     }
 
     protected final ErrorResponse buildErrorResponse(String statusCode, Throwable throwable) {

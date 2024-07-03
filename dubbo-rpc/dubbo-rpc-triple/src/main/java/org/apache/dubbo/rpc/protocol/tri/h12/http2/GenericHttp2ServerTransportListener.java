@@ -145,17 +145,17 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         serverChannelObserver.setCancellationContext(cancellationContext);
     }
 
-    private UnaryServerCallListener startUnary(
+    protected UnaryServerCallListener startUnary(
             RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
         return new UnaryServerCallListener(invocation, invoker, responseObserver);
     }
 
-    private ServerStreamServerCallListener startServerStreaming(
+    protected ServerStreamServerCallListener startServerStreaming(
             RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
         return new ServerStreamServerCallListener(invocation, invoker, responseObserver);
     }
 
-    private BiStreamServerCallListener startBiStreaming(
+    protected BiStreamServerCallListener startBiStreaming(
             RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
         return new BiStreamServerCallListener(invocation, invoker, responseObserver);
     }

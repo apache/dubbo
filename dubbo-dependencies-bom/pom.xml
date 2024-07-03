@@ -110,6 +110,7 @@
     <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
     <servlet_version>3.1.0</servlet_version>
     <servlet6_version>6.1.0</servlet6_version>
+    <jakart_websocket_version>2.2.0</jakart_websocket_version>
     <jetty_version>9.4.54.v20240208</jetty_version>
     <validation_new_version>3.1.0</validation_new_version>
     <validation_version>1.1.0.Final</validation_version>
@@ -417,6 +418,18 @@
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>${servlet6_version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.websocket</groupId>
+        <artifactId>jakarta.websocket-api</artifactId>
+        <version>${jakart_websocket_version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.websocket</groupId>
+        <artifactId>jakarta.websocket-client-api</artifactId>
+        <version>${jakart_websocket_version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>

@@ -99,6 +99,8 @@ public interface Constants {
 
     String HTTP3_KEY = "http3";
 
+    String TRIPLE_SERVLET_KEY = "triple.servlet";
+
     String H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
     String H2_SETTINGS_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
     String H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";

@@ -76,6 +76,7 @@ dubbo-remoting
 dubbo-remoting-api
 dubbo-remoting-http12
 dubbo-remoting-http3
+dubbo-remoting-websocket
 dubbo-remoting-netty
 dubbo-remoting-netty4
 dubbo-remoting-zookeeper-curator5
@@ -119,3 +120,4 @@ dubbo-rest-jaxrs
 dubbo-rest-servlet
 dubbo-rest-spring
 dubbo-triple-servlet
+dubbo-triple-websocket
