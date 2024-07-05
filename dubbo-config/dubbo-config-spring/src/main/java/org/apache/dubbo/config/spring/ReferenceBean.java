@@ -148,7 +148,7 @@ public class ReferenceBean<T>
     private MutablePropertyValues propertyValues;
 
     // actual reference config
-    private ReferenceConfig referenceConfig;
+    private volatile ReferenceConfig referenceConfig;
 
     // ReferenceBeanManager
     private ReferenceBeanManager referenceBeanManager;
@@ -423,15 +423,22 @@ public class ReferenceBean<T>
 
     private Object getCallProxy() throws Exception {
         if (referenceConfig == null) {
-            referenceBeanManager.initReferenceBean(this);
-            applicationContext
-                    .getBean(DubboConfigApplicationListener.class.getName(), DubboConfigApplicationListener.class)
-                    .init();
-            logger.warn(
-                    CONFIG_DUBBO_BEAN_INITIALIZER,
-                    "",
-                    "",
-                    "ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
+            synchronized (LockUtils.getSingletonMutex(applicationContext)) {
+                if (referenceConfig == null) {
+                    referenceBeanManager.initReferenceBean(this);
+                    applicationContext
+                            .getBean(
+                                    DubboConfigApplicationListener.class.getName(),
+                                    DubboConfigApplicationListener.class)
+                            .init();
+                    logger.warn(
+                            CONFIG_DUBBO_BEAN_INITIALIZER,
+                            "",
+                            "",
+                            "ReferenceBean is not ready yet, please make sure to "
+                                    + "call reference interface method after dubbo is started.");
+                }
+            }
         }
         // get reference proxy
         // Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation
