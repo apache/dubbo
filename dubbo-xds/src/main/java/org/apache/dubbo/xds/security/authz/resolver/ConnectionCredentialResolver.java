@@ -43,8 +43,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.ssl.SslHandler;
 
 @Activate(order = -20)
 public class ConnectionCredentialResolver implements CredentialResolver, ChannelContextListener {

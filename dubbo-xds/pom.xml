@@ -45,12 +45,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-netty4</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-framework</artifactId>
       <scope>test</scope>
@@ -88,32 +82,26 @@
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
     </dependency>
-
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
     </dependency>
-
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty-shaded</artifactId>
     </dependency>
-
     <dependency>
       <groupId>io.envoyproxy.controlplane</groupId>
       <artifactId>api</artifactId>
     </dependency>
-
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
-
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
@@ -153,41 +141,40 @@
       <artifactId>jwks-rsa</artifactId>
       <version>0.18.0</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-config-api</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rpc-triple</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-registry-zookeeper</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-serialization-hessian2</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.12.3</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-netty4</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
