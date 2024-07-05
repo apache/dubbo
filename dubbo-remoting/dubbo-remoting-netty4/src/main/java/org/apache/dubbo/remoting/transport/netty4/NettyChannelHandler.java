@@ -17,30 +17,39 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.api.ChannelContextListener;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
-    private static final Logger logger = LoggerFactory.getLogger(NettyChannelHandler.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyChannelHandler.class);
 
     private final Map<String, Channel> dubboChannels;
 
     private final URL url;
     private final ChannelHandler handler;
 
-    public NettyChannelHandler(Map<String, Channel> dubboChannels, URL url, ChannelHandler handler) {
+    private final List<ChannelContextListener> contextListeners;
+
+    public NettyChannelHandler(
+            Map<String, Channel> dubboChannels,
+            URL url,
+            ChannelHandler handler,
+            List<ChannelContextListener> listeners) {
         this.dubboChannels = dubboChannels;
         this.url = url;
         this.handler = handler;
+        this.contextListeners = listeners;
     }
 
     @Override
@@ -51,7 +60,13 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
             dubboChannels.put(
                     NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
             handler.connected(channel);
-
+            contextListeners.forEach(listener -> {
+                try {
+                    listener.onConnect(ctx);
+                } catch (Exception e) {
+                    logger.warn("99-1", "", "", "", "Failed to invoke listener when channel connect:", e);
+                }
+            });
             if (logger.isInfoEnabled()) {
                 logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress()
                         + " is established.");
@@ -75,6 +90,13 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
             }
         } finally {
             NettyChannel.removeChannel(ctx.channel());
+            contextListeners.forEach(listener -> {
+                try {
+                    listener.onDisconnect(ctx);
+                } catch (Exception e) {
+                    logger.warn("99-1", "", "", "", "Failed to invoke listener when channel disconnect:", e);
+                }
+            });
         }
     }
 }

@@ -14,10 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds;
+package org.apache.dubbo.xds.security.api;
 
-public interface DemoService {
-    default String sayHello() {
-        return null;
-    }
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
+
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface RequestAuthorizer {
+
+    void validate(Invocation invocation) throws AuthorizationException;
 }

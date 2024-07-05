@@ -24,9 +24,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
@@ -46,6 +49,8 @@ public class AdsObserver {
 
     protected StreamObserver<DiscoveryRequest> requestObserver;
 
+    private CompletableFuture<String> future = new CompletableFuture<>();
+
     private final Map<String, DiscoveryRequest> observedResources = new ConcurrentHashMap<>();
 
     public AdsObserver(URL url, Node node) {
@@ -61,22 +66,42 @@ public class AdsObserver {
 
     public void request(DiscoveryRequest discoveryRequest) {
         if (requestObserver == null) {
-            requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(this));
+            requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(this, future));
         }
         requestObserver.onNext(discoveryRequest);
         observedResources.put(discoveryRequest.getTypeUrl(), discoveryRequest);
+        try {
+            // TODO：This is to make the child thread receive the information.
+            //  Maybe Using CountDownLatch would be better
+            String name = Thread.currentThread().getName();
+            if ("main".equals(name)) {
+                future.get(600, TimeUnit.SECONDS);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static class ResponseObserver implements StreamObserver<DiscoveryResponse> {
         private AdsObserver adsObserver;
 
-        public ResponseObserver(AdsObserver adsObserver) {
+        private CompletableFuture future;
+
+        public ResponseObserver(AdsObserver adsObserver, CompletableFuture future) {
             this.adsObserver = adsObserver;
+            this.future = future;
         }
 
         @Override
         public void onNext(DiscoveryResponse discoveryResponse) {
-            System.out.println("Receive message from server");
+            logger.info("Receive message from server");
+            if (future != null) {
+                future.complete(null);
+            }
             XdsListener xdsListener = adsObserver.listeners.get(discoveryResponse.getTypeUrl());
             xdsListener.process(discoveryResponse);
             adsObserver.requestObserver.onNext(buildAck(discoveryResponse));
@@ -122,7 +147,8 @@ public class AdsObserver {
         try {
             xdsChannel = new XdsChannel(url);
             if (xdsChannel.getChannel() != null) {
-                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(this));
+                // Child thread not need to wait other child thread.
+                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(this, null));
                 observedResources.values().forEach(requestObserver::onNext);
                 return;
             } else {

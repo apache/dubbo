@@ -22,7 +22,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.BootstrapperImpl;
-import org.apache.dubbo.xds.bootstrap.XdsCertificateSigner;
+import org.apache.dubbo.xds.security.api.CertPair;
+import org.apache.dubbo.xds.security.api.CertSource;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -52,7 +53,7 @@ public class XdsChannel {
 
     private URL url;
 
-    private static final String SECURE = "secure";
+    private static final String SECURITY = "security";
 
     private static final String PLAINTEXT = "plaintext";
 
@@ -71,15 +72,16 @@ public class XdsChannel {
         this.url = url;
         try {
             if (!url.getParameter(USE_AGENT, false)) {
-                if (PLAINTEXT.equals(url.getParameter(SECURE))) {
+                // TODO：Need to consider situation where only user sa_jwt
+                if (PLAINTEXT.equals(url.getParameter(SECURITY))) {
                     managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
                             .usePlaintext()
                             .build();
                 } else {
-                    XdsCertificateSigner signer = url.getOrDefaultApplicationModel()
-                            .getExtensionLoader(XdsCertificateSigner.class)
-                            .getExtension(url.getParameter("signer", "istio"));
-                    XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
+                    CertSource signer = url.getOrDefaultApplicationModel()
+                            .getExtensionLoader(CertSource.class)
+                            .getExtension(url.getProtocol());
+                    CertPair certPair = signer.getCert(url, null);
                     SslContext context = GrpcSslContexts.forClient()
                             .trustManager(InsecureTrustManagerFactory.INSTANCE)
                             .keyManager(

@@ -1,1 +1,1 @@
-xds=org.apache.dubbo.xds.registry.XdsRegistryFactory
+istio=org.apache.dubbo.xds.registry.XdsRegistryFactory

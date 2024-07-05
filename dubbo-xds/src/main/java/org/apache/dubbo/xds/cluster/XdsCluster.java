@@ -31,4 +31,8 @@ public class XdsCluster extends AbstractCluster {
         XdsDirectory<T> xdsDirectory = new XdsDirectory<>(directory);
         return new XdsClusterInvoker<>(xdsDirectory);
     }
+
+    public boolean isAvailable() {
+        return true;
+    }
 }

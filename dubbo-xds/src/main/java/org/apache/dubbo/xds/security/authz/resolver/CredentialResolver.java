@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.springboot.demo.provider;
+package org.apache.dubbo.xds.security.authz.resolver;
 
-import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.xds.security.authz.RequestCredential;
 
-import java.util.concurrent.CountDownLatch;
+/**
+ * Resolve connection/request credential to validation context.
+ */
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface CredentialResolver {
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-@EnableDubbo(scanBasePackages = {"org.apache.dubbo.springboot.demo.provider"})
-public class ProviderApplication {
-    public static void main(String[] args) throws Exception {
-        SpringApplication.run(ProviderApplication.class, args);
-        System.out.println("dubbo service started");
-        new CountDownLatch(1).await();
-    }
+    void appendRequestCredential(URL url, Invocation invocation, RequestCredential requestCredential);
 }

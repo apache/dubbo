@@ -38,23 +38,30 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
             throws RpcException {
-        Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
-        try {
-            return invokeWithContext(invoker, invocation);
-        } catch (Throwable e) {
-            if (e instanceof RpcException && ((RpcException) e).isBiz()) { // biz exception.
-                throw (RpcException) e;
+        while (true) {
+            Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
+            try {
+                return invokeWithContext(invoker, invocation);
+            } catch (Throwable e) {
+                if (e instanceof RpcException && ((RpcException) e).isBiz()) { // biz exception.
+                    throw (RpcException) e;
+                }
+                throw new RpcException(
+                        e instanceof RpcException ? ((RpcException) e).getCode() : 0,
+                        "Xds invoke providers " + invoker.getUrl() + " "
+                                + loadbalance.getClass().getSimpleName()
+                                + " for service " + getInterface().getName()
+                                + " method " + RpcUtils.getMethodName(invocation) + " on consumer "
+                                + NetUtils.getLocalHost()
+                                + " use dubbo version " + Version.getVersion()
+                                + ", but no luck to perform the invocation. Last error is: " + e.getMessage(),
+                        e.getCause() != null ? e.getCause() : e);
             }
-            throw new RpcException(
-                    e instanceof RpcException ? ((RpcException) e).getCode() : 0,
-                    "Xds invoke providers " + invoker.getUrl() + " "
-                            + loadbalance.getClass().getSimpleName()
-                            + " for service " + getInterface().getName()
-                            + " method " + RpcUtils.getMethodName(invocation) + " on consumer "
-                            + NetUtils.getLocalHost()
-                            + " use dubbo version " + Version.getVersion()
-                            + ", but no luck to perform the invocation. Last error is: " + e.getMessage(),
-                    e.getCause() != null ? e.getCause() : e);
         }
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
     }
 }

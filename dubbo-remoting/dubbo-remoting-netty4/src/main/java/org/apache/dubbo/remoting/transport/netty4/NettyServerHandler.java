@@ -72,7 +72,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         }
         handler.connected(channel);
 
-        if (logger.isInfoEnabled()) {
+        if (logger.isInfoEnabled() && channel != null) {
             logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress()
                     + " is established.");
         }

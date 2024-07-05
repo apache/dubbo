@@ -19,11 +19,13 @@ package org.apache.dubbo.xds;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.xds.directory.XdsDirectory;
+import org.apache.dubbo.xds.protocol.XdsResourceListener;
 import org.apache.dubbo.xds.protocol.impl.CdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.EdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.LdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.RdsProtocol;
 import org.apache.dubbo.xds.resource.XdsCluster;
+import org.apache.dubbo.xds.resource.XdsEndpoint;
 import org.apache.dubbo.xds.resource.XdsRouteConfiguration;
 import org.apache.dubbo.xds.resource.XdsVirtualHost;
 
@@ -31,7 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
+import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 
 public class PilotExchanger {
 
@@ -61,23 +66,31 @@ public class PilotExchanger {
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
         adsObserver = new AdsObserver(url, NodeBuilder.build());
 
-        // rds resources callback
-        Consumer<List<XdsRouteConfiguration>> rdsCallback = (xdsRouteConfigurations) -> {
-            xdsRouteConfigurations.forEach(xdsRouteConfiguration -> {
-                xdsRouteConfiguration.getVirtualHosts().forEach((serviceName, xdsVirtualHost) -> {
-                    this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
-                    // when resource update, notify subscribers
-                    if (rdsListeners.containsKey(serviceName)) {
-                        for (XdsDirectory listener : rdsListeners.get(serviceName)) {
-                            listener.onRdsChange(serviceName, xdsVirtualHost);
-                        }
-                    }
-                });
-            });
-        };
+        this.rdsProtocol =
+                new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.edsProtocol =
+                new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.ldsProtocol =
+                new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
+        this.cdsProtocol =
+                new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
 
-        // eds resources callback
-        Consumer<List<XdsCluster>> edsCallback = (xdsClusters) -> {
+        XdsResourceListener<XdsRouteConfiguration> pilotRdsListener =
+                xdsRouteConfigurations -> xdsRouteConfigurations.forEach(xdsRouteConfiguration -> xdsRouteConfiguration
+                        .getVirtualHosts()
+                        .forEach((serviceName, xdsVirtualHost) -> {
+                            this.xdsVirtualHostMap.put(serviceName, xdsVirtualHost);
+                            // when resource update, notify subscribers
+                            if (rdsListeners.containsKey(serviceName)) {
+                                for (XdsDirectory listener : rdsListeners.get(serviceName)) {
+                                    listener.onRdsChange(serviceName, xdsVirtualHost);
+                                }
+                            }
+                        }));
+
+        XdsResourceListener<ClusterLoadAssignment> pilotEdsListener = clusterLoadAssignments -> {
+            List<XdsCluster> xdsClusters =
+                    clusterLoadAssignments.stream().map(this::parseCluster).collect(Collectors.toList());
             xdsClusters.forEach(xdsCluster -> {
                 this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
                 if (cdsListeners.containsKey(xdsCluster.getName())) {
@@ -87,21 +100,16 @@ public class PilotExchanger {
                 }
             });
         };
-        this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, rdsCallback);
-        this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, edsCallback);
 
-        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
-        this.cdsProtocol = new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
-
+        this.rdsProtocol.registerListen(pilotRdsListener);
+        this.edsProtocol.registerListen(pilotEdsListener);
         // lds resources callback，listen to all rds resources in the callback function
-        Consumer<Set<String>> ldsCallback = rdsProtocol::subscribeResource;
-        ldsProtocol.setUpdateCallback(ldsCallback);
-        ldsProtocol.subscribeListeners();
+        this.ldsProtocol.registerListen(rdsProtocol.getLdsListener());
+        this.cdsProtocol.registerListen(edsProtocol.getCdsListener());
 
         // cds resources callback，listen to all cds resources in the callback function
-        Consumer<Set<String>> cdsCallback = edsProtocol::subscribeResource;
-        cdsProtocol.setUpdateCallback(cdsCallback);
-        cdsProtocol.subscribeClusters();
+        this.cdsProtocol.subscribeClusters();
+        this.ldsProtocol.subscribeListeners();
     }
 
     public static Map<String, XdsVirtualHost> getXdsVirtualHostMap() {
@@ -151,11 +159,38 @@ public class PilotExchanger {
         }
     }
 
+    public static PilotExchanger createInstance(URL url) {
+        return new PilotExchanger(url);
+    }
+
     public static boolean isEnabled() {
         return GLOBAL_PILOT_EXCHANGER != null;
     }
 
     public void destroy() {
         this.adsObserver.destroy();
+    }
+
+    private XdsCluster parseCluster(ClusterLoadAssignment cluster) {
+        XdsCluster xdsCluster = new XdsCluster();
+
+        xdsCluster.setName(cluster.getClusterName());
+
+        List<XdsEndpoint> xdsEndpoints = cluster.getEndpointsList().stream()
+                .flatMap(e -> e.getLbEndpointsList().stream())
+                .map(LbEndpoint::getEndpoint)
+                .map(this::parseEndpoint)
+                .collect(Collectors.toList());
+
+        xdsCluster.setXdsEndpoints(xdsEndpoints);
+
+        return xdsCluster;
+    }
+
+    private XdsEndpoint parseEndpoint(io.envoyproxy.envoy.config.endpoint.v3.Endpoint endpoint) {
+        XdsEndpoint xdsEndpoint = new XdsEndpoint();
+        xdsEndpoint.setAddress(endpoint.getAddress().getSocketAddress().getAddress());
+        xdsEndpoint.setPortValue(endpoint.getAddress().getSocketAddress().getPortValue());
+        return xdsEndpoint;
     }
 }

@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
-class CertDeployerListenerTest {
+class CertDeployerLdsListenerTest {
     @Test
     void testEmpty1() {
         AtomicReference<DubboCertManager> reference = new AtomicReference<>();

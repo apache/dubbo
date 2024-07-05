@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.router;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.Holder;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -37,9 +38,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.config.Constants.MESH_KEY;
+
 public class XdsRouter<T> extends AbstractStateRouter<T> {
 
-    private final PilotExchanger pilotExchanger = PilotExchanger.getInstance();
+    private final PilotExchanger pilotExchanger;
 
     private Map<String, XdsVirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
@@ -47,6 +50,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     public XdsRouter(URL url) {
         super(url);
+        pilotExchanger = url.getOrDefaultApplicationModel().getBeanFactory().getBean(PilotExchanger.class);
     }
 
     @Override
@@ -60,8 +64,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             throws RpcException {
 
         // return all invokers directly if xds is not used
-        // TODO：need to consider where to set ‘xds’ param
-        if (!url.getParameter("xds", false)) {
+        String meshType = url.getParameter(MESH_KEY);
+        if (StringUtils.isEmpty(meshType)) {
             return invokers;
         }
 
@@ -76,7 +80,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     private String matchCluster(Invocation invocation) {
         String cluster = null;
-        String serviceName = invocation.getInvoker().getUrl().getParameter("providedBy");
+        String serviceName = invocation.getInvoker().getUrl().getParameter("provided-by");
         XdsVirtualHost xdsVirtualHost = pilotExchanger.getXdsVirtualHostMap().get(serviceName);
 
         // match route
@@ -85,12 +89,12 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             String path = "/" + invocation.getInvoker().getUrl().getPath() + "/" + RpcUtils.getMethodName(invocation);
             if (xdsRoute.getRouteMatch().isMatch(path)) {
                 cluster = xdsRoute.getRouteAction().getCluster();
-
                 // if weighted cluster
                 if (cluster == null) {
                     cluster = computeWeightCluster(xdsRoute.getRouteAction().getClusterWeights());
                 }
             }
+            if (cluster != null) break;
         }
 
         return cluster;

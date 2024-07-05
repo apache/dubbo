@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.XdsListener;
 
@@ -32,6 +33,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -70,11 +72,20 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
 
     protected Map<String, T> resourcesMap = new ConcurrentHashMap<>();
 
-    public AbstractProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
+    protected List<XdsResourceListener<T>> resourceListeners = new CopyOnWriteArrayList<>();
+
+    protected ApplicationModel applicationModel;
+
+    public AbstractProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
         this.adsObserver = adsObserver;
         this.node = node;
         this.checkInterval = checkInterval;
+        this.applicationModel = applicationModel;
         adsObserver.addListener(this);
+    }
+
+    public void registerListen(XdsResourceListener<T> listener) {
+        this.resourceListeners.add(listener);
     }
 
     /**
@@ -163,13 +174,18 @@ public abstract class AbstractProtocol<T> implements XdsProtocol, XdsListener {
                 .build();
     }
 
+    //    protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
+
     protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
 
     @Override
     public final void process(DiscoveryResponse discoveryResponse) {
-        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
+        //        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
         Map<String, T> oldResource = resourcesMap;
         // discoveryResponseListener(oldResource, newResult);
+
+        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
+        resourceListeners.forEach(l -> l.onResourceUpdate(new ArrayList<>(newResult.values())));
         resourcesMap = newResult;
     }
 

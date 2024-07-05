@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds;
+package org.apache.dubbo.xds.security.authz.rule.matcher;
 
-public class DemoServiceImpl implements DemoService {
-    @Override
-    public String sayHello() {
-        return "hello";
-    }
+import org.apache.dubbo.xds.security.authz.rule.RequestAuthProperty;
+
+/**
+ * @param <T> Type of the actual value to match.
+ */
+public interface Matcher<T> {
+    boolean match(T actual);
+
+    RequestAuthProperty propType();
 }

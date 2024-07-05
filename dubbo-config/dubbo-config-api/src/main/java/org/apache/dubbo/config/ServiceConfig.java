@@ -607,6 +607,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             ProtocolConfig protocolConfig, List<URL> registryURLs, RegisterTypeEnum registerType) {
         Map<String, String> map = buildAttributes(protocolConfig);
 
+        for (URL u : registryURLs) {
+            ConfigValidationUtils.loadMeshConfig(u, map);
+        }
+
         // remove null key and null value
         map.keySet().removeIf(key -> StringUtils.isEmpty(key) || StringUtils.isEmpty(map.get(key)));
         // init serviceMetadata attachments
