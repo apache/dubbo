@@ -295,6 +295,27 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String executorManagementMode;
 
+    /**
+     * Only use the new version of metadataService (MetadataServiceV2).
+     * <br> MetadataServiceV2 have better compatibility with other language's dubbo implement (dubbo-go).
+     * <br> If set to false (default):
+     * <br>  1. If your services are using triple protocol and {@link #metadataServiceProtocol} is not set
+     * <br>     - Dubbo will export both MetadataService and MetadataServiceV2 with triple
+     * <br>  2. Set {@link #metadataServiceProtocol} = tri
+     * <br>     - Dubbo will export both MetadataService and MetadataServiceV2 with triple
+     * <br>  3. Set {@link #metadataServiceProtocol} != tri
+     * <br>     - Dubbo will only export MetadataService
+     * <br>  4. Your services are not using triple protocol, and {@link #metadataServiceProtocol} is not set
+     * <br>     - Dubbo will only export MetadataService
+     * <br>
+     * <br>  If set to true, dubbo will try to only use MetadataServiceV2.
+     * <br>  It only activates when meet at least one of the following cases:
+     * <br>     1. Manually set {@link #metadataServiceProtocol} = tri
+     * <br>     2. Your services are using triple protocol
+     * <br>
+     */
+    private Boolean onlyUseMetadataV2;
+
     public ApplicationConfig() {}
 
     public ApplicationConfig(ApplicationModel applicationModel) {
@@ -792,6 +813,15 @@ public class ApplicationConfig extends AbstractConfig {
     @Parameter(key = EXECUTOR_MANAGEMENT_MODE)
     public String getExecutorManagementMode() {
         return executorManagementMode;
+    }
+
+    @Parameter(excluded = true)
+    public Boolean getOnlyUseMetadataV2() {
+        return onlyUseMetadataV2;
+    }
+
+    public void setOnlyUseMetadataV2(Boolean onlyUseMetadataV2) {
+        this.onlyUseMetadataV2 = onlyUseMetadataV2;
     }
 
     @Override

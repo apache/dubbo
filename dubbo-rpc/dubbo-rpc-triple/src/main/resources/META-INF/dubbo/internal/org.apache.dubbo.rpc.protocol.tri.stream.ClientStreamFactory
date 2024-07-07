@@ -1,0 +1,2 @@
+http2=org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ClientStreamFactory
+http3=org.apache.dubbo.rpc.protocol.tri.h3.Http3ClientStreamFactory

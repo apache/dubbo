@@ -68,6 +68,9 @@ public class JsonCodec implements HttpMessageCodec {
     public Object[] decode(InputStream is, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try {
             int len = targetTypes.length;
+            if (len == 0) {
+                return new Object[0];
+            }
             Object obj = JsonUtils.toJavaObject(StreamUtils.toString(is, charset), Object.class);
             if (obj instanceof List) {
                 List<?> list = (List<?>) obj;

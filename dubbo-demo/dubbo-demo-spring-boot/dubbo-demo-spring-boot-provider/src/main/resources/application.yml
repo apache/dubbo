@@ -21,9 +21,12 @@ spring:
 dubbo:
   application:
     name: ${spring.application.name}
+    qos-enable: false
   protocol:
-    name: dubbo
-    port: -1
+    name: tri
+    port: ${server.port}
+    triple:
+      enable-servlet: true
   registry:
     id: zk-registry
     address: zookeeper://127.0.0.1:2181
@@ -41,3 +44,10 @@ dubbo:
       exporter:
         enabled: true
     enable-metadata: true
+
+server:
+  port: 8081
+  http2:
+    enabled: true
+  tomcat:
+    keep-alive-timeout: 180000

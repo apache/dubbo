@@ -38,6 +38,10 @@ public final class MethodsCondition implements Condition<MethodsCondition, HttpR
         this.methods = methods;
     }
 
+    public Set<String> getMethods() {
+        return methods;
+    }
+
     @Override
     public MethodsCondition combine(MethodsCondition other) {
         Set<String> set = new HashSet<>(methods);

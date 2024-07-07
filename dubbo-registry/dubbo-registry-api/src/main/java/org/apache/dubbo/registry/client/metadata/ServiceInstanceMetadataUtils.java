@@ -96,6 +96,8 @@ public class ServiceInstanceMetadataUtils {
      */
     public static final String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
+    public static final String METADATA_SERVICE_VERSION_NAME = "meta-v";
+
     public static final String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
 
     public static String getMetadataServiceParameter(URL url) {

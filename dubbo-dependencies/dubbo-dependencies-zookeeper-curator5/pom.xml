@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <revision>3.3.0-beta.4-SNAPSHOT</revision>
+    <revision>3.3.0-beta.5-SNAPSHOT</revision>
     <maven_flatten_version>1.6.0</maven_flatten_version>
     <slf4j_version>1.7.36</slf4j_version>
     <curator5_version>5.1.0</curator5_version>
@@ -203,6 +203,12 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>skip-spotless</id>
+      <properties>
+        <spotless.skip>true</spotless.skip>
+      </properties>
     </profile>
   </profiles>
 </project>
