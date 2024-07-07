@@ -27,6 +27,6 @@ public class ZoneAwareCluster extends AbstractCluster {
 
     @Override
     protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new ZoneAwareClusterInvoker<T>(directory);
+        return new ZoneAwareClusterInvoker<>(directory);
     }
 }

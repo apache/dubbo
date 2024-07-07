@@ -84,6 +84,10 @@
       <classifier>linux-aarch_64</classifier>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-http2</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>

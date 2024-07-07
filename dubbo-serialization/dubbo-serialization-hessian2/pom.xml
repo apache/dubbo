@@ -37,7 +37,7 @@ limitations under the License.
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.alibaba</groupId>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>hessian-lite</artifactId>
     </dependency>
     <dependency>
@@ -45,5 +45,11 @@ limitations under the License.
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-native</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
   </dependencies>
 </project>

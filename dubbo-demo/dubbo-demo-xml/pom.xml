@@ -32,8 +32,6 @@
   <modules>
     <module>dubbo-demo-xml-provider</module>
     <module>dubbo-demo-xml-consumer</module>
-    <module>dubbo-demo-jaxrs-rest-consumer</module>
-    <module>dubbo-demo-jaxrs-rest-provider</module>
     <module>dubbo-demo-spring-mvc-rest-consumer</module>
     <module>dubbo-demo-spring-mvc-rest-provider</module>
   </modules>

@@ -38,7 +38,6 @@ dubbo-core-spi
 dubbo-dependencies
 dubbo-dependencies-all
 dubbo-dependencies-bom
-dubbo-dependencies-zookeeper
 dubbo-dependencies-zookeeper-curator5
 dubbo-distribution
 dubbo-filter-cache
@@ -47,7 +46,6 @@ dubbo-kubernetes
 dubbo-maven-plugin
 dubbo-metadata
 dubbo-metadata-api
-dubbo-metadata-rest
 dubbo-metadata-definition-protobuf
 dubbo-metadata-processor
 dubbo-metadata-report-nacos
@@ -77,18 +75,15 @@ dubbo-registry-zookeeper
 dubbo-xds
 dubbo-remoting
 dubbo-remoting-api
-dubbo-remoting-http
 dubbo-remoting-http12
+dubbo-remoting-http3
 dubbo-remoting-netty
 dubbo-remoting-netty4
-dubbo-remoting-zookeeper-api
-dubbo-remoting-zookeeper
 dubbo-remoting-zookeeper-curator5
 dubbo-rpc
 dubbo-rpc-api
 dubbo-rpc-dubbo
 dubbo-rpc-injvm
-dubbo-rpc-rest
 dubbo-rpc-triple
 dubbo-security
 dubbo-serialization
@@ -100,6 +95,7 @@ dubbo-spring-boot
 dubbo-spring-boot-actuator
 dubbo-spring-boot-actuator-compatible
 dubbo-spring-boot-autoconfigure
+dubbo-spring-boot-3-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
 dubbo-spring-boot-compatible
 dubbo-observability-spring-boot-starters
@@ -123,4 +119,4 @@ dubbo-plugin-loom
 dubbo-rest-jaxrs
 dubbo-rest-servlet
 dubbo-rest-spring
-
+dubbo-triple-servlet

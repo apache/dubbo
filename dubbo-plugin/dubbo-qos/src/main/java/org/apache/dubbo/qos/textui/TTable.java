@@ -299,7 +299,7 @@ public class TTable implements TComponent {
         private final Align align;
 
         // data rows
-        private final List<String> rows = new ArrayList<String>();
+        private final List<String> rows = new ArrayList<>();
 
         public ColumnDefine(int width, boolean isAutoResize, Align align) {
             this.width = width;

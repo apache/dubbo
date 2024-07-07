@@ -42,7 +42,7 @@ public class ZookeeperDubboServiceConsumerBootstrap {
                         .protocol("dubbo")
                         .services("zookeeper-dubbo-provider"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class)
-                        .protocol("rest"))
+                        .protocol("tri"))
                 .start();
 
         EchoService echoService = bootstrap.getCache().get(EchoService.class);

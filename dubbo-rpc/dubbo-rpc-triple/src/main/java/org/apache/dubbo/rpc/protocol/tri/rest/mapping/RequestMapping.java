@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ParamsCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ResponseMeta;
 
 import java.util.Objects;
@@ -43,6 +44,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
     private final ConsumesCondition consumesCondition;
     private final ProducesCondition producesCondition;
     private final ConditionWrapper customCondition;
+    private final CorsMeta cors;
     private final ResponseMeta response;
 
     private int hashCode;
@@ -56,6 +58,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             ConsumesCondition consumesCondition,
             ProducesCondition producesCondition,
             Condition<?, HttpRequest> customCondition,
+            CorsMeta cors,
             ResponseMeta response) {
         this.name = name;
         this.pathCondition = pathCondition;
@@ -65,6 +68,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         this.consumesCondition = consumesCondition;
         this.producesCondition = producesCondition;
         this.customCondition = customCondition == null ? null : new ConditionWrapper(customCondition);
+        this.cors = cors;
         this.response = response;
     }
 
@@ -82,16 +86,28 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         ConsumesCondition consumes = combine(consumesCondition, other.consumesCondition);
         ProducesCondition produces = combine(producesCondition, other.producesCondition);
         ConditionWrapper custom = combine(customCondition, other.customCondition);
+        CorsMeta corsMeta = combine(this.cors, other.cors);
         ResponseMeta response = ResponseMeta.combine(this.response, other.response);
-        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, response);
+        return new RequestMapping(
+                name, paths, methods, params, headers, consumes, produces, custom, corsMeta, response);
     }
 
-    private <T extends Condition<T, HttpRequest>> T combine(T value, T other) {
-        return value == null ? other : other == null ? value : value.combine(other);
+    private <T extends Condition<T, HttpRequest>> T combine(T source, T other) {
+        return source == null ? other : other == null ? source : source.combine(other);
+    }
+
+    private CorsMeta combine(CorsMeta source, CorsMeta other) {
+        return source == null || source.isEmpty()
+                ? other == null || other.isEmpty() ? null : other.applyDefault()
+                : source.combine(other).applyDefault();
     }
 
     public RequestMapping match(HttpRequest request, PathExpression path) {
         return doMatch(request, new PathCondition(path));
+    }
+
+    public boolean matchMethod(String method) {
+        return methodsCondition == null || methodsCondition.getMethods().contains(method);
     }
 
     @Override
@@ -156,7 +172,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             }
         }
 
-        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, response);
+        return new RequestMapping(name, paths, methods, params, headers, consumes, produces, custom, cors, response);
     }
 
     public String getName() {
@@ -169,6 +185,10 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
     public ProducesCondition getProducesCondition() {
         return producesCondition;
+    }
+
+    public CorsMeta getCors() {
+        return cors;
     }
 
     public ResponseMeta getResponse() {
@@ -290,6 +310,9 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         if (response != null) {
             sb.append(", response=").append(response);
         }
+        if (cors != null) {
+            sb.append(", cors=").append(cors);
+        }
         sb.append('}');
         return sb.toString();
     }
@@ -304,6 +327,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         private String[] consumes;
         private String[] produces;
         private Condition<?, HttpRequest> customCondition;
+        private CorsMeta corsMeta;
         private Integer responseStatus;
         private String responseReason;
 
@@ -352,6 +376,11 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             return this;
         }
 
+        public Builder cors(CorsMeta corsMeta) {
+            this.corsMeta = corsMeta;
+            return this;
+        }
+
         public Builder responseStatus(int status) {
             responseStatus = status;
             return this;
@@ -363,23 +392,17 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         }
 
         public RequestMapping build() {
-            PathCondition pathCondition = isEmpty(paths) ? null : new PathCondition(contextPath, paths);
-            MethodsCondition methodsCondition = isEmpty(methods) ? null : new MethodsCondition(methods);
-            ParamsCondition paramsCondition = isEmpty(params) ? null : new ParamsCondition(params);
-            HeadersCondition headersCondition = isEmpty(headers) ? null : new HeadersCondition(headers);
-            ConsumesCondition consumesCondition = isEmpty(consumes) ? null : new ConsumesCondition(consumes);
-            ProducesCondition producesCondition = isEmpty(produces) ? null : new ProducesCondition(produces);
-            ResponseMeta response = responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason);
             return new RequestMapping(
                     name,
-                    pathCondition,
-                    methodsCondition,
-                    paramsCondition,
-                    headersCondition,
-                    consumesCondition,
-                    producesCondition,
+                    isEmpty(paths) ? null : new PathCondition(contextPath, paths),
+                    isEmpty(methods) ? null : new MethodsCondition(methods),
+                    isEmpty(params) ? null : new ParamsCondition(params),
+                    isEmpty(headers) ? null : new HeadersCondition(headers),
+                    isEmpty(consumes) ? null : new ConsumesCondition(consumes),
+                    isEmpty(produces) ? null : new ProducesCondition(produces),
                     customCondition,
-                    response);
+                    corsMeta == null ? null : corsMeta,
+                    responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason));
         }
     }
 }

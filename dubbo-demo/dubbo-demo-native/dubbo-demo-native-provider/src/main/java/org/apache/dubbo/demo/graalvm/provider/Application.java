@@ -36,7 +36,7 @@ public class Application {
     public static void main(String[] args) throws Exception {
         SystemPropertyConfigUtils.setSystemProperty(DubboProperty.DUBBO_APPLICATION_LOGGER, "logback");
         System.setProperty("native", "true");
-        SystemPropertyConfigUtils.setSystemProperty(DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson");
+        SystemPropertyConfigUtils.setSystemProperty(DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "fastjson2");
         startWithBootstrap();
         System.in.read();
     }
@@ -60,7 +60,7 @@ public class Application {
         service.setRef(new DemoServiceImpl());
 
         ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
-        protocolConfig.setSerialization("fastjson2");
+        protocolConfig.setSerialization("hessian2");
         bootstrap
                 .application(applicationConfig)
                 .registry(new RegistryConfig(REGISTRY_URL))

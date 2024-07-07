@@ -25,11 +25,15 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2;
+import org.apache.dubbo.metadata.MetadataServiceV2Detector;
+import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.metadata.util.MetadataServiceVersionUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -39,6 +43,7 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.Destroyable;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,20 +51,25 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.NATIVE_STUB;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+import static org.apache.dubbo.metadata.util.MetadataServiceVersionUtils.V2;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_VERSION_NAME;
+import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 
 public class MetadataUtils {
     public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataUtils.class);
 
     public static void publishServiceDefinition(
             URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
-        if (getMetadataReports(applicationModel).size() == 0) {
+        if (getMetadataReports(applicationModel).isEmpty()) {
             String msg =
                     "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
             logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", msg);
@@ -115,7 +125,70 @@ public class MetadataUtils {
         }
     }
 
-    public static ProxyHolder referProxy(ServiceInstance instance) {
+    public static RemoteMetadataService referMetadataService(ServiceInstance instance) {
+        URL url = buildMetadataUrl(instance);
+
+        // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
+        ApplicationModel applicationModel = instance.getApplicationModel();
+        ModuleModel internalModel = applicationModel.getInternalModule();
+
+        ConsumerModel consumerModel;
+
+        boolean useV2 = MetadataServiceDelegationV2.VERSION.equals(url.getAttribute(METADATA_SERVICE_VERSION_NAME));
+        if (!MetadataServiceV2Detector.support()) {
+            useV2 = false;
+        }
+        boolean inNativeImage = NativeDetector.inNativeImage();
+
+        if (useV2 && !inNativeImage) {
+            // If provider supports, we use MetadataServiceV2 in priority
+            url = url.addParameter(PROXY_KEY, NATIVE_STUB);
+            url = url.setPath(MetadataServiceV2.class.getName());
+            url = url.addParameter(VERSION_KEY, V2);
+
+            consumerModel = applicationModel
+                    .getInternalModule()
+                    .registerInternalConsumer(
+                            MetadataServiceV2.class,
+                            url,
+                            StubSuppliers.getServiceDescriptor(MetadataServiceV2.class.getName()));
+        } else {
+            consumerModel = applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
+        }
+
+        if (inNativeImage) {
+            url = url.addParameter(PROXY_KEY, "jdk");
+        }
+
+        Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
+
+        url = url.setServiceModel(consumerModel);
+
+        RemoteMetadataService remoteMetadataService;
+        ProxyFactory proxyFactory =
+                applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        if (useV2) {
+            Invoker<MetadataServiceV2> invoker = protocol.refer(MetadataServiceV2.class, url);
+
+            remoteMetadataService =
+                    new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);
+        } else {
+            Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
+
+            remoteMetadataService =
+                    new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);
+        }
+
+        Object metadataServiceProxy = remoteMetadataService.getInternalProxy();
+        consumerModel.getServiceMetadata().setTarget(metadataServiceProxy);
+        consumerModel.getServiceMetadata().addAttribute(PROXY_CLASS_REF, metadataServiceProxy);
+        consumerModel.setProxyObject(metadataServiceProxy);
+        consumerModel.initMethodModels();
+
+        return remoteMetadataService;
+    }
+
+    private static URL buildMetadataUrl(ServiceInstance instance) {
         MetadataServiceURLBuilder builder;
         ExtensionLoader<MetadataServiceURLBuilder> loader =
                 instance.getApplicationModel().getExtensionLoader(MetadataServiceURLBuilder.class);
@@ -134,36 +207,12 @@ public class MetadataUtils {
             throw new IllegalStateException("Introspection service discovery mode is enabled " + instance
                     + ", but no metadata service can build from it.");
         }
-
         URL url = urls.get(0);
 
-        // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
-        ApplicationModel applicationModel = instance.getApplicationModel();
-        ModuleModel internalModel = applicationModel.getInternalModule();
-        ConsumerModel consumerModel =
-                applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
+        String version = metadata.get(METADATA_SERVICE_VERSION_NAME);
+        url = url.putAttribute(METADATA_SERVICE_VERSION_NAME, version);
 
-        Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
-
-        url = url.setServiceModel(consumerModel);
-
-        if (NativeDetector.inNativeImage()) {
-            url = url.addParameter("proxy", "jdk");
-        }
-
-        Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
-
-        ProxyFactory proxyFactory =
-                applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-
-        MetadataService metadataService = proxyFactory.getProxy(invoker);
-
-        consumerModel.getServiceMetadata().setTarget(metadataService);
-        consumerModel.getServiceMetadata().addAttribute(PROXY_CLASS_REF, metadataService);
-        consumerModel.setProxyObject(metadataService);
-        consumerModel.initMethodModels();
-
-        return new ProxyHolder(consumerModel, metadataService, internalModel);
+        return url;
     }
 
     public static MetadataInfo getRemoteMetadata(
@@ -179,14 +228,13 @@ public class MetadataUtils {
                 metadataInfo = MetadataUtils.getMetadata(revision, instance, metadataReport);
             } else {
                 // change the instance used to communicate to avoid all requests route to the same instance
-                ProxyHolder proxyHolder = null;
+                RemoteMetadataService remoteMetadataService = null;
                 try {
-                    proxyHolder = MetadataUtils.referProxy(instance);
-                    metadataInfo = proxyHolder
-                            .getProxy()
-                            .getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+                    remoteMetadataService = MetadataUtils.referMetadataService(instance);
+                    metadataInfo = remoteMetadataService.getRemoteMetadata(
+                            ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
                 } finally {
-                    MetadataUtils.destroyProxy(proxyHolder);
+                    MetadataUtils.destroyProxy(remoteMetadataService);
                 }
             }
         } catch (Exception e) {
@@ -206,9 +254,9 @@ public class MetadataUtils {
         return metadataInfo;
     }
 
-    public static void destroyProxy(ProxyHolder proxyHolder) {
-        if (proxyHolder != null) {
-            proxyHolder.destroy();
+    public static void destroyProxy(RemoteMetadataService remoteMetadataService) {
+        if (remoteMetadataService != null) {
+            remoteMetadataService.destroy();
         }
     }
 
@@ -242,14 +290,26 @@ public class MetadataUtils {
         return instances.get(ThreadLocalRandom.current().nextInt(0, instances.size()));
     }
 
-    public static class ProxyHolder {
+    public static class RemoteMetadataService {
         private final ConsumerModel consumerModel;
-        private final MetadataService proxy;
+
+        @Deprecated
+        private MetadataService proxy;
+
+        private MetadataServiceV2 proxyV2;
+
         private final ModuleModel internalModel;
 
-        public ProxyHolder(ConsumerModel consumerModel, MetadataService proxy, ModuleModel internalModel) {
+        public RemoteMetadataService(ConsumerModel consumerModel, MetadataService proxy, ModuleModel internalModel) {
             this.consumerModel = consumerModel;
             this.proxy = proxy;
+            this.internalModel = internalModel;
+        }
+
+        public RemoteMetadataService(
+                ConsumerModel consumerModel, MetadataServiceV2 proxyV2, ModuleModel internalModel) {
+            this.consumerModel = consumerModel;
+            this.proxyV2 = proxyV2;
             this.internalModel = internalModel;
         }
 
@@ -257,6 +317,11 @@ public class MetadataUtils {
             if (proxy instanceof Destroyable) {
                 ((Destroyable) proxy).$destroy();
             }
+
+            if (proxyV2 instanceof Destroyable) {
+                ((Destroyable) proxyV2).$destroy();
+            }
+
             internalModel.getServiceRepository().unregisterConsumer(consumerModel);
         }
 
@@ -264,12 +329,23 @@ public class MetadataUtils {
             return consumerModel;
         }
 
-        public MetadataService getProxy() {
-            return proxy;
+        public Object getInternalProxy() {
+            return proxy == null ? proxyV2 : proxy;
         }
 
         public ModuleModel getInternalModel() {
             return internalModel;
+        }
+
+        public MetadataInfo getRemoteMetadata(String revision) {
+            Object existProxy = getInternalProxy();
+            if (existProxy instanceof MetadataService) {
+                return ((MetadataService) existProxy).getMetadataInfo(revision);
+            } else {
+                return MetadataServiceVersionUtils.toV1(((MetadataServiceV2) existProxy)
+                        .getMetadataInfo(
+                                Revision.newBuilder().setValue(revision).build()));
+            }
         }
     }
 }

@@ -42,7 +42,7 @@ public class NacosDubboServiceProviderBootstrap {
                 // Nacos in traditional registry type
                 //                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
                 .protocol("dubbo", builder -> builder.port(20885).name("dubbo"))
-                .protocol("rest", builder -> builder.port(9090).name("rest"))
+                .protocol("tri", builder -> builder.port(9090).name("tri"))
                 .service(builder -> builder.id("echo")
                         .interfaceClass(EchoService.class)
                         .ref(new EchoServiceImpl())
@@ -50,7 +50,7 @@ public class NacosDubboServiceProviderBootstrap {
                 .service(builder -> builder.id("user")
                         .interfaceClass(UserService.class)
                         .ref(new UserServiceImpl())
-                        .protocolIds("rest"))
+                        .protocolIds("tri"))
                 .start()
                 .await();
     }

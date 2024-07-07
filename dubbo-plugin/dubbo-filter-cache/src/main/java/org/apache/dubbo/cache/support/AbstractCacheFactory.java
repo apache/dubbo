@@ -42,7 +42,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
     /**
      * This is used to store factory level-1 cached data.
      */
-    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
+    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
 
     private final Object MONITOR = new Object();
 

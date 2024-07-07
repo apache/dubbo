@@ -39,10 +39,10 @@ public class DubboServiceProviderBootstrap {
     }
 
     private static void multipleRegistries() {
-        ProtocolConfig restProtocol = new ProtocolConfig();
-        restProtocol.setName("rest");
-        restProtocol.setId("rest");
-        restProtocol.setPort(-1);
+        ProtocolConfig triProtocol = new ProtocolConfig();
+        triProtocol.setName("tri");
+        triProtocol.setId("tri");
+        triProtocol.setPort(-1);
 
         RegistryConfig interfaceRegistry = new RegistryConfig();
         interfaceRegistry.setId("interfaceRegistry");
@@ -59,7 +59,7 @@ public class DubboServiceProviderBootstrap {
         ServiceConfig<UserService> userService = new ServiceConfig<>();
         userService.setInterface(UserService.class.getName());
         userService.setRef(new UserServiceImpl());
-        userService.setProtocol(restProtocol);
+        userService.setProtocol(triProtocol);
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
         applicationConfig.setMetadataType("remote");

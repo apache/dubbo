@@ -20,8 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import zipkin2.Call;
-import zipkin2.Callback;
+import zipkin2.reporter.Call;
+import zipkin2.reporter.Callback;
 
 class ZipkinWebClientSender extends HttpSender {
     private final String endpoint;

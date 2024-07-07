@@ -283,7 +283,7 @@ public class TelnetCodec extends TransportCodec {
         String result = toString(message, getCharset(channel));
         if (result.trim().length() > 0) {
             if (history == null) {
-                history = new LinkedList<String>();
+                history = new LinkedList<>();
                 channel.setAttribute(HISTORY_LIST_KEY, history);
             }
             if (history.isEmpty()) {

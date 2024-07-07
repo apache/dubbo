@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
-public interface HttpChannelObserver<T> extends StreamObserver<T> {
+public interface HttpChannelObserver<T> extends StreamObserver<T>, AutoCloseable {
 
     HttpChannel getHttpChannel();
 }

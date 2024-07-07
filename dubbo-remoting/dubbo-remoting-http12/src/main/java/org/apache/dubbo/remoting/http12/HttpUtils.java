@@ -166,7 +166,7 @@ public final class HttpUtils {
                 HttpMethod.POST,
                 request.uri(),
                 data,
-                new DefaultHttpHeaders(),
+                new DefaultHttpHeaders(false),
                 new DefaultHttpHeaders(false));
         request.headers().forEach(nRequest.headers()::set);
         if (charset == null) {
@@ -185,14 +185,14 @@ public final class HttpUtils {
     }
 
     public static HttpRequest.FileUpload readUpload(InterfaceHttpData item) {
-        return new DefaultFileUploadAdaptee((FileUpload) item);
+        return new DefaultFileUploadAdapter((FileUpload) item);
     }
 
-    private static class DefaultFileUploadAdaptee implements HttpRequest.FileUpload {
+    private static class DefaultFileUploadAdapter implements HttpRequest.FileUpload {
         private final FileUpload fu;
         private InputStream inputStream;
 
-        DefaultFileUploadAdaptee(FileUpload fu) {
+        DefaultFileUploadAdapter(FileUpload fu) {
             this.fu = fu;
         }
 

@@ -221,7 +221,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The url of the reference service
      */
-    protected final transient List<URL> urls = new ArrayList<URL>();
+    protected final transient List<URL> urls = new ArrayList<>();
 
     @Transient
     public List<URL> getExportedUrls() {

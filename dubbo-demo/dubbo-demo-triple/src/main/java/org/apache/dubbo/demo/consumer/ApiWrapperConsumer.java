@@ -23,8 +23,10 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.GreeterWrapperService;
+import org.apache.dubbo.rpc.Constants;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class ApiWrapperConsumer {
     public static void main(String[] args) throws IOException {
@@ -33,6 +35,9 @@ public class ApiWrapperConsumer {
         referenceConfig.setCheck(false);
         referenceConfig.setProtocol("tri");
         referenceConfig.setLazy(true);
+        if (args.length > 0 && Constants.HTTP3_KEY.equals(args[0])) {
+            referenceConfig.setParameters(Collections.singletonMap(Constants.HTTP3_KEY, "true"));
+        }
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap

@@ -223,7 +223,7 @@ public abstract class AbstractConfigurator implements Configurator {
     }
 
     private Set<String> genConditionKeys() {
-        Set<String> conditionKeys = new HashSet<String>();
+        Set<String> conditionKeys = new HashSet<>();
         conditionKeys.add(CATEGORY_KEY);
         conditionKeys.add(Constants.CHECK_KEY);
         conditionKeys.add(DYNAMIC_KEY);

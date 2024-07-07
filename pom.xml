@@ -130,18 +130,18 @@
     <jacoco.skip>true</jacoco.skip>
 
     <!-- Maven plugins -->
-    <maven_jar_version>3.3.0</maven_jar_version>
-    <maven_surefire_version>3.2.5</maven_surefire_version>
-    <maven_failsafe_version>3.2.5</maven_failsafe_version>
+    <maven_jar_version>3.4.1</maven_jar_version>
+    <maven_surefire_version>3.3.0</maven_surefire_version>
+    <maven_failsafe_version>3.3.0</maven_failsafe_version>
     <maven_deploy_version>2.8.2</maven_deploy_version>
-    <maven_compiler_version>3.12.1</maven_compiler_version>
-    <maven_source_version>3.3.0</maven_source_version>
-    <maven_javadoc_version>3.6.3</maven_javadoc_version>
+    <maven_compiler_version>3.13.0</maven_compiler_version>
+    <maven_source_version>3.3.1</maven_source_version>
+    <maven_javadoc_version>3.7.0</maven_javadoc_version>
     <maven_jetty_version>9.4.54.v20240208</maven_jetty_version>
-    <maven_checkstyle_version>3.3.1</maven_checkstyle_version>
-    <maven_jacoco_version>0.8.11</maven_jacoco_version>
+    <maven_checkstyle_version>3.4.0</maven_checkstyle_version>
+    <maven_jacoco_version>0.8.12</maven_jacoco_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
-    <maven_enforce_version>3.4.1</maven_enforce_version>
+    <maven_enforce_version>3.5.0</maven_enforce_version>
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
@@ -153,7 +153,7 @@
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
 
-    <revision>3.3.0-beta.2-SNAPSHOT</revision>
+    <revision>3.3.0-beta.5-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -219,7 +219,7 @@
         </includes>
       </resource>
       <resource>
-        <targetPath>META-INF/versions</targetPath>
+        <targetPath>META-INF/dubbo-versions</targetPath>
         <filtering>false</filtering>
         <directory>${maven.multiModuleProjectDirectory}</directory>
         <includes>
@@ -256,7 +256,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.6.1</version>
+          <version>3.7.0</version>
         </plugin>
         <plugin>
           <!-- Do NOT upgrade -->
@@ -266,7 +266,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <groupId>org.fusesource.hawtjni</groupId>
@@ -281,7 +281,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.6.0</version>
           <configuration>
             <createDependencyReducedPom>false</createDependencyReducedPom>
           </configuration>
@@ -393,7 +393,7 @@
             <configuration>
               <failOnError>true</failOnError>
               <target>
-                <property name="version_file" value="${project.build.outputDirectory}/META-INF/versions/${project.artifactId}" />
+                <property name="version_file" value="${project.build.outputDirectory}/META-INF/dubbo-versions/${project.artifactId}" />
                 <!-- get the current version of dubbo -->
                 <echo file="${version_file}" message="revision=${revision}${line.separator}" />
                 <!-- attach the artifact id -->
@@ -411,7 +411,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.1.0</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <useReleaseProfile>false</useReleaseProfile>
@@ -572,6 +572,7 @@
                                         **/org/apache/dubbo/test/common/utils/TestSocketUtils.java,
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
+                                        **/org/apache/dubbo/rpc/protocol/tri/rest/cors/CorsHeaderFilter.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java,
                                         **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
@@ -843,6 +844,7 @@
                   <exclude>src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/test/common/utils/TestSocketUtils.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java</exclude>
+                  <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/rest/cors/CorsHeaderFilter.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java</exclude>
@@ -909,6 +911,12 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>skip-spotless</id>
+      <properties>
+        <spotless.skip>true</spotless.skip>
+      </properties>
     </profile>
   </profiles>
 

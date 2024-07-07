@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+@CrossOrigin
 public class SpringDemoServiceImpl implements SpringRestDemoService {
     private static Map<String, Object> context;
     private boolean called;

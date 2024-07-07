@@ -17,6 +17,7 @@
 package org.apache.dubbo.validation.support.jvalidation;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.validation.Validator;
 import org.apache.dubbo.validation.support.AbstractValidation;
 
@@ -25,6 +26,7 @@ import org.apache.dubbo.validation.support.AbstractValidation;
  * @see AbstractValidation
  * @see Validator
  */
+@Activate(onClass = "jakarta.validation.Validation")
 public class JValidationNew extends AbstractValidation {
 
     /**

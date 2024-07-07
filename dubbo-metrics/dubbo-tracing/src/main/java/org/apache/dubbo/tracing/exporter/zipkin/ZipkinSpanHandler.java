@@ -21,9 +21,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import brave.handler.SpanHandler;
 import zipkin2.Span;
-import zipkin2.codec.BytesEncoder;
-import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.AsyncReporter;
+import zipkin2.reporter.BytesEncoder;
+import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.urlconnection.URLConnectionSender;
 
 /**
@@ -43,7 +43,8 @@ public class ZipkinSpanHandler {
             sender = builder.build();
         }
 
-        AsyncReporter<Span> spanReporter = AsyncReporter.builder(sender).build(getSpanBytesEncoder(applicationModel));
+        BytesEncoder<Span> spanBytesEncoder = getSpanBytesEncoder(applicationModel);
+        AsyncReporter<Span> spanReporter = AsyncReporter.builder(sender).build(spanBytesEncoder);
         return zipkin2.reporter.brave.ZipkinSpanHandler.newBuilder(spanReporter).build();
     }
 

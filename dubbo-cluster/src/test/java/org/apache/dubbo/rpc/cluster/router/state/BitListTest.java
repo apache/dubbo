@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -575,5 +577,45 @@ class BitListTest {
 
         set.add(new LinkedList<>(Arrays.asList("A", "B", "C", "D", "E", "F", "G")));
         Assertions.assertEquals(2, set.size());
+    }
+
+    @Test
+    void testConcurrent() throws InterruptedException {
+        for (int i = 0; i < 100000; i++) {
+            BitList<String> bitList = new BitList<>(Collections.singletonList("test"));
+            bitList.remove("test");
+
+            CountDownLatch countDownLatch = new CountDownLatch(1);
+            CountDownLatch countDownLatch2 = new CountDownLatch(2);
+
+            Thread thread1 = new Thread(() -> {
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                bitList.add("test");
+                countDownLatch2.countDown();
+            });
+
+            AtomicReference<BitList<String>> ref = new AtomicReference<>();
+            Thread thread2 = new Thread(() -> {
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                ref.set(bitList.clone());
+                countDownLatch2.countDown();
+            });
+
+            thread1.start();
+            thread2.start();
+
+            countDownLatch.countDown();
+            countDownLatch2.await();
+
+            Assertions.assertDoesNotThrow(() -> ref.get().iterator().hasNext());
+        }
     }
 }

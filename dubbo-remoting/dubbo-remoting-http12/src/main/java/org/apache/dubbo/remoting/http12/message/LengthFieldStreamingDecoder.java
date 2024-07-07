@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
@@ -46,7 +47,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     private int requiredLength;
 
-    private InputStream dataHeader = new ByteArrayInputStream(new byte[0]);
+    private InputStream dataHeader = StreamUtils.EMPTY;
 
     public LengthFieldStreamingDecoder() {
         this(4);
@@ -85,6 +86,19 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     @Override
+    public final void onStreamClosed() {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            accumulate.close();
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
+    }
+
+    @Override
     public final void setFragmentListener(FragmentListener listener) {
         this.listener = listener;
     }
@@ -93,6 +107,9 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         // We can have reentrancy here when using a direct executor, triggered by calls to
         // request more messages. This is safe as we simply loop until pendingDelivers = 0
         if (inDelivery) {
+            return;
+        }
+        if (closed) {
             return;
         }
         inDelivery = true;

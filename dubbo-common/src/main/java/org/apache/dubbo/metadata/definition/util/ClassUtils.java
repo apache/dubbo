@@ -96,7 +96,7 @@ public final class ClassUtils {
      * @return methods list
      */
     public static List<Method> getPublicNonStaticMethods(final Class<?> clazz) {
-        List<Method> result = new ArrayList<Method>();
+        List<Method> result = new ArrayList<>();
 
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
