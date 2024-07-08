@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.WriteOperation;
 
+import java.util.Map;
+
 /**
  * Dubbo Online
  *
@@ -35,7 +37,8 @@ public class DubboOnlineEndpoint extends AbstractDubboMetadata {
     private DubboOnlineMetadata dubboOnlineMetadata;
 
     @WriteOperation
-    public boolean online() {
-        return dubboOnlineMetadata.online();
+    public Map<String, Object> online() {
+        String servicePattern = ".*";
+        return dubboOnlineMetadata.online(servicePattern);
     }
 }

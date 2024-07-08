@@ -27,7 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dubbo online
@@ -40,20 +42,17 @@ public class DubboOnlineMetadata extends AbstractDubboMetadata {
     @Autowired
     public ApplicationModel applicationModel;
 
-    public boolean online() {
-        System.out.println("执行上线");
-        String servicePattern = ".*";
-        boolean hasService = false;
+    public Map<String, Object> online(String servicePattern) {
+        Map<String, Object> onlineInfo = new LinkedHashMap<>();
 
         Collection<ProviderModel> providerModelList = applicationModel.getApplicationServiceRepository()
                 .allProviderModels();
-        System.out.println(providerModelList);
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
             if (metadata.getServiceKey()
                     .matches(servicePattern) || metadata.getDisplayServiceKey()
                     .matches(servicePattern)) {
-                hasService = true;
+                onlineInfo.put(metadata.getDisplayServiceKey(), "true");
                 List<RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedUrl : statedUrls) {
                     if (!statedUrl.isRegistered()) {
@@ -63,7 +62,7 @@ public class DubboOnlineMetadata extends AbstractDubboMetadata {
             }
         }
 
-        return hasService;
+        return onlineInfo;
     }
 
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
