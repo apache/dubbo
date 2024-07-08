@@ -25,6 +25,8 @@ import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
 
 public class NacosConfigServiceWrapper {
 
+    private static final char ASTERISK_SYMBOL = '*';
+
     private static final String INNERCLASS_SYMBOL = "$";
 
     private static final String INNERCLASS_COMPATIBLE_SYMBOL = "___";
@@ -76,6 +78,8 @@ public class NacosConfigServiceWrapper {
         if (data == null) {
             return null;
         }
-        return data.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL).replace(SLASH_CHAR, HYPHEN_CHAR);
+        return data.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL)
+                .replace(SLASH_CHAR, HYPHEN_CHAR)
+                .replace(ASTERISK_SYMBOL, HYPHEN_CHAR);
     }
 }
