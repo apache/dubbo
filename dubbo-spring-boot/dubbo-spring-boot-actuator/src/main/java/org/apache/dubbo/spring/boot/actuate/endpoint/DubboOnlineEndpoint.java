@@ -19,11 +19,11 @@ package org.apache.dubbo.spring.boot.actuate.endpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.AbstractDubboMetadata;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboOnlineMetadata;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.WriteOperation;
-
-import java.util.Map;
 
 /**
  * Dubbo Online

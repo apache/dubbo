@@ -22,14 +22,14 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Dubbo ready
@@ -45,19 +45,17 @@ public class DubboReadyMetadata extends AbstractDubboMetadata {
     public Map<String, Object> ready() {
         Map<String, Object> readyInfo = new LinkedHashMap<>();
 
-        String config = applicationModel.getFrameworkModel()
-                .getApplicationModels()
-                .stream()
-                .map(applicationModel -> applicationModel.getApplicationConfigManager()
-                        .getApplication())
+        String config = applicationModel.getFrameworkModel().getApplicationModels().stream()
+                .map(applicationModel ->
+                        applicationModel.getApplicationConfigManager().getApplication())
                 .map(o -> o.orElse(null))
                 .filter(Objects::nonNull)
                 .map(ApplicationConfig::getReadinessProbe)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(","));
-        URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
-        List<ReadinessProbe> readinessProbes = applicationModel.getFrameworkModel()
+        URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
+        List<ReadinessProbe> readinessProbes = applicationModel
+                .getFrameworkModel()
                 .getExtensionLoader(ReadinessProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
         if (!readinessProbes.isEmpty()) {

@@ -23,13 +23,13 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ProviderModel.RegisterStatedURL;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Dubbo online
@@ -45,13 +45,12 @@ public class DubboOnlineMetadata extends AbstractDubboMetadata {
     public Map<String, Object> online(String servicePattern) {
         Map<String, Object> onlineInfo = new LinkedHashMap<>();
 
-        Collection<ProviderModel> providerModelList = applicationModel.getApplicationServiceRepository()
-                .allProviderModels();
+        Collection<ProviderModel> providerModelList =
+                applicationModel.getApplicationServiceRepository().allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
-            if (metadata.getServiceKey()
-                    .matches(servicePattern) || metadata.getDisplayServiceKey()
-                    .matches(servicePattern)) {
+            if (metadata.getServiceKey().matches(servicePattern)
+                    || metadata.getDisplayServiceKey().matches(servicePattern)) {
                 onlineInfo.put(metadata.getDisplayServiceKey(), "true");
                 List<RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedUrl : statedUrls) {
@@ -66,7 +65,8 @@ public class DubboOnlineMetadata extends AbstractDubboMetadata {
     }
 
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
-        RegistryFactory registryFactory = statedURL.getRegistryUrl()
+        RegistryFactory registryFactory = statedURL
+                .getRegistryUrl()
                 .getOrDefaultApplicationModel()
                 .getExtensionLoader(RegistryFactory.class)
                 .getAdaptiveExtension();
