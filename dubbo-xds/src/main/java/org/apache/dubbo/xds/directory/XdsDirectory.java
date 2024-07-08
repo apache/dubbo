@@ -165,12 +165,11 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         xdsEndpoints.forEach(e -> {
             String ip = e.getAddress();
             int port = e.getPortValue();
-            URL url = new URL(this.protocolName, ip, port, this.url.getParameters());
+            URL url = new URL(this.protocolName, ip, port, this.serviceType.getName(), this.url.getParameters());
             // set cluster name
             url = url.addParameter("clusterID", clusterName);
             // set load balance policy
             url = url.addParameter("loadbalance", lbPolicy);
-            url.setPath(this.serviceType.getName());
             //  cluster to invoker
             Invoker<T> invoker = this.protocol.refer(this.serviceType, url);
             invokers.add(invoker);
