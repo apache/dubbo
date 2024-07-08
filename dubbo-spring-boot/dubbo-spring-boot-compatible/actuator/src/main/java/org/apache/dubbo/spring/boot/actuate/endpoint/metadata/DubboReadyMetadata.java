@@ -31,6 +31,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Dubbo ready
+ *
+ * @since 3.3.0
+ */
 @Component
 public class DubboReadyMetadata extends AbstractDubboMetadata {
 

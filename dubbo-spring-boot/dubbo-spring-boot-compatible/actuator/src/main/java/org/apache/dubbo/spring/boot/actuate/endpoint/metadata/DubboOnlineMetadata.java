@@ -19,8 +19,6 @@ package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ProviderModel.RegisterStatedURL;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
@@ -31,6 +29,11 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Dubbo online
+ *
+ * @since 3.3.0
+ */
 @Component
 public class DubboOnlineMetadata extends AbstractDubboMetadata {
 
@@ -42,17 +45,18 @@ public class DubboOnlineMetadata extends AbstractDubboMetadata {
         String servicePattern = ".*";
         boolean hasService = false;
 
-        Collection<ProviderModel> providerModelList
-                = applicationModel.getApplicationServiceRepository().allProviderModels();
+        Collection<ProviderModel> providerModelList = applicationModel.getApplicationServiceRepository()
+                .allProviderModels();
         System.out.println(providerModelList);
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
-            if (metadata.getServiceKey().matches(servicePattern)
-                    || metadata.getServiceKey().matches(servicePattern)) {
+            if (metadata.getServiceKey()
+                    .matches(servicePattern) || metadata.getDisplayServiceKey()
+                    .matches(servicePattern)) {
                 hasService = true;
                 List<RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedUrl : statedUrls) {
-                    if(!statedUrl.isRegistered()){
+                    if (!statedUrl.isRegistered()) {
                         doExport(statedUrl);
                     }
                 }
@@ -62,9 +66,8 @@ public class DubboOnlineMetadata extends AbstractDubboMetadata {
         return hasService;
     }
 
-    protected void doExport(ProviderModel.RegisterStatedURL statedURL){
-        RegistryFactory registryFactory = statedURL
-                .getRegistryUrl()
+    protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory = statedURL.getRegistryUrl()
                 .getOrDefaultApplicationModel()
                 .getExtensionLoader(RegistryFactory.class)
                 .getAdaptiveExtension();
