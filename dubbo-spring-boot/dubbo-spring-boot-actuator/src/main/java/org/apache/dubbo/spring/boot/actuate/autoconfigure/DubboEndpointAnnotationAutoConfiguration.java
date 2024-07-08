@@ -45,9 +45,8 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
  */
 @ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @Configuration
-@PropertySource(
-        name = "Dubbo Endpoints Default Properties",
-        value = "classpath:/META-INF/dubbo-endpoints-default.properties")
+@PropertySource(name = "Dubbo Endpoints Default Properties", value = "classpath:/META-INF/dubbo-endpoints-default"
+        + ".properties")
 public class DubboEndpointAnnotationAutoConfiguration {
 
     @Bean

@@ -45,15 +45,18 @@ public class DubboReadyMetadata extends AbstractDubboMetadata {
     public Map<String, Object> ready() {
         Map<String, Object> readyInfo = new LinkedHashMap<>();
 
-        String config = applicationModel.getFrameworkModel().getApplicationModels().stream()
-                .map(applicationModel ->
-                        applicationModel.getApplicationConfigManager().getApplication())
+        String config = applicationModel.getFrameworkModel()
+                .getApplicationModels()
+                .stream()
+                .map(applicationModel -> applicationModel.getApplicationConfigManager()
+                        .getApplication())
                 .map(o -> o.orElse(null))
                 .filter(Objects::nonNull)
                 .map(ApplicationConfig::getReadinessProbe)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(","));
-        URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
+        URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
         List<ReadinessProbe> readinessProbes = applicationModel.getFrameworkModel()
                 .getExtensionLoader(ReadinessProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
