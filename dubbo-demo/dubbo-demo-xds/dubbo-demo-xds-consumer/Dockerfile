@@ -14,5 +14,8 @@
 # limitations under the License.
 
 FROM openjdk:8-jdk
-ADD ./target/dubbo-demo-xds-consumer-3.3.0-beta.2-SNAPSHOT.jar dubbo-demo-xds-consumer-3.3.0-beta.2-SNAPSHOT.jar
-CMD java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=31000 /dubbo-demo-xds-consumer-3.3.0-beta.2-SNAPSHOT.jar
+ARG ARTIFACT
+ADD ./target/$ARTIFACT app.jar
+CMD java -jar /app.jar
+EXPOSE 50050
+EXPOSE 31000
