@@ -52,6 +52,9 @@ spec:
       version: v1
   template:
     metadata:
+      annotations:
+        inject.istio.io/templates: grpc-agent
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
       labels:
         app: dubbo-demo-xds-consumer
         version: v1
@@ -85,6 +88,9 @@ spec:
       version: v1
   template:
     metadata:
+      annotations:
+        inject.istio.io/templates: grpc-agent
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
       labels:
         app: dubbo-demo-xds-provider
         version: v1
