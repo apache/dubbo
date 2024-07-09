@@ -59,14 +59,14 @@ spec:
       serviceAccountName: dubbo-demo-xds-consumer
       containers:
         - name: dubbo-demo-xds-consumer
-          image: localhost:5000/dubbo-demo-xds-consumer:latest
+          image: registry.cn-hangzhou.aliyuncs.com/apache-dubbo/xds-demo-consumer:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 50050
             - containerPort: 31000  #for JVM remote debug
           env:
             - name: JAVA_TOOL_OPTIONS
-              value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=31000"
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=31000"
   replicas: 1
 
 ---
@@ -92,14 +92,14 @@ spec:
       serviceAccountName: dubbo-demo-xds-provider
       containers:
         - name: dubbo-demo-xds-provider
-          image: localhost:5000/dubbo-demo-xds-provider:latest
+          image: registry.cn-hangzhou.aliyuncs.com/apache-dubbo/xds-demo-provider:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 50051 #for JVM remote debug
             - containerPort: 31001
           env:
             - name: JAVA_TOOL_OPTIONS
-              value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=31001"
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=31001"
 
   replicas: 1
 

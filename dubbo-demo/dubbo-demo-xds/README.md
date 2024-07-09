@@ -9,20 +9,20 @@
 * Then, install istio following [installation guide](https://istio.io/latest/docs/setup/getting-started/)
   * Use `kubectl get pods -n istio-system` to check if istio is installed correctly.
 
-* If you are not using docker desktop, you need to install docker to build and manage image.
 
 ## Remote Deployment
 Run the following command to deploy pre-prepared images:
 
 ```shell
-kubectl apply -f
+kubectl apply -f ./services_remote.yaml
 ```
 
 ## Local Development
 If you have code changed locally and want to deploy it to remote cluster, follow the instructions below to learn how to build and deploy from source code.
 
 ### Deploy Example
-> Use `docker run -d -p 5000:5000 --name local-registry registry:2` to enable local image repository.
+> * If you are not using docker desktop, you need to install docker to build and manage image.
+> * Use `docker run -d -p 5000:5000 --name local-registry registry:2` to enable local image repository.
 
 **When you have completed the above steps:**
 * Run `chmod 777 ./start.sh ./update.sh`
