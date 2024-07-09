@@ -91,7 +91,6 @@ class ExceptionUtilsTest {
 
         URL providerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter2.class.getName())
                 .addParameter(CommonConstants.TIMEOUT_KEY, 10000);
-        ;
 
         ModuleServiceRepository serviceRepository =
                 applicationModel.getDefaultModule().getServiceRepository();

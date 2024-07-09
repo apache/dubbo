@@ -28,6 +28,8 @@ public interface StreamingDecoder {
 
     void close();
 
+    void onStreamClosed();
+
     void setFragmentListener(FragmentListener listener);
 
     interface FragmentListener {

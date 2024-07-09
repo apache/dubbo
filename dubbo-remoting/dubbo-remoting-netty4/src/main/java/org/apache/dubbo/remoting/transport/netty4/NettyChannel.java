@@ -61,14 +61,13 @@ final class NettyChannel extends AbstractChannel {
     /**
      * the cache for netty channel and dubbo channel
      */
-    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP =
-            new ConcurrentHashMap<Channel, NettyChannel>();
+    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<>();
     /**
      * netty channel
      */
     private final Channel channel;
 
-    private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     private final AtomicBoolean active = new AtomicBoolean(false);
 
@@ -151,12 +150,12 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public InetSocketAddress getLocalAddress() {
-        return (InetSocketAddress) channel.localAddress();
+        return AddressUtils.getLocalAddress(channel);
     }
 
     @Override
     public InetSocketAddress getRemoteAddress() {
-        return (InetSocketAddress) channel.remoteAddress();
+        return AddressUtils.getRemoteAddress(channel);
     }
 
     @Override

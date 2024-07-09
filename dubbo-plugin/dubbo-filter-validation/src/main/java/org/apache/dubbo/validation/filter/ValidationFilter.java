@@ -105,6 +105,7 @@ public class ValidationFilter implements Filter {
     private boolean needValidate(URL url, String methodName) {
         return validation != null
                 && !methodName.startsWith("$")
-                && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY));
+                && ConfigUtils.isNotEmpty(url.getMethodParameter(methodName, VALIDATION_KEY))
+                && !"false".equalsIgnoreCase(url.getParameter(VALIDATION_KEY));
     }
 }

@@ -61,6 +61,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     // works only for DNS service discovery
     private String instanceMetadata;
 
+    public static final String VERSION = "1.0.0";
+
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         registryManager = RegistryManager.getInstance(applicationModel);
@@ -96,21 +98,25 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getExportedServiceURLs();
-            if (serviceURLs == null) {
-                continue;
-            }
-            for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
-                SortedSet<URL> urls = entry.getValue();
-                if (urls != null) {
-                    for (URL url : urls) {
-                        if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
-                            bizURLs.add(url);
-                        }
+            joinNonMetadataServiceUrls(bizURLs, serviceURLs);
+        }
+        return MetadataService.toSortedStrings(bizURLs);
+    }
+
+    private void joinNonMetadataServiceUrls(SortedSet<URL> bizURLs, Map<String, SortedSet<URL>> serviceURLs) {
+        if (serviceURLs == null) {
+            return;
+        }
+        for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
+            SortedSet<URL> urls = entry.getValue();
+            if (urls != null) {
+                for (URL url : urls) {
+                    if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
+                        bizURLs.add(url);
                     }
                 }
             }
         }
-        return MetadataService.toSortedStrings(bizURLs);
     }
 
     private SortedSet<String> getAllUnmodifiableSubscribedURLs() {
@@ -119,19 +125,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getSubscribedServiceURLs();
-            if (serviceURLs == null) {
-                continue;
-            }
-            for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
-                SortedSet<URL> urls = entry.getValue();
-                if (urls != null) {
-                    for (URL url : urls) {
-                        if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
-                            bizURLs.add(url);
-                        }
-                    }
-                }
-            }
+            joinNonMetadataServiceUrls(bizURLs, serviceURLs);
         }
         return MetadataService.toSortedStrings(bizURLs);
     }

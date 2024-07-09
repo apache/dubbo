@@ -126,7 +126,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 doOnData(message);
             } catch (Throwable t) {
                 logError(t);
-                onError(t);
+                onError(message, t);
+            } finally {
+                onFinally(message);
             }
         });
     }
@@ -160,10 +162,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected void logError(Throwable t) {
         if (t instanceof HttpStatusException) {
             HttpStatusException e = (HttpStatusException) t;
-            if (e.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR.getCode()) {
+            if (e.getStatusCode() >= HttpStatus.BAD_REQUEST.getCode()) {
                 LOGGER.debug("http status exception", e);
-                return;
             }
+            return;
         }
         LOGGER.error(INTERNAL_ERROR, "", "", "server internal error", t);
     }
@@ -182,6 +184,18 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             }
         }
         throw new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR.getCode(), throwable);
+    }
+
+    protected void onError(MESSAGE message, Throwable throwable) {
+        onError(throwable);
+    }
+
+    protected void onFinally(MESSAGE message) {
+        try {
+            message.close();
+        } catch (Exception e) {
+            onError(e);
+        }
     }
 
     protected RpcInvocation buildRpcInvocation(RpcInvocationBuildContext context) {
@@ -218,8 +232,15 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         // customizer RpcInvocation
         headerFilters.forEach(f -> f.invoke(invoker, inv));
 
+        initializeAltSvc(url);
+
         return onBuildRpcInvocationCompletion(inv);
     }
+
+    /**
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Alt-Svc">Alt-Svc</a>
+     */
+    protected void initializeAltSvc(URL url) {}
 
     protected RpcInvocation onBuildRpcInvocationCompletion(RpcInvocation invocation) {
         String timeoutString = httpMetadata.headers().getFirst(TripleHeaderEnum.SERVICE_TIMEOUT.getHeader());

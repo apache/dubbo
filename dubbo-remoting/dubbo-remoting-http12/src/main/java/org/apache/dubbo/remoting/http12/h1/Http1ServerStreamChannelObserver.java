@@ -17,6 +17,9 @@
 package org.apache.dubbo.remoting.http12.h1;
 
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
 import java.io.IOException;
@@ -31,6 +34,13 @@ public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver
 
     public Http1ServerStreamChannelObserver(HttpChannel httpChannel) {
         super(httpChannel);
+    }
+
+    @Override
+    protected HttpMetadata encodeHttpMetadata() {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set(HttpHeaderNames.TRANSFER_ENCODING.getName(), "chunked");
+        return new Http1Metadata(httpHeaders);
     }
 
     @Override

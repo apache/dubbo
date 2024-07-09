@@ -131,7 +131,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     /**
      * A random port cache, the different protocols who have no port specified have different random port
      */
-    private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
+    private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<>();
 
     private Protocol protocolSPI;
 
@@ -675,7 +675,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private Map<String, String> buildAttributes(ProtocolConfig protocolConfig) {
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
         // append params with basic configs,
@@ -1004,14 +1004,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        List<CommonConfigPostProcessor> commonConfigPostProcessors = this.getExtensionLoader(
-                        CommonConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
 
-        HashSet<CommonConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
+        HashSet<ConfigPostProcessor> allConfigPostProcessor = new HashSet<>();
 
         // merge common and old config
-        allConfigPostProcessor.addAll(commonConfigPostProcessors);
+        allConfigPostProcessor.addAll(configPostProcessors);
         allConfigPostProcessor.addAll(configPostProcessors);
 
         allConfigPostProcessor.forEach(component -> component.postProcessServiceConfig(this));

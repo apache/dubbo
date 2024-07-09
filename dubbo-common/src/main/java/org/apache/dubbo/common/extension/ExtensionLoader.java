@@ -75,6 +75,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -120,6 +121,7 @@ public class ExtensionLoader<T> {
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
+    private final ReentrantLock loadExtensionClassesLock = new ReentrantLock();
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = Collections.synchronizedMap(new LinkedHashMap<>());
@@ -951,7 +953,8 @@ public class ExtensionLoader<T> {
     private Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if (classes == null) {
-            synchronized (cachedClasses) {
+            loadExtensionClassesLock.lock();
+            try {
                 classes = cachedClasses.get();
                 if (classes == null) {
                     try {
@@ -968,6 +971,8 @@ public class ExtensionLoader<T> {
                     }
                     cachedClasses.set(classes);
                 }
+            } finally {
+                loadExtensionClassesLock.unlock();
             }
         }
         return classes;

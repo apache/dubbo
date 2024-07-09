@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -24,6 +25,7 @@ import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
+import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.h2.command.Http2WriteQueueChannel;
 import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -41,14 +43,18 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
 
     private final FrameworkModel frameworkModel;
 
+    private final TripleConfig tripleConfig;
+
     private final Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
 
     public NettyHttp2ProtocolSelectorHandler(
             URL url,
             FrameworkModel frameworkModel,
+            TripleConfig tripleConfig,
             Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory) {
         this.url = url;
         this.frameworkModel = frameworkModel;
+        this.tripleConfig = tripleConfig;
         this.defaultHttp2ServerTransportListenerFactory = defaultHttp2ServerTransportListenerFactory;
     }
 
@@ -60,7 +66,7 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
         if (factory == null) {
             throw new UnsupportedMediaTypeException(contentType);
         }
-        H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) ctx.channel());
+        H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) ctx.channel(), tripleConfig);
         HttpWriteQueueHandler writeQueueHandler =
                 ctx.channel().parent().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {
@@ -68,8 +74,9 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
             h2StreamChannel = new Http2WriteQueueChannel(h2StreamChannel, writeQueue);
         }
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast(
-                new NettyHttp2FrameHandler(h2StreamChannel, factory.newInstance(h2StreamChannel, url, frameworkModel)));
+        Http2TransportListener http2TransportListener = factory.newInstance(h2StreamChannel, url, frameworkModel);
+        ctx.channel().closeFuture().addListener(future -> http2TransportListener.close());
+        pipeline.addLast(new NettyHttp2FrameHandler(h2StreamChannel, http2TransportListener));
         pipeline.remove(this);
         ctx.fireChannelRead(metadata);
     }

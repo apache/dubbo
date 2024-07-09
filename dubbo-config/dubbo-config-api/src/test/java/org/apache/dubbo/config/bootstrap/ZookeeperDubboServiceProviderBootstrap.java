@@ -35,13 +35,13 @@ public class ZookeeperDubboServiceProviderBootstrap {
                         .protocol("zookeeper")
                         .parameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE))
                 .protocol("dubbo", builder -> builder.port(-1).name("dubbo"))
-                .protocol("rest", builder -> builder.port(8081).name("rest"))
+                .protocol("tri", builder -> builder.port(8081).name("tri"))
                 .service("echo", builder -> builder.interfaceClass(EchoService.class)
                         .ref(new EchoServiceImpl())
                         .protocolIds("dubbo"))
                 .service("user", builder -> builder.interfaceClass(UserService.class)
                         .ref(new UserServiceImpl())
-                        .protocolIds("rest"))
+                        .protocolIds("tri"))
                 .start()
                 .await();
     }

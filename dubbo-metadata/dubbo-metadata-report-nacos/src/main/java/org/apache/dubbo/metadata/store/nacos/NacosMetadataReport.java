@@ -258,7 +258,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         if (StringUtils.isEmpty(content)) {
             return Collections.emptyList();
         }
-        return new ArrayList<String>(Arrays.asList(URL.decode(content)));
+        return new ArrayList<>(Arrays.asList(URL.decode(content)));
     }
 
     @Override

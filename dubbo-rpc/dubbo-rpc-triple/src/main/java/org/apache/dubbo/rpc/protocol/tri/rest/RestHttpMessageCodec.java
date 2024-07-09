@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
@@ -108,6 +109,8 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
                 if (messageEncoder.mediaType().isPureText() && type != String.class) {
                     data = typeConverter.convert(data, String.class);
                 }
+            } catch (HttpStatusException e) {
+                throw e;
             } catch (Exception e) {
                 throw new EncodeException(e);
             }

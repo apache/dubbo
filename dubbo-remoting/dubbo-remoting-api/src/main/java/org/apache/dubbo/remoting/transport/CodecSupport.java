@@ -42,9 +42,9 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
 
 public class CodecSupport {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CodecSupport.class);
-    private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
-    private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
-    private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
+    private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<>();
+    private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<>();
+    private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<>();
     // Cache null object serialize results, for heartbeat request/response serialize use.
     private static ConcurrentMap<Byte, byte[]> ID_NULLBYTES_MAP = new ConcurrentHashMap<>();
 

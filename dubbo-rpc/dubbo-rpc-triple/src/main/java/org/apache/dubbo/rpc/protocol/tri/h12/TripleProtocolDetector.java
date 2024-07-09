@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.buffer.ByteBufferBackedChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.http12.HttpMethods;
+import org.apache.dubbo.remoting.http12.HttpVersion;
 
 import io.netty.handler.codec.http2.Http2CodecUtil;
 
@@ -73,20 +74,5 @@ public class TripleProtocolDetector implements ProtocolDetector {
             }
         }
         return false;
-    }
-
-    public enum HttpVersion {
-        HTTP1("http1"),
-        HTTP2("http2");
-
-        private final String version;
-
-        HttpVersion(String version) {
-            this.version = version;
-        }
-
-        public String getVersion() {
-            return version;
-        }
     }
 }

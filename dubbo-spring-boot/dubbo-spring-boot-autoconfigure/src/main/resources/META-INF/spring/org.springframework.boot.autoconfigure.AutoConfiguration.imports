@@ -1,1 +1,2 @@
 org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBinding2AutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.DubboTripleAutoConfiguration

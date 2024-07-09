@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.support.Nested;
+
 import java.io.Serializable;
 
 /**
@@ -68,6 +70,12 @@ public class RestConfig implements Serializable {
      */
     private String formatParameterName;
 
+    /**
+     *  The config is used to set the Global CORS configuration properties.
+     */
+    @Nested
+    private CorsConfig cors;
+
     public Integer getMaxBodySize() {
         return maxBodySize;
     }
@@ -114,5 +122,13 @@ public class RestConfig implements Serializable {
 
     public void setFormatParameterName(String formatParameterName) {
         this.formatParameterName = formatParameterName;
+    }
+
+    public CorsConfig getCors() {
+        return cors;
+    }
+
+    public void setCors(CorsConfig cors) {
+        this.cors = cors;
     }
 }

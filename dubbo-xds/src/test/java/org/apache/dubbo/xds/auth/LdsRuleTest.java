@@ -53,7 +53,7 @@ import io.envoyproxy.envoy.config.route.v3.HeaderMatcher;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpFilter;
 import io.envoyproxy.envoy.type.matcher.v3.RegexMatcher;
 import io.envoyproxy.envoy.type.matcher.v3.StringMatcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LdsRuleTest {
 

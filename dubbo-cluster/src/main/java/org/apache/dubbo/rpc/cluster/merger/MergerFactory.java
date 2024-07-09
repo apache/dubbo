@@ -36,7 +36,7 @@ public class MergerFactory implements ScopeModelAware {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MergerFactory.class);
 
-    private ConcurrentMap<Class<?>, Merger<?>> MERGER_CACHE = new ConcurrentHashMap<Class<?>, Merger<?>>();
+    private ConcurrentMap<Class<?>, Merger<?>> MERGER_CACHE = new ConcurrentHashMap<>();
     private ScopeModel scopeModel;
 
     @Override

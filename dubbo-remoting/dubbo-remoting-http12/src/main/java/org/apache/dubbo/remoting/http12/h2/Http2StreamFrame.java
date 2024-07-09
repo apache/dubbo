@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12.h2;
 
 public interface Http2StreamFrame {
 
-    int id();
+    long id();
 
     String name();
 

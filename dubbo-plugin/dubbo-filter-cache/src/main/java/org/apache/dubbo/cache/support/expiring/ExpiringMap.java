@@ -158,7 +158,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 
     @Override
     public Collection<V> values() {
-        List<V> list = new ArrayList<V>();
+        List<V> list = new ArrayList<>();
         Set<Entry<K, ExpiryObject>> delegatedSet = delegateMap.entrySet();
         for (Entry<K, ExpiryObject> entry : delegatedSet) {
             ExpiryObject value = entry.getValue();

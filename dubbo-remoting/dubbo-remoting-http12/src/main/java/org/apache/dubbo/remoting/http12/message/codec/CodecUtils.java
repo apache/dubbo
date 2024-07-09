@@ -40,8 +40,8 @@ public final class CodecUtils {
     public CodecUtils(FrameworkModel frameworkModel) {
         decoderFactories = frameworkModel.getActivateExtensions(HttpMessageDecoderFactory.class);
         encoderFactories = frameworkModel.getActivateExtensions(HttpMessageEncoderFactory.class);
-        decoderFactories.forEach(factory -> decoderCache.put(factory.mediaType().getName(), Optional.of(factory)));
-        encoderFactories.forEach(factory -> encoderCache.put(factory.mediaType().getName(), Optional.of(factory)));
+        decoderFactories.forEach(f -> decoderCache.putIfAbsent(f.mediaType().getName(), Optional.of(f)));
+        encoderFactories.forEach(f -> encoderCache.putIfAbsent(f.mediaType().getName(), Optional.of(f)));
     }
 
     public HttpMessageDecoder determineHttpMessageDecoder(URL url, FrameworkModel frameworkModel, String mediaType) {

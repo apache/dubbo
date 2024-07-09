@@ -126,11 +126,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metadata-rest</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metadata-report-zookeeper</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -266,6 +261,11 @@
       <artifactId>dubbo-rest-spring</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-triple-servlet</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- registry -->
     <dependency>
@@ -307,12 +307,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-http</artifactId>
+      <artifactId>dubbo-remoting-http12</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-http12</artifactId>
+      <artifactId>dubbo-remoting-http3</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -323,16 +323,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-netty4</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-zookeeper-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-remoting-zookeeper</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -355,11 +345,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rpc-injvm</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rpc-rest</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -400,6 +385,11 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-spring-boot-3-autoconfigure</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -31,6 +31,6 @@ public class TagStateRouterFactory extends CacheableStateRouterFactory {
 
     @Override
     protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
-        return new TagStateRouter<T>(url);
+        return new TagStateRouter<>(url);
     }
 }

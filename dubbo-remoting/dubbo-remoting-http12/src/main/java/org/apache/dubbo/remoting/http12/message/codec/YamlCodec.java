@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
@@ -43,6 +44,8 @@ public class YamlCodec implements HttpMessageCodec {
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
             return createYaml().loadAs(reader, (Class) targetType);
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable t) {
             throw new DecodeException("Error decoding yaml", t);
         }
@@ -69,6 +72,8 @@ public class YamlCodec implements HttpMessageCodec {
                 }
             }
             return results;
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable t) {
             throw new DecodeException("Error decoding yaml", t);
         }
@@ -78,6 +83,8 @@ public class YamlCodec implements HttpMessageCodec {
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try (OutputStreamWriter writer = new OutputStreamWriter(os, charset)) {
             createYaml().dump(data, writer);
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable t) {
             throw new EncodeException("Error encoding yaml", t);
         }
@@ -87,6 +94,8 @@ public class YamlCodec implements HttpMessageCodec {
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
         try (OutputStreamWriter writer = new OutputStreamWriter(os, charset)) {
             createYaml().dump(data, writer);
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable t) {
             throw new EncodeException("Error encoding yaml", t);
         }
