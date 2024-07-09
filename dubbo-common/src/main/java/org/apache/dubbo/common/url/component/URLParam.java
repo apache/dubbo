@@ -483,7 +483,7 @@ public class URLParam {
      * @return A new URLParam
      */
     public URLParam addParameter(String key, String value) {
-        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(key)) {
             return this;
         }
         return addParameters(Collections.singletonMap(key, value));
@@ -497,7 +497,7 @@ public class URLParam {
      * @return A new URLParam
      */
     public URLParam addParameterIfAbsent(String key, String value) {
-        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(key)) {
             return this;
         }
         if (hasParameter(key)) {
@@ -567,7 +567,7 @@ public class URLParam {
             if (skipIfPresent && hasParameter(entry.getKey())) {
                 continue;
             }
-            if (entry.getKey() == null || entry.getValue() == null) {
+            if (entry.getKey() == null) {
                 continue;
             }
             int keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, entry.getKey());
