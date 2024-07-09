@@ -39,6 +39,7 @@ limitations under the License.
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>hessian-lite</artifactId>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>
