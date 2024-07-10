@@ -24,9 +24,25 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dubbo-spring-boot-starter</artifactId>
+  <artifactId>dubbo-spring-boot-3-starter</artifactId>
   <packaging>jar</packaging>
-  <description>Apache Dubbo Spring Boot Starter</description>
+  <description>Apache Dubbo Spring Boot 3 Starter</description>
+
+  <properties>
+    <spring-boot.version>3.2.1</spring-boot.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- Spring Boot dependencies -->
@@ -41,5 +57,12 @@
       <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-spring-boot-3-autoconfigure</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
+
 </project>
