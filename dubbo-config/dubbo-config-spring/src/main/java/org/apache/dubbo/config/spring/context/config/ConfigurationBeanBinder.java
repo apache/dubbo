@@ -25,8 +25,6 @@ import org.springframework.core.env.Environment;
 /**
  * The binder for the configuration bean
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.3
  */
 public interface ConfigurationBeanBinder {
 

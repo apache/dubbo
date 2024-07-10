@@ -30,11 +30,9 @@ import org.springframework.core.env.PropertySources;
 /**
  * Enables Spring's annotation-driven configuration bean from {@link PropertySources properties}.
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see ConfigurationBeanBindingRegistrar
  * @see ConfigurationBeanBindingPostProcessor
  * @see ConfigurationBeanCustomizer
- * @since 1.0.3
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)

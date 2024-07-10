@@ -24,9 +24,7 @@ import org.springframework.validation.DataBinder;
 /**
  * The default {@link ConfigurationBeanBinder} implementation
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see ConfigurationBeanBinder
- * @since 1.0.3
  */
 public class DefaultConfigurationBeanBinder implements ConfigurationBeanBinder {
 

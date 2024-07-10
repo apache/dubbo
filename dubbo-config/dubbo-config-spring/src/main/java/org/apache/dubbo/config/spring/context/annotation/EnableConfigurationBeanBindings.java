@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Import;
 /**
  * The annotation composes the multiple {@link EnableConfigurationBeanBinding EnableConfigurationBeanBindings}
  *
- * @since 1.0.4
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

@@ -51,9 +51,7 @@ import static org.springframework.util.ObjectUtils.nullSafeEquals;
 /**
  * Annotated {@link BeanDefinition} Utilities
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see BeanDefinition
- * @since 2017.01.09
  */
 public abstract class AnnotatedBeanDefinitionRegistryUtils {
 

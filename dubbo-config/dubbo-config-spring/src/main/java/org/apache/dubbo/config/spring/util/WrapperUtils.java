@@ -25,7 +25,6 @@ import org.springframework.util.Assert;
 /**
  * The utilities class for wrapper interfaces
  *
- * @since 1.0.6
  */
 public abstract class WrapperUtils {
 
