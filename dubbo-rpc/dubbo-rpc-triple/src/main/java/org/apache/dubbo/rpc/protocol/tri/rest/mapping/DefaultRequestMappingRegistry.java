@@ -61,6 +61,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private RestConfig restConfig;
     private List<RequestMappingResolver> resolvers;
     private RadixTree<Registration> tree;
+    private Map<RequestMapping, HandlerMeta> handlerMetaMap;
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -143,6 +144,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             registration.meta = handler;
             for (PathExpression path : mapping.getPathCondition().getExpressions()) {
                 tree.addPath(path, registration);
+                handlerMetaMap.put(mapping, handler);
             }
         } finally {
             lock.writeLock().unlock();
@@ -317,8 +319,11 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 return tryExists(new KeyString(path, i, cs), method);
             }
         }
-
         return false;
+    }
+
+    public Map<RequestMapping, HandlerMeta> getRegistrations() {
+        return handlerMetaMap;
     }
 
     private boolean tryExists(KeyString path, String method) {

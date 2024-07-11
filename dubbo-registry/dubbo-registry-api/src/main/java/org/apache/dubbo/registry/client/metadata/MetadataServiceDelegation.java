@@ -27,7 +27,6 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.OpenAPIGenerator;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
-import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
 

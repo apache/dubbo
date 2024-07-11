@@ -60,7 +60,7 @@ public class OpenAPIGenerator {
         Paths paths = new Paths();
 
         handlerMetaMap.forEach((key, value) -> {
-            if(value.getMethodDescriptor().getMethodName().contains("metadata")) return;
+            if (value.getMethodDescriptor().getMethodName().contains("metadata")) return;
             Server server = new Server();
             server.setUrl(value.getService().getUrl().toString());
             servers.add(server);
