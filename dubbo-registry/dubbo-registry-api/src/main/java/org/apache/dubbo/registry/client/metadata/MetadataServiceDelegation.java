@@ -24,9 +24,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.OpenAPIGenerator;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,6 +58,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
+    private final DefaultRequestMappingRegistry requestMappingRegistry;
     private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap =
             new ConcurrentHashMap<>();
     private URL url;
@@ -64,6 +68,10 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         registryManager = RegistryManager.getInstance(applicationModel);
+        requestMappingRegistry = applicationModel
+                .getFrameworkModel()
+                .getBeanFactory()
+                .getOrRegisterBean(DefaultRequestMappingRegistry.class);
     }
 
     /**
@@ -218,6 +226,12 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
         instanceMetadataChangedListenerMap.put(consumerId, listener);
         return instanceMetadata;
+    }
+
+    @Override
+    public String getOpenAPISchema() {
+        OpenAPIGenerator generator = new OpenAPIGenerator(requestMappingRegistry);
+        return generator.generateOpenAPIDocument();
     }
 
     private SortedSet<String> getServiceURLs(

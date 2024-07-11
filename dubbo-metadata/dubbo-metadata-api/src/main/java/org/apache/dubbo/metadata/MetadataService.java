@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.rest.Mapping;
 
 import java.util.Collections;
 import java.util.List;
@@ -226,4 +227,14 @@ public interface MetadataService {
      * @since 3.0
      */
     String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener);
+
+    /**
+     * Get OpenAPI Schema
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     * @return OpenAPI Schema
+     * @since 3.3
+     */
+    @Mapping("/openapi")
+    String getOpenAPISchema();
 }

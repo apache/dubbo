@@ -65,16 +65,15 @@ public class ConfigurableMetadataServiceExporter {
                     .getInternalServiceExecutor();
             this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
                     .interfaceClass(MetadataService.class)
-                    .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
+                    .protocol("tri", METADATA_SERVICE_PROTOCOL_KEY)
                     .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
                     .registryId("internal-metadata-registry")
                     .executor(internalServiceExecutor)
                     .ref(metadataService)
                     .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
-
             // export
             serviceConfig.export();
-
+            serviceConfig.getExportedUrls().forEach(System.out::println);
             metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));
             if (logger.isInfoEnabled()) {
                 logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
