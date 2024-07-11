@@ -727,7 +727,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         long startTime = System.currentTimeMillis();
         long checkDeadline = startTime + timeout;
         do {
-            logger.info("Waiting for service " + getUniqueServiceName() + " to be available..., set 'dubbo.consumer.check=false' to skip check.");
+            logger.info("Waiting for service " + getUniqueServiceName()
+                    + " to be available..., set 'dubbo.consumer.check=false' to skip check.");
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
