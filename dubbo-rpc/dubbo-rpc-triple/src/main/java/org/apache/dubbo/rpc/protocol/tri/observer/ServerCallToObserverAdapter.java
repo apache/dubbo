@@ -84,8 +84,20 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void onError(Throwable throwable) {
-        final TriRpcStatus status = TriRpcStatus.getStatus(throwable);
-        onCompleted(status);
+        // Log the error
+        LOGGER.error("ServerCallToObserverAdapter error: ", throwable);
+
+        if (isNeedReturnException()) {
+            // Handle custom logic, pass the exception directly
+            call.setExceptionCode(exceptionCode);
+            call.setNeedReturnException(isNeedReturnException);
+            call.close(TriRpcStatus.fromCode(exceptionCode).withCause(throwable), attachments);
+        } else {
+            // Complete the call using the status derived from the Throwable
+            final TriRpcStatus status = TriRpcStatus.getStatus(throwable);
+            onCompleted(status);
+        }
+        setTerminated();
     }
 
     public void onCompleted(TriRpcStatus status) {
