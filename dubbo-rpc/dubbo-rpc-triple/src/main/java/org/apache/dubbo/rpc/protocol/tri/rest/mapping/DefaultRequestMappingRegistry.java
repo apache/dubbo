@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -61,7 +62,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private RestConfig restConfig;
     private List<RequestMappingResolver> resolvers;
     private RadixTree<Registration> tree;
-    private Map<RequestMapping, HandlerMeta> handlerMetaMap;
+    private Map<RequestMapping, HandlerMeta> handlerMetaMap = new HashMap<>();
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -144,8 +145,8 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             registration.meta = handler;
             for (PathExpression path : mapping.getPathCondition().getExpressions()) {
                 tree.addPath(path, registration);
-                handlerMetaMap.put(mapping, handler);
             }
+            handlerMetaMap.put(mapping, handler);
         } finally {
             lock.writeLock().unlock();
         }
