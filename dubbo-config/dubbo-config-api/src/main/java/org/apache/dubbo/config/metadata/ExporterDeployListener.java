@@ -20,7 +20,6 @@ import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
-import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegationV2;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -84,8 +83,7 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
                 applicationModel.getBeanFactory().getOrRegisterBean(MetadataServiceDelegation.class);
 
         if (metadataServiceExporter == null) {
-            metadataServiceExporter =
-                    new ConfigurableMetadataServiceExporter(applicationModel, metadataService);
+            metadataServiceExporter = new ConfigurableMetadataServiceExporter(applicationModel, metadataService);
             // fixme, let's disable local metadata service export at this moment
             if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType(applicationModel))
                     && !INTERFACE_REGISTER_MODE.equals(getRegisterMode(applicationModel))) {
