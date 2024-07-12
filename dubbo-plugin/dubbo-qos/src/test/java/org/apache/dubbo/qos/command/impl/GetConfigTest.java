@@ -73,6 +73,7 @@ class GetConfigTest {
 
         Assertions.assertNotNull(new GetConfig(frameworkModel).execute(commandContext, null));
     }
+
     @Test
     void testEmptyId() {
         FrameworkModel frameworkModel = new FrameworkModel();
