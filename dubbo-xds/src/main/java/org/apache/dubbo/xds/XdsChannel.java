@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.BootstrapperImpl;
+import org.apache.dubbo.xds.bootstrap.DubboBootstrapperImpl;
 import org.apache.dubbo.xds.security.api.CertPair;
 import org.apache.dubbo.xds.security.api.CertSource;
 
@@ -95,7 +96,7 @@ public class XdsChannel {
                             .build();
                 }
             } else {
-                BootstrapperImpl bootstrapper = new BootstrapperImpl();
+                BootstrapperImpl bootstrapper = new DubboBootstrapperImpl();
                 Bootstrapper.BootstrapInfo bootstrapInfo = bootstrapper.bootstrap();
                 URLAddress address =
                         URLAddress.parse(bootstrapInfo.servers().get(0).target(), null, false);
