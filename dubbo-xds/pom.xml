@@ -95,6 +95,11 @@
       <artifactId>grpc-netty-shaded</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-xds</artifactId>
+      <version>1.64.0</version>
+    </dependency>
+    <dependency>
       <groupId>io.envoyproxy.controlplane</groupId>
       <artifactId>api</artifactId>
     </dependency>
