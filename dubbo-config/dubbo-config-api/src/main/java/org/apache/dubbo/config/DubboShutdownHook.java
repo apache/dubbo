@@ -158,27 +158,6 @@ public class DubboShutdownHook extends Thread {
         }
     }
 
-    /**
-     * Unregister the ShutdownHook
-     */
-    public void unregister() {
-        if (!ignoreListenShutdownHook && registered.compareAndSet(true, false)) {
-            if (this.isAlive()) {
-                // DubboShutdownHook thread is running
-                return;
-            }
-            try {
-                Runtime.getRuntime().removeShutdownHook(this);
-            } catch (IllegalStateException e) {
-                logger.warn(
-                        CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
-            } catch (Exception e) {
-                logger.warn(
-                        CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
-            }
-        }
-    }
-
     public boolean getRegistered() {
         return registered.get();
     }

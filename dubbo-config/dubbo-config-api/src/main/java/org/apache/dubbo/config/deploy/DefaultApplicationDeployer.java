@@ -178,10 +178,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return applicationModel.getExtensionLoader(type);
     }
 
-    private void unRegisterShutdownHook() {
-        dubboShutdownHook.unregister();
-    }
-
     /**
      * Close registration of instance for pure Consumer process by setting registerConsumer to 'false'
      * by default is true.
@@ -1060,7 +1056,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             unexportMetricsService();
 
-            unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
             }
