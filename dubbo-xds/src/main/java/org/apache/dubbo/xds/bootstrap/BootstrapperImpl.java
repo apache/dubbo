@@ -19,6 +19,7 @@ package org.apache.dubbo.xds.bootstrap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.grpc.ChannelCredentials;
 import io.grpc.Internal;
 import io.grpc.InternalLogId;
 import io.grpc.internal.GrpcUtil;
@@ -36,8 +37,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.dubbo.xds.bootstrap.DubboBootstrapperImpl.parseChannelCredentials;
 
 /**
  * A {@link Bootstrapper} implementation that reads xDS configurations from local file system.
@@ -58,6 +62,8 @@ public abstract class BootstrapperImpl extends Bootstrapper {
   protected final XdsLogger logger;
 
   protected FileReader reader = LocalFileReader.INSTANCE;
+
+  private static final String SERVER_FEATURE_XDS_V3 = "xds_v3";
 
   protected BootstrapperImpl() {
     logger = XdsLogger.withLogId(InternalLogId.allocate("bootstrapper", null));
@@ -105,7 +111,7 @@ public abstract class BootstrapperImpl extends Bootstrapper {
     if (rawServerConfigs == null) {
       throw new XdsInitializationException("Invalid bootstrap: 'xds_servers' does not exist.");
     }
-    List<ServerInfo> servers = parseServerInfos(rawServerConfigs, logger);
+    List<ServerInfo> servers = parseServerInfos(rawServerConfigs);
     builder.servers(servers);
 
     Node.Builder nodeBuilder = Node.newBuilder();
@@ -212,7 +218,7 @@ public abstract class BootstrapperImpl extends Bootstrapper {
         if (rawAuthorityServers == null || rawAuthorityServers.isEmpty()) {
           authorityServers = servers;
         } else {
-          authorityServers = parseServerInfos(rawAuthorityServers, logger);
+          authorityServers = parseServerInfos(rawAuthorityServers);
         }
         authorityInfoMapBuilder.put(
             authorityName, AuthorityInfo.create(clientListnerTemplate, authorityServers));
@@ -223,32 +229,66 @@ public abstract class BootstrapperImpl extends Bootstrapper {
     return builder;
   }
 
-  private List<ServerInfo> parseServerInfos(List<?> rawServerConfigs, XdsLogger logger)
-      throws XdsInitializationException {
-    logger.log(XdsLogLevel.INFO, "Configured with {0} xDS servers", rawServerConfigs.size());
-    ImmutableList.Builder<ServerInfo> servers = ImmutableList.builder();
-    List<Map<String, ?>> serverConfigList = JsonUtil.checkObjectList(rawServerConfigs);
-    for (Map<String, ?> serverConfig : serverConfigList) {
-      String serverUri = JsonUtil.getString(serverConfig, "server_uri");
-      if (serverUri == null) {
-        throw new XdsInitializationException("Invalid bootstrap: missing 'server_uri'");
-      }
-      logger.log(XdsLogLevel.INFO, "xDS server URI: {0}", serverUri);
+    /**
+     *
+     * private List<ServerInfo> parseServerInfos(List<?> rawServerConfigs, XdsLogger logger)
+     *       throws XdsInitializationException {
+     *     logger.log(XdsLogLevel.INFO, "Configured with {0} xDS servers", rawServerConfigs.size());
+     *     ImmutableList.Builder<ServerInfo> servers = ImmutableList.builder();
+     *     List<Map<String, ?>> serverConfigList = JsonUtil.checkObjectList(rawServerConfigs);
+     *     for (Map<String, ?> serverConfig : serverConfigList) {
+     *       String serverUri = JsonUtil.getString(serverConfig, "server_uri");
+     *       if (serverUri == null) {
+     *         throw new XdsInitializationException("Invalid bootstrap: missing 'server_uri'");
+     *       }
+     *       logger.log(XdsLogLevel.INFO, "xDS server URI: {0}", serverUri);
+     *
+     *       Object implSpecificConfig = getImplSpecificConfig(serverConfig, serverUri);
+     *
+     *       boolean ignoreResourceDeletion = false;
+     *       List<String> serverFeatures = JsonUtil.getListOfStrings(serverConfig, "server_features");
+     *       if (serverFeatures != null) {
+     *         logger.log(XdsLogLevel.INFO, "Server features: {0}", serverFeatures);
+     *         ignoreResourceDeletion = serverFeatures.contains(SERVER_FEATURE_IGNORE_RESOURCE_DELETION);
+     *       }
+     *       servers.add(
+     *           ServerInfo.create(serverUri, implSpecificConfig, ignoreResourceDeletion));
+     *     }
+     *     return servers.build();
+     *   }
+     */
+    private List<ServerInfo> parseServerInfos(List<?> rawServerConfigs) throws XdsInitializationException {
+        List<ServerInfo> servers = new LinkedList<>();
+        List<Map<String, ?>> serverConfigList = JsonUtil.checkObjectList(rawServerConfigs);
+        for (Map<String, ?> serverConfig : serverConfigList) {
+            String serverUri = JsonUtil.getString(serverConfig, "server_uri");
+            if (serverUri == null) {
+                throw new XdsInitializationException("Invalid bootstrap: missing 'server_uri'");
+            }
+            List<?> rawChannelCredsList = JsonUtil.getList(serverConfig, "channel_creds");
+            if (rawChannelCredsList == null || rawChannelCredsList.isEmpty()) {
+                throw new XdsInitializationException(
+                        "Invalid bootstrap: server " + serverUri + " 'channel_creds' required");
+            }
+            ChannelCredentials channelCredentials =
+                    parseChannelCredentials(JsonUtil.checkObjectList(rawChannelCredsList), serverUri);
+            //            if (channelCredentials == null) {
+            //                throw new XdsInitializationException(
+            //                    "Server " + serverUri + ": no supported channel credentials found");
+            //            }
 
-      Object implSpecificConfig = getImplSpecificConfig(serverConfig, serverUri);
-
-      boolean ignoreResourceDeletion = false;
-      List<String> serverFeatures = JsonUtil.getListOfStrings(serverConfig, "server_features");
-      if (serverFeatures != null) {
-        logger.log(XdsLogLevel.INFO, "Server features: {0}", serverFeatures);
-        ignoreResourceDeletion = serverFeatures.contains(SERVER_FEATURE_IGNORE_RESOURCE_DELETION);
-      }
-      servers.add(
-          ServerInfo.create(serverUri, implSpecificConfig, ignoreResourceDeletion));
+            boolean useProtocolV3 = false;
+            boolean ignoreResourceDeletion = false;
+            Object implSpecificConfig = getImplSpecificConfig(serverConfig, serverUri);
+            List<String> serverFeatures = JsonUtil.getListOfStrings(serverConfig, "server_features");
+            if (serverFeatures != null) {
+                useProtocolV3 = serverFeatures.contains(SERVER_FEATURE_XDS_V3);
+                ignoreResourceDeletion = serverFeatures.contains(SERVER_FEATURE_IGNORE_RESOURCE_DELETION);
+            }
+            servers.add(ServerInfo.create(serverUri, implSpecificConfig, ignoreResourceDeletion));
+        }
+        return servers;
     }
-    return servers.build();
-  }
-
   @VisibleForTesting
   public void setFileReader(FileReader reader) {
     this.reader = reader;

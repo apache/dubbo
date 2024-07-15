@@ -18,7 +18,6 @@ package org.apache.dubbo.xds;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import io.grpc.InternalServiceProviders;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -27,6 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import io.grpc.xds.internal.GoogleDefaultXdsCredentialsProvider;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -151,19 +151,21 @@ public final class XdsCredentialsRegistry {
     // https://sourceforge.net/p/proguard/bugs/418/
     ArrayList<Class<?>> list = new ArrayList<>();
     try {
-      list.add(Class.forName("io.grpc.xds.internal.GoogleDefaultXdsCredentialsProvider"));
+      list.add(Class.forName("org.apache.dubbo.xds.credentialsProvider.GoogleDefaultXdsCredentialsProvider"));
+        ClassLoader classLoader = GoogleDefaultXdsCredentialsProvider.class.getClassLoader();
+        logger.info("ClassLoader: " + classLoader);
     } catch (ClassNotFoundException e) {
       logger.log(Level.WARNING, "Unable to find GoogleDefaultXdsCredentialsProvider", e);
     }
 
     try {
-      list.add(Class.forName("io.grpc.xds.internal.InsecureXdsCredentialsProvider"));
+      list.add(Class.forName("org.apache.dubbo.xds.credentialsProvider.InsecureXdsCredentialsProvider"));
     }  catch (ClassNotFoundException e) {
       logger.log(Level.WARNING, "Unable to find InsecureXdsCredentialsProvider", e);
     }
 
     try {
-      list.add(Class.forName("io.grpc.xds.internal.TlsXdsCredentialsProvider"));
+      list.add(Class.forName("org.apache.dubbo.xds.credentialsProvider.TlsXdsCredentialsProvider"));
     } catch (ClassNotFoundException e) {
       logger.log(Level.WARNING, "Unable to find TlsXdsCredentialsProvider", e);
     }

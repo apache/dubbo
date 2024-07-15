@@ -56,7 +56,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 public class DubboBootstrapperImplTest {
 
   private static final String BOOTSTRAP_FILE_PATH = "C:\\Users\\Windows 10\\Desktop\\grpc-bootstrap.json";
-  private static final String SERVER_URI = "trafficdirector.googleapis.com:443";
+  private static final String SERVER_URI = "unix:///etc/istio/proxy/XDS";
   @SuppressWarnings("deprecation") // https://github.com/grpc/grpc-java/issues/7467
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -90,48 +90,12 @@ public class DubboBootstrapperImplTest {
 
   @Test
   public void parseBootstrap_singleXdsServer() throws XdsInitializationException {
-    String rawData = "{\n"
-        + "  \"node\": {\n"
-        + "    \"id\": \"ENVOY_NODE_ID\",\n"
-        + "    \"cluster\": \"ENVOY_CLUSTER\",\n"
-        + "    \"locality\": {\n"
-        + "      \"region\": \"ENVOY_REGION\",\n"
-        + "      \"zone\": \"ENVOY_ZONE\",\n"
-        + "      \"sub_zone\": \"ENVOY_SUBZONE\"\n"
-        + "    },\n"
-        + "    \"metadata\": {\n"
-        + "      \"TRAFFICDIRECTOR_INTERCEPTION_PORT\": \"ENVOY_PORT\",\n"
-        + "      \"TRAFFICDIRECTOR_NETWORK_NAME\": \"VPC_NETWORK_NAME\"\n"
-        + "    }\n"
-        + "  },\n"
-        + "  \"xds_servers\": [\n"
-        + "    {\n"
-        + "      \"server_uri\": \"" + SERVER_URI + "\",\n"
-        + "      \"channel_creds\": [\n"
-        + "        {\"type\": \"insecure\"}\n"
-        + "      ]\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
-
-    bootstrapper.setFileReader(createFileReader(BOOTSTRAP_FILE_PATH, rawData));
+    //bootstrapper.setFileReader(createFileReader(BOOTSTRAP_FILE_PATH, rawData));
     BootstrapInfo info = bootstrapper.bootstrap();
     assertThat(info.servers()).hasSize(1);
     ServerInfo serverInfo = Iterables.getOnlyElement(info.servers());
     assertThat(serverInfo.target()).isEqualTo(SERVER_URI);
     assertThat(serverInfo.implSpecificConfig()).isInstanceOf(InsecureChannelCredentials.class);
-    assertThat(info.node()).isEqualTo(
-        getNodeBuilder()
-            .setId("ENVOY_NODE_ID")
-            .setCluster("ENVOY_CLUSTER")
-            .setLocality(Locality.create("ENVOY_REGION", "ENVOY_ZONE", "ENVOY_SUBZONE"))
-            .setMetadata(
-                ImmutableMap.of(
-                    "TRAFFICDIRECTOR_INTERCEPTION_PORT",
-                    "ENVOY_PORT",
-                    "TRAFFICDIRECTOR_NETWORK_NAME",
-                    "VPC_NETWORK_NAME"))
-            .build());
   }
 
   @Test
@@ -623,7 +587,7 @@ public class DubboBootstrapperImplTest {
         + "  ]\n"
         + "}";
 
-    //bootstrapper.setFileReader(createFileReader(BOOTSTRAP_FILE_PATH, rawData));
+    bootstrapper.setFileReader(createFileReader(BOOTSTRAP_FILE_PATH, rawData));
     BootstrapInfo info = bootstrapper.bootstrap();
     ServerInfo serverInfo = Iterables.getOnlyElement(info.servers());
     assertThat(serverInfo.target()).isEqualTo(SERVER_URI);

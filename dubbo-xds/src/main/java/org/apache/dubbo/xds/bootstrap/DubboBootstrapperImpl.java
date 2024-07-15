@@ -110,15 +110,16 @@ public class DubboBootstrapperImpl extends BootstrapperImpl {
     ChannelCredentials channelCredentials =
         parseChannelCredentials(JsonUtil.checkObjectList(rawChannelCredsList), serverUri);
     if (channelCredentials == null) {
-      throw new XdsInitializationException(
-          "Server " + serverUri + ": no supported channel credentials found");
+        throw new XdsInitializationException(
+                "Server " + serverUri + ": no supported channel credentials found");
+
     }
     return channelCredentials;
   }
 
   @Nullable
-  private static ChannelCredentials parseChannelCredentials(List<Map<String, ?>> jsonList,
-                                                            String serverUri)
+  static ChannelCredentials parseChannelCredentials(
+          List<Map<String, ?>> jsonList, String serverUri)
       throws XdsInitializationException {
     for (Map<String, ?> channelCreds : jsonList) {
       String type = JsonUtil.getString(channelCreds, "type");
