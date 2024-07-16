@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.mock.MockServiceDiscovery;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.registry.client.support.MockServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
