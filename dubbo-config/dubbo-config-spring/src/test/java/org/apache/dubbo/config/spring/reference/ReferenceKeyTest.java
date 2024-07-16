@@ -28,6 +28,7 @@ import org.apache.dubbo.config.spring.api.ProvidedByDemoService2;
 import org.apache.dubbo.config.spring.api.ProvidedByDemoService3;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
+import org.apache.dubbo.config.spring.util.AnnotationUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -36,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

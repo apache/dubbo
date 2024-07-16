@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.autoconfigure;
-
-import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
-import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
+package org.apache.dubbo.config.spring.context.config;
 
 import java.util.Map;
 
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.boot.bind.RelaxedDataBinder;
+import org.springframework.validation.DataBinder;
 
 /**
- * Spring Boot Relaxed {@link DubboConfigBinder} implementation
+ * The default {@link ConfigurationBeanBinder} implementation
  *
- * @since 2.7.0
+ * @see ConfigurationBeanBinder
  */
-class RelaxedDubboConfigBinder implements ConfigurationBeanBinder {
+public class DefaultConfigurationBeanBinder implements ConfigurationBeanBinder {
 
     @Override
     public void bind(
@@ -37,14 +34,14 @@ class RelaxedDubboConfigBinder implements ConfigurationBeanBinder {
             boolean ignoreUnknownFields,
             boolean ignoreInvalidFields,
             Object configurationBean) {
-        RelaxedDataBinder relaxedDataBinder = new RelaxedDataBinder(configurationBean);
+        DataBinder dataBinder = new DataBinder(configurationBean);
         // Set ignored*
-        relaxedDataBinder.setIgnoreInvalidFields(ignoreInvalidFields);
-        relaxedDataBinder.setIgnoreUnknownFields(ignoreUnknownFields);
+        dataBinder.setIgnoreInvalidFields(ignoreUnknownFields);
+        dataBinder.setIgnoreUnknownFields(ignoreInvalidFields);
         // Get properties under specified prefix from PropertySources
         // Convert Map to MutablePropertyValues
         MutablePropertyValues propertyValues = new MutablePropertyValues(configurationProperties);
         // Bind
-        relaxedDataBinder.bind(propertyValues);
+        dataBinder.bind(propertyValues);
     }
 }
