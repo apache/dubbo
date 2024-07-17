@@ -95,7 +95,8 @@ public class XdsChannel {
                             .sslContext(context)
                             .build();
                 }
-            } else {
+            }
+            else {
                 BootstrapperImpl bootstrapper = new DubboBootstrapperImpl();
                 Bootstrapper.BootstrapInfo bootstrapInfo = bootstrapper.bootstrap();
                 URLAddress address =

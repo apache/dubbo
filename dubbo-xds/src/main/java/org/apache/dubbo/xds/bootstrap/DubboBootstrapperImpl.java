@@ -19,6 +19,8 @@ package org.apache.dubbo.xds.bootstrap;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -34,17 +36,14 @@ import org.apache.dubbo.xds.XdsLogger;
 
 public class DubboBootstrapperImpl extends BootstrapperImpl {
   private static final String BOOTSTRAP_PATH_SYS_ENV_VAR = "GRPC_XDS_BOOTSTRAP";
-  private static final String BOOTSTRAP_PATH_SYS_PROPERTY = "io.grpc.xds.bootstrap";
   private static final String BOOTSTRAP_CONFIG_SYS_ENV_VAR = "GRPC_XDS_BOOTSTRAP_CONFIG";
-  private static final String BOOTSTRAP_CONFIG_SYS_PROPERTY = "io.grpc.xds.bootstrapConfig";
-  @VisibleForTesting
+  private static final String DEFAULT_BOOTSTRAP_PATH = "/etc/istio/proxy/grpc-bootstrap.json";
+
+    @VisibleForTesting
   public String bootstrapPathFromEnvVar = System.getenv(BOOTSTRAP_PATH_SYS_ENV_VAR);
-  @VisibleForTesting
-  public String bootstrapPathFromSysProp = System.getProperty(BOOTSTRAP_PATH_SYS_PROPERTY);
   @VisibleForTesting
   public String bootstrapConfigFromEnvVar = System.getenv(BOOTSTRAP_CONFIG_SYS_ENV_VAR);
   @VisibleForTesting
-  public String bootstrapConfigFromSysProp = System.getProperty(BOOTSTRAP_CONFIG_SYS_PROPERTY);
 
   public DubboBootstrapperImpl() {
     super();
@@ -69,25 +68,22 @@ public class DubboBootstrapperImpl extends BootstrapperImpl {
   @Override
   protected String getJsonContent() throws XdsInitializationException, IOException {
     String jsonContent;
-    String filePath =
-        bootstrapPathFromEnvVar != null ? bootstrapPathFromEnvVar : bootstrapPathFromSysProp;
+    String filePath = null;
+
+    // Check the default path
+    if (Files.exists(Paths.get(DEFAULT_BOOTSTRAP_PATH))) {
+        filePath = DEFAULT_BOOTSTRAP_PATH;
+    } else if(Files.exists(Paths.get(bootstrapPathFromEnvVar))){
+        // Check environment variable and system property
+        filePath = bootstrapPathFromEnvVar;
+    }
+
     if (filePath != null) {
       logger.log(XdsLogger.XdsLogLevel.INFO, "Reading bootstrap file from {0}", filePath);
       jsonContent = reader.readFile(filePath);
       logger.log(XdsLogger.XdsLogLevel.INFO, "Reading bootstrap from " + filePath);
     } else {
-      jsonContent = bootstrapConfigFromEnvVar != null
-          ? bootstrapConfigFromEnvVar : bootstrapConfigFromSysProp;
-    }
-    if (jsonContent == null) {
-      throw new XdsInitializationException(
-          "Cannot find bootstrap configuration\n"
-              + "Environment variables searched:\n"
-              + "- " + BOOTSTRAP_PATH_SYS_ENV_VAR + "\n"
-              + "- " + BOOTSTRAP_CONFIG_SYS_ENV_VAR + "\n\n"
-              + "Java System Properties searched:\n"
-              + "- " + BOOTSTRAP_PATH_SYS_PROPERTY + "\n"
-              + "- " + BOOTSTRAP_CONFIG_SYS_PROPERTY + "\n\n");
+      jsonContent = null;
     }
 
     return jsonContent;

@@ -75,22 +75,17 @@ public class DubboBootstrapperImplTest {
 
   private void saveEnvironment() {
     originalBootstrapPathFromEnvVar = bootstrapper.bootstrapPathFromEnvVar;
-    originalBootstrapPathFromSysProp = bootstrapper.bootstrapPathFromSysProp;
     originalBootstrapConfigFromEnvVar = bootstrapper.bootstrapConfigFromEnvVar;
-    originalBootstrapConfigFromSysProp = bootstrapper.bootstrapConfigFromSysProp;
   }
 
   @After
   public void restoreEnvironment() {
     bootstrapper.bootstrapPathFromEnvVar = originalBootstrapPathFromEnvVar;
-    bootstrapper.bootstrapPathFromSysProp = originalBootstrapPathFromSysProp;
     bootstrapper.bootstrapConfigFromEnvVar = originalBootstrapConfigFromEnvVar;
-    bootstrapper.bootstrapConfigFromSysProp = originalBootstrapConfigFromSysProp;
   }
 
   @Test
   public void parseBootstrap_singleXdsServer() throws XdsInitializationException {
-    //bootstrapper.setFileReader(createFileReader(BOOTSTRAP_FILE_PATH, rawData));
     BootstrapInfo info = bootstrapper.bootstrap();
     assertThat(info.servers()).hasSize(1);
     ServerInfo serverInfo = Iterables.getOnlyElement(info.servers());
@@ -617,84 +612,6 @@ public class DubboBootstrapperImplTest {
     assertThat(serverInfo.implSpecificConfig()).isInstanceOf(InsecureChannelCredentials.class);
     // ignore_resource_deletion features enabled: confirm both are on.
     assertThat(serverInfo.ignoreResourceDeletion()).isTrue();
-  }
-
-  @Test
-  public void notFound() {
-    bootstrapper.bootstrapPathFromEnvVar = null;
-    bootstrapper.bootstrapPathFromSysProp = null;
-    bootstrapper.bootstrapConfigFromEnvVar = null;
-    bootstrapper.bootstrapConfigFromSysProp = null;
-    BootstrapperImpl.FileReader reader = mock(BootstrapperImpl.FileReader.class);
-    bootstrapper.setFileReader(reader);
-    try {
-      bootstrapper.bootstrap();
-      fail("should fail");
-    } catch (XdsInitializationException expected) {
-      assertThat(expected).hasMessageThat().startsWith("Cannot find bootstrap configuration");
-    }
-    verifyNoInteractions(reader);
-  }
-
-  @Test
-  public void fallbackToFilePathFromSystemProperty() throws XdsInitializationException {
-    final String customPath = "/home/bootstrap.json";
-    bootstrapper.bootstrapPathFromEnvVar = null;
-    bootstrapper.bootstrapPathFromSysProp = customPath;
-    String rawData = "{\n"
-        + "  \"xds_servers\": [\n"
-        + "    {\n"
-        + "      \"server_uri\": \"" + SERVER_URI + "\",\n"
-        + "      \"channel_creds\": [\n"
-        + "        {\"type\": \"insecure\"}\n"
-        + "      ]\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
-
-    bootstrapper.setFileReader(createFileReader(customPath, rawData));
-    bootstrapper.bootstrap();
-  }
-
-  @Test
-  public void fallbackToConfigFromEnvVar() throws XdsInitializationException {
-    String rawData = "{\n"
-        + "  \"xds_servers\": [\n"
-        + "    {\n"
-        + "      \"server_uri\": \"" + SERVER_URI + "\",\n"
-        + "      \"channel_creds\": [\n"
-        + "        {\"type\": \"insecure\"}\n"
-        + "      ]\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
-
-    bootstrapper.bootstrapPathFromEnvVar = null;
-    bootstrapper.bootstrapPathFromSysProp = null;
-    bootstrapper.bootstrapConfigFromEnvVar = rawData;
-    bootstrapper.setFileReader(mock(BootstrapperImpl.FileReader.class));
-    bootstrapper.bootstrap();
-  }
-
-  @Test
-  public void fallbackToConfigFromSysProp() throws XdsInitializationException {
-    String rawData = "{\n"
-        + "  \"xds_servers\": [\n"
-        + "    {\n"
-        + "      \"server_uri\": \"" + SERVER_URI + "\",\n"
-        + "      \"channel_creds\": [\n"
-        + "        {\"type\": \"insecure\"}\n"
-        + "      ]\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
-
-    bootstrapper.bootstrapPathFromEnvVar = null;
-    bootstrapper.bootstrapPathFromSysProp = null;
-    bootstrapper.bootstrapConfigFromEnvVar = null;
-    bootstrapper.bootstrapConfigFromSysProp = rawData;
-    bootstrapper.setFileReader(mock(BootstrapperImpl.FileReader.class));
-    bootstrapper.bootstrap();
   }
 
   @Test
