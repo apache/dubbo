@@ -29,8 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import io.grpc.ChannelCredentials;
 import io.grpc.internal.JsonUtil;
 
-import org.apache.dubbo.xds.XdsCredentialsProvider;
-import org.apache.dubbo.xds.XdsCredentialsRegistry;
+import org.apache.dubbo.xds.credentials.XdsCredentialsProvider;
+import org.apache.dubbo.xds.credentials.XdsCredentialsRegistry;
 import org.apache.dubbo.xds.XdsInitializationException;
 import org.apache.dubbo.xds.XdsLogger;
 

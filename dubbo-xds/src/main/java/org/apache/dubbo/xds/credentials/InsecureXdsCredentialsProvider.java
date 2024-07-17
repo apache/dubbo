@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.xds.credentialsProvider;
+package org.apache.dubbo.xds.credentials;
 
 import java.util.Map;
 
 import io.grpc.ChannelCredentials;
-import io.grpc.TlsChannelCredentials;
-import org.apache.dubbo.xds.XdsCredentialsProvider;
+import io.grpc.InsecureChannelCredentials;
 
 /**
- * A wrapper class that supports {@link TlsChannelCredentials} for Xds
+ * A wrapper class that supports {@link InsecureChannelCredentials} for Xds
  * by implementing {@link XdsCredentialsProvider}.
  */
-public final class TlsXdsCredentialsProvider extends XdsCredentialsProvider {
-  private static final String CREDS_NAME = "tls";
+public final class InsecureXdsCredentialsProvider extends XdsCredentialsProvider {
+  private static final String CREDS_NAME = "insecure";
 
   @Override
   public ChannelCredentials newChannelCredentials(Map<String, ?> jsonConfig) {
-    return TlsChannelCredentials.create();
+    return InsecureChannelCredentials.create();
   }
 
   @Override

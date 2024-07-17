@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.xds;
+package org.apache.dubbo.xds.credentials;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.xds;
+package org.apache.dubbo.xds.credentials;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -151,7 +151,7 @@ public final class XdsCredentialsRegistry {
     // https://sourceforge.net/p/proguard/bugs/418/
     ArrayList<Class<?>> list = new ArrayList<>();
     try {
-      list.add(Class.forName("org.apache.dubbo.xds.credentialsProvider.GoogleDefaultXdsCredentialsProvider"));
+      list.add(Class.forName("org.apache.dubbo.xds.credentials.GoogleDefaultXdsCredentialsProvider"));
         ClassLoader classLoader = GoogleDefaultXdsCredentialsProvider.class.getClassLoader();
         logger.info("ClassLoader: " + classLoader);
     } catch (ClassNotFoundException e) {
@@ -159,13 +159,13 @@ public final class XdsCredentialsRegistry {
     }
 
     try {
-      list.add(Class.forName("org.apache.dubbo.xds.credentialsProvider.InsecureXdsCredentialsProvider"));
+      list.add(Class.forName("org.apache.dubbo.xds.credentials.InsecureXdsCredentialsProvider"));
     }  catch (ClassNotFoundException e) {
       logger.log(Level.WARNING, "Unable to find InsecureXdsCredentialsProvider", e);
     }
 
     try {
-      list.add(Class.forName("org.apache.dubbo.xds.credentialsProvider.TlsXdsCredentialsProvider"));
+      list.add(Class.forName("org.apache.dubbo.xds.credentials.TlsXdsCredentialsProvider"));
     } catch (ClassNotFoundException e) {
       logger.log(Level.WARNING, "Unable to find TlsXdsCredentialsProvider", e);
     }

@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.xds.credentialsProvider;
-
-import io.grpc.ChannelCredentials;
-import io.grpc.alts.GoogleDefaultChannelCredentials;
-
-import org.apache.dubbo.xds.XdsCredentialsProvider;
+package org.apache.dubbo.xds.credentials;
 
 import java.util.Map;
 
+import io.grpc.ChannelCredentials;
+import io.grpc.TlsChannelCredentials;
+
 /**
- * A wrapper class that supports {@link GoogleDefaultChannelCredentials} for
- * Xds by implementing {@link XdsCredentialsProvider}.
+ * A wrapper class that supports {@link TlsChannelCredentials} for Xds
+ * by implementing {@link XdsCredentialsProvider}.
  */
-public final class GoogleDefaultXdsCredentialsProvider extends XdsCredentialsProvider {
-  private static final String CREDS_NAME = "google_default";
+public final class TlsXdsCredentialsProvider extends XdsCredentialsProvider {
+  private static final String CREDS_NAME = "tls";
 
   @Override
   public ChannelCredentials newChannelCredentials(Map<String, ?> jsonConfig) {
-    return GoogleDefaultChannelCredentials.create();
+    return TlsChannelCredentials.create();
   }
 
   @Override
@@ -49,4 +47,5 @@ public final class GoogleDefaultXdsCredentialsProvider extends XdsCredentialsPro
   public int priority() {
     return 5;
   }
+
 }
