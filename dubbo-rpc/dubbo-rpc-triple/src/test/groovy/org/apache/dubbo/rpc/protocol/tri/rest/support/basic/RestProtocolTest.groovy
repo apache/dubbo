@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.rest
+package org.apache.dubbo.rpc.protocol.tri.rest.support.basic
 
 import org.apache.dubbo.remoting.http12.message.MediaType
 import org.apache.dubbo.rpc.protocol.tri.rest.service.Book
@@ -51,13 +51,24 @@ class RestProtocolTest extends BaseServiceTest {
             '/argTest?name=Sam' | '{"age": 8}'                | 'Sam is 8 years old'
     }
 
+    def "bean argument test"() {
+        expect:
+            runner.post(path, body, Book.class).name == output
+        where:
+            path    | body                                      | output
+            '/buy'  | new Book(name: "Dubbo")                   | 'Dubbo'
+            '/buy'  | [new Book(name: "Dubbo")]                 | 'Dubbo'
+            '/buy2' | [new Book(name: "Dubbo"), 2]              | 'Dubbo'
+            '/buy2' | [book: new Book(name: "Dubbo"), count: 2] | 'Dubbo'
+    }
+
     def "bean argument get test"() {
         expect:
             runner.get(path, Book.class).price == output
         where:
             path                                     | output
             '/beanArgTest'                           | 0
-            '/beanArgTest?quote=5'                   | 0
+            '/beanArgTest?quote=5'                   | 5
             '/beanArgTest?book={"price": 6}'         | 6
             '/beanArgTest?book={"price": 6}&quote=5' | 5
     }
@@ -68,21 +79,41 @@ class RestProtocolTest extends BaseServiceTest {
         where:
             path           | body                                 | output
             '/beanArgTest' | []                                   | 0
-            '/beanArgTest' | [quote: 5]                           | 0
+            '/beanArgTest' | [quote: 5]                           | 5
             '/beanArgTest' | [book: new Book(price: 6)]           | 6
             '/beanArgTest' | [book: new Book(price: 6), quote: 5] | 5
-            '/beanArgTest' | [price: 6, quote: 5]                 | 0
+            '/beanArgTest' | [price: 6, quote: 5]                 | 5
     }
 
-    def "bean test"() {
+    def "advance bean argument get test"() {
         expect:
-            runner.post(path, body, Book.class).name == output
+            runner.get(path) contains output
         where:
-            path    | body                                      | output
-            '/buy'  | new Book(name: "Dubbo")                   | 'Dubbo'
-            '/buy'  | [new Book(name: "Dubbo")]                 | 'Dubbo'
-            '/buy2' | [new Book(name: "Dubbo"), 2]              | 'Dubbo'
-            '/buy2' | [book: new Book(name: "Dubbo"), count: 2] | 'Dubbo'
+            path                                                                            | output
+            '/bean?id=1&name=sam'                                                           | '"id":1,"name":"sam"'
+            '/bean?user.id=1&user.name=sam'                                                 | '"id":1,"name":"sam"'
+            '/bean?name=sam&p=123&email=a@b.com'                                            | '"email":"a@b.com","name":"sam","phone":"123"'
+            '/bean?group.name=g1&group.owner.name=jack'                                     | '"group":{"id":0,"name":"g1","owner":{"name":"jack"'
+            '/bean?group.parent.parent.children[0].name=xx'                                 | '"group":{"id":0,"parent":{"id":0,"parent":{"children":[{"id":0,"name":"xx"}],"id":0}}}'
+            '/bean?group={"name":"g1","id":2}'                                              | '"group":{"id":2,"name":"g1"}'
+            '/bean?ids=3&ids=4'                                                             | '"ids":[3,4]'
+            '/bean?ids[]=3&ids[]=4'                                                         | '"ids":[3,4]'
+            '/bean?ids[1]=3&ids[2]=4'                                                       | '"ids":[0,3,4]'
+            '/bean?scores=3&scores=4'                                                       | '"scores":[3,4]'
+            '/bean?scores[]=3&scores[]=4'                                                   | '"scores":[3,4]'
+            '/bean?scores[1]=3&scores[2]=4'                                                 | '"scores":[null,3,4]'
+            '/bean?tags[0].name=a&tags[0].value=b&tags[1].name=c&tags[1].value=d'           | '"tags":[{"name":"a","value":"b"},{"name":"c","value":"d"}]'
+            '/bean?tagsA[0].name=a&tagsA[0].value=b&tagsA[1].name=c&tagsA[1].value=d'       | '"tagsA":[{"name":"a","value":"b"},{"name":"c","value":"d"}]'
+            '/bean?tagsB[0].name=e&tagsB[1].name=c&tagsB[1].value=d'                        | '"tagsB":[{"name":"e","value":"b"},{"name":"c","value":"d"}]'
+            '/bean?tagsC[0].name=e&tagsC[1].name=c&tagsC[1].value=d'                        | '"tagsC":[{"name":"e","value":"b"},{"name":"c","value":"d"}]'
+            '/bean?groupMaps[0].one.name=a&groupMaps[1].two.name=b'                         | '"groupMaps":[{"one":{"id":0,"name":"a"}},{"two":{"id":0,"name":"b"}}]'
+            '/bean?id=1&features.a=xx&features.b=2'                                         | '"features":{"a":"xx","b":"2"}'
+            '/bean?id=1&features[a]=xx&features[b]=2'                                       | '"features":{"a":"xx","b":"2"}'
+            '/bean?group.id=2&group.features.a=1&group.features.b=xx'                       | '"group":{"features":{"a":"1","b":"xx"},"id":2}'
+            '/bean?tagMap.a.name=a&tagMap.a.value=b&tagMap.b.name=c&tagMap.b.value=d'       | '"tagMap":{"a":{"name":"a","value":"b"},"b":{"name":"c","value":"d"}}'
+            '/bean?tagMapA.a.name=e&tagMapA.b.name=c&tagMapA.b.value=d'                     | '"tagMapA":{"a":{"name":"e","value":"b"},"b":{"name":"c","value":"d"}}'
+            '/bean?tagMapB[2].name=a&tagMapB[2].value=b&tagMapB[3].name=c'                  | '"tagMapB":{2:{"name":"a","value":"b"},3:{"name":"c"}}'
+            '/bean?groupsMap.one[0].name=a&groupsMap.one[1].name=b&groupsMap.two[1].name=c' | '"groupsMap":{"one":[{"id":0,"name":"a"},{"id":0,"name":"b"}],"two":[null,{"id":0,"name":"c"}]}'
     }
 
     def "urlEncodeForm test"() {

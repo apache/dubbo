@@ -72,6 +72,10 @@ public class TestRequest {
         return setMethod(method.name());
     }
 
+    public String getContentType() {
+        return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+    }
+
     public TestRequest setContentType(String contentType) {
         headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), contentType);
         return this;

@@ -484,7 +484,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 values.add(HttpUtils.readPostValue(item));
             }
         }
-        return values;
+        return values == null ? Collections.emptyList() : values;
     }
 
     @Override
@@ -507,7 +507,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 names.add(item.getName());
             }
         }
-        return names;
+        return names == null ? Collections.emptyList() : names;
     }
 
     @Override
@@ -553,7 +553,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 allNames.add(item.getName());
             }
         }
-        return allNames;
+        return allNames == null ? Collections.emptyList() : allNames;
     }
 
     @Override

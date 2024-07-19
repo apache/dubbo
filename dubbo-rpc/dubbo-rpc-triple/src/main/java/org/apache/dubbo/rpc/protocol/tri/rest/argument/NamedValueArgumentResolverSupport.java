@@ -67,7 +67,7 @@ public abstract class NamedValueArgumentResolverSupport {
         Class<?> type = parameterMeta.getType();
         Type genericType = parameterMeta.getGenericType();
         if (type == Optional.class) {
-            Class<?> actualType = TypeUtils.getNestedType(genericType, 0);
+            Class<?> actualType = TypeUtils.getNestedActualType(genericType, 0);
             meta.setType(actualType == null ? Object.class : actualType);
         } else {
             meta.setType(type);
@@ -75,7 +75,7 @@ public abstract class NamedValueArgumentResolverSupport {
         if (type.isArray()) {
             meta.setNestedTypes(new Class<?>[] {type.getComponentType()});
         } else {
-            meta.setNestedTypes(TypeUtils.getNestedTypes(genericType));
+            meta.setNestedTypes(TypeUtils.getNestedActualTypes(genericType));
         }
         meta.setParameterMeta(parameterMeta);
         return meta;

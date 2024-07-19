@@ -922,8 +922,7 @@ public class GeneralTypeConverter implements TypeConverter {
                                     defCt = ct;
                                     break;
                                 case 1:
-                                    Class paramType = ct.getParameterTypes()[0];
-                                    if (paramType == int.class) {
+                                    if (ct.getParameterTypes()[0] == int.class) {
                                         return (Map) ct.newInstance(CollectionUtils.capacity(size));
                                     }
                                     break;

@@ -23,12 +23,14 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 public abstract class AbstractSpringArgumentResolver extends AbstractAnnotationBaseArgumentResolver {
 
     @Override
     protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        return new NamedValueMeta(ann.getValue(), Helper.isRequired(ann), Helper.defaultValue(ann));
+        boolean required = param.getType() != Optional.class && Helper.isRequired(ann);
+        return new NamedValueMeta(ann.getValue(), required, Helper.defaultValue(ann));
     }
 
     @Override

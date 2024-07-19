@@ -161,6 +161,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     @Override
     public void destroy() {
+        if (tree == null) {
+            return;
+        }
         lock.writeLock().lock();
         try {
             tree.clear();

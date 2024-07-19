@@ -19,12 +19,11 @@ package org.apache.dubbo.rpc.protocol.tri.rest.service;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
+import org.apache.dubbo.rpc.protocol.tri.rest.service.User.UserEx;
 
 import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
-
-import static io.grpc.health.v1.HealthCheckResponse.newBuilder;
 
 public class DemoServiceImpl implements DemoService {
 
@@ -42,10 +41,16 @@ public class DemoServiceImpl implements DemoService {
     public Book beanArgTest(Book book, Integer quote) {
         if (book == null) {
             book = new Book();
-        } else if (quote != null) {
+        }
+        if (quote != null) {
             book.setPrice(quote);
         }
         return book;
+    }
+
+    @Override
+    public UserEx advanceBeanArgTest(UserEx user) {
+        return user;
     }
 
     @Override
@@ -88,8 +93,9 @@ public class DemoServiceImpl implements DemoService {
         if (StringUtils.isNotEmpty(service)) {
             int count = Integer.parseInt(service);
             for (int i = 0; i < count; i++) {
-                responseObserver.onNext(
-                        newBuilder().setStatus(ServingStatus.SERVING).build());
+                responseObserver.onNext(HealthCheckResponse.newBuilder()
+                        .setStatus(ServingStatus.SERVING)
+                        .build());
             }
         }
         responseObserver.onCompleted();

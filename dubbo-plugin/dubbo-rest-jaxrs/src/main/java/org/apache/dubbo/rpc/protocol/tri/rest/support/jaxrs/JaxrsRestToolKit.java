@@ -21,18 +21,23 @@ import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.DefaultRestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.AbstractRestToolKit;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
-final class JaxrsRestToolKit extends DefaultRestToolKit {
+final class JaxrsRestToolKit extends AbstractRestToolKit {
 
     private final BeanArgumentBinder binder;
 
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
         binder = new BeanArgumentBinder(frameworkModel);
+    }
+
+    @Override
+    public int getDialect() {
+        return RestConstants.DIALECT_JAXRS;
     }
 
     @Override
@@ -44,11 +49,6 @@ final class JaxrsRestToolKit extends DefaultRestToolKit {
             return typeConverter.convert(value, MultivaluedHashMap.class);
         }
         return super.convert(value, parameter);
-    }
-
-    @Override
-    public int getDialect() {
-        return RestConstants.DIALECT_JAXRS;
     }
 
     @Override

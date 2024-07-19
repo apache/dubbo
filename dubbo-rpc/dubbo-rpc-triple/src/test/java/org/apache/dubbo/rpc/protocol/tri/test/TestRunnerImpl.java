@@ -28,7 +28,9 @@ import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
+import org.apache.dubbo.remoting.http12.message.codec.UrlEncodeFormCodec;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -91,7 +93,7 @@ final class TestRunnerImpl implements TestRunner {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "resource"})
     public TestResponse run(TestRequest request) {
         MockH2StreamChannel channel = new MockH2StreamChannel();
         URL url = new URL(TestProtocol.NAME, TestProtocol.HOST, TestProtocol.PORT, request.getProviderParams());
@@ -165,8 +167,24 @@ final class TestRunnerImpl implements TestRunner {
         RpcInvocationBuildContext context = listener.getContext();
         HttpMessageDecoder decoder = JsonCodec.INSTANCE;
         if (context != null) {
-            HttpMessageEncoder encoder = context.getHttpMessageEncoder();
-            decoder = context.getHttpMessageDecoder();
+            String ct = request.getContentType();
+            boolean isForm = ct != null && ct.startsWith(MediaType.APPLICATION_FROM_URLENCODED.getName());
+            HttpMessageEncoder encoder;
+            Object coder;
+            if (isForm) {
+                encoder = new UrlEncodeFormCodec(null);
+                coder = context.getHttpMessageDecoder();
+            } else {
+                encoder = context.getHttpMessageEncoder();
+                coder = encoder;
+            }
+            if (coder instanceof RestHttpMessageCodec) {
+                coder = ((RestHttpMessageCodec) coder).getMessageEncoder();
+                if (coder instanceof HttpMessageDecoder) {
+                    decoder = (HttpMessageDecoder) coder;
+                }
+            }
+
             HttpRequest hRequest = (HttpRequest) context.getAttributes().get(TripleConstant.HTTP_REQUEST_KEY);
             if (CollectionUtils.isEmpty(request.getBodies())) {
                 if (HttpMethods.supportBody(hRequest.method())) {
@@ -185,13 +203,6 @@ final class TestRunnerImpl implements TestRunner {
                     listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(bytes)));
                 }
                 listener.onData(END);
-            }
-
-            if (encoder instanceof RestHttpMessageCodec) {
-                encoder = ((RestHttpMessageCodec) encoder).getMessageEncoder();
-            }
-            if (encoder instanceof HttpMessageDecoder) {
-                decoder = (HttpMessageDecoder) encoder;
             }
         }
         return new TestResponse(channel.getHttpMetadata().headers(), channel.getBodies(), decoder);

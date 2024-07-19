@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
+import org.apache.dubbo.rpc.protocol.tri.rest.service.User.UserEx;
 
 import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse;
@@ -30,6 +31,9 @@ public interface DemoService {
     String argTest(String name, int age);
 
     Book beanArgTest(Book book, Integer quote);
+
+    @Mapping("/bean")
+    UserEx advanceBeanArgTest(UserEx user);
 
     Book buy(Book book);
 

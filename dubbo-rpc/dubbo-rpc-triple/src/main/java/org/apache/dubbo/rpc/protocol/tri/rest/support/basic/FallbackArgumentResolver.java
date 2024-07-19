@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -44,24 +45,24 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        return doResolveValue(meta, request, true);
+        return doResolveValue(meta, true, request, response);
     }
 
     @Override
     protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        return doResolveValue(meta, request, false);
+        return doResolveValue(meta, false, request, response);
     }
 
-    protected Object doResolveValue(NamedValueMeta meta, HttpRequest request, boolean single) {
+    protected Object doResolveValue(NamedValueMeta meta, boolean single, HttpRequest request, HttpResponse response) {
+        ParameterMeta parameter = meta.parameterMeta();
         if (HttpMethods.supportBody(request.method())) {
-            ParameterMeta parameterMeta = meta.parameterMeta();
-            Object body = RequestUtils.decodeBody(request, parameterMeta.getType(), parameterMeta.isSingle());
+            Object body = RequestUtils.decodeBody(request, parameter.getType(), parameter.isSingle());
             if (body != null) {
-                if (parameterMeta.getType().isInstance(body)) {
+                if (parameter.getType().isInstance(body)) {
                     return body;
                 } else if (body instanceof List) {
                     List<?> list = (List<?>) body;
-                    int index = parameterMeta.getIndex();
+                    int index = parameter.getIndex();
                     if (index >= 0 && list.size() > index) {
                         return list.get(index);
                     }
@@ -73,7 +74,14 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 }
             }
         }
-        return single ? request.parameter(meta.name()) : request.parameterValues(meta.name());
+        if (single) {
+            String value = request.parameter(meta.name());
+            if (parameter.isSimple() || RestUtils.isMaybeJSONObject(value)) {
+                return value;
+            }
+            return parameter.bind(request, response);
+        }
+        return request.parameterValues(meta.name());
     }
 
     @Override

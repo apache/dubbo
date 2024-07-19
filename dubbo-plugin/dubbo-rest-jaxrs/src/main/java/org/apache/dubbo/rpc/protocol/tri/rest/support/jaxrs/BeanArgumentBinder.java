@@ -27,254 +27,90 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.ConstructorMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.FieldMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.SetMethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 final class BeanArgumentBinder {
 
-    private final ArgumentResolver argumentResolver;
+    private static final ThreadLocal<Set<Class<?>>> LOCAL = new ThreadLocal<>();
 
     private final Map<Pair<Class<?>, String>, BeanMeta> cache = CollectionUtils.newConcurrentHashMap();
+    private final ArgumentResolver argumentResolver;
 
     BeanArgumentBinder(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
     }
 
-    public Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
+    public Object bind(ParameterMeta paramMeta, HttpRequest request, HttpResponse response) {
+        Set<Class<?>> walked = LOCAL.get();
+        if (walked == null) {
+            LOCAL.set(new HashSet<>());
+        }
         try {
-            return resolveArgument(parameter, request, response);
+            return resolveArgument(paramMeta, request, response);
         } catch (Exception e) {
-            throw new RestException(Messages.ARGUMENT_BIND_ERROR, parameter.getName(), parameter.getType(), e);
+            throw new RestException(e, Messages.ARGUMENT_BIND_ERROR, paramMeta.getName(), paramMeta.getType());
+        } finally {
+            if (walked == null) {
+                LOCAL.remove();
+            }
         }
     }
 
-    private Object resolveArgument(ParameterMeta param, HttpRequest request, HttpResponse response) throws Exception {
-        AnnotationMeta<?> form = param.findAnnotation(Annotations.Form);
-        if (form != null || param.isHierarchyAnnotated(Annotations.BeanParam)) {
-            String prefix = form == null ? null : form.getString("prefix");
-            BeanMeta beanMeta = cache.computeIfAbsent(
-                    Pair.of(param.getActualType(), prefix),
-                    k -> new BeanMeta(param.getToolKit(), k.getValue(), k.getKey()));
-
-            ConstructorMeta constructor = beanMeta.constructor;
-            ParameterMeta[] parameters = constructor.parameters;
-            int len = parameters.length;
-            Object[] args = new Object[len];
-            for (int i = 0; i < len; i++) {
-                args[i] = resolveArgument(parameters[i], request, response);
-            }
-            Object bean = constructor.newInstance(args);
-
-            for (FieldMeta fieldMeta : beanMeta.fields) {
-                fieldMeta.set(bean, resolveArgument(fieldMeta, request, response));
-            }
-
-            for (SetMethodMeta methodMeta : beanMeta.methods) {
-                methodMeta.invoke(bean, resolveArgument(methodMeta, request, response));
-            }
-            return bean;
+    private Object resolveArgument(ParameterMeta paramMeta, HttpRequest request, HttpResponse response) {
+        if (paramMeta.isSimple()) {
+            return argumentResolver.resolve(paramMeta, request, response);
         }
 
-        return argumentResolver.resolve(param, request, response);
-    }
+        // Prevent infinite loops
+        if (LOCAL.get().add(paramMeta.getActualType())) {
+            AnnotationMeta<?> form = paramMeta.findAnnotation(Annotations.Form);
+            if (form != null || paramMeta.isHierarchyAnnotated(Annotations.BeanParam)) {
+                String prefix = form == null ? null : form.getString("prefix");
+                BeanMeta beanMeta = cache.computeIfAbsent(
+                        Pair.of(paramMeta.getActualType(), prefix),
+                        k -> new BeanMeta(paramMeta.getToolKit(), k.getValue(), k.getKey()));
 
-    private static class BeanMeta {
-
-        private final List<FieldMeta> fields = new ArrayList<>();
-        private final List<SetMethodMeta> methods = new ArrayList<>();
-        private final ConstructorMeta constructor;
-
-        BeanMeta(RestToolKit toolKit, String prefix, Class<?> type) {
-            constructor = resolveConstructor(toolKit, prefix, type);
-            resolveFieldAndMethod(toolKit, prefix, type);
-        }
-
-        private ConstructorMeta resolveConstructor(RestToolKit toolKit, String prefix, Class<?> type) {
-            Constructor<?>[] constructors = type.getConstructors();
-            Constructor<?> ct = null;
-            if (constructors.length == 1) {
-                ct = constructors[0];
-            } else {
-                try {
-                    ct = type.getDeclaredConstructor();
-                } catch (NoSuchMethodException ignored) {
-                }
-            }
-            if (ct == null) {
-                throw new IllegalArgumentException("No available default constructor found in " + type);
-            }
-            return new ConstructorMeta(toolKit, prefix, ct);
-        }
-
-        private void resolveFieldAndMethod(RestToolKit toolKit, String prefix, Class<?> type) {
-            if (type == Object.class) {
-                return;
-            }
-            for (Field field : type.getDeclaredFields()) {
-                int modifiers = field.getModifiers();
-                if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
-                    continue;
-                }
-                if (field.getAnnotations().length == 0) {
-                    continue;
-                }
-                if (!field.isAccessible()) {
-                    field.setAccessible(true);
-                }
-                fields.add(new FieldMeta(toolKit, prefix, field));
-            }
-            for (Method method : type.getDeclaredMethods()) {
-                if (method.getParameterCount() != 1) {
-                    continue;
-                }
-                int modifiers = method.getModifiers();
-                if ((modifiers & (Modifier.PUBLIC | Modifier.ABSTRACT | Modifier.STATIC)) == Modifier.PUBLIC) {
-                    Parameter parameter = method.getParameters()[0];
-                    String name = method.getName();
-                    if (name.length() > 3 && name.startsWith("set")) {
-                        name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
-                        methods.add(new SetMethodMeta(toolKit, method, parameter, prefix, name));
+                ConstructorMeta constructor = beanMeta.getConstructor();
+                ParameterMeta[] parameters = constructor.getParameters();
+                Object bean;
+                int len = parameters.length;
+                if (len == 0) {
+                    bean = constructor.newInstance();
+                } else {
+                    Object[] args = new Object[len];
+                    for (int i = 0; i < len; i++) {
+                        args[i] = resolveArgument(parameters[i], request, response);
                     }
+                    bean = constructor.newInstance(args);
                 }
+
+                Set<String> resolved = new HashSet<>();
+                for (FieldMeta fieldMeta : beanMeta.getFields()) {
+                    resolved.add(fieldMeta.getName());
+                    fieldMeta.setValue(bean, resolveArgument(fieldMeta, request, response));
+                }
+
+                for (SetMethodMeta methodMeta : beanMeta.getMethods()) {
+                    if (resolved.contains(methodMeta.getName())) {
+                        continue;
+                    }
+                    methodMeta.setValue(bean, resolveArgument(methodMeta, request, response));
+                }
+
+                return bean;
             }
-            resolveFieldAndMethod(toolKit, prefix, type.getSuperclass());
-        }
-    }
-
-    private static final class ConstructorMeta {
-
-        private final Constructor<?> constructor;
-        private final ConstructorParameterMeta[] parameters;
-
-        ConstructorMeta(RestToolKit toolKit, String prefix, Constructor<?> constructor) {
-            this.constructor = constructor;
-            parameters = initParameters(toolKit, prefix, constructor);
         }
 
-        private ConstructorParameterMeta[] initParameters(RestToolKit toolKit, String prefix, Constructor<?> ct) {
-            Parameter[] cps = ct.getParameters();
-            int len = cps.length;
-            ConstructorParameterMeta[] parameters = new ConstructorParameterMeta[len];
-            for (int i = 0; i < len; i++) {
-                parameters[i] = new ConstructorParameterMeta(toolKit, cps[i], prefix);
-            }
-            return parameters;
-        }
-
-        Object newInstance(Object[] args) throws Exception {
-            return constructor.newInstance(args);
-        }
-    }
-
-    public static final class ConstructorParameterMeta extends ParameterMeta {
-
-        private final Parameter parameter;
-
-        ConstructorParameterMeta(RestToolKit toolKit, Parameter parameter, String prefix) {
-            super(toolKit, prefix, parameter.isNamePresent() ? parameter.getName() : null);
-            this.parameter = parameter;
-        }
-
-        @Override
-        protected AnnotatedElement getAnnotatedElement() {
-            return parameter;
-        }
-
-        @Override
-        public Class<?> getType() {
-            return parameter.getType();
-        }
-
-        @Override
-        public Type getGenericType() {
-            return parameter.getParameterizedType();
-        }
-
-        @Override
-        public String getDescription() {
-            return "ConstructorParameter{" + parameter + '}';
-        }
-    }
-
-    private static final class FieldMeta extends ParameterMeta {
-
-        private final Field field;
-
-        FieldMeta(RestToolKit toolKit, String prefix, Field field) {
-            super(toolKit, prefix, field.getName());
-            this.field = field;
-        }
-
-        @Override
-        public Class<?> getType() {
-            return field.getType();
-        }
-
-        @Override
-        public Type getGenericType() {
-            return field.getGenericType();
-        }
-
-        @Override
-        protected AnnotatedElement getAnnotatedElement() {
-            return field;
-        }
-
-        public void set(Object bean, Object value) throws Exception {
-            field.set(bean, value);
-        }
-
-        @Override
-        public String getDescription() {
-            return "FieldParameter{" + field + '}';
-        }
-    }
-
-    private static final class SetMethodMeta extends ParameterMeta {
-
-        private final Method method;
-        private final Parameter parameter;
-
-        SetMethodMeta(RestToolKit toolKit, Method method, Parameter parameter, String prefix, String name) {
-            super(toolKit, prefix, name);
-            this.method = method;
-            this.parameter = parameter;
-        }
-
-        @Override
-        public Class<?> getType() {
-            return parameter.getType();
-        }
-
-        @Override
-        public Type getGenericType() {
-            return parameter.getParameterizedType();
-        }
-
-        @Override
-        protected AnnotatedElement getAnnotatedElement() {
-            return parameter;
-        }
-
-        public void invoke(Object bean, Object value) throws Exception {
-            method.invoke(bean, value);
-        }
-
-        @Override
-        public String getDescription() {
-            return "SetMethodParameter{" + method + '}';
-        }
+        return TypeUtils.nullDefault(paramMeta.getType());
     }
 }

@@ -20,6 +20,7 @@ import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.h2.Http2Headers;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,11 +55,23 @@ public class TestResponse {
         return Integer.parseInt(headers.getFirst(Http2Headers.STATUS.getName()));
     }
 
+    public boolean isOk() {
+        return getStatus() == 200;
+    }
+
     public String getContentType() {
         return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
     }
 
     public <T> T getBody(Class<T> type) {
+        if (type != String.class) {
+            int status = getStatus();
+            if (status >= 400) {
+                List<String> bodies = getBodies(String.class);
+                String message = bodies.isEmpty() ? null : bodies.get(0);
+                throw new RestException(status, "status: " + status + ", body: " + message);
+            }
+        }
         List<T> bodies = getBodies(type);
         return bodies.isEmpty() ? null : bodies.get(0);
     }

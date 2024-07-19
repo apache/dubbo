@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.DefaultRestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
@@ -43,7 +42,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
 
     public BasicRequestMappingResolver(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        toolKit = new DefaultRestToolKit(frameworkModel);
+        toolKit = new BasicRestToolKit(frameworkModel);
     }
 
     @Override

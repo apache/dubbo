@@ -18,10 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.AnnotationUtils;
-import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -32,19 +29,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Map;
 
-public class DefaultRestToolKit implements RestToolKit {
+public abstract class AbstractRestToolKit implements RestToolKit {
 
     protected final FrameworkModel frameworkModel;
     protected final TypeConverter typeConverter;
 
-    public DefaultRestToolKit(FrameworkModel frameworkModel) {
+    public AbstractRestToolKit(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
-    }
-
-    @Override
-    public int getDialect() {
-        return RestConstants.DIALECT_BASIC;
     }
 
     @Override
@@ -59,11 +51,6 @@ public class DefaultRestToolKit implements RestToolKit {
     @Override
     public Object convert(Object value, ParameterMeta parameter) {
         return typeConverter.convert(value, parameter.getGenericType());
-    }
-
-    @Override
-    public Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
-        return null;
     }
 
     @Override

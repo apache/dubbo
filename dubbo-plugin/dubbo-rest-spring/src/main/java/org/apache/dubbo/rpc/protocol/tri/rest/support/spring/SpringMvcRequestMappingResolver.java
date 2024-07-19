@@ -85,6 +85,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         if (requestMapping == null && httpExchange == null) {
             AnnotationMeta<?> exceptionHandler = methodMeta.getAnnotation(Annotations.ExceptionHandler);
             if (exceptionHandler != null) {
+                methodMeta.initParameters();
                 methodMeta.getServiceMeta().addExceptionHandler(methodMeta);
             }
             return null;
