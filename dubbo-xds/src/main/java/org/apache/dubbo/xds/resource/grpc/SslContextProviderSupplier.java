@@ -19,7 +19,6 @@ package org.apache.dubbo.xds.resource.grpc;
 import org.apache.dubbo.xds.resource.grpc.EnvoyServerProtoData.BaseTlsContext;
 import org.apache.dubbo.xds.resource.grpc.EnvoyServerProtoData.DownstreamTlsContext;
 import org.apache.dubbo.xds.resource.grpc.EnvoyServerProtoData.UpstreamTlsContext;
-import org.apache.dubbo.xds.resource.grpc.third.TlsContextManager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -40,7 +39,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class SslContextProviderSupplier implements Closeable {
 
   private final BaseTlsContext tlsContext;
-  private final org.apache.dubbo.xds.resource.grpc.third.TlsContextManager tlsContextManager;
+  private final org.apache.dubbo.xds.resource.grpc.TlsContextManager tlsContextManager;
   private SslContextProvider sslContextProvider;
   private boolean shutdown;
 

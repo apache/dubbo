@@ -16,7 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc;
 
-import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.resource.grpc.Bootstrapper.ServerInfo;
 import org.apache.dubbo.xds.resource.grpc.LoadStatsManager2.ClusterDropStats;
 import org.apache.dubbo.xds.resource.grpc.LoadStatsManager2.ClusterLocalityStats;
