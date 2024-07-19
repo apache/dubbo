@@ -95,11 +95,6 @@
       <artifactId>grpc-netty-shaded</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-xds</artifactId>
-      <version>1.64.0</version>
-    </dependency>
-    <dependency>
       <groupId>io.envoyproxy.controlplane</groupId>
       <artifactId>api</artifactId>
     </dependency>
@@ -183,17 +178,6 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.auto.value</groupId>
-      <artifactId>auto-value-annotations</artifactId>
-      <version>1.8.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.auto.value</groupId>
-      <artifactId>auto-value</artifactId>
-      <version>1.8.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

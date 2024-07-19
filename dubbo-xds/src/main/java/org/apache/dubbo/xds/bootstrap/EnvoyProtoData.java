@@ -248,37 +248,6 @@ public final class EnvoyProtoData {
       return listeningAddresses;
     }
 
-    @SuppressWarnings("deprecation")
-    @VisibleForTesting
-    public io.envoyproxy.envoy.config.core.v3.Node toEnvoyProtoNode() {
-      io.envoyproxy.envoy.config.core.v3.Node.Builder builder =
-          io.envoyproxy.envoy.config.core.v3.Node.newBuilder();
-      builder.setId(id);
-      builder.setCluster(cluster);
-      if (metadata != null) {
-        Struct.Builder structBuilder = Struct.newBuilder();
-        for (Map.Entry<String, ?> entry : metadata.entrySet()) {
-          structBuilder.putFields(entry.getKey(), convertToValue(entry.getValue()));
-        }
-        builder.setMetadata(structBuilder);
-      }
-      if (locality != null) {
-        builder.setLocality(
-            io.envoyproxy.envoy.config.core.v3.Locality.newBuilder()
-                .setRegion(locality.region())
-                .setZone(locality.zone())
-                .setSubZone(locality.subZone()));
-      }
-      for (Address address : listeningAddresses) {
-        builder.addListeningAddresses(address.toEnvoyProtoAddress());
-      }
-      builder.setUserAgentName(userAgentName);
-      if (userAgentVersion != null) {
-        builder.setUserAgentVersion(userAgentVersion);
-      }
-      builder.addAllClientFeatures(clientFeatures);
-      return builder.build();
-    }
   }
 
   /**

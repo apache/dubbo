@@ -19,17 +19,43 @@ package org.apache.dubbo.xds.bootstrap;
 import com.google.auto.value.AutoValue;
 import io.grpc.Internal;
 
+import java.util.Objects;
+
 /** Represents a network locality. */
-@AutoValue
 @Internal
-public abstract class Locality {
-  public abstract String region();
+public class Locality {
+    private final String region;
+    private final String zone;
+    private final String subZone;
 
-  public abstract String zone();
+    public Locality(String region, String zone, String subZone) {
+        this.region = region;
+        this.zone = zone;
+        this.subZone = subZone;
+    }
 
-  public abstract String subZone();
+    public String getRegion() {
+        return region;
+    }
 
-  public static Locality create(String region, String zone, String subZone) {
-    return new AutoValue_Locality(region, zone, subZone);
-  }
+    public String getZone() {
+        return zone;
+    }
+
+    public String getSubZone() {
+        return subZone;
+    }
+
+    public static Locality create(String region, String zone, String subZone) {
+        return new Locality(region, zone, subZone);
+    }
+
+    @Override
+    public String toString() {
+        return "Locality{" +
+                "region='" + region + '\'' +
+                ", zone='" + zone + '\'' +
+                ", subZone='" + subZone + '\'' +
+                '}';
+    }
 }

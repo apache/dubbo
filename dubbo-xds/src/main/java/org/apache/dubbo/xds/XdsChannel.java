@@ -21,8 +21,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
-import org.apache.dubbo.xds.bootstrap.BootstrapperImpl;
-import org.apache.dubbo.xds.bootstrap.DubboBootstrapperImpl;
 import org.apache.dubbo.xds.security.api.CertPair;
 import org.apache.dubbo.xds.security.api.CertSource;
 
@@ -97,10 +95,10 @@ public class XdsChannel {
                 }
             }
             else {
-                BootstrapperImpl bootstrapper = new DubboBootstrapperImpl();
+                Bootstrapper bootstrapper = new Bootstrapper();
                 Bootstrapper.BootstrapInfo bootstrapInfo = bootstrapper.bootstrap();
                 URLAddress address =
-                        URLAddress.parse(bootstrapInfo.servers().get(0).target(), null, false);
+                        URLAddress.parse(bootstrapInfo.getServers().get(0).getTarget(), null, false);
                 EpollEventLoopGroup elg = new EpollEventLoopGroup();
                 managedChannel = NettyChannelBuilder.forAddress(new DomainSocketAddress("/" + address.getPath()))
                         .eventLoopGroup(elg)
