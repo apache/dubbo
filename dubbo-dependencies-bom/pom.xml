@@ -155,9 +155,6 @@
 
     <embedded_redis_version>1.4.3</embedded_redis_version>
 
-    <!-- Alibaba -->
-    <alibaba_spring_context_support_version>1.0.11</alibaba_spring_context_support_version>
-
     <!-- Test libs -->
     <junit_jupiter_version>5.9.3</junit_jupiter_version>
     <junit_version>4.13.2</junit_version>
@@ -359,11 +356,6 @@
       </dependency>
 
       <!-- Alibaba -->
-      <dependency>
-        <groupId>com.alibaba.spring</groupId>
-        <artifactId>spring-context-support</artifactId>
-        <version>${alibaba_spring_context_support_version}</version>
-      </dependency>
 
       <dependency>
         <groupId>com.caucho</groupId>
