@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -136,6 +137,19 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     @Override
     protected GrpcStreamingDecoder getStreamingDecoder() {
         return (GrpcStreamingDecoder) super.getStreamingDecoder();
+    }
+
+    @Override
+    protected boolean applyCustomizeException() {
+        RpcInvocationBuildContext context = getContext();
+        if (context.isHasStub()) {
+            return false;
+        }
+        MethodMetadata methodMetadata = context.getMethodMetadata();
+        return ReflectionPackableMethod.needWrap(
+                context.getMethodDescriptor(),
+                methodMetadata.getActualRequestTypes(),
+                methodMetadata.getActualResponseType());
     }
 
     private class LazyFindMethodListener implements HttpMessageListener {

@@ -185,8 +185,10 @@
             <configuration>
               <skip>false</skip>
               <includes>
-                <include>org/apache/dubbo/rpc/protocol/tri/rest/**</include>
-                <include>org/apache/dubbo/rpc/protocol/tri/test/**</include>
+                <include>org/apache/dubbo/rpc/protocol/tri/rest/test/*</include>
+                <include>org/apache/dubbo/rpc/protocol/tri/rest/service/*</include>
+                <include>org/apache/dubbo/rpc/protocol/tri/test/*</include>
+                <include>META-INF/dubbo/**</include>
               </includes>
             </configuration>
           </execution>
@@ -196,6 +198,13 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compileTests</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

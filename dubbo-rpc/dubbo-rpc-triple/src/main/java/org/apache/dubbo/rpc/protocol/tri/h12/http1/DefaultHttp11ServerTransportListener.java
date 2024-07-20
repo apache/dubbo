@@ -126,7 +126,7 @@ public class DefaultHttp11ServerTransportListener
 
         public AutoCompleteUnaryServerCallListener(
                 RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
-            super(invocation, invoker, responseObserver);
+            super(invocation, invoker, responseObserver, false);
         }
 
         @Override
