@@ -5,6 +5,8 @@ import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
 
 import com.google.common.collect.ImmutableMap;
 
+import java.util.Map;
+
 public class Route{
 
   private final RouteMatch routeMatch;
@@ -13,6 +15,26 @@ public class Route{
   private final RouteAction routeAction;
 
   private final ImmutableMap<String, FilterConfig> filterConfigOverrides;
+
+    public static Route forAction(
+            RouteMatch routeMatch, RouteAction routeAction,
+            Map<String, FilterConfig> filterConfigOverrides) {
+        return create(routeMatch, routeAction, filterConfigOverrides);
+    }
+
+    public static Route forNonForwardingAction(
+            RouteMatch routeMatch,
+            Map<String, FilterConfig> filterConfigOverrides) {
+        return create(routeMatch, null, filterConfigOverrides);
+    }
+
+    public static Route create(
+            RouteMatch routeMatch, @javax.annotation.Nullable RouteAction routeAction,
+            Map<String, FilterConfig> filterConfigOverrides) {
+        return new Route(
+                routeMatch, routeAction, ImmutableMap.copyOf(filterConfigOverrides));
+    }
+
 
     Route(
       RouteMatch routeMatch,
