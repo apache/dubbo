@@ -91,14 +91,13 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private final int cleanPeriod;
 
+    private final ApplicationModel applicationModel;
+
     private volatile boolean admin = false;
 
     public MulticastRegistry(URL url, ApplicationModel applicationModel) {
-        this(url);
-    }
-
-    public MulticastRegistry(URL url) {
         super(url);
+        this.applicationModel = applicationModel;
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
         }
@@ -121,7 +120,7 @@ public class MulticastRegistry extends FailbackRegistry {
                                 if (i > 0) {
                                     msg = msg.substring(0, i).trim();
                                 }
-                                MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
+                                receive(msg, (InetSocketAddress) recv.getSocketAddress());
                                 Arrays.fill(buf, (byte) 0);
                             } catch (Throwable e) {
                                 if (!multicastSocket.isClosed()) {
@@ -157,6 +156,10 @@ public class MulticastRegistry extends FailbackRegistry {
         } else {
             this.cleanFuture = null;
         }
+    }
+
+    public MulticastRegistry(URL url) {
+        this(url, url.getOrDefaultApplicationModel());
     }
 
     private void checkMulticastAddress(InetAddress multicastAddress) {
@@ -215,6 +218,10 @@ public class MulticastRegistry extends FailbackRegistry {
     private void receive(String msg, InetSocketAddress remoteAddress) {
         if (logger.isInfoEnabled()) {
             logger.info("Receive multicast message: " + msg + " from " + remoteAddress);
+        }
+        if (applicationModel.isDestroyed()) {
+            logger.info("The applicationModel is destroyed, skip");
+            return;
         }
         if (msg.startsWith(REGISTER)) {
             URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
