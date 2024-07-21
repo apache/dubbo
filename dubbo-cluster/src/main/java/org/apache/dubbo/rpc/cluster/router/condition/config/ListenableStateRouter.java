@@ -125,7 +125,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         List<? extends AbstractStateRouter<T>> routers;
         if (routerRule instanceof MultiDestConditionRouterRule) {
             routers = multiDestConditionRouters;
-        }else {
+        } else {
             routers = conditionRouters;
         }
 
@@ -170,7 +170,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         } else if (rule instanceof MultiDestConditionRouterRule) {
             this.multiDestConditionRouters = ((MultiDestConditionRouterRule) rule)
                     .getConditions().stream()
-                            .map(condition -> new MultiDestConditionRouter<T>(getUrl(), condition,rule.isForce(), rule.isEnabled()))
+                            .map(condition -> new MultiDestConditionRouter<T>(
+                                    getUrl(), condition, rule.isForce(), rule.isEnabled()))
                             .collect(Collectors.toList());
 
             for (MultiDestConditionRouter<T> conditionRouter : this.multiDestConditionRouters) {

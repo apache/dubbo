@@ -28,15 +28,15 @@ import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleP
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.MultiDestConditionRouterRule;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -110,47 +110,44 @@ public class ConditionStateRouterTestV31 {
         AbstractRouterRule routerRule = ConditionRuleParser.parse(config);
         Assertions.assertInstanceOf(MultiDestConditionRouterRule.class, routerRule);
         MultiDestConditionRouterRule rule = (MultiDestConditionRouterRule) routerRule;
-        Assertions.assertEquals(rule.getConditions()
-                .size(), 2);
-        Assertions.assertEquals(rule.getConditions()
-                .get(0)
-                .getTo()
-                .size(), 3);
-        Assertions.assertEquals(rule.getConditions()
-                .get(1)
-                .getTo()
-                .size(), 1);
+        Assertions.assertEquals(rule.getConditions().size(), 2);
+        Assertions.assertEquals(rule.getConditions().get(0).getTo().size(), 3);
+        Assertions.assertEquals(rule.getConditions().get(1).getTo().size(), 1);
         System.out.println("rule.getConditions() = " + rule.getConditions());
     }
 
     @Test
     public void testMultiplyConditionRoute() {
 
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: com.foo.BarService\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env!=gray\n" +
-                "        weight: 100";
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: com.foo.BarService\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env!=gray\n"
+                + "        weight: 100";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing&version=v1"),
+                invocation,
+                false,
+                new Holder<>());
 
         int count = 0;
         for (Invoker<String> invoker : invokers) {
-            String url = invoker.getUrl()
-                    .toString();
+            String url = invoker.getUrl().toString();
             if (url.contains("env") && !url.contains("gray")) {
                 count++;
             }
@@ -160,35 +157,39 @@ public class ConditionStateRouterTestV31 {
 
     @Test
     public void testRemoveDuplicatesCondition() {
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.samples.CommentService\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env!=gray\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env!=gray\n" +
-                "        weight: 100";
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: org.apache.dubbo.samples.CommentService\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env!=gray\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env!=gray\n"
+                + "        weight: 100";
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         int count = 0;
         for (Invoker<String> invoker : invokers) {
-            String url = invoker.getUrl()
-                    .toString();
+            String url = invoker.getUrl().toString();
             if (url.contains("env") && !url.contains("gray")) {
                 count++;
             }
@@ -198,40 +199,46 @@ public class ConditionStateRouterTestV31 {
 
     @Test
     public void testConsequentCondition() {
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.samples.CommentService\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env!=gray\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "      match: region=beijing\n" +
-                "    to:\n" +
-                "      - match: region=beijing\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "    to:\n" +
-                "      - match: host!=127.0.0.1";
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: org.apache.dubbo.samples.CommentService\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env!=gray\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "      match: region=beijing\n"
+                + "    to:\n"
+                + "      - match: region=beijing\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "    to:\n"
+                + "      - match: host!=127.0.0.1";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         int count = 0;
         for (Invoker<String> invoker : invokers) {
-            String url = invoker.getUrl()
-                    .toString();
-            if ((url.contains("env") && !url.contains("gray")) && url.contains("region=beijing") && !url.contains("127.0.0.1")) {
+            String url = invoker.getUrl().toString();
+            if ((url.contains("env") && !url.contains("gray"))
+                    && url.contains("region=beijing")
+                    && !url.contains("127.0.0.1")) {
                 count++;
             }
         }
@@ -240,39 +247,43 @@ public class ConditionStateRouterTestV31 {
 
     @Test
     public void testUnMatchCondition() {
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.samples.CommentService\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env!=gray\n" +
-                "    to:\n" +
-                "      - match: env=gray\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "      match: region!=beijing\n" +
-                "    to:\n" +
-                "      - match: region=beijing\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "    to:\n" +
-                "      - match: host!=127.0.0.1";
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: org.apache.dubbo.samples.CommentService\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env!=gray\n"
+                + "    to:\n"
+                + "      - match: env=gray\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "      match: region!=beijing\n"
+                + "    to:\n"
+                + "      - match: region=beijing\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "    to:\n"
+                + "      - match: host!=127.0.0.1";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         int count = 0;
         for (Invoker<String> invoker : invokers) {
-            String url = invoker.getUrl()
-                    .toString();
+            String url = invoker.getUrl().toString();
             if (!url.contains("127.0.0.1")) {
                 count++;
             }
@@ -282,72 +293,81 @@ public class ConditionStateRouterTestV31 {
 
     @Test
     public void testMatchAndRouteZero() {
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.samples.CommentService\n" +
-                "force: true\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env=ErrTag\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "      match: region!=beijing\n" +
-                "    to:\n" +
-                "      - match: region=beijing\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "    to:\n" +
-                "      - match: host!=127.0.0.1";
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: org.apache.dubbo.samples.CommentService\n"
+                + "force: true\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env=ErrTag\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "      match: region!=beijing\n"
+                + "    to:\n"
+                + "      - match: region=beijing\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "    to:\n"
+                + "      - match: host!=127.0.0.1";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
         Assertions.assertEquals(0, result.size());
     }
 
     @Test
     public void testMatchRouteZeroAndIgnore() {
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.samples.CommentService\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: region=beijing\n" +
-                "    to:\n" +
-                "      - match: region!=beijing\n" +
-                "        weight: 100\n" +
-                "  - from:\n" +
-                "    to:\n" +
-                "      - match: host!=127.0.0.1\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env=ErrTag\n" +
-                "        weight: 100";
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: org.apache.dubbo.samples.CommentService\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: region=beijing\n"
+                + "    to:\n"
+                + "      - match: region!=beijing\n"
+                + "        weight: 100\n"
+                + "  - from:\n"
+                + "    to:\n"
+                + "      - match: host!=127.0.0.1\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env=ErrTag\n"
+                + "        weight: 100";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         int count = 0;
         for (Invoker<String> invoker : invokers) {
-            String url = invoker.getUrl()
-                    .toString();
+            String url = invoker.getUrl().toString();
             if ((url.contains("region") && !url.contains("beijing") && !url.contains("127.0.0.1"))) {
                 count++;
             }
@@ -357,59 +377,64 @@ public class ConditionStateRouterTestV31 {
 
     @Test
     public void testTrafficDisabledAndIgnoreConditionRouteForce() {
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.samples.CommentService\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: host=127.0.0.1\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env!=gray\n" +
-                "        weight: 100\n" +
-                "  - to:\n" +
-                "      - match: region!=beijing";
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: org.apache.dubbo.samples.CommentService\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: host=127.0.0.1\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env!=gray\n"
+                + "        weight: 100\n"
+                + "  - to:\n"
+                + "      - match: region!=beijing";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getComment");
 
-        BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+        BitList<Invoker<String>> result = router.route(
+                invokers.clone(),
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                invocation,
+                false,
+                new Holder<>());
 
         Assertions.assertEquals(0, result.size());
     }
 
     @Test
     public void testMultiplyDestination() {
-        String rawRule = "configVersion: v3.1\n" +
-                "scope: service\n" +
-                "key: org.apache.dubbo.samples.CommentService\n" +
-                "force: false\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "conditions:\n" +
-                "  - from:\n" +
-                "      match: env=gray\n" +
-                "    to:\n" +
-                "      - match: env!=gray\n" +
-                "        weight: 100\n" +
-                "      - match: env=gray\n" +
-                "        weight: 900\n" +
-                "  - from:\n" +
-                "      match: region=beijing\n" +
-                "    to:\n" +
-                "      - match: region!=beijing\n" +
-                "        weight: 100\n" +
-                "      - match: region=beijing\n" +
-                "        weight: 200";
+        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
+                + "key: org.apache.dubbo.samples.CommentService\n"
+                + "force: false\n"
+                + "runtime: true\n"
+                + "enabled: true\n"
+                + "conditions:\n"
+                + "  - from:\n"
+                + "      match: env=gray\n"
+                + "    to:\n"
+                + "      - match: env!=gray\n"
+                + "        weight: 100\n"
+                + "      - match: env=gray\n"
+                + "        weight: 900\n"
+                + "  - from:\n"
+                + "      match: region=beijing\n"
+                + "    to:\n"
+                + "      - match: region!=beijing\n"
+                + "        weight: 100\n"
+                + "      - match: region=beijing\n"
+                + "        weight: 200";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
+        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
         RpcInvocation invocation = new RpcInvocation();
@@ -417,7 +442,12 @@ public class ConditionStateRouterTestV31 {
 
         Map<Integer, Integer> actualDistribution = new HashMap<>();
         for (int i = 0; i < 1000; i++) {
-            BitList<Invoker<String>> result = router.route(invokers.clone(), URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"), invocation, false, new Holder<>());
+            BitList<Invoker<String>> result = router.route(
+                    invokers.clone(),
+                    URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"),
+                    invocation,
+                    false,
+                    new Holder<>());
 
             actualDistribution.put(result.size(), actualDistribution.getOrDefault(result.size(), 0) + 1);
         }
@@ -426,13 +456,11 @@ public class ConditionStateRouterTestV31 {
         for (Map.Entry<Integer, Integer> entry : actualDistribution.entrySet()) {
             sum += entry.getValue();
         }
-        assertEquals(actualDistribution.size(),4); // 8 6 4 2
+        assertEquals(actualDistribution.size(), 4); // 8 6 4 2
         Assertions.assertNotNull(actualDistribution.get(8));
         Assertions.assertNotNull(actualDistribution.get(6));
         Assertions.assertNotNull(actualDistribution.get(4));
         Assertions.assertNotNull(actualDistribution.get(2));
-        assertEquals(sum,1000);
-
+        assertEquals(sum, 1000);
     }
-
 }

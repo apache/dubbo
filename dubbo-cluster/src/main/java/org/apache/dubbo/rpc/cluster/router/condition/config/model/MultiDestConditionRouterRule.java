@@ -20,7 +20,6 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
