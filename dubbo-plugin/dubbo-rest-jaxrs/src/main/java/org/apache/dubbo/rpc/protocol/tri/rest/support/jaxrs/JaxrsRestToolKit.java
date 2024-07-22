@@ -25,16 +25,23 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.AbstractRestToolKit;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.ParamConverter;
+
+import java.util.Optional;
 
 final class JaxrsRestToolKit extends AbstractRestToolKit {
 
     private final BeanArgumentBinder binder;
 
+    private final ParamConverterFactory paramConverterFactory;
+
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
         binder = new BeanArgumentBinder(frameworkModel);
+        paramConverterFactory = new ParamConverterFactory();
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public int getDialect() {
         return RestConstants.DIALECT_JAXRS;
@@ -48,6 +55,19 @@ final class JaxrsRestToolKit extends AbstractRestToolKit {
             }
             return typeConverter.convert(value, MultivaluedHashMap.class);
         }
+
+        Optional<ParamConverter> optional = paramConverterFactory.getParamConverter(
+                parameter.getType(), parameter.getGenericType(), parameter.getRealAnnotations());
+        if (optional.isPresent()) {
+            ParamConverter paramConverter = optional.get();
+            Object result = value.getClass() == String.class
+                    ? paramConverter.fromString((String) value)
+                    : paramConverter.toString(value);
+            if (result != null) {
+                return result;
+            }
+        }
+
         return super.convert(value, parameter);
     }
 
