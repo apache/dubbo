@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
+import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.Pair;
 
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
@@ -27,6 +26,7 @@ import javax.ws.rs.ext.ParamConverterProvider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,40 +34,45 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_LOAD_EXTENSION;
+import static org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger;
 
-@SuppressWarnings({"rawtypes"})
-public class ParamConverterFactory {
+final class ParamConverterFactory {
 
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(ParamConverterFactory.class);
-    private final Map<Pair<Pair<Class<?>, Type>, Annotation[]>, Optional<ParamConverter>> cache =
-            CollectionUtils.newConcurrentHashMap();
+    private static final ErrorTypeAwareLogger logger = getErrorTypeAwareLogger(ParamConverterFactory.class);
+    private final Map<List<Object>, Optional<ParamConverter<?>>> cache = CollectionUtils.newConcurrentHashMap();
     private final List<ParamConverterProvider> providers = new ArrayList<>();
 
     ParamConverterFactory() {
-        ServiceLoader<ParamConverterProvider> serviceLoader = ServiceLoader.load(ParamConverterProvider.class);
-        Iterator<ParamConverterProvider> iterator = serviceLoader.iterator();
-        while (iterator.hasNext()) {
+        Iterator<ParamConverterProvider> it =
+                ServiceLoader.load(ParamConverterProvider.class).iterator();
+        while (it.hasNext()) {
             try {
-                ParamConverterProvider paramConverterProvider = iterator.next();
-                providers.add(paramConverterProvider);
-            } catch (Throwable e) {
-                logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Spi Fail to load ParamConverterProvider");
+                providers.add(it.next());
+            } catch (Throwable t) {
+                logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Failed to load ParamConverterProvider", t);
             }
         }
     }
 
-    public <T> Optional<ParamConverter> getParamConverter(
-            Class<T> rawType, Type genericType, Annotation[] annotations) {
-        Pair<Pair<Class<?>, Type>, Annotation[]> pair = Pair.of(Pair.of(rawType, genericType), annotations);
-        return cache.computeIfAbsent(pair, k -> {
-            for (ParamConverterProvider provider : providers) {
-                ParamConverter converter = provider.getConverter(rawType, genericType, annotations);
-                if (converter != null) {
-                    return Optional.of(converter);
-                }
-            }
-            return Optional.empty();
-        });
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <T> ParamConverter<T> getParamConverter(Class<T> type, Type genericType, Annotation[] annotations) {
+        if (providers.isEmpty()) {
+            return null;
+        }
+        List<Object> key = new ArrayList<>(annotations.length + 2);
+        key.add(type);
+        key.add(genericType);
+        Collections.addAll(key, annotations);
+        return (ParamConverter<T>) cache.computeIfAbsent(key, k -> {
+                    for (ParamConverterProvider provider : providers) {
+                        ParamConverter<T> converter = provider.getConverter(type, genericType, annotations);
+                        if (converter != null) {
+                            return Optional.of(converter);
+                        }
+                    }
+                    return Optional.empty();
+                })
+                .orElse(null);
     }
 }

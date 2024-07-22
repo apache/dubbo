@@ -68,4 +68,11 @@ class RestProtocolTest extends BaseServiceTest {
             '/beanTest/2?name=sam' | ['first': 'sam', 'last': 'lee'] | '{"form":{"contentType":"application/x-www-form-urlencoded","firstName":"sam","lastName":"lee"},"id":2,"name":"sam"}'
     }
 
+    def "param converter test"() {
+        expect:
+            runner.get(path) == output
+        where:
+            path                      | output
+            '/convertTest?user=3,sam' | '{"id":3,"name":"sam"}'
+    }
 }

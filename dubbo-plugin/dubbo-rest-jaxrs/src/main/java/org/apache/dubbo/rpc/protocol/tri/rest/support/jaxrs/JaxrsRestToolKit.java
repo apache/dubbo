@@ -27,12 +27,9 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ParamConverter;
 
-import java.util.Optional;
-
 final class JaxrsRestToolKit extends AbstractRestToolKit {
 
     private final BeanArgumentBinder binder;
-
     private final ParamConverterFactory paramConverterFactory;
 
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
@@ -41,13 +38,13 @@ final class JaxrsRestToolKit extends AbstractRestToolKit {
         paramConverterFactory = new ParamConverterFactory();
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public int getDialect() {
         return RestConstants.DIALECT_JAXRS;
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Object convert(Object value, ParameterMeta parameter) {
         if (MultivaluedMap.class.isAssignableFrom(parameter.getType())) {
             if (value instanceof MultivaluedMap) {
@@ -56,16 +53,10 @@ final class JaxrsRestToolKit extends AbstractRestToolKit {
             return typeConverter.convert(value, MultivaluedHashMap.class);
         }
 
-        Optional<ParamConverter> optional = paramConverterFactory.getParamConverter(
+        ParamConverter converter = paramConverterFactory.getParamConverter(
                 parameter.getType(), parameter.getGenericType(), parameter.getRealAnnotations());
-        if (optional.isPresent()) {
-            ParamConverter paramConverter = optional.get();
-            Object result = value.getClass() == String.class
-                    ? paramConverter.fromString((String) value)
-                    : paramConverter.toString(value);
-            if (result != null) {
-                return result;
-            }
+        if (converter != null) {
+            return value instanceof String ? converter.fromString((String) value) : converter.toString(value);
         }
 
         return super.convert(value, parameter);

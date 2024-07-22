@@ -27,4 +27,9 @@ public class JaxrsDemoServiceImpl implements JaxrsDemoService {
     public User getTest(User user) {
         return user;
     }
+
+    @Override
+    public User convertTest(User user) {
+        return user;
+    }
 }

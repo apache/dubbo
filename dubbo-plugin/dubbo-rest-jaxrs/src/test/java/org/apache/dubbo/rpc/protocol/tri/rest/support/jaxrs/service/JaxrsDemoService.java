@@ -17,8 +17,10 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.service;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 
 import org.jboss.resteasy.annotations.Form;
 
@@ -31,4 +33,8 @@ public interface JaxrsDemoService {
     @POST
     @Path("/beanTest/{id}")
     User getTest(@BeanParam User user);
+
+    @GET
+    @Path("/convertTest")
+    User convertTest(@QueryParam("user") User user);
 }
