@@ -27,7 +27,7 @@ import java.util.Map;
  * A registry for all supported {@link Filter}s. Filters can be queried from the registry
  * by any of the {@link Filter#typeUrls() type URLs}.
  */
-final class FilterRegistry {
+public class FilterRegistry {
   private static FilterRegistry instance;
 
   private final Map<String, Filter> supportedFilters = new HashMap<>();

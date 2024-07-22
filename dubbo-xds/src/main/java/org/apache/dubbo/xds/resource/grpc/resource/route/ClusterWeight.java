@@ -12,7 +12,7 @@ public class ClusterWeight {
 
   private final ImmutableMap<String, FilterConfig> filterConfigOverrides;
 
-    ClusterWeight(
+    public ClusterWeight(
       String name,
       int weight,
       ImmutableMap<String, FilterConfig> filterConfigOverrides) {

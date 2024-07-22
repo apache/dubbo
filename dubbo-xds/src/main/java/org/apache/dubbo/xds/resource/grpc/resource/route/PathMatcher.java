@@ -4,6 +4,8 @@ import org.apache.dubbo.common.lang.Nullable;
 
 import com.google.re2j.Pattern;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class PathMatcher {
 
     @Nullable
@@ -16,6 +18,27 @@ public class PathMatcher {
     private final Pattern regEx;
 
     private final boolean caseSensitive;
+
+    public static PathMatcher fromPath(String path, boolean caseSensitive) {
+        checkNotNull(path, "path");
+        return create(path, null, null, caseSensitive);
+    }
+
+    public static PathMatcher fromPrefix(String prefix, boolean caseSensitive) {
+        checkNotNull(prefix, "prefix");
+        return create(null, prefix, null, caseSensitive);
+    }
+
+    public static PathMatcher fromRegEx(Pattern regEx) {
+        checkNotNull(regEx, "regEx");
+        return create(null, null, regEx, false /* doesn't matter */);
+    }
+
+    private static PathMatcher create(@javax.annotation.Nullable String path, @javax.annotation.Nullable String prefix,
+                                                                   @javax.annotation.Nullable Pattern regEx, boolean caseSensitive) {
+        return new PathMatcher(path, prefix, regEx,
+                caseSensitive);
+    }
 
     PathMatcher(
             @Nullable String path, @Nullable String prefix, @Nullable Pattern regEx, boolean caseSensitive) {

@@ -5,6 +5,11 @@ import org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin.NamedPluginConf
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class RouteAction {
 
     private final ImmutableList<HashPolicy> hashPolicies;
@@ -23,6 +28,48 @@ public class RouteAction {
 
     @Nullable
     private final RetryPolicy retryPolicy;
+
+    public static RouteAction forCluster(
+            String cluster, List<HashPolicy> hashPolicies, @javax.annotation.Nullable Long timeoutNano,
+            @javax.annotation.Nullable RetryPolicy retryPolicy) {
+        checkNotNull(cluster, "cluster");
+        return create(hashPolicies, timeoutNano, cluster, null, null, retryPolicy);
+    }
+
+    public static RouteAction forWeightedClusters(
+            List<ClusterWeight> weightedClusters, List<HashPolicy> hashPolicies,
+            @javax.annotation.Nullable Long timeoutNano, @javax.annotation.Nullable RetryPolicy retryPolicy) {
+        checkNotNull(weightedClusters, "weightedClusters");
+        checkArgument(!weightedClusters.isEmpty(), "empty cluster list");
+        return create(
+                hashPolicies, timeoutNano, null, weightedClusters, null, retryPolicy);
+    }
+
+    public static RouteAction forClusterSpecifierPlugin(
+            NamedPluginConfig namedConfig,
+            List<HashPolicy> hashPolicies,
+            @javax.annotation.Nullable Long timeoutNano,
+            @javax.annotation.Nullable RetryPolicy retryPolicy) {
+        checkNotNull(namedConfig, "namedConfig");
+        return create(hashPolicies, timeoutNano, null, null, namedConfig, retryPolicy);
+    }
+
+    private static RouteAction create(
+            List<HashPolicy> hashPolicies,
+            @javax.annotation.Nullable Long timeoutNano,
+            @javax.annotation.Nullable String cluster,
+            @javax.annotation.Nullable List<ClusterWeight> weightedClusters,
+            @javax.annotation.Nullable NamedPluginConfig namedConfig,
+            @javax.annotation.Nullable RetryPolicy retryPolicy) {
+        return new RouteAction(
+                ImmutableList.copyOf(hashPolicies),
+                timeoutNano,
+                cluster,
+                weightedClusters == null ? null : ImmutableList.copyOf(weightedClusters),
+                namedConfig,
+                retryPolicy);
+    }
+
 
     RouteAction(
             ImmutableList<HashPolicy> hashPolicies,

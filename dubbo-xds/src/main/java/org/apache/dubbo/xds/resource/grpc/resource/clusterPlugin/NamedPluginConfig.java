@@ -59,7 +59,7 @@ public class NamedPluginConfig {
     return h$;
   }
 
-    static NamedPluginConfig create(String name, PluginConfig config) {
+    public static NamedPluginConfig create(String name, PluginConfig config) {
         return new NamedPluginConfig(name, config);
     }
 }
