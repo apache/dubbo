@@ -16,38 +16,39 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.CONDITIONS_KEY;
 
-public class ConditionRouterRule extends AbstractRouterRule {
-    private List<String> conditions;
+public class MultiDestConditionRouterRule extends AbstractRouterRule {
 
-    @SuppressWarnings("unchecked")
+    private List<MultiDestCondition> conditions;
+
     public static AbstractRouterRule parseFromMap(Map<String, Object> map) {
-        ConditionRouterRule conditionRouterRule = new ConditionRouterRule();
-        conditionRouterRule.parseFromMap0(map);
 
-        Object conditions = map.get(CONDITIONS_KEY);
-        if (conditions != null && List.class.isAssignableFrom(conditions.getClass())) {
-            conditionRouterRule.setConditions(
-                    ((List<Object>) conditions).stream().map(String::valueOf).collect(Collectors.toList()));
+        MultiDestConditionRouterRule multiDestConditionRouterRule = new MultiDestConditionRouterRule();
+        multiDestConditionRouterRule.parseFromMap0(map);
+        List<Map<String, String>> conditions = (List<Map<String, String>>) map.get(CONDITIONS_KEY);
+        List<MultiDestCondition> multiDestConditions = new ArrayList<>();
+
+        for (Map<String, String> condition : conditions) {
+            multiDestConditions.add((MultiDestCondition) JsonUtils.convertObject(condition, MultiDestCondition.class));
         }
+        multiDestConditionRouterRule.setConditions(multiDestConditions);
 
-        return conditionRouterRule;
+        return multiDestConditionRouterRule;
     }
 
-    public ConditionRouterRule() {}
-
-    public List<String> getConditions() {
+    public List<MultiDestCondition> getConditions() {
         return conditions;
     }
 
-    public void setConditions(List<String> conditions) {
+    public void setConditions(List<MultiDestCondition> conditions) {
         this.conditions = conditions;
     }
 }

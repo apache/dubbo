@@ -14,19 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store.redis;
+package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-/**
- * RedisMetadataReportFactory.
- */
-public class RedisMetadataReportFactory extends AbstractMetadataReportFactory {
+public class Destination<T> {
+    private int weight;
+    private BitList<Invoker<T>> invokers;
 
-    @Override
-    public MetadataReport createMetadataReport(URL url) {
-        return new RedisMetadataReport(url);
+    Destination(int weight, BitList<Invoker<T>> invokers) {
+        this.weight = weight;
+        this.invokers = invokers;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    public BitList<Invoker<T>> getInvokers() {
+        return invokers;
+    }
+
+    public void setInvokers(BitList<Invoker<T>> invokers) {
+        this.invokers = invokers;
     }
 }

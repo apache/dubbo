@@ -14,14 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store.redis;
+package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
-/**
- * 2018/10/26
- */
-public interface RedisMetadata4TstService {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-    int getCounter();
+public class MultiDestCondition {
+    private Map<String, String> from = new HashMap<>();
+    private List<Map<String, String>> to = new ArrayList<>();
 
-    void printResult(String var);
+    public Map<String, String> getFrom() {
+        return from;
+    }
+
+    public void setFrom(Map<String, String> from) {
+        this.from = from;
+    }
+
+    public List<Map<String, String>> getTo() {
+        return to;
+    }
+
+    public void setTo(List<Map<String, String>> to) {
+        this.to = to;
+    }
+
+    @Override
+    public String toString() {
+        return "MultiDestCondition{" + "from=" + from + ", to=" + to + '}';
+    }
 }
