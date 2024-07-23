@@ -147,6 +147,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                 context.getMethodDescriptor(),
                 methodMetadata.getActualRequestTypes(),
                 methodMetadata.getActualResponseType());
+    }
 
     @Override
     protected void onSettingMethodDescriptor(MethodDescriptor methodDescriptor) {
