@@ -22,7 +22,10 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
 import java.io.File;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -34,18 +37,34 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 public final class TypeUtils {
+
     private static final Set<Class<?>> SIMPLE_TYPES = new ConcurrentHashSet<>();
 
     static {
@@ -124,15 +143,15 @@ public final class TypeUtils {
     }
 
     public static Class<?> getSuperGenericType(Class<?> clazz, int index) {
-        Class<?> result = getNestedType(clazz.getGenericSuperclass(), index);
-        return result == null ? getNestedType(ArrayUtils.first(clazz.getGenericInterfaces()), index) : result;
+        Class<?> result = getNestedActualType(clazz.getGenericSuperclass(), index);
+        return result == null ? getNestedActualType(ArrayUtils.first(clazz.getGenericInterfaces()), index) : result;
     }
 
     public static Class<?> getSuperGenericType(Class<?> clazz) {
         return getSuperGenericType(clazz, 0);
     }
 
-    public static Class<?>[] getNestedTypes(Type type) {
+    public static Class<?>[] getNestedActualTypes(Type type) {
         if (type instanceof ParameterizedType) {
             Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
             int len = typeArgs.length;
@@ -145,7 +164,7 @@ public final class TypeUtils {
         return null;
     }
 
-    public static Class<?> getNestedType(Type type, int index) {
+    public static Class<?> getNestedActualType(Type type, int index) {
         if (type instanceof ParameterizedType) {
             Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
             if (index < typeArgs.length) {
@@ -171,6 +190,16 @@ public final class TypeUtils {
         if (type instanceof GenericArrayType) {
             Type componentType = ((GenericArrayType) type).getGenericComponentType();
             return Array.newInstance(getActualType(componentType), 0).getClass();
+        }
+        return null;
+    }
+
+    public static Type getNestedGenericType(Type type, int index) {
+        if (type instanceof ParameterizedType) {
+            Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
+            if (index < typeArgs.length) {
+                return getActualGenericType(typeArgs[index]);
+            }
         }
         return null;
     }
@@ -214,5 +243,138 @@ public final class TypeUtils {
             return Optional.empty();
         }
         return null;
+    }
+
+    public static Object longToObject(long value, Class<?> targetClass) {
+        if (targetClass == Long.class) {
+            return value;
+        }
+        if (targetClass == Integer.class) {
+            return (int) value;
+        }
+        if (targetClass == Short.class) {
+            return (short) value;
+        }
+        if (targetClass == Character.class) {
+            return (char) value;
+        }
+        if (targetClass == Byte.class) {
+            return (byte) value;
+        }
+        return null;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static Collection createCollection(Class targetClass) {
+        if (targetClass.isInterface()) {
+            if (targetClass == List.class || targetClass == Collection.class) {
+                return new ArrayList<>();
+            }
+            if (targetClass == Set.class) {
+                return new HashSet<>();
+            }
+            if (targetClass == SortedSet.class) {
+                return new LinkedHashSet<>();
+            }
+            if (targetClass == Queue.class || targetClass == Deque.class) {
+                return new LinkedList<>();
+            }
+        } else if (Collection.class.isAssignableFrom(targetClass)) {
+            if (targetClass == ArrayList.class) {
+                return new ArrayList<>();
+            }
+            if (targetClass == LinkedList.class) {
+                return new LinkedList();
+            }
+            if (targetClass == HashSet.class) {
+                return new HashSet<>();
+            }
+            if (targetClass == LinkedHashSet.class) {
+                return new LinkedHashSet<>();
+            }
+            if (!Modifier.isAbstract(targetClass.getModifiers())) {
+                try {
+                    Constructor sizeCt = null;
+                    for (Constructor ct : targetClass.getConstructors()) {
+                        switch (ct.getParameterCount()) {
+                            case 0:
+                                return (Collection) ct.newInstance();
+                            case 1:
+                                if (ct.getParameterTypes()[0] == int.class) {
+                                    sizeCt = ct;
+                                }
+                                break;
+                            default:
+                        }
+                    }
+                    if (sizeCt != null) {
+                        return (Collection) sizeCt.newInstance(16);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        throw new IllegalArgumentException("Unsupported collection type: " + targetClass.getName());
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static Map createMap(Class targetClass) {
+        if (targetClass.isInterface()) {
+            if (targetClass == Map.class) {
+                return new HashMap<>();
+            }
+            if (targetClass == ConcurrentMap.class) {
+                return new ConcurrentHashMap<>();
+            }
+            if (SortedMap.class.isAssignableFrom(targetClass)) {
+                return new TreeMap<>();
+            }
+        } else if (Map.class.isAssignableFrom(targetClass)) {
+            if (targetClass == HashMap.class) {
+                return new HashMap<>();
+            }
+            if (targetClass == LinkedHashMap.class) {
+                return new LinkedHashMap<>();
+            }
+            if (targetClass == TreeMap.class) {
+                return new TreeMap<>();
+            }
+            if (targetClass == ConcurrentHashMap.class) {
+                return new ConcurrentHashMap<>();
+            }
+            if (!Modifier.isAbstract(targetClass.getModifiers())) {
+                try {
+                    Constructor sizeCt = null;
+                    for (Constructor ct : targetClass.getConstructors()) {
+                        if (Modifier.isPublic(ct.getModifiers())) {
+                            switch (ct.getParameterCount()) {
+                                case 0:
+                                    return (Map) ct.newInstance();
+                                case 1:
+                                    if (ct.getParameterTypes()[0] == int.class) {
+                                        sizeCt = ct;
+                                    }
+                                    break;
+                                default:
+                            }
+                        }
+                    }
+                    if (sizeCt != null) {
+                        return (Map) sizeCt.newInstance(16);
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        throw new IllegalArgumentException("Unsupported map type: " + targetClass.getName());
+    }
+
+    public static String buildSig(Method method) {
+        StringBuilder sb = new StringBuilder(8);
+        for (Class<?> type : method.getParameterTypes()) {
+            String name = type.getName();
+            sb.append(name.charAt(name.lastIndexOf('.') + 1));
+        }
+        return sb.toString();
     }
 }

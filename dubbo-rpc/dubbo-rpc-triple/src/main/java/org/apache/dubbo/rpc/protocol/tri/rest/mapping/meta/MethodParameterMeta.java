@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
+
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -45,6 +48,13 @@ public final class MethodParameterMeta extends ParameterMeta {
         return parameter;
     }
 
+    @Override
+    public boolean isSingle() {
+        MethodDescriptor methodDescriptor = methodMeta.getMethodDescriptor();
+        return methodDescriptor.getRpcType() != RpcType.UNARY || methodDescriptor.getParameterClasses().length == 1;
+    }
+
+    @Override
     public int getIndex() {
         return index;
     }

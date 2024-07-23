@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
@@ -30,14 +31,21 @@ public final class ServiceMeta extends AnnotationSupport {
     private final List<Class<?>> hierarchy;
     private final Class<?> type;
     private final Object service;
+    private final ServiceDescriptor serviceDescriptor;
     private final URL url;
     private final String contextPath;
 
     private List<MethodMeta> exceptionHandlers;
 
-    public ServiceMeta(Collection<Class<?>> hierarchy, Object service, URL url, RestToolKit toolKit) {
+    public ServiceMeta(
+            Collection<Class<?>> hierarchy,
+            ServiceDescriptor serviceDescriptor,
+            Object service,
+            URL url,
+            RestToolKit toolKit) {
         super(toolKit);
         this.hierarchy = new ArrayList<>(hierarchy);
+        this.serviceDescriptor = serviceDescriptor;
         type = this.hierarchy.get(0);
         this.service = service;
         this.url = url;
@@ -50,6 +58,10 @@ public final class ServiceMeta extends AnnotationSupport {
 
     public Class<?> getType() {
         return type;
+    }
+
+    public ServiceDescriptor getServiceDescriptor() {
+        return serviceDescriptor;
     }
 
     public Object getService() {

@@ -24,14 +24,14 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 public class UnaryServerCallListener extends AbstractServerCallListener {
 
-    private boolean applyCustomizeException = false;
+    private final boolean applyCustomizeException;
 
     public UnaryServerCallListener(
-            RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
+            RpcInvocation invocation,
+            Invoker<?> invoker,
+            StreamObserver<Object> responseObserver,
+            boolean applyCustomizeException) {
         super(invocation, invoker, responseObserver);
-    }
-
-    public void setApplyCustomizeException(boolean applyCustomizeException) {
         this.applyCustomizeException = applyCustomizeException;
     }
 

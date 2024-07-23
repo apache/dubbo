@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
@@ -27,6 +26,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 import javax.annotation.Nullable;
 
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Optional;
 
 public abstract class ParameterMeta extends AnnotationSupport {
@@ -39,7 +39,7 @@ public abstract class ParameterMeta extends AnnotationSupport {
 
     protected ParameterMeta(RestToolKit toolKit, String prefix, String name) {
         super(toolKit);
-        this.prefix = StringUtils.isEmpty(prefix) ? null : prefix;
+        this.prefix = prefix;
         this.name = name;
     }
 
@@ -54,11 +54,12 @@ public abstract class ParameterMeta extends AnnotationSupport {
     }
 
     @Nullable
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
-    public final String getRequiredName() {
+    public String getRequiredName() {
+        String name = getName();
         if (name == null) {
             throw new RestException(Messages.ARGUMENT_NAME_MISSING, getType());
         }
@@ -68,7 +69,10 @@ public abstract class ParameterMeta extends AnnotationSupport {
     public final boolean isSimple() {
         Boolean simple = this.simple;
         if (simple == null) {
-            simple = TypeUtils.isSimpleProperty(getActualType());
+            Class<?> type = Collection.class.isAssignableFrom(getType())
+                    ? TypeUtils.getNestedActualType(getGenericType(), 0)
+                    : getActualType();
+            simple = TypeUtils.isSimpleProperty(type);
             this.simple = simple;
         }
         return simple;
@@ -79,7 +83,7 @@ public abstract class ParameterMeta extends AnnotationSupport {
         if (type == null) {
             type = getType();
             if (type == Optional.class) {
-                type = TypeUtils.getNestedType(getGenericType(), 0);
+                type = TypeUtils.getNestedActualType(getGenericType(), 0);
                 if (type == null) {
                     type = Object.class;
                 }
@@ -99,6 +103,14 @@ public abstract class ParameterMeta extends AnnotationSupport {
 
     public final Object bind(HttpRequest request, HttpResponse response) {
         return getToolKit().bind(this, request, response);
+    }
+
+    public boolean isSingle() {
+        return false;
+    }
+
+    public int getIndex() {
+        return -1;
     }
 
     public String getDescription() {

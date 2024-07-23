@@ -28,6 +28,8 @@ import java.util.Map;
  */
 public class ExporterConfig implements Serializable {
 
+    private static final long serialVersionUID = -559392305178067845L;
+
     /**
      * Configuration for the Zipkin.
      */

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -27,18 +29,27 @@ public final class MethodMeta extends AnnotationSupport {
 
     private final List<Method> hierarchy;
     private final Method method;
-    private final ParameterMeta[] parameters;
+    private MethodDescriptor methodDescriptor;
+    private ParameterMeta[] parameters;
     private final ServiceMeta serviceMeta;
 
-    public MethodMeta(List<Method> hierarchy, ServiceMeta serviceMeta) {
+    public MethodMeta(List<Method> hierarchy, MethodDescriptor methodDescriptor, ServiceMeta serviceMeta) {
         super(serviceMeta.getToolKit());
         this.hierarchy = hierarchy;
-        method = hierarchy.get(0);
-        parameters = initParameters(method, hierarchy);
+        method = initMethod(hierarchy, methodDescriptor);
+        this.methodDescriptor = methodDescriptor;
         this.serviceMeta = serviceMeta;
     }
 
-    private ParameterMeta[] initParameters(Method method, List<Method> hierarchy) {
+    private Method initMethod(List<Method> hierarchy, MethodDescriptor methodDescriptor) {
+        Method method = null;
+        if (methodDescriptor != null) {
+            method = methodDescriptor.getMethod();
+        }
+        return method == null ? hierarchy.get(hierarchy.size() - 1) : method;
+    }
+
+    public void initParameters() {
         int count = method.getParameterCount();
         List<List<Parameter>> parameterHierarchies = new ArrayList<>(count);
         for (int i = 0, len = hierarchy.size(); i < len; i++) {
@@ -62,7 +73,7 @@ public final class MethodMeta extends AnnotationSupport {
             String parameterName = parameterNames == null ? null : parameterNames[i];
             parameters[i] = new MethodParameterMeta(parameterHierarchies.get(i), parameterName, i, this);
         }
-        return parameters;
+        this.parameters = parameters;
     }
 
     public List<Method> getHierarchy() {
@@ -71,6 +82,14 @@ public final class MethodMeta extends AnnotationSupport {
 
     public Method getMethod() {
         return method;
+    }
+
+    public MethodDescriptor getMethodDescriptor() {
+        return methodDescriptor;
+    }
+
+    public void setMethodDescriptor(MethodDescriptor methodDescriptor) {
+        this.methodDescriptor = methodDescriptor;
     }
 
     public ParameterMeta[] getParameters() {

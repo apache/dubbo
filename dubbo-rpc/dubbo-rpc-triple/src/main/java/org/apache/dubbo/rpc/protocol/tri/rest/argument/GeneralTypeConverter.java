@@ -25,6 +25,9 @@ import org.apache.dubbo.common.utils.DateUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
+import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
+import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
@@ -93,6 +96,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.dubbo.common.utils.StringUtils.tokenizeToList;
 import static org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils.getActualGenericType;
 import static org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils.getActualType;
@@ -104,13 +108,16 @@ public class GeneralTypeConverter implements TypeConverter {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneralTypeConverter.class);
 
     private final ConverterUtil converterUtil;
+    private final CodecUtils codecUtils;
 
     public GeneralTypeConverter() {
         converterUtil = null;
+        codecUtils = null;
     }
 
     public GeneralTypeConverter(FrameworkModel frameworkModel) {
         converterUtil = frameworkModel.getBeanFactory().getOrRegisterBean(ConverterUtil.class);
+        codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
     }
 
     @Override
@@ -255,7 +262,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 case "java.lang.Class":
                     return TypeUtils.loadClass(str);
                 case "[B":
-                    return str.getBytes(StandardCharsets.UTF_8);
+                    return str.getBytes(UTF_8);
                 case "[C":
                     return str.toCharArray();
                 case "java.util.OptionalInt":
@@ -432,7 +439,7 @@ public class GeneralTypeConverter implements TypeConverter {
 
             switch (targetClass.getName()) {
                 case "java.lang.String":
-                    return new String(bytes, StandardCharsets.UTF_8);
+                    return new String(bytes, UTF_8);
                 case "java.lang.Double":
                 case "double":
                     return ByteBuffer.wrap(bytes).getDouble();
@@ -565,6 +572,11 @@ public class GeneralTypeConverter implements TypeConverter {
         if (targetClass == byte[].class) {
             if (source instanceof InputStream) {
                 try (InputStream is = (InputStream) source) {
+                    return StreamUtils.readBytes(is);
+                }
+            }
+            if (source instanceof FileUpload) {
+                try (InputStream is = ((FileUpload) source).inputStream()) {
                     return StreamUtils.readBytes(is);
                 }
             }
@@ -910,8 +922,7 @@ public class GeneralTypeConverter implements TypeConverter {
                                     defCt = ct;
                                     break;
                                 case 1:
-                                    Class paramType = ct.getParameterTypes()[0];
-                                    if (paramType == int.class) {
+                                    if (ct.getParameterTypes()[0] == int.class) {
                                         return (Map) ct.newInstance(CollectionUtils.capacity(size));
                                     }
                                     break;
@@ -1078,10 +1089,15 @@ public class GeneralTypeConverter implements TypeConverter {
         return false;
     }
 
-    private static Object jsonToObject(String value, Type targetType) {
+    private Object jsonToObject(String value, Type targetType) {
         if (isMaybeJSON(value)) {
             try {
-                return JsonUtils.toJavaObject(value, targetType);
+                if (codecUtils == null || !(targetType instanceof Class)) {
+                    return JsonUtils.toJavaObject(value, targetType);
+                }
+                return codecUtils
+                        .determineHttpMessageDecoder(MediaType.APPLICATION_JSON.getName())
+                        .decode(new ByteArrayInputStream(value.getBytes(UTF_8)), (Class<?>) targetType);
             } catch (Throwable t) {
                 LOGGER.debug("Failed to parse [{}] from json string [{}]", targetType, value, t);
             }
