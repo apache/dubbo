@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
+import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
