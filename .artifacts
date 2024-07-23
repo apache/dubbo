@@ -49,7 +49,6 @@ dubbo-metadata-api
 dubbo-metadata-definition-protobuf
 dubbo-metadata-processor
 dubbo-metadata-report-nacos
-dubbo-metadata-report-redis
 dubbo-metadata-report-zookeeper
 dubbo-metrics
 dubbo-metrics-api
