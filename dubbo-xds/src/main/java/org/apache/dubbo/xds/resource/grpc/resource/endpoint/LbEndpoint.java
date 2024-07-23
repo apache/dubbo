@@ -1,29 +1,33 @@
 package org.apache.dubbo.xds.resource.grpc.resource.endpoint;
 
-import io.grpc.EquivalentAddressGroup;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.dubbo.common.url.component.URLAddress;
 
 public class LbEndpoint {
 
-    private final EquivalentAddressGroup eag;
+    private final List<URLAddress> addresses;
 
     private final int loadBalancingWeight;
 
     private final boolean isHealthy;
 
     public LbEndpoint(
-            EquivalentAddressGroup eag,
+            List<URLAddress> addresses,
             int loadBalancingWeight,
             boolean isHealthy) {
-        if (eag == null) {
-            throw new NullPointerException("Null eag");
+        if (addresses == null) {
+            throw new NullPointerException("Null addresses");
         }
-        this.eag = eag;
+        this.addresses = Collections.unmodifiableList(new ArrayList<>(addresses));
         this.loadBalancingWeight = loadBalancingWeight;
         this.isHealthy = isHealthy;
     }
 
-    EquivalentAddressGroup eag() {
-        return eag;
+    List<URLAddress> addresses() {
+        return addresses;
     }
 
     int loadBalancingWeight() {
@@ -37,7 +41,7 @@ public class LbEndpoint {
     @Override
     public String toString() {
         return "LbEndpoint{"
-                + "eag=" + eag + ", "
+                + "addresses=" + addresses + ", "
                 + "loadBalancingWeight=" + loadBalancingWeight + ", "
                 + "isHealthy=" + isHealthy
                 + "}";
@@ -50,7 +54,7 @@ public class LbEndpoint {
         }
         if (o instanceof LbEndpoint) {
             LbEndpoint that = (LbEndpoint) o;
-            return this.eag.equals(that.eag())
+            return this.addresses.equals(that.addresses())
                     && this.loadBalancingWeight == that.loadBalancingWeight()
                     && this.isHealthy == that.isHealthy();
         }
@@ -61,7 +65,7 @@ public class LbEndpoint {
     public int hashCode() {
         int h$ = 1;
         h$ *= 1000003;
-        h$ ^= eag.hashCode();
+        h$ ^= addresses.hashCode();
         h$ *= 1000003;
         h$ ^= loadBalancingWeight;
         h$ *= 1000003;

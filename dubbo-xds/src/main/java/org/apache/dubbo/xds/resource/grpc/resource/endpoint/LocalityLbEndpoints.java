@@ -1,28 +1,30 @@
 package org.apache.dubbo.xds.resource.grpc.resource.endpoint;
 
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class LocalityLbEndpoints {
 
-    private final ImmutableList<LbEndpoint> endpoints;
+    private final List<LbEndpoint> endpoints;
 
     private final int localityWeight;
 
     private final int priority;
 
     public LocalityLbEndpoints(
-            ImmutableList<LbEndpoint> endpoints,
+            List<LbEndpoint> endpoints,
             int localityWeight,
             int priority) {
         if (endpoints == null) {
             throw new NullPointerException("Null endpoints");
         }
-        this.endpoints = endpoints;
+        this.endpoints = Collections.unmodifiableList(new ArrayList<>(endpoints));
         this.localityWeight = localityWeight;
         this.priority = priority;
     }
 
-    ImmutableList<LbEndpoint> endpoints() {
+    List<LbEndpoint> endpoints() {
         return endpoints;
     }
 

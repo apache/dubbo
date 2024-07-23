@@ -1,19 +1,13 @@
 package org.apache.dubbo.xds.resource.grpc.resource.update;
 
-import com.google.common.base.MoreObjects;
-
 import org.apache.dubbo.xds.resource.grpc.resource.endpoint.DropOverload;
 import org.apache.dubbo.xds.resource.grpc.resource.endpoint.Locality;
 import org.apache.dubbo.xds.resource.grpc.resource.endpoint.LocalityLbEndpoints;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EdsUpdate implements ResourceUpdate {
     final String clusterName;
@@ -22,11 +16,22 @@ public class EdsUpdate implements ResourceUpdate {
 
     public EdsUpdate(String clusterName, Map<Locality, LocalityLbEndpoints> localityLbEndpoints,
               List<DropOverload> dropPolicies) {
-        this.clusterName = checkNotNull(clusterName, "clusterName");
-        this.localityLbEndpointsMap = Collections.unmodifiableMap(
-                new LinkedHashMap<>(checkNotNull(localityLbEndpoints, "localityLbEndpoints")));
-        this.dropPolicies = Collections.unmodifiableList(
-                new ArrayList<>(checkNotNull(dropPolicies, "dropPolicies")));
+        List<String> nullArgs = new ArrayList<>();
+        if (clusterName == null) {
+            nullArgs.add("clusterName");
+        }
+        if (localityLbEndpoints == null) {
+            nullArgs.add("localityLbEndpoints");
+        }
+        if (dropPolicies == null) {
+            nullArgs.add("dropPolicies");
+        }
+        if (!nullArgs.isEmpty()) {
+            throw new IllegalArgumentException("Null argument for EdsUpdate: " + String.join(", ", nullArgs));
+        }
+        this.clusterName = clusterName;
+        this.localityLbEndpointsMap = localityLbEndpoints;
+        this.dropPolicies = dropPolicies;
     }
 
     @Override
@@ -50,12 +55,7 @@ public class EdsUpdate implements ResourceUpdate {
 
     @Override
     public String toString() {
-        return
-                MoreObjects
-                        .toStringHelper(this)
-                        .add("clusterName", clusterName)
-                        .add("localityLbEndpointsMap", localityLbEndpointsMap)
-                        .add("dropPolicies", dropPolicies)
-                        .toString();
+        return "EdsUpdate{" + "clusterName='" + clusterName + '\'' + ", localityLbEndpointsMap="
+                + localityLbEndpointsMap + ", dropPolicies=" + dropPolicies + '}';
     }
 }

@@ -16,13 +16,12 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.type.v3.FractionalPercent;
-import io.grpc.EquivalentAddressGroup;
 
+import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.xds.resource.grpc.resource.endpoint.DropOverload;
 import org.apache.dubbo.xds.resource.grpc.resource.endpoint.LbEndpoint;
 import org.apache.dubbo.xds.resource.grpc.resource.endpoint.Locality;
@@ -30,9 +29,6 @@ import org.apache.dubbo.xds.resource.grpc.resource.endpoint.LocalityLbEndpoints;
 import org.apache.dubbo.xds.resource.grpc.resource.exception.ResourceInvalidException;
 import org.apache.dubbo.xds.resource.grpc.resource.update.EdsUpdate;
 
-import javax.annotation.Nullable;
-
-import java.net.InetSocketAddress;
 import java.util.*;
 
 class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
@@ -160,7 +156,6 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
     }
 
 
-    @VisibleForTesting
     @Nullable
     static StructOrError<LocalityLbEndpoints> parseLocalityLbEndpoints(
             io.envoyproxy.envoy.config.endpoint.v3.LocalityLbEndpoints proto) {
@@ -180,17 +175,16 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
             }
             io.envoyproxy.envoy.config.core.v3.SocketAddress socketAddress =
                     endpoint.getEndpoint().getAddress().getSocketAddress();
-            InetSocketAddress addr =
-                    new InetSocketAddress(socketAddress.getAddress(), socketAddress.getPortValue());
+            URLAddress addr = new URLAddress(socketAddress.getAddress(), socketAddress.getPortValue());
             boolean isHealthy =
                     endpoint.getHealthStatus() == io.envoyproxy.envoy.config.core.v3.HealthStatus.HEALTHY
                             || endpoint.getHealthStatus()
                             == io.envoyproxy.envoy.config.core.v3.HealthStatus.UNKNOWN;
             endpoints.add(new LbEndpoint(
-                    new EquivalentAddressGroup(ImmutableList.<java.net.SocketAddress>of(addr)),
+                    Collections.singletonList(addr),
                     endpoint.getLoadBalancingWeight().getValue(), isHealthy));
         }
         return StructOrError.fromStruct(new LocalityLbEndpoints(
-                ImmutableList.copyOf(endpoints), proto.getLoadBalancingWeight().getValue(), proto.getPriority()));
+                endpoints, proto.getLoadBalancingWeight().getValue(), proto.getPriority()));
     }
 }
