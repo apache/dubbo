@@ -25,12 +25,12 @@ public class OutlierDetection {
     private final FailurePercentageEjection failurePercentageEjection;
 
     static OutlierDetection create(
-            @javax.annotation.Nullable Long intervalNanos,
-            @javax.annotation.Nullable Long baseEjectionTimeNanos,
-            @javax.annotation.Nullable Long maxEjectionTimeNanos,
-            @javax.annotation.Nullable Integer maxEjectionPercentage,
-            @javax.annotation.Nullable SuccessRateEjection successRateEjection,
-            @javax.annotation.Nullable FailurePercentageEjection failurePercentageEjection) {
+            @Nullable Long intervalNanos,
+            @Nullable Long baseEjectionTimeNanos,
+            @Nullable Long maxEjectionTimeNanos,
+            @Nullable Integer maxEjectionPercentage,
+            @Nullable SuccessRateEjection successRateEjection,
+            @Nullable FailurePercentageEjection failurePercentageEjection) {
         return new OutlierDetection(intervalNanos,
                 baseEjectionTimeNanos, maxEjectionTimeNanos, maxEjectionPercentage, successRateEjection,
                 failurePercentageEjection);

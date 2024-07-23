@@ -16,9 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.cluster;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Struct;
@@ -35,9 +32,6 @@ import io.envoyproxy.envoy.extensions.load_balancing_policies.pick_first.v3.Pick
 import io.envoyproxy.envoy.extensions.load_balancing_policies.ring_hash.v3.RingHash;
 import io.envoyproxy.envoy.extensions.load_balancing_policies.round_robin.v3.RoundRobin;
 import io.envoyproxy.envoy.extensions.load_balancing_policies.wrr_locality.v3.WrrLocality;
-import io.grpc.InternalLogId;
-import io.grpc.LoadBalancerRegistry;
-import io.grpc.internal.JsonParser;
 
 import org.apache.dubbo.xds.resource.grpc.resource.exception.ResourceInvalidException;
 
@@ -97,27 +91,30 @@ public class LoadBalancerConfigFactory {
    *
    * @throws ResourceInvalidException If the {@link Cluster} has an invalid LB configuration.
    */
-  public static ImmutableMap<String, ?> newConfig(Cluster cluster, boolean enableLeastRequest,
+  public static Object newConfig(Cluster cluster, boolean enableLeastRequest,
       boolean enableWrr, boolean enablePickFirst)
       throws ResourceInvalidException {
-    // The new load_balancing_policy will always be used if it is set, but for backward
-    // compatibility we will fall back to using the old lb_policy field if the new field is not set.
-    if (cluster.hasLoadBalancingPolicy()) {
-      try {
-        return LoadBalancingPolicyConverter.convertToServiceConfig(cluster.getLoadBalancingPolicy(),
-            0, enableWrr, enablePickFirst);
-      } catch (LoadBalancingPolicyConverter.MaxRecursionReachedException e) {
-        throw new ResourceInvalidException("Maximum LB config recursion depth reached", e);
-      }
-    } else {
-      return LegacyLoadBalancingPolicyConverter.convertToServiceConfig(cluster, enableLeastRequest);
-    }
+
+      return new Object();
+
+      //// The new load_balancing_policy will always be used if it is set, but for backward
+    //// compatibility we will fall back to using the old lb_policy field if the new field is not set.
+    //if (cluster.hasLoadBalancingPolicy()) {
+    //  try {
+    //    return LoadBalancingPolicyConverter.convertToServiceConfig(cluster.getLoadBalancingPolicy(),
+    //        0, enableWrr, enablePickFirst);
+    //  } catch (LoadBalancingPolicyConverter.MaxRecursionReachedException e) {
+    //    throw new ResourceInvalidException("Maximum LB config recursion depth reached", e);
+    //  }
+    //} else {
+    //  return LegacyLoadBalancingPolicyConverter.convertToServiceConfig(cluster, enableLeastRequest);
+    //}
   }
 
-  /**
+/*  *//**
    * Builds a service config JSON object for the ring_hash load balancer config based on the given
    * config values.
-   */
+   *//*
   private static ImmutableMap<String, ?> buildRingHashConfig(Long minRingSize, Long maxRingSize) {
     ImmutableMap.Builder<String, Object> configBuilder = ImmutableMap.builder();
     if (minRingSize != null) {
@@ -129,10 +126,10 @@ public class LoadBalancerConfigFactory {
     return ImmutableMap.of(RING_HASH_FIELD_NAME, configBuilder.buildOrThrow());
   }
 
-  /**
+  *//**
    * Builds a service config JSON object for the weighted_round_robin load balancer config based on
    * the given config values.
-   */
+   *//*
   private static ImmutableMap<String, ?> buildWrrConfig(String blackoutPeriod,
                                                         String weightExpirationPeriod,
                                                         String oobReportingPeriod,
@@ -163,10 +160,10 @@ public class LoadBalancerConfigFactory {
       return null;
   }
 
-  /**
+  *//**
    * Builds a service config JSON object for the least_request load balancer config based on the
    * given config values.
-   */
+   *//*
   private static ImmutableMap<String, ?> buildLeastRequestConfig(Integer choiceCount) {
     ImmutableMap.Builder<String, Object> configBuilder = ImmutableMap.builder();
     if (choiceCount != null) {
@@ -175,43 +172,43 @@ public class LoadBalancerConfigFactory {
     return ImmutableMap.of(LEAST_REQUEST_FIELD_NAME, configBuilder.buildOrThrow());
   }
 
-  /**
+  *//**
    * Builds a service config JSON wrr_locality by wrapping another policy config.
-   */
+   *//*
   private static ImmutableMap<String, ?> buildWrrLocalityConfig(
       ImmutableMap<String, ?> childConfig) {
     return ImmutableMap.<String, Object>builder().put(WRR_LOCALITY_FIELD_NAME,
         ImmutableMap.of(CHILD_POLICY_FIELD, ImmutableList.of(childConfig))).buildOrThrow();
   }
 
-  /**
+  *//**
    * Builds an empty service config JSON config object for round robin (it is not configurable).
-   */
+   *//*
   private static ImmutableMap<String, ?> buildRoundRobinConfig() {
     return ImmutableMap.of(ROUND_ROBIN_FIELD_NAME, ImmutableMap.of());
   }
 
-  /**
+  *//**
    * Builds a service config JSON object for the pick_first load balancer config based on the
    * given config values.
-   */
+   *//*
   private static ImmutableMap<String, ?> buildPickFirstConfig(boolean shuffleAddressList) {
     ImmutableMap.Builder<String, Object> configBuilder = ImmutableMap.builder();
     configBuilder.put(SHUFFLE_ADDRESS_LIST_FIELD_NAME, shuffleAddressList);
     return ImmutableMap.of(PICK_FIRST_FIELD_NAME, configBuilder.buildOrThrow());
   }
 
-  /**
+  *//**
    * Responsible for converting from a {@code envoy.config.cluster.v3.LoadBalancingPolicy} proto
    * message to a gRPC service config format.
-   */
+   *//*
   static class LoadBalancingPolicyConverter {
 
     private static final int MAX_RECURSION = 16;
 
-    /**
+    *//**
      * Converts a {@link LoadBalancingPolicy} object to a service config JSON object.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertToServiceConfig(
         LoadBalancingPolicy loadBalancingPolicy, int recursionDepth, boolean enableWrr,
         boolean enablePickFirst)
@@ -272,9 +269,9 @@ public class LoadBalancerConfigFactory {
       throw new ResourceInvalidException("Invalid LoadBalancingPolicy: " + loadBalancingPolicy);
     }
 
-    /**
+    *//**
      * Converts a ring_hash {@link Any} configuration to service config format.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertRingHashConfig(RingHash ringHash)
         throws ResourceInvalidException {
       // The hash function needs to be validated here as it is not exposed in the returned
@@ -306,9 +303,9 @@ public class LoadBalancerConfigFactory {
       }
     }
 
-    /**
+    *//**
      * Converts a wrr_locality {@link Any} configuration to service config format.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertWrrLocalityConfig(WrrLocality wrrLocality,
         int recursionDepth, boolean enableWrr, boolean enablePickFirst)
         throws ResourceInvalidException,
@@ -318,32 +315,32 @@ public class LoadBalancerConfigFactory {
               recursionDepth + 1, enableWrr, enablePickFirst));
     }
 
-    /**
+    *//**
      * "Converts" a round_robin configuration to service config format.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertRoundRobinConfig() {
       return buildRoundRobinConfig();
     }
 
-    /**
+    *//**
      * "Converts" a pick_first configuration to service config format.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertPickFirstConfig(PickFirst pickFirst) {
       return buildPickFirstConfig(pickFirst.getShuffleAddressList());
     }
 
-    /**
+    *//**
      * Converts a least_request {@link Any} configuration to service config format.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertLeastRequestConfig(LeastRequest leastRequest)
         throws ResourceInvalidException {
       return buildLeastRequestConfig(
           leastRequest.hasChoiceCount() ? leastRequest.getChoiceCount().getValue() : null);
     }
 
-    /**
+    *//**
      * Converts a custom TypedStruct LB config to service config format.
-     */
+     *//*
     @SuppressWarnings("unchecked")
     private static ImmutableMap<String, ?> convertCustomConfig(
         com.github.xds.type.v3.TypedStruct configTypedStruct)
@@ -352,9 +349,9 @@ public class LoadBalancerConfigFactory {
           (Map<String, ?>) parseCustomConfigJson(configTypedStruct.getValue()));
     }
 
-    /**
+    *//**
      * Converts a custom UDPA (legacy) TypedStruct LB config to service config format.
-     */
+     *//*
     @SuppressWarnings("unchecked")
     private static ImmutableMap<String, ?> convertCustomConfig(
         com.github.udpa.udpa.type.v1.TypedStruct configTypedStruct)
@@ -363,9 +360,9 @@ public class LoadBalancerConfigFactory {
           (Map<String, ?>) parseCustomConfigJson(configTypedStruct.getValue()));
     }
 
-    /**
+    *//**
      * Print the config Struct into JSON and then parse that into our internal representation.
-     */
+     *//*
     private static Object parseCustomConfigJson(Struct configStruct)
         throws ResourceInvalidException {
       Object rawJsonConfig = null;
@@ -396,19 +393,19 @@ public class LoadBalancerConfigFactory {
     }
   }
 
-  /**
+  *//**
    * Builds a JSON LB configuration based on the old style of using the xDS Cluster proto message.
    * The lb_policy field is used to select the policy and configuration is extracted from various
    * policy specific fields in Cluster.
-   */
+   *//*
   static class LegacyLoadBalancingPolicyConverter {
 
-    /**
+    *//**
      * Factory method for creating a new {link LoadBalancerConfigConverter} for a given xDS {@link
      * Cluster}.
      *
      * @throws ResourceInvalidException If the {@link Cluster} has an invalid LB configuration.
-     */
+     *//*
     static ImmutableMap<String, ?> convertToServiceConfig(Cluster cluster,
         boolean enableLeastRequest) throws ResourceInvalidException {
       switch (cluster.getLbPolicy()) {
@@ -427,10 +424,10 @@ public class LoadBalancerConfigFactory {
           "Cluster " + cluster.getName() + ": unsupported lb policy: " + cluster.getLbPolicy());
     }
 
-    /**
+    *//**
      * Creates a new ring_hash service config JSON object based on the old {@link RingHashLbConfig}
      * config message.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertRingHashConfig(Cluster cluster)
         throws ResourceInvalidException {
       RingHashLbConfig lbConfig = cluster.getRingHashLbConfig();
@@ -447,14 +444,14 @@ public class LoadBalancerConfigFactory {
           lbConfig.hasMaximumRingSize() ? (Long) lbConfig.getMaximumRingSize().getValue() : null);
     }
 
-    /**
+    *//**
      * Creates a new least_request service config JSON object based on the old {@link
      * LeastRequestLbConfig} config message.
-     */
+     *//*
     private static ImmutableMap<String, ?> convertLeastRequestConfig(Cluster cluster) {
       LeastRequestLbConfig lbConfig = cluster.getLeastRequestLbConfig();
       return buildLeastRequestConfig(
           lbConfig.hasChoiceCount() ? (Integer) lbConfig.getChoiceCount().getValue() : null);
     }
-  }
+  }*/
 }

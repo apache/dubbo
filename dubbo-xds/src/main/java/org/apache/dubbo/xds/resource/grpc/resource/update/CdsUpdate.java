@@ -2,17 +2,14 @@ package org.apache.dubbo.xds.resource.grpc.resource.update;
 
 import org.apache.dubbo.common.lang.Nullable;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper.ServerInfo;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.OutlierDetection;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.UpstreamTlsContext;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class CdsUpdate implements ResourceUpdate {
 
@@ -25,20 +22,22 @@ public class CdsUpdate implements ResourceUpdate {
     }
 
     public static Builder forAggregate(String clusterName, List<String> prioritizedClusterNames) {
-        checkNotNull(prioritizedClusterNames, "prioritizedClusterNames");
+        if (prioritizedClusterNames == null) {
+            throw new IllegalArgumentException("prioritizedClusterNames is null");
+        }
         return new Builder()
                 .clusterName(clusterName)
                 .clusterType(ClusterType.AGGREGATE)
                 .minRingSize(0)
                 .maxRingSize(0)
                 .choiceCount(0)
-                .prioritizedClusterNames(ImmutableList.copyOf(prioritizedClusterNames));
+                .prioritizedClusterNames(prioritizedClusterNames);
     }
 
-    public static Builder forEds(String clusterName, @javax.annotation.Nullable String edsServiceName,
-                          @javax.annotation.Nullable ServerInfo lrsServerInfo, @javax.annotation.Nullable Long maxConcurrentRequests,
-                          @javax.annotation.Nullable UpstreamTlsContext upstreamTlsContext,
-                          @javax.annotation.Nullable OutlierDetection outlierDetection) {
+    public static Builder forEds(String clusterName, @Nullable String edsServiceName,
+                          @Nullable ServerInfo lrsServerInfo, @Nullable Long maxConcurrentRequests,
+                          @Nullable UpstreamTlsContext upstreamTlsContext,
+                          @Nullable OutlierDetection outlierDetection) {
         return new Builder()
                 .clusterName(clusterName)
                 .clusterType(ClusterType.EDS)
@@ -53,9 +52,9 @@ public class CdsUpdate implements ResourceUpdate {
     }
 
     public static Builder forLogicalDns(String clusterName, String dnsHostName,
-                                                              @javax.annotation.Nullable ServerInfo lrsServerInfo,
-                                                              @javax.annotation.Nullable Long maxConcurrentRequests,
-                                                              @javax.annotation.Nullable UpstreamTlsContext upstreamTlsContext) {
+                                                              @Nullable ServerInfo lrsServerInfo,
+                                                              @Nullable Long maxConcurrentRequests,
+                                                              @Nullable UpstreamTlsContext upstreamTlsContext) {
         return new Builder()
                 .clusterName(clusterName)
                 .clusterType(ClusterType.LOGICAL_DNS)
@@ -73,7 +72,7 @@ public class CdsUpdate implements ResourceUpdate {
 
     private final ClusterType clusterType;
 
-    private final ImmutableMap<String, ?> lbPolicyConfig;
+    private final Object lbPolicyConfig;
 
     private final long minRingSize;
 
@@ -97,7 +96,7 @@ public class CdsUpdate implements ResourceUpdate {
     private final UpstreamTlsContext upstreamTlsContext;
 
     @Nullable
-    private final ImmutableList<String> prioritizedClusterNames;
+    private final List<String> prioritizedClusterNames;
 
     @Nullable
     private final OutlierDetection outlierDetection;
@@ -105,7 +104,7 @@ public class CdsUpdate implements ResourceUpdate {
     private CdsUpdate(
             String clusterName,
             ClusterType clusterType,
-            ImmutableMap<String, ?> lbPolicyConfig,
+            Object lbPolicyConfig,
             long minRingSize,
             long maxRingSize,
             int choiceCount,
@@ -114,7 +113,7 @@ public class CdsUpdate implements ResourceUpdate {
             @Nullable Bootstrapper.ServerInfo lrsServerInfo,
             @Nullable Long maxConcurrentRequests,
             @Nullable UpstreamTlsContext upstreamTlsContext,
-            @Nullable ImmutableList<String> prioritizedClusterNames,
+            @Nullable List<String> prioritizedClusterNames,
             @Nullable OutlierDetection outlierDetection) {
         this.clusterName = clusterName;
         this.clusterType = clusterType;
@@ -127,7 +126,7 @@ public class CdsUpdate implements ResourceUpdate {
         this.lrsServerInfo = lrsServerInfo;
         this.maxConcurrentRequests = maxConcurrentRequests;
         this.upstreamTlsContext = upstreamTlsContext;
-        this.prioritizedClusterNames = prioritizedClusterNames;
+        this.prioritizedClusterNames = Collections.unmodifiableList(new ArrayList<>(prioritizedClusterNames));
         this.outlierDetection = outlierDetection;
     }
 
@@ -139,7 +138,7 @@ public class CdsUpdate implements ResourceUpdate {
         return clusterType;
     }
 
-    ImmutableMap<String, ?> lbPolicyConfig() {
+    Object lbPolicyConfig() {
         return lbPolicyConfig;
     }
 
@@ -181,7 +180,7 @@ public class CdsUpdate implements ResourceUpdate {
     }
 
     @Nullable
-    ImmutableList<String> prioritizedClusterNames() {
+    List<String> prioritizedClusterNames() {
         return prioritizedClusterNames;
     }
 
@@ -249,7 +248,7 @@ public class CdsUpdate implements ResourceUpdate {
     public static class Builder {
         private String clusterName;
         private CdsUpdate.ClusterType clusterType;
-        private ImmutableMap<String, ?> lbPolicyConfig;
+        private Object lbPolicyConfig;
         private long minRingSize;
         private long maxRingSize;
         private int choiceCount;
@@ -258,7 +257,7 @@ public class CdsUpdate implements ResourceUpdate {
         private Bootstrapper.ServerInfo lrsServerInfo;
         private Long maxConcurrentRequests;
         private UpstreamTlsContext upstreamTlsContext;
-        private ImmutableList<String> prioritizedClusterNames;
+        private List<String> prioritizedClusterNames;
         private OutlierDetection outlierDetection;
         private byte set$0;
         public Builder() {
@@ -278,7 +277,7 @@ public class CdsUpdate implements ResourceUpdate {
             this.clusterType = clusterType;
             return this;
         }
-        public Builder lbPolicyConfig(ImmutableMap<String, ?> lbPolicyConfig) {
+        public Builder lbPolicyConfig(Object lbPolicyConfig) {
             if (lbPolicyConfig == null) {
                 throw new NullPointerException("Null lbPolicyConfig");
             }
@@ -321,7 +320,7 @@ public class CdsUpdate implements ResourceUpdate {
             return this;
         }
         public Builder prioritizedClusterNames(List<String> prioritizedClusterNames) {
-            this.prioritizedClusterNames = (prioritizedClusterNames == null ? null : ImmutableList.copyOf(prioritizedClusterNames));
+            this.prioritizedClusterNames = prioritizedClusterNames;
             return this;
         }
         public Builder outlierDetection(OutlierDetection outlierDetection) {

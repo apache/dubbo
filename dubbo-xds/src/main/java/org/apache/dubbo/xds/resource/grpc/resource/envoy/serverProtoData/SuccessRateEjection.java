@@ -17,10 +17,10 @@ public class SuccessRateEjection {
     private final Integer requestVolume;
 
     public static SuccessRateEjection create(
-            @javax.annotation.Nullable Integer stdevFactor,
-            @javax.annotation.Nullable Integer enforcementPercentage,
-            @javax.annotation.Nullable Integer minimumHosts,
-            @javax.annotation.Nullable Integer requestVolume) {
+            @Nullable Integer stdevFactor,
+            @Nullable Integer enforcementPercentage,
+            @Nullable Integer minimumHosts,
+            @Nullable Integer requestVolume) {
         return new SuccessRateEjection(stdevFactor,
                 enforcementPercentage, minimumHosts, requestVolume);
     }

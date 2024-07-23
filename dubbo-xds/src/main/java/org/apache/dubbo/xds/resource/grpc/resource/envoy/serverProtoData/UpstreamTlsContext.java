@@ -1,11 +1,9 @@
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
 
 public final class UpstreamTlsContext extends BaseTlsContext {
 
-    @VisibleForTesting
     public UpstreamTlsContext(CommonTlsContext commonTlsContext) {
       super(commonTlsContext);
     }

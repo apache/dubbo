@@ -16,8 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Duration;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -29,19 +27,14 @@ import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CertificateValidationContext;
 import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
-import io.grpc.LoadBalancerRegistry;
-import io.grpc.NameResolver;
-import io.grpc.internal.ServiceConfigUtil;
-import io.grpc.internal.ServiceConfigUtil.LbConfig;
 
+import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper.ServerInfo;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.OutlierDetection;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.UpstreamTlsContext;
 import org.apache.dubbo.xds.resource.grpc.resource.exception.ResourceInvalidException;
 import org.apache.dubbo.xds.resource.grpc.resource.update.CdsUpdate;
 import org.apache.dubbo.xds.resource.grpc.resource.cluster.LoadBalancerConfigFactory;
-
-import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -102,14 +95,12 @@ class XdsClusterResource extends XdsResourceType<CdsUpdate> {
       certProviderInstances = args.bootstrapInfo.certProviders().keySet();
     }
     return processCluster((Cluster) unpackedMessage, certProviderInstances,
-        args.serverInfo, args.loadBalancerRegistry);
+        args.serverInfo);
   }
 
-  @VisibleForTesting
   static CdsUpdate processCluster(Cluster cluster,
                                   Set<String> certProviderInstances,
-                                  ServerInfo serverInfo,
-                                  LoadBalancerRegistry loadBalancerRegistry)
+                                  ServerInfo serverInfo)
       throws ResourceInvalidException {
     StructOrError<CdsUpdate.Builder> structOrError;
     switch (cluster.getClusterDiscoveryTypeCase()) {
@@ -130,17 +121,8 @@ class XdsClusterResource extends XdsResourceType<CdsUpdate> {
     }
     CdsUpdate.Builder updateBuilder = structOrError.getStruct();
 
-    ImmutableMap<String, ?> lbPolicyConfig = LoadBalancerConfigFactory.newConfig(cluster,
+    Object lbPolicyConfig = LoadBalancerConfigFactory.newConfig(cluster,
         enableLeastRequest, enableWrr, enablePickFirst);
-
-    // Validate the LB config by trying to parse it with the corresponding LB provider.
-    LbConfig lbConfig = ServiceConfigUtil.unwrapLoadBalancingConfig(lbPolicyConfig);
-    NameResolver.ConfigOrError configOrError = loadBalancerRegistry.getProvider(
-        lbConfig.getPolicyName()).parseLoadBalancingPolicyConfig(
-        lbConfig.getRawConfigValue());
-    if (configOrError.getError() != null) {
-      throw new ResourceInvalidException(structOrError.getErrorDetail());
-    }
 
     updateBuilder.lbPolicyConfig(lbPolicyConfig);
 
@@ -346,7 +328,6 @@ class XdsClusterResource extends XdsResourceType<CdsUpdate> {
     return duration.getSeconds() < 0 || duration.getNanos() < 0;
   }
 
-  @VisibleForTesting
   static io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
       validateUpstreamTlsContext(
       io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext upstreamTlsContext,
@@ -361,7 +342,6 @@ class XdsClusterResource extends XdsResourceType<CdsUpdate> {
     return upstreamTlsContext;
   }
 
-  @VisibleForTesting
   static void validateCommonTlsContext(
       CommonTlsContext commonTlsContext, Set<String> certProviderInstances, boolean server)
       throws ResourceInvalidException {
