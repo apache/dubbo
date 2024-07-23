@@ -20,8 +20,11 @@ import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.http.Part;
 
 import java.io.FileOutputStream;
@@ -141,5 +144,14 @@ final class Helper {
         public Collection<String> getHeaderNames() {
             return Collections.emptyList();
         }
+    }
+
+    public static ServletContext createDummyServletContext(FrameworkModel frameworkModel) {
+        return new DummyServletContext(frameworkModel);
+    }
+
+    public static FilterConfig createDummyFilterConfig(
+            String filterName, FrameworkModel frameworkModel, ServletContext servletContext) {
+        return new DummyFilterConfig(filterName, frameworkModel, servletContext);
     }
 }

@@ -37,7 +37,7 @@ public final class ServletHttpMessageAdapterFactory
 
     public ServletHttpMessageAdapterFactory(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        servletContext = new DummyServletContext(frameworkModel);
+        servletContext = Helper.createDummyServletContext(frameworkModel);
         httpSessionFactory = getHttpSessionFactory(frameworkModel);
     }
 
@@ -61,6 +61,6 @@ public final class ServletHttpMessageAdapterFactory
     }
 
     public FilterConfig adaptFilterConfig(String filterName) {
-        return new DummyFilterConfig(filterName, frameworkModel, servletContext);
+        return Helper.createDummyFilterConfig(filterName, frameworkModel, servletContext);
     }
 }

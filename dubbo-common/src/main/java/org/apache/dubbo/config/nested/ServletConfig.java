@@ -23,17 +23,10 @@ public class ServletConfig implements Serializable {
     private static final long serialVersionUID = 1091478303358670173L;
 
     /**
-     * Enable servlet support, requests are transport through the servlet container,
-     * which only supports unary calls due to protocol limitations
+     * Whether to enable servlet support, requests are transport through the servlet container
      * <p>The default value is false.
      */
-    private Boolean enable;
-
-    /**
-     * The timeout in milliseconds for the servlet async timeout.
-     * <p>The default value is 180_000.
-     */
-    private Integer timeout;
+    private Boolean enabled;
 
     /**
      * The URL patterns that the servlet filter will be registered for.
@@ -47,20 +40,12 @@ public class ServletConfig implements Serializable {
      */
     private Integer filterOrder;
 
-    public Boolean getEnable() {
-        return enable;
+    public Boolean getEnabled() {
+        return enabled;
     }
 
-    public void setEnable(Boolean enable) {
-        this.enable = enable;
-    }
-
-    public Integer getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(Integer timeout) {
-        this.timeout = timeout;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public String[] getFilterUrlPatterns() {

@@ -23,10 +23,10 @@ public class Http3Config implements Serializable {
     private static final long serialVersionUID = -4443828713331129834L;
 
     /**
-     * Enable http3 support
+     * Whether to enable HTTP/3 support
      * <p>The default value is false.
      */
-    private Boolean enable;
+    private Boolean enabled;
 
     /**
      * See <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_data">set_initial_max_data</a>.
@@ -115,12 +115,12 @@ public class Http3Config implements Serializable {
      */
     private String ccAlgorithm;
 
-    public Boolean getEnable() {
-        return enable;
+    public Boolean getEnabled() {
+        return enabled;
     }
 
-    public void setEnable(Boolean enable) {
-        this.enable = enable;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Integer getInitialMaxData() {
