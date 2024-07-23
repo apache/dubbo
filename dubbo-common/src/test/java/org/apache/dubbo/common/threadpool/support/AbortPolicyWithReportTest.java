@@ -73,15 +73,16 @@ class AbortPolicyWithReportTest {
         URL url = URL.valueOf(
                 "dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
         AtomicInteger jStackCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
         AtomicInteger finishedCount = new AtomicInteger(0);
+        AtomicInteger timeoutCount = new AtomicInteger(0);
+        int runTimes = 100;
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url) {
             @Override
             protected void jstack(FileOutputStream jStackStream) {
                 jStackCount.incrementAndGet();
-                try {
-                    Thread.sleep(3000);
-                } catch (Exception e) {
-                }
+                // try to simulate the jstack cost long time, so that AbortPolicyWithReport may jstack repeatedly.
+                await().atMost(3, TimeUnit.SECONDS);
             }
         };
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
@@ -90,25 +91,31 @@ class AbortPolicyWithReportTest {
                 0,
                 TimeUnit.MILLISECONDS,
                 new SynchronousQueue<>(),
-                new NamedInternalThreadFactory("jStackRepeatFixedTest", false),
+                new NamedInternalThreadFactory("jStack_ConcurrencyDump_Active_10MinSilence", true),
                 abortPolicyWithReport);
         List<Future<?>> futureList = new LinkedList<>();
-        for (int pos = 0; pos < 100; pos++) {
+        for (int i = 0; i < runTimes; i++) {
             try {
                 futureList.add(threadPoolExecutor.submit(() -> {
                     finishedCount.incrementAndGet();
                 }));
             } catch (Exception ignored) {
+                failureCount.incrementAndGet();
             }
         }
-        futureList.stream().forEach(f -> {
+        futureList.forEach(f -> {
             try {
-                f.get(1000, TimeUnit.MILLISECONDS);
+                f.get(1, TimeUnit.SECONDS);
             } catch (Exception ignored) {
+                timeoutCount.incrementAndGet();
             }
         });
-        System.out.printf("finishedCount: %d, jStackCount: %d\n", finishedCount.get(), jStackCount.get());
-        Assertions.assertEquals(jStackCount.get(), 1);
+        System.out.printf(
+                "jStackCount: %d, finishedCount: %d, failureCount: %d, timeoutCount: %d %n",
+                jStackCount.get(), finishedCount.get(), failureCount.get(), timeoutCount.get());
+        Assertions.assertEquals(
+                runTimes, finishedCount.get() + failureCount.get(), "all the test thread should be run completely");
+        Assertions.assertEquals(1, jStackCount.get(), "'jstack' should be called only once in 10 minutes");
     }
 
     @Test
