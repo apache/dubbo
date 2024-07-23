@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store.redis;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.rest;
 
-/**
- * 2018/10/26
- */
-public interface RedisMetadata4TstService {
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.compatible.User;
 
-    int getCounter();
-
-    void printResult(String var);
+public class ParamConverterServiceImpl implements ParamConverterService {
+    @Override
+    public User convert(User user) {
+        return user;
+    }
 }

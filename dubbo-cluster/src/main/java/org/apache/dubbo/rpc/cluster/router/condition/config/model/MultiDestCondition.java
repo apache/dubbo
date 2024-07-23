@@ -14,19 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store.redis;
+package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * RedisMetadataReportFactory.
- */
-public class RedisMetadataReportFactory extends AbstractMetadataReportFactory {
+public class MultiDestCondition {
+    private Map<String, String> from = new HashMap<>();
+    private List<Map<String, String>> to = new ArrayList<>();
+
+    public Map<String, String> getFrom() {
+        return from;
+    }
+
+    public void setFrom(Map<String, String> from) {
+        this.from = from;
+    }
+
+    public List<Map<String, String>> getTo() {
+        return to;
+    }
+
+    public void setTo(List<Map<String, String>> to) {
+        this.to = to;
+    }
 
     @Override
-    public MetadataReport createMetadataReport(URL url) {
-        return new RedisMetadataReport(url);
+    public String toString() {
+        return "MultiDestCondition{" + "from=" + from + ", to=" + to + '}';
     }
 }
