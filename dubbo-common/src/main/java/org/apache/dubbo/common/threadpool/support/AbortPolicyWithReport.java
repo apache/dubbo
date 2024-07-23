@@ -184,10 +184,9 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                     jstack(jStackStream);
                 } catch (Exception t) {
                     logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
-                } finally {
-                    lastPrintTime = System.currentTimeMillis();
                 }
             });
+            lastPrintTime = System.currentTimeMillis();
         } finally {
             guard.release();
             // must shut down thread pool ,if not will lead to OOM

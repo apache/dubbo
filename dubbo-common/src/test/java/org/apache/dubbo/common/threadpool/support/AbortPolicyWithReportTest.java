@@ -16,7 +16,13 @@
  */
 package org.apache.dubbo.common.threadpool.support;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
 
@@ -27,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -58,6 +65,48 @@ class AbortPolicyWithReportTest {
 
         await().until(() -> AbortPolicyWithReport.guard.availablePermits() == 1);
         Assertions.assertNotNull(fileOutputStream.get());
+    }
+
+    @Test
+    void jStack_ConcurrencyDump_Active_10MinSilence() {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
+        AtomicInteger jStackCount = new AtomicInteger(0);
+        AtomicInteger finishedCount = new AtomicInteger(0);
+        AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url) {
+            @Override
+            protected void jstack(FileOutputStream jStackStream) {
+                jStackCount.incrementAndGet();
+                try {
+                    Thread.sleep(3000);
+                } catch (Exception e) {
+                }
+            }
+        };
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+            4,
+            4,
+            0,
+            TimeUnit.MILLISECONDS,
+            new SynchronousQueue<>(),
+            new NamedInternalThreadFactory("jStackRepeatFixedTest", false),
+            abortPolicyWithReport);
+        List<Future<?>> futureList = new LinkedList<>();
+        for (int pos = 0; pos < 100; pos++) {
+            try {
+                futureList.add(threadPoolExecutor.submit(() -> {
+                   finishedCount.incrementAndGet();
+                }));
+            } catch (Exception ignored) {
+            }
+        }
+        futureList.stream().forEach(f -> {
+            try {
+                f.get(1000, TimeUnit.MILLISECONDS);
+            } catch (Exception ignored) {
+            }
+        });
+        System.out.printf("finishedCount: %d, jStackCount: %d\n", finishedCount.get(), jStackCount.get());
+        Assertions.assertEquals(jStackCount.get(), 1);
     }
 
     @Test
