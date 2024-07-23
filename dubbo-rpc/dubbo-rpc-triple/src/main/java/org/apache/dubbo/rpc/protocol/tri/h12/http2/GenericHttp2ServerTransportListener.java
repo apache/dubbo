@@ -205,7 +205,9 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     public void cancelByRemote(long errorCode) {
         serverChannelObserver.cancel(CancelStreamException.fromRemote(errorCode));
-        serverCallListener.onCancel(errorCode);
+        if (serverCallListener != null) {
+            serverCallListener.onCancel(errorCode);
+        }
     }
 
     protected StreamingDecoder getStreamingDecoder() {
