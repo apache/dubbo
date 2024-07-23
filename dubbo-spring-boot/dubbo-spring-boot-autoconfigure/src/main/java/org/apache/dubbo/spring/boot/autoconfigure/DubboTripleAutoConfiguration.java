@@ -21,6 +21,8 @@ import org.apache.dubbo.rpc.protocol.tri.servlet.TripleFilter;
 
 import javax.servlet.Filter;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,21 +37,23 @@ import org.springframework.context.annotation.Configuration;
 @Conditional(SpringBoot12Condition.class)
 public class DubboTripleAutoConfiguration {
 
-    public static final String PREFIX = "dubbo.protocol.triple";
+    public static final String PREFIX = "dubbo.protocol.triple.servlet";
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enable-servlet")
+    @ConditionalOnProperty(prefix = PREFIX, name = "enable")
     public static class TripleServletConfiguration {
 
         @Bean
         public FilterRegistrationBean<TripleFilter> tripleProtocolFilter(
-                @Value("${" + PREFIX + ".servlet-filter-url-patterns:/*}") String[] urlPatterns,
-                @Value("${" + PREFIX + ".servlet-filter-order:-1000000}") int order,
+                @Value("${" + PREFIX + ".timeout:}") String timeout,
+                @Value("${" + PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
+                @Value("${" + PREFIX + ".filter-order:-1000000}") int order,
                 @Value("${server.port:8080}") int serverPort) {
             ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleFilter> registrationBean = new FilterRegistrationBean<>();
+            registrationBean.setInitParameters(Collections.singletonMap("timeout", timeout));
             registrationBean.setFilter(new TripleFilter());
             registrationBean.addUrlPatterns(urlPatterns);
             registrationBean.setOrder(order);

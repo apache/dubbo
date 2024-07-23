@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -43,7 +44,7 @@ public class DefaultRestToolKit implements RestToolKit {
 
     @Override
     public int getDialect() {
-        return 0;
+        return RestConstants.DIALECT_BASIC;
     }
 
     @Override

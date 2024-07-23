@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -97,6 +98,12 @@ final class SpringRestToolKit implements RestToolKit {
 
     @Override
     public Object convert(Object value, ParameterMeta parameter) {
+        if (value instanceof Collection) {
+            Object target = typeConverter.convert(value, parameter.getGenericType());
+            if (target != null) {
+                return target;
+            }
+        }
         TypeDescriptor targetType = (TypeDescriptor) parameter.getTypeDescriptor();
         if (targetType == null) {
             MethodParameterMeta meta = (MethodParameterMeta) parameter;

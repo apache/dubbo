@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -214,5 +215,14 @@ public final class TypeUtils {
             return Optional.empty();
         }
         return null;
+    }
+
+    public static String buildSig(Method method) {
+        StringBuilder sb = new StringBuilder(8);
+        for (Class<?> type : method.getParameterTypes()) {
+            String name = type.getName();
+            sb.append(name.charAt(name.lastIndexOf('.') + 1));
+        }
+        return sb.toString();
     }
 }

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-final class HttpMetadataAdapter implements Http2Header {
+public final class HttpMetadataAdapter implements Http2Header {
 
     private final HttpServletRequest request;
 
@@ -33,6 +33,10 @@ final class HttpMetadataAdapter implements Http2Header {
 
     HttpMetadataAdapter(HttpServletRequest request) {
         this.request = request;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
     }
 
     @Override

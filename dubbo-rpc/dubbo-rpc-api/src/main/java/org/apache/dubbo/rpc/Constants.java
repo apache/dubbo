@@ -105,8 +105,8 @@ public interface Constants {
     String H2_SETTINGS_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
     String H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS = "dubbo.rpc.tri.pass-through-standard-http-headers";
 
-    String H3_SETTINGS_HTTP3_ENABLE = "dubbo.protocol.triple.enable-http3";
-    String H3_SETTINGS_SERVLET_ENABLE = "dubbo.protocol.triple.enable-servlet";
+    String H3_SETTINGS_HTTP3_ENABLE = "dubbo.protocol.triple.http3.enable";
+    String H3_SETTINGS_SERVLET_ENABLE = "dubbo.protocol.triple.servlet.enable";
 
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";

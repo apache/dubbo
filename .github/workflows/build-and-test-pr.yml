@@ -326,7 +326,7 @@ jobs:
           cd test && bash ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
-      - name: "merge jacoco resule"
+      - name: "merge jacoco result"
         run: |
           cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"

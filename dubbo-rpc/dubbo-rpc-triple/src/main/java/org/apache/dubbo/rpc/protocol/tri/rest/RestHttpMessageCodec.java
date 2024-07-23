@@ -62,6 +62,10 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
         charset = request.charsetOrDefault();
     }
 
+    public HttpMessageEncoder getMessageEncoder() {
+        return messageEncoder;
+    }
+
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
         return decode(inputStream, new Class<?>[] {targetType}, charset);

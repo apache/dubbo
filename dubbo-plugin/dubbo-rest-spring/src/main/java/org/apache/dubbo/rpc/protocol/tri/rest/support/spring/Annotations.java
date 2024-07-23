@@ -34,6 +34,7 @@ public enum Annotations implements AnnotationEnum {
     ResponseStatus,
     CrossOrigin,
     ExceptionHandler,
+    HttpExchange("org.springframework.web.service.annotation.HttpExchange"),
     Nonnull("javax.annotation.Nonnull");
 
     private final String className;

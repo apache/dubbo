@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
@@ -70,7 +71,7 @@ public class TripleFilter implements Filter {
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
         mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
         String timeoutString = config.getInitParameter("timeout");
-        defaultTimeout = timeoutString == null ? 180_000 : Integer.parseInt(timeoutString);
+        defaultTimeout = StringUtils.isEmpty(timeoutString) ? 180_000 : Integer.parseInt(timeoutString);
     }
 
     @Override
