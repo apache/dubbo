@@ -75,13 +75,13 @@ class AbortPolicyWithReportTest {
 
     @Test
     void jStack_ConcurrencyDump_Silence_10Min() {
-        URL spyUrl = URL.valueOf(
+        URL url = URL.valueOf(
                 "dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
         AtomicInteger jStackCount = new AtomicInteger(0);
         AtomicInteger failureCount = new AtomicInteger(0);
         AtomicInteger finishedCount = new AtomicInteger(0);
         AtomicInteger timeoutCount = new AtomicInteger(0);
-        AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", spyUrl) {
+        AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url) {
             @Override
             protected void jstack(FileOutputStream jStackStream) {
                 jStackCount.incrementAndGet();
@@ -123,7 +123,6 @@ class AbortPolicyWithReportTest {
         System.out.printf(
                 "jStackCount: %d, finishedCount: %d, failureCount: %d, timeoutCount: %d %n",
                 jStackCount.get(), finishedCount.get(), failureCount.get(), timeoutCount.get());
-        // Mockito.verify(spyUrl, Mockito.times(1)).getParameter(DUMP_DIRECTORY);
         Assertions.assertEquals(
                 runTimes, finishedCount.get() + failureCount.get(), "all the test thread should be run completely");
         Assertions.assertEquals(1, jStackCount.get(), "'jstack' should be called only once in 10 minutes");
