@@ -69,7 +69,7 @@ class AbortPolicyWithReportTest {
     }
 
     @Test
-    void jStack_ConcurrencyDump_Active_10MinSilence() {
+    void jStack_ConcurrencyDump_Silence_10Min() {
         URL url = URL.valueOf(
                 "dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
         AtomicInteger jStackCount = new AtomicInteger(0);
@@ -82,7 +82,10 @@ class AbortPolicyWithReportTest {
             protected void jstack(FileOutputStream jStackStream) {
                 jStackCount.incrementAndGet();
                 // try to simulate the jstack cost long time, so that AbortPolicyWithReport may jstack repeatedly.
-                await().atMost(3, TimeUnit.SECONDS);
+                long startTime = System.currentTimeMillis();
+                await().atLeast(200, TimeUnit.MILLISECONDS)
+                        .atMost(400, TimeUnit.MILLISECONDS)
+                        .until(() -> System.currentTimeMillis() - startTime >= 300);
             }
         };
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
@@ -91,13 +94,17 @@ class AbortPolicyWithReportTest {
                 0,
                 TimeUnit.MILLISECONDS,
                 new SynchronousQueue<>(),
-                new NamedInternalThreadFactory("jStack_ConcurrencyDump_Active_10MinSilence", true),
+                new NamedInternalThreadFactory("jStack_ConcurrencyDump_Silence_10Min", true),
                 abortPolicyWithReport);
         List<Future<?>> futureList = new LinkedList<>();
         for (int i = 0; i < runTimes; i++) {
             try {
                 futureList.add(threadPoolExecutor.submit(() -> {
                     finishedCount.incrementAndGet();
+                    long startTime = System.currentTimeMillis();
+                    await().atLeast(300, TimeUnit.MILLISECONDS)
+                            .atMost(600, TimeUnit.MILLISECONDS)
+                            .until(() -> System.currentTimeMillis() - startTime >= 400);
                 }));
             } catch (Exception ignored) {
                 failureCount.incrementAndGet();
@@ -105,7 +112,7 @@ class AbortPolicyWithReportTest {
         }
         futureList.forEach(f -> {
             try {
-                f.get(1, TimeUnit.SECONDS);
+                f.get(500, TimeUnit.MILLISECONDS);
             } catch (Exception ignored) {
                 timeoutCount.incrementAndGet();
             }
