@@ -61,7 +61,7 @@ public abstract class AnnotationSupport {
         });
     }
 
-    public final Annotation[] getRealAnnotations() {
+    public final Annotation[] getRawAnnotations() {
         AnnotationMeta[] annotations = getAnnotations();
         int len = annotations.length;
         Annotation[] result = new Annotation[len];

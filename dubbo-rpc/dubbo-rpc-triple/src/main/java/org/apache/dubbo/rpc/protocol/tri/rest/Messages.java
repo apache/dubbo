@@ -34,9 +34,9 @@ public enum Messages {
     AMBIGUOUS_MAPPING("Ambiguous mapping for ''{0}'': [{1}, {2}]"),
     EXTENSION_INIT_FAILED("Rest extension: ''{0}'' initialization failed for invoker: ''{1}''"),
     ARGUMENT_NAME_MISSING("Name for argument of type [{0}] not specified, and parameter name information not "
-            + "available via reflection. Ensure that the compiler uses the '-parameters' flag."),
+            + "available via reflection. Ensure that the compiler uses the '-parameters' flag"),
     ARGUMENT_VALUE_MISSING("Missing argument ''{0}'' for method parameter of type [{1}]", 412),
-    ARGUMENT_CONVERT_ERROR("Convert argument ''{0}'' value [{1}] from type [{2}] to type [{3}] error", 412),
+    ARGUMENT_CONVERT_ERROR("Could not convert argument ''{0}'' value ''{1}'' from type [{2}] to type [{3}]", 412),
     ARGUMENT_COULD_NOT_RESOLVED("Could not resolve ''{0}'', no suitable resolver", 400),
     ARGUMENT_BIND_ERROR("Bind argument ''{0}'' of type [{1}] error", 400),
     INTERNAL_ERROR("Rest internal error");

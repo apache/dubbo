@@ -352,7 +352,7 @@ public final class BeanMeta {
         }
     }
 
-    public static final class NestedMeta extends NestableParameterMeta {
+    private static final class NestedMeta extends NestableParameterMeta {
 
         private final Class<?> type;
         private final Type genericType;

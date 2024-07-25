@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
@@ -41,6 +43,8 @@ import org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping;
 @Activate(order = -2000)
 public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestRequestHandlerMapping.class);
+
     private final FrameworkModel frameworkModel;
     private final RequestMappingRegistry requestMappingRegistry;
     private final ArgumentResolver argumentResolver;
@@ -60,6 +64,8 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     @Override
     public RequestHandler getRequestHandler(URL url, HttpRequest request, HttpResponse response) {
+        LOGGER.debug("Received http request: {}", request);
+
         HandlerMeta meta = requestMappingRegistry.lookup(request);
         if (meta == null) {
             return null;
@@ -92,6 +98,8 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
                     RestConstants.BODY_DECODER_ATTRIBUTE,
                     codecUtils.determineHttpMessageDecoder(url, frameworkModel, requestMediaType));
         }
+
+        LOGGER.debug("Content-type negotiate result: request='{}', response='{}'", requestMediaType, responseMediaType);
 
         RequestHandler handler = new RequestHandler(meta.getInvoker());
         handler.setHasStub(false);

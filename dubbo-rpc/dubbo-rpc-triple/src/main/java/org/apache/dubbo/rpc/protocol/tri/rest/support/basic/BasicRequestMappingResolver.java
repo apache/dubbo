@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
@@ -80,7 +79,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
 
         String[] paths = getPaths(mapping);
         if (paths.length == 0) {
-            builder.path(method.getName()).sig(TypeUtils.buildSig(method));
+            builder.path('/' + method.getName()).sig(TypeUtils.buildSig(method));
         } else {
             builder.path(paths);
         }
@@ -90,7 +89,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
             globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
         }
         return builder.name(method.getName())
-                .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
+                .service(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion())
                 .cors(globalCorsMeta)
                 .build();
     }

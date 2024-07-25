@@ -26,11 +26,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class NamedValueArgumentResolverSupport {
 
@@ -64,18 +62,13 @@ public abstract class NamedValueArgumentResolverSupport {
             meta.setName(parameterMeta.getRequiredName());
         }
 
-        Class<?> type = parameterMeta.getType();
-        Type genericType = parameterMeta.getGenericType();
-        if (type == Optional.class) {
-            Class<?> actualType = TypeUtils.getNestedActualType(genericType, 0);
-            meta.setType(actualType == null ? Object.class : actualType);
-        } else {
-            meta.setType(type);
-        }
+        Class<?> type = parameterMeta.getActualType();
+        meta.setType(type);
+        meta.setGenericType(parameterMeta.getActualGenericType());
         if (type.isArray()) {
-            meta.setNestedTypes(new Class<?>[] {type.getComponentType()});
+            meta.setNestedTypes(new Class<?>[] {type});
         } else {
-            meta.setNestedTypes(TypeUtils.getNestedActualTypes(genericType));
+            meta.setNestedTypes(TypeUtils.getNestedActualTypes(meta.genericType()));
         }
         meta.setParameterMeta(parameterMeta);
         return meta;

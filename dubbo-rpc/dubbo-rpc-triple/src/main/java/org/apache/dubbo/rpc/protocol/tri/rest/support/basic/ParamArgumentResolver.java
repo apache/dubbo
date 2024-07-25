@@ -84,7 +84,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
                 if (RequestUtils.isFormOrMultiPart(request)) {
                     return request.formParameter(meta.name());
                 }
-                return RequestUtils.decodeBody(request, meta.type());
+                return RequestUtils.decodeBody(request, meta.genericType());
         }
         return null;
     }
@@ -135,7 +135,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
                 if (RequestUtils.isFormOrMultiPart(request)) {
                     return request.formParameterValues(meta.name());
                 }
-                return RequestUtils.decodeBody(request, meta.type());
+                return RequestUtils.decodeBody(request, meta.genericType());
         }
         return null;
     }
@@ -179,7 +179,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
                 if (RequestUtils.isFormOrMultiPart(request)) {
                     return RequestUtils.getFormParametersMap(request);
                 }
-                return RequestUtils.decodeBody(request, meta.type());
+                return RequestUtils.decodeBody(request, meta.genericType());
         }
         return null;
     }
@@ -209,7 +209,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
 
         private final ParamType paramType;
 
-        public ParamNamedValueMeta(String name, boolean required, String defaultValue, ParamType paramType) {
+        ParamNamedValueMeta(String name, boolean required, String defaultValue, ParamType paramType) {
             super(name, required, defaultValue);
             this.paramType = paramType;
         }

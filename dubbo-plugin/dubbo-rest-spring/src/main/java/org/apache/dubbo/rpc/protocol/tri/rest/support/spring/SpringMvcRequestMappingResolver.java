@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
@@ -70,9 +69,11 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         String[] methods = requestMapping == null
                 ? httpExchange.getStringArray("method")
                 : requestMapping.getStringArray("method");
+        String[] paths = requestMapping == null ? httpExchange.getValueArray() : requestMapping.getValueArray();
         return builder(requestMapping, httpExchange, serviceMeta.findMergedAnnotation(Annotations.ResponseStatus))
                 .method(methods)
                 .name(serviceMeta.getType().getSimpleName())
+                .path(paths)
                 .contextPath(serviceMeta.getContextPath())
                 .cors(buildCorsMeta(serviceMeta.findMergedAnnotation(Annotations.CrossOrigin), methods))
                 .build();
@@ -92,14 +93,20 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         }
 
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
+        String name = methodMeta.getMethod().getName();
         String[] methods = requestMapping == null
                 ? httpExchange.getStringArray("method")
                 : requestMapping.getStringArray("method");
+        String[] paths = requestMapping == null ? httpExchange.getValueArray() : requestMapping.getValueArray();
+        if (paths.length == 0) {
+            paths = new String[] {'/' + name};
+        }
         return builder(requestMapping, httpExchange, methodMeta.findMergedAnnotation(Annotations.ResponseStatus))
                 .method(methods)
-                .name(methodMeta.getMethod().getName())
+                .name(name)
+                .path(paths)
                 .contextPath(serviceMeta.getContextPath())
-                .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
+                .service(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion())
                 .cors(buildCorsMeta(methodMeta.findMergedAnnotation(Annotations.CrossOrigin), methods))
                 .build();
     }
@@ -116,12 +123,10 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
             }
         }
         if (requestMapping == null) {
-            return builder.path(httpExchange.getValueArray())
-                    .consume(httpExchange.getStringArray("contentType"))
+            return builder.consume(httpExchange.getStringArray("contentType"))
                     .produce(httpExchange.getStringArray("accept"));
         }
-        return builder.path(requestMapping.getValueArray())
-                .param(requestMapping.getStringArray("params"))
+        return builder.param(requestMapping.getStringArray("params"))
                 .header(requestMapping.getStringArray("headers"))
                 .consume(requestMapping.getStringArray("consumes"))
                 .produce(requestMapping.getStringArray("produces"));

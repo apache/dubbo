@@ -51,6 +51,24 @@ class RestProtocolTest extends BaseServiceTest {
             '/argTest?name=Sam' | '{"age": 8}'                | 'Sam is 8 years old'
     }
 
+    def "list argument body test"() {
+        expect:
+            runner.post(path, body) contains output
+        where:
+            path                      | body        | output
+            '/listArgBodyTest?age=2'  | '[1,2]'     | '[1,2]'
+            '/listArgBodyTest2?age=1' | '[[1,2],2]' | '[1,2]'
+    }
+
+    def "map argument body test"() {
+        expect:
+            runner.post(path, body) contains output
+        where:
+            path                     | body                        | output
+            '/mapArgBodyTest?age=2'  | '{"1":["2",3],"4":[5,"6"]}' | '{4:[5,6],1:[2,3]}'
+            '/mapArgBodyTest2?age=1' | '[{"1":[2,3],"4":[5,6]},2]' | '{4:[5,6],1:[2,3]}'
+    }
+
     def "bean argument test"() {
         expect:
             runner.post(path, body, Book.class).name == output
@@ -77,12 +95,14 @@ class RestProtocolTest extends BaseServiceTest {
         expect:
             runner.post(path, body, Book.class).price == output
         where:
-            path           | body                                 | output
-            '/beanArgTest' | []                                   | 0
-            '/beanArgTest' | [quote: 5]                           | 5
-            '/beanArgTest' | [book: new Book(price: 6)]           | 6
-            '/beanArgTest' | [book: new Book(price: 6), quote: 5] | 5
-            '/beanArgTest' | [price: 6, quote: 5]                 | 5
+            path            | body                                 | output
+            '/beanArgTest'  | []                                   | 0
+            '/beanArgTest'  | [quote: 5]                           | 5
+            '/beanArgTest'  | [book: new Book(price: 6)]           | 6
+            '/beanArgTest'  | [book: new Book(price: 6), quote: 5] | 5
+            '/beanArgTest'  | [price: 6, quote: 5]                 | 5
+            '/beanArgTest2' | '{"price": 5}'                       | 5
+            '/beanArgTest2' | '[{"price": 5}]'                     | 5
     }
 
     def "advance bean argument get test"() {
@@ -114,6 +134,15 @@ class RestProtocolTest extends BaseServiceTest {
             '/bean?tagMapA.a.name=e&tagMapA.b.name=c&tagMapA.b.value=d'                     | '"tagMapA":{"a":{"name":"e","value":"b"},"b":{"name":"c","value":"d"}}'
             '/bean?tagMapB[2].name=a&tagMapB[2].value=b&tagMapB[3].name=c'                  | '"tagMapB":{2:{"name":"a","value":"b"},3:{"name":"c"}}'
             '/bean?groupsMap.one[0].name=a&groupsMap.one[1].name=b&groupsMap.two[1].name=c' | '"groupsMap":{"one":[{"id":0,"name":"a"},{"id":0,"name":"b"}],"two":[null,{"id":0,"name":"c"}]}'
+    }
+
+    def "bean body test"() {
+        expect:
+            runner.post(path, body) contains output
+        where:
+            path                   | body                                              | output
+            '/beanBodyTest?age=2'  | '[{"id":1,"name":"g1"},{"id":2,"name":"g2"}]'     | '[{"id":1,"name":"g1"},{"id":2,"name":"g2"}]'
+            '/beanBodyTest2?age=1' | '[[{"id":1,"name":"g1"},{"id":2,"name":"g2"}],2]' | '[{"id":1,"name":"g1"},{"id":2,"name":"g2"}]'
     }
 
     def "urlEncodeForm test"() {

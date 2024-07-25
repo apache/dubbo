@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
@@ -28,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
@@ -44,6 +46,21 @@ public class YamlCodec implements HttpMessageCodec {
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
             return createYaml().loadAs(reader, (Class) targetType);
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new DecodeException("Error decoding yaml", t);
+        }
+    }
+
+    @Override
+    public Object decode(InputStream is, Type targetType, Charset charset) throws DecodeException {
+        if (targetType instanceof Class) {
+            return decode(is, (Class<?>) targetType, charset);
+        }
+
+        try (InputStreamReader reader = new InputStreamReader(is, charset)) {
+            return JsonUtils.convertObject(createYaml().load(reader), targetType);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 public class NamedValueMeta {
@@ -24,6 +25,7 @@ public class NamedValueMeta {
     private final boolean required;
     private final String defaultValue;
     private Class<?> type;
+    private Type genericType;
     private Class<?>[] nestedTypes;
     private ParameterMeta parameterMeta;
 
@@ -63,6 +65,14 @@ public class NamedValueMeta {
         this.type = type;
     }
 
+    public Type genericType() {
+        return genericType;
+    }
+
+    public void setGenericType(Type genericType) {
+        this.genericType = genericType;
+    }
+
     public Class<?> nestedType() {
         return nestedTypes == null ? null : nestedTypes[0];
     }
@@ -99,6 +109,9 @@ public class NamedValueMeta {
         }
         if (type != null) {
             sb.append(", type=").append(type);
+            if (genericType != type) {
+                sb.append(", genericType=").append(genericType);
+            }
         }
         if (nestedTypes != null) {
             sb.append(", nestedTypes=").append(Arrays.toString(nestedTypes));

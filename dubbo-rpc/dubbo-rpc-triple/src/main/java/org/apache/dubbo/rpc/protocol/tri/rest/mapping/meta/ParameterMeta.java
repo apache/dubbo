@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import javax.annotation.Nullable;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Optional;
@@ -35,7 +36,7 @@ public abstract class ParameterMeta extends AnnotationSupport {
     private final String name;
     private Boolean simple;
     private Class<?> actualType;
-    private Object typeDescriptor;
+    private Type actualGenericType;
 
     protected ParameterMeta(RestToolKit toolKit, String prefix, String name) {
         super(toolKit);
@@ -93,20 +94,23 @@ public abstract class ParameterMeta extends AnnotationSupport {
         return type;
     }
 
-    public final Object getTypeDescriptor() {
-        return typeDescriptor;
-    }
-
-    public final void setTypeDescriptor(Object typeDescriptor) {
-        this.typeDescriptor = typeDescriptor;
+    public final Type getActualGenericType() {
+        Type type = actualGenericType;
+        if (type == null) {
+            type = getGenericType();
+            if (type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == Optional.class) {
+                type = TypeUtils.getNestedGenericType(getGenericType(), 0);
+                if (type == null) {
+                    type = Object.class;
+                }
+            }
+            actualGenericType = type;
+        }
+        return type;
     }
 
     public final Object bind(HttpRequest request, HttpResponse response) {
         return getToolKit().bind(this, request, response);
-    }
-
-    public boolean isSingle() {
-        return false;
     }
 
     public int getIndex() {

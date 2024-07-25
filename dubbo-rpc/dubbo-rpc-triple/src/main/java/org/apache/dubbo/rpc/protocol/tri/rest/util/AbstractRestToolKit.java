@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.util;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -50,7 +52,16 @@ public abstract class AbstractRestToolKit implements RestToolKit {
 
     @Override
     public Object convert(Object value, ParameterMeta parameter) {
-        return typeConverter.convert(value, parameter.getGenericType());
+        Object target = typeConverter.convert(value, parameter.getGenericType());
+        if (target == null && value != null) {
+            throw new RestException(
+                    Messages.ARGUMENT_CONVERT_ERROR,
+                    parameter.getName(),
+                    value,
+                    value.getClass(),
+                    parameter.getGenericType());
+        }
+        return target;
     }
 
     @Override

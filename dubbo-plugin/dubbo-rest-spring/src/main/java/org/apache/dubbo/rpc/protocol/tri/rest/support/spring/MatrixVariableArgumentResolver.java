@@ -117,7 +117,7 @@ public class MatrixVariableArgumentResolver extends AbstractSpringArgumentResolv
 
         private final String pathVar;
 
-        public MatrixNamedValueMeta(String name, boolean required, String defaultValue, String pathVar) {
+        MatrixNamedValueMeta(String name, boolean required, String defaultValue, String pathVar) {
             super(name, required, defaultValue);
             this.pathVar = pathVar;
         }

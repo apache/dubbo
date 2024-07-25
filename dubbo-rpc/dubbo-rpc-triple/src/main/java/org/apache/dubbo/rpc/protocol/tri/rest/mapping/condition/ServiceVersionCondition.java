@@ -51,10 +51,10 @@ public final class ServiceVersionCondition implements Condition<ServiceVersionCo
         if (version == null) {
             version = request.header(RestConstants.HEADER_SERVICE_VERSION);
         }
-
         if (version != null && !version.equals(this.version)) {
             return null;
         }
+
         return this;
     }
 

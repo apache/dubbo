@@ -17,9 +17,14 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
+import org.apache.dubbo.rpc.protocol.tri.rest.service.User.Group;
 import org.apache.dubbo.rpc.protocol.tri.rest.service.User.UserEx;
+
+import java.util.List;
+import java.util.Map;
 
 import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse;
@@ -49,8 +54,46 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
+    public Book beanArgTest2(Book book) {
+        return beanArgTest(book, null);
+    }
+
+    @Override
     public UserEx advanceBeanArgTest(UserEx user) {
         return user;
+    }
+
+    @Override
+    public List<Integer> listArgBodyTest(List<Integer> list, int age) {
+        Assert.assertTrue(age == 2, "age must be 2");
+        return list;
+    }
+
+    @Override
+    public List<Integer> listArgBodyTest2(List<Integer> list, int age) {
+        return listArgBodyTest(list, age);
+    }
+
+    @Override
+    public Map<Integer, List<Long>> mapArgBodyTest(Map<Integer, List<Long>> map, int age) {
+        Assert.assertTrue(age == 2, "age must be 2");
+        return map;
+    }
+
+    @Override
+    public Map<Integer, List<Long>> mapArgBodyTest2(Map<Integer, List<Long>> map, int age) {
+        return mapArgBodyTest(map, age);
+    }
+
+    @Override
+    public List<Group> beanBodyTest(List<Group> groups, int age) {
+        Assert.assertTrue(age == 2, "age must be 2");
+        return groups;
+    }
+
+    @Override
+    public List<Group> beanBodyTest2(List<Group> groups, int age) {
+        return beanBodyTest(groups, age);
     }
 
     @Override
