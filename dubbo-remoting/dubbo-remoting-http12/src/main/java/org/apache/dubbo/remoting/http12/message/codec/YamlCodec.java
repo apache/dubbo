@@ -71,7 +71,7 @@ public class YamlCodec implements HttpMessageCodec {
     @Override
     public Object[] decode(InputStream is, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
-            Yaml yaml = new Yaml();
+            Yaml yaml = createYaml();
             Iterator<Object> iterator = yaml.loadAll(reader).iterator();
             int len = targetTypes.length;
             Object[] results = new Object[len];

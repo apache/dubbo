@@ -19,7 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.nested.RestConfig;
@@ -57,7 +58,8 @@ import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.AMBIGUOUS_MAPPING;
 
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestMappingRegistry.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(DefaultRequestMappingRegistry.class);
 
     private final FrameworkModel frameworkModel;
     private final ContentNegotiator contentNegotiator;
@@ -154,9 +156,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             for (PathExpression path : mapping.getPathCondition().getExpressions()) {
                 Registration exists = tree.addPath(path, registration);
                 if (exists == null) {
-                    LOGGER.debug("Register rest mapping path: '" + path + "' -> " + mapping);
-                } else {
-                    LOGGER.warn(Messages.DUPLICATE_MAPPING.format(path, mapping, exists.mapping));
+                    LOGGER.debug("Register rest mapping path: '{}' -> {}", path, mapping);
+                } else if (LOGGER.isWarnEnabled()) {
+                    String msg = Messages.DUPLICATE_MAPPING.format(path, mapping, exists.mapping);
+                    LOGGER.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", msg);
                 }
             }
         } finally {
