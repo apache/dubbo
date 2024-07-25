@@ -32,12 +32,11 @@ public class HttpResultPayloadException extends HttpStatusException {
 
     public HttpResultPayloadException(int statusCode, Object body) {
         super(statusCode);
-        result = HttpResult.builder(body).status(statusCode).build();
+        result = HttpResult.of(statusCode, body);
     }
 
     public HttpResultPayloadException(Object body) {
-        super(HttpStatus.OK.getCode());
-        result = HttpResult.builder(body).ok().build();
+        this(HttpStatus.OK.getCode(), body);
     }
 
     @Override

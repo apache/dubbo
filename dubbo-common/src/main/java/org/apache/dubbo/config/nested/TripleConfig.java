@@ -28,6 +28,15 @@ public class TripleConfig implements Serializable {
     private static final long serialVersionUID = -3682252713701362155L;
 
     /**
+     * Whether enable verbose mode.
+     * When true, the application will produce detailed logging output
+     * to help with debugging and monitoring. This is useful for
+     * troubleshooting and understanding the application's behavior in detail.
+     * <p>The default value is false.
+     */
+    private Boolean verbose;
+
+    /**
      * Maximum allowed size for HTTP request bodies.
      * Limits the size of request to prevent excessively large request.
      * <p>The default value is 8MiB.
@@ -121,6 +130,14 @@ public class TripleConfig implements Serializable {
 
     @Nested
     private ServletConfig servlet;
+
+    public Boolean getVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(Boolean verbose) {
+        this.verbose = verbose;
+    }
 
     public Integer getMaxBodySize() {
         return maxBodySize;

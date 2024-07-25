@@ -44,6 +44,6 @@ public class RestParameterException extends RestException {
 
     @Override
     public int getStatusCode() {
-        return HttpStatus.PRECONDITION_FAILED.getCode();
+        return HttpStatus.BAD_REQUEST.getCode();
     }
 }

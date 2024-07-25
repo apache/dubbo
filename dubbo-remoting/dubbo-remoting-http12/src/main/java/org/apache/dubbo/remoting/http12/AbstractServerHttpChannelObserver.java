@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
@@ -30,6 +29,8 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     private TrailersCustomizer trailersCustomizer = TrailersCustomizer.NO_OP;
 
     private ErrorResponseCustomizer errorResponseCustomizer = ErrorResponseCustomizer.NO_OP;
+
+    private ExceptionHandler<Throwable, ?> exceptionHandler;
 
     private HttpMessageEncoder responseEncoder;
 
@@ -63,6 +64,12 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     @Override
     public void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer) {
         this.errorResponseCustomizer = errorResponseCustomizer;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setExceptionHandler(ExceptionHandler<?, ?> exceptionHandler) {
+        this.exceptionHandler = (ExceptionHandler<Throwable, ?>) exceptionHandler;
     }
 
     public void setAltSvc(String altSvc) {
@@ -101,11 +108,16 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         if (closed) {
             return;
         }
-        if (throwable instanceof HttpResultPayloadException) {
-            onNext(((HttpResultPayloadException) throwable).getResult());
-            onCompleted(null);
-            return;
+
+        if (exceptionHandler != null) {
+            HttpResult<?> result = exceptionHandler.handle(throwable);
+            if (result != null) {
+                onNext(result);
+                onCompleted(null);
+                return;
+            }
         }
+
         try {
             doOnError(throwable);
         } catch (Throwable ex) {
@@ -184,14 +196,23 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     protected final ErrorResponse buildErrorResponse(String statusCode, Throwable throwable) {
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setStatus(statusCode);
-        errorResponse.setMessage(throwable.getMessage());
+        if (throwable instanceof HttpStatusException) {
+            errorResponse.setMessage(throwable.getMessage());
+        } else {
+            errorResponse.setMessage("Internal Server Error");
+        }
         errorResponseCustomizer.accept(errorResponse, throwable);
         return errorResponse;
     }
 
     protected final HttpOutputMessage buildMessage(Object data) throws Throwable {
         if (data instanceof HttpResult) {
-            data = ((HttpResult<?>) data).getBody();
+            HttpResult<?> result = (HttpResult<?>) data;
+            data = result.getBody();
+            if (data instanceof Throwable) {
+                String statusCode = String.valueOf(result.getStatus());
+                data = buildErrorResponse(statusCode, (Throwable) data);
+            }
         }
         HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
         try {

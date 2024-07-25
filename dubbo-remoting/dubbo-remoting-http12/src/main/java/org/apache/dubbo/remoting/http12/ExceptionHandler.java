@@ -16,13 +16,11 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-public interface CustomizableHttpChannelObserver<T> extends HttpChannelObserver<T> {
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-    void setHeadersCustomizer(HeadersCustomizer headersCustomizer);
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ExceptionHandler<E extends Throwable, T> {
 
-    void setTrailersCustomizer(TrailersCustomizer trailersCustomizer);
-
-    void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer);
-
-    void setExceptionHandler(ExceptionHandler<?, ?> exceptionHandler);
+    HttpResult<T> handle(E error);
 }

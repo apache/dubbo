@@ -236,7 +236,7 @@ public class DefaultHttpResponse implements HttpResponse {
     public void sendRedirect(String location) {
         check();
         setStatus(HttpStatus.FOUND.getCode());
-        setHeader("location", location);
+        setHeader(HttpHeaderNames.LOCATION.getName(), location);
         commit();
     }
 
@@ -354,7 +354,7 @@ public class DefaultHttpResponse implements HttpResponse {
         if (body == null) {
             body = outputStream;
         }
-        return HttpResult.builder(body).status(status).headers(headers).build();
+        return HttpResult.builder().status(status).body(body).headers(headers).build();
     }
 
     @Override

@@ -188,6 +188,42 @@ public class TriRpcStatus implements Serializable {
         }
     }
 
+    public static int grpcCodeToHttpStatus(Code code) {
+        switch (code) {
+            case OK:
+                return HttpResponseStatus.OK.code();
+            case CANCELLED:
+                return 499;
+            case UNKNOWN:
+            case DATA_LOSS:
+            case INTERNAL:
+                return HttpResponseStatus.INTERNAL_SERVER_ERROR.code();
+            case INVALID_ARGUMENT:
+            case FAILED_PRECONDITION:
+            case OUT_OF_RANGE:
+                return HttpResponseStatus.BAD_REQUEST.code();
+            case DEADLINE_EXCEEDED:
+                return HttpResponseStatus.GATEWAY_TIMEOUT.code();
+            case NOT_FOUND:
+                return HttpResponseStatus.NOT_FOUND.code();
+            case ALREADY_EXISTS:
+            case ABORTED:
+                return HttpResponseStatus.CONFLICT.code();
+            case PERMISSION_DENIED:
+                return HttpResponseStatus.FORBIDDEN.code();
+            case RESOURCE_EXHAUSTED:
+                return HttpResponseStatus.TOO_MANY_REQUESTS.code();
+            case UNIMPLEMENTED:
+                return HttpResponseStatus.NOT_IMPLEMENTED.code();
+            case UNAVAILABLE:
+                return HttpResponseStatus.SERVICE_UNAVAILABLE.code();
+            case UNAUTHENTICATED:
+                return HttpResponseStatus.UNAUTHORIZED.code();
+            default:
+                return -1;
+        }
+    }
+
     public boolean isOk() {
         return Code.isOk(code.code);
     }

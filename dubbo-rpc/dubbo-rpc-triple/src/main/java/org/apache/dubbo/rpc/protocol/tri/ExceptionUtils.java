@@ -20,9 +20,13 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 public class ExceptionUtils {
 
@@ -76,5 +80,85 @@ public class ExceptionUtils {
 
     public static List<String> getStackFrameList(final Throwable t) {
         return getStackFrameList(t, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Wrap as runtime exception
+     */
+    public static RuntimeException wrap(Throwable t) {
+        while (true) {
+            if (t instanceof UndeclaredThrowableException) {
+                t = ((UndeclaredThrowableException) t).getUndeclaredThrowable();
+            } else if (t instanceof InvocationTargetException) {
+                t = ((InvocationTargetException) t).getTargetException();
+            } else if (t instanceof CompletionException || t instanceof ExecutionException) {
+                Throwable cause = t.getCause();
+                if (cause == t) {
+                    break;
+                }
+                t = cause;
+            } else {
+                break;
+            }
+        }
+        return t instanceof RuntimeException ? (RuntimeException) t : new ThrowableWrapper(t);
+    }
+
+    /**
+     * Unwrap the wrapped exception
+     */
+    public static Throwable unwrap(Throwable t) {
+        while (true) {
+            if (t instanceof ThrowableWrapper) {
+                t = ((ThrowableWrapper) t).getOriginal();
+            } else if (t instanceof UndeclaredThrowableException) {
+                t = ((UndeclaredThrowableException) t).getUndeclaredThrowable();
+            } else if (t instanceof InvocationTargetException) {
+                t = ((InvocationTargetException) t).getTargetException();
+            } else if (t instanceof CompletionException || t instanceof ExecutionException) {
+                Throwable cause = t.getCause();
+                if (cause == t) {
+                    break;
+                }
+                t = cause;
+            } else {
+                break;
+            }
+        }
+        return t;
+    }
+
+    public static String buildVerboseMessage(Throwable t) {
+        StringBuilder sb = new StringBuilder(256);
+
+        t = unwrap(t);
+        Throwable parent;
+        String before = null;
+        do {
+            String msg = t.getMessage();
+            String className = t.getClass().getName();
+            if (before != null) {
+                if (!before.startsWith(className) && !before.equals(msg)) {
+                    sb.append(": ").append(before);
+                }
+                sb.append(" -> ");
+            }
+            sb.append(className);
+            before = msg;
+
+            parent = t;
+            t = t.getCause();
+        } while (t != null && t != parent);
+        if (before != null) {
+            sb.append(": ").append(before);
+        }
+
+        sb.append("\n -> Stack traces:");
+        StackTraceElement[] elements = parent.getStackTrace();
+        for (int i = 0, len = elements.length; i < 10 && i < len; i++) {
+            sb.append("\n    at ").append(elements[i]);
+        }
+
+        return sb.toString();
     }
 }

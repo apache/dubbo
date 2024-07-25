@@ -17,11 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest;
 
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 
 public class RestException extends HttpStatusException {
 
@@ -35,12 +31,12 @@ public class RestException extends HttpStatusException {
     }
 
     public RestException(Throwable cause, Messages message, Object... arguments) {
-        super(message.statusCode(), message.format(arguments), unwrap(cause));
+        super(message.statusCode(), message.format(arguments), ExceptionUtils.unwrap(cause));
         this.message = message;
     }
 
     public RestException(String message, Throwable cause) {
-        super(500, message, unwrap(cause));
+        super(500, message, ExceptionUtils.unwrap(cause));
         this.message = Messages.INTERNAL_ERROR;
     }
 
@@ -55,35 +51,11 @@ public class RestException extends HttpStatusException {
     }
 
     public RestException(Throwable cause) {
-        super(500, unwrap(cause));
+        super(500, ExceptionUtils.unwrap(cause));
         message = Messages.INTERNAL_ERROR;
     }
 
     public String getErrorCode() {
         return message.name();
-    }
-
-    public static RuntimeException wrap(Throwable t) {
-        t = unwrap(t);
-        return t instanceof RuntimeException ? (RuntimeException) t : new RestException(t);
-    }
-
-    public static Throwable unwrap(Throwable t) {
-        while (true) {
-            if (t instanceof UndeclaredThrowableException) {
-                t = ((UndeclaredThrowableException) t).getUndeclaredThrowable();
-            } else if (t instanceof InvocationTargetException) {
-                t = ((InvocationTargetException) t).getTargetException();
-            } else if (t instanceof CompletionException || t instanceof ExecutionException) {
-                Throwable cause = t.getCause();
-                if (cause == t) {
-                    break;
-                }
-                t = cause;
-            } else {
-                break;
-            }
-        }
-        return t;
     }
 }
