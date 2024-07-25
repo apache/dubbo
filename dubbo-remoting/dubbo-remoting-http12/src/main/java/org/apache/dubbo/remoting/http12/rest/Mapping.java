@@ -42,4 +42,6 @@ public @interface Mapping {
     String[] consumes() default {};
 
     String[] produces() default {};
+
+    boolean disabled() default false;
 }

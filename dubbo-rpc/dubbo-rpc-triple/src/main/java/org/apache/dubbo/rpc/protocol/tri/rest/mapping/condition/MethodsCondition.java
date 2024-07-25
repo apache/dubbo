@@ -52,16 +52,21 @@ public final class MethodsCondition implements Condition<MethodsCondition, HttpR
     @Override
     public MethodsCondition match(HttpRequest request) {
         String method = request.method();
+
+        if (OPTIONS.name().equals(method)) {
+            if (request.hasHeader("origin") && request.hasHeader("access-control-request-method")) {
+                return new MethodsCondition(OPTIONS.name());
+            } else {
+                return this;
+            }
+        }
+
         if (methods.contains(method)) {
             return new MethodsCondition(method);
         }
+
         if (HEAD.name().equals(method) && methods.contains(GET.name())) {
             return new MethodsCondition(GET.name());
-        }
-        if (OPTIONS.name().equals(method)
-                && request.hasHeader("origin")
-                && request.hasHeader("access-control-request-method")) {
-            return new MethodsCondition(OPTIONS.name());
         }
 
         return null;

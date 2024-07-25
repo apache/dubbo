@@ -204,6 +204,10 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return pathCondition;
     }
 
+    public MethodsCondition getMethodsCondition() {
+        return methodsCondition;
+    }
+
     public ProducesCondition getProducesCondition() {
         return producesCondition;
     }

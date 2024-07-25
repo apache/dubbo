@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.basic;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
@@ -51,12 +52,13 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
 
     @Override
     public boolean accept(MethodMeta methodMeta) {
-        return methodMeta.getMethodDescriptor() != null || methodMeta.findAnnotation(Annotations.Mapping) != null;
+        AnnotationMeta<Mapping> mapping = methodMeta.findAnnotation(Mapping.class);
+        return mapping != null ? !mapping.getAnnotation().disabled() : methodMeta.getMethodDescriptor() != null;
     }
 
     @Override
     public RequestMapping resolve(ServiceMeta serviceMeta) {
-        AnnotationMeta<?> mapping = serviceMeta.findAnnotation(Annotations.Mapping);
+        AnnotationMeta<Mapping> mapping = serviceMeta.findAnnotation(Mapping.class);
         Builder builder = builder(mapping);
 
         String[] paths = getPaths(mapping);
@@ -74,7 +76,11 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
     @Override
     public RequestMapping resolve(MethodMeta methodMeta) {
         Method method = methodMeta.getMethod();
-        AnnotationMeta<?> mapping = methodMeta.findAnnotation(Annotations.Mapping);
+        AnnotationMeta<Mapping> mapping = methodMeta.findAnnotation(Mapping.class);
+        if (mapping != null && mapping.getAnnotation().disabled()) {
+            return null;
+        }
+
         Builder builder = builder(mapping);
 
         String[] paths = getPaths(mapping);
