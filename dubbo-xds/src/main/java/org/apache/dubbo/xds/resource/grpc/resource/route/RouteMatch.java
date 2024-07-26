@@ -18,9 +18,7 @@ public final class RouteMatch {
     private final FractionMatcher fractionMatcher;
 
     public RouteMatch(
-            PathMatcher pathMatcher,
-            List<HeaderMatcher> headerMatchers,
-            @Nullable FractionMatcher fractionMatcher) {
+            PathMatcher pathMatcher, List<HeaderMatcher> headerMatchers, @Nullable FractionMatcher fractionMatcher) {
         if (pathMatcher == null) {
             throw new NullPointerException("Null pathMatcher");
         }

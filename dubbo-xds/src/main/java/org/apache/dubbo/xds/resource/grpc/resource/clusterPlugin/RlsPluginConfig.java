@@ -6,8 +6,7 @@ import java.util.Map;
 
 final class RlsPluginConfig implements PluginConfig {
 
-    private static final String TYPE_URL =
-            "type.googleapis.com/grpc.lookup.v1.RouteLookupClusterSpecifier";
+    private static final String TYPE_URL = "type.googleapis.com/grpc.lookup.v1.RouteLookupClusterSpecifier";
 
     private final Map<String, ?> config;
 

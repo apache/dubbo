@@ -16,9 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.filter;
 
-
-import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.xds.resource.grpc.resource.RouterFilter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.fault.FaultFilter;
@@ -27,44 +24,43 @@ import org.apache.dubbo.xds.resource.grpc.resource.filter.rbac.RbacFilter;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
- * A registry for all supported {@link Filter}s. Filters can be queried from the registry
- * by any of the {@link Filter#typeUrls() type URLs}.
+ * A registry for all supported {@link Filter}s. Filters can be queried from the registry by any of the
+ * {@link Filter#typeUrls() type URLs}.
  */
 public class FilterRegistry {
-  private static FilterRegistry instance;
+    private static FilterRegistry instance;
 
-  private final Map<String, Filter> supportedFilters = new HashMap<>();
+    private final Map<String, Filter> supportedFilters = new HashMap<>();
 
-  private FilterRegistry() {}
+    private FilterRegistry() {}
 
-  static synchronized FilterRegistry getDefaultRegistry() {
-    if (instance == null) {
-      instance = newRegistry().register(
-              FaultFilter.INSTANCE,
-              RouterFilter.INSTANCE,
-              RbacFilter.INSTANCE);
+    static synchronized FilterRegistry getDefaultRegistry() {
+        if (instance == null) {
+            instance = newRegistry().register(FaultFilter.INSTANCE, RouterFilter.INSTANCE, RbacFilter.INSTANCE);
+        }
+        return instance;
     }
-    return instance;
-  }
 
-  @VisibleForTesting
-  static FilterRegistry newRegistry() {
-    return new FilterRegistry();
-  }
-
-  @VisibleForTesting
-  FilterRegistry register(Filter... filters) {
-    for (Filter filter : filters) {
-      for (String typeUrl : filter.typeUrls()) {
-        supportedFilters.put(typeUrl, filter);
-      }
+    @VisibleForTesting
+    static FilterRegistry newRegistry() {
+        return new FilterRegistry();
     }
-    return this;
-  }
 
-  @Nullable
-  public Filter get(String typeUrl) {
-    return supportedFilters.get(typeUrl);
-  }
+    @VisibleForTesting
+    FilterRegistry register(Filter... filters) {
+        for (Filter filter : filters) {
+            for (String typeUrl : filter.typeUrls()) {
+                supportedFilters.put(typeUrl, filter);
+            }
+        }
+        return this;
+    }
+
+    @Nullable
+    public Filter get(String typeUrl) {
+        return supportedFilters.get(typeUrl);
+    }
 }

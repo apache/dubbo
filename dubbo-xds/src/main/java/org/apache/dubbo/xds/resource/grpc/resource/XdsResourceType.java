@@ -16,8 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource;
 
-import io.grpc.LoadBalancerRegistry;
-
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -44,6 +42,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import io.envoyproxy.envoy.service.discovery.v3.Resource;
+import io.grpc.LoadBalancerRegistry;
 
 abstract class XdsResourceType<T extends ResourceUpdate> {
     static final String TYPE_URL_RESOURCE = "type.googleapis.com/envoy.service.discovery.v3.Resource";
@@ -60,8 +59,8 @@ abstract class XdsResourceType<T extends ResourceUpdate> {
 
     static boolean enablePickFirst = getFlag("GRPC_EXPERIMENTAL_PICKFIRST_LB_CONFIG", true);
 
-    static final String TYPE_URL_CLUSTER_CONFIG = "type.googleapis.com/envoy.extensions.clusters.aggregate.v3"
-            + ".ClusterConfig";
+    static final String TYPE_URL_CLUSTER_CONFIG =
+            "type.googleapis.com/envoy.extensions.clusters.aggregate.v3" + ".ClusterConfig";
     static final String TYPE_URL_TYPED_STRUCT_UDPA = "type.googleapis.com/udpa.type.v1.TypedStruct";
     static final String TYPE_URL_TYPED_STRUCT = "type.googleapis.com/xds.type.v3.TypedStruct";
 
@@ -94,8 +93,8 @@ abstract class XdsResourceType<T extends ResourceUpdate> {
         final String nonce;
         final Bootstrapper.BootstrapInfo bootstrapInfo;
         final FilterRegistry filterRegistry;
-            final LoadBalancerRegistry loadBalancerRegistry;
-            final TlsContextManager tlsContextManager;
+        final LoadBalancerRegistry loadBalancerRegistry;
+        final TlsContextManager tlsContextManager;
         // Management server is required to always send newly requested resources, even if they
         // may have been sent previously (proactively). Thus, client does not need to cache
         // unrequested resources.
@@ -212,7 +211,8 @@ abstract class XdsResourceType<T extends ResourceUpdate> {
             return false;
         }
         List<String> pathSegs = Arrays.stream(path.split("/"))
-                .filter(StringUtils::isNotBlank).collect(Collectors.toList());
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toList());
         if (pathSegs.size() < 2) {
             return false;
         }

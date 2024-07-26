@@ -16,13 +16,13 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.filter.router;
 
-import com.google.protobuf.Message;
-
 import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.ClientInterceptorBuilder;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.Filter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.ServerInterceptorBuilder;
+
+import com.google.protobuf.Message;
 
 /**
  * Router filter implementation. Currently this filter does not parse any field in the config.

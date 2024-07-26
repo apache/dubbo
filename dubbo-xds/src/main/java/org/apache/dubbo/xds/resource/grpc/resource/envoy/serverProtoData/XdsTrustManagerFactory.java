@@ -16,6 +16,8 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -37,8 +39,6 @@ import io.envoyproxy.envoy.config.core.v3.DataSource.SpecifierCase;
 import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CertificateValidationContext;
 import io.netty.handler.ssl.util.SimpleTrustManagerFactory;
 
-import org.apache.dubbo.common.utils.StringUtils;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -47,106 +47,103 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public final class XdsTrustManagerFactory extends SimpleTrustManagerFactory {
 
-  private static final Logger logger = Logger.getLogger(XdsTrustManagerFactory.class.getName());
-  private XdsX509TrustManager xdsX509TrustManager;
+    private static final Logger logger = Logger.getLogger(XdsTrustManagerFactory.class.getName());
+    private XdsX509TrustManager xdsX509TrustManager;
 
-  /** Constructor constructs from a {@link CertificateValidationContext}. */
-  public XdsTrustManagerFactory(CertificateValidationContext certificateValidationContext)
-      throws CertificateException, IOException, CertStoreException {
-    this(
-        getTrustedCaFromCertContext(certificateValidationContext),
-        certificateValidationContext,
-        false);
-  }
-
-  public XdsTrustManagerFactory(
-          X509Certificate[] certs, CertificateValidationContext staticCertificateValidationContext)
-          throws CertStoreException {
-    this(certs, staticCertificateValidationContext, true);
-  }
-
-  private XdsTrustManagerFactory(
-      X509Certificate[] certs,
-      CertificateValidationContext certificateValidationContext,
-      boolean validationContextIsStatic)
-      throws CertStoreException {
-    if (validationContextIsStatic) {
-      checkArgument(
-          certificateValidationContext == null || !certificateValidationContext.hasTrustedCa(),
-          "only static certificateValidationContext expected");
+    /**
+     * Constructor constructs from a {@link CertificateValidationContext}.
+     */
+    public XdsTrustManagerFactory(CertificateValidationContext certificateValidationContext) throws CertificateException, IOException, CertStoreException {
+        this(getTrustedCaFromCertContext(certificateValidationContext), certificateValidationContext, false);
     }
-    xdsX509TrustManager = createX509TrustManager(certs, certificateValidationContext);
-  }
 
-  private static X509Certificate[] getTrustedCaFromCertContext(
-      CertificateValidationContext certificateValidationContext)
-      throws CertificateException, IOException {
-    final SpecifierCase specifierCase =
-        certificateValidationContext.getTrustedCa().getSpecifierCase();
-    if (specifierCase == SpecifierCase.FILENAME) {
-      String certsFile = certificateValidationContext.getTrustedCa().getFilename();
-      checkState(
-          !StringUtils.isEmpty(certsFile),
-          "trustedCa.file-name in certificateValidationContext cannot be empty");
-      return CertificateUtils.toX509Certificates(new File(certsFile));
-    } else if (specifierCase == SpecifierCase.INLINE_BYTES) {
-      try (InputStream is =
-          certificateValidationContext.getTrustedCa().getInlineBytes().newInput()) {
-        return CertificateUtils.toX509Certificates(is);
-      }
-    } else {
-      throw new IllegalArgumentException("Not supported: " + specifierCase);
+    public XdsTrustManagerFactory(
+            X509Certificate[] certs,
+            CertificateValidationContext staticCertificateValidationContext) throws CertStoreException {
+        this(certs, staticCertificateValidationContext, true);
     }
-  }
 
-  static XdsX509TrustManager createX509TrustManager(
-      X509Certificate[] certs, CertificateValidationContext certContext) throws CertStoreException {
-    TrustManagerFactory tmf = null;
-    try {
-      tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      KeyStore ks = KeyStore.getInstance("PKCS12");
-      // perform a load to initialize KeyStore
-      ks.load(/* stream= */ null, /* password= */ null);
-      int i = 1;
-      for (X509Certificate cert : certs) {
-        // note: alias lookup uses toLowerCase(Locale.ENGLISH)
-        // so our alias needs to be all lower-case and unique
-        ks.setCertificateEntry("alias" + i, cert);
-        i++;
-      }
-      tmf.init(ks);
-    } catch (NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException e) {
-      logger.log(Level.SEVERE, "createX509TrustManager", e);
-      throw new CertStoreException(e);
-    }
-    TrustManager[] tms = tmf.getTrustManagers();
-    X509ExtendedTrustManager myDelegate = null;
-    if (tms != null) {
-      for (TrustManager tm : tms) {
-        if (tm instanceof X509ExtendedTrustManager) {
-          myDelegate = (X509ExtendedTrustManager) tm;
-          break;
+    private XdsTrustManagerFactory(
+            X509Certificate[] certs,
+            CertificateValidationContext certificateValidationContext,
+            boolean validationContextIsStatic) throws CertStoreException {
+        if (validationContextIsStatic) {
+            checkArgument(certificateValidationContext == null
+                    || !certificateValidationContext.hasTrustedCa(), "only static certificateValidationContext "
+                    + "expected");
         }
-      }
+        xdsX509TrustManager = createX509TrustManager(certs, certificateValidationContext);
     }
-    if (myDelegate == null) {
-      throw new CertStoreException("Native X509 TrustManager not found.");
+
+    private static X509Certificate[] getTrustedCaFromCertContext(
+            CertificateValidationContext certificateValidationContext) throws CertificateException, IOException {
+        final SpecifierCase specifierCase = certificateValidationContext.getTrustedCa()
+                .getSpecifierCase();
+        if (specifierCase == SpecifierCase.FILENAME) {
+            String certsFile = certificateValidationContext.getTrustedCa()
+                    .getFilename();
+            checkState(!StringUtils.isEmpty(certsFile), "trustedCa.file-name in certificateValidationContext cannot "
+                    + "be empty");
+            return CertificateUtils.toX509Certificates(new File(certsFile));
+        } else if (specifierCase == SpecifierCase.INLINE_BYTES) {
+            try (InputStream is = certificateValidationContext.getTrustedCa()
+                    .getInlineBytes()
+                    .newInput()) {
+                return CertificateUtils.toX509Certificates(is);
+            }
+        } else {
+            throw new IllegalArgumentException("Not supported: " + specifierCase);
+        }
     }
-    return new XdsX509TrustManager(certContext, myDelegate);
-  }
 
-  @Override
-  protected void engineInit(KeyStore keyStore) throws Exception {
-    throw new UnsupportedOperationException();
-  }
+    static XdsX509TrustManager createX509TrustManager(
+            X509Certificate[] certs, CertificateValidationContext certContext) throws CertStoreException {
+        TrustManagerFactory tmf = null;
+        try {
+            tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            // perform a load to initialize KeyStore
+            ks.load(/* stream= */ null, /* password= */ null);
+            int i = 1;
+            for (X509Certificate cert : certs) {
+                // note: alias lookup uses toLowerCase(Locale.ENGLISH)
+                // so our alias needs to be all lower-case and unique
+                ks.setCertificateEntry("alias" + i, cert);
+                i++;
+            }
+            tmf.init(ks);
+        } catch (NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException e) {
+            logger.log(Level.SEVERE, "createX509TrustManager", e);
+            throw new CertStoreException(e);
+        }
+        TrustManager[] tms = tmf.getTrustManagers();
+        X509ExtendedTrustManager myDelegate = null;
+        if (tms != null) {
+            for (TrustManager tm : tms) {
+                if (tm instanceof X509ExtendedTrustManager) {
+                    myDelegate = (X509ExtendedTrustManager) tm;
+                    break;
+                }
+            }
+        }
+        if (myDelegate == null) {
+            throw new CertStoreException("Native X509 TrustManager not found.");
+        }
+        return new XdsX509TrustManager(certContext, myDelegate);
+    }
 
-  @Override
-  protected void engineInit(ManagerFactoryParameters managerFactoryParameters) throws Exception {
-    throw new UnsupportedOperationException();
-  }
+    @Override
+    protected void engineInit(KeyStore keyStore) throws Exception {
+        throw new UnsupportedOperationException();
+    }
 
-  @Override
-  protected TrustManager[] engineGetTrustManagers() {
-    return new TrustManager[] {xdsX509TrustManager};
-  }
+    @Override
+    protected void engineInit(ManagerFactoryParameters managerFactoryParameters) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected TrustManager[] engineGetTrustManagers() {
+        return new TrustManager[] {xdsX509TrustManager};
+    }
 }

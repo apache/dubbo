@@ -1,113 +1,131 @@
 package org.apache.dubbo.xds.resource.grpc.resource.matcher;
 
 import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.common.utils.Assert;
 
 import com.google.re2j.Pattern;
 
-import org.apache.dubbo.common.utils.Assert;
-
 public final class HeaderMatcher {
 
-  private final String name;
+    private final String name;
 
-  @Nullable
-  private final String exactValue;
+    @Nullable
+    private final String exactValue;
 
-  @Nullable
-  private final Pattern safeRegEx;
+    @Nullable
+    private final Pattern safeRegEx;
 
-  @Nullable
-  private final Range range;
+    @Nullable
+    private final Range range;
 
-  @Nullable
-  private final Boolean present;
+    @Nullable
+    private final Boolean present;
 
-  @Nullable
-  private final String prefix;
+    @Nullable
+    private final String prefix;
 
-  @Nullable
-  private final String suffix;
+    @Nullable
+    private final String suffix;
 
-  @Nullable
-  private final String contains;
+    @Nullable
+    private final String contains;
 
-  @Nullable
-  private final StringMatcher stringMatcher;
+    @Nullable
+    private final StringMatcher stringMatcher;
 
-  private final boolean inverted;
+    private final boolean inverted;
 
-    /** The request header value should exactly match the specified value. */
+    /**
+     * The request header value should exactly match the specified value.
+     */
     public static HeaderMatcher forExactValue(String name, String exactValue, boolean inverted) {
         Assert.notNull(name, "name is null");
         Assert.notNull(exactValue, "exactValue is null");
-        return HeaderMatcher.create(
-                name, exactValue, null, null, null, null, null, null, null, inverted);
+        return HeaderMatcher.create(name, exactValue, null, null, null, null, null, null, null, inverted);
     }
 
-    /** The request header value should match the regular expression pattern. */
+    /**
+     * The request header value should match the regular expression pattern.
+     */
     public static HeaderMatcher forSafeRegEx(String name, Pattern safeRegEx, boolean inverted) {
         Assert.notNull(name, "name is null");
         Assert.notNull(safeRegEx, "safeRegEx is null");
-        return HeaderMatcher.create(
-                name, null, safeRegEx, null, null, null, null, null, null, inverted);
+        return HeaderMatcher.create(name, null, safeRegEx, null, null, null, null, null, null, inverted);
     }
 
-    /** The request header value should be within the range. */
+    /**
+     * The request header value should be within the range.
+     */
     public static HeaderMatcher forRange(String name, Range range, boolean inverted) {
         Assert.notNull(name, "name is null");
         Assert.notNull(range, "range is null");
         return HeaderMatcher.create(name, null, null, range, null, null, null, null, null, inverted);
     }
 
-    /** The request header value should exist. */
+    /**
+     * The request header value should exist.
+     */
     public static HeaderMatcher forPresent(String name, boolean present, boolean inverted) {
         Assert.notNull(name, "name is null");
-        return HeaderMatcher.create(
-                name, null, null, null, present, null, null, null, null, inverted);
+        return HeaderMatcher.create(name, null, null, null, present, null, null, null, null, inverted);
     }
 
-    /** The request header value should have this prefix. */
+    /**
+     * The request header value should have this prefix.
+     */
     public static HeaderMatcher forPrefix(String name, String prefix, boolean inverted) {
         Assert.notNull(name, "name is null");
         Assert.notNull(prefix, "prefix is null");
         return HeaderMatcher.create(name, null, null, null, null, prefix, null, null, null, inverted);
     }
 
-    /** The request header value should have this suffix. */
+    /**
+     * The request header value should have this suffix.
+     */
     public static HeaderMatcher forSuffix(String name, String suffix, boolean inverted) {
         Assert.notNull(name, "name is null");
         Assert.notNull(suffix, "suffix is null");
         return HeaderMatcher.create(name, null, null, null, null, null, suffix, null, null, inverted);
     }
 
-    /** The request header value should have this substring. */
+    /**
+     * The request header value should have this substring.
+     */
     public static HeaderMatcher forContains(String name, String contains, boolean inverted) {
         Assert.notNull(name, "name is null");
         Assert.notNull(contains, "contains is null");
-        return HeaderMatcher.create(
-                name, null, null, null, null, null, null, contains, null, inverted);
+        return HeaderMatcher.create(name, null, null, null, null, null, null, contains, null, inverted);
     }
 
-    /** The request header value should match this stringMatcher. */
+    /**
+     * The request header value should match this stringMatcher.
+     */
     public static HeaderMatcher forString(
             String name, StringMatcher stringMatcher, boolean inverted) {
         Assert.notNull(name, "name is null");
         Assert.notNull(stringMatcher, "stringMatcher is null");
-        return HeaderMatcher.create(
-                name, null, null, null, null, null, null, null, stringMatcher, inverted);
+        return HeaderMatcher.create(name, null, null, null, null, null, null, null, stringMatcher, inverted);
     }
 
-    private static HeaderMatcher create(String name, @Nullable String exactValue,
-                                                 @Nullable Pattern safeRegEx, @Nullable Range range,
-                                                 @Nullable Boolean present, @Nullable String prefix,
-                                                 @Nullable String suffix, @Nullable String contains,
-                                                 @Nullable StringMatcher stringMatcher, boolean inverted) {
+    private static HeaderMatcher create(
+            String name,
+            @Nullable String exactValue,
+            @Nullable Pattern safeRegEx,
+            @Nullable Range range,
+            @Nullable Boolean present,
+            @Nullable String prefix,
+            @Nullable String suffix,
+            @Nullable String contains,
+            @Nullable StringMatcher stringMatcher,
+            boolean inverted) {
         Assert.notNull(name, "name");
-        return new HeaderMatcher(name, exactValue, safeRegEx, range, present,
-                prefix, suffix, contains, stringMatcher, inverted);
+        return new HeaderMatcher(name, exactValue, safeRegEx, range, present, prefix, suffix, contains, stringMatcher
+                , inverted);
     }
 
-    /** Returns the matching result. */
+    /**
+     * Returns the matching result.
+     */
     public boolean matches(@Nullable String value) {
         if (value == null) {
             return present() != null && present() == inverted();
@@ -121,8 +139,7 @@ public final class HeaderMatcher {
             long numValue;
             try {
                 numValue = Long.parseLong(value);
-                baseMatch = numValue >= range().start()
-                        && numValue <= range().end();
+                baseMatch = numValue >= range().start() && numValue <= range().end();
             } catch (NumberFormatException ignored) {
                 baseMatch = false;
             }
@@ -140,142 +157,134 @@ public final class HeaderMatcher {
         return baseMatch != inverted();
     }
 
-
     HeaderMatcher(
-      String name,
-      @Nullable String exactValue,
-      @Nullable Pattern safeRegEx,
-      @Nullable Range range,
-      @Nullable Boolean present,
-      @Nullable String prefix,
-      @Nullable String suffix,
-      @Nullable String contains,
-      @Nullable StringMatcher stringMatcher,
-      boolean inverted) {
-    if (name == null) {
-      throw new NullPointerException("Null name");
+            String name,
+            @Nullable String exactValue,
+            @Nullable Pattern safeRegEx,
+            @Nullable Range range,
+            @Nullable Boolean present,
+            @Nullable String prefix,
+            @Nullable String suffix,
+            @Nullable String contains,
+            @Nullable StringMatcher stringMatcher,
+            boolean inverted) {
+        if (name == null) {
+            throw new NullPointerException("Null name");
+        }
+        this.name = name;
+        this.exactValue = exactValue;
+        this.safeRegEx = safeRegEx;
+        this.range = range;
+        this.present = present;
+        this.prefix = prefix;
+        this.suffix = suffix;
+        this.contains = contains;
+        this.stringMatcher = stringMatcher;
+        this.inverted = inverted;
     }
-    this.name = name;
-    this.exactValue = exactValue;
-    this.safeRegEx = safeRegEx;
-    this.range = range;
-    this.present = present;
-    this.prefix = prefix;
-    this.suffix = suffix;
-    this.contains = contains;
-    this.stringMatcher = stringMatcher;
-    this.inverted = inverted;
-  }
 
-  public String name() {
-    return name;
-  }
-
-  @Nullable
-  public String exactValue() {
-    return exactValue;
-  }
-
-  @Nullable
-  public Pattern safeRegEx() {
-    return safeRegEx;
-  }
-
-  @Nullable
-  public Range range() {
-    return range;
-  }
-
-  @Nullable
-  public Boolean present() {
-    return present;
-  }
-
-  @Nullable
-  public String prefix() {
-    return prefix;
-  }
-
-  @Nullable
-  public String suffix() {
-    return suffix;
-  }
-
-  @Nullable
-  public String contains() {
-    return contains;
-  }
-
-  @Nullable
-  public StringMatcher stringMatcher() {
-    return stringMatcher;
-  }
-
-  public boolean inverted() {
-    return inverted;
-  }
-
-  @Override
-  public String toString() {
-    return "HeaderMatcher{"
-        + "name=" + name + ", "
-        + "exactValue=" + exactValue + ", "
-        + "safeRegEx=" + safeRegEx + ", "
-        + "range=" + range + ", "
-        + "present=" + present + ", "
-        + "prefix=" + prefix + ", "
-        + "suffix=" + suffix + ", "
-        + "contains=" + contains + ", "
-        + "stringMatcher=" + stringMatcher + ", "
-        + "inverted=" + inverted
-        + "}";
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
+    public String name() {
+        return name;
     }
-    if (o instanceof HeaderMatcher) {
-      HeaderMatcher that = (HeaderMatcher) o;
-      return this.name.equals(that.name())
-          && (this.exactValue == null ? that.exactValue() == null : this.exactValue.equals(that.exactValue()))
-          && (this.safeRegEx == null ? that.safeRegEx() == null : this.safeRegEx.equals(that.safeRegEx()))
-          && (this.range == null ? that.range() == null : this.range.equals(that.range()))
-          && (this.present == null ? that.present() == null : this.present.equals(that.present()))
-          && (this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix()))
-          && (this.suffix == null ? that.suffix() == null : this.suffix.equals(that.suffix()))
-          && (this.contains == null ? that.contains() == null : this.contains.equals(that.contains()))
-          && (this.stringMatcher == null ? that.stringMatcher() == null : this.stringMatcher.equals(that.stringMatcher()))
-          && this.inverted == that.inverted();
-    }
-    return false;
-  }
 
-  @Override
-  public int hashCode() {
-    int h$ = 1;
-    h$ *= 1000003;
-    h$ ^= name.hashCode();
-    h$ *= 1000003;
-    h$ ^= (exactValue == null) ? 0 : exactValue.hashCode();
-    h$ *= 1000003;
-    h$ ^= (safeRegEx == null) ? 0 : safeRegEx.hashCode();
-    h$ *= 1000003;
-    h$ ^= (range == null) ? 0 : range.hashCode();
-    h$ *= 1000003;
-    h$ ^= (present == null) ? 0 : present.hashCode();
-    h$ *= 1000003;
-    h$ ^= (prefix == null) ? 0 : prefix.hashCode();
-    h$ *= 1000003;
-    h$ ^= (suffix == null) ? 0 : suffix.hashCode();
-    h$ *= 1000003;
-    h$ ^= (contains == null) ? 0 : contains.hashCode();
-    h$ *= 1000003;
-    h$ ^= (stringMatcher == null) ? 0 : stringMatcher.hashCode();
-    h$ *= 1000003;
-    h$ ^= inverted ? 1231 : 1237;
-    return h$;
-  }
+    @Nullable
+    public String exactValue() {
+        return exactValue;
+    }
+
+    @Nullable
+    public Pattern safeRegEx() {
+        return safeRegEx;
+    }
+
+    @Nullable
+    public Range range() {
+        return range;
+    }
+
+    @Nullable
+    public Boolean present() {
+        return present;
+    }
+
+    @Nullable
+    public String prefix() {
+        return prefix;
+    }
+
+    @Nullable
+    public String suffix() {
+        return suffix;
+    }
+
+    @Nullable
+    public String contains() {
+        return contains;
+    }
+
+    @Nullable
+    public StringMatcher stringMatcher() {
+        return stringMatcher;
+    }
+
+    public boolean inverted() {
+        return inverted;
+    }
+
+    @Override
+    public String toString() {
+        return "HeaderMatcher{" + "name=" + name + ", " + "exactValue=" + exactValue + ", " + "safeRegEx=" + safeRegEx
+                + ", " + "range=" + range + ", " + "present=" + present + ", " + "prefix=" + prefix + ", " + "suffix="
+                + suffix + ", " + "contains=" + contains + ", " + "stringMatcher=" + stringMatcher + ", " + "inverted="
+                + inverted + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o instanceof HeaderMatcher) {
+            HeaderMatcher that = (HeaderMatcher) o;
+            return this.name.equals(that.name()) && (
+                    this.exactValue == null ? that.exactValue() == null : this.exactValue.equals(that.exactValue()))
+                    && (this.safeRegEx == null ? that.safeRegEx() == null : this.safeRegEx.equals(that.safeRegEx()))
+                    && (this.range == null ? that.range() == null : this.range.equals(that.range())) && (
+                    this.present == null ? that.present() == null : this.present.equals(that.present())) && (
+                    this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix())) && (
+                    this.suffix == null ? that.suffix() == null : this.suffix.equals(that.suffix())) && (
+                    this.contains == null ? that.contains() == null : this.contains.equals(that.contains())) && (
+                    this.stringMatcher == null ?
+                            that.stringMatcher() == null : this.stringMatcher.equals(that.stringMatcher()))
+                    && this.inverted == that.inverted();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int h$ = 1;
+        h$ *= 1000003;
+        h$ ^= name.hashCode();
+        h$ *= 1000003;
+        h$ ^= (exactValue == null) ? 0 : exactValue.hashCode();
+        h$ *= 1000003;
+        h$ ^= (safeRegEx == null) ? 0 : safeRegEx.hashCode();
+        h$ *= 1000003;
+        h$ ^= (range == null) ? 0 : range.hashCode();
+        h$ *= 1000003;
+        h$ ^= (present == null) ? 0 : present.hashCode();
+        h$ *= 1000003;
+        h$ ^= (prefix == null) ? 0 : prefix.hashCode();
+        h$ *= 1000003;
+        h$ ^= (suffix == null) ? 0 : suffix.hashCode();
+        h$ *= 1000003;
+        h$ ^= (contains == null) ? 0 : contains.hashCode();
+        h$ *= 1000003;
+        h$ ^= (stringMatcher == null) ? 0 : stringMatcher.hashCode();
+        h$ *= 1000003;
+        h$ ^= inverted ? 1231 : 1237;
+        return h$;
+    }
 
 }

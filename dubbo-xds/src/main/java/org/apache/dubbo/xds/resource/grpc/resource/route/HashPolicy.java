@@ -1,10 +1,9 @@
 package org.apache.dubbo.xds.resource.grpc.resource.route;
 
 import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.common.utils.Assert;
 
 import com.google.re2j.Pattern;
-
-import org.apache.dubbo.common.utils.Assert;
 
 public class HashPolicy {
 
@@ -22,10 +21,7 @@ public class HashPolicy {
     private final String regExSubstitution;
 
     public static HashPolicy forHeader(
-            boolean isTerminal,
-            String headerName,
-            @Nullable Pattern regEx,
-            @Nullable String regExSubstitution) {
+            boolean isTerminal, String headerName, @Nullable Pattern regEx, @Nullable String regExSubstitution) {
         Assert.notNull(headerName, "headerName is null");
         return HashPolicy.create(HashPolicyType.HEADER, isTerminal, headerName, regEx, regExSubstitution);
     }

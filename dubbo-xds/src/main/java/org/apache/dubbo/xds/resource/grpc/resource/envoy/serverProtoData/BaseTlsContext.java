@@ -1,10 +1,10 @@
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
-import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
-
 import org.apache.dubbo.common.lang.Nullable;
 
 import java.util.Objects;
+
+import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
 
 public abstract class BaseTlsContext {
     @Nullable
@@ -14,7 +14,8 @@ public abstract class BaseTlsContext {
         this.commonTlsContext = commonTlsContext;
     }
 
-    @Nullable public CommonTlsContext getCommonTlsContext() {
+    @Nullable
+    public CommonTlsContext getCommonTlsContext() {
         return commonTlsContext;
     }
 

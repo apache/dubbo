@@ -16,115 +16,122 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
-import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.security.cert.CertStoreException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.Executor;
 
+import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
- * A SslContextProvider is a "container" or provider of SslContext. This is used by gRPC-xds to
- * obtain an SslContext, so is not part of the public API of gRPC. This "container" may represent a
- * stream that is receiving the requested secret(s) or it could represent file-system based
- * secret(s) that are dynamic.
+ * A SslContextProvider is a "container" or provider of SslContext. This is used by gRPC-xds to obtain an SslContext, so
+ * is not part of the public API of gRPC. This "container" may represent a stream that is receiving the requested
+ * secret(s) or it could represent file-system based secret(s) that are dynamic.
  */
 public abstract class SslContextProvider implements Closeable {
 
-  protected final BaseTlsContext tlsContext;
+    protected final BaseTlsContext tlsContext;
 
-   public abstract static class Callback {
-    private final Executor executor;
+    public abstract static class Callback {
+        private final Executor executor;
 
-    protected Callback(Executor executor) {
-      this.executor = executor;
+        protected Callback(Executor executor) {
+            this.executor = executor;
+        }
+
+        public Executor getExecutor() {
+            return executor;
+        }
+
+        /**
+         * Informs callee of new/updated SslContext.
+         */
+        public abstract void updateSslContext(SslContext sslContext);
+
+        /**
+         * Informs callee of an exception that was generated.
+         */
+        protected abstract void onException(Throwable throwable);
     }
 
-    public Executor getExecutor() {
-      return executor;
+    protected SslContextProvider(BaseTlsContext tlsContext) {
+        this.tlsContext = checkNotNull(tlsContext, "tlsContext");
     }
 
-    /** Informs callee of new/updated SslContext. */
-    public abstract void updateSslContext(SslContext sslContext);
-
-    /** Informs callee of an exception that was generated. */
-    protected abstract void onException(Throwable throwable);
-  }
-
-  protected SslContextProvider(BaseTlsContext tlsContext) {
-    this.tlsContext = checkNotNull(tlsContext, "tlsContext");
-  }
-
-  protected CommonTlsContext getCommonTlsContext() {
-    return tlsContext.getCommonTlsContext();
-  }
-
-  protected void setClientAuthValues(
-      SslContextBuilder sslContextBuilder, XdsTrustManagerFactory xdsTrustManagerFactory)
-      throws CertificateException, IOException, CertStoreException {
-    DownstreamTlsContext downstreamTlsContext = getDownstreamTlsContext();
-    if (xdsTrustManagerFactory != null) {
-      sslContextBuilder.trustManager(xdsTrustManagerFactory);
-      sslContextBuilder.clientAuth(
-          downstreamTlsContext.isRequireClientCertificate()
-              ? ClientAuth.REQUIRE
-              : ClientAuth.OPTIONAL);
-    } else {
-      sslContextBuilder.clientAuth(ClientAuth.NONE);
+    protected CommonTlsContext getCommonTlsContext() {
+        return tlsContext.getCommonTlsContext();
     }
-  }
 
-  /** Returns the DownstreamTlsContext in this SslContextProvider if this is server side. **/
-  public DownstreamTlsContext getDownstreamTlsContext() {
-    checkState(tlsContext instanceof DownstreamTlsContext,
-        "expected DownstreamTlsContext");
-    return ((DownstreamTlsContext)tlsContext);
-  }
+    protected void setClientAuthValues(
+            SslContextBuilder sslContextBuilder,
+            XdsTrustManagerFactory xdsTrustManagerFactory) throws CertificateException, IOException,
+            CertStoreException {
+        DownstreamTlsContext downstreamTlsContext = getDownstreamTlsContext();
+        if (xdsTrustManagerFactory != null) {
+            sslContextBuilder.trustManager(xdsTrustManagerFactory);
+            sslContextBuilder.clientAuth(downstreamTlsContext.isRequireClientCertificate() ? ClientAuth.REQUIRE :
+                    ClientAuth.OPTIONAL);
+        } else {
+            sslContextBuilder.clientAuth(ClientAuth.NONE);
+        }
+    }
 
-  /** Returns the UpstreamTlsContext in this SslContextProvider if this is client side. **/
-  public UpstreamTlsContext getUpstreamTlsContext() {
-    checkState(tlsContext instanceof UpstreamTlsContext,
-        "expected UpstreamTlsContext");
-    return ((UpstreamTlsContext)tlsContext);
-  }
+    /**
+     * Returns the DownstreamTlsContext in this SslContextProvider if this is server side.
+     **/
+    public DownstreamTlsContext getDownstreamTlsContext() {
+        checkState(tlsContext instanceof DownstreamTlsContext, "expected DownstreamTlsContext");
+        return ((DownstreamTlsContext) tlsContext);
+    }
 
-  /** Closes this provider and releases any resources. */
-  @Override
-  public abstract void close();
+    /**
+     * Returns the UpstreamTlsContext in this SslContextProvider if this is client side.
+     **/
+    public UpstreamTlsContext getUpstreamTlsContext() {
+        checkState(tlsContext instanceof UpstreamTlsContext, "expected UpstreamTlsContext");
+        return ((UpstreamTlsContext) tlsContext);
+    }
 
-  /**
-   * Registers a callback on the given executor. The callback will run when SslContext becomes
-   * available or immediately if the result is already available.
-   */
-  public abstract void addCallback(Callback callback);
+    /**
+     * Closes this provider and releases any resources.
+     */
+    @Override
+    public abstract void close();
 
-  protected final void performCallback(
-          final SslContextGetter sslContextGetter, final Callback callback) {
-    checkNotNull(sslContextGetter, "sslContextGetter");
-    checkNotNull(callback, "callback");
-    callback.executor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              SslContext sslContext = sslContextGetter.get();
-              callback.updateSslContext(sslContext);
-            } catch (Throwable e) {
-              callback.onException(e);
+    /**
+     * Registers a callback on the given executor. The callback will run when SslContext becomes available or
+     * immediately if the result is already available.
+     */
+    public abstract void addCallback(Callback callback);
+
+    protected final void performCallback(
+            final SslContextGetter sslContextGetter, final Callback callback) {
+        checkNotNull(sslContextGetter, "sslContextGetter");
+        checkNotNull(callback, "callback");
+        callback.executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SslContext sslContext = sslContextGetter.get();
+                    callback.updateSslContext(sslContext);
+                } catch (Throwable e) {
+                    callback.onException(e);
+                }
             }
-          }
         });
-  }
+    }
 
-  /** Allows implementations to compute or get SslContext. */
-  protected interface SslContextGetter {
-    SslContext get() throws Exception;
-  }
+    /**
+     * Allows implementations to compute or get SslContext.
+     */
+    protected interface SslContextGetter {
+        SslContext get() throws Exception;
+    }
 }

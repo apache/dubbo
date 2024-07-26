@@ -18,33 +18,37 @@ package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
 public interface TlsContextManager {
 
-  /** Creates a SslContextProvider. Used for retrieving a server-side SslContext. */
-  SslContextProvider findOrCreateServerSslContextProvider(
-      DownstreamTlsContext downstreamTlsContext);
+    /**
+     * Creates a SslContextProvider. Used for retrieving a server-side SslContext.
+     */
+    SslContextProvider findOrCreateServerSslContextProvider(
+            DownstreamTlsContext downstreamTlsContext);
 
-  /** Creates a SslContextProvider. Used for retrieving a client-side SslContext. */
-  SslContextProvider findOrCreateClientSslContextProvider(
-      UpstreamTlsContext upstreamTlsContext);
+    /**
+     * Creates a SslContextProvider. Used for retrieving a client-side SslContext.
+     */
+    SslContextProvider findOrCreateClientSslContextProvider(
+            UpstreamTlsContext upstreamTlsContext);
 
-  /**
-   * Releases an instance of the given client-side {@link SslContextProvider}.
-   *
-   * <p>The instance must have been obtained from {@link #findOrCreateClientSslContextProvider}.
-   * Otherwise will throw IllegalArgumentException.
-   *
-   * <p>Caller must not release a reference more than once. It's advised that you clear the
-   * reference to the instance with the null returned by this method.
-   */
-  SslContextProvider releaseClientSslContextProvider(SslContextProvider sslContextProvider);
+    /**
+     * Releases an instance of the given client-side {@link SslContextProvider}.
+     *
+     * <p>The instance must have been obtained from {@link #findOrCreateClientSslContextProvider}.
+     * Otherwise will throw IllegalArgumentException.
+     *
+     * <p>Caller must not release a reference more than once. It's advised that you clear the
+     * reference to the instance with the null returned by this method.
+     */
+    SslContextProvider releaseClientSslContextProvider(SslContextProvider sslContextProvider);
 
-  /**
-   * Releases an instance of the given server-side {@link SslContextProvider}.
-   *
-   * <p>The instance must have been obtained from {@link #findOrCreateServerSslContextProvider}.
-   * Otherwise will throw IllegalArgumentException.
-   *
-   * <p>Caller must not release a reference more than once. It's advised that you clear the
-   * reference to the instance with the null returned by this method.
-   */
-  SslContextProvider releaseServerSslContextProvider(SslContextProvider sslContextProvider);
+    /**
+     * Releases an instance of the given server-side {@link SslContextProvider}.
+     *
+     * <p>The instance must have been obtained from {@link #findOrCreateServerSslContextProvider}.
+     * Otherwise will throw IllegalArgumentException.
+     *
+     * <p>Caller must not release a reference more than once. It's advised that you clear the
+     * reference to the instance with the null returned by this method.
+     */
+    SslContextProvider releaseServerSslContextProvider(SslContextProvider sslContextProvider);
 }

@@ -15,15 +15,12 @@ final class FaultConfig implements FilterConfig {
     private final Integer maxActiveFaults;
 
     static FaultConfig create(
-            @Nullable FaultDelay faultDelay, @Nullable FaultAbort faultAbort,
-            @Nullable Integer maxActiveFaults) {
+            @Nullable FaultDelay faultDelay, @Nullable FaultAbort faultAbort, @Nullable Integer maxActiveFaults) {
         return new FaultConfig(faultDelay, faultAbort, maxActiveFaults);
     }
 
     FaultConfig(
-            @Nullable FaultDelay faultDelay,
-            @Nullable FaultAbort faultAbort,
-            @Nullable Integer maxActiveFaults) {
+            @Nullable FaultDelay faultDelay, @Nullable FaultAbort faultAbort, @Nullable Integer maxActiveFaults) {
         this.faultDelay = faultDelay;
         this.faultAbort = faultAbort;
         this.maxActiveFaults = maxActiveFaults;

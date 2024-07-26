@@ -4,9 +4,9 @@ import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin.NamedPluginConfig;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public class RouteAction {
 
@@ -28,19 +28,22 @@ public class RouteAction {
     private final RetryPolicy retryPolicy;
 
     public static RouteAction forCluster(
-            String cluster, List<HashPolicy> hashPolicies, @Nullable Long timeoutNano,
+            String cluster,
+            List<HashPolicy> hashPolicies,
+            @Nullable Long timeoutNano,
             @Nullable RetryPolicy retryPolicy) {
         Assert.notNull(cluster, "cluster is null");
         return create(hashPolicies, timeoutNano, cluster, null, null, retryPolicy);
     }
 
     public static RouteAction forWeightedClusters(
-            List<ClusterWeight> weightedClusters, List<HashPolicy> hashPolicies,
-            @Nullable Long timeoutNano, @Nullable RetryPolicy retryPolicy) {
+            List<ClusterWeight> weightedClusters,
+            List<HashPolicy> hashPolicies,
+            @Nullable Long timeoutNano,
+            @Nullable RetryPolicy retryPolicy) {
         Assert.notNull(weightedClusters, "weightedClusters is null");
         Assert.assertTrue(!weightedClusters.isEmpty(), "empty cluster list");
-        return create(
-                hashPolicies, timeoutNano, null, weightedClusters, null, retryPolicy);
+        return create(hashPolicies, timeoutNano, null, weightedClusters, null, retryPolicy);
     }
 
     public static RouteAction forClusterSpecifierPlugin(
@@ -59,15 +62,9 @@ public class RouteAction {
             @Nullable List<ClusterWeight> weightedClusters,
             @Nullable NamedPluginConfig namedConfig,
             @Nullable RetryPolicy retryPolicy) {
-        return new RouteAction(
-                ImmutableList.copyOf(hashPolicies),
-                timeoutNano,
-                cluster,
-                weightedClusters == null ? null : ImmutableList.copyOf(weightedClusters),
-                namedConfig,
-                retryPolicy);
+        return new RouteAction(ImmutableList.copyOf(hashPolicies), timeoutNano, cluster,
+                weightedClusters == null ? null : ImmutableList.copyOf(weightedClusters), namedConfig, retryPolicy);
     }
-
 
     RouteAction(
             ImmutableList<HashPolicy> hashPolicies,

@@ -16,6 +16,12 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.filter.fault;
 
+import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
+import org.apache.dubbo.xds.resource.grpc.resource.common.ThreadSafeRandom;
+import org.apache.dubbo.xds.resource.grpc.resource.common.ThreadSafeRandomImpl;
+import org.apache.dubbo.xds.resource.grpc.resource.filter.ClientInterceptorBuilder;
+import org.apache.dubbo.xds.resource.grpc.resource.filter.Filter;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -27,12 +33,6 @@ import io.envoyproxy.envoy.extensions.filters.http.fault.v3.HTTPFault;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.internal.GrpcUtil;
-
-import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
-import org.apache.dubbo.xds.resource.grpc.resource.common.ThreadSafeRandom;
-import org.apache.dubbo.xds.resource.grpc.resource.common.ThreadSafeRandomImpl;
-import org.apache.dubbo.xds.resource.grpc.resource.filter.ClientInterceptorBuilder;
-import org.apache.dubbo.xds.resource.grpc.resource.filter.Filter;
 
 /**
  * HttpFault filter implementation.

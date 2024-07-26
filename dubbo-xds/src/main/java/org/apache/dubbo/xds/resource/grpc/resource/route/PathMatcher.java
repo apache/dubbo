@@ -34,10 +34,9 @@ public class PathMatcher {
         return create(null, null, regEx, false /* doesn't matter */);
     }
 
-    private static PathMatcher create(@Nullable String path, @Nullable String prefix,
-                                                                   @Nullable Pattern regEx, boolean caseSensitive) {
-        return new PathMatcher(path, prefix, regEx,
-                caseSensitive);
+    private static PathMatcher create(
+            @Nullable String path, @Nullable String prefix, @Nullable Pattern regEx, boolean caseSensitive) {
+        return new PathMatcher(path, prefix, regEx, caseSensitive);
     }
 
     PathMatcher(

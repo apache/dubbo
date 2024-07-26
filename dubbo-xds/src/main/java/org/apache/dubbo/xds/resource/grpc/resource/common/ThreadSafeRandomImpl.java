@@ -10,16 +10,19 @@ public final class ThreadSafeRandomImpl implements ThreadSafeRandom {
 
     @Override
     public int nextInt(int bound) {
-      return ThreadLocalRandom.current().nextInt(bound);
+        return ThreadLocalRandom.current()
+                .nextInt(bound);
     }
 
     @Override
     public long nextLong() {
-      return ThreadLocalRandom.current().nextLong();
+        return ThreadLocalRandom.current()
+                .nextLong();
     }
 
     @Override
     public long nextLong(long bound) {
-      return ThreadLocalRandom.current().nextLong(bound);
+        return ThreadLocalRandom.current()
+                .nextLong(bound);
     }
-  }
+}

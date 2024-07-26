@@ -22,34 +22,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class ClusterSpecifierPluginRegistry {
-  private static ClusterSpecifierPluginRegistry instance;
+    private static ClusterSpecifierPluginRegistry instance;
 
-  private final Map<String, ClusterSpecifierPlugin> supportedPlugins = new HashMap<>();
+    private final Map<String, ClusterSpecifierPlugin> supportedPlugins = new HashMap<>();
 
-  private ClusterSpecifierPluginRegistry() {}
+    private ClusterSpecifierPluginRegistry() {}
 
-  public static synchronized ClusterSpecifierPluginRegistry getDefaultRegistry() {
-    if (instance == null) {
-      instance = newRegistry().register(RouteLookupServiceClusterSpecifierPlugin.INSTANCE);
+    public static synchronized ClusterSpecifierPluginRegistry getDefaultRegistry() {
+        if (instance == null) {
+            instance = newRegistry().register(RouteLookupServiceClusterSpecifierPlugin.INSTANCE);
+        }
+        return instance;
     }
-    return instance;
-  }
 
-  static ClusterSpecifierPluginRegistry newRegistry() {
-    return new ClusterSpecifierPluginRegistry();
-  }
-
-  ClusterSpecifierPluginRegistry register(ClusterSpecifierPlugin... plugins) {
-    for (ClusterSpecifierPlugin plugin : plugins) {
-      for (String typeUrl : plugin.typeUrls()) {
-        supportedPlugins.put(typeUrl, plugin);
-      }
+    static ClusterSpecifierPluginRegistry newRegistry() {
+        return new ClusterSpecifierPluginRegistry();
     }
-    return this;
-  }
 
-  @Nullable
-  public ClusterSpecifierPlugin get(String typeUrl) {
-    return supportedPlugins.get(typeUrl);
-  }
+    ClusterSpecifierPluginRegistry register(ClusterSpecifierPlugin... plugins) {
+        for (ClusterSpecifierPlugin plugin : plugins) {
+            for (String typeUrl : plugin.typeUrls()) {
+                supportedPlugins.put(typeUrl, plugin);
+            }
+        }
+        return this;
+    }
+
+    @Nullable
+    public ClusterSpecifierPlugin get(String typeUrl) {
+        return supportedPlugins.get(typeUrl);
+    }
 }

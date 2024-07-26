@@ -25,7 +25,8 @@ public class HttpConnectionManager {
         this.httpMaxStreamDurationNano = httpMaxStreamDurationNano;
         this.rdsName = rdsName;
         this.virtualHosts = virtualHosts != null ? Collections.unmodifiableList(new ArrayList<>(virtualHosts)) : null;
-        this.httpFilterConfigs = httpFilterConfigs != null ? Collections.unmodifiableList(new ArrayList<>(httpFilterConfigs)) : null;
+        this.httpFilterConfigs =
+                httpFilterConfigs != null ? Collections.unmodifiableList(new ArrayList<>(httpFilterConfigs)) : null;
     }
 
     public long getHttpMaxStreamDurationNano() {

@@ -16,35 +16,34 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.filter;
 
-import com.google.protobuf.Message;
-
 import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
+
+import com.google.protobuf.Message;
 
 /**
  * Defines the parsing functionality of an HTTP filter. A Filter may optionally implement either
- * {@link ClientInterceptorBuilder} or {@link ServerInterceptorBuilder} or both, indicating it is
- * capable of working on the client side or server side or both, respectively.
+ * {@link ClientInterceptorBuilder} or {@link ServerInterceptorBuilder} or both, indicating it is capable of working on
+ * the client side or server side or both, respectively.
  */
 public interface Filter {
 
-  /**
-   * The proto message types supported by this filter. A filter will be registered by each of its
-   * supported message types.
-   */
-  String[] typeUrls();
+    /**
+     * The proto message types supported by this filter. A filter will be registered by each of its supported message
+     * types.
+     */
+    String[] typeUrls();
 
-  /**
-   * Parses the top-level filter config from raw proto message. The message may be either a {@link
-   * com.google.protobuf.Any} or a {@link com.google.protobuf.Struct}.
-   */
-  ConfigOrError<? extends FilterConfig> parseFilterConfig(Message rawProtoMessage);
+    /**
+     * Parses the top-level filter config from raw proto message. The message may be either a
+     * {@link com.google.protobuf.Any} or a {@link com.google.protobuf.Struct}.
+     */
+    ConfigOrError<? extends FilterConfig> parseFilterConfig(Message rawProtoMessage);
 
-  /**
-   * Parses the per-filter override filter config from raw proto message. The message may be either
-   * a {@link com.google.protobuf.Any} or a {@link com.google.protobuf.Struct}.
-   */
-  ConfigOrError<? extends FilterConfig> parseFilterConfigOverride(Message rawProtoMessage);
-
+    /**
+     * Parses the per-filter override filter config from raw proto message. The message may be either a
+     * {@link com.google.protobuf.Any} or a {@link com.google.protobuf.Struct}.
+     */
+    ConfigOrError<? extends FilterConfig> parseFilterConfigOverride(Message rawProtoMessage);
 
 
 }

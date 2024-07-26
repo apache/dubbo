@@ -21,8 +21,7 @@ public class SuccessRateEjection {
             @Nullable Integer enforcementPercentage,
             @Nullable Integer minimumHosts,
             @Nullable Integer requestVolume) {
-        return new SuccessRateEjection(stdevFactor,
-                enforcementPercentage, minimumHosts, requestVolume);
+        return new SuccessRateEjection(stdevFactor, enforcementPercentage, minimumHosts, requestVolume);
     }
 
     public SuccessRateEjection(
@@ -58,12 +57,9 @@ public class SuccessRateEjection {
 
     @Override
     public String toString() {
-        return "SuccessRateEjection{"
-                + "stdevFactor=" + stdevFactor + ", "
-                + "enforcementPercentage=" + enforcementPercentage + ", "
-                + "minimumHosts=" + minimumHosts + ", "
-                + "requestVolume=" + requestVolume
-                + "}";
+        return "SuccessRateEjection{" + "stdevFactor=" + stdevFactor + ", " + "enforcementPercentage="
+                + enforcementPercentage + ", " + "minimumHosts=" + minimumHosts + ", " + "requestVolume="
+                + requestVolume + "}";
     }
 
     @Override
@@ -74,9 +70,13 @@ public class SuccessRateEjection {
         if (o instanceof SuccessRateEjection) {
             SuccessRateEjection that = (SuccessRateEjection) o;
             return (this.stdevFactor == null ? that.stdevFactor() == null : this.stdevFactor.equals(that.stdevFactor()))
-                    && (this.enforcementPercentage == null ? that.enforcementPercentage() == null : this.enforcementPercentage.equals(that.enforcementPercentage()))
-                    && (this.minimumHosts == null ? that.minimumHosts() == null : this.minimumHosts.equals(that.minimumHosts()))
-                    && (this.requestVolume == null ? that.requestVolume() == null : this.requestVolume.equals(that.requestVolume()));
+                    && (
+                    this.enforcementPercentage == null ? that.enforcementPercentage()
+                            == null : this.enforcementPercentage.equals(that.enforcementPercentage())) && (
+                    this.minimumHosts == null ?
+                            that.minimumHosts() == null : this.minimumHosts.equals(that.minimumHosts())) && (
+                    this.requestVolume == null ?
+                            that.requestVolume() == null : this.requestVolume.equals(that.requestVolume()));
         }
         return false;
     }

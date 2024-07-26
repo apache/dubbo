@@ -16,7 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource;
 
-
 import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.Filter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
@@ -27,35 +26,30 @@ import com.google.protobuf.Message;
  * Router filter implementation. Currently this filter does not parse any field in the config.
  */
 public enum RouterFilter implements Filter {
-  INSTANCE;
+    INSTANCE;
 
-  static final String TYPE_URL =
-      "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router";
+    static final String TYPE_URL = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router";
 
-  static final FilterConfig ROUTER_CONFIG = new FilterConfig() {
+    static final FilterConfig ROUTER_CONFIG = new FilterConfig() {
 
-    public String typeUrl() {
-      return RouterFilter.TYPE_URL;
+        public String typeUrl() {
+            return RouterFilter.TYPE_URL;
+        }
+
+        public String toString() {
+            return "ROUTER_CONFIG";
+        }
+    };
+
+    public String[] typeUrls() {
+        return new String[] {TYPE_URL};
     }
 
-
-    public String toString() {
-      return "ROUTER_CONFIG";
+    public ConfigOrError<? extends FilterConfig> parseFilterConfig(Message rawProtoMessage) {
+        return ConfigOrError.fromConfig(ROUTER_CONFIG);
     }
-  };
 
-
-  public String[] typeUrls() {
-    return new String[] { TYPE_URL };
-  }
-
-
-  public ConfigOrError<? extends FilterConfig> parseFilterConfig(Message rawProtoMessage) {
-    return ConfigOrError.fromConfig(ROUTER_CONFIG);
-  }
-
-
-  public ConfigOrError<? extends FilterConfig> parseFilterConfigOverride(Message rawProtoMessage) {
-    return ConfigOrError.fromError("Router Filter should not have override config");
-  }
+    public ConfigOrError<? extends FilterConfig> parseFilterConfigOverride(Message rawProtoMessage) {
+        return ConfigOrError.fromError("Router Filter should not have override config");
+    }
 }

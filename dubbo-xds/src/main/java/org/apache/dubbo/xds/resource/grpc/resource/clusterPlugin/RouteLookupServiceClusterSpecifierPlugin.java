@@ -16,62 +16,59 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.grpc.resource.common.MessagePrinter;
 
 import java.util.Map;
 
-/** The ClusterSpecifierPlugin for RouteLookup policy. */
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+
+/**
+ * The ClusterSpecifierPlugin for RouteLookup policy.
+ */
 final class RouteLookupServiceClusterSpecifierPlugin implements ClusterSpecifierPlugin {
 
-  static final RouteLookupServiceClusterSpecifierPlugin INSTANCE =
-      new RouteLookupServiceClusterSpecifierPlugin();
+    static final RouteLookupServiceClusterSpecifierPlugin INSTANCE = new RouteLookupServiceClusterSpecifierPlugin();
 
-  private static final String TYPE_URL =
-      "type.googleapis.com/grpc.lookup.v1.RouteLookupClusterSpecifier";
+    private static final String TYPE_URL = "type.googleapis.com/grpc.lookup.v1.RouteLookupClusterSpecifier";
 
-  private RouteLookupServiceClusterSpecifierPlugin() {}
+    private RouteLookupServiceClusterSpecifierPlugin() {}
 
-  @Override
-  public String[] typeUrls() {
-    return new String[] {
-        TYPE_URL,
-    };
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public ConfigOrError<RlsPluginConfig> parsePlugin(Message rawProtoMessage) {
-    if (!(rawProtoMessage instanceof Any)) {
-      return ConfigOrError.fromError("Invalid config type: " + rawProtoMessage.getClass());
+    @Override
+    public String[] typeUrls() {
+        return new String[] {TYPE_URL,};
     }
-    try {
-      Any anyMessage = (Any) rawProtoMessage;
-      Class<? extends Message> protoClass;
-      try {
-        protoClass =
-            (Class<? extends Message>)
-                Class.forName("io.grpc.lookup.v1.RouteLookupClusterSpecifier");
-      } catch (ClassNotFoundException e) {
-        return ConfigOrError.fromError("Dependency for 'io.grpc:grpc-rls' is missing: " + e);
-      }
-      Message configProto;
-      try {
-        configProto = anyMessage.unpack(protoClass);
-      } catch (InvalidProtocolBufferException e) {
-        return ConfigOrError.fromError("Invalid proto: " + e);
-      }
-      String jsonString = MessagePrinter.print(configProto);
-      Map<String, ?> jsonMap = JsonUtils.toJavaObject(jsonString, Map.class);
-      Map<String, ?> config = JsonUtils.toJavaObject(jsonMap.get("routeLookupConfig").toString(), Map.class);
-      return ConfigOrError.fromConfig(RlsPluginConfig.create(config));
-    } catch (RuntimeException e) {
-      return ConfigOrError.fromError("Error parsing RouteLookupConfig: " + e);
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public ConfigOrError<RlsPluginConfig> parsePlugin(Message rawProtoMessage) {
+        if (!(rawProtoMessage instanceof Any)) {
+            return ConfigOrError.fromError("Invalid config type: " + rawProtoMessage.getClass());
+        }
+        try {
+            Any anyMessage = (Any) rawProtoMessage;
+            Class<? extends Message> protoClass;
+            try {
+                protoClass = (Class<? extends Message>) Class.forName("io.grpc.lookup.v1.RouteLookupClusterSpecifier");
+            } catch (ClassNotFoundException e) {
+                return ConfigOrError.fromError("Dependency for 'io.grpc:grpc-rls' is missing: " + e);
+            }
+            Message configProto;
+            try {
+                configProto = anyMessage.unpack(protoClass);
+            } catch (InvalidProtocolBufferException e) {
+                return ConfigOrError.fromError("Invalid proto: " + e);
+            }
+            String jsonString = MessagePrinter.print(configProto);
+            Map<String, ?> jsonMap = JsonUtils.toJavaObject(jsonString, Map.class);
+            Map<String, ?> config = JsonUtils.toJavaObject(jsonMap.get("routeLookupConfig")
+                    .toString(), Map.class);
+            return ConfigOrError.fromConfig(RlsPluginConfig.create(config));
+        } catch (RuntimeException e) {
+            return ConfigOrError.fromError("Error parsing RouteLookupConfig: " + e);
+        }
     }
-  }
 }

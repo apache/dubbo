@@ -12,7 +12,9 @@ public class FilterChain {
     private SslContextProviderSupplier sslContextProviderSupplier;
 
     public FilterChain(
-            String name, FilterChainMatch filterChainMatch, HttpConnectionManager httpConnectionManager,
+            String name,
+            FilterChainMatch filterChainMatch,
+            HttpConnectionManager httpConnectionManager,
             SslContextProviderSupplier sslContextProviderSupplier) {
         if (name == null) {
             throw new NullPointerException("Null name");
@@ -26,7 +28,7 @@ public class FilterChain {
             throw new NullPointerException("Null httpConnectionManager");
         }
         this.httpConnectionManager = httpConnectionManager;
-            this.sslContextProviderSupplier = sslContextProviderSupplier;
+        this.sslContextProviderSupplier = sslContextProviderSupplier;
     }
 
     public String name() {
@@ -53,13 +55,13 @@ public class FilterChain {
         this.httpConnectionManager = httpConnectionManager;
     }
 
-  public SslContextProviderSupplier getSslContextProviderSupplier() {
-    return sslContextProviderSupplier;
-  }
+    public SslContextProviderSupplier getSslContextProviderSupplier() {
+        return sslContextProviderSupplier;
+    }
 
-  public void setSslContextProviderSupplier(SslContextProviderSupplier sslContextProviderSupplier) {
-    this.sslContextProviderSupplier = sslContextProviderSupplier;
-  }
+    public void setSslContextProviderSupplier(SslContextProviderSupplier sslContextProviderSupplier) {
+        this.sslContextProviderSupplier = sslContextProviderSupplier;
+    }
 
     public String toString() {
         return "FilterChain{" + "name=" + name + ", " + "filterChainMatch=" + filterChainMatch + ", "
@@ -87,10 +89,8 @@ public class FilterChain {
             HttpConnectionManager httpConnectionManager,
             @Nullable DownstreamTlsContext downstreamTlsContext,
             TlsContextManager tlsContextManager) {
-        SslContextProviderSupplier sslContextProviderSupplier =
-                downstreamTlsContext == null
-                        ? null : new SslContextProviderSupplier(downstreamTlsContext, tlsContextManager);
-        return new FilterChain(
-                name, filterChainMatch, httpConnectionManager, sslContextProviderSupplier);
+        SslContextProviderSupplier sslContextProviderSupplier = downstreamTlsContext
+                == null ? null : new SslContextProviderSupplier(downstreamTlsContext, tlsContextManager);
+        return new FilterChain(name, filterChainMatch, httpConnectionManager, sslContextProviderSupplier);
     }
 }

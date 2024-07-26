@@ -16,21 +16,21 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin;
 
-import com.google.protobuf.Message;
-
 import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
+
+import com.google.protobuf.Message;
 
 /**
  * Defines the parsing functionality of a ClusterSpecifierPlugin as defined in the Enovy proto
  * api/envoy/config/route/v3/route.proto.
  */
 public interface ClusterSpecifierPlugin {
-  /**
-   * The proto message types supported by this plugin. A plugin will be registered by each of its
-   * supported message types.
-   */
-  String[] typeUrls();
+    /**
+     * The proto message types supported by this plugin. A plugin will be registered by each of its supported message
+     * types.
+     */
+    String[] typeUrls();
 
-  ConfigOrError<? extends PluginConfig> parsePlugin(Message rawProtoMessage);
+    ConfigOrError<? extends PluginConfig> parsePlugin(Message rawProtoMessage);
 
 }

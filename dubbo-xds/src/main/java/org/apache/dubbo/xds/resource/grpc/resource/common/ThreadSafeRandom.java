@@ -20,10 +20,10 @@ import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe // Except for impls/mocks in tests
 public interface ThreadSafeRandom {
-  int nextInt(int bound);
+    int nextInt(int bound);
 
-  long nextLong();
+    long nextLong();
 
-  long nextLong(long bound);
+    long nextLong(long bound);
 
 }

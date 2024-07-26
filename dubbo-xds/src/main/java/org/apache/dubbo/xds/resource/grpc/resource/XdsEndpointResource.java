@@ -16,10 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource;
 
-import com.google.protobuf.Message;
-import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
-import io.envoyproxy.envoy.type.v3.FractionalPercent;
-
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.xds.resource.grpc.resource.endpoint.DropOverload;
@@ -29,11 +25,21 @@ import org.apache.dubbo.xds.resource.grpc.resource.endpoint.LocalityLbEndpoints;
 import org.apache.dubbo.xds.resource.grpc.resource.exception.ResourceInvalidException;
 import org.apache.dubbo.xds.resource.grpc.resource.update.EdsUpdate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.protobuf.Message;
+import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
+import io.envoyproxy.envoy.type.v3.FractionalPercent;
 
 class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
-    static final String ADS_TYPE_URL_EDS =
-            "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
+    static final String ADS_TYPE_URL_EDS = "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
 
     private static final XdsEndpointResource instance = new XdsEndpointResource();
 
@@ -71,24 +77,21 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
     }
 
     @Override
-    EdsUpdate doParse(Args args, Message unpackedMessage)
-            throws ResourceInvalidException {
+    EdsUpdate doParse(Args args, Message unpackedMessage) throws ResourceInvalidException {
         if (!(unpackedMessage instanceof ClusterLoadAssignment)) {
             throw new ResourceInvalidException("Invalid message type: " + unpackedMessage.getClass());
         }
         return processClusterLoadAssignment((ClusterLoadAssignment) unpackedMessage);
     }
 
-    private static EdsUpdate processClusterLoadAssignment(ClusterLoadAssignment assignment)
-            throws ResourceInvalidException {
+    private static EdsUpdate processClusterLoadAssignment(ClusterLoadAssignment assignment) throws ResourceInvalidException {
         Map<Integer, Set<Locality>> priorities = new HashMap<>();
         Map<Locality, LocalityLbEndpoints> localityLbEndpointsMap = new LinkedHashMap<>();
         List<DropOverload> dropOverloads = new ArrayList<>();
         int maxPriority = -1;
-        for (io.envoyproxy.envoy.config.endpoint.v3.LocalityLbEndpoints localityLbEndpointsProto
-                : assignment.getEndpointsList()) {
-            StructOrError<LocalityLbEndpoints> structOrError =
-                    parseLocalityLbEndpoints(localityLbEndpointsProto);
+        for (io.envoyproxy.envoy.config.endpoint.v3.LocalityLbEndpoints localityLbEndpointsProto :
+                assignment.getEndpointsList()) {
+            StructOrError<LocalityLbEndpoints> structOrError = parseLocalityLbEndpoints(localityLbEndpointsProto);
             if (structOrError == null) {
                 continue;
             }
@@ -102,22 +105,23 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
             // Note endpoints with health status other than HEALTHY and UNKNOWN are still
             // handed over to watching parties. It is watching parties' responsibility to
             // filter out unhealthy endpoints. See EnvoyProtoData.LbEndpoint#isHealthy().
-            Locality locality =  parseLocality(localityLbEndpointsProto.getLocality());
+            Locality locality = parseLocality(localityLbEndpointsProto.getLocality());
             localityLbEndpointsMap.put(locality, localityLbEndpoints);
             if (!priorities.containsKey(priority)) {
                 priorities.put(priority, new HashSet<>());
             }
-            if (!priorities.get(priority).add(locality)) {
-                throw new ResourceInvalidException("ClusterLoadAssignment has duplicate locality:"
-                        + locality + " for priority:" + priority);
+            if (!priorities.get(priority)
+                    .add(locality)) {
+                throw new ResourceInvalidException(
+                        "ClusterLoadAssignment has duplicate locality:" + locality + " for priority:" + priority);
             }
         }
         if (priorities.size() != maxPriority + 1) {
             throw new ResourceInvalidException("ClusterLoadAssignment has sparse priorities");
         }
 
-        for (ClusterLoadAssignment.Policy.DropOverload dropOverloadProto
-                : assignment.getPolicy().getDropOverloadsList()) {
+        for (ClusterLoadAssignment.Policy.DropOverload dropOverloadProto : assignment.getPolicy()
+                .getDropOverloadsList()) {
             dropOverloads.add(parseDropOverload(dropOverloadProto));
         }
         return new EdsUpdate(assignment.getClusterName(), localityLbEndpointsMap, dropOverloads);
@@ -155,12 +159,12 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
         return numerator;
     }
 
-
     @Nullable
     static StructOrError<LocalityLbEndpoints> parseLocalityLbEndpoints(
             io.envoyproxy.envoy.config.endpoint.v3.LocalityLbEndpoints proto) {
         // Filter out localities without or with 0 weight.
-        if (!proto.hasLoadBalancingWeight() || proto.getLoadBalancingWeight().getValue() < 1) {
+        if (!proto.hasLoadBalancingWeight() || proto.getLoadBalancingWeight()
+                .getValue() < 1) {
             return null;
         }
         if (proto.getPriority() < 0) {
@@ -170,21 +174,20 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
         for (io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint endpoint : proto.getLbEndpointsList()) {
             // The endpoint field of each lb_endpoints must be set.
             // Inside of it: the address field must be set.
-            if (!endpoint.hasEndpoint() || !endpoint.getEndpoint().hasAddress()) {
+            if (!endpoint.hasEndpoint() || !endpoint.getEndpoint()
+                    .hasAddress()) {
                 return StructOrError.fromError("LbEndpoint with no endpoint/address");
             }
-            io.envoyproxy.envoy.config.core.v3.SocketAddress socketAddress =
-                    endpoint.getEndpoint().getAddress().getSocketAddress();
+            io.envoyproxy.envoy.config.core.v3.SocketAddress socketAddress = endpoint.getEndpoint()
+                    .getAddress()
+                    .getSocketAddress();
             URLAddress addr = new URLAddress(socketAddress.getAddress(), socketAddress.getPortValue());
-            boolean isHealthy =
-                    endpoint.getHealthStatus() == io.envoyproxy.envoy.config.core.v3.HealthStatus.HEALTHY
-                            || endpoint.getHealthStatus()
-                            == io.envoyproxy.envoy.config.core.v3.HealthStatus.UNKNOWN;
-            endpoints.add(new LbEndpoint(
-                    Collections.singletonList(addr),
-                    endpoint.getLoadBalancingWeight().getValue(), isHealthy));
+            boolean isHealthy = endpoint.getHealthStatus() == io.envoyproxy.envoy.config.core.v3.HealthStatus.HEALTHY
+                    || endpoint.getHealthStatus() == io.envoyproxy.envoy.config.core.v3.HealthStatus.UNKNOWN;
+            endpoints.add(new LbEndpoint(Collections.singletonList(addr), endpoint.getLoadBalancingWeight()
+                    .getValue(), isHealthy));
         }
-        return StructOrError.fromStruct(new LocalityLbEndpoints(
-                endpoints, proto.getLoadBalancingWeight().getValue(), proto.getPriority()));
+        return StructOrError.fromStruct(new LocalityLbEndpoints(endpoints, proto.getLoadBalancingWeight()
+                .getValue(), proto.getPriority()));
     }
 }

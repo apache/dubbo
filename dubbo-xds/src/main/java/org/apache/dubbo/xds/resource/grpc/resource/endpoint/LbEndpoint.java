@@ -1,10 +1,10 @@
 package org.apache.dubbo.xds.resource.grpc.resource.endpoint;
 
+import org.apache.dubbo.common.url.component.URLAddress;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.dubbo.common.url.component.URLAddress;
 
 public class LbEndpoint {
 
@@ -15,9 +15,7 @@ public class LbEndpoint {
     private final boolean isHealthy;
 
     public LbEndpoint(
-            List<URLAddress> addresses,
-            int loadBalancingWeight,
-            boolean isHealthy) {
+            List<URLAddress> addresses, int loadBalancingWeight, boolean isHealthy) {
         if (addresses == null) {
             throw new NullPointerException("Null addresses");
         }
@@ -40,11 +38,8 @@ public class LbEndpoint {
 
     @Override
     public String toString() {
-        return "LbEndpoint{"
-                + "addresses=" + addresses + ", "
-                + "loadBalancingWeight=" + loadBalancingWeight + ", "
-                + "isHealthy=" + isHealthy
-                + "}";
+        return "LbEndpoint{" + "addresses=" + addresses + ", " + "loadBalancingWeight=" + loadBalancingWeight + ", "
+                + "isHealthy=" + isHealthy + "}";
     }
 
     @Override
@@ -54,8 +49,7 @@ public class LbEndpoint {
         }
         if (o instanceof LbEndpoint) {
             LbEndpoint that = (LbEndpoint) o;
-            return this.addresses.equals(that.addresses())
-                    && this.loadBalancingWeight == that.loadBalancingWeight()
+            return this.addresses.equals(that.addresses()) && this.loadBalancingWeight == that.loadBalancingWeight()
                     && this.isHealthy == that.isHealthy();
         }
         return false;

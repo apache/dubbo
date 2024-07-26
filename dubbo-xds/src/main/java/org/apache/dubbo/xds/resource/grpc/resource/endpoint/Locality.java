@@ -2,75 +2,68 @@ package org.apache.dubbo.xds.resource.grpc.resource.endpoint;
 
 public class Locality {
 
-  private String region;
+    private String region;
 
-  private String zone;
+    private String zone;
 
-  private String subZone;
+    private String subZone;
 
-  public Locality(
-      String region,
-      String zone,
-      String subZone) {
-    if (region == null) {
-      throw new NullPointerException("Null region");
+    public Locality(
+            String region, String zone, String subZone) {
+        if (region == null) {
+            throw new NullPointerException("Null region");
+        }
+        this.region = region;
+        if (zone == null) {
+            throw new NullPointerException("Null zone");
+        }
+        this.zone = zone;
+        if (subZone == null) {
+            throw new NullPointerException("Null subZone");
+        }
+        this.subZone = subZone;
     }
-    this.region = region;
-    if (zone == null) {
-      throw new NullPointerException("Null zone");
+
+    String region() {
+        return region;
     }
-    this.zone = zone;
-    if (subZone == null) {
-      throw new NullPointerException("Null subZone");
+
+    String zone() {
+        return zone;
     }
-    this.subZone = subZone;
-  }
 
-  String region() {
-    return region;
-  }
-
-  String zone() {
-    return zone;
-  }
-
-  String subZone() {
-    return subZone;
-  }
-
-  @Override
-  public String toString() {
-    return "Locality{"
-        + "region=" + region + ", "
-        + "zone=" + zone + ", "
-        + "subZone=" + subZone
-        + "}";
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
+    String subZone() {
+        return subZone;
     }
-    if (o instanceof Locality) {
-      Locality that = (Locality) o;
-      return this.region.equals(that.region())
-          && this.zone.equals(that.zone())
-          && this.subZone.equals(that.subZone());
-    }
-    return false;
-  }
 
-  @Override
-  public int hashCode() {
-    int h$ = 1;
-    h$ *= 1000003;
-    h$ ^= region.hashCode();
-    h$ *= 1000003;
-    h$ ^= zone.hashCode();
-    h$ *= 1000003;
-    h$ ^= subZone.hashCode();
-    return h$;
-  }
+    @Override
+    public String toString() {
+        return "Locality{" + "region=" + region + ", " + "zone=" + zone + ", " + "subZone=" + subZone + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o instanceof Locality) {
+            Locality that = (Locality) o;
+            return this.region.equals(that.region()) && this.zone.equals(that.zone())
+                    && this.subZone.equals(that.subZone());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int h$ = 1;
+        h$ *= 1000003;
+        h$ ^= region.hashCode();
+        h$ *= 1000003;
+        h$ ^= zone.hashCode();
+        h$ *= 1000003;
+        h$ ^= subZone.hashCode();
+        return h$;
+    }
 
 }

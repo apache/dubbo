@@ -89,7 +89,6 @@ public class Listener {
             @Nullable String address,
             List<FilterChain> filterChains,
             @Nullable FilterChain defaultFilterChain) {
-        return new Listener(name, address, filterChains,
-                defaultFilterChain);
+        return new Listener(name, address, filterChains, defaultFilterChain);
     }
 }

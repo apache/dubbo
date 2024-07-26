@@ -1,8 +1,8 @@
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
-import com.google.protobuf.util.Durations;
-
 import org.apache.dubbo.common.lang.Nullable;
+
+import com.google.protobuf.util.Durations;
 
 public class OutlierDetection {
 
@@ -31,64 +31,72 @@ public class OutlierDetection {
             @Nullable Integer maxEjectionPercentage,
             @Nullable SuccessRateEjection successRateEjection,
             @Nullable FailurePercentageEjection failurePercentageEjection) {
-        return new OutlierDetection(intervalNanos,
-                baseEjectionTimeNanos, maxEjectionTimeNanos, maxEjectionPercentage, successRateEjection,
-                failurePercentageEjection);
+        return new OutlierDetection(intervalNanos, baseEjectionTimeNanos, maxEjectionTimeNanos, maxEjectionPercentage
+                , successRateEjection, failurePercentageEjection);
     }
 
     public static OutlierDetection fromEnvoyOutlierDetection(
             io.envoyproxy.envoy.config.cluster.v3.OutlierDetection envoyOutlierDetection) {
 
-        Long intervalNanos = envoyOutlierDetection.hasInterval()
-                ? Durations.toNanos(envoyOutlierDetection.getInterval()) : null;
-        Long baseEjectionTimeNanos = envoyOutlierDetection.hasBaseEjectionTime()
-                ? Durations.toNanos(envoyOutlierDetection.getBaseEjectionTime()) : null;
-        Long maxEjectionTimeNanos = envoyOutlierDetection.hasMaxEjectionTime()
-                ? Durations.toNanos(envoyOutlierDetection.getMaxEjectionTime()) : null;
-        Integer maxEjectionPercentage = envoyOutlierDetection.hasMaxEjectionPercent()
-                ? envoyOutlierDetection.getMaxEjectionPercent().getValue() : null;
+        Long intervalNanos = envoyOutlierDetection.hasInterval() ?
+                Durations.toNanos(envoyOutlierDetection.getInterval()) : null;
+        Long baseEjectionTimeNanos = envoyOutlierDetection.hasBaseEjectionTime() ?
+                Durations.toNanos(envoyOutlierDetection.getBaseEjectionTime()) : null;
+        Long maxEjectionTimeNanos = envoyOutlierDetection.hasMaxEjectionTime() ?
+                Durations.toNanos(envoyOutlierDetection.getMaxEjectionTime()) : null;
+        Integer maxEjectionPercentage = envoyOutlierDetection.hasMaxEjectionPercent() ?
+                envoyOutlierDetection.getMaxEjectionPercent()
+                .getValue() : null;
 
         SuccessRateEjection successRateEjection;
         // If success rate enforcement has been turned completely off, don't configure this ejection.
-        if (envoyOutlierDetection.hasEnforcingSuccessRate()
-                && envoyOutlierDetection.getEnforcingSuccessRate().getValue() == 0) {
+        if (envoyOutlierDetection.hasEnforcingSuccessRate() && envoyOutlierDetection.getEnforcingSuccessRate()
+                .getValue() == 0) {
             successRateEjection = null;
         } else {
-            Integer stdevFactor = envoyOutlierDetection.hasSuccessRateStdevFactor()
-                    ? envoyOutlierDetection.getSuccessRateStdevFactor().getValue() : null;
-            Integer enforcementPercentage = envoyOutlierDetection.hasEnforcingSuccessRate()
-                    ? envoyOutlierDetection.getEnforcingSuccessRate().getValue() : null;
-            Integer minimumHosts = envoyOutlierDetection.hasSuccessRateMinimumHosts()
-                    ? envoyOutlierDetection.getSuccessRateMinimumHosts().getValue() : null;
-            Integer requestVolume = envoyOutlierDetection.hasSuccessRateRequestVolume()
-                    ? envoyOutlierDetection.getSuccessRateMinimumHosts().getValue() : null;
+            Integer stdevFactor = envoyOutlierDetection.hasSuccessRateStdevFactor() ?
+                    envoyOutlierDetection.getSuccessRateStdevFactor()
+                    .getValue() : null;
+            Integer enforcementPercentage = envoyOutlierDetection.hasEnforcingSuccessRate() ?
+                    envoyOutlierDetection.getEnforcingSuccessRate()
+                    .getValue() : null;
+            Integer minimumHosts = envoyOutlierDetection.hasSuccessRateMinimumHosts() ?
+                    envoyOutlierDetection.getSuccessRateMinimumHosts()
+                    .getValue() : null;
+            Integer requestVolume = envoyOutlierDetection.hasSuccessRateRequestVolume() ?
+                    envoyOutlierDetection.getSuccessRateMinimumHosts()
+                    .getValue() : null;
 
-            successRateEjection = SuccessRateEjection.create(stdevFactor, enforcementPercentage,
-                    minimumHosts, requestVolume);
+            successRateEjection = SuccessRateEjection.create(stdevFactor, enforcementPercentage, minimumHosts,
+                    requestVolume);
         }
 
         FailurePercentageEjection failurePercentageEjection;
-        if (envoyOutlierDetection.hasEnforcingFailurePercentage()
-                && envoyOutlierDetection.getEnforcingFailurePercentage().getValue() == 0) {
+        if (envoyOutlierDetection.hasEnforcingFailurePercentage() &&
+                envoyOutlierDetection.getEnforcingFailurePercentage()
+                        .getValue() == 0) {
             failurePercentageEjection = null;
         } else {
-            Integer threshold = envoyOutlierDetection.hasFailurePercentageThreshold()
-                    ? envoyOutlierDetection.getFailurePercentageThreshold().getValue() : null;
-            Integer enforcementPercentage = envoyOutlierDetection.hasEnforcingFailurePercentage()
-                    ? envoyOutlierDetection.getEnforcingFailurePercentage().getValue() : null;
-            Integer minimumHosts = envoyOutlierDetection.hasFailurePercentageMinimumHosts()
-                    ? envoyOutlierDetection.getFailurePercentageMinimumHosts().getValue() : null;
-            Integer requestVolume = envoyOutlierDetection.hasFailurePercentageRequestVolume()
-                    ? envoyOutlierDetection.getFailurePercentageRequestVolume().getValue() : null;
+            Integer threshold = envoyOutlierDetection.hasFailurePercentageThreshold() ?
+                    envoyOutlierDetection.getFailurePercentageThreshold()
+                    .getValue() : null;
+            Integer enforcementPercentage = envoyOutlierDetection.hasEnforcingFailurePercentage() ?
+                    envoyOutlierDetection.getEnforcingFailurePercentage()
+                    .getValue() : null;
+            Integer minimumHosts = envoyOutlierDetection.hasFailurePercentageMinimumHosts() ?
+                    envoyOutlierDetection.getFailurePercentageMinimumHosts()
+                    .getValue() : null;
+            Integer requestVolume = envoyOutlierDetection.hasFailurePercentageRequestVolume() ?
+                    envoyOutlierDetection.getFailurePercentageRequestVolume()
+                    .getValue() : null;
 
-            failurePercentageEjection = FailurePercentageEjection.create(threshold,
-                    enforcementPercentage, minimumHosts, requestVolume);
+            failurePercentageEjection = FailurePercentageEjection.create(threshold, enforcementPercentage,
+                    minimumHosts, requestVolume);
         }
 
-        return create(intervalNanos, baseEjectionTimeNanos, maxEjectionTimeNanos,
-                maxEjectionPercentage, successRateEjection, failurePercentageEjection);
+        return create(intervalNanos, baseEjectionTimeNanos, maxEjectionTimeNanos, maxEjectionPercentage,
+                successRateEjection, failurePercentageEjection);
     }
-
 
     public OutlierDetection(
             @Nullable Long intervalNanos,
@@ -137,14 +145,10 @@ public class OutlierDetection {
 
     @Override
     public String toString() {
-        return "OutlierDetection{"
-                + "intervalNanos=" + intervalNanos + ", "
-                + "baseEjectionTimeNanos=" + baseEjectionTimeNanos + ", "
-                + "maxEjectionTimeNanos=" + maxEjectionTimeNanos + ", "
-                + "maxEjectionPercent=" + maxEjectionPercent + ", "
-                + "successRateEjection=" + successRateEjection + ", "
-                + "failurePercentageEjection=" + failurePercentageEjection
-                + "}";
+        return "OutlierDetection{" + "intervalNanos=" + intervalNanos + ", " + "baseEjectionTimeNanos="
+                + baseEjectionTimeNanos + ", " + "maxEjectionTimeNanos=" + maxEjectionTimeNanos + ", "
+                + "maxEjectionPercent=" + maxEjectionPercent + ", " + "successRateEjection=" + successRateEjection
+                + ", " + "failurePercentageEjection=" + failurePercentageEjection + "}";
     }
 
     @Override
@@ -154,12 +158,18 @@ public class OutlierDetection {
         }
         if (o instanceof OutlierDetection) {
             OutlierDetection that = (OutlierDetection) o;
-            return (this.intervalNanos == null ? that.intervalNanos() == null : this.intervalNanos.equals(that.intervalNanos()))
-                    && (this.baseEjectionTimeNanos == null ? that.baseEjectionTimeNanos() == null : this.baseEjectionTimeNanos.equals(that.baseEjectionTimeNanos()))
-                    && (this.maxEjectionTimeNanos == null ? that.maxEjectionTimeNanos() == null : this.maxEjectionTimeNanos.equals(that.maxEjectionTimeNanos()))
-                    && (this.maxEjectionPercent == null ? that.maxEjectionPercent() == null : this.maxEjectionPercent.equals(that.maxEjectionPercent()))
-                    && (this.successRateEjection == null ? that.successRateEjection() == null : this.successRateEjection.equals(that.successRateEjection()))
-                    && (this.failurePercentageEjection == null ? that.failurePercentageEjection() == null : this.failurePercentageEjection.equals(that.failurePercentageEjection()));
+            return (this.intervalNanos == null ?
+                    that.intervalNanos() == null : this.intervalNanos.equals(that.intervalNanos())) && (
+                    this.baseEjectionTimeNanos == null ? that.baseEjectionTimeNanos()
+                            == null : this.baseEjectionTimeNanos.equals(that.baseEjectionTimeNanos())) && (
+                    this.maxEjectionTimeNanos == null ? that.maxEjectionTimeNanos()
+                            == null : this.maxEjectionTimeNanos.equals(that.maxEjectionTimeNanos())) && (
+                    this.maxEjectionPercent == null ? that.maxEjectionPercent()
+                            == null : this.maxEjectionPercent.equals(that.maxEjectionPercent())) && (
+                    this.successRateEjection == null ? that.successRateEjection()
+                            == null : this.successRateEjection.equals(that.successRateEjection())) && (
+                    this.failurePercentageEjection == null ? that.failurePercentageEjection()
+                            == null : this.failurePercentageEjection.equals(that.failurePercentageEjection()));
         }
         return false;
     }

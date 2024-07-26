@@ -16,8 +16,7 @@ final class FaultAbort {
     private final FractionalPercent percent;
 
     static FaultAbort forStatus(
-            Status status,
-            FractionalPercent percent) {
+            Status status, FractionalPercent percent) {
         checkNotNull(status, "status");
         return FaultAbort.create(status, false, percent);
     }
@@ -32,9 +31,7 @@ final class FaultAbort {
     }
 
     FaultAbort(
-            @Nullable Status status,
-            boolean headerAbort,
-            FractionalPercent percent) {
+            @Nullable Status status, boolean headerAbort, FractionalPercent percent) {
         this.status = status;
         this.headerAbort = headerAbort;
         if (percent == null) {
@@ -68,8 +65,7 @@ final class FaultAbort {
             return true;
         }
         if (o instanceof FaultAbort) {
-            FaultAbort that =
-                    (FaultAbort) o;
+            FaultAbort that = (FaultAbort) o;
             return (this.status == null ? that.status() == null : this.status.equals(that.status()))
                     && this.headerAbort == that.headerAbort() && this.percent.equals(that.percent());
         }

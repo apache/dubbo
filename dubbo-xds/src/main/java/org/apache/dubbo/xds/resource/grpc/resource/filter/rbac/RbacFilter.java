@@ -16,17 +16,6 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.filter.rbac;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import io.envoyproxy.envoy.config.core.v3.CidrRange;
-import io.envoyproxy.envoy.config.rbac.v3.Permission;
-import io.envoyproxy.envoy.config.rbac.v3.Policy;
-import io.envoyproxy.envoy.config.rbac.v3.Principal;
-import io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC;
-import io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBACPerRoute;
-import io.envoyproxy.envoy.type.v3.Int32Range;
-
 import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.Filter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.ServerInterceptorBuilder;
@@ -42,7 +31,16 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import io.envoyproxy.envoy.config.core.v3.CidrRange;
+import io.envoyproxy.envoy.config.rbac.v3.Permission;
+import io.envoyproxy.envoy.config.rbac.v3.Policy;
+import io.envoyproxy.envoy.config.rbac.v3.Principal;
+import io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBAC;
+import io.envoyproxy.envoy.extensions.filters.http.rbac.v3.RBACPerRoute;
+import io.envoyproxy.envoy.type.v3.Int32Range;
 
 /**
  * RBAC Http filter implementation.
@@ -54,8 +52,8 @@ public final class RbacFilter implements Filter, ServerInterceptorBuilder {
 
     static final String TYPE_URL = "type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC";
 
-    private static final String TYPE_URL_OVERRIDE_CONFIG = "type.googleapis.com/envoy.extensions.filters.http.rbac.v3"
-            + ".RBACPerRoute";
+    private static final String TYPE_URL_OVERRIDE_CONFIG =
+            "type.googleapis.com/envoy.extensions.filters.http.rbac.v3" + ".RBACPerRoute";
 
     RbacFilter() {}
 

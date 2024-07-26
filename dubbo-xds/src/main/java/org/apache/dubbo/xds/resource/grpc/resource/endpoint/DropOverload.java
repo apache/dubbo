@@ -7,8 +7,7 @@ public class DropOverload {
     private final int dropsPerMillion;
 
     public DropOverload(
-            String category,
-            int dropsPerMillion) {
+            String category, int dropsPerMillion) {
         if (category == null) {
             throw new NullPointerException("Null category");
         }
@@ -26,10 +25,7 @@ public class DropOverload {
 
     @Override
     public String toString() {
-        return "DropOverload{"
-                + "category=" + category + ", "
-                + "dropsPerMillion=" + dropsPerMillion
-                + "}";
+        return "DropOverload{" + "category=" + category + ", " + "dropsPerMillion=" + dropsPerMillion + "}";
     }
 
     @Override
@@ -39,8 +35,7 @@ public class DropOverload {
         }
         if (o instanceof DropOverload) {
             DropOverload that = (DropOverload) o;
-            return this.category.equals(that.category())
-                    && this.dropsPerMillion == that.dropsPerMillion();
+            return this.category.equals(that.category()) && this.dropsPerMillion == that.dropsPerMillion();
         }
         return false;
     }

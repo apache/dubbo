@@ -14,8 +14,10 @@ public class EdsUpdate implements ResourceUpdate {
     final Map<Locality, LocalityLbEndpoints> localityLbEndpointsMap;
     final List<DropOverload> dropPolicies;
 
-    public EdsUpdate(String clusterName, Map<Locality, LocalityLbEndpoints> localityLbEndpoints,
-              List<DropOverload> dropPolicies) {
+    public EdsUpdate(
+            String clusterName,
+            Map<Locality, LocalityLbEndpoints> localityLbEndpoints,
+            List<DropOverload> dropPolicies) {
         List<String> nullArgs = new ArrayList<>();
         if (clusterName == null) {
             nullArgs.add("clusterName");

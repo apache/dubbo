@@ -1,11 +1,11 @@
 package org.apache.dubbo.xds.resource.grpc.resource.filter.rbac;
 
-import com.google.common.collect.ImmutableList;
-
 import org.apache.dubbo.common.utils.Assert;
 
 import java.util.Arrays;
 import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 final class AndMatcher implements Matcher {
 

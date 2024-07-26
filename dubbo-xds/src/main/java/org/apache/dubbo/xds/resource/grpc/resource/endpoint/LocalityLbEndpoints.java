@@ -13,9 +13,7 @@ public class LocalityLbEndpoints {
     private final int priority;
 
     public LocalityLbEndpoints(
-            List<LbEndpoint> endpoints,
-            int localityWeight,
-            int priority) {
+            List<LbEndpoint> endpoints, int localityWeight, int priority) {
         if (endpoints == null) {
             throw new NullPointerException("Null endpoints");
         }
@@ -37,11 +35,8 @@ public class LocalityLbEndpoints {
     }
 
     public String toString() {
-        return "LocalityLbEndpoints{"
-                + "endpoints=" + endpoints + ", "
-                + "localityWeight=" + localityWeight + ", "
-                + "priority=" + priority
-                + "}";
+        return "LocalityLbEndpoints{" + "endpoints=" + endpoints + ", " + "localityWeight=" + localityWeight + ", "
+                + "priority=" + priority + "}";
     }
 
     @Override
@@ -51,8 +46,7 @@ public class LocalityLbEndpoints {
         }
         if (o instanceof LocalityLbEndpoints) {
             LocalityLbEndpoints that = (LocalityLbEndpoints) o;
-            return this.endpoints.equals(that.endpoints())
-                    && this.localityWeight == that.localityWeight()
+            return this.endpoints.equals(that.endpoints()) && this.localityWeight == that.localityWeight()
                     && this.priority == that.priority();
         }
         return false;

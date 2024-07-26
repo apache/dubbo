@@ -36,67 +36,62 @@ import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.DownstreamTlsCont
 import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext;
 
 /**
- * Converts protobuf message to human readable String format. Useful for protobuf messages
- * containing {@link com.google.protobuf.Any} fields.
+ * Converts protobuf message to human readable String format. Useful for protobuf messages containing
+ * {@link com.google.protobuf.Any} fields.
  */
 public final class MessagePrinter {
 
-  private MessagePrinter() {}
+    private MessagePrinter() {}
 
-  // The initialization-on-demand holder idiom.
-  private static class LazyHolder {
-    static final JsonFormat.Printer printer = newPrinter();
+    // The initialization-on-demand holder idiom.
+    private static class LazyHolder {
+        static final JsonFormat.Printer printer = newPrinter();
 
-    private static JsonFormat.Printer newPrinter() {
-      TypeRegistry.Builder registry =
-          TypeRegistry.newBuilder()
-              .add(Listener.getDescriptor())
-              .add(io.envoyproxy.envoy.api.v2.Listener.getDescriptor())
-              .add(HttpConnectionManager.getDescriptor())
-              .add(io.envoyproxy.envoy.config.filter.network.http_connection_manager.v2
-                  .HttpConnectionManager.getDescriptor())
-              .add(HTTPFault.getDescriptor())
-              .add(io.envoyproxy.envoy.config.filter.http.fault.v2.HTTPFault.getDescriptor())
-              .add(RBAC.getDescriptor())
-              .add(RBACPerRoute.getDescriptor())
-              .add(Router.getDescriptor())
-              .add(io.envoyproxy.envoy.config.filter.http.router.v2.Router.getDescriptor())
-              // UpstreamTlsContext and DownstreamTlsContext in v3 are not transitively imported
-              // by top-level resource types.
-              .add(UpstreamTlsContext.getDescriptor())
-              .add(DownstreamTlsContext.getDescriptor())
-              .add(RouteConfiguration.getDescriptor())
-              .add(io.envoyproxy.envoy.api.v2.RouteConfiguration.getDescriptor())
-              .add(Cluster.getDescriptor())
-              .add(io.envoyproxy.envoy.api.v2.Cluster.getDescriptor())
-              .add(ClusterConfig.getDescriptor())
-              .add(io.envoyproxy.envoy.config.cluster.aggregate.v2alpha.ClusterConfig
-                  .getDescriptor())
-              .add(ClusterLoadAssignment.getDescriptor())
-              .add(io.envoyproxy.envoy.api.v2.ClusterLoadAssignment.getDescriptor());
-      try {
-        @SuppressWarnings("unchecked")
-        Class<? extends Message> routeLookupClusterSpecifierClass =
-            (Class<? extends Message>)
-                Class.forName("io.grpc.lookup.v1.RouteLookupClusterSpecifier");
-        Descriptor descriptor =
-            (Descriptor)
-                routeLookupClusterSpecifierClass.getDeclaredMethod("getDescriptor").invoke(null);
-        registry.add(descriptor);
-      } catch (Exception e) {
-        // Ignore. In most cases RouteLookup is not required.
-      }
-      return JsonFormat.printer().usingTypeRegistry(registry.build());
+        private static JsonFormat.Printer newPrinter() {
+            TypeRegistry.Builder registry = TypeRegistry.newBuilder()
+                    .add(Listener.getDescriptor())
+                    .add(io.envoyproxy.envoy.api.v2.Listener.getDescriptor())
+                    .add(HttpConnectionManager.getDescriptor())
+                    .add(io.envoyproxy.envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager.getDescriptor())
+                    .add(HTTPFault.getDescriptor())
+                    .add(io.envoyproxy.envoy.config.filter.http.fault.v2.HTTPFault.getDescriptor())
+                    .add(RBAC.getDescriptor())
+                    .add(RBACPerRoute.getDescriptor())
+                    .add(Router.getDescriptor())
+                    .add(io.envoyproxy.envoy.config.filter.http.router.v2.Router.getDescriptor())
+                    // UpstreamTlsContext and DownstreamTlsContext in v3 are not transitively imported
+                    // by top-level resource types.
+                    .add(UpstreamTlsContext.getDescriptor())
+                    .add(DownstreamTlsContext.getDescriptor())
+                    .add(RouteConfiguration.getDescriptor())
+                    .add(io.envoyproxy.envoy.api.v2.RouteConfiguration.getDescriptor())
+                    .add(Cluster.getDescriptor())
+                    .add(io.envoyproxy.envoy.api.v2.Cluster.getDescriptor())
+                    .add(ClusterConfig.getDescriptor())
+                    .add(io.envoyproxy.envoy.config.cluster.aggregate.v2alpha.ClusterConfig.getDescriptor())
+                    .add(ClusterLoadAssignment.getDescriptor())
+                    .add(io.envoyproxy.envoy.api.v2.ClusterLoadAssignment.getDescriptor());
+            try {
+                @SuppressWarnings("unchecked") Class<? extends Message> routeLookupClusterSpecifierClass = (Class<?
+                        extends Message>) Class.forName("io.grpc.lookup.v1.RouteLookupClusterSpecifier");
+                Descriptor descriptor = (Descriptor) routeLookupClusterSpecifierClass.getDeclaredMethod("getDescriptor")
+                        .invoke(null);
+                registry.add(descriptor);
+            } catch (Exception e) {
+                // Ignore. In most cases RouteLookup is not required.
+            }
+            return JsonFormat.printer()
+                    .usingTypeRegistry(registry.build());
+        }
     }
-  }
 
-  public static String print(MessageOrBuilder message) {
-    String res;
-    try {
-      res = LazyHolder.printer.print(message);
-    } catch (InvalidProtocolBufferException e) {
-      res = message + " (failed to pretty-print: " + e + ")";
+    public static String print(MessageOrBuilder message) {
+        String res;
+        try {
+            res = LazyHolder.printer.print(message);
+        } catch (InvalidProtocolBufferException e) {
+            res = message + " (failed to pretty-print: " + e + ")";
+        }
+        return res;
     }
-    return res;
-  }
 }
