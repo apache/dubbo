@@ -1,28 +1,19 @@
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
-//import org.apache.dubbo.xds.resource.grpc.SslContextProviderSupplier;
-
-import org.apache.dubbo.xds.resource.grpc.EnvoyServerProtoData;
-import org.apache.dubbo.xds.resource.grpc.EnvoyServerProtoData.DownstreamTlsContext;
-import org.apache.dubbo.xds.resource.grpc.SslContextProviderSupplier;
-import org.apache.dubbo.xds.resource.grpc.TlsContextManager;
+import org.apache.dubbo.common.lang.Nullable;
 
 import java.util.Objects;
-
-import com.google.common.collect.ImmutableList;
-
-import javax.annotation.Nullable;
 
 public class FilterChain {
 
     private String name;
     private FilterChainMatch filterChainMatch;
     private HttpConnectionManager httpConnectionManager;
-    //  private SslContextProviderSupplier sslContextProviderSupplier;
+    private SslContextProviderSupplier sslContextProviderSupplier;
 
     public FilterChain(
-            String name, FilterChainMatch filterChainMatch, HttpConnectionManager httpConnectionManager
-            /*SslContextProviderSupplier sslContextProviderSupplier*/) {
+            String name, FilterChainMatch filterChainMatch, HttpConnectionManager httpConnectionManager,
+            SslContextProviderSupplier sslContextProviderSupplier) {
         if (name == null) {
             throw new NullPointerException("Null name");
         }
@@ -35,7 +26,7 @@ public class FilterChain {
             throw new NullPointerException("Null httpConnectionManager");
         }
         this.httpConnectionManager = httpConnectionManager;
-        //    this.sslContextProviderSupplier = sslContextProviderSupplier;
+            this.sslContextProviderSupplier = sslContextProviderSupplier;
     }
 
     public String name() {
@@ -62,7 +53,6 @@ public class FilterChain {
         this.httpConnectionManager = httpConnectionManager;
     }
 
-/*
   public SslContextProviderSupplier getSslContextProviderSupplier() {
     return sslContextProviderSupplier;
   }
@@ -70,7 +60,6 @@ public class FilterChain {
   public void setSslContextProviderSupplier(SslContextProviderSupplier sslContextProviderSupplier) {
     this.sslContextProviderSupplier = sslContextProviderSupplier;
   }
-*/
 
     public String toString() {
         return "FilterChain{" + "name=" + name + ", " + "filterChainMatch=" + filterChainMatch + ", "
@@ -95,13 +84,13 @@ public class FilterChain {
     public static FilterChain create(
             String name,
             FilterChainMatch filterChainMatch,
-            HttpConnectionManager httpConnectionManager/*,
+            HttpConnectionManager httpConnectionManager,
             @Nullable DownstreamTlsContext downstreamTlsContext,
-            TlsContextManager tlsContextManager*/) {
-//        SslContextProviderSupplier sslContextProviderSupplier =
-//                downstreamTlsContext == null
-//                        ? null : new SslContextProviderSupplier(downstreamTlsContext, tlsContextManager);
+            TlsContextManager tlsContextManager) {
+        SslContextProviderSupplier sslContextProviderSupplier =
+                downstreamTlsContext == null
+                        ? null : new SslContextProviderSupplier(downstreamTlsContext, tlsContextManager);
         return new FilterChain(
-                name, filterChainMatch, httpConnectionManager/*, sslContextProviderSupplier*/);
+                name, filterChainMatch, httpConnectionManager, sslContextProviderSupplier);
     }
 }

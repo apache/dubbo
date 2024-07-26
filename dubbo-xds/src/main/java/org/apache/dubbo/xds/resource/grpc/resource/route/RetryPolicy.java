@@ -2,16 +2,19 @@ package org.apache.dubbo.xds.resource.grpc.resource.route;
 
 import org.apache.dubbo.common.lang.Nullable;
 
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Duration;
 import io.grpc.Status;
 import io.grpc.Status.Code;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class RetryPolicy {
 
     private final int maxAttempts;
 
-    private final ImmutableList<Code> retryableStatusCodes;
+    private final List<Code> retryableStatusCodes;
 
     private final Duration initialBackoff;
 
@@ -22,7 +25,7 @@ public class RetryPolicy {
 
     public RetryPolicy(
             int maxAttempts,
-            ImmutableList<Status.Code> retryableStatusCodes,
+            List<Code> retryableStatusCodes,
             Duration initialBackoff,
             Duration maxBackoff,
             @Nullable Duration perAttemptRecvTimeout) {
@@ -30,7 +33,7 @@ public class RetryPolicy {
         if (retryableStatusCodes == null) {
             throw new NullPointerException("Null retryableStatusCodes");
         }
-        this.retryableStatusCodes = retryableStatusCodes;
+        this.retryableStatusCodes = Collections.unmodifiableList(new ArrayList<>(retryableStatusCodes));
         if (initialBackoff == null) {
             throw new NullPointerException("Null initialBackoff");
         }
@@ -46,7 +49,7 @@ public class RetryPolicy {
         return maxAttempts;
     }
 
-    ImmutableList<Status.Code> retryableStatusCodes() {
+    List<Status.Code> retryableStatusCodes() {
         return retryableStatusCodes;
     }
 

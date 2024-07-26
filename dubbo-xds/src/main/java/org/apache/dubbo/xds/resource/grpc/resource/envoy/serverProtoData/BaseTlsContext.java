@@ -2,9 +2,7 @@ package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
 import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
 
-import org.apache.dubbo.xds.resource.grpc.EnvoyServerProtoData;
-
-import javax.annotation.Nullable;
+import org.apache.dubbo.common.lang.Nullable;
 
 import java.util.Objects;
 

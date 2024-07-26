@@ -17,13 +17,8 @@
 package org.apache.dubbo.xds.resource.grpc.resource.filter;
 
 import com.google.protobuf.Message;
-import io.grpc.ClientInterceptor;
-import io.grpc.LoadBalancer.PickSubchannelArgs;
-import io.grpc.ServerInterceptor;
 
-import javax.annotation.Nullable;
-
-import java.util.concurrent.ScheduledExecutorService;
+import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 
 /**
  * Defines the parsing functionality of an HTTP filter. A Filter may optionally implement either
@@ -50,11 +45,6 @@ public interface Filter {
    */
   ConfigOrError<? extends FilterConfig> parseFilterConfigOverride(Message rawProtoMessage);
 
-
-  /** Uses the FilterConfigs produced above to produce an HTTP filter interceptor for clients. */
-
-
-  /** Uses the FilterConfigs produced above to produce an HTTP filter interceptor for the server. */
 
 
 }

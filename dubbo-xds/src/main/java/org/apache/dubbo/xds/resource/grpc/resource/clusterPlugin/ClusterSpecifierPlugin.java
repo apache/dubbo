@@ -18,7 +18,7 @@ package org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin;
 
 import com.google.protobuf.Message;
 
-import org.apache.dubbo.xds.resource.grpc.resource.filter.ConfigOrError;
+import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 
 /**
  * Defines the parsing functionality of a ClusterSpecifierPlugin as defined in the Enovy proto

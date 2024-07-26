@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-class XdsClusterResource extends XdsResourceType<CdsUpdate> {
+public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
   static final String ADS_TYPE_URL_CDS =
       "type.googleapis.com/envoy.config.cluster.v3.Cluster";
   private static final String TYPE_URL_UPSTREAM_TLS_CONTEXT =
@@ -328,7 +328,7 @@ class XdsClusterResource extends XdsResourceType<CdsUpdate> {
     return duration.getSeconds() < 0 || duration.getNanos() < 0;
   }
 
-  static io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+  public static io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
       validateUpstreamTlsContext(
       io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext upstreamTlsContext,
       Set<String> certProviderInstances)

@@ -17,10 +17,10 @@ public class FailurePercentageEjection {
     private final Integer requestVolume;
 
     static FailurePercentageEjection create(
-            @javax.annotation.Nullable Integer threshold,
-            @javax.annotation.Nullable Integer enforcementPercentage,
-            @javax.annotation.Nullable Integer minimumHosts,
-            @javax.annotation.Nullable Integer requestVolume) {
+            @Nullable Integer threshold,
+            @Nullable Integer enforcementPercentage,
+            @Nullable Integer minimumHosts,
+            @Nullable Integer requestVolume) {
         return new FailurePercentageEjection(threshold,
                 enforcementPercentage, minimumHosts, requestVolume);
     }

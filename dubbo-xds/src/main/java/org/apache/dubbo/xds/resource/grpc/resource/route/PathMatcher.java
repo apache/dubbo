@@ -34,8 +34,8 @@ public class PathMatcher {
         return create(null, null, regEx, false /* doesn't matter */);
     }
 
-    private static PathMatcher create(@javax.annotation.Nullable String path, @javax.annotation.Nullable String prefix,
-                                                                   @javax.annotation.Nullable Pattern regEx, boolean caseSensitive) {
+    private static PathMatcher create(@Nullable String path, @Nullable String prefix,
+                                                                   @Nullable Pattern regEx, boolean caseSensitive) {
         return new PathMatcher(path, prefix, regEx,
                 caseSensitive);
     }

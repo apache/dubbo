@@ -2,7 +2,9 @@ package org.apache.dubbo.xds.resource.grpc.resource.route;
 
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClusterWeight {
 
@@ -10,12 +12,12 @@ public class ClusterWeight {
 
   private final int weight;
 
-  private final ImmutableMap<String, FilterConfig> filterConfigOverrides;
+  private final Map<String, FilterConfig> filterConfigOverrides;
 
     public ClusterWeight(
       String name,
       int weight,
-      ImmutableMap<String, FilterConfig> filterConfigOverrides) {
+      Map<String, FilterConfig> filterConfigOverrides) {
     if (name == null) {
       throw new NullPointerException("Null name");
     }
@@ -24,7 +26,7 @@ public class ClusterWeight {
     if (filterConfigOverrides == null) {
       throw new NullPointerException("Null filterConfigOverrides");
     }
-    this.filterConfigOverrides = filterConfigOverrides;
+    this.filterConfigOverrides = Collections.unmodifiableMap(new HashMap<>(filterConfigOverrides));
   }
 
 
@@ -38,7 +40,7 @@ public class ClusterWeight {
   }
 
 
-  ImmutableMap<String, FilterConfig> filterConfigOverrides() {
+  Map<String, FilterConfig> filterConfigOverrides() {
     return filterConfigOverrides;
   }
 

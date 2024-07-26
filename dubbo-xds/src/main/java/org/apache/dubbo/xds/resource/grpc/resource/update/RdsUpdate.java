@@ -1,8 +1,7 @@
 package org.apache.dubbo.xds.resource.grpc.resource.update;
 
-import com.google.common.base.MoreObjects;
-import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.xds.resource.grpc.resource.VirtualHost;
 
 import java.util.ArrayList;
@@ -15,15 +14,14 @@ public class RdsUpdate implements ResourceUpdate {
     final List<VirtualHost> virtualHosts;
 
     public RdsUpdate(List<VirtualHost> virtualHosts) {
+        Assert.notNull(virtualHosts, "virtualHosts is null");
       this.virtualHosts = Collections.unmodifiableList(
-          new ArrayList<>(checkNotNull(virtualHosts, "virtualHosts")));
+          new ArrayList<>(virtualHosts));
     }
 
     @Override
     public String toString() {
-      return MoreObjects.toStringHelper(this)
-          .add("virtualHosts", virtualHosts)
-          .toString();
+        return "RdsUpdate{" + "virtualHosts=" + virtualHosts + '}';
     }
 
     @Override

@@ -16,9 +16,8 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.dubbo.common.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,12 +35,10 @@ public final class ClusterSpecifierPluginRegistry {
     return instance;
   }
 
-  @VisibleForTesting
   static ClusterSpecifierPluginRegistry newRegistry() {
     return new ClusterSpecifierPluginRegistry();
   }
 
-  @VisibleForTesting
   ClusterSpecifierPluginRegistry register(ClusterSpecifierPlugin... plugins) {
     for (ClusterSpecifierPlugin plugin : plugins) {
       for (String typeUrl : plugin.typeUrls()) {

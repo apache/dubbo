@@ -4,11 +4,11 @@ import org.apache.dubbo.common.lang.Nullable;
 
 import com.google.re2j.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.apache.dubbo.common.utils.Assert;
 
 public class HashPolicy {
 
-    private final Type type;
+    private final HashPolicyType type;
 
     private final boolean isTerminal;
 
@@ -24,27 +24,27 @@ public class HashPolicy {
     public static HashPolicy forHeader(
             boolean isTerminal,
             String headerName,
-            @javax.annotation.Nullable Pattern regEx,
-            @javax.annotation.Nullable String regExSubstitution) {
-        checkNotNull(headerName, "headerName");
-        return HashPolicy.create(Type.HEADER, isTerminal, headerName, regEx, regExSubstitution);
+            @Nullable Pattern regEx,
+            @Nullable String regExSubstitution) {
+        Assert.notNull(headerName, "headerName is null");
+        return HashPolicy.create(HashPolicyType.HEADER, isTerminal, headerName, regEx, regExSubstitution);
     }
 
     public static HashPolicy forChannelId(boolean isTerminal) {
-        return HashPolicy.create(Type.CHANNEL_ID, isTerminal, null, null, null);
+        return HashPolicy.create(HashPolicyType.CHANNEL_ID, isTerminal, null, null, null);
     }
 
     public static HashPolicy create(
-            Type type,
+            HashPolicyType type,
             boolean isTerminal,
-            @javax.annotation.Nullable String headerName,
-            @javax.annotation.Nullable Pattern regEx,
-            @javax.annotation.Nullable String regExSubstitution) {
+            @Nullable String headerName,
+            @Nullable Pattern regEx,
+            @Nullable String regExSubstitution) {
         return new HashPolicy(type, isTerminal, headerName, regEx, regExSubstitution);
     }
 
     HashPolicy(
-            Type type,
+            HashPolicyType type,
             boolean isTerminal,
             @Nullable String headerName,
             @Nullable Pattern regEx,
@@ -59,7 +59,7 @@ public class HashPolicy {
         this.regExSubstitution = regExSubstitution;
     }
 
-    Type type() {
+    HashPolicyType type() {
         return type;
     }
 
@@ -120,9 +120,4 @@ public class HashPolicy {
         return h$;
     }
 
-}
-
-enum Type {
-    HEADER,
-    CHANNEL_ID
 }

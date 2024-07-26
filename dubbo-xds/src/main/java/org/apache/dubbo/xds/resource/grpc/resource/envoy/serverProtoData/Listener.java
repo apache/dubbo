@@ -1,17 +1,22 @@
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
-import com.google.common.collect.ImmutableList;
+import org.apache.dubbo.common.lang.Nullable;
 
-import javax.annotation.Nullable;
-
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class Listener {
 
     private String name;
+
+    @Nullable
     private String address;
+
+    @Nullable
     private List<FilterChain> filterChains;
+
     private FilterChain defaultFilterChain;
 
     public Listener(String name, String address, List<FilterChain> filterChains, FilterChain defaultFilterChain) {
@@ -23,7 +28,7 @@ public class Listener {
         if (filterChains == null) {
             throw new NullPointerException("Null filterChains");
         }
-        this.filterChains = filterChains;
+        this.filterChains = Collections.unmodifiableList(new ArrayList<>(filterChains));
         this.defaultFilterChain = defaultFilterChain;
     }
 
@@ -35,6 +40,7 @@ public class Listener {
         this.name = name;
     }
 
+    @Nullable
     public String address() {
         return address;
     }
@@ -43,6 +49,7 @@ public class Listener {
         this.address = address;
     }
 
+    @Nullable
     public List<FilterChain> filterChains() {
         return filterChains;
     }
@@ -80,7 +87,7 @@ public class Listener {
     public static Listener create(
             String name,
             @Nullable String address,
-            ImmutableList<FilterChain> filterChains,
+            List<FilterChain> filterChains,
             @Nullable FilterChain defaultFilterChain) {
         return new Listener(name, address, filterChains,
                 defaultFilterChain);

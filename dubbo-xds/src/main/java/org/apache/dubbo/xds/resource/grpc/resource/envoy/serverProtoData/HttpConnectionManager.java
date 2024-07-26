@@ -1,17 +1,14 @@
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
+import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.xds.resource.grpc.resource.VirtualHost;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.NamedFilterConfig;
 
-import com.google.common.collect.ImmutableList;
-
-import javax.annotation.Nullable;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class HttpConnectionManager {
 
@@ -27,8 +24,8 @@ public class HttpConnectionManager {
             List<NamedFilterConfig> httpFilterConfigs) {
         this.httpMaxStreamDurationNano = httpMaxStreamDurationNano;
         this.rdsName = rdsName;
-        this.virtualHosts = virtualHosts != null ? new ArrayList<>(virtualHosts) : null;
-        this.httpFilterConfigs = httpFilterConfigs != null ? new ArrayList<>(httpFilterConfigs) : null;
+        this.virtualHosts = virtualHosts != null ? Collections.unmodifiableList(new ArrayList<>(virtualHosts)) : null;
+        this.httpFilterConfigs = httpFilterConfigs != null ? Collections.unmodifiableList(new ArrayList<>(httpFilterConfigs)) : null;
     }
 
     public long getHttpMaxStreamDurationNano() {
@@ -87,7 +84,7 @@ public class HttpConnectionManager {
 
     public static HttpConnectionManager forRdsName(
             long httpMaxStreamDurationNano, String rdsName, @Nullable List<NamedFilterConfig> httpFilterConfigs) {
-        checkNotNull(rdsName, "rdsName");
+        Assert.notNull(rdsName, "rdsName is null");
         return create(httpMaxStreamDurationNano, rdsName, null, httpFilterConfigs);
     }
 
@@ -95,7 +92,7 @@ public class HttpConnectionManager {
             long httpMaxStreamDurationNano,
             List<VirtualHost> virtualHosts,
             @Nullable List<NamedFilterConfig> httpFilterConfigs) {
-        checkNotNull(virtualHosts, "virtualHosts");
+        Assert.notNull(virtualHosts, "virtualHosts is null");
         return create(httpMaxStreamDurationNano, null, virtualHosts, httpFilterConfigs);
     }
 
@@ -104,8 +101,6 @@ public class HttpConnectionManager {
             @Nullable String rdsName,
             @Nullable List<VirtualHost> virtualHosts,
             @Nullable List<NamedFilterConfig> httpFilterConfigs) {
-        return new HttpConnectionManager(httpMaxStreamDurationNano, rdsName,
-                virtualHosts == null ? null : ImmutableList.copyOf(virtualHosts),
-                httpFilterConfigs == null ? null : ImmutableList.copyOf(httpFilterConfigs));
+        return new HttpConnectionManager(httpMaxStreamDurationNano, rdsName, virtualHosts, httpFilterConfigs);
     }
 }

@@ -16,17 +16,14 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import io.grpc.internal.JsonParser;
-import io.grpc.internal.JsonUtil;
 
-import org.apache.dubbo.xds.resource.grpc.resource.filter.ConfigOrError;
+import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.grpc.resource.common.MessagePrinter;
 
-import java.io.IOException;
 import java.util.Map;
 
 /** The ClusterSpecifierPlugin for RouteLookup policy. */
@@ -70,14 +67,9 @@ final class RouteLookupServiceClusterSpecifierPlugin implements ClusterSpecifier
         return ConfigOrError.fromError("Invalid proto: " + e);
       }
       String jsonString = MessagePrinter.print(configProto);
-      try {
-        Map<String, ?> jsonMap = (Map<String, ?>) JsonParser.parse(jsonString);
-        Map<String, ?> config = JsonUtil.getObject(jsonMap, "routeLookupConfig");
-        return ConfigOrError.fromConfig(RlsPluginConfig.create(config));
-      } catch (IOException e) {
-        return ConfigOrError.fromError(
-            "Unable to parse RouteLookupClusterSpecifier: " + jsonString);
-      }
+      Map<String, ?> jsonMap = JsonUtils.toJavaObject(jsonString, Map.class);
+      Map<String, ?> config = JsonUtils.toJavaObject(jsonMap.get("routeLookupConfig").toString(), Map.class);
+      return ConfigOrError.fromConfig(RlsPluginConfig.create(config));
     } catch (RuntimeException e) {
       return ConfigOrError.fromError("Error parsing RouteLookupConfig: " + e);
     }

@@ -17,13 +17,17 @@
 package org.apache.dubbo.xds.resource.grpc.resource;
 
 
+import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext;
+
+import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.CidrRange;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.ConnectionSourceType;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.FilterChain;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.FilterChainMatch;
+import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.TlsContextManager;
 import org.apache.dubbo.xds.resource.grpc.resource.exception.ResourceInvalidException;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.ClientInterceptorBuilder;
-import org.apache.dubbo.xds.resource.grpc.resource.filter.ConfigOrError;
+import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.Filter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterRegistry;
@@ -31,18 +35,15 @@ import org.apache.dubbo.xds.resource.grpc.resource.filter.NamedFilterConfig;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.ServerInterceptorBuilder;
 import org.apache.dubbo.xds.resource.grpc.resource.update.LdsUpdate;
 
-import javax.annotation.Nullable;
-
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.github.udpa.udpa.type.v1.TypedStruct;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -54,7 +55,8 @@ import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
-import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext;
+
+import static org.apache.dubbo.xds.resource.grpc.resource.XdsClusterResource.validateCommonTlsContext;
 
 public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
   static final String ADS_TYPE_URL_LDS =
@@ -137,12 +139,12 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     if (args.bootstrapInfo != null && args.bootstrapInfo.certProviders() != null) {
       certProviderInstances = args.bootstrapInfo.certProviders().keySet();
     }
-    return LdsUpdate.forTcpListener(parseServerSideListener(proto, /*args.tlsContextManager,*/
+    return LdsUpdate.forTcpListener(parseServerSideListener(proto, args.tlsContextManager,
         args.filterRegistry, certProviderInstances));
   }
 
   static org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.Listener parseServerSideListener(
-          Listener proto, /*TlsContextManager tlsContextManager,*/
+          Listener proto, TlsContextManager tlsContextManager,
           FilterRegistry filterRegistry, Set<String> certProviderInstances)
       throws ResourceInvalidException {
     if (!proto.getTrafficDirection().equals(TrafficDirection.INBOUND)
@@ -176,29 +178,28 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
       }
     }
 
-    ImmutableList.Builder<FilterChain> filterChains = ImmutableList.builder();
+    List<FilterChain> filterChains = new ArrayList<>();
     Set<FilterChainMatch> uniqueSet = new HashSet<>();
     for (io.envoyproxy.envoy.config.listener.v3.FilterChain fc : proto.getFilterChainsList()) {
       filterChains.add(
-          parseFilterChain(fc, /*tlsContextManager,*/ filterRegistry, uniqueSet,
+          parseFilterChain(fc, tlsContextManager, filterRegistry, uniqueSet,
               certProviderInstances));
     }
     FilterChain defaultFilterChain = null;
     if (proto.hasDefaultFilterChain()) {
       defaultFilterChain = parseFilterChain(
-          proto.getDefaultFilterChain(),/* tlsContextManager,*/ filterRegistry,
+          proto.getDefaultFilterChain(), tlsContextManager, filterRegistry,
           null, certProviderInstances);
     }
 
     return org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.Listener.create(
-        proto.getName(), address, filterChains.build(), defaultFilterChain);
+        proto.getName(), address, filterChains, defaultFilterChain);
   }
 
-  @VisibleForTesting
   static FilterChain parseFilterChain(
-      io.envoyproxy.envoy.config.listener.v3.FilterChain proto,
-      /*TlsContextManager tlsContextManager,*/ FilterRegistry filterRegistry,
-      Set<FilterChainMatch> uniqueSet, Set<String> certProviderInstances)
+          io.envoyproxy.envoy.config.listener.v3.FilterChain proto,
+          TlsContextManager tlsContextManager, FilterRegistry filterRegistry,
+          Set<FilterChainMatch> uniqueSet, Set<String> certProviderInstances)
       throws ResourceInvalidException {
     if (proto.getFiltersCount() != 1) {
       throw new ResourceInvalidException("FilterChain " + proto.getName()
@@ -227,47 +228,46 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
       org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.HttpConnectionManager httpConnectionManager = parseHttpConnectionManager(
         hcmProto, filterRegistry, false /* isForClient */);
 
-//    EnvoyServerProtoData.DownstreamTlsContext downstreamTlsContext = null;
-//    if (proto.hasTransportSocket()) {
-//      if (!TRANSPORT_SOCKET_NAME_TLS.equals(proto.getTransportSocket().getName())) {
-//        throw new ResourceInvalidException("transport-socket with name "
-//            + proto.getTransportSocket().getName() + " not supported.");
-//      }
-//      DownstreamTlsContext downstreamTlsContextProto;
-//      try {
-//        downstreamTlsContextProto =
-//            proto.getTransportSocket().getTypedConfig().unpack(DownstreamTlsContext.class);
-//      } catch (InvalidProtocolBufferException e) {
-//        throw new ResourceInvalidException("FilterChain " + proto.getName()
-//            + " failed to unpack message", e);
-//      }
-//      downstreamTlsContext =
-//          EnvoyServerProtoData.DownstreamTlsContext.fromEnvoyProtoDownstreamTlsContext(
-//              validateDownstreamTlsContext(downstreamTlsContextProto, certProviderInstances));
-//    }
+      org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.DownstreamTlsContext downstreamTlsContext = null;
+    if (proto.hasTransportSocket()) {
+      if (!TRANSPORT_SOCKET_NAME_TLS.equals(proto.getTransportSocket().getName())) {
+        throw new ResourceInvalidException("transport-socket with name "
+            + proto.getTransportSocket().getName() + " not supported.");
+      }
+      DownstreamTlsContext downstreamTlsContextProto;
+      try {
+        downstreamTlsContextProto =
+            proto.getTransportSocket().getTypedConfig().unpack(DownstreamTlsContext.class);
+      } catch (InvalidProtocolBufferException e) {
+        throw new ResourceInvalidException("FilterChain " + proto.getName()
+            + " failed to unpack message", e);
+      }
+      downstreamTlsContext =
+              org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.DownstreamTlsContext.fromEnvoyProtoDownstreamTlsContext(
+              validateDownstreamTlsContext(downstreamTlsContextProto, certProviderInstances));
+    }
 
     FilterChainMatch filterChainMatch = parseFilterChainMatch(proto.getFilterChainMatch());
     checkForUniqueness(uniqueSet, filterChainMatch);
     return FilterChain.create(
         proto.getName(),
         filterChainMatch,
-        httpConnectionManager/*,
+        httpConnectionManager,
         downstreamTlsContext,
-        tlsContextManager*/
+        tlsContextManager
     );
   }
 
-  @VisibleForTesting
   static DownstreamTlsContext validateDownstreamTlsContext(
       DownstreamTlsContext downstreamTlsContext, Set<String> certProviderInstances)
       throws ResourceInvalidException {
-//    if (downstreamTlsContext.hasCommonTlsContext()) {
-//      validateCommonTlsContext(downstreamTlsContext.getCommonTlsContext(), certProviderInstances,
-//          true);
-//    } else {
-//      throw new ResourceInvalidException(
-//          "common-tls-context is required in downstream-tls-context");
-//    }
+    if (downstreamTlsContext.hasCommonTlsContext()) {
+      validateCommonTlsContext(downstreamTlsContext.getCommonTlsContext(), certProviderInstances,
+          true);
+    } else {
+      throw new ResourceInvalidException(
+          "common-tls-context is required in downstream-tls-context");
+    }
     if (downstreamTlsContext.hasRequireSni()) {
       throw new ResourceInvalidException(
           "downstream-tls-context with require-sni is not supported");
@@ -313,7 +313,7 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     } else {
       for (CidrRange cidrRange : filterChainMatch.prefixRanges()) {
         expandedList.add(FilterChainMatch.create(filterChainMatch.destinationPort(),
-            ImmutableList.of(cidrRange),
+            Collections.singletonList(cidrRange),
             filterChainMatch.applicationProtocols(),
             filterChainMatch.sourcePrefixRanges(),
             filterChainMatch.connectionSourceType(),
@@ -335,7 +335,7 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
         for (String applicationProtocol : filterChainMatch.applicationProtocols()) {
           expandedList.add(FilterChainMatch.create(filterChainMatch.destinationPort(),
               filterChainMatch.prefixRanges(),
-              ImmutableList.of(applicationProtocol),
+              Collections.singletonList(applicationProtocol),
               filterChainMatch.sourcePrefixRanges(),
               filterChainMatch.connectionSourceType(),
               filterChainMatch.sourcePorts(),
@@ -358,7 +358,7 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
           expandedList.add(FilterChainMatch.create(filterChainMatch.destinationPort(),
               filterChainMatch.prefixRanges(),
               filterChainMatch.applicationProtocols(),
-              ImmutableList.of(cidrRange),
+              Collections.singletonList(cidrRange),
               filterChainMatch.connectionSourceType(),
               filterChainMatch.sourcePorts(),
               filterChainMatch.serverNames(),
@@ -381,7 +381,7 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
               filterChainMatch.applicationProtocols(),
               filterChainMatch.sourcePrefixRanges(),
               filterChainMatch.connectionSourceType(),
-              ImmutableList.of(sourcePort),
+              Collections.singletonList(sourcePort),
               filterChainMatch.serverNames(),
               filterChainMatch.transportProtocol()));
         }
@@ -403,7 +403,7 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
               filterChainMatch.sourcePrefixRanges(),
               filterChainMatch.connectionSourceType(),
               filterChainMatch.sourcePorts(),
-              ImmutableList.of(serverName),
+              Collections.singletonList(serverName),
               filterChainMatch.transportProtocol()));
         }
       }
@@ -414,8 +414,8 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
   private static FilterChainMatch parseFilterChainMatch(
       io.envoyproxy.envoy.config.listener.v3.FilterChainMatch proto)
       throws ResourceInvalidException {
-    ImmutableList.Builder<CidrRange> prefixRanges = ImmutableList.builder();
-    ImmutableList.Builder<CidrRange> sourcePrefixRanges = ImmutableList.builder();
+      List<CidrRange> prefixRanges = new ArrayList<>();
+    List<CidrRange> sourcePrefixRanges = new ArrayList<>();
     try {
       for (io.envoyproxy.envoy.config.core.v3.CidrRange range : proto.getPrefixRangesList()) {
         prefixRanges.add(
@@ -445,12 +445,12 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     }
     return FilterChainMatch.create(
         proto.getDestinationPort().getValue(),
-        prefixRanges.build(),
-        ImmutableList.copyOf(proto.getApplicationProtocolsList()),
-        sourcePrefixRanges.build(),
+        prefixRanges,
+        new ArrayList<>(proto.getApplicationProtocolsList()),
+        sourcePrefixRanges,
         sourceType,
-        ImmutableList.copyOf(proto.getSourcePortsList()),
-        ImmutableList.copyOf(proto.getServerNamesList()),
+        new ArrayList<>(proto.getSourcePortsList()),
+        new ArrayList<>(proto.getServerNamesList()),
         proto.getTransportProtocol());
   }
 
@@ -544,7 +544,6 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     return RouterFilter.ROUTER_CONFIG.equals(filterConfig);
   }
 
-  @VisibleForTesting
   @Nullable // Returns null if the filter is optional but not supported.
   static StructOrError<FilterConfig> parseHttpFilter(
       io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpFilter

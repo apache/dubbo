@@ -1,7 +1,7 @@
 package org.apache.dubbo.xds.resource.grpc.resource.clusterPlugin;
 
-import com.google.common.collect.ImmutableMap;
-
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 final class RlsPluginConfig implements PluginConfig {
@@ -9,22 +9,22 @@ final class RlsPluginConfig implements PluginConfig {
     private static final String TYPE_URL =
             "type.googleapis.com/grpc.lookup.v1.RouteLookupClusterSpecifier";
 
-    private final ImmutableMap<String, ?> config;
+    private final Map<String, ?> config;
 
     RlsPluginConfig(
-            ImmutableMap<String, ?> config) {
+            Map<String, ?> config) {
         if (config == null) {
             throw new NullPointerException("Null config");
         }
-        this.config = config;
+        this.config = Collections.unmodifiableMap(new HashMap<>(config));
     }
 
-    ImmutableMap<String, ?> config() {
+    Map<String, ?> config() {
         return config;
     }
 
     static RlsPluginConfig create(Map<String, ?> config) {
-        return new RlsPluginConfig(ImmutableMap.copyOf(config));
+        return new RlsPluginConfig(config);
     }
 
     public String typeUrl() {

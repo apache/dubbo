@@ -17,25 +17,16 @@
 package org.apache.dubbo.xds.resource.grpc.resource;
 
 
-import org.apache.dubbo.xds.resource.grpc.resource.filter.ClientInterceptorBuilder;
-import org.apache.dubbo.xds.resource.grpc.resource.filter.ConfigOrError;
+import org.apache.dubbo.xds.resource.grpc.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.Filter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
-import org.apache.dubbo.xds.resource.grpc.resource.filter.ServerInterceptorBuilder;
 
 import com.google.protobuf.Message;
-import io.grpc.ClientInterceptor;
-import io.grpc.LoadBalancer.PickSubchannelArgs;
-import io.grpc.ServerInterceptor;
-
-import javax.annotation.Nullable;
-
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Router filter implementation. Currently this filter does not parse any field in the config.
  */
-public enum RouterFilter implements Filter, ClientInterceptorBuilder, ServerInterceptorBuilder {
+public enum RouterFilter implements Filter {
   INSTANCE;
 
   static final String TYPE_URL =
@@ -66,20 +57,5 @@ public enum RouterFilter implements Filter, ClientInterceptorBuilder, ServerInte
 
   public ConfigOrError<? extends FilterConfig> parseFilterConfigOverride(Message rawProtoMessage) {
     return ConfigOrError.fromError("Router Filter should not have override config");
-  }
-
-  @Nullable
-
-  public ClientInterceptor buildClientInterceptor(
-      FilterConfig config, @Nullable FilterConfig overrideConfig, PickSubchannelArgs args,
-      ScheduledExecutorService scheduler) {
-    return null;
-  }
-
-  @Nullable
-
-  public ServerInterceptor buildServerInterceptor(
-      FilterConfig config, @Nullable FilterConfig overrideConfig) {
-    return null;
   }
 }

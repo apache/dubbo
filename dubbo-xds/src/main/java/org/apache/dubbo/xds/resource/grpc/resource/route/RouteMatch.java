@@ -1,21 +1,25 @@
 package org.apache.dubbo.xds.resource.grpc.resource.route;
 
 import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.xds.resource.grpc.resource.matcher.FractionMatcher;
+import org.apache.dubbo.xds.resource.grpc.resource.matcher.HeaderMatcher;
 
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public final class RouteMatch {
 
     private final PathMatcher pathMatcher;
 
-    private final ImmutableList<HeaderMatcher> headerMatchers;
+    private final List<HeaderMatcher> headerMatchers;
 
     @Nullable
     private final FractionMatcher fractionMatcher;
 
     public RouteMatch(
             PathMatcher pathMatcher,
-            ImmutableList<HeaderMatcher> headerMatchers,
+            List<HeaderMatcher> headerMatchers,
             @Nullable FractionMatcher fractionMatcher) {
         if (pathMatcher == null) {
             throw new NullPointerException("Null pathMatcher");
@@ -24,7 +28,7 @@ public final class RouteMatch {
         if (headerMatchers == null) {
             throw new NullPointerException("Null headerMatchers");
         }
-        this.headerMatchers = headerMatchers;
+        this.headerMatchers = Collections.unmodifiableList(new ArrayList<>(headerMatchers));
         this.fractionMatcher = fractionMatcher;
     }
 
@@ -32,7 +36,7 @@ public final class RouteMatch {
         return pathMatcher;
     }
 
-    ImmutableList<HeaderMatcher> headerMatchers() {
+    List<HeaderMatcher> headerMatchers() {
         return headerMatchers;
     }
 

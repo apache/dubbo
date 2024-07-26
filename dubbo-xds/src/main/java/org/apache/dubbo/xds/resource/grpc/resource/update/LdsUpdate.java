@@ -1,11 +1,10 @@
 package org.apache.dubbo.xds.resource.grpc.resource.update;
 
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.HttpConnectionManager;
 import org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData.Listener;
 
 import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class LdsUpdate implements ResourceUpdate {
 
@@ -55,12 +54,12 @@ public class LdsUpdate implements ResourceUpdate {
     }
 
     public static LdsUpdate forApiListener(HttpConnectionManager httpConnectionManager) {
-        checkNotNull(httpConnectionManager, "httpConnectionManager");
+        Assert.notNull(httpConnectionManager, "httpConnectionManager is null");
         return new LdsUpdate(httpConnectionManager, null);
     }
 
     public static LdsUpdate forTcpListener(Listener listener) {
-        checkNotNull(listener, "listener");
+        Assert.notNull(listener, "listener is null");
         return new LdsUpdate(null, listener);
     }
 }

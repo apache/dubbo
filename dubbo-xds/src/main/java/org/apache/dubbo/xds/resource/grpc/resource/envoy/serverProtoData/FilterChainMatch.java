@@ -1,43 +1,42 @@
 package org.apache.dubbo.xds.resource.grpc.resource.envoy.serverProtoData;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class FilterChainMatch {
 
     private int destinationPort;
-    private ImmutableList<CidrRange> prefixRanges;
-    private ImmutableList<String> applicationProtocols;
-    private ImmutableList<CidrRange> sourcePrefixRanges;
+    private List<CidrRange> prefixRanges;
+    private List<String> applicationProtocols;
+    private List<CidrRange> sourcePrefixRanges;
     private ConnectionSourceType connectionSourceType;
-    private ImmutableList<Integer> sourcePorts;
-    private ImmutableList<String> serverNames;
+    private List<Integer> sourcePorts;
+    private List<String> serverNames;
     private String transportProtocol;
 
     public FilterChainMatch(
             int destinationPort,
-            ImmutableList<CidrRange> prefixRanges,
-            ImmutableList<String> applicationProtocols,
-            ImmutableList<CidrRange> sourcePrefixRanges,
+            List<CidrRange> prefixRanges,
+            List<String> applicationProtocols,
+            List<CidrRange> sourcePrefixRanges,
             ConnectionSourceType connectionSourceType,
-            ImmutableList<Integer> sourcePorts,
-            ImmutableList<String> serverNames,
+            List<Integer> sourcePorts,
+            List<String> serverNames,
             String transportProtocol) {
         this.destinationPort = destinationPort;
         if (prefixRanges == null) {
             throw new NullPointerException("Null prefixRanges");
         }
-        this.prefixRanges = prefixRanges;
+        this.prefixRanges = Collections.unmodifiableList(new ArrayList<>(prefixRanges));
         if (applicationProtocols == null) {
             throw new NullPointerException("Null applicationProtocols");
         }
-        this.applicationProtocols = applicationProtocols;
+        this.applicationProtocols = Collections.unmodifiableList(new ArrayList<>(applicationProtocols));
         if (sourcePrefixRanges == null) {
             throw new NullPointerException("Null sourcePrefixRanges");
         }
-        this.sourcePrefixRanges = sourcePrefixRanges;
+        this.sourcePrefixRanges = Collections.unmodifiableList(new ArrayList<>(sourcePrefixRanges));
         if (connectionSourceType == null) {
             throw new NullPointerException("Null connectionSourceType");
         }
@@ -45,11 +44,11 @@ public class FilterChainMatch {
         if (sourcePorts == null) {
             throw new NullPointerException("Null sourcePorts");
         }
-        this.sourcePorts = sourcePorts;
+        this.sourcePorts = Collections.unmodifiableList(new ArrayList<>(sourcePorts));
         if (serverNames == null) {
             throw new NullPointerException("Null serverNames");
         }
-        this.serverNames = serverNames;
+        this.serverNames = Collections.unmodifiableList(new ArrayList<>(serverNames));
         if (transportProtocol == null) {
             throw new NullPointerException("Null transportProtocol");
         }
@@ -58,12 +57,12 @@ public class FilterChainMatch {
 
     public static FilterChainMatch create(
             int destinationPort,
-            ImmutableList<CidrRange> prefixRanges,
-            ImmutableList<String> applicationProtocols,
-            ImmutableList<CidrRange> sourcePrefixRanges,
+            List<CidrRange> prefixRanges,
+            List<String> applicationProtocols,
+            List<CidrRange> sourcePrefixRanges,
             ConnectionSourceType connectionSourceType,
-            ImmutableList<Integer> sourcePorts,
-            ImmutableList<String> serverNames,
+            List<Integer> sourcePorts,
+            List<String> serverNames,
             String transportProtocol) {
         return new FilterChainMatch(destinationPort, prefixRanges, applicationProtocols, sourcePrefixRanges,
                 connectionSourceType, sourcePorts, serverNames, transportProtocol);
@@ -74,15 +73,15 @@ public class FilterChainMatch {
         return destinationPort;
     }
 
-    public ImmutableList<CidrRange> prefixRanges() {
+    public List<CidrRange> prefixRanges() {
         return prefixRanges;
     }
 
-    public ImmutableList<String> applicationProtocols() {
+    public List<String> applicationProtocols() {
         return applicationProtocols;
     }
 
-    public ImmutableList<CidrRange> sourcePrefixRanges() {
+    public List<CidrRange> sourcePrefixRanges() {
         return sourcePrefixRanges;
     }
 
@@ -90,11 +89,11 @@ public class FilterChainMatch {
         return connectionSourceType;
     }
 
-    public ImmutableList<Integer> sourcePorts() {
+    public List<Integer> sourcePorts() {
         return sourcePorts;
     }
 
-    public ImmutableList<String> serverNames() {
+    public List<String> serverNames() {
         return serverNames;
     }
 

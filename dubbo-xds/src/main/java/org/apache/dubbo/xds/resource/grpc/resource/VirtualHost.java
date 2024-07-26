@@ -3,10 +3,8 @@ package org.apache.dubbo.xds.resource.grpc.resource;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
 import org.apache.dubbo.xds.resource.grpc.resource.route.Route;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +23,9 @@ public class VirtualHost {
       List<Route> routes,
       Map<String, FilterConfig> filterConfigOverrides) {
     this.name = name;
-    this.domains = new ArrayList<>(domains);
-    this.routes = new ArrayList<>(routes);
-    this.filterConfigOverrides = new HashMap<>(filterConfigOverrides);
+    this.domains = Collections.unmodifiableList(new ArrayList<>(domains));
+    this.routes = Collections.unmodifiableList(new ArrayList<>(routes));
+    this.filterConfigOverrides = Collections.unmodifiableMap(new HashMap<>(filterConfigOverrides));
   }
 
   public String getName() {
@@ -91,7 +89,6 @@ public class VirtualHost {
     public static VirtualHost create(
             String name, List<String> domains, List<Route> routes,
             Map<String, FilterConfig> filterConfigOverrides) {
-        return new VirtualHost(name, ImmutableList.copyOf(domains),
-                ImmutableList.copyOf(routes), ImmutableMap.copyOf(filterConfigOverrides));
+        return new VirtualHost(name, domains, routes, filterConfigOverrides);
     }
 }

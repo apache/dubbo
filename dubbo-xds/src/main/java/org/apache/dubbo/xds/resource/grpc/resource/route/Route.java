@@ -3,8 +3,8 @@ package org.apache.dubbo.xds.resource.grpc.resource.route;
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
 
-import com.google.common.collect.ImmutableMap;
-
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Route{
@@ -14,7 +14,7 @@ public class Route{
   @Nullable
   private final RouteAction routeAction;
 
-  private final ImmutableMap<String, FilterConfig> filterConfigOverrides;
+  private final Map<String, FilterConfig> filterConfigOverrides;
 
     public static Route forAction(
             RouteMatch routeMatch, RouteAction routeAction,
@@ -29,17 +29,17 @@ public class Route{
     }
 
     public static Route create(
-            RouteMatch routeMatch, @javax.annotation.Nullable RouteAction routeAction,
+            RouteMatch routeMatch, @Nullable RouteAction routeAction,
             Map<String, FilterConfig> filterConfigOverrides) {
         return new Route(
-                routeMatch, routeAction, ImmutableMap.copyOf(filterConfigOverrides));
+                routeMatch, routeAction, filterConfigOverrides);
     }
 
 
     Route(
       RouteMatch routeMatch,
       @Nullable RouteAction routeAction,
-      ImmutableMap<String, FilterConfig> filterConfigOverrides) {
+      Map<String, FilterConfig> filterConfigOverrides) {
     if (routeMatch == null) {
       throw new NullPointerException("Null routeMatch");
     }
@@ -48,7 +48,7 @@ public class Route{
     if (filterConfigOverrides == null) {
       throw new NullPointerException("Null filterConfigOverrides");
     }
-    this.filterConfigOverrides = filterConfigOverrides;
+    this.filterConfigOverrides = Collections.unmodifiableMap(new HashMap<>(filterConfigOverrides));
   }
 
 
@@ -63,7 +63,7 @@ public class Route{
   }
 
 
-  ImmutableMap<String, FilterConfig> filterConfigOverrides() {
+  Map<String, FilterConfig> filterConfigOverrides() {
     return filterConfigOverrides;
   }
 

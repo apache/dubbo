@@ -19,7 +19,10 @@ package org.apache.dubbo.xds.resource.grpc.resource.filter;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import javax.annotation.Nullable;
+import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.xds.resource.grpc.resource.RouterFilter;
+import org.apache.dubbo.xds.resource.grpc.resource.filter.fault.FaultFilter;
+import org.apache.dubbo.xds.resource.grpc.resource.filter.rbac.RbacFilter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,10 +40,10 @@ public class FilterRegistry {
 
   static synchronized FilterRegistry getDefaultRegistry() {
     if (instance == null) {
-      instance = newRegistry()/*.register(
+      instance = newRegistry().register(
               FaultFilter.INSTANCE,
               RouterFilter.INSTANCE,
-              RbacFilter.INSTANCE)*/;
+              RbacFilter.INSTANCE);
     }
     return instance;
   }
