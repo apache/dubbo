@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
@@ -125,7 +125,7 @@ public class GeneralTypeConverter implements TypeConverter {
         try {
             return targetClass == null ? (T) source : (T) doConvert(source, targetClass);
         } catch (Exception e) {
-            throw RestException.wrap(e);
+            throw ExceptionUtils.wrap(e);
         }
     }
 
@@ -134,7 +134,7 @@ public class GeneralTypeConverter implements TypeConverter {
         try {
             return targetType == null ? (T) source : (T) doConvert(source, targetType);
         } catch (Exception e) {
-            throw RestException.wrap(e);
+            throw ExceptionUtils.wrap(e);
         }
     }
 

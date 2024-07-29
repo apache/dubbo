@@ -14,15 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri;
 
-public interface CustomizableHttpChannelObserver<T> extends HttpChannelObserver<T> {
+public final class ThrowableWrapper extends RuntimeException {
 
-    void setHeadersCustomizer(HeadersCustomizer headersCustomizer);
+    private static final long serialVersionUID = 1L;
 
-    void setTrailersCustomizer(TrailersCustomizer trailersCustomizer);
+    private final Throwable original;
 
-    void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer);
+    public ThrowableWrapper(Throwable original) {
+        super(original.getMessage(), null);
+        this.original = original;
+        setStackTrace(original.getStackTrace());
+    }
 
-    void setExceptionHandler(ExceptionHandler<?, ?> exceptionHandler);
+    public Throwable getOriginal() {
+        return original;
+    }
+
+    @Override
+    public Throwable fillInStackTrace() {
+        return null;
+    }
+
+    @Override
+    public Throwable getCause() {
+        return original;
+    }
 }

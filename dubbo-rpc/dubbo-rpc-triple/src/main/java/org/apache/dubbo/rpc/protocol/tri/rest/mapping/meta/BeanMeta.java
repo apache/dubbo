@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.remoting.http12.rest.Param;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
@@ -161,7 +161,7 @@ public final class BeanMeta {
             try {
                 return constructor.newInstance(args);
             } catch (Throwable t) {
-                throw RestException.wrap(t);
+                throw ExceptionUtils.wrap(t);
             }
         }
     }
@@ -280,7 +280,7 @@ public final class BeanMeta {
             try {
                 field.set(bean, value);
             } catch (Throwable t) {
-                throw RestException.wrap(t);
+                throw ExceptionUtils.wrap(t);
             }
         }
 
@@ -288,7 +288,7 @@ public final class BeanMeta {
             try {
                 return field.get(bean);
             } catch (Throwable t) {
-                throw RestException.wrap(t);
+                throw ExceptionUtils.wrap(t);
             }
         }
 
@@ -331,7 +331,7 @@ public final class BeanMeta {
             try {
                 method.invoke(bean, value);
             } catch (Throwable t) {
-                throw RestException.wrap(t);
+                throw ExceptionUtils.wrap(t);
             }
         }
 
@@ -342,7 +342,7 @@ public final class BeanMeta {
             try {
                 return getMethod.invoke(bean);
             } catch (Throwable t) {
-                throw RestException.wrap(t);
+                throw ExceptionUtils.wrap(t);
             }
         }
 

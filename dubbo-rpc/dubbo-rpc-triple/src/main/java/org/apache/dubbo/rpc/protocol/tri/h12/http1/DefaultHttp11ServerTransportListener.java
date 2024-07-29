@@ -63,6 +63,7 @@ public class DefaultHttp11ServerTransportListener
         this.httpChannel = httpChannel;
         serverChannelObserver = new Http1ServerUnaryChannelObserver(httpChannel);
         serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
+        serverChannelObserver.setExceptionHandler(getExceptionHandler());
     }
 
     @Override

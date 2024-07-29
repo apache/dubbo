@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.HttpStatus;
@@ -35,6 +36,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.CompositeExceptionHandler;
 import org.apache.dubbo.rpc.protocol.tri.route.DefaultRequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
@@ -58,6 +60,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private final URL url;
     private final HttpChannel httpChannel;
     private final RequestRouter requestRouter;
+    private final ExceptionHandler<?, ?> exceptionHandler;
     private final List<HeaderFilter> headerFilters;
 
     private Executor executor;
@@ -70,6 +73,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.url = url;
         this.httpChannel = httpChannel;
         requestRouter = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestRouter.class);
+        exceptionHandler = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeExceptionHandler.class);
         headerFilters = frameworkModel
                 .getExtensionLoader(HeaderFilter.class)
                 .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
@@ -264,6 +268,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     protected final FrameworkModel getFrameworkModel() {
         return frameworkModel;
+    }
+
+    public final ExceptionHandler<?, ?> getExceptionHandler() {
+        return exceptionHandler;
     }
 
     protected final HEADER getHttpMetadata() {
