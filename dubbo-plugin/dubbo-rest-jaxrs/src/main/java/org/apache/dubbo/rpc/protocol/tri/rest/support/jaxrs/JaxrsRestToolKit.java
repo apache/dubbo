@@ -54,7 +54,7 @@ final class JaxrsRestToolKit extends AbstractRestToolKit {
         }
 
         ParamConverter converter = paramConverterFactory.getParamConverter(
-                parameter.getType(), parameter.getGenericType(), parameter.getRealAnnotations());
+                parameter.getType(), parameter.getGenericType(), parameter.getRawAnnotations());
         if (converter != null) {
             return value instanceof String ? converter.fromString((String) value) : converter.toString(value);
         }

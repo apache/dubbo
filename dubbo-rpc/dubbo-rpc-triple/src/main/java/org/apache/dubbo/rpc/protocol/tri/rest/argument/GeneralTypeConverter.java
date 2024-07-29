@@ -615,8 +615,9 @@ public class GeneralTypeConverter implements TypeConverter {
 
         try {
             return JsonUtils.convertObject(source, targetClass);
-        } catch (Exception e) {
-            LOGGER.debug("JSON convert from [{}] to [{}] failed", sourceClass.getName(), targetClass.getName(), e);
+        } catch (Throwable t) {
+            String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
+            LOGGER.debug(msg, source, sourceClass, targetClass, t);
         }
 
         return null;
@@ -660,6 +661,20 @@ public class GeneralTypeConverter implements TypeConverter {
 
                 if (Collection.class.isAssignableFrom(targetClass)) {
                     Type itemType = getActualGenericType(argTypes[0]);
+                    if (itemType instanceof Class && targetClass.isInstance(source)) {
+                        boolean same = true;
+                        Class<?> itemClass = (Class<?>) itemType;
+                        for (Object item : (Collection) source) {
+                            if (item != null && !itemClass.isInstance(item)) {
+                                same = false;
+                                break;
+                            }
+                        }
+                        if (same) {
+                            return source;
+                        }
+                    }
+
                     Collection items = toCollection(source);
                     Collection targetItems = createCollection(targetClass, items.size());
                     for (Object item : items) {
@@ -671,6 +686,28 @@ public class GeneralTypeConverter implements TypeConverter {
                 if (Map.class.isAssignableFrom(targetClass)) {
                     Type keyType = argTypes[0];
                     Type valueType = argTypes[1];
+
+                    if (keyType instanceof Class && valueType instanceof Class && targetClass.isInstance(source)) {
+                        boolean same = true;
+                        Class<?> keyClass = (Class<?>) keyType;
+                        Class<?> valueClass = (Class<?>) valueType;
+                        for (Map.Entry entry : ((Map<Object, Object>) source).entrySet()) {
+                            Object key = entry.getKey();
+                            if (key != null && !keyClass.isInstance(key)) {
+                                same = false;
+                                break;
+                            }
+                            Object value = entry.getValue();
+                            if (value != null && !valueClass.isInstance(value)) {
+                                same = false;
+                                break;
+                            }
+                        }
+                        if (same) {
+                            return source;
+                        }
+                    }
+
                     Class<?> mapValueClass = TypeUtils.getMapValueType(targetClass);
                     boolean multiValue = mapValueClass != null && Collection.class.isAssignableFrom(mapValueClass);
 
@@ -725,9 +762,9 @@ public class GeneralTypeConverter implements TypeConverter {
 
         try {
             return JsonUtils.convertObject(source, targetType);
-        } catch (Exception e) {
-            String name = source.getClass().getName();
-            LOGGER.debug("JSON convert from [{}] to [{}] failed", name, targetType.getTypeName(), e);
+        } catch (Throwable t) {
+            String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
+            LOGGER.debug(msg, source, source.getClass(), targetType, t);
         }
 
         return null;
@@ -1099,7 +1136,7 @@ public class GeneralTypeConverter implements TypeConverter {
                         .determineHttpMessageDecoder(MediaType.APPLICATION_JSON.getName())
                         .decode(new ByteArrayInputStream(value.getBytes(UTF_8)), (Class<?>) targetType);
             } catch (Throwable t) {
-                LOGGER.debug("Failed to parse [{}] from json string [{}]", targetType, value, t);
+                LOGGER.debug("Failed to parse value '{}' from json string '{}'", targetType, value, t);
             }
         }
         return null;

@@ -19,6 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
@@ -29,6 +33,7 @@ import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
@@ -52,6 +57,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.AMBIGUOUS_MAPPING;
 
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
+
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(DefaultRequestMappingRegistry.class);
 
     private final FrameworkModel frameworkModel;
     private final ContentNegotiator contentNegotiator;
@@ -100,6 +108,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
             for (int i = 0, size = resolvers.size(); i < size; i++) {
                 RequestMappingResolver resolver = resolvers.get(i);
+                if (LOGGER.isInfoEnabled()) {
+                    String name = resolver.getClass().getSimpleName();
+                    LOGGER.info("{} resolve rest mappings from [{}]", name, CollectionUtils.first(classes));
+                }
                 ServiceMeta serviceMeta = new ServiceMeta(classes, sd, service, url, resolver.getRestToolKit());
                 if (!resolver.accept(serviceMeta)) {
                     continue;
@@ -142,7 +154,13 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             registration.mapping = mapping;
             registration.meta = handler;
             for (PathExpression path : mapping.getPathCondition().getExpressions()) {
-                tree.addPath(path, registration);
+                Registration exists = tree.addPath(path, registration);
+                if (exists == null) {
+                    LOGGER.debug("Register rest mapping path: '{}' -> {}", path, mapping);
+                } else if (LOGGER.isWarnEnabled()) {
+                    String msg = Messages.DUPLICATE_MAPPING.format(path, mapping, exists.mapping);
+                    LOGGER.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", msg);
+                }
             }
         } finally {
             lock.writeLock().unlock();
@@ -232,6 +250,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 }
                 return c1.variableMap.size() - c2.variableMap.size();
             });
+
+            LOGGER.debug("Candidate rest mappings: {}", candidates);
+
             Candidate first = candidates.get(0);
             Candidate second = candidates.get(1);
             if (first.mapping.compareTo(second.mapping, request) == 0) {
@@ -245,6 +266,8 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         HandlerMeta handler = winner.meta;
         request.setAttribute(RestConstants.MAPPING_ATTRIBUTE, mapping);
         request.setAttribute(RestConstants.HANDLER_ATTRIBUTE, handler);
+
+        LOGGER.debug("Matched rest mapping={}, method={}", mapping, handler.getMethod());
 
         if (!winner.variableMap.isEmpty()) {
             request.setAttribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE, winner.variableMap);
@@ -368,5 +391,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         HandlerMeta meta;
         PathExpression expression;
         Map<String, String> variableMap;
+
+        @Override
+        public String toString() {
+            return "Candidate{mapping=" + mapping + ", method=" + meta.getMethod() + '}';
+        }
     }
 }

@@ -20,8 +20,15 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
+import org.apache.dubbo.remoting.http12.rest.Param;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
+import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
@@ -40,7 +47,21 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
     protected NamedValueMeta createNamedValueMeta(ParameterMeta param) {
-        return new NamedValueMeta(param.isAnnotated(Annotations.Nonnull), null);
+        boolean noBodyParam = true;
+        int paramCount = -1;
+        if (param instanceof MethodParameterMeta) {
+            MethodMeta methodMeta = ((MethodParameterMeta) param).getMethodMeta();
+            ParameterMeta[] paramMetas = methodMeta.getParameters();
+            for (ParameterMeta paramMeta : paramMetas) {
+                AnnotationMeta<Param> anno = paramMeta.findAnnotation(Param.class);
+                if (anno != null && anno.getAnnotation().type() == ParamType.Body) {
+                    noBodyParam = false;
+                    break;
+                }
+            }
+            paramCount = methodMeta.getMethodDescriptor().getRpcType() != RpcType.UNARY ? 1 : paramMetas.length;
+        }
+        return new FallbackNamedValueMeta(param.isAnnotated(Annotations.Nonnull), noBodyParam, paramCount);
     }
 
     @Override
@@ -54,17 +75,24 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
     }
 
     protected Object doResolveValue(NamedValueMeta meta, boolean single, HttpRequest request, HttpResponse response) {
-        ParameterMeta parameter = meta.parameterMeta();
+        FallbackNamedValueMeta fm = (FallbackNamedValueMeta) meta;
+
         if (HttpMethods.supportBody(request.method())) {
-            Object body = RequestUtils.decodeBody(request, parameter.getType(), parameter.isSingle());
-            if (body != null) {
-                if (parameter.getType().isInstance(body)) {
-                    return body;
-                } else if (body instanceof List) {
+            if (fm.paramCount == 1) {
+                try {
+                    Object body = RequestUtils.decodeBody(request, meta.genericType());
+                    if (body != null) {
+                        return body;
+                    }
+                } catch (DecodeException ignored) {
+                }
+            }
+            if (fm.noBodyParam) {
+                Object body = RequestUtils.decodeBodyAsObject(request);
+                if (body instanceof List) {
                     List<?> list = (List<?>) body;
-                    int index = parameter.getIndex();
-                    if (index >= 0 && list.size() > index) {
-                        return list.get(index);
+                    if (list.size() == fm.paramCount) {
+                        return list.get(meta.parameterMeta().getIndex());
                     }
                 } else if (body instanceof Map) {
                     Object value = ((Map<?, ?>) body).get(meta.name());
@@ -74,18 +102,32 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 }
             }
         }
+
         if (single) {
             String value = request.parameter(meta.name());
-            if (parameter.isSimple() || RestUtils.isMaybeJSONObject(value)) {
+            if (meta.parameterMeta().isSimple() || RestUtils.isMaybeJSONObject(value)) {
                 return value;
             }
-            return parameter.bind(request, response);
+            return meta.parameterMeta().bind(request, response);
         }
+
         return request.parameterValues(meta.name());
     }
 
     @Override
     protected Object resolveMapValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
         return resolveValue(meta, request, response);
+    }
+
+    private static class FallbackNamedValueMeta extends NamedValueMeta {
+
+        private final boolean noBodyParam;
+        private final int paramCount;
+
+        FallbackNamedValueMeta(boolean required, boolean noBodyParam, int paramCount) {
+            super(required, null);
+            this.noBodyParam = noBodyParam;
+            this.paramCount = paramCount;
+        }
     }
 }

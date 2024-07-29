@@ -18,10 +18,17 @@ package org.apache.dubbo.rpc.protocol.tri.rest.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
+import org.apache.dubbo.remoting.http12.rest.Param;
+import org.apache.dubbo.rpc.protocol.tri.rest.service.User.Group;
 import org.apache.dubbo.rpc.protocol.tri.rest.service.User.UserEx;
+
+import java.util.List;
+import java.util.Map;
 
 import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse;
+
+import static org.apache.dubbo.remoting.http12.rest.ParamType.Body;
 
 @Mapping("/")
 public interface DemoService {
@@ -32,8 +39,22 @@ public interface DemoService {
 
     Book beanArgTest(Book book, Integer quote);
 
+    Book beanArgTest2(Book book);
+
     @Mapping("/bean")
     UserEx advanceBeanArgTest(UserEx user);
+
+    List<Integer> listArgBodyTest(@Param(type = Body) List<Integer> list, int age);
+
+    List<Integer> listArgBodyTest2(List<Integer> list, int age);
+
+    Map<Integer, List<Long>> mapArgBodyTest(@Param(type = Body) Map<Integer, List<Long>> map, int age);
+
+    Map<Integer, List<Long>> mapArgBodyTest2(Map<Integer, List<Long>> map, int age);
+
+    List<Group> beanBodyTest(@Param(type = Body) List<Group> groups, int age);
+
+    List<Group> beanBodyTest2(List<Group> groups, int age);
 
     Book buy(Book book);
 

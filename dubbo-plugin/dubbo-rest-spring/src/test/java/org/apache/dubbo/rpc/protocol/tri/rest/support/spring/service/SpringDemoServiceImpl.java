@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.service.User.UserEx;
+import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl;
 
-public class SpringDemoServiceImpl implements SpringDemoService {
-
-    @Override
-    public UserEx beanArgTest(UserEx user) {
-        return user;
-    }
-}
+public class SpringDemoServiceImpl extends DemoServiceImpl implements SpringDemoService {}

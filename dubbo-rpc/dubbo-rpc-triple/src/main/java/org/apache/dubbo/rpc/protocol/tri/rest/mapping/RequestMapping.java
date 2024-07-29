@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ParamsCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ResponseMeta;
 
@@ -201,6 +202,10 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
     public PathCondition getPathCondition() {
         return pathCondition;
+    }
+
+    public MethodsCondition getMethodsCondition() {
+        return methodsCondition;
     }
 
     public ProducesCondition getProducesCondition() {
@@ -417,6 +422,13 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
         public Builder custom(Condition<?, HttpRequest> customCondition) {
             this.customCondition = customCondition;
+            return this;
+        }
+
+        public Builder service(String ServiceGroup, String ServiceVersion) {
+            if (ServiceGroup != null || ServiceVersion != null) {
+                customCondition = new ServiceVersionCondition(ServiceGroup, ServiceVersion);
+            }
             return this;
         }
 
