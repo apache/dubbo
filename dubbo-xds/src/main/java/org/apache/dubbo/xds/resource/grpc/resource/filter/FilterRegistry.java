@@ -17,7 +17,7 @@
 package org.apache.dubbo.xds.resource.grpc.resource.filter;
 
 import org.apache.dubbo.common.lang.Nullable;
-import org.apache.dubbo.xds.resource.grpc.resource.RouterFilter;
+import org.apache.dubbo.xds.resource.grpc.resource.filter.router.RouterFilter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.fault.FaultFilter;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.rbac.RbacFilter;
 

@@ -75,12 +75,12 @@ public class FilterChain {
         if (o == null || getClass() != o.getClass()) {return false;}
         FilterChain that = (FilterChain) o;
         return Objects.equals(name, that.name) && Objects.equals(filterChainMatch, that.filterChainMatch)
-                && Objects.equals(httpConnectionManager, that.httpConnectionManager);
-        //        && Objects.equals(sslContextProviderSupplier, that.sslContextProviderSupplier);
+                && Objects.equals(httpConnectionManager, that.httpConnectionManager)
+                && Objects.equals(sslContextProviderSupplier, that.sslContextProviderSupplier);
     }
 
     public int hashCode() {
-        return Objects.hash(name, filterChainMatch, httpConnectionManager/*, sslContextProviderSupplier*/);
+        return Objects.hash(name, filterChainMatch, httpConnectionManager, sslContextProviderSupplier);
     }
 
     public static FilterChain create(

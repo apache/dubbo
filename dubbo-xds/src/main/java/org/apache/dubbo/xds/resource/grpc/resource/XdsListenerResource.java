@@ -30,6 +30,7 @@ import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterConfig;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.FilterRegistry;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.NamedFilterConfig;
 import org.apache.dubbo.xds.resource.grpc.resource.filter.ServerInterceptorBuilder;
+import org.apache.dubbo.xds.resource.grpc.resource.filter.router.RouterFilter;
 import org.apache.dubbo.xds.resource.grpc.resource.update.LdsUpdate;
 
 import java.net.UnknownHostException;
