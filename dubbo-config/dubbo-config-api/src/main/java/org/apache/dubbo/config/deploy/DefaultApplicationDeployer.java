@@ -130,7 +130,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
-    private final DubboShutdownHook dubboShutdownHook;
 
     private volatile MetricsServiceExporter metricsServiceExporter;
 
@@ -149,7 +148,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         frameworkExecutorRepository =
                 applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         executorRepository = ExecutorRepository.getInstance(applicationModel);
-        dubboShutdownHook = new DubboShutdownHook(applicationModel);
 
         // load spi listener
         Set<ApplicationDeployListener> deployListeners = applicationModel
@@ -235,7 +233,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void registerShutdownHook() {
-        dubboShutdownHook.register();
+        DubboShutdownHook.getInstance().register();
     }
 
     private void initModuleDeployers() {
