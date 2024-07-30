@@ -17,12 +17,32 @@
 package org.apache.dubbo.xds.resource_new.cluster;
 
 import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Struct;
+import com.google.protobuf.util.Durations;
+import com.google.protobuf.util.JsonFormat;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster.LeastRequestLbConfig;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster.RingHashLbConfig;
 import io.envoyproxy.envoy.config.cluster.v3.LoadBalancingPolicy;
+import io.envoyproxy.envoy.config.cluster.v3.LoadBalancingPolicy.Policy;
 
+import io.envoyproxy.envoy.extensions.load_balancing_policies.client_side_weighted_round_robin.v3.ClientSideWeightedRoundRobin;
+import io.envoyproxy.envoy.extensions.load_balancing_policies.least_request.v3.LeastRequest;
+import io.envoyproxy.envoy.extensions.load_balancing_policies.pick_first.v3.PickFirst;
+import io.envoyproxy.envoy.extensions.load_balancing_policies.ring_hash.v3.RingHash;
+
+import io.envoyproxy.envoy.extensions.load_balancing_policies.round_robin.v3.RoundRobin;
+import io.envoyproxy.envoy.extensions.load_balancing_policies.wrr_locality.v3.WrrLocality;
+
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.xds.resource_new.exception.ResourceInvalidException;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Creates service config JSON  load balancer config objects for a given xDS Cluster message. Supports both the "legacy"
@@ -74,134 +94,129 @@ public class LoadBalancerConfigFactory {
      *
      * @throws ResourceInvalidException If the {@link Cluster} has an invalid LB configuration.
      */
-    public static Object newConfig(
+    public static Map<String, ?> newConfig(
             Cluster cluster,
             boolean enableLeastRequest,
             boolean enableWrr,
             boolean enablePickFirst) throws ResourceInvalidException {
 
-        return new Object();
-
-        //// The new load_balancing_policy will always be used if it is set, but for backward
-        //// compatibility we will fall back to using the old lb_policy field if the new field is not set.
-        //if (cluster.hasLoadBalancingPolicy()) {
-        //  try {
-        //    return LoadBalancingPolicyConverter.convertToServiceConfig(cluster.getLoadBalancingPolicy(),
-        //        0, enableWrr, enablePickFirst);
-        //  } catch (LoadBalancingPolicyConverter.MaxRecursionReachedException e) {
-        //    throw new ResourceInvalidException("Maximum LB config recursion depth reached", e);
-        //  }
-        //} else {
-        //  return LegacyLoadBalancingPolicyConverter.convertToServiceConfig(cluster, enableLeastRequest);
-        //}
+        // The new load_balancing_policy will always be used if it is set, but for backward
+        // compatibility we will fall back to using the old lb_policy field if the new field is not set.
+        if (cluster.hasLoadBalancingPolicy()) {
+          try {
+            return LoadBalancingPolicyConverter.convertToServiceConfig(cluster.getLoadBalancingPolicy(),
+                0, enableWrr, enablePickFirst);
+          } catch (LoadBalancingPolicyConverter.MaxRecursionReachedException e) {
+            throw new ResourceInvalidException("Maximum LB config recursion depth reached", e);
+          }
+        } else {
+          return LegacyLoadBalancingPolicyConverter.convertToServiceConfig(cluster, enableLeastRequest);
+        }
     }
 
-    /*  *//**
+    /**
      * Builds a service config JSON object for the ring_hash load balancer config based on the given
      * config values.
-     *//*
-  private static ImmutableMap<String, ?> buildRingHashConfig(Long minRingSize, Long maxRingSize) {
-    ImmutableMap.Builder<String, Object> configBuilder = ImmutableMap.builder();
+     */
+  private static Map<String, ?> buildRingHashConfig(Long minRingSize, Long maxRingSize) {
+    Map<String, Object> config = new HashMap<>();
     if (minRingSize != null) {
-      configBuilder.put(MIN_RING_SIZE_FIELD_NAME, minRingSize.doubleValue());
+      config.put(MIN_RING_SIZE_FIELD_NAME, minRingSize.doubleValue());
     }
     if (maxRingSize != null) {
-      configBuilder.put(MAX_RING_SIZE_FIELD_NAME, maxRingSize.doubleValue());
+      config.put(MAX_RING_SIZE_FIELD_NAME, maxRingSize.doubleValue());
     }
-    return ImmutableMap.of(RING_HASH_FIELD_NAME, configBuilder.buildOrThrow());
+     return CollectionUtils.toMap(RING_HASH_FIELD_NAME, config);
   }
 
-  *//**
+  /**
      * Builds a service config JSON object for the weighted_round_robin load balancer config based on
      * the given config values.
-     *//*
-  private static ImmutableMap<String, ?> buildWrrConfig(String blackoutPeriod,
+     */
+  private static Map<String, ?> buildWrrConfig(String blackoutPeriod,
                                                         String weightExpirationPeriod,
                                                         String oobReportingPeriod,
                                                         Boolean enableOobLoadReport,
                                                         String weightUpdatePeriod,
                                                         Float errorUtilizationPenalty) {
-    ImmutableMap.Builder<String, Object> configBuilder = ImmutableMap.builder();
+    Map<String, Object> config = new HashMap<>();
     if (blackoutPeriod != null) {
-      configBuilder.put(BLACK_OUT_PERIOD, blackoutPeriod);
+      config.put(BLACK_OUT_PERIOD, blackoutPeriod);
     }
     if (weightExpirationPeriod != null) {
-      configBuilder.put(WEIGHT_EXPIRATION_PERIOD, weightExpirationPeriod);
+      config.put(WEIGHT_EXPIRATION_PERIOD, weightExpirationPeriod);
     }
     if (oobReportingPeriod != null) {
-      configBuilder.put(OOB_REPORTING_PERIOD, oobReportingPeriod);
+      config.put(OOB_REPORTING_PERIOD, oobReportingPeriod);
     }
     if (enableOobLoadReport != null) {
-      configBuilder.put(ENABLE_OOB_LOAD_REPORT, enableOobLoadReport);
+      config.put(ENABLE_OOB_LOAD_REPORT, enableOobLoadReport);
     }
     if (weightUpdatePeriod != null) {
-      configBuilder.put(WEIGHT_UPDATE_PERIOD, weightUpdatePeriod);
+      config.put(WEIGHT_UPDATE_PERIOD, weightUpdatePeriod);
     }
     if (errorUtilizationPenalty != null) {
-      configBuilder.put(ERROR_UTILIZATION_PENALTY, errorUtilizationPenalty);
+      config.put(ERROR_UTILIZATION_PENALTY, errorUtilizationPenalty);
     }
-//    return ImmutableMap.of(WeightedRoundRobinLoadBalancerProvider.SCHEME,
-//        configBuilder.buildOrThrow());
-      return null;
+      return CollectionUtils.toMap("weighted_round_robin", config);
   }
 
-  *//**
+  /**
      * Builds a service config JSON object for the least_request load balancer config based on the
      * given config values.
-     *//*
-  private static ImmutableMap<String, ?> buildLeastRequestConfig(Integer choiceCount) {
-    ImmutableMap.Builder<String, Object> configBuilder = ImmutableMap.builder();
+     */
+  private static Map<String, ?> buildLeastRequestConfig(Integer choiceCount) {
+    Map<String, Object> config = new HashMap<>();
     if (choiceCount != null) {
-      configBuilder.put(CHOICE_COUNT_FIELD_NAME, choiceCount.doubleValue());
+      config.put(CHOICE_COUNT_FIELD_NAME, choiceCount.doubleValue());
     }
-    return ImmutableMap.of(LEAST_REQUEST_FIELD_NAME, configBuilder.buildOrThrow());
+      return CollectionUtils.toMap(LEAST_REQUEST_FIELD_NAME, config);
   }
 
-  *//**
+  /**
      * Builds a service config JSON wrr_locality by wrapping another policy config.
-     *//*
-  private static ImmutableMap<String, ?> buildWrrLocalityConfig(
-      ImmutableMap<String, ?> childConfig) {
-    return ImmutableMap.<String, Object>builder().put(WRR_LOCALITY_FIELD_NAME,
-        ImmutableMap.of(CHILD_POLICY_FIELD, ImmutableList.of(childConfig))).buildOrThrow();
+     */
+  private static Map<String, ?> buildWrrLocalityConfig(
+      Map<String, ?> childConfig) {
+      return CollectionUtils.toMap(WRR_LOCALITY_FIELD_NAME, CollectionUtils.toMap(CHILD_POLICY_FIELD,
+              Collections.singletonList(childConfig)));
   }
 
-  *//**
+  /**
      * Builds an empty service config JSON config object for round robin (it is not configurable).
-     *//*
-  private static ImmutableMap<String, ?> buildRoundRobinConfig() {
-    return ImmutableMap.of(ROUND_ROBIN_FIELD_NAME, ImmutableMap.of());
+     */
+  private static Map<String, ?> buildRoundRobinConfig() {
+    return CollectionUtils.toMap(ROUND_ROBIN_FIELD_NAME, Collections.emptyMap());
   }
 
-  *//**
+  /**
      * Builds a service config JSON object for the pick_first load balancer config based on the
      * given config values.
-     *//*
-  private static ImmutableMap<String, ?> buildPickFirstConfig(boolean shuffleAddressList) {
-    ImmutableMap.Builder<String, Object> configBuilder = ImmutableMap.builder();
-    configBuilder.put(SHUFFLE_ADDRESS_LIST_FIELD_NAME, shuffleAddressList);
-    return ImmutableMap.of(PICK_FIRST_FIELD_NAME, configBuilder.buildOrThrow());
+     */
+  private static Map<String, ?> buildPickFirstConfig(boolean shuffleAddressList) {
+    return CollectionUtils.toMap(PICK_FIRST_FIELD_NAME,
+            CollectionUtils.toMap(SHUFFLE_ADDRESS_LIST_FIELD_NAME, shuffleAddressList));
   }
 
-  *//**
+  /**
      * Responsible for converting from a {@code envoy.config.cluster.v3.LoadBalancingPolicy} proto
      * message to a gRPC service config format.
-     *//*
+     */
   static class LoadBalancingPolicyConverter {
 
     private static final int MAX_RECURSION = 16;
 
-    *//**
+    /**
      * Converts a {@link LoadBalancingPolicy} object to a service config JSON object.
-     *//*
-    private static ImmutableMap<String, ?> convertToServiceConfig(
+     */
+    private static Map<String, ?> convertToServiceConfig(
         LoadBalancingPolicy loadBalancingPolicy, int recursionDepth, boolean enableWrr,
         boolean enablePickFirst)
         throws ResourceInvalidException, MaxRecursionReachedException {
       if (recursionDepth > MAX_RECURSION) {
         throw new MaxRecursionReachedException();
       }
-      ImmutableMap<String, ?> serviceConfig = null;
+      Map<String, ?> serviceConfig = null;
 
       for (Policy policy : loadBalancingPolicy.getPoliciesList()) {
         Any typedConfig = policy.getTypedExtensionConfig().getTypedConfig();
@@ -239,14 +254,14 @@ public class LoadBalancerConfigFactory {
         }
         // The service config is expected to have a single root entry, where the name of that entry
         // is the name of the policy. A Load balancer with this name must exist in the registry.
-        if (serviceConfig == null || LoadBalancerRegistry.getDefaultRegistry()
-            .getProvider(Iterables.getOnlyElement(serviceConfig.keySet())) == null) {
+//        if (serviceConfig == null || LoadBalancerRegistry.getDefaultRegistry()
+//            .getProvider(Iterables.getOnlyElement(serviceConfig.keySet())) == null) {
 //          logger.log(XdsLogLevel.WARNING, "Policy {0} not found in the LB registry, skipping",
 //              typedConfig.getTypeUrl());
-          continue;
-        } else {
+//          continue;
+//        } else {
           return serviceConfig;
-        }
+//        }
       }
 
       // If we could not find a Policy that we could both convert as well as find a provider for
@@ -254,10 +269,10 @@ public class LoadBalancerConfigFactory {
       throw new ResourceInvalidException("Invalid LoadBalancingPolicy: " + loadBalancingPolicy);
     }
 
-    *//**
+    /**
      * Converts a ring_hash {@link Any} configuration to service config format.
-     *//*
-    private static ImmutableMap<String, ?> convertRingHashConfig(RingHash ringHash)
+     */
+    private static Map<String, ?> convertRingHashConfig(RingHash ringHash)
         throws ResourceInvalidException {
       // The hash function needs to be validated here as it is not exposed in the returned
       // configuration for later validation.
@@ -271,7 +286,7 @@ public class LoadBalancerConfigFactory {
           ringHash.hasMaximumRingSize() ? ringHash.getMaximumRingSize().getValue() : null);
     }
 
-    private static ImmutableMap<String, ?> convertWeightedRoundRobinConfig(
+    private static Map<String, ?> convertWeightedRoundRobinConfig(
             ClientSideWeightedRoundRobin wrr) throws ResourceInvalidException {
       try {
         return buildWrrConfig(
@@ -288,11 +303,12 @@ public class LoadBalancerConfigFactory {
       }
     }
 
-    *//**
+    /**
      * Converts a wrr_locality {@link Any} configuration to service config format.
-     *//*
-    private static ImmutableMap<String, ?> convertWrrLocalityConfig(WrrLocality wrrLocality,
-        int recursionDepth, boolean enableWrr, boolean enablePickFirst)
+     */
+    private static Map<String, ?> convertWrrLocalityConfig(
+            WrrLocality wrrLocality,
+            int recursionDepth, boolean enableWrr, boolean enablePickFirst)
         throws ResourceInvalidException,
         MaxRecursionReachedException {
       return buildWrrLocalityConfig(
@@ -300,59 +316,59 @@ public class LoadBalancerConfigFactory {
               recursionDepth + 1, enableWrr, enablePickFirst));
     }
 
-    *//**
+    /**
      * "Converts" a round_robin configuration to service config format.
-     *//*
-    private static ImmutableMap<String, ?> convertRoundRobinConfig() {
+     */
+    private static Map<String, ?> convertRoundRobinConfig() {
       return buildRoundRobinConfig();
     }
 
-    *//**
+    /**
      * "Converts" a pick_first configuration to service config format.
-     *//*
-    private static ImmutableMap<String, ?> convertPickFirstConfig(PickFirst pickFirst) {
+     */
+    private static Map<String, ?> convertPickFirstConfig(PickFirst pickFirst) {
       return buildPickFirstConfig(pickFirst.getShuffleAddressList());
     }
 
-    *//**
+    /**
      * Converts a least_request {@link Any} configuration to service config format.
-     *//*
-    private static ImmutableMap<String, ?> convertLeastRequestConfig(LeastRequest leastRequest)
+     */
+    private static Map<String, ?> convertLeastRequestConfig(LeastRequest leastRequest)
         throws ResourceInvalidException {
       return buildLeastRequestConfig(
           leastRequest.hasChoiceCount() ? leastRequest.getChoiceCount().getValue() : null);
     }
 
-    *//**
+    /**
      * Converts a custom TypedStruct LB config to service config format.
-     *//*
+     */
     @SuppressWarnings("unchecked")
-    private static ImmutableMap<String, ?> convertCustomConfig(
+    private static Map<String, ?> convertCustomConfig(
         com.github.xds.type.v3.TypedStruct configTypedStruct)
         throws ResourceInvalidException {
-      return ImmutableMap.of(parseCustomConfigTypeName(configTypedStruct.getTypeUrl()),
+      return CollectionUtils.toMap(parseCustomConfigTypeName(configTypedStruct.getTypeUrl()),
           (Map<String, ?>) parseCustomConfigJson(configTypedStruct.getValue()));
     }
 
-    *//**
+    /**
      * Converts a custom UDPA (legacy) TypedStruct LB config to service config format.
-     *//*
+     */
     @SuppressWarnings("unchecked")
-    private static ImmutableMap<String, ?> convertCustomConfig(
+    private static Map<String, ?> convertCustomConfig(
         com.github.udpa.udpa.type.v1.TypedStruct configTypedStruct)
         throws ResourceInvalidException {
-      return ImmutableMap.of(parseCustomConfigTypeName(configTypedStruct.getTypeUrl()),
+      return CollectionUtils.toMap(parseCustomConfigTypeName(configTypedStruct.getTypeUrl()),
           (Map<String, ?>) parseCustomConfigJson(configTypedStruct.getValue()));
     }
 
-    *//**
+    /**
      * Print the config Struct into JSON and then parse that into our internal representation.
-     *//*
+     */
     private static Object parseCustomConfigJson(Struct configStruct)
         throws ResourceInvalidException {
       Object rawJsonConfig = null;
       try {
-        rawJsonConfig = JsonParser.parse(JsonFormat.printer().print(configStruct));
+        rawJsonConfig = JsonUtils.toJavaObject(JsonFormat.printer().print(configStruct), Object.class);
       } catch (IOException e) {
         throw new ResourceInvalidException("Unable to parse custom LB config JSON", e);
       }
@@ -378,20 +394,20 @@ public class LoadBalancerConfigFactory {
     }
   }
 
-  *//**
+  /**
      * Builds a JSON LB configuration based on the old style of using the xDS Cluster proto message.
      * The lb_policy field is used to select the policy and configuration is extracted from various
      * policy specific fields in Cluster.
-     *//*
+     */
   static class LegacyLoadBalancingPolicyConverter {
 
-    *//**
+    /**
      * Factory method for creating a new {link LoadBalancerConfigConverter} for a given xDS {@link
      * Cluster}.
      *
      * @throws ResourceInvalidException If the {@link Cluster} has an invalid LB configuration.
-     *//*
-    static ImmutableMap<String, ?> convertToServiceConfig(Cluster cluster,
+     */
+    static Map<String, ?> convertToServiceConfig(Cluster cluster,
         boolean enableLeastRequest) throws ResourceInvalidException {
       switch (cluster.getLbPolicy()) {
         case RING_HASH:
@@ -409,11 +425,11 @@ public class LoadBalancerConfigFactory {
           "Cluster " + cluster.getName() + ": unsupported lb policy: " + cluster.getLbPolicy());
     }
 
-    *//**
+    /**
      * Creates a new ring_hash service config JSON object based on the old {@link RingHashLbConfig}
      * config message.
-     *//*
-    private static ImmutableMap<String, ?> convertRingHashConfig(Cluster cluster)
+     */
+    private static Map<String, ?> convertRingHashConfig(Cluster cluster)
         throws ResourceInvalidException {
       RingHashLbConfig lbConfig = cluster.getRingHashLbConfig();
 
@@ -429,14 +445,14 @@ public class LoadBalancerConfigFactory {
           lbConfig.hasMaximumRingSize() ? (Long) lbConfig.getMaximumRingSize().getValue() : null);
     }
 
-    *//**
+    /**
      * Creates a new least_request service config JSON object based on the old {@link
      * LeastRequestLbConfig} config message.
-     *//*
-    private static ImmutableMap<String, ?> convertLeastRequestConfig(Cluster cluster) {
+     */
+    private static Map<String, ?> convertLeastRequestConfig(Cluster cluster) {
       LeastRequestLbConfig lbConfig = cluster.getLeastRequestLbConfig();
       return buildLeastRequestConfig(
           lbConfig.hasChoiceCount() ? (Integer) lbConfig.getChoiceCount().getValue() : null);
     }
-  }*/
+  }
 }

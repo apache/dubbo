@@ -9,6 +9,7 @@ import org.apache.dubbo.xds.resource_new.listener.security.UpstreamTlsContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class CdsUpdate implements ResourceUpdate {
 
@@ -76,7 +77,7 @@ public class CdsUpdate implements ResourceUpdate {
 
     private final ClusterType clusterType;
 
-    private final Object lbPolicyConfig;
+    private final Map<String, ?> lbPolicyConfig;
 
     private final long minRingSize;
 
@@ -108,7 +109,7 @@ public class CdsUpdate implements ResourceUpdate {
     private CdsUpdate(
             String clusterName,
             ClusterType clusterType,
-            Object lbPolicyConfig,
+            Map<String, ?> lbPolicyConfig,
             long minRingSize,
             long maxRingSize,
             int choiceCount,
@@ -142,7 +143,7 @@ public class CdsUpdate implements ResourceUpdate {
         return clusterType;
     }
 
-    Object lbPolicyConfig() {
+    Map<String, ?> lbPolicyConfig() {
         return lbPolicyConfig;
     }
 
@@ -256,7 +257,7 @@ public class CdsUpdate implements ResourceUpdate {
     public static class Builder {
         private String clusterName;
         private CdsUpdate.ClusterType clusterType;
-        private Object lbPolicyConfig;
+        private Map<String, ?> lbPolicyConfig;
         private long minRingSize;
         private long maxRingSize;
         private int choiceCount;
@@ -288,7 +289,7 @@ public class CdsUpdate implements ResourceUpdate {
             return this;
         }
 
-        public Builder lbPolicyConfig(Object lbPolicyConfig) {
+        public Builder lbPolicyConfig(Map<String, ?> lbPolicyConfig) {
             if (lbPolicyConfig == null) {
                 throw new NullPointerException("Null lbPolicyConfig");
             }

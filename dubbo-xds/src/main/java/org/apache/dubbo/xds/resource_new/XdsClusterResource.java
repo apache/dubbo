@@ -26,6 +26,7 @@ import org.apache.dubbo.xds.resource_new.update.CdsUpdate;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.protobuf.Duration;
@@ -116,7 +117,7 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
         }
         CdsUpdate.Builder updateBuilder = structOrError.getStruct();
 
-        Object lbPolicyConfig = LoadBalancerConfigFactory.newConfig(cluster, enableLeastRequest, enableWrr,
+        Map<String, ?> lbPolicyConfig = LoadBalancerConfigFactory.newConfig(cluster, enableLeastRequest, enableWrr,
                 enablePickFirst);
 
         updateBuilder.lbPolicyConfig(lbPolicyConfig);
