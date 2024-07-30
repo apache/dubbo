@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Http3Exchanger {
 
-    private static final ErrorTypeAwareLogger LOG = LoggerFactory.getErrorTypeAwareLogger(Http3Exchanger.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(Http3Exchanger.class);
     private static final Map<String, RemotingServer> SERVERS = new ConcurrentHashMap<>();
     private static final Map<String, AbstractConnectionClient> CLIENTS = new ConcurrentHashMap<>(16);
     private static final ChannelHandler HANDLER = new ChannelHandlerAdapter();
@@ -78,7 +78,7 @@ public final class Http3Exchanger {
             try {
                 server.close();
             } catch (Throwable t) {
-                LOG.error(LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close Http3 server failed", t);
+                LOGGER.error(LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close Http3 server failed", t);
             }
         }
     }

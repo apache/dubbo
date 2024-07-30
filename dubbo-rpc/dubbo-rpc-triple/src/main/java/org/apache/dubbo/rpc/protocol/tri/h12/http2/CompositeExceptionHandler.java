@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -36,8 +37,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("rawtypes")
-public final class CompositeExceptionHandler implements ExceptionHandler {
+@SuppressWarnings({"rawtypes", "unchecked"})
+public final class CompositeExceptionHandler implements ExceptionHandler<Throwable, Object> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CompositeExceptionHandler.class);
 
@@ -49,7 +50,32 @@ public final class CompositeExceptionHandler implements ExceptionHandler {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    public Level resolveLogLevel(Throwable error) {
+        if (error instanceof HttpResultPayloadException) {
+            return Level.DEBUG;
+        }
+
+        List<ExceptionHandler> exceptionHandlers = getSuitableExceptionHandlers(error.getClass());
+        for (int i = 0, len = exceptionHandlers.size(); i < len; i++) {
+            Level level = exceptionHandlers.get(i).resolveLogLevel(error);
+            if (level != null) {
+                return level;
+            }
+        }
+
+        if (error instanceof HttpStatusException) {
+            int httpStatusCode = ((HttpStatusException) error).getStatusCode();
+            if (httpStatusCode < HttpStatus.BAD_REQUEST.getCode()) {
+                return Level.DEBUG;
+            }
+            if (httpStatusCode < HttpStatus.INTERNAL_SERVER_ERROR.getCode()) {
+                return Level.INFO;
+            }
+        }
+        return Level.ERROR;
+    }
+
+    @Override
     public HttpResult handle(Throwable error) {
         error = ExceptionUtils.unwrap(error);
 
@@ -59,37 +85,33 @@ public final class CompositeExceptionHandler implements ExceptionHandler {
 
         List<ExceptionHandler> exceptionHandlers = getSuitableExceptionHandlers(error.getClass());
         for (int i = 0, len = exceptionHandlers.size(); i < len; i++) {
-            ExceptionHandler handler = exceptionHandlers.get(i);
-            HttpResult result = handler.handle(error);
+            HttpResult result = exceptionHandlers.get(i).handle(error);
             if (result != null) {
                 return result;
             }
         }
 
-        int httpStatusCode = TriRpcStatus.triCodeToDubboCode(TriRpcStatus.getStatus(error).code);
+        int statusCode;
+        if (error instanceof HttpStatusException) {
+            statusCode = ((HttpStatusException) error).getStatusCode();
+        } else {
+            statusCode = TriRpcStatus.grpcCodeToHttpStatus(TriRpcStatus.getStatus(error).code);
+        }
 
         if (TripleProtocol.VERBOSE_ENABLED) {
-            if (httpStatusCode < 1) {
-                if (error instanceof HttpStatusException) {
-                    httpStatusCode = ((HttpStatusException) error).getStatusCode();
-                } else {
-                    httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
-                }
+            if (statusCode < 1) {
+                statusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
             }
 
-            LOGGER.info("An error occurred while processing the http request: status={}", httpStatusCode, error);
+            LOGGER.info("Http request process error response: status={}", statusCode, error);
 
             ErrorResponse response = new ErrorResponse();
-            response.setStatus(String.valueOf(httpStatusCode));
+            response.setStatus(String.valueOf(statusCode));
             response.setMessage(ExceptionUtils.buildVerboseMessage(error));
-            return HttpResult.of(httpStatusCode, response);
+            return HttpResult.of(statusCode, response);
         }
 
-        if (httpStatusCode > 0) {
-            return HttpResult.of(httpStatusCode, error);
-        }
-
-        return null;
+        return statusCode > 0 ? HttpResult.of(statusCode, error) : null;
     }
 
     private List<ExceptionHandler> getSuitableExceptionHandlers(Class type) {

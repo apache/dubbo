@@ -32,7 +32,7 @@ public class RestConfig implements Serializable {
      * If enabled, a method mapped to "/users" also matches to "/users/".
      * <p>The default value is {@code true}.
      */
-    private boolean trailingSlashMatch;
+    private Boolean trailingSlashMatch;
 
     /**
      * Whether path matching uses suffix pattern matching (".*").
@@ -41,14 +41,14 @@ public class RestConfig implements Serializable {
      * inferred from the URL suffix, e.g., ".json" for "application/json".
      * <p>The default value is {@code true}.
      */
-    private boolean suffixPatternMatch;
+    private Boolean suffixPatternMatch;
 
     /**
      * Whether path matching should be case-sensitive.
      * If enabled, a method mapped to "/users" won't match to "/Users/".
      * <p>The default value is {@code true}.
      */
-    private boolean caseSensitiveMatch;
+    private Boolean caseSensitiveMatch;
 
     /**
      * The parameter name that can be used to specify the response format.
@@ -62,27 +62,27 @@ public class RestConfig implements Serializable {
     @Nested
     private CorsConfig cors;
 
-    public boolean isTrailingSlashMatch() {
+    public Boolean getTrailingSlashMatch() {
         return trailingSlashMatch;
     }
 
-    public void setTrailingSlashMatch(boolean trailingSlashMatch) {
+    public void setTrailingSlashMatch(Boolean trailingSlashMatch) {
         this.trailingSlashMatch = trailingSlashMatch;
     }
 
-    public boolean isSuffixPatternMatch() {
+    public Boolean getSuffixPatternMatch() {
         return suffixPatternMatch;
     }
 
-    public void setSuffixPatternMatch(boolean suffixPatternMatch) {
+    public void setSuffixPatternMatch(Boolean suffixPatternMatch) {
         this.suffixPatternMatch = suffixPatternMatch;
     }
 
-    public boolean isCaseSensitiveMatch() {
+    public Boolean getCaseSensitiveMatch() {
         return caseSensitiveMatch;
     }
 
-    public void setCaseSensitiveMatch(boolean caseSensitiveMatch) {
+    public void setCaseSensitiveMatch(Boolean caseSensitiveMatch) {
         this.caseSensitiveMatch = caseSensitiveMatch;
     }
 

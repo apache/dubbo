@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
-import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,6 +25,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
+import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -107,16 +107,16 @@ public class GeneralTypeConverter implements TypeConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneralTypeConverter.class);
 
-    private final ConverterUtil converterUtil;
+    private final CompositeArgumentConverter converter;
     private final CodecUtils codecUtils;
 
     public GeneralTypeConverter() {
-        converterUtil = null;
+        converter = null;
         codecUtils = null;
     }
 
     public GeneralTypeConverter(FrameworkModel frameworkModel) {
-        converterUtil = frameworkModel.getBeanFactory().getOrRegisterBean(ConverterUtil.class);
+        converter = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeArgumentConverter.class);
         codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
     }
 
@@ -485,6 +485,27 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         if (targetClass.isArray()) {
+            if (targetClass == byte[].class) {
+                if (source instanceof InputStream) {
+                    try (InputStream is = (InputStream) source) {
+                        return StreamUtils.readBytes(is);
+                    }
+                }
+                if (source instanceof FileUpload) {
+                    try (InputStream is = ((FileUpload) source).inputStream()) {
+                        return StreamUtils.readBytes(is);
+                    }
+                }
+                if (source instanceof Character) {
+                    char c = (Character) source;
+                    return new byte[] {(byte) (c >> 8), (byte) c};
+                }
+                if (source instanceof Boolean) {
+                    boolean b = (Boolean) source;
+                    return new byte[] {b ? (byte) 1 : (byte) 0};
+                }
+            }
+
             Class itemType = targetClass.getComponentType();
 
             if (source instanceof Collection) {
@@ -566,28 +587,23 @@ public class GeneralTypeConverter implements TypeConverter {
                     return StreamUtils.toString(is);
                 }
             }
-            return source.toString();
-        }
-
-        if (targetClass == byte[].class) {
-            if (source instanceof InputStream) {
-                try (InputStream is = (InputStream) source) {
-                    return StreamUtils.readBytes(is);
-                }
-            }
             if (source instanceof FileUpload) {
-                try (InputStream is = ((FileUpload) source).inputStream()) {
-                    return StreamUtils.readBytes(is);
+                FileUpload fu = (FileUpload) source;
+                try (InputStream is = fu.inputStream()) {
+                    String contentType = fu.contentType();
+                    if (contentType != null) {
+                        int index = contentType.lastIndexOf(HttpUtils.CHARSET_PREFIX);
+                        if (index > 0) {
+                            return StreamUtils.toString(
+                                    is,
+                                    Charset.forName(
+                                            contentType.substring(index + 8).trim()));
+                        }
+                    }
+                    return StreamUtils.toString(is);
                 }
             }
-            if (source instanceof Character) {
-                char c = (Character) source;
-                return new byte[] {(byte) (c >> 8), (byte) c};
-            }
-            if (source instanceof Boolean) {
-                boolean b = (Boolean) source;
-                return new byte[] {b ? (byte) 1 : (byte) 0};
-            }
+            return source.toString();
         }
 
         if (!Modifier.isAbstract(targetClass.getModifiers())) {
@@ -755,11 +771,6 @@ public class GeneralTypeConverter implements TypeConverter {
             return target;
         }
 
-        Object target = customConvert(source, targetType);
-        if (target != null) {
-            return target;
-        }
-
         try {
             return JsonUtils.convertObject(source, targetType);
         } catch (Throwable t) {
@@ -771,19 +782,15 @@ public class GeneralTypeConverter implements TypeConverter {
     }
 
     protected Object customConvert(Object source, Class<?> targetClass) {
-        return converterUtil == null ? null : converterUtil.convertIfPossible(source, targetClass);
-    }
-
-    protected Object customConvert(Object source, Type targetType) {
-        return null;
+        return converter == null ? null : converter.convert(source, targetClass);
     }
 
     protected Collection customCreateCollection(Class targetClass, int size) {
-        return converterUtil == null ? null : (Collection) converterUtil.convertIfPossible(size, targetClass);
+        return converter == null ? null : (Collection) converter.convert(size, targetClass);
     }
 
     protected Map customCreateMap(Class targetClass, int size) {
-        return converterUtil == null ? null : (Map) converterUtil.convertIfPossible(size, targetClass);
+        return converter == null ? null : (Map) converter.convert(size, targetClass);
     }
 
     private Collection createCollection(Class targetClass, int size) {
@@ -881,7 +888,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 return new LinkedHashSet(source);
             }
             if (Modifier.isAbstract(targetClass.getModifiers())) {
-                Collection collection = (Collection) converterUtil.convertIfPossible(source.size(), targetClass);
+                Collection collection = customCreateCollection(targetClass, source.size());
                 if (collection != null) {
                     collection.addAll(source);
                     return collection;
@@ -1012,7 +1019,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 return new ConcurrentHashMap(source);
             }
             if (Modifier.isAbstract(targetClass.getModifiers())) {
-                Map map = (Map) converterUtil.convertIfPossible(source.size(), targetClass);
+                Map map = customCreateMap(targetClass, source.size());
                 if (map != null) {
                     map.putAll(source);
                     return map;

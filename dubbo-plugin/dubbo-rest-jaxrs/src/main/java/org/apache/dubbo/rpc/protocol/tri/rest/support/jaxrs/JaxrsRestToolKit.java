@@ -23,8 +23,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.AbstractRestToolKit;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ParamConverter;
 
 final class JaxrsRestToolKit extends AbstractRestToolKit {
@@ -46,19 +44,11 @@ final class JaxrsRestToolKit extends AbstractRestToolKit {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object convert(Object value, ParameterMeta parameter) {
-        if (MultivaluedMap.class.isAssignableFrom(parameter.getType())) {
-            if (value instanceof MultivaluedMap) {
-                return value;
-            }
-            return typeConverter.convert(value, MultivaluedHashMap.class);
-        }
-
         ParamConverter converter = paramConverterFactory.getParamConverter(
                 parameter.getType(), parameter.getGenericType(), parameter.getRawAnnotations());
         if (converter != null) {
             return value instanceof String ? converter.fromString((String) value) : converter.toString(value);
         }
-
         return super.convert(value, parameter);
     }
 

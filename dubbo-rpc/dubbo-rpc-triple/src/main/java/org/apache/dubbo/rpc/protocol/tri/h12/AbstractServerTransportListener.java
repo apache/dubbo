@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
@@ -34,8 +35,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.CompositeExceptionHandler;
 import org.apache.dubbo.rpc.protocol.tri.route.DefaultRequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestRouter;
@@ -44,6 +47,7 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
@@ -60,7 +64,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private final URL url;
     private final HttpChannel httpChannel;
     private final RequestRouter requestRouter;
-    private final ExceptionHandler<?, ?> exceptionHandler;
+    private final ExceptionHandler<Throwable, ?> exceptionHandler;
     private final List<HeaderFilter> headerFilters;
 
     private Executor executor;
@@ -164,14 +168,64 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     }
 
     protected void logError(Throwable t) {
-        if (t instanceof HttpStatusException) {
-            HttpStatusException e = (HttpStatusException) t;
-            if (e.getStatusCode() >= HttpStatus.BAD_REQUEST.getCode()) {
-                LOGGER.debug("http status exception", e);
+        t = ExceptionUtils.unwrap(t);
+        Supplier<String> msg = () -> {
+            StringBuilder sb = new StringBuilder(64);
+            sb.append("An error occurred while processing the http request, ");
+            sb.append(httpMetadata);
+            if (TripleProtocol.VERBOSE_ENABLED) {
+                sb.append(", headers=").append(httpMetadata.headers());
             }
-            return;
+            if (context != null) {
+                MethodDescriptor md = context.getMethodDescriptor();
+                if (md != null) {
+                    sb.append(", method=").append(MethodUtils.toShortString(md.getMethod()));
+                }
+                if (TripleProtocol.VERBOSE_ENABLED) {
+                    Invoker<?> invoker = context.getInvoker();
+                    if (invoker != null) {
+                        URL url = invoker.getUrl();
+                        Object service = url.getServiceModel().getProxyObject();
+                        sb.append(", service=")
+                                .append(service.getClass().getSimpleName())
+                                .append('@')
+                                .append(Integer.toHexString(System.identityHashCode(service)))
+                                .append(", url='")
+                                .append(url)
+                                .append('\'');
+                    }
+                }
+            }
+            return sb.toString();
+        };
+        switch (exceptionHandler.resolveLogLevel(t)) {
+            case TRACE:
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace(msg.get(), t);
+                }
+                return;
+            case DEBUG:
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(msg.get(), t);
+                }
+                return;
+            case INFO:
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info(msg.get(), t);
+                }
+                return;
+            case WARN:
+                if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn(INTERNAL_ERROR, "", "", msg.get(), t);
+                }
+                return;
+            case ERROR:
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error(INTERNAL_ERROR, "", "", msg.get(), t);
+                }
+                return;
+            default:
         }
-        LOGGER.error(INTERNAL_ERROR, "", "", "server internal error", t);
     }
 
     protected void onError(Throwable throwable) {
@@ -270,7 +324,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return frameworkModel;
     }
 
-    public final ExceptionHandler<?, ?> getExceptionHandler() {
+    protected ExceptionHandler<Throwable, ?> getExceptionHandler() {
         return exceptionHandler;
     }
 
@@ -286,7 +340,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return httpMessageListener;
     }
 
-    protected void setHttpMessageListener(HttpMessageListener httpMessageListener) {
+    protected final void setHttpMessageListener(HttpMessageListener httpMessageListener) {
         this.httpMessageListener = httpMessageListener;
     }
 

@@ -14,15 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
-public interface CustomizableHttpChannelObserver<T> extends HttpChannelObserver<T> {
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
-    void setHeadersCustomizer(HeadersCustomizer headersCustomizer);
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 
-    void setTrailersCustomizer(TrailersCustomizer trailersCustomizer);
+@Activate(onClass = "javax.ws.rs.core.MultivaluedMap")
+public class MultivaluedMapCreator implements ArgumentConverter<Integer, MultivaluedMap<?, ?>> {
 
-    void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer);
-
-    void setExceptionHandler(ExceptionHandler<Throwable, ?> exceptionHandler);
+    @Override
+    public MultivaluedMap<?, ?> convert(Integer value, ParameterMeta parameter) {
+        return new MultivaluedHashMap<>(value);
+    }
 }

@@ -34,6 +34,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.CookieHeaderNames.SameSite;
@@ -53,6 +54,10 @@ public final class HttpUtils {
     public static final String CHARSET_PREFIX = "charset=";
 
     private HttpUtils() {}
+
+    public static String getStatusMessage(int status) {
+        return HttpResponseStatus.valueOf(status).reasonPhrase();
+    }
 
     public static List<HttpCookie> decodeCookies(String value) {
         List<HttpCookie> cookies = new ArrayList<>();

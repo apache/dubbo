@@ -18,6 +18,8 @@ package org.apache.dubbo.remoting.http12.exception;
 
 public class HttpOverPayloadException extends HttpStatusException {
 
+    private static final long serialVersionUID = 1L;
+
     public HttpOverPayloadException(String message) {
         super(500, message);
     }

@@ -60,7 +60,7 @@ import java.util.Set;
 
 public class TripleFilter implements Filter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TripleFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TripleFilter.class);
 
     private PathResolver pathResolver;
     private RequestMappingRegistry mappingRegistry;
@@ -99,7 +99,7 @@ public class TripleFilter implements Filter {
 
             listener.onMetadata(new HttpMetadataAdapter(hRequest));
         } catch (Throwable t) {
-            LOG.info("Failed to process request", t);
+            LOGGER.info("Failed to process request", t);
             channel.writeError(Code.UNKNOWN.code, t);
         }
     }

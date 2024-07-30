@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -104,7 +105,28 @@ public final class ServiceMeta extends AnnotationSupport {
 
     @Override
     public String toString() {
-        return "ServiceMeta{class='" + getType().getName() + "', service=" + service + '}';
+        StringBuilder sb = new StringBuilder(64);
+        sb.append("ServiceMeta{interface=")
+                .append(getServiceInterface())
+                .append(", service=")
+                .append(toShortString());
+        if (StringUtils.isNotEmpty(contextPath)) {
+            sb.append(", contextPath='").append(contextPath).append('\'');
+        }
+        String group = getServiceGroup();
+        if (StringUtils.isNotEmpty(group)) {
+            sb.append(", group='").append(group).append('\'');
+        }
+        String version = getServiceVersion();
+        if (StringUtils.isNotEmpty(version)) {
+            sb.append(", version='").append(version).append('\'');
+        }
+        sb.append('}');
+        return sb.toString();
+    }
+
+    public String toShortString() {
+        return type.getSimpleName() + '@' + Integer.toHexString(System.identityHashCode(service));
     }
 
     public void addExceptionHandler(MethodMeta methodMeta) {
