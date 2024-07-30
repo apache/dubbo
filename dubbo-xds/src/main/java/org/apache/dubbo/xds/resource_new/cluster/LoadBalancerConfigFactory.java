@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.xds.resource.grpc.resource.cluster;
+package org.apache.dubbo.xds.resource_new.cluster;
 
 import com.google.protobuf.Any;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster;
