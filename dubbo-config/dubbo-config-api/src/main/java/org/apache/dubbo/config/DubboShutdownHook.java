@@ -93,26 +93,15 @@ public class DubboShutdownHook extends Thread {
             }
 
             logger.info("Waiting for modules(" + applicationModel.getDesc() + ") managed by Spring to be shutdown.");
-            boolean hasModuleBindSpring = true;
-            while (!applicationModel.isDestroyed()
-                    && hasModuleBindSpring
-                    && System.currentTimeMillis() - start < val.intValue()) {
+            while (!applicationModel.isDestroyed() && System.currentTimeMillis() - start < val.intValue()) {
                 try {
                     TimeUnit.MILLISECONDS.sleep(10);
-                    hasModuleBindSpring = false;
-                    if (!applicationModel.isDestroyed()) {
-                        for (ModuleModel module : applicationModel.getModuleModels()) {
-                            if (module.isLifeCycleManagedExternally()) {
-                                hasModuleBindSpring = true;
-                                break;
-                            }
-                        }
-                    }
                 } catch (InterruptedException e) {
                     logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
                     Thread.currentThread().interrupt();
                 }
             }
+            logger.info("Module(" + applicationModel.getDesc() + ") managed by Spring has been shutdown.");
         }
     }
 
