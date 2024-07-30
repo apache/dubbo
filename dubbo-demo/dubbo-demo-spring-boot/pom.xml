@@ -29,6 +29,7 @@
     <module>dubbo-demo-spring-boot-consumer</module>
     <module>dubbo-demo-spring-boot-provider</module>
     <module>dubbo-demo-spring-boot-interface</module>
+    <module>dubbo-demo-spring-boot-servlet</module>
   </modules>
 
   <properties>

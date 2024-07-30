@@ -21,8 +21,6 @@ import org.apache.dubbo.rpc.protocol.tri.servlet.TripleFilter;
 
 import javax.servlet.Filter;
 
-import java.util.Collections;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -47,13 +45,11 @@ public class DubboTripleAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean<TripleFilter> tripleProtocolFilter(
-                @Value("${" + PREFIX + ".timeout:}") String timeout,
                 @Value("${" + PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
                 @Value("${" + PREFIX + ".filter-order:-1000000}") int order,
                 @Value("${server.port:8080}") int serverPort) {
             ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleFilter> registrationBean = new FilterRegistrationBean<>();
-            registrationBean.setInitParameters(Collections.singletonMap("timeout", timeout));
             registrationBean.setFilter(new TripleFilter());
             registrationBean.addUrlPatterns(urlPatterns);
             registrationBean.setOrder(order);
