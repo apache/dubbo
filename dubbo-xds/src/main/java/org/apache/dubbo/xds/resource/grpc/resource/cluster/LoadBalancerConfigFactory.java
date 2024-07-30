@@ -16,13 +16,13 @@
 
 package org.apache.dubbo.xds.resource.grpc.resource.cluster;
 
-import org.apache.dubbo.xds.resource.grpc.resource.exception.ResourceInvalidException;
-
 import com.google.protobuf.Any;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster.LeastRequestLbConfig;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster.RingHashLbConfig;
 import io.envoyproxy.envoy.config.cluster.v3.LoadBalancingPolicy;
+
+import org.apache.dubbo.xds.resource_new.exception.ResourceInvalidException;
 
 /**
  * Creates service config JSON  load balancer config objects for a given xDS Cluster message. Supports both the "legacy"
