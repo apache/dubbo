@@ -23,8 +23,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
 public final class RestConstants {
 
-    public static final String REST = "rest";
-
     public static final String REST_FILTER_KEY = "rest.filter";
     public static final String EXTENSION_KEY = "extension";
     public static final String EXTENSIONS_ATTRIBUTE_KEY = "restExtensionsAttributeKey";

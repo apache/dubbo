@@ -21,7 +21,7 @@ import spock.lang.Specification
 
 class RadixTreeTest extends Specification {
 
-    def "Match"() {
+    def "match"() {
         given:
             def tree = new RadixTree<String>()
             tree.addPath('/a/*', 'abc')
@@ -33,7 +33,7 @@ class RadixTreeTest extends Specification {
             !match.empty
     }
 
-    def "Clear"() {
+    def "clear"() {
         given:
             def tree = new RadixTree<String>()
             tree.addPath('/a/*', 'abc')
@@ -43,5 +43,19 @@ class RadixTreeTest extends Specification {
             tree.remove(s -> s in ['abc', 'bcd'])
         then:
             tree.empty
+    }
+
+    def "test end match"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            tree.addPath('/a/*/*', true)
+        expect:
+            tree.match(path).size() == len
+        where:
+            path       | len
+            '/a'       | 0
+            '/a/b'     | 0
+            '/a/b/c'   | 1
+            '/a/b/c/d' | 0
     }
 }
