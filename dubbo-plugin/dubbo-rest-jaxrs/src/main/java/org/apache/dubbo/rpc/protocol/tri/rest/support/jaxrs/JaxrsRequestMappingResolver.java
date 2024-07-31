@@ -22,7 +22,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationSupport;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
@@ -76,7 +75,7 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
         return builder(methodMeta, path, httpMethod)
                 .name(methodMeta.getMethod().getName())
                 .contextPath(methodMeta.getServiceMeta().getContextPath())
-                .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
+                .service(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion())
                 .cors(globalCorsMeta)
                 .build();
     }

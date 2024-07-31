@@ -25,6 +25,8 @@ public enum HttpHeaderNames {
 
     TRANSFER_ENCODING("transfer-encoding"),
 
+    LOCATION("location"),
+
     TE("te"),
 
     ALT_SVC("alt-svc"),

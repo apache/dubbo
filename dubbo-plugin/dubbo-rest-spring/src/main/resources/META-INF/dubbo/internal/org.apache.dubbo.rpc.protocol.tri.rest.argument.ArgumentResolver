@@ -7,6 +7,7 @@ spring-request-attribute=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.R
 spring-request-part=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.RequestPartArgumentResolver
 spring-request-body=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.RequestBodyArgumentResolver
 spring-model-attribute=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.ModelAttributeArgumentResolver
+spring-bind-param=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.BindParamArgumentResolver
 spring-misc=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.SpringMiscArgumentResolver
 spring-fallback=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.FallbackArgumentResolver
 

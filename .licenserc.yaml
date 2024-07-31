@@ -115,8 +115,6 @@ dependency:
     - pom.xml
     - dubbo-dependencies-bom/pom.xml
   licenses:
-    - name: com.alibaba.spring:spring-context-support
-      license: Apache-2.0
     - name: com.fasterxml.jackson.core:jackson-annotations
       license: Apache-2.0
     - name: com.fasterxml.jackson.core:jackson-core

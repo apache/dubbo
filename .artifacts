@@ -49,7 +49,6 @@ dubbo-metadata-api
 dubbo-metadata-definition-protobuf
 dubbo-metadata-processor
 dubbo-metadata-report-nacos
-dubbo-metadata-report-redis
 dubbo-metadata-report-zookeeper
 dubbo-metrics
 dubbo-metrics-api
@@ -116,6 +115,5 @@ dubbo-tracing
 dubbo-xds
 dubbo-plugin-loom
 dubbo-rest-jaxrs
-dubbo-rest-servlet
 dubbo-rest-spring
 dubbo-triple-servlet

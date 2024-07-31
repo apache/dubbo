@@ -28,7 +28,7 @@ public class ConditionRouterRule extends AbstractRouterRule {
     private List<String> conditions;
 
     @SuppressWarnings("unchecked")
-    public static ConditionRouterRule parseFromMap(Map<String, Object> map) {
+    public static AbstractRouterRule parseFromMap(Map<String, Object> map) {
         ConditionRouterRule conditionRouterRule = new ConditionRouterRule();
         conditionRouterRule.parseFromMap0(map);
 

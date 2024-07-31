@@ -39,6 +39,5 @@ public class TripleConstant {
     public static final String HTTP_RESPONSE_KEY = "tri.http.response";
 
     public static final String TRIPLE_HANDLER_TYPE_REST = "rest";
-    public static final String TRIPLE_HANDLER_TYPE_HTTP = "http";
     public static final String TRIPLE_HANDLER_TYPE_GRPC = "grpc";
 }

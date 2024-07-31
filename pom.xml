@@ -16,9 +16,7 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
@@ -144,6 +142,7 @@
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
+    <maven_gmavenplus.version>3.0.2</maven_gmavenplus.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
@@ -357,6 +356,11 @@
             <!-- common shared -->
           </systemProperties>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>${maven_gmavenplus.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

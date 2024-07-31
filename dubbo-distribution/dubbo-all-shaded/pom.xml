@@ -121,13 +121,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rest-servlet</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rest-spring</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
@@ -158,13 +151,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metadata-report-nacos</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metadata-report-redis</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -414,10 +400,6 @@
       <artifactId>spring-context</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.alibaba.spring</groupId>
-      <artifactId>spring-context-support</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.javassist</groupId>
       <artifactId>javassist</artifactId>
     </dependency>
@@ -465,7 +447,6 @@
                   <include>org.apache.dubbo:dubbo-metadata-api</include>
                   <include>org.apache.dubbo:dubbo-metadata-definition-protobuf</include>
                   <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
-                  <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                   <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
                   <include>org.apache.dubbo:dubbo-metrics-api</include>
                   <include>org.apache.dubbo:dubbo-metrics-default</include>
@@ -492,7 +473,6 @@
                   <include>org.apache.dubbo:dubbo-rpc-injvm</include>
                   <include>org.apache.dubbo:dubbo-rpc-triple</include>
                   <include>org.apache.dubbo:dubbo-rest-jaxrs</include>
-                  <include>org.apache.dubbo:dubbo-rest-servlet</include>
                   <include>org.apache.dubbo:dubbo-rest-spring</include>
                   <include>org.apache.dubbo:dubbo-triple-servlet</include>
                   <include>org.apache.dubbo:dubbo-serialization-api</include>
@@ -849,6 +829,9 @@
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.ExceptionHandler</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http12.message.HttpMessageAdapterFactory</resource>

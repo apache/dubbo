@@ -18,12 +18,12 @@ package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 
 import java.util.Map;
 import java.util.Set;
 
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.ObjectProvider;

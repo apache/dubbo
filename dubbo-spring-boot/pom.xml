@@ -32,7 +32,6 @@
   <modules>
     <module>dubbo-spring-boot-actuator</module>
     <module>dubbo-spring-boot-autoconfigure</module>
-    <module>dubbo-spring-boot-3-autoconfigure</module>
     <module>dubbo-spring-boot-compatible</module>
     <module>dubbo-spring-boot-starter</module>
     <module>dubbo-spring-boot-starters</module>
@@ -189,6 +188,23 @@
       <properties>
         <spring-boot.version>2.2.8.RELEASE</spring-boot.version>
       </properties>
+    </profile>
+
+    <profile>
+      <id>jdk-version-ge-17</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-spring-boot-3-autoconfigure</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>release</id>
+      <modules>
+        <module>dubbo-spring-boot-3-autoconfigure</module>
+      </modules>
     </profile>
   </profiles>
 </project>

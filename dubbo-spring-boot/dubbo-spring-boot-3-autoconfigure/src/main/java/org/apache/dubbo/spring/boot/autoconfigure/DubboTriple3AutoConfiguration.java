@@ -34,18 +34,18 @@ import org.springframework.context.annotation.Configuration;
 @Conditional(SpringBoot3Condition.class)
 public class DubboTriple3AutoConfiguration {
 
-    public static final String PREFIX = "dubbo.protocol.triple";
+    public static final String PREFIX = "dubbo.protocol.triple.servlet";
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enable-servlet")
+    @ConditionalOnProperty(prefix = PREFIX, name = "enable")
     public static class TripleServletConfiguration {
 
         @Bean
         public FilterRegistrationBean<TripleFilter> tripleProtocolFilter(
-                @Value("${" + PREFIX + ".servlet-filter-url-patterns:/*}") String[] urlPatterns,
-                @Value("${" + PREFIX + ".servlet-filter-order:-1000000}") int order,
+                @Value("${" + PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
+                @Value("${" + PREFIX + ".filter-order:-1000000}") int order,
                 @Value("${server.port:8080}") int serverPort) {
             ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleFilter> registrationBean = new FilterRegistrationBean<>();

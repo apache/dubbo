@@ -23,6 +23,8 @@ import java.io.Serializable;
  */
 public class HistogramConfig implements Serializable {
 
+    private static final long serialVersionUID = 8152538916051803031L;
+
     /**
      * Whether histograms are enabled or not. Default is not enabled (false).
      */

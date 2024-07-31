@@ -29,7 +29,6 @@ import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.DefaultStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
-import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -39,7 +38,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
@@ -71,6 +69,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         serverChannelObserver = newHttp2ServerChannelObserver(frameworkModel, h2StreamChannel);
         serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
         serverChannelObserver.setStreamingDecoder(streamingDecoder);
+        serverChannelObserver.setExceptionHandler(getExceptionHandler());
         this.frameworkModel = frameworkModel;
         this.h2StreamChannel = h2StreamChannel;
     }
@@ -109,19 +108,8 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
                 onUnary();
-                boolean applyCustomizeException = false;
-                if (!getContext().isHasStub()) {
-                    MethodMetadata methodMetadata = getContext().getMethodMetadata();
-                    applyCustomizeException = ReflectionPackableMethod.needWrap(
-                            methodDescriptor,
-                            methodMetadata.getActualRequestTypes(),
-                            methodMetadata.getActualResponseType());
-                }
                 onListenerStart();
-                UnaryServerCallListener unaryServerCallListener =
-                        startUnary(invocation, invoker, getServerChannelObserver());
-                unaryServerCallListener.setApplyCustomizeException(applyCustomizeException);
-                return unaryServerCallListener;
+                return startUnary(invocation, invoker, getServerChannelObserver());
             case SERVER_STREAM:
                 onListenerStart();
                 return startServerStreaming(invocation, invoker, getServerChannelObserver());
@@ -147,7 +135,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     private UnaryServerCallListener startUnary(
             RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
-        return new UnaryServerCallListener(invocation, invoker, responseObserver);
+        return new UnaryServerCallListener(invocation, invoker, responseObserver, applyCustomizeException());
     }
 
     private ServerStreamServerCallListener startServerStreaming(
@@ -205,7 +193,9 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     public void cancelByRemote(long errorCode) {
         serverChannelObserver.cancel(CancelStreamException.fromRemote(errorCode));
-        serverCallListener.onCancel(errorCode);
+        if (serverCallListener != null) {
+            serverCallListener.onCancel(errorCode);
+        }
     }
 
     protected StreamingDecoder getStreamingDecoder() {
@@ -214,6 +204,10 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     protected final Http2ServerChannelObserver getServerChannelObserver() {
         return serverChannelObserver;
+    }
+
+    protected boolean applyCustomizeException() {
+        return false;
     }
 
     @Override

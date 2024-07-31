@@ -56,7 +56,7 @@ public abstract class InterceptorContextImpl implements InterceptorContext {
 
     @Override
     public Annotation[] getAnnotations() {
-        return getHandler().getMethod().getRealAnnotations();
+        return getHandler().getMethod().getRawAnnotations();
     }
 
     @Override

@@ -18,14 +18,14 @@ package org.apache.dubbo.rpc.protocol.tri.servlet;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.StreamUtils;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
+import org.apache.dubbo.rpc.TriRpcStatus.Code;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -39,38 +39,37 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegis
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class TripleFilter implements Filter {
 
-    private static final ErrorTypeAwareLogger LOG = LoggerFactory.getErrorTypeAwareLogger(TripleFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TripleFilter.class);
 
     private PathResolver pathResolver;
     private RequestMappingRegistry mappingRegistry;
-    private int defaultTimeout;
 
     @Override
     public void init(FilterConfig config) {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
         mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
-        String timeoutString = config.getInitParameter("timeout");
-        defaultTimeout = timeoutString == null ? 180_000 : Integer.parseInt(timeoutString);
     }
 
     @Override
@@ -84,37 +83,24 @@ public class TripleFilter implements Filter {
             return;
         }
 
-        AsyncContext context = request.startAsync();
+        AsyncContext context = request.startAsync(request, response);
+        ServletStreamChannel channel = new ServletStreamChannel(hRequest, hResponse, context);
         try {
-            H2StreamChannel streamChannel = new ServletStreamChannel(hRequest, hResponse, context);
             Http2TransportListener listener = determineHttp2ServerTransportListenerFactory(request.getContentType())
-                    .newInstance(streamChannel, ServletExchanger.getUrl(), FrameworkModel.defaultModel());
+                    .newInstance(channel, ServletExchanger.getUrl(), FrameworkModel.defaultModel());
 
-            context.setTimeout(resolveTimeout(hRequest, listener instanceof GrpcHttp2ServerTransportListener));
+            boolean isGrpc = listener instanceof GrpcHttp2ServerTransportListener;
+            channel.setGrpc(isGrpc);
+            context.setTimeout(resolveTimeout(hRequest, isGrpc));
+            context.addListener(new TripleAsyncListener(channel));
+            ServletInputStream is = request.getInputStream();
+            is.setReadListener(new TripleReadListener(listener, channel, is));
+            response.getOutputStream().setWriteListener(new TripleWriteListener(channel));
 
             listener.onMetadata(new HttpMetadataAdapter(hRequest));
-
-            ByteArrayOutputStream os;
-            try {
-                os = new ByteArrayOutputStream(1024);
-                StreamUtils.copy(request.getInputStream(), os);
-            } catch (Throwable t) {
-                LOG.error(COMMON_IO_EXCEPTION, "", "", "Failed to read input", t);
-                try {
-                    hResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                } finally {
-                    context.complete();
-                }
-                return;
-            }
-            listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(os.toByteArray()), true));
         } catch (Throwable t) {
-            LOG.error(INTERNAL_ERROR, "", "", "Failed to process request", t);
-            try {
-                hResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            } finally {
-                context.complete();
-            }
+            LOG.info("Failed to process request", t);
+            channel.writeError(Code.UNKNOWN.code, t);
         }
     }
 
@@ -159,7 +145,7 @@ public class TripleFilter implements Filter {
         return GenericHttp2ServerTransportListenerFactory.INSTANCE;
     }
 
-    private int resolveTimeout(HttpServletRequest request, boolean isGrpc) {
+    private static int resolveTimeout(HttpServletRequest request, boolean isGrpc) {
         try {
             if (isGrpc) {
                 String timeoutString = request.getHeader(GrpcHeaderNames.GRPC_TIMEOUT.getName());
@@ -177,6 +163,84 @@ public class TripleFilter implements Filter {
             }
         } catch (Throwable ignored) {
         }
-        return defaultTimeout;
+        return 0;
+    }
+
+    private static final class TripleAsyncListener implements AsyncListener {
+
+        private final ServletStreamChannel streamChannel;
+
+        TripleAsyncListener(ServletStreamChannel streamChannel) {
+            this.streamChannel = streamChannel;
+        }
+
+        @Override
+        public void onComplete(AsyncEvent event) {}
+
+        @Override
+        public void onTimeout(AsyncEvent event) {
+            streamChannel.writeError(Code.DEADLINE_EXCEEDED.code, event.getThrowable());
+        }
+
+        @Override
+        public void onError(AsyncEvent event) {
+            streamChannel.writeError(Code.CANCELLED.code, event.getThrowable());
+        }
+
+        @Override
+        public void onStartAsync(AsyncEvent event) {}
+    }
+
+    private static final class TripleReadListener implements ReadListener {
+
+        private final Http2TransportListener listener;
+        private final ServletStreamChannel channel;
+        private final ServletInputStream input;
+        private final byte[] buffer = new byte[4 * 1024];
+
+        TripleReadListener(Http2TransportListener listener, ServletStreamChannel channel, ServletInputStream input) {
+            this.listener = listener;
+            this.channel = channel;
+            this.input = input;
+        }
+
+        @Override
+        public void onDataAvailable() throws IOException {
+            while (input.isReady()) {
+                int length = input.read(buffer);
+                if (length == -1) {
+                    return;
+                }
+                byte[] copy = Arrays.copyOf(buffer, length);
+                listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(copy), false));
+            }
+        }
+
+        @Override
+        public void onAllDataRead() {
+            listener.onData(new Http2InputMessageFrame(StreamUtils.EMPTY, true));
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            channel.writeError(Code.CANCELLED.code, t);
+        }
+    }
+
+    private static final class TripleWriteListener implements WriteListener {
+
+        private final ServletStreamChannel channel;
+
+        TripleWriteListener(ServletStreamChannel channel) {
+            this.channel = channel;
+        }
+
+        @Override
+        public void onWritePossible() {}
+
+        @Override
+        public void onError(Throwable t) {
+            channel.writeError(Code.CANCELLED.code, t);
+        }
     }
 }

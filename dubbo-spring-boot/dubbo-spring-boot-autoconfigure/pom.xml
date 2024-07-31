@@ -72,6 +72,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-triple-servlet</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
@@ -83,6 +90,5 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 </project>

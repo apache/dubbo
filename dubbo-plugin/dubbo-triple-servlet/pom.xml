@@ -28,7 +28,7 @@
 
   <properties>
     <servlet4_version>4.0.1</servlet4_version>
-    <sources_directory>${project.build.directory}/generated-sources/java/org/apache/dubbo/rpc/protocol/tri/servlet/jakarta</sources_directory>
+    <sources_directory>${project.build.directory}/generated-sources/java/org/apache/dubbo/rpc/protocol/tri</sources_directory>
   </properties>
 
   <dependencies>
@@ -69,22 +69,44 @@
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
               <execution>
-                <id>copy-sources</id>
+                <id>generate-jakarta</id>
                 <goals>
                   <goal>run</goal>
                 </goals>
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <copy overwrite="true" todir="${sources_directory}">
+                    <copy overwrite="true" todir="${sources_directory}/servlet/jakarta">
                       <fileset dir="src/main/java/org/apache/dubbo/rpc/protocol/tri/servlet" />
                     </copy>
-                    <replace token="tri.servlet;" value="tri.servlet.jakarta;">
+                    <copy overwrite="true" todir="${sources_directory}/rest/support/servlet/jakarta">
+                      <fileset dir="src/main/java/org/apache/dubbo/rpc/protocol/tri/rest/support/servlet" />
+                    </copy>
+                    <replace token=".servlet;" value=".servlet.jakarta;">
                       <fileset dir="${sources_directory}" />
                     </replace>
                     <replace token="javax.servlet" value="jakarta.servlet">
                       <fileset dir="${sources_directory}" />
                     </replace>
+                    <replace file="${sources_directory}/rest/support/servlet/jakarta/ServletHttpRequestAdapter.java">
+                      <replacetoken>/* jakarta placeholder */</replacetoken>
+                      <replacevalue><![CDATA[@Override
+    public String getRequestId() {
+        return "";
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return "";
+    }
+
+    @Override
+    public jakarta.servlet.ServletConnection getServletConnection() {
+        return null;
+    }]]></replacevalue>
+                    </replace>
+                    <replace file="${sources_directory}/rest/support/servlet/jakarta/ServletHttpMessageAdapterFactory.java" token="-100" value="-200" />
+                    <replace file="${sources_directory}/rest/support/servlet/jakarta/FilterAdapter.java" token="&quot;servlet" value="&quot;jakarta-servlet" />
                   </target>
                 </configuration>
               </execution>
@@ -104,6 +126,36 @@
                   <sources>
                     <source>${project.build.directory}/generated-sources/java</source>
                   </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce-generate-jakarta</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <phase>prepare-package</phase>
+                <configuration>
+                  <rules>
+                    <requireFilesExist>
+                      <files>
+                        <file>${sources_directory}/servlet/jakarta/TripleFilter.java</file>
+                      </files>
+                    </requireFilesExist>
+                  </rules>
+                  <fail>true</fail>
                 </configuration>
               </execution>
             </executions>
