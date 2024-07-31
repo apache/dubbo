@@ -23,7 +23,7 @@ public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub 
     String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
     String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
 
-    MetadataInfoV2 getMetadataInfo(Revision request);
+    MetadataInfoV2 getMetadataInfo(MetadataRequest request);
 
-    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(Revision request);
+    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
 }

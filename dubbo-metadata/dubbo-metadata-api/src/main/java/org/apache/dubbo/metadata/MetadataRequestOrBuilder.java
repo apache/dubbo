@@ -16,19 +16,19 @@
  */
 package org.apache.dubbo.metadata;
 
-public interface RevisionOrBuilder
+public interface MetadataRequestOrBuilder
         extends
-        // @@protoc_insertion_point(interface_extends:org.apache.dubbo.metadata.Revision)
+        // @@protoc_insertion_point(interface_extends:org.apache.dubbo.metadata.MetadataRequest)
         com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string value = 1;</code>
-     * @return The value.
+     * <code>string revision = 1;</code>
+     * @return The revision.
      */
-    String getValue();
+    String getRevision();
     /**
-     * <code>string value = 1;</code>
-     * @return The bytes for value.
+     * <code>string revision = 1;</code>
+     * @return The bytes for revision.
      */
-    com.google.protobuf.ByteString getValueBytes();
+    com.google.protobuf.ByteString getRevisionBytes();
 }
