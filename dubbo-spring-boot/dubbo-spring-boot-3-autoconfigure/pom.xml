@@ -61,54 +61,16 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-triple-servlet</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <optional>true</optional>
     </dependency>
   </dependencies>
-
-  <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <excludes>
-          <exclude>**</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <skipMain>true</skipMain>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>jdk-version-ge-17</id>
-      <activation>
-        <jdk>[17,)</jdk>
-      </activation>
-      <build>
-        <resources>
-          <resource>
-            <directory>src/main/resources</directory>
-          </resource>
-        </resources>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <skipMain>false</skipMain>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

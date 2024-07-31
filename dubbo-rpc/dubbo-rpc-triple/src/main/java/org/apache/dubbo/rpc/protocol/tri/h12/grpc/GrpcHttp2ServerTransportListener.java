@@ -18,9 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
@@ -33,15 +33,15 @@ import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListener;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -134,8 +134,34 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     @Override
+    protected ExceptionHandler<Throwable, ?> getExceptionHandler() {
+        return null;
+    }
+
+    @Override
     protected GrpcStreamingDecoder getStreamingDecoder() {
         return (GrpcStreamingDecoder) super.getStreamingDecoder();
+    }
+
+    @Override
+    protected boolean applyCustomizeException() {
+        RpcInvocationBuildContext context = getContext();
+        if (context.isHasStub()) {
+            return false;
+        }
+        MethodMetadata methodMetadata = context.getMethodMetadata();
+        return ReflectionPackableMethod.needWrap(
+                context.getMethodDescriptor(),
+                methodMetadata.getActualRequestTypes(),
+                methodMetadata.getActualResponseType());
+    }
+
+    @Override
+    protected void onSettingMethodDescriptor(MethodDescriptor methodDescriptor) {
+        GrpcCompositeCodec grpcCompositeCodec =
+                (GrpcCompositeCodec) getContext().getHttpMessageDecoder();
+        grpcCompositeCodec.loadPackableMethod(methodDescriptor);
+        super.onSettingMethodDescriptor(methodDescriptor);
     }
 
     private class LazyFindMethodListener implements HttpMessageListener {
@@ -157,38 +183,24 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     private class DetermineMethodDescriptorListener implements StreamingDecoder.FragmentListener {
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {}
-
-        @Override
         public void onClose() {
             getStreamingDecoder().close();
         }
 
         @Override
-        public void onFragmentMessage(InputStream dataHeader, InputStream rawMessage) {
+        public void onFragmentMessage(InputStream rawMessage) {
             try {
-                ByteArrayOutputStream merged =
-                        new ByteArrayOutputStream(dataHeader.available() + rawMessage.available());
-                StreamUtils.copy(dataHeader, merged);
-                byte[] data = StreamUtils.readBytes(rawMessage);
-
                 RpcInvocationBuildContext context = getContext();
                 if (null == context.getMethodDescriptor()) {
-                    context.setMethodDescriptor(DescriptorUtils.findTripleMethodDescriptor(
-                            context.getServiceDescriptor(), context.getMethodName(), data));
+                    MethodDescriptor methodDescriptor = DescriptorUtils.findTripleMethodDescriptor(
+                            context.getServiceDescriptor(), context.getMethodName(), rawMessage);
+                    context.setMethodDescriptor(methodDescriptor);
+                    onSettingMethodDescriptor(methodDescriptor);
 
                     setHttpMessageListener(GrpcHttp2ServerTransportListener.super.buildHttpMessageListener());
-
-                    // replace decoder
-                    GrpcCompositeCodec grpcCompositeCodec = (GrpcCompositeCodec) context.getHttpMessageDecoder();
-                    MethodMetadata methodMetadata = context.getMethodMetadata();
-                    grpcCompositeCodec.setDecodeTypes(methodMetadata.getActualRequestTypes());
-                    grpcCompositeCodec.setEncodeTypes(new Class[] {methodMetadata.getActualResponseType()});
-                    getServerChannelObserver().setResponseEncoder(grpcCompositeCodec);
                 }
 
-                merged.write(data);
-                getHttpMessageListener().onMessage(new ByteArrayInputStream(merged.toByteArray()));
+                getStreamingDecoder().invokeListener(rawMessage);
             } catch (IOException e) {
                 throw new DecodeException(e);
             }

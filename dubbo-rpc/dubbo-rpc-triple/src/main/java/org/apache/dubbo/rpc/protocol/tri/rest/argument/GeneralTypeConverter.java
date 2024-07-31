@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
-import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -25,8 +24,12 @@ import org.apache.dubbo.common.utils.DateUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
+import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
+import org.apache.dubbo.remoting.http12.HttpUtils;
+import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
@@ -93,6 +96,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.dubbo.common.utils.StringUtils.tokenizeToList;
 import static org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils.getActualGenericType;
 import static org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils.getActualType;
@@ -103,14 +107,17 @@ public class GeneralTypeConverter implements TypeConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneralTypeConverter.class);
 
-    private final ConverterUtil converterUtil;
+    private final CompositeArgumentConverter converter;
+    private final CodecUtils codecUtils;
 
     public GeneralTypeConverter() {
-        converterUtil = null;
+        converter = null;
+        codecUtils = null;
     }
 
     public GeneralTypeConverter(FrameworkModel frameworkModel) {
-        converterUtil = frameworkModel.getBeanFactory().getOrRegisterBean(ConverterUtil.class);
+        converter = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeArgumentConverter.class);
+        codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
     }
 
     @Override
@@ -118,7 +125,7 @@ public class GeneralTypeConverter implements TypeConverter {
         try {
             return targetClass == null ? (T) source : (T) doConvert(source, targetClass);
         } catch (Exception e) {
-            throw RestException.wrap(e);
+            throw ExceptionUtils.wrap(e);
         }
     }
 
@@ -127,7 +134,7 @@ public class GeneralTypeConverter implements TypeConverter {
         try {
             return targetType == null ? (T) source : (T) doConvert(source, targetType);
         } catch (Exception e) {
-            throw RestException.wrap(e);
+            throw ExceptionUtils.wrap(e);
         }
     }
 
@@ -255,7 +262,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 case "java.lang.Class":
                     return TypeUtils.loadClass(str);
                 case "[B":
-                    return str.getBytes(StandardCharsets.UTF_8);
+                    return str.getBytes(UTF_8);
                 case "[C":
                     return str.toCharArray();
                 case "java.util.OptionalInt":
@@ -432,7 +439,7 @@ public class GeneralTypeConverter implements TypeConverter {
 
             switch (targetClass.getName()) {
                 case "java.lang.String":
-                    return new String(bytes, StandardCharsets.UTF_8);
+                    return new String(bytes, UTF_8);
                 case "java.lang.Double":
                 case "double":
                     return ByteBuffer.wrap(bytes).getDouble();
@@ -478,6 +485,27 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         if (targetClass.isArray()) {
+            if (targetClass == byte[].class) {
+                if (source instanceof InputStream) {
+                    try (InputStream is = (InputStream) source) {
+                        return StreamUtils.readBytes(is);
+                    }
+                }
+                if (source instanceof FileUpload) {
+                    try (InputStream is = ((FileUpload) source).inputStream()) {
+                        return StreamUtils.readBytes(is);
+                    }
+                }
+                if (source instanceof Character) {
+                    char c = (Character) source;
+                    return new byte[] {(byte) (c >> 8), (byte) c};
+                }
+                if (source instanceof Boolean) {
+                    boolean b = (Boolean) source;
+                    return new byte[] {b ? (byte) 1 : (byte) 0};
+                }
+            }
+
             Class itemType = targetClass.getComponentType();
 
             if (source instanceof Collection) {
@@ -559,23 +587,23 @@ public class GeneralTypeConverter implements TypeConverter {
                     return StreamUtils.toString(is);
                 }
             }
-            return source.toString();
-        }
-
-        if (targetClass == byte[].class) {
-            if (source instanceof InputStream) {
-                try (InputStream is = (InputStream) source) {
-                    return StreamUtils.readBytes(is);
+            if (source instanceof FileUpload) {
+                FileUpload fu = (FileUpload) source;
+                try (InputStream is = fu.inputStream()) {
+                    String contentType = fu.contentType();
+                    if (contentType != null) {
+                        int index = contentType.lastIndexOf(HttpUtils.CHARSET_PREFIX);
+                        if (index > 0) {
+                            return StreamUtils.toString(
+                                    is,
+                                    Charset.forName(
+                                            contentType.substring(index + 8).trim()));
+                        }
+                    }
+                    return StreamUtils.toString(is);
                 }
             }
-            if (source instanceof Character) {
-                char c = (Character) source;
-                return new byte[] {(byte) (c >> 8), (byte) c};
-            }
-            if (source instanceof Boolean) {
-                boolean b = (Boolean) source;
-                return new byte[] {b ? (byte) 1 : (byte) 0};
-            }
+            return source.toString();
         }
 
         if (!Modifier.isAbstract(targetClass.getModifiers())) {
@@ -603,8 +631,9 @@ public class GeneralTypeConverter implements TypeConverter {
 
         try {
             return JsonUtils.convertObject(source, targetClass);
-        } catch (Exception e) {
-            LOGGER.debug("JSON convert from [{}] to [{}] failed", sourceClass.getName(), targetClass.getName(), e);
+        } catch (Throwable t) {
+            String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
+            LOGGER.debug(msg, source, sourceClass, targetClass, t);
         }
 
         return null;
@@ -648,6 +677,20 @@ public class GeneralTypeConverter implements TypeConverter {
 
                 if (Collection.class.isAssignableFrom(targetClass)) {
                     Type itemType = getActualGenericType(argTypes[0]);
+                    if (itemType instanceof Class && targetClass.isInstance(source)) {
+                        boolean same = true;
+                        Class<?> itemClass = (Class<?>) itemType;
+                        for (Object item : (Collection) source) {
+                            if (item != null && !itemClass.isInstance(item)) {
+                                same = false;
+                                break;
+                            }
+                        }
+                        if (same) {
+                            return source;
+                        }
+                    }
+
                     Collection items = toCollection(source);
                     Collection targetItems = createCollection(targetClass, items.size());
                     for (Object item : items) {
@@ -659,6 +702,28 @@ public class GeneralTypeConverter implements TypeConverter {
                 if (Map.class.isAssignableFrom(targetClass)) {
                     Type keyType = argTypes[0];
                     Type valueType = argTypes[1];
+
+                    if (keyType instanceof Class && valueType instanceof Class && targetClass.isInstance(source)) {
+                        boolean same = true;
+                        Class<?> keyClass = (Class<?>) keyType;
+                        Class<?> valueClass = (Class<?>) valueType;
+                        for (Map.Entry entry : ((Map<Object, Object>) source).entrySet()) {
+                            Object key = entry.getKey();
+                            if (key != null && !keyClass.isInstance(key)) {
+                                same = false;
+                                break;
+                            }
+                            Object value = entry.getValue();
+                            if (value != null && !valueClass.isInstance(value)) {
+                                same = false;
+                                break;
+                            }
+                        }
+                        if (same) {
+                            return source;
+                        }
+                    }
+
                     Class<?> mapValueClass = TypeUtils.getMapValueType(targetClass);
                     boolean multiValue = mapValueClass != null && Collection.class.isAssignableFrom(mapValueClass);
 
@@ -706,35 +771,26 @@ public class GeneralTypeConverter implements TypeConverter {
             return target;
         }
 
-        Object target = customConvert(source, targetType);
-        if (target != null) {
-            return target;
-        }
-
         try {
             return JsonUtils.convertObject(source, targetType);
-        } catch (Exception e) {
-            String name = source.getClass().getName();
-            LOGGER.debug("JSON convert from [{}] to [{}] failed", name, targetType.getTypeName(), e);
+        } catch (Throwable t) {
+            String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
+            LOGGER.debug(msg, source, source.getClass(), targetType, t);
         }
 
         return null;
     }
 
     protected Object customConvert(Object source, Class<?> targetClass) {
-        return converterUtil == null ? null : converterUtil.convertIfPossible(source, targetClass);
-    }
-
-    protected Object customConvert(Object source, Type targetType) {
-        return null;
+        return converter == null ? null : converter.convert(source, targetClass);
     }
 
     protected Collection customCreateCollection(Class targetClass, int size) {
-        return converterUtil == null ? null : (Collection) converterUtil.convertIfPossible(size, targetClass);
+        return converter == null ? null : (Collection) converter.convert(size, targetClass);
     }
 
     protected Map customCreateMap(Class targetClass, int size) {
-        return converterUtil == null ? null : (Map) converterUtil.convertIfPossible(size, targetClass);
+        return converter == null ? null : (Map) converter.convert(size, targetClass);
     }
 
     private Collection createCollection(Class targetClass, int size) {
@@ -832,7 +888,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 return new LinkedHashSet(source);
             }
             if (Modifier.isAbstract(targetClass.getModifiers())) {
-                Collection collection = (Collection) converterUtil.convertIfPossible(source.size(), targetClass);
+                Collection collection = customCreateCollection(targetClass, source.size());
                 if (collection != null) {
                     collection.addAll(source);
                     return collection;
@@ -910,8 +966,7 @@ public class GeneralTypeConverter implements TypeConverter {
                                     defCt = ct;
                                     break;
                                 case 1:
-                                    Class paramType = ct.getParameterTypes()[0];
-                                    if (paramType == int.class) {
+                                    if (ct.getParameterTypes()[0] == int.class) {
                                         return (Map) ct.newInstance(CollectionUtils.capacity(size));
                                     }
                                     break;
@@ -964,7 +1019,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 return new ConcurrentHashMap(source);
             }
             if (Modifier.isAbstract(targetClass.getModifiers())) {
-                Map map = (Map) converterUtil.convertIfPossible(source.size(), targetClass);
+                Map map = customCreateMap(targetClass, source.size());
                 if (map != null) {
                     map.putAll(source);
                     return map;
@@ -1078,12 +1133,17 @@ public class GeneralTypeConverter implements TypeConverter {
         return false;
     }
 
-    private static Object jsonToObject(String value, Type targetType) {
+    private Object jsonToObject(String value, Type targetType) {
         if (isMaybeJSON(value)) {
             try {
-                return JsonUtils.toJavaObject(value, targetType);
+                if (codecUtils == null || !(targetType instanceof Class)) {
+                    return JsonUtils.toJavaObject(value, targetType);
+                }
+                return codecUtils
+                        .determineHttpMessageDecoder(MediaType.APPLICATION_JSON.getName())
+                        .decode(new ByteArrayInputStream(value.getBytes(UTF_8)), (Class<?>) targetType);
             } catch (Throwable t) {
-                LOGGER.debug("Failed to parse [{}] from json string [{}]", targetType, value, t);
+                LOGGER.debug("Failed to parse value '{}' from json string '{}'", targetType, value, t);
             }
         }
         return null;

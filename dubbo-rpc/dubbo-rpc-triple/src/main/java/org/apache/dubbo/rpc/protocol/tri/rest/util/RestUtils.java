@@ -21,6 +21,7 @@ import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtension;
 
 public final class RestUtils {
+
     private RestUtils() {}
 
     public static boolean hasPlaceholder(String text) {
@@ -46,6 +47,36 @@ public final class RestUtils {
             } else if (c == '}' && state == 2) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public static boolean isMaybeJSONObject(String str) {
+        if (str == null) {
+            return false;
+        }
+        int i = 0, n = str.length();
+        if (n < 3) {
+            return false;
+        }
+        char expected = 0;
+        for (; i < n; i++) {
+            char c = str.charAt(i);
+            if (Character.isWhitespace(c)) {
+                continue;
+            }
+            if (c == '{') {
+                expected = '}';
+                break;
+            }
+            return false;
+        }
+        for (int j = n - 1; j > i; j--) {
+            char c = str.charAt(j);
+            if (Character.isWhitespace(c)) {
+                continue;
+            }
+            return c == expected;
         }
         return false;
     }

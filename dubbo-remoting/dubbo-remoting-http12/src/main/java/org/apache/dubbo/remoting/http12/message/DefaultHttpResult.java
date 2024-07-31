@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.message;
 
 import org.apache.dubbo.common.utils.DateUtils;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 
@@ -85,8 +86,12 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
             return status(HttpStatus.OK.getCode());
         }
 
+        public Builder<T> moved(String url) {
+            return status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaderNames.LOCATION.getName(), url);
+        }
+
         public Builder<T> found(String url) {
-            return status(HttpStatus.FOUND).header("location", url);
+            return status(HttpStatus.FOUND).header(HttpHeaderNames.LOCATION.getName(), url);
         }
 
         public Builder<T> error() {

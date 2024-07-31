@@ -136,11 +136,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metadata-report-redis</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metadata-processor</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -249,11 +244,6 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rest-jaxrs</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-rest-servlet</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

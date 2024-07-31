@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 import com.google.protobuf.Message;
@@ -61,6 +62,13 @@ public final class JsonPbCodec extends JsonCodec {
             throw new DecodeException("Error decoding jsonPb", e);
         }
         return super.decode(is, targetType, charset);
+    }
+
+    @Override
+    public Object decode(InputStream is, Type targetType, Charset charset) throws DecodeException {
+        return targetType instanceof Class
+                ? decode(is, (Class<?>) targetType, charset)
+                : super.decode(is, targetType, charset);
     }
 
     @Override

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-final class HttpMetadataAdapter implements Http2Header {
+public final class HttpMetadataAdapter implements Http2Header {
 
     private final HttpServletRequest request;
 
@@ -33,6 +33,10 @@ final class HttpMetadataAdapter implements Http2Header {
 
     HttpMetadataAdapter(HttpServletRequest request) {
         this.request = request;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
     }
 
     @Override
@@ -64,11 +68,6 @@ final class HttpMetadataAdapter implements Http2Header {
     public String path() {
         String query = request.getQueryString();
         return query == null ? request.getRequestURI() : request.getRequestURI() + '?' + query;
-    }
-
-    @Override
-    public String status() {
-        return null;
     }
 
     @Override

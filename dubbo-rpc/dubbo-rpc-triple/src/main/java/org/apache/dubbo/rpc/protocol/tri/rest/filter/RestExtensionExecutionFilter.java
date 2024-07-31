@@ -31,9 +31,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
@@ -91,7 +91,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
             }
             return AsyncRpcResult.newDefaultAsyncResult(invocation);
         } catch (Throwable t) {
-            throw RestException.wrap(t);
+            throw ExceptionUtils.wrap(t);
         }
     }
 

@@ -63,6 +63,7 @@ public class DefaultHttp11ServerTransportListener
         this.httpChannel = httpChannel;
         serverChannelObserver = new Http1ServerUnaryChannelObserver(httpChannel);
         serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
+        serverChannelObserver.setExceptionHandler(getExceptionHandler());
     }
 
     @Override
@@ -126,7 +127,7 @@ public class DefaultHttp11ServerTransportListener
 
         public AutoCompleteUnaryServerCallListener(
                 RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
-            super(invocation, invoker, responseObserver);
+            super(invocation, invoker, responseObserver, false);
         }
 
         @Override

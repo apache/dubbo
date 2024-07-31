@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment.Type;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -33,7 +32,7 @@ import java.util.ListIterator;
  * <p>
  * <a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html#mvc-ann-requestmapping-uri-templates">Spring uri templates</a>
  * <br/>
- * <a href="https://docs.jboss.org/resteasy/docs/6.2.6.Final/userguide/html/ch04.html">Path and regular expression mappings</a>
+ * <a href="https://docs.jboss.org/resteasy/docs/6.2.7.Final/userguide/html/ch04.html">Path and regular expression mappings</a>
  * </p>
  */
 final class PathParser {
@@ -59,9 +58,6 @@ final class PathParser {
 
     private List<PathSegment> doParse(String path) {
         parseSegments(path);
-        if (segments.isEmpty()) {
-            return Collections.emptyList();
-        }
         transformSegments(segments, path);
         for (PathSegment segment : segments) {
             try {
@@ -96,11 +92,11 @@ final class PathParser {
                             appendSegment(Type.WILDCARD);
                             break;
                         case State.REGEX_VARIABLE_START:
-                            if (path.charAt(i - 1) == '^' && path.charAt(i - 2) == '[') {
-                                break;
+                            if (path.charAt(i - 1) != '^' || path.charAt(i - 2) != '[') {
+                                regexMulti = true;
                             }
-                            regexMulti = true;
-                            break;
+                            buf.append(c);
+                            continue;
                         case State.VARIABLE_START:
                         case State.WILDCARD_VARIABLE_START:
                             throw new PathParserException(Messages.MISSING_CLOSE_CAPTURE, path, i);
@@ -235,8 +231,6 @@ final class PathParser {
                 case State.REGEX_VARIABLE_START:
                 case State.WILDCARD_VARIABLE_START:
                     throw new PathParserException(Messages.MISSING_CLOSE_CAPTURE, path, len - 1);
-                case State.END:
-                    throw new PathParserException(Messages.NO_MORE_DATA_ALLOWED, path, len - 1);
                 default:
             }
         }
@@ -269,7 +263,9 @@ final class PathParser {
                                 prev = curr;
                                 break;
                             case PATTERN_MULTI:
-                                prev.setValue(prev.getValue() + '/');
+                                if (!".*".equals(prev.getValue())) {
+                                    prev.setValue(prev.getValue() + '/');
+                                }
                                 break;
                             default:
                         }
@@ -338,9 +334,10 @@ final class PathParser {
                             throw new PathParserException(Messages.ILLEGAL_DOUBLE_CAPTURE, path);
                         case PATTERN:
                         case PATTERN_MULTI:
-                            prev.addVariable(curr.getVariable());
+                            String var = curr.getVariable();
+                            prev.addVariable(var);
                             prev.setType(type);
-                            prev.setValue("(?<" + prev.getVariable() + ">[^/]+)" + value);
+                            prev.setValue("(?<" + prev.getVariable() + ">[^/]+)(?<" + var + '>' + value + ')');
                             iterator.remove();
                             continue;
                         default:
@@ -354,8 +351,13 @@ final class PathParser {
                             iterator.remove();
                             continue;
                         case WILDCARD_TAIL:
-                            prev.addVariable(curr.getVariable());
-                            prev.setValue(pValue + "(?<" + curr.getVariable() + ">.*)");
+                            if (curr.getVariables() == null) {
+                                prev.setValue(pValue + ".*");
+                            } else {
+                                prev.addVariable(curr.getVariable());
+                                prev.setValue(pValue + "(?<" + curr.getVariable() + ">.*)");
+                            }
+                            prev.setType(Type.PATTERN_MULTI);
                             iterator.remove();
                             continue;
                         case VARIABLE:
@@ -368,10 +370,15 @@ final class PathParser {
                             prev.setValue(pValue + "(?<" + curr.getVariable() + ">[^/]+)");
                             iterator.remove();
                             continue;
-                        case PATTERN:
                         case PATTERN_MULTI:
-                            prev.addVariable(curr.getVariable());
-                            prev.setValue(pValue + "(?<" + curr.getVariable() + '>' + value + ')');
+                            prev.setType(Type.PATTERN_MULTI);
+                        case PATTERN:
+                            if (curr.getVariables() == null) {
+                                prev.setValue(pValue + value);
+                            } else {
+                                prev.addVariable(curr.getVariable());
+                                prev.setValue(pValue + "(?<" + curr.getVariable() + '>' + value + ')');
+                            }
                             iterator.remove();
                             continue;
                         default:
@@ -424,7 +431,7 @@ final class PathParser {
                     sb.append("[^/]*");
                     break;
                 case '?':
-                    if (i > 0 && sb.charAt(i - 1) == '*') {
+                    if (i > 0 && wildcard.charAt(i - 1) == '*') {
                         continue;
                     }
                     sb.append("[^/]");

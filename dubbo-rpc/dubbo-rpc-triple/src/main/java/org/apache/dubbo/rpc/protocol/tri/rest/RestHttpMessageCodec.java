@@ -29,7 +29,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -62,6 +64,10 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
         charset = request.charsetOrDefault();
     }
 
+    public HttpMessageEncoder getMessageEncoder() {
+        return messageEncoder;
+    }
+
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
         return decode(inputStream, new Class<?>[] {targetType}, charset);
@@ -69,7 +75,7 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
 
     @Override
     public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
-        request.setInputStream(inputStream);
+        request.setInputStream(decodeInputStream(inputStream));
         ParameterMeta[] parameters = this.parameters;
         int len = parameters.length;
         if (len == 0) {
@@ -85,6 +91,19 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
     @Override
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         encode(os, data);
+    }
+
+    private InputStream decodeInputStream(InputStream is) {
+        if (is.getClass() == ByteArrayInputStream.class) {
+            return is;
+        }
+        try {
+            byte[] bytes = new byte[is.available()];
+            is.read(bytes);
+            return new ByteArrayInputStream(bytes);
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
     }
 
     @Override

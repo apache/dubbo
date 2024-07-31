@@ -45,12 +45,19 @@
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-http3</artifactId>
       <version>${project.parent.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-netty4</artifactId>
       <version>${project.parent.version}</version>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-cluster</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
@@ -98,6 +105,11 @@
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.spockframework</groupId>
+      <artifactId>spock-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -160,6 +172,40 @@
         <configuration>
           <skip>true</skip>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <skip>false</skip>
+              <includes>
+                <include>org/apache/dubbo/rpc/protocol/tri/rest/test/*</include>
+                <include>org/apache/dubbo/rpc/protocol/tri/rest/service/*</include>
+                <include>org/apache/dubbo/rpc/protocol/tri/test/*</include>
+                <include>META-INF/dubbo/**</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compileTests</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

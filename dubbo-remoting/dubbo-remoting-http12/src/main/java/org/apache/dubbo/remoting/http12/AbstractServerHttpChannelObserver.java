@@ -16,12 +16,16 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
 public abstract class AbstractServerHttpChannelObserver implements CustomizableHttpChannelObserver<Object> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerHttpChannelObserver.class);
 
     private final HttpChannel httpChannel;
 
@@ -30,6 +34,8 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     private TrailersCustomizer trailersCustomizer = TrailersCustomizer.NO_OP;
 
     private ErrorResponseCustomizer errorResponseCustomizer = ErrorResponseCustomizer.NO_OP;
+
+    private ExceptionHandler<Throwable, ?> exceptionHandler;
 
     private HttpMessageEncoder responseEncoder;
 
@@ -63,6 +69,11 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     @Override
     public void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer) {
         this.errorResponseCustomizer = errorResponseCustomizer;
+    }
+
+    @Override
+    public void setExceptionHandler(ExceptionHandler<Throwable, ?> exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
     }
 
     public void setAltSvc(String altSvc) {
@@ -101,10 +112,13 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         if (closed) {
             return;
         }
-        if (throwable instanceof HttpResultPayloadException) {
-            onNext(((HttpResultPayloadException) throwable).getResult());
-            onCompleted(null);
-            return;
+        if (exceptionHandler != null) {
+            HttpResult<?> result = exceptionHandler.handle(throwable);
+            if (result != null) {
+                onNext(result);
+                onCompleted();
+                return;
+            }
         }
         try {
             doOnError(throwable);
@@ -151,6 +165,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         }
         trailersCustomizer.accept(httpMetadata.headers(), throwable);
         getHttpChannel().writeHeader(httpMetadata);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Http response trailers sent: " + httpMetadata.headers());
+        }
     }
 
     protected HttpMetadata encodeTrailers(Throwable throwable) {
@@ -176,22 +193,41 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     }
 
     protected final String resolveStatusCode(Throwable throwable) {
-        return throwable instanceof HttpStatusException
-                ? String.valueOf(((HttpStatusException) throwable).getStatusCode())
-                : HttpStatus.INTERNAL_SERVER_ERROR.getStatusString();
+        if (throwable == null) {
+            return HttpStatus.OK.getStatusString();
+        }
+        if (throwable instanceof HttpStatusException) {
+            return String.valueOf(((HttpStatusException) throwable).getStatusCode());
+        }
+        return HttpStatus.INTERNAL_SERVER_ERROR.getStatusString();
     }
 
     protected final ErrorResponse buildErrorResponse(String statusCode, Throwable throwable) {
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setStatus(statusCode);
-        errorResponse.setMessage(throwable.getMessage());
+        if (throwable instanceof HttpStatusException) {
+            errorResponse.setMessage(((HttpStatusException) throwable).getDisplayMessage());
+        } else {
+            errorResponse.setMessage("Internal Server Error");
+        }
         errorResponseCustomizer.accept(errorResponse, throwable);
         return errorResponse;
     }
 
     protected final HttpOutputMessage buildMessage(Object data) throws Throwable {
         if (data instanceof HttpResult) {
-            data = ((HttpResult<?>) data).getBody();
+            HttpResult<?> result = (HttpResult<?>) data;
+            data = result.getBody();
+            if (data instanceof Throwable) {
+                String statusCode = String.valueOf(result.getStatus());
+                data = buildErrorResponse(statusCode, (Throwable) data);
+            }
+        }
+        if (LOGGER.isDebugEnabled()) {
+            try {
+                LOGGER.debug("Http response body is: '{}'", JsonUtils.toJson(data));
+            } catch (Throwable ignored) {
+            }
         }
         HttpOutputMessage outputMessage = encodeHttpOutputMessage(data);
         try {
@@ -231,6 +267,9 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     protected final void sendHeader(HttpMetadata httpMetadata) {
         getHttpChannel().writeHeader(httpMetadata);
         headerSent = true;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Http response headers sent: " + httpMetadata.headers());
+        }
     }
 
     @Override

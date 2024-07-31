@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.nested.Http3Config;
 import org.apache.dubbo.config.nested.TripleConfig;
 
 import io.netty.incubator.codec.quic.QuicCodecBuilder;
@@ -30,43 +31,37 @@ final class Helper {
     @SuppressWarnings("unchecked")
     static <T extends QuicCodecBuilder<T>> T configCodec(QuicCodecBuilder<T> builder, URL url) {
         TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
-        if (tripleConfig.getHttp3InitialMaxData() != null) {
-            builder.initialMaxData(tripleConfig.getHttp3InitialMaxData());
+        Http3Config config = tripleConfig.getHttp3();
+        if (config == null) {
+            config = new Http3Config();
         }
-        if (tripleConfig.getHttp3RecvQueueLen() != null && tripleConfig.getHttp3SendQueueLen() != null) {
-            builder.datagram(tripleConfig.getHttp3RecvQueueLen(), tripleConfig.getHttp3SendQueueLen());
+        config.checkDefault();
+        builder.initialMaxData(config.getInitialMaxData())
+                .initialMaxStreamDataBidirectionalLocal(config.getInitialMaxStreamDataBidiLocal())
+                .initialMaxStreamDataBidirectionalRemote(config.getInitialMaxStreamDataBidiRemote())
+                .initialMaxStreamDataUnidirectional(config.getInitialMaxStreamDataUni())
+                .initialMaxStreamsBidirectional(config.getInitialMaxStreamsBidi())
+                .initialMaxStreamsUnidirectional(config.getInitialMaxStreamsUni());
+
+        if (config.getRecvQueueLen() != null && config.getSendQueueLen() != null) {
+            builder.datagram(config.getRecvQueueLen(), config.getSendQueueLen());
         }
-        if (tripleConfig.getHttp3InitialMaxStreamDataBidiLocal() != null) {
-            builder.initialMaxStreamDataBidirectionalLocal(tripleConfig.getHttp3InitialMaxStreamDataBidiLocal());
+        if (config.getMaxAckDelayExponent() != null) {
+            builder.ackDelayExponent(config.getMaxAckDelayExponent());
         }
-        if (tripleConfig.getHttp3InitialMaxStreamDataBidiRemote() != null) {
-            builder.initialMaxStreamDataBidirectionalRemote(tripleConfig.getHttp3InitialMaxStreamDataBidiRemote());
+        if (config.getMaxAckDelay() != null) {
+            builder.maxAckDelay(config.getMaxAckDelay(), MILLISECONDS);
         }
-        if (tripleConfig.getHttp3InitialMaxStreamDataUni() != null) {
-            builder.initialMaxStreamDataUnidirectional(tripleConfig.getHttp3InitialMaxStreamDataUni());
+        if (config.getDisableActiveMigration() != null) {
+            builder.activeMigration(config.getDisableActiveMigration());
         }
-        if (tripleConfig.getHttp3InitialMaxStreamsBidi() != null) {
-            builder.initialMaxStreamsBidirectional(tripleConfig.getHttp3InitialMaxStreamsBidi());
+        if (config.getEnableHystart() != null) {
+            builder.hystart(config.getEnableHystart());
         }
-        if (tripleConfig.getHttp3InitialMaxStreamsUni() != null) {
-            builder.initialMaxStreamsUnidirectional(tripleConfig.getHttp3InitialMaxStreamsUni());
-        }
-        if (tripleConfig.getHttp3MaxAckDelayExponent() != null) {
-            builder.ackDelayExponent(tripleConfig.getHttp3MaxAckDelayExponent());
-        }
-        if (tripleConfig.getHttp3MaxAckDelay() != null) {
-            builder.maxAckDelay(tripleConfig.getHttp3MaxAckDelay(), MILLISECONDS);
-        }
-        if (tripleConfig.getHttp3DisableActiveMigration() != null) {
-            builder.activeMigration(tripleConfig.getHttp3DisableActiveMigration());
-        }
-        if (tripleConfig.getHttp3EnableHystart() != null) {
-            builder.hystart(tripleConfig.getHttp3EnableHystart());
-        }
-        if (tripleConfig.getHttp3CcAlgorithm() != null) {
-            if ("RENO".equalsIgnoreCase(tripleConfig.getHttp3CcAlgorithm())) {
+        if (config.getCcAlgorithm() != null) {
+            if ("RENO".equalsIgnoreCase(config.getCcAlgorithm())) {
                 builder.congestionControlAlgorithm(QuicCongestionControlAlgorithm.RENO);
-            } else if ("BBR".equalsIgnoreCase(tripleConfig.getHttp3CcAlgorithm())) {
+            } else if ("BBR".equalsIgnoreCase(config.getCcAlgorithm())) {
                 builder.congestionControlAlgorithm(QuicCongestionControlAlgorithm.BBR);
             }
         }
