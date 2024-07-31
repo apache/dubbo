@@ -17,13 +17,22 @@
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboConfigsMetadataEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboLoggerInfoEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboLsEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboMetadataEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboOfflineAppEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboOfflineEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboOfflineInterfaceEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboOnlineAppEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboOnlineEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboOnlineInterfaceEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboPropertiesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboReadyEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboReferencesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboServicesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboShutdownEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboSwitchLogLevelEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboSwitchLoggerEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.condition.CompatibleConditionalOnEnabledEndpoint;
 
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
@@ -47,7 +56,7 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 @Configuration
 @PropertySource(
         name = "Dubbo Endpoints Default Properties",
-        value = "classpath:/META-INF/dubbo-endpoints-default" + ".properties")
+        value = "classpath:/META-INF/dubbo-endpoints-default.properties")
 public class DubboEndpointAnnotationAutoConfiguration {
 
     @Bean
@@ -110,7 +119,79 @@ public class DubboEndpointAnnotationAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnAvailableEndpoint
     @CompatibleConditionalOnEnabledEndpoint
+    public DubboOnlineAppEndpoint dubboOnlineAppEndpoint() {
+        return new DubboOnlineAppEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboOnlineInterfaceEndpoint dubboOnlineInterfaceEndpoint() {
+        return new DubboOnlineInterfaceEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboOfflineEndpoint dubboOfflineEndpoint() {
+        return new DubboOfflineEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboOfflineAppEndpoint dubboOfflineAppEndpoint() {
+        return new DubboOfflineAppEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboOfflineInterfaceEndpoint dubboOfflineInterfaceEndpoint() {
+        return new DubboOfflineInterfaceEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
     public DubboReadyEndpoint dubboReadyEndpoint() {
         return new DubboReadyEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboLsEndpoint dubboLsEndpoint() {
+        return new DubboLsEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboLoggerInfoEndpoint dubboLoggerInfoEndpoint() {
+        return new DubboLoggerInfoEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboSwitchLoggerEndpoint dubboSwitchLoggerEndpoint() {
+        return new DubboSwitchLoggerEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboSwitchLogLevelEndpoint dubboSwitchLogLevelEndpoint() {
+        return new DubboSwitchLogLevelEndpoint();
     }
 }

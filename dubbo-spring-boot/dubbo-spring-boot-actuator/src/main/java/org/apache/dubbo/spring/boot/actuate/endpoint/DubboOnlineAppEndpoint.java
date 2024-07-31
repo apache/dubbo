@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint;
 
-import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.AbstractDubboMetadata;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboOnlineMetadata;
 
 import java.util.Map;
@@ -27,22 +26,22 @@ import org.springframework.boot.actuate.endpoint.annotation.WriteOperation;
 import org.springframework.lang.Nullable;
 
 /**
- * Dubbo Online
+ * Dubbo Online App
  *
  * @since 3.3.0
  */
-@Endpoint(id = "dubboonline")
-public class DubboOnlineEndpoint extends AbstractDubboMetadata {
+@Endpoint(id = "dubboonlineapp")
+public class DubboOnlineAppEndpoint {
 
     @Autowired
     private DubboOnlineMetadata dubboOnlineMetadata;
 
     @WriteOperation
-    public Map<String, Object> online(@Nullable String service) {
+    public Map<String, Object> onlineApp(@Nullable String service) {
         if (service == null || service.isEmpty()) {
-            return dubboOnlineMetadata.online(".*");
+            return dubboOnlineMetadata.onlineApp(".*");
         } else {
-            return dubboOnlineMetadata.online(service);
+            return dubboOnlineMetadata.onlineApp(service);
         }
     }
 }

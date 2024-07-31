@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -27,6 +28,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,26 +44,43 @@ public class DubboOnlineMetadata extends AbstractDubboMetadata {
     @Autowired
     public ApplicationModel applicationModel;
 
-    public Map<String, Object> online(String servicePattern) {
+    public Map<String, Object> baseOnline(
+            String servicePattern, Predicate<RegisterStatedURL> filterCondition, String status) {
         Map<String, Object> onlineInfo = new LinkedHashMap<>();
-
         Collection<ProviderModel> providerModelList =
                 applicationModel.getApplicationServiceRepository().allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
             if (metadata.getServiceKey().matches(servicePattern)
                     || metadata.getDisplayServiceKey().matches(servicePattern)) {
-                onlineInfo.put(metadata.getDisplayServiceKey(), "true");
                 List<RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedUrl : statedUrls) {
-                    if (!statedUrl.isRegistered()) {
+                    if (filterCondition.test(statedUrl)) {
                         doExport(statedUrl);
+                        onlineInfo.put(metadata.getDisplayServiceKey(), status);
                     }
                 }
             }
         }
-
         return onlineInfo;
+    }
+
+    public Map<String, Object> online(String servicePattern) {
+        return baseOnline(servicePattern, statedUrl -> !statedUrl.isRegistered(), "online");
+    }
+
+    public Map<String, Object> onlineApp(String servicePattern) {
+        return baseOnline(
+                servicePattern,
+                statedUrl -> !statedUrl.isRegistered() && UrlUtils.isServiceDiscoveryURL(statedUrl.getRegistryUrl()),
+                "onlineApplication");
+    }
+
+    public Map<String, Object> onlineInterface(String servicePattern) {
+        return baseOnline(
+                servicePattern,
+                statedUrl -> !statedUrl.isRegistered() && !UrlUtils.isServiceDiscoveryURL(statedUrl.getRegistryUrl()),
+                "onlineInterface");
     }
 
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
