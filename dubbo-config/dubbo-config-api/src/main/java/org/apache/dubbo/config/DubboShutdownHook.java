@@ -44,8 +44,10 @@ public class DubboShutdownHook extends Thread {
     private DubboShutdownHook() {
         super("DubboShutdownHook");
     }
-
-    private static volatile DubboShutdownHook instance;
+    
+    private static class SingletonHelper {
+        private static final DubboShutdownHook INSTANCE = new DubboShutdownHook();
+    }
 
     /**
      * Returns the singleton instance of <code>DubboShutdownHook</code>.
@@ -53,14 +55,7 @@ public class DubboShutdownHook extends Thread {
      * @return singleton instance
      */
     public static DubboShutdownHook getInstance() {
-        if (instance == null) {
-            synchronized (DubboShutdownHook.class) {
-                if (instance == null) {
-                    instance = new DubboShutdownHook();
-                }
-            }
-        }
-        return instance;
+        return SingletonHelper.INSTANCE;
     }
 
     /**
@@ -80,7 +75,7 @@ public class DubboShutdownHook extends Thread {
                         appModel.getModuleModels().stream().anyMatch(ModuleModel::isLifeCycleManagedExternally))
                 .collect(Collectors.toMap(
                         appModel -> appModel,
-                        appModel -> ConfigurationUtils.getServerShutdownTimeout(appModel),
+                        ConfigurationUtils::getServerShutdownTimeout,
                         (existingValue, newValue) -> existingValue,
                         HashMap::new));
 

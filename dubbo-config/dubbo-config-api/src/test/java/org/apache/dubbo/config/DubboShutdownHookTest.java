@@ -45,13 +45,6 @@ public class DubboShutdownHookTest {
     public void clear() {
         SysProps.clear();
     }
-    //
-    //    @Test
-    //    public void testDubboShutdownHook() {
-    //        Assertions.assertNotNull(dubboShutdownHook);
-    //        Assertions.assertLinesMatch(asList("DubboShutdownHook"), asList(dubboShutdownHook.getName()));
-    //        Assertions.assertFalse(dubboShutdownHook.getRegistered());
-    //    }
 
     @Test
     public void testDestoryNoModuleManagedExternally() {
