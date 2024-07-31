@@ -18,9 +18,16 @@ package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.logger.Level;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ExceptionHandler<E extends Throwable, T> {
 
-    HttpResult<T> handle(E error);
+    default Level resolveLogLevel(E error) {
+        return null;
+    }
+
+    default HttpResult<T> handle(E error) {
+        return null;
+    }
 }

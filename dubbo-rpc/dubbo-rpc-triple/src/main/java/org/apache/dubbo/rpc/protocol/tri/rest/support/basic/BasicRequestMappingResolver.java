@@ -53,7 +53,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
     @Override
     public boolean accept(MethodMeta methodMeta) {
         AnnotationMeta<Mapping> mapping = methodMeta.findAnnotation(Mapping.class);
-        return mapping != null ? !mapping.getAnnotation().disabled() : methodMeta.getMethodDescriptor() != null;
+        return mapping != null ? mapping.getAnnotation().enabled() : methodMeta.getMethodDescriptor() != null;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
         AnnotationMeta<Mapping> mapping = serviceMeta.findAnnotation(Mapping.class);
         Builder builder = builder(mapping);
 
-        String[] paths = getPaths(mapping);
+        String[] paths = resolvePaths(mapping);
         if (paths.length == 0) {
             builder.path(serviceMeta.getServiceInterface());
         } else {
@@ -77,13 +77,13 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
     public RequestMapping resolve(MethodMeta methodMeta) {
         Method method = methodMeta.getMethod();
         AnnotationMeta<Mapping> mapping = methodMeta.findAnnotation(Mapping.class);
-        if (mapping != null && mapping.getAnnotation().disabled()) {
+        if (mapping != null && !mapping.getAnnotation().enabled()) {
             return null;
         }
 
         Builder builder = builder(mapping);
 
-        String[] paths = getPaths(mapping);
+        String[] paths = resolvePaths(mapping);
         if (paths.length == 0) {
             builder.path('/' + method.getName()).sig(TypeUtils.buildSig(method));
         } else {
@@ -113,7 +113,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
         return builder;
     }
 
-    private static String[] getPaths(AnnotationMeta<?> mapping) {
+    private static String[] resolvePaths(AnnotationMeta<?> mapping) {
         if (mapping == null) {
             return StringUtils.EMPTY_STRING_ARRAY;
         }

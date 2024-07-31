@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
@@ -130,6 +131,11 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                             getContext().getMethodName()));
         }
         return invocation;
+    }
+
+    @Override
+    protected ExceptionHandler<Throwable, ?> getExceptionHandler() {
+        return null;
     }
 
     @Override

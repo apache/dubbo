@@ -24,38 +24,49 @@ public class RestException extends HttpStatusException {
     private static final long serialVersionUID = 1L;
 
     private final Messages message;
-
-    public RestException(Messages message, Object... arguments) {
-        super(message.statusCode(), message.format(arguments));
-        this.message = message;
-    }
-
-    public RestException(Throwable cause, Messages message, Object... arguments) {
-        super(message.statusCode(), message.format(arguments), ExceptionUtils.unwrap(cause));
-        this.message = message;
-    }
-
-    public RestException(String message, Throwable cause) {
-        super(500, message, ExceptionUtils.unwrap(cause));
-        this.message = Messages.INTERNAL_ERROR;
-    }
-
-    public RestException(int statusCode, String message) {
-        super(statusCode, message);
-        this.message = Messages.INTERNAL_ERROR;
-    }
+    private final String displayMessage;
 
     public RestException(String message) {
         super(500, message);
         this.message = Messages.INTERNAL_ERROR;
+        displayMessage = null;
     }
 
     public RestException(Throwable cause) {
         super(500, ExceptionUtils.unwrap(cause));
         message = Messages.INTERNAL_ERROR;
+        displayMessage = null;
+    }
+
+    public RestException(String message, Throwable cause) {
+        super(500, message, ExceptionUtils.unwrap(cause));
+        this.message = Messages.INTERNAL_ERROR;
+        displayMessage = null;
+    }
+
+    public RestException(Messages message, Object... arguments) {
+        super(message.statusCode(), message.format(arguments));
+        this.message = message;
+        displayMessage = message.formatLocalized(arguments);
+    }
+
+    public RestException(Throwable cause, Messages message, Object... arguments) {
+        super(message.statusCode(), message.format(arguments), ExceptionUtils.unwrap(cause));
+        this.message = message;
+        displayMessage = message.formatLocalized(arguments);
     }
 
     public String getErrorCode() {
         return message.name();
+    }
+
+    @Override
+    public String getDisplayMessage() {
+        return displayMessage == null ? getMessage() : displayMessage;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName() + ": status=" + getStatusCode() + ", " + getErrorCode() + ", " + getMessage();
     }
 }

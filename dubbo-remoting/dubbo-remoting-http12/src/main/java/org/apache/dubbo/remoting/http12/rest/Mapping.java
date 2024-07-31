@@ -43,5 +43,5 @@ public @interface Mapping {
 
     String[] produces() default {};
 
-    boolean disabled() default false;
+    boolean enabled() default true;
 }

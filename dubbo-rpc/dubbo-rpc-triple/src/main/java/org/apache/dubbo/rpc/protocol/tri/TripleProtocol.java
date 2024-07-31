@@ -71,6 +71,7 @@ public class TripleProtocol extends AbstractProtocol {
     private final RequestMappingRegistry mappingRegistry;
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
+    private boolean http3Bound;
 
     public static boolean CONVERT_NO_LOWER_HEADER = false;
     public static boolean IGNORE_1_0_0_VERSION = false;
@@ -193,6 +194,7 @@ public class TripleProtocol extends AbstractProtocol {
 
         if (isHttp3Enabled(url)) {
             Http3Exchanger.bind(url);
+            http3Bound = true;
         }
 
         optimizeSerialization(url);
@@ -232,7 +234,9 @@ public class TripleProtocol extends AbstractProtocol {
             logger.info("Destroying protocol [" + getClass().getSimpleName() + "] ...");
         }
         PortUnificationExchanger.close();
-        Http3Exchanger.close();
+        if (http3Bound) {
+            Http3Exchanger.close();
+        }
         pathResolver.destroy();
         mappingRegistry.destroy();
         super.destroy();

@@ -14,15 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
-public interface CustomizableHttpChannelObserver<T> extends HttpChannelObserver<T> {
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
-    void setHeadersCustomizer(HeadersCustomizer headersCustomizer);
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-    void setTrailersCustomizer(TrailersCustomizer trailersCustomizer);
+@Activate(onClass = "org.springframework.util.MultiValueMap")
+public class MultiValueMapCreator implements ArgumentConverter<Integer, MultiValueMap<?, ?>> {
 
-    void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer);
-
-    void setExceptionHandler(ExceptionHandler<Throwable, ?> exceptionHandler);
+    @Override
+    public MultiValueMap<?, ?> convert(Integer value, ParameterMeta parameter) {
+        return new LinkedMultiValueMap<>(value);
+    }
 }

@@ -48,7 +48,7 @@ import java.util.concurrent.CompletableFuture;
 
 final class ServletStreamChannel implements H2StreamChannel {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ServletStreamChannel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServletStreamChannel.class);
 
     private final HttpServletRequest request;
     private final HttpServletResponse response;
@@ -87,7 +87,7 @@ final class ServletStreamChannel implements H2StreamChannel {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
             } catch (Throwable t) {
-                LOG.info("Failed to send response", t);
+                LOGGER.info("Failed to send response", t);
             }
         } finally {
             context.complete();
@@ -115,7 +115,7 @@ final class ServletStreamChannel implements H2StreamChannel {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         } catch (Throwable t) {
-            LOG.info("Failed to close response", t);
+            LOGGER.info("Failed to close response", t);
         } finally {
             context.complete();
         }
@@ -164,7 +164,7 @@ final class ServletStreamChannel implements H2StreamChannel {
                 }
             }
         } catch (Throwable t) {
-            LOG.info("Failed to write header", t);
+            LOGGER.info("Failed to write header", t);
         } finally {
             if (endStream) {
                 context.complete();
@@ -185,7 +185,7 @@ final class ServletStreamChannel implements H2StreamChannel {
             bos.writeTo(out);
             out.flush();
         } catch (Throwable t) {
-            LOG.info("Failed to write message", t);
+            LOGGER.info("Failed to write message", t);
         } finally {
             if (endStream) {
                 context.complete();

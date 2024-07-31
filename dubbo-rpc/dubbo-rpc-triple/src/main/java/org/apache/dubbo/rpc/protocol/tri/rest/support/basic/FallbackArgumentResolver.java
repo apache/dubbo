@@ -104,6 +104,9 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         }
 
         if (single) {
+            if (Map.class.isAssignableFrom(meta.type())) {
+                return RequestUtils.getParametersMap(request);
+            }
             String value = request.parameter(meta.name());
             if (meta.parameterMeta().isSimple() || RestUtils.isMaybeJSONObject(value)) {
                 return value;

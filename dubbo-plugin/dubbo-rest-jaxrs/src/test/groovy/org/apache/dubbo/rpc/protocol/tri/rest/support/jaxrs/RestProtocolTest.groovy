@@ -75,4 +75,17 @@ class RestProtocolTest extends BaseServiceTest {
             path                      | output
             '/convertTest?user=3,sam' | '{"id":3,"name":"sam"}'
     }
+
+    def "MultivaluedMap test"() {
+        expect:
+            TestRequest request = new TestRequest(
+                path: path,
+                contentType: MediaType.APPLICATION_FROM_URLENCODED,
+                body: body
+            )
+            runner.post(request) == output
+        where:
+            path                  | body                  | output
+            '/multivaluedMapTest' | 'name=1&name=2&age=8' | '{"name":[1,2],"age":[8]}'
+    }
 }

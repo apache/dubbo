@@ -14,15 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.rest;
 
-public interface CustomizableHttpChannelObserver<T> extends HttpChannelObserver<T> {
+public final class RestMappingException extends RestException {
 
-    void setHeadersCustomizer(HeadersCustomizer headersCustomizer);
+    private static final long serialVersionUID = 1L;
 
-    void setTrailersCustomizer(TrailersCustomizer trailersCustomizer);
+    public RestMappingException(Messages message, Object... arguments) {
+        super(message, arguments);
+    }
 
-    void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer);
-
-    void setExceptionHandler(ExceptionHandler<Throwable, ?> exceptionHandler);
+    public RestMappingException(Throwable cause, Messages message, Object... arguments) {
+        super(cause, message, arguments);
+    }
 }

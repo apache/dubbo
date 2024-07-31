@@ -21,6 +21,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.jboss.resteasy.annotations.Form;
 
@@ -37,4 +38,8 @@ public interface JaxrsDemoService {
     @GET
     @Path("/convertTest")
     User convertTest(@QueryParam("user") User user);
+
+    @POST
+    @Path("/multivaluedMapTest")
+    MultivaluedMap<String, Integer> multiValueMapTest(MultivaluedMap<String, Integer> params);
 }

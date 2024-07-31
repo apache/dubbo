@@ -146,7 +146,11 @@ public final class MethodMeta extends AnnotationSupport {
 
     @Override
     public String toString() {
-        return "MethodMeta{" + MethodUtils.toShortString(method) + '}';
+        return "MethodMeta{method=" + toShortString() + ", service=" + serviceMeta.toShortString() + '}';
+    }
+
+    public String toShortString() {
+        return MethodUtils.toShortString(method);
     }
 
     private static final class StreamParameterMeta extends ParameterMeta {

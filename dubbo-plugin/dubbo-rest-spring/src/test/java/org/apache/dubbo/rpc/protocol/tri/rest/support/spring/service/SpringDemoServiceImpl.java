@@ -18,4 +18,12 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service;
 
 import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl;
 
-public class SpringDemoServiceImpl extends DemoServiceImpl implements SpringDemoService {}
+import org.springframework.util.MultiValueMap;
+
+public class SpringDemoServiceImpl extends DemoServiceImpl implements SpringDemoService {
+
+    @Override
+    public MultiValueMap<String, Integer> multiValueMapTest(MultiValueMap<String, Integer> params) {
+        return params;
+    }
+}

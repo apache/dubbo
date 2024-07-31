@@ -108,6 +108,14 @@ class RestProtocolTest extends BaseServiceTest {
             '/spring/beanBodyTest?age=2' | '[{"id":1,"name":"g1"},{"id":2,"name":"g2"}]' | '[{"id":1,"name":"g1"},{"id":2,"name":"g2"}]'
     }
 
+    def "multiValueMap test"() {
+        expect:
+            runner.get(path) contains output
+        where:
+            path                                            | output
+            '/spring/multiValueMapTest?name=1&name=2&age=8' | '{"name":[1,2],"age":[8]}'
+    }
+
     def "urlEncodeForm test"() {
         given:
             def request = new TestRequest(

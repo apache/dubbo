@@ -26,6 +26,7 @@ import java.util.Map;
 
 import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -64,6 +65,9 @@ public interface SpringDemoService {
 
     @RequestMapping
     List<Group> beanBodyTest2(List<Group> groups, int age);
+
+    @RequestMapping
+    MultiValueMap<String, Integer> multiValueMapTest(MultiValueMap<String, Integer> params);
 
     @RequestMapping
     Book buy(Book book);

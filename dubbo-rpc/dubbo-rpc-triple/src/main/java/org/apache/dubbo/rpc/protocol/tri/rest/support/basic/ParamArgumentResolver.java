@@ -122,7 +122,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
             case Attribute:
                 return request.attribute(meta.name());
             case Part:
-                return request.parts();
+                return meta.type() == byte[].class ? request.part(meta.name()) : request.parts();
             case Body:
                 Class<?> type = meta.type();
                 if (type == byte[].class) {
