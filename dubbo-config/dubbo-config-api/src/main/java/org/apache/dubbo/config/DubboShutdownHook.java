@@ -44,7 +44,7 @@ public class DubboShutdownHook extends Thread {
     private DubboShutdownHook() {
         super("DubboShutdownHook");
     }
-    
+
     private static class SingletonHelper {
         private static final DubboShutdownHook INSTANCE = new DubboShutdownHook();
     }
