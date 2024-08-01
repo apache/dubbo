@@ -97,10 +97,11 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
 
     @Override
     public Object readObject() throws IOException {
-        if (!Objects.equals(mH2i.getSerializerFactory().getClassLoader(),
+        if (!Objects.equals(
+                mH2i.getSerializerFactory().getClassLoader(),
                 Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread()
-                    .getContextClassLoader()));
+            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                    Thread.currentThread().getContextClassLoader()));
         }
         return mH2i.readObject();
     }
@@ -108,20 +109,22 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
-        if (!Objects.equals(mH2i.getSerializerFactory().getClassLoader(),
+        if (!Objects.equals(
+                mH2i.getSerializerFactory().getClassLoader(),
                 Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread()
-                    .getContextClassLoader()));
+            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                    Thread.currentThread().getContextClassLoader()));
         }
         return (T) mH2i.readObject(cls);
     }
 
     @Override
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
-        if (!Objects.equals(mH2i.getSerializerFactory().getClassLoader(),
+        if (!Objects.equals(
+                mH2i.getSerializerFactory().getClassLoader(),
                 Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread()
-                    .getContextClassLoader()));
+            mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
+                    Thread.currentThread().getContextClassLoader()));
         }
         return readObject(cls);
     }
