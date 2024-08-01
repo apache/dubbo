@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.resource_new.route;
 
 import org.apache.dubbo.common.lang.Nullable;
@@ -62,8 +78,13 @@ public class RouteAction {
             @Nullable List<ClusterWeight> weightedClusters,
             @Nullable NamedPluginConfig namedConfig,
             @Nullable RetryPolicy retryPolicy) {
-        return new RouteAction(Collections.unmodifiableList(new ArrayList<>(hashPolicies)), timeoutNano, cluster,
-                weightedClusters == null ? null : Collections.unmodifiableList(new ArrayList<>(weightedClusters)), namedConfig, retryPolicy);
+        return new RouteAction(
+                Collections.unmodifiableList(new ArrayList<>(hashPolicies)),
+                timeoutNano,
+                cluster,
+                weightedClusters == null ? null : Collections.unmodifiableList(new ArrayList<>(weightedClusters)),
+                namedConfig,
+                retryPolicy);
     }
 
     RouteAction(
@@ -125,18 +146,20 @@ public class RouteAction {
         }
         if (o instanceof RouteAction) {
             RouteAction that = (RouteAction) o;
-            return this.hashPolicies.equals(that.hashPolicies()) && (
-                    this.timeoutNano == null ? that.timeoutNano() == null : this.timeoutNano.equals(that.timeoutNano()))
-                    && (this.cluster == null ? that.cluster() == null : this.cluster.equals(that.cluster())) && (
-                    this.weightedClusters == null ?
-                            that.weightedClusters() == null : this.weightedClusters.equals(that.weightedClusters()))
-                    && (
-                    this.namedClusterSpecifierPluginConfig == null ? that.namedClusterSpecifierPluginConfig()
-                            == null :
-                            this.namedClusterSpecifierPluginConfig.equals(that.namedClusterSpecifierPluginConfig()))
-                    && (
-                    this.retryPolicy == null ?
-                            that.retryPolicy() == null : this.retryPolicy.equals(that.retryPolicy()));
+            return this.hashPolicies.equals(that.hashPolicies())
+                    && (this.timeoutNano == null
+                            ? that.timeoutNano() == null
+                            : this.timeoutNano.equals(that.timeoutNano()))
+                    && (this.cluster == null ? that.cluster() == null : this.cluster.equals(that.cluster()))
+                    && (this.weightedClusters == null
+                            ? that.weightedClusters() == null
+                            : this.weightedClusters.equals(that.weightedClusters()))
+                    && (this.namedClusterSpecifierPluginConfig == null
+                            ? that.namedClusterSpecifierPluginConfig() == null
+                            : this.namedClusterSpecifierPluginConfig.equals(that.namedClusterSpecifierPluginConfig()))
+                    && (this.retryPolicy == null
+                            ? that.retryPolicy() == null
+                            : this.retryPolicy.equals(that.retryPolicy()));
         }
         return false;
     }
@@ -157,5 +180,4 @@ public class RouteAction {
         h$ ^= (retryPolicy == null) ? 0 : retryPolicy.hashCode();
         return h$;
     }
-
 }

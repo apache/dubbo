@@ -1,9 +1,10 @@
 /*
- * Copyright 2022 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new;
 
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.url.component.URLAddress;
+import org.apache.dubbo.xds.resource_new.common.Locality;
 import org.apache.dubbo.xds.resource_new.endpoint.DropOverload;
 import org.apache.dubbo.xds.resource_new.endpoint.LbEndpoint;
-import org.apache.dubbo.xds.resource_new.common.Locality;
 import org.apache.dubbo.xds.resource_new.endpoint.LocalityLbEndpoints;
 import org.apache.dubbo.xds.resource_new.exception.ResourceInvalidException;
 import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
@@ -84,7 +84,8 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
         return processClusterLoadAssignment((ClusterLoadAssignment) unpackedMessage);
     }
 
-    private static EdsUpdate processClusterLoadAssignment(ClusterLoadAssignment assignment) throws ResourceInvalidException {
+    private static EdsUpdate processClusterLoadAssignment(ClusterLoadAssignment assignment)
+            throws ResourceInvalidException {
         Map<Integer, Set<Locality>> priorities = new HashMap<>();
         Map<Locality, LocalityLbEndpoints> localityLbEndpointsMap = new LinkedHashMap<>();
         List<DropOverload> dropOverloads = new ArrayList<>();
@@ -110,8 +111,7 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
             if (!priorities.containsKey(priority)) {
                 priorities.put(priority, new HashSet<>());
             }
-            if (!priorities.get(priority)
-                    .add(locality)) {
+            if (!priorities.get(priority).add(locality)) {
                 throw new ResourceInvalidException(
                         "ClusterLoadAssignment has duplicate locality:" + locality + " for priority:" + priority);
             }
@@ -120,8 +120,8 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
             throw new ResourceInvalidException("ClusterLoadAssignment has sparse priorities");
         }
 
-        for (ClusterLoadAssignment.Policy.DropOverload dropOverloadProto : assignment.getPolicy()
-                .getDropOverloadsList()) {
+        for (ClusterLoadAssignment.Policy.DropOverload dropOverloadProto :
+                assignment.getPolicy().getDropOverloadsList()) {
             dropOverloads.add(parseDropOverload(dropOverloadProto));
         }
         return new EdsUpdate(assignment.getClusterName(), localityLbEndpointsMap, dropOverloads);
@@ -131,8 +131,7 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
         return new Locality(proto.getRegion(), proto.getZone(), proto.getSubZone());
     }
 
-    private static DropOverload parseDropOverload(
-            ClusterLoadAssignment.Policy.DropOverload proto) {
+    private static DropOverload parseDropOverload(ClusterLoadAssignment.Policy.DropOverload proto) {
         return new DropOverload(proto.getCategory(), getRatePerMillion(proto.getDropPercentage()));
     }
 
@@ -163,8 +162,7 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
     static StructOrError<LocalityLbEndpoints> parseLocalityLbEndpoints(
             io.envoyproxy.envoy.config.endpoint.v3.LocalityLbEndpoints proto) {
         // Filter out localities without or with 0 weight.
-        if (!proto.hasLoadBalancingWeight() || proto.getLoadBalancingWeight()
-                .getValue() < 1) {
+        if (!proto.hasLoadBalancingWeight() || proto.getLoadBalancingWeight().getValue() < 1) {
             return null;
         }
         if (proto.getPriority() < 0) {
@@ -174,20 +172,20 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
         for (io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint endpoint : proto.getLbEndpointsList()) {
             // The endpoint field of each lb_endpoints must be set.
             // Inside of it: the address field must be set.
-            if (!endpoint.hasEndpoint() || !endpoint.getEndpoint()
-                    .hasAddress()) {
+            if (!endpoint.hasEndpoint() || !endpoint.getEndpoint().hasAddress()) {
                 return StructOrError.fromError("LbEndpoint with no endpoint/address");
             }
-            io.envoyproxy.envoy.config.core.v3.SocketAddress socketAddress = endpoint.getEndpoint()
-                    .getAddress()
-                    .getSocketAddress();
+            io.envoyproxy.envoy.config.core.v3.SocketAddress socketAddress =
+                    endpoint.getEndpoint().getAddress().getSocketAddress();
             URLAddress addr = new URLAddress(socketAddress.getAddress(), socketAddress.getPortValue());
             boolean isHealthy = endpoint.getHealthStatus() == io.envoyproxy.envoy.config.core.v3.HealthStatus.HEALTHY
                     || endpoint.getHealthStatus() == io.envoyproxy.envoy.config.core.v3.HealthStatus.UNKNOWN;
-            endpoints.add(new LbEndpoint(Collections.singletonList(addr), endpoint.getLoadBalancingWeight()
-                    .getValue(), isHealthy));
+            endpoints.add(new LbEndpoint(
+                    Collections.singletonList(addr),
+                    endpoint.getLoadBalancingWeight().getValue(),
+                    isHealthy));
         }
-        return StructOrError.fromStruct(new LocalityLbEndpoints(endpoints, proto.getLoadBalancingWeight()
-                .getValue(), proto.getPriority()));
+        return StructOrError.fromStruct(new LocalityLbEndpoints(
+                endpoints, proto.getLoadBalancingWeight().getValue(), proto.getPriority()));
     }
 }

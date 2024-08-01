@@ -1,9 +1,10 @@
 /*
- * Copyright 2020 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.listener.security;
+
+import org.apache.dubbo.common.utils.Assert;
 
 import java.io.Closeable;
 import java.util.Objects;
 
 import io.netty.handler.ssl.SslContext;
-
-import org.apache.dubbo.common.utils.Assert;
 
 /**
  * Enables Client or server side to initialize this object with the received {@link BaseTlsContext} and communicate it
@@ -36,8 +36,7 @@ public final class SslContextProviderSupplier implements Closeable {
     private SslContextProvider sslContextProvider;
     private boolean shutdown;
 
-    public SslContextProviderSupplier(
-            BaseTlsContext tlsContext, TlsContextManager tlsContextManager) {
+    public SslContextProviderSupplier(BaseTlsContext tlsContext, TlsContextManager tlsContextManager) {
         Assert.notNull(tlsContext, "tlsContext must not be null");
         Assert.notNull(tlsContextManager, "tlsContextManager must not be null");
         this.tlsContext = tlsContext;
@@ -76,13 +75,12 @@ public final class SslContextProviderSupplier implements Closeable {
                 }
             });
         } catch (final Throwable throwable) {
-            callback.getExecutor()
-                    .execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.onException(throwable);
-                        }
-                    });
+            callback.getExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onException(throwable);
+                }
+            });
         }
     }
 
@@ -95,9 +93,9 @@ public final class SslContextProviderSupplier implements Closeable {
     }
 
     private SslContextProvider getSslContextProvider() {
-        return tlsContext instanceof UpstreamTlsContext ?
-                tlsContextManager.findOrCreateClientSslContextProvider((UpstreamTlsContext) tlsContext) :
-                tlsContextManager.findOrCreateServerSslContextProvider((DownstreamTlsContext) tlsContext);
+        return tlsContext instanceof UpstreamTlsContext
+                ? tlsContextManager.findOrCreateClientSslContextProvider((UpstreamTlsContext) tlsContext)
+                : tlsContextManager.findOrCreateServerSslContextProvider((DownstreamTlsContext) tlsContext);
     }
 
     public boolean isShutdown() {

@@ -1,9 +1,10 @@
 /*
- * Copyright 2021 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.route.plugin;
 
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -39,7 +39,9 @@ final class RouteLookupServiceClusterSpecifierPlugin implements ClusterSpecifier
 
     @Override
     public String[] typeUrls() {
-        return new String[] {TYPE_URL,};
+        return new String[] {
+            TYPE_URL,
+        };
     }
 
     @Override
@@ -64,8 +66,8 @@ final class RouteLookupServiceClusterSpecifierPlugin implements ClusterSpecifier
             }
             String jsonString = MessagePrinter.print(configProto);
             Map<String, ?> jsonMap = JsonUtils.toJavaObject(jsonString, Map.class);
-            Map<String, ?> config = JsonUtils.toJavaObject(jsonMap.get("routeLookupConfig")
-                    .toString(), Map.class);
+            Map<String, ?> config =
+                    JsonUtils.toJavaObject(jsonMap.get("routeLookupConfig").toString(), Map.class);
             return ConfigOrError.fromConfig(RlsPluginConfig.create(config));
         } catch (RuntimeException e) {
             return ConfigOrError.fromError("Error parsing RouteLookupConfig: " + e);

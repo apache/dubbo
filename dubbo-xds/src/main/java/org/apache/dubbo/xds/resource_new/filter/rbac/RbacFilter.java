@@ -1,9 +1,10 @@
 /*
- * Copyright 2021 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.filter.rbac;
 
 import org.apache.dubbo.xds.resource_new.common.ConfigOrError;
@@ -97,11 +97,8 @@ public final class RbacFilter implements Filter, ServerFilter {
                 return ConfigOrError.fromError("Unknown rbacConfig action type: " + rbacConfig.getAction());
         }
         List<PolicyMatcher> policyMatchers = new ArrayList<>();
-        List<Entry<String, Policy>> sortedPolicyEntries = rbacConfig.getPoliciesMap()
-                .entrySet()
-                .stream()
-                .sorted((a, b) -> a.getKey()
-                        .compareTo(b.getKey()))
+        List<Entry<String, Policy>> sortedPolicyEntries = rbacConfig.getPoliciesMap().entrySet().stream()
+                .sorted((a, b) -> a.getKey().compareTo(b.getKey()))
                 .collect(Collectors.toList());
         for (Entry<String, Policy> entry : sortedPolicyEntries) {
             try {
@@ -110,7 +107,8 @@ public final class RbacFilter implements Filter, ServerFilter {
                     return ConfigOrError.fromError(
                             "Policy.condition and Policy.checked_condition must not set: " + entry.getKey());
                 }
-                policyMatchers.add(PolicyMatcher.create(entry.getKey(),
+                policyMatchers.add(PolicyMatcher.create(
+                        entry.getKey(),
                         parsePermissionList(policy.getPermissionsList()),
                         parsePrincipalList(policy.getPrincipalsList())));
             } catch (Exception e) {
@@ -151,14 +149,12 @@ public final class RbacFilter implements Filter, ServerFilter {
         switch (permission.getRuleCase()) {
             case AND_RULES:
                 List<Matcher> andMatch = new ArrayList<>();
-                for (Permission p : permission.getAndRules()
-                        .getRulesList()) {
+                for (Permission p : permission.getAndRules().getRulesList()) {
                     andMatch.add(parsePermission(p));
                 }
                 return AndMatcher.create(andMatch);
             case OR_RULES:
-                return parsePermissionList(permission.getOrRules()
-                        .getRulesList());
+                return parsePermissionList(permission.getOrRules().getRulesList());
             case ANY:
                 return AlwaysTrueMatcher.INSTANCE;
             case HEADER:
@@ -194,12 +190,10 @@ public final class RbacFilter implements Filter, ServerFilter {
     private static Matcher parsePrincipal(Principal principal) {
         switch (principal.getIdentifierCase()) {
             case OR_IDS:
-                return parsePrincipalList(principal.getOrIds()
-                        .getIdsList());
+                return parsePrincipalList(principal.getOrIds().getIdsList());
             case AND_IDS:
                 List<Matcher> nextMatchers = new ArrayList<>();
-                for (Principal next : principal.getAndIds()
-                        .getIdsList()) {
+                for (Principal next : principal.getAndIds().getIdsList()) {
                     nextMatchers.add(parsePrincipal(next));
                 }
                 return AndMatcher.create(nextMatchers);
@@ -228,8 +222,7 @@ public final class RbacFilter implements Filter, ServerFilter {
         }
     }
 
-    private static PathMatcher parsePathMatcher(
-            io.envoyproxy.envoy.type.matcher.v3.PathMatcher proto) {
+    private static PathMatcher parsePathMatcher(io.envoyproxy.envoy.type.matcher.v3.PathMatcher proto) {
         switch (proto.getRuleCase()) {
             case PATH:
                 return PathMatcher.create(MatcherParser.parseStringMatcher(proto.getPath()));
@@ -244,10 +237,8 @@ public final class RbacFilter implements Filter, ServerFilter {
         return RequestedServerNameMatcher.create(MatcherParser.parseStringMatcher(proto));
     }
 
-    private static AuthHeaderMatcher parseHeaderMatcher(
-            io.envoyproxy.envoy.config.route.v3.HeaderMatcher proto) {
-        if (proto.getName()
-                .startsWith("grpc-")) {
+    private static AuthHeaderMatcher parseHeaderMatcher(io.envoyproxy.envoy.config.route.v3.HeaderMatcher proto) {
+        if (proto.getName().startsWith("grpc-")) {
             throw new IllegalArgumentException(
                     "Invalid header matcher config: [grpc-] prefixed " + "header name is not allowed.");
         }
@@ -258,8 +249,7 @@ public final class RbacFilter implements Filter, ServerFilter {
         return AuthHeaderMatcher.create(MatcherParser.parseHeaderMatcher(proto));
     }
 
-    private static AuthenticatedMatcher parseAuthenticatedMatcher(
-            Principal.Authenticated proto) {
+    private static AuthenticatedMatcher parseAuthenticatedMatcher(Principal.Authenticated proto) {
         StringMatcher matcher = MatcherParser.parseStringMatcher(proto.getPrincipalName());
         return AuthenticatedMatcher.create(matcher);
     }
@@ -273,13 +263,13 @@ public final class RbacFilter implements Filter, ServerFilter {
     }
 
     private static DestinationIpMatcher createDestinationIpMatcher(CidrRange cidrRange) {
-        return DestinationIpMatcher.create(CidrMatcher.create(resolve(cidrRange), cidrRange.getPrefixLen()
-                .getValue()));
+        return DestinationIpMatcher.create(
+                CidrMatcher.create(resolve(cidrRange), cidrRange.getPrefixLen().getValue()));
     }
 
     private static SourceIpMatcher createSourceIpMatcher(CidrRange cidrRange) {
-        return SourceIpMatcher.create(CidrMatcher.create(resolve(cidrRange), cidrRange.getPrefixLen()
-                .getValue()));
+        return SourceIpMatcher.create(
+                CidrMatcher.create(resolve(cidrRange), cidrRange.getPrefixLen().getValue()));
     }
 
     private static InetAddress resolve(CidrRange cidrRange) {
@@ -290,4 +280,3 @@ public final class RbacFilter implements Filter, ServerFilter {
         }
     }
 }
-

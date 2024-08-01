@@ -1,9 +1,10 @@
 /*
- * Copyright 2021 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.filter.fault;
 
 import org.apache.dubbo.xds.resource_new.common.ConfigOrError;
@@ -40,16 +40,16 @@ import io.grpc.internal.GrpcUtil;
 public final class FaultFilter implements Filter, ClientFilter {
 
     public static final FaultFilter INSTANCE = new FaultFilter(ThreadSafeRandomImpl.instance, new AtomicLong());
-    static final Metadata.Key<String> HEADER_DELAY_KEY = Metadata.Key.of("x-envoy-fault-delay-request",
-            Metadata.ASCII_STRING_MARSHALLER);
-    static final Metadata.Key<String> HEADER_DELAY_PERCENTAGE_KEY = Metadata.Key.of(
-            "x-envoy-fault-delay-request" + "-percentage", Metadata.ASCII_STRING_MARSHALLER);
-    static final Metadata.Key<String> HEADER_ABORT_HTTP_STATUS_KEY = Metadata.Key.of("x-envoy-fault-abort-request",
-            Metadata.ASCII_STRING_MARSHALLER);
-    static final Metadata.Key<String> HEADER_ABORT_GRPC_STATUS_KEY = Metadata.Key.of(
-            "x-envoy-fault-abort-grpc" + "-request", Metadata.ASCII_STRING_MARSHALLER);
-    static final Metadata.Key<String> HEADER_ABORT_PERCENTAGE_KEY = Metadata.Key.of(
-            "x-envoy-fault-abort-request" + "-percentage", Metadata.ASCII_STRING_MARSHALLER);
+    static final Metadata.Key<String> HEADER_DELAY_KEY =
+            Metadata.Key.of("x-envoy-fault-delay-request", Metadata.ASCII_STRING_MARSHALLER);
+    static final Metadata.Key<String> HEADER_DELAY_PERCENTAGE_KEY =
+            Metadata.Key.of("x-envoy-fault-delay-request" + "-percentage", Metadata.ASCII_STRING_MARSHALLER);
+    static final Metadata.Key<String> HEADER_ABORT_HTTP_STATUS_KEY =
+            Metadata.Key.of("x-envoy-fault-abort-request", Metadata.ASCII_STRING_MARSHALLER);
+    static final Metadata.Key<String> HEADER_ABORT_GRPC_STATUS_KEY =
+            Metadata.Key.of("x-envoy-fault-abort-grpc" + "-request", Metadata.ASCII_STRING_MARSHALLER);
+    static final Metadata.Key<String> HEADER_ABORT_PERCENTAGE_KEY =
+            Metadata.Key.of("x-envoy-fault-abort-request" + "-percentage", Metadata.ASCII_STRING_MARSHALLER);
     static final String TYPE_URL = "type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault";
 
     private final ThreadSafeRandom random;
@@ -96,8 +96,7 @@ public final class FaultFilter implements Filter, ClientFilter {
         }
         Integer maxActiveFaults = null;
         if (httpFault.hasMaxActiveFaults()) {
-            maxActiveFaults = httpFault.getMaxActiveFaults()
-                    .getValue();
+            maxActiveFaults = httpFault.getMaxActiveFaults().getValue();
             if (maxActiveFaults < 0) {
                 maxActiveFaults = Integer.MAX_VALUE;
             }
@@ -121,10 +120,11 @@ public final class FaultFilter implements Filter, ClientFilter {
             case HEADER_ABORT:
                 return ConfigOrError.fromConfig(FaultAbort.forHeader(percent));
             case HTTP_STATUS:
-                return ConfigOrError.fromConfig(FaultAbort.forStatus(GrpcUtil.httpStatusToGrpcStatus(faultAbort.getHttpStatus()), percent));
+                return ConfigOrError.fromConfig(
+                        FaultAbort.forStatus(GrpcUtil.httpStatusToGrpcStatus(faultAbort.getHttpStatus()), percent));
             case GRPC_STATUS:
-                return ConfigOrError.fromConfig(FaultAbort.forStatus(Status.fromCodeValue(faultAbort.getGrpcStatus())
-                        , percent));
+                return ConfigOrError.fromConfig(
+                        FaultAbort.forStatus(Status.fromCodeValue(faultAbort.getGrpcStatus()), percent));
             case ERRORTYPE_NOT_SET:
             default:
                 return ConfigOrError.fromError("Unknown error type case: " + faultAbort.getErrorTypeCase());

@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.resource_new.update;
 
 import org.apache.dubbo.common.lang.Nullable;
@@ -29,7 +45,8 @@ public class CdsUpdate implements ResourceUpdate {
         if (prioritizedClusterNames == null) {
             throw new IllegalArgumentException("prioritizedClusterNames must not be null");
         }
-        return new Builder().clusterName(clusterName)
+        return new Builder()
+                .clusterName(clusterName)
                 .clusterType(ClusterType.AGGREGATE)
                 .minRingSize(0)
                 .maxRingSize(0)
@@ -44,7 +61,8 @@ public class CdsUpdate implements ResourceUpdate {
             @Nullable Long maxConcurrentRequests,
             @Nullable UpstreamTlsContext upstreamTlsContext,
             @Nullable OutlierDetection outlierDetection) {
-        return new Builder().clusterName(clusterName)
+        return new Builder()
+                .clusterName(clusterName)
                 .clusterType(ClusterType.EDS)
                 .minRingSize(0)
                 .maxRingSize(0)
@@ -62,7 +80,8 @@ public class CdsUpdate implements ResourceUpdate {
             @Nullable ServerInfo lrsServerInfo,
             @Nullable Long maxConcurrentRequests,
             @Nullable UpstreamTlsContext upstreamTlsContext) {
-        return new Builder().clusterName(clusterName)
+        return new Builder()
+                .clusterName(clusterName)
                 .clusterType(ClusterType.LOGICAL_DNS)
                 .minRingSize(0)
                 .maxRingSize(0)
@@ -201,23 +220,33 @@ public class CdsUpdate implements ResourceUpdate {
         }
         if (o instanceof CdsUpdate) {
             CdsUpdate that = (CdsUpdate) o;
-            return this.clusterName.equals(that.clusterName()) && this.clusterType.equals(that.clusterType())
-                    && this.lbPolicyConfig.equals(that.lbPolicyConfig()) && this.minRingSize == that.minRingSize()
-                    && this.maxRingSize == that.maxRingSize() && this.choiceCount == that.choiceCount() && (
-                    this.edsServiceName == null ?
-                            that.edsServiceName() == null : this.edsServiceName.equals(that.edsServiceName())) && (
-                    this.dnsHostName == null ? that.dnsHostName() == null : this.dnsHostName.equals(that.dnsHostName()))
-                    && (
-                    this.lrsServerInfo == null ?
-                            that.lrsServerInfo() == null : this.lrsServerInfo.equals(that.lrsServerInfo())) && (
-                    this.maxConcurrentRequests == null ? that.maxConcurrentRequests()
-                            == null : this.maxConcurrentRequests.equals(that.maxConcurrentRequests())) && (
-                    this.upstreamTlsContext == null ? that.upstreamTlsContext()
-                            == null : this.upstreamTlsContext.equals(that.upstreamTlsContext())) && (
-                    this.prioritizedClusterNames == null ? that.prioritizedClusterNames()
-                            == null : this.prioritizedClusterNames.equals(that.prioritizedClusterNames())) && (
-                    this.outlierDetection == null ?
-                            that.outlierDetection() == null : this.outlierDetection.equals(that.outlierDetection()));
+            return this.clusterName.equals(that.clusterName())
+                    && this.clusterType.equals(that.clusterType())
+                    && this.lbPolicyConfig.equals(that.lbPolicyConfig())
+                    && this.minRingSize == that.minRingSize()
+                    && this.maxRingSize == that.maxRingSize()
+                    && this.choiceCount == that.choiceCount()
+                    && (this.edsServiceName == null
+                            ? that.edsServiceName() == null
+                            : this.edsServiceName.equals(that.edsServiceName()))
+                    && (this.dnsHostName == null
+                            ? that.dnsHostName() == null
+                            : this.dnsHostName.equals(that.dnsHostName()))
+                    && (this.lrsServerInfo == null
+                            ? that.lrsServerInfo() == null
+                            : this.lrsServerInfo.equals(that.lrsServerInfo()))
+                    && (this.maxConcurrentRequests == null
+                            ? that.maxConcurrentRequests() == null
+                            : this.maxConcurrentRequests.equals(that.maxConcurrentRequests()))
+                    && (this.upstreamTlsContext == null
+                            ? that.upstreamTlsContext() == null
+                            : this.upstreamTlsContext.equals(that.upstreamTlsContext()))
+                    && (this.prioritizedClusterNames == null
+                            ? that.prioritizedClusterNames() == null
+                            : this.prioritizedClusterNames.equals(that.prioritizedClusterNames()))
+                    && (this.outlierDetection == null
+                            ? that.outlierDetection() == null
+                            : this.outlierDetection.equals(that.outlierDetection()));
         }
         return false;
     }
@@ -270,8 +299,7 @@ public class CdsUpdate implements ResourceUpdate {
         private OutlierDetection outlierDetection;
         private byte set$0;
 
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder clusterName(String clusterName) {
             if (clusterName == null) {
@@ -373,11 +401,20 @@ public class CdsUpdate implements ResourceUpdate {
                 }
                 throw new IllegalStateException("Missing required properties:" + missing);
             }
-            return new CdsUpdate(this.clusterName, this.clusterType, this.lbPolicyConfig, this.minRingSize,
-                    this.maxRingSize, this.choiceCount, this.edsServiceName, this.dnsHostName, this.lrsServerInfo,
-                    this.maxConcurrentRequests, this.upstreamTlsContext, this.prioritizedClusterNames,
+            return new CdsUpdate(
+                    this.clusterName,
+                    this.clusterType,
+                    this.lbPolicyConfig,
+                    this.minRingSize,
+                    this.maxRingSize,
+                    this.choiceCount,
+                    this.edsServiceName,
+                    this.dnsHostName,
+                    this.lrsServerInfo,
+                    this.maxConcurrentRequests,
+                    this.upstreamTlsContext,
+                    this.prioritizedClusterNames,
                     this.outlierDetection);
         }
     }
-
 }

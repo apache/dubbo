@@ -1,9 +1,10 @@
 /*
- * Copyright 2019 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.listener.security;
 
 import org.apache.dubbo.common.utils.StringUtils;
@@ -50,20 +50,22 @@ public final class XdsTrustManagerFactory extends SimpleTrustManagerFactory {
     /**
      * Constructor constructs from a {@link CertificateValidationContext}.
      */
-    public XdsTrustManagerFactory(CertificateValidationContext certificateValidationContext) throws CertificateException, IOException, CertStoreException {
+    public XdsTrustManagerFactory(CertificateValidationContext certificateValidationContext)
+            throws CertificateException, IOException, CertStoreException {
         this(getTrustedCaFromCertContext(certificateValidationContext), certificateValidationContext, false);
     }
 
     public XdsTrustManagerFactory(
-            X509Certificate[] certs,
-            CertificateValidationContext staticCertificateValidationContext) throws CertStoreException {
+            X509Certificate[] certs, CertificateValidationContext staticCertificateValidationContext)
+            throws CertStoreException {
         this(certs, staticCertificateValidationContext, true);
     }
 
     private XdsTrustManagerFactory(
             X509Certificate[] certs,
             CertificateValidationContext certificateValidationContext,
-            boolean validationContextIsStatic) throws CertStoreException {
+            boolean validationContextIsStatic)
+            throws CertStoreException {
         if (validationContextIsStatic) {
             if (!(certificateValidationContext == null || !certificateValidationContext.hasTrustedCa())) {
                 throw new IllegalArgumentException("only static certificateValidationContext expected");
@@ -74,19 +76,17 @@ public final class XdsTrustManagerFactory extends SimpleTrustManagerFactory {
 
     private static X509Certificate[] getTrustedCaFromCertContext(
             CertificateValidationContext certificateValidationContext) throws CertificateException, IOException {
-        final SpecifierCase specifierCase = certificateValidationContext.getTrustedCa()
-                .getSpecifierCase();
+        final SpecifierCase specifierCase =
+                certificateValidationContext.getTrustedCa().getSpecifierCase();
         if (specifierCase == SpecifierCase.FILENAME) {
-            String certsFile = certificateValidationContext.getTrustedCa()
-                    .getFilename();
+            String certsFile = certificateValidationContext.getTrustedCa().getFilename();
             if (StringUtils.isEmpty(certsFile)) {
                 throw new IllegalStateException("trustedCa.file-name in certificateValidationContext cannot be empty");
             }
             return CertificateUtils.toX509Certificates(new File(certsFile));
         } else if (specifierCase == SpecifierCase.INLINE_BYTES) {
-            try (InputStream is = certificateValidationContext.getTrustedCa()
-                    .getInlineBytes()
-                    .newInput()) {
+            try (InputStream is =
+                    certificateValidationContext.getTrustedCa().getInlineBytes().newInput()) {
                 return CertificateUtils.toX509Certificates(is);
             }
         } else {
@@ -94,8 +94,8 @@ public final class XdsTrustManagerFactory extends SimpleTrustManagerFactory {
         }
     }
 
-    static XdsX509TrustManager createX509TrustManager(
-            X509Certificate[] certs, CertificateValidationContext certContext) throws CertStoreException {
+    static XdsX509TrustManager createX509TrustManager(X509Certificate[] certs, CertificateValidationContext certContext)
+            throws CertStoreException {
         TrustManagerFactory tmf = null;
         try {
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());

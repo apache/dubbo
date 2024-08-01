@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.resource_new.matcher;
 
 import org.apache.dubbo.common.lang.Nullable;
@@ -53,7 +69,7 @@ public final class StringMatcher {
      */
     public static StringMatcher forSafeRegEx(Pattern regEx) {
         Assert.notNull(regEx, "regEx must not be null");
-        return StringMatcher.create(null, null, null, regEx, null, false/* doesn't matter */);
+        return StringMatcher.create(null, null, null, regEx, null, false /* doesn't matter */);
     }
 
     /**
@@ -61,7 +77,7 @@ public final class StringMatcher {
      */
     public static StringMatcher forContains(String contains) {
         Assert.notNull(contains, "contains must not be null");
-        return StringMatcher.create(null, null, null, null, contains, false/* doesn't matter */);
+        return StringMatcher.create(null, null, null, null, contains, false /* doesn't matter */);
     }
 
     /**
@@ -74,11 +90,9 @@ public final class StringMatcher {
         if (exact() != null) {
             return ignoreCase() ? exact().equalsIgnoreCase(args) : exact().equals(args);
         } else if (prefix() != null) {
-            return ignoreCase() ? args.toLowerCase()
-                    .startsWith(prefix().toLowerCase()) : args.startsWith(prefix());
+            return ignoreCase() ? args.toLowerCase().startsWith(prefix().toLowerCase()) : args.startsWith(prefix());
         } else if (suffix() != null) {
-            return ignoreCase() ? args.toLowerCase()
-                    .endsWith(suffix().toLowerCase()) : args.endsWith(suffix());
+            return ignoreCase() ? args.toLowerCase().endsWith(suffix().toLowerCase()) : args.endsWith(suffix());
         } else if (contains() != null) {
             return args.contains(contains());
         }
@@ -152,11 +166,11 @@ public final class StringMatcher {
         }
         if (o instanceof StringMatcher) {
             StringMatcher that = (StringMatcher) o;
-            return (this.exact == null ? that.exact() == null : this.exact.equals(that.exact())) && (
-                    this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix())) && (
-                    this.suffix == null ? that.suffix() == null : this.suffix.equals(that.suffix())) && (
-                    this.regEx == null ? that.regEx() == null : this.regEx.equals(that.regEx())) && (
-                    this.contains == null ? that.contains() == null : this.contains.equals(that.contains()))
+            return (this.exact == null ? that.exact() == null : this.exact.equals(that.exact()))
+                    && (this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix()))
+                    && (this.suffix == null ? that.suffix() == null : this.suffix.equals(that.suffix()))
+                    && (this.regEx == null ? that.regEx() == null : this.regEx.equals(that.regEx()))
+                    && (this.contains == null ? that.contains() == null : this.contains.equals(that.contains()))
                     && this.ignoreCase == that.ignoreCase();
         }
         return false;
@@ -179,5 +193,4 @@ public final class StringMatcher {
         h$ ^= ignoreCase ? 1231 : 1237;
         return h$;
     }
-
 }

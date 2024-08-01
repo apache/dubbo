@@ -1,11 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.resource_new.matcher;
 
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.xds.resource_new.common.Range;
 
 import com.google.re2j.Pattern;
-
-import org.apache.dubbo.xds.resource_new.common.Range;
 
 public final class HeaderMatcher {
 
@@ -102,8 +117,7 @@ public final class HeaderMatcher {
     /**
      * The request header value should match this stringMatcher.
      */
-    public static HeaderMatcher forString(
-            String name, StringMatcher stringMatcher, boolean inverted) {
+    public static HeaderMatcher forString(String name, StringMatcher stringMatcher, boolean inverted) {
         Assert.notNull(name, "name must not be null");
         Assert.notNull(stringMatcher, "stringMatcher must not be null");
         return HeaderMatcher.create(name, null, null, null, null, null, null, null, stringMatcher, inverted);
@@ -121,8 +135,8 @@ public final class HeaderMatcher {
             @Nullable StringMatcher stringMatcher,
             boolean inverted) {
         Assert.notNull(name, "name");
-        return new HeaderMatcher(name, exactValue, safeRegEx, range, present, prefix, suffix, contains, stringMatcher
-                , inverted);
+        return new HeaderMatcher(
+                name, exactValue, safeRegEx, range, present, prefix, suffix, contains, stringMatcher, inverted);
     }
 
     /**
@@ -248,16 +262,17 @@ public final class HeaderMatcher {
         }
         if (o instanceof HeaderMatcher) {
             HeaderMatcher that = (HeaderMatcher) o;
-            return this.name.equals(that.name()) && (
-                    this.exactValue == null ? that.exactValue() == null : this.exactValue.equals(that.exactValue()))
+            return this.name.equals(that.name())
+                    && (this.exactValue == null ? that.exactValue() == null : this.exactValue.equals(that.exactValue()))
                     && (this.safeRegEx == null ? that.safeRegEx() == null : this.safeRegEx.equals(that.safeRegEx()))
-                    && (this.range == null ? that.range() == null : this.range.equals(that.range())) && (
-                    this.present == null ? that.present() == null : this.present.equals(that.present())) && (
-                    this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix())) && (
-                    this.suffix == null ? that.suffix() == null : this.suffix.equals(that.suffix())) && (
-                    this.contains == null ? that.contains() == null : this.contains.equals(that.contains())) && (
-                    this.stringMatcher == null ?
-                            that.stringMatcher() == null : this.stringMatcher.equals(that.stringMatcher()))
+                    && (this.range == null ? that.range() == null : this.range.equals(that.range()))
+                    && (this.present == null ? that.present() == null : this.present.equals(that.present()))
+                    && (this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix()))
+                    && (this.suffix == null ? that.suffix() == null : this.suffix.equals(that.suffix()))
+                    && (this.contains == null ? that.contains() == null : this.contains.equals(that.contains()))
+                    && (this.stringMatcher == null
+                            ? that.stringMatcher() == null
+                            : this.stringMatcher.equals(that.stringMatcher()))
                     && this.inverted == that.inverted();
         }
         return false;
@@ -288,5 +303,4 @@ public final class HeaderMatcher {
         h$ ^= inverted ? 1231 : 1237;
         return h$;
     }
-
 }

@@ -1,9 +1,10 @@
 /*
- * Copyright 2019 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.listener.security;
+
+import org.apache.dubbo.common.utils.Assert;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -26,8 +28,6 @@ import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-
-import org.apache.dubbo.common.utils.Assert;
 
 /**
  * A SslContextProvider is a "container" or provider of SslContext. This is used by gRPC-xds to obtain an SslContext, so
@@ -70,14 +70,13 @@ public abstract class SslContextProvider implements Closeable {
     }
 
     protected void setClientAuthValues(
-            SslContextBuilder sslContextBuilder,
-            XdsTrustManagerFactory xdsTrustManagerFactory) throws CertificateException, IOException,
-            CertStoreException {
+            SslContextBuilder sslContextBuilder, XdsTrustManagerFactory xdsTrustManagerFactory)
+            throws CertificateException, IOException, CertStoreException {
         DownstreamTlsContext downstreamTlsContext = getDownstreamTlsContext();
         if (xdsTrustManagerFactory != null) {
             sslContextBuilder.trustManager(xdsTrustManagerFactory);
-            sslContextBuilder.clientAuth(downstreamTlsContext.isRequireClientCertificate() ? ClientAuth.REQUIRE :
-                    ClientAuth.OPTIONAL);
+            sslContextBuilder.clientAuth(
+                    downstreamTlsContext.isRequireClientCertificate() ? ClientAuth.REQUIRE : ClientAuth.OPTIONAL);
         } else {
             sslContextBuilder.clientAuth(ClientAuth.NONE);
         }
@@ -115,8 +114,7 @@ public abstract class SslContextProvider implements Closeable {
      */
     public abstract void addCallback(Callback callback);
 
-    protected final void performCallback(
-            final SslContextGetter sslContextGetter, final Callback callback) {
+    protected final void performCallback(final SslContextGetter sslContextGetter, final Callback callback) {
         Assert.notNull(sslContextGetter, "sslContextGetter must not be null");
         Assert.notNull(callback, "callback must not be null");
         callback.executor.execute(new Runnable() {

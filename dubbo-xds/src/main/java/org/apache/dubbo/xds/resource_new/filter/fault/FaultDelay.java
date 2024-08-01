@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds.resource_new.filter.fault;
 
 import org.apache.dubbo.common.lang.Nullable;
@@ -20,13 +36,11 @@ final class FaultDelay {
         return FaultDelay.create(null, true, percentage);
     }
 
-    private static FaultDelay create(
-            @Nullable Long delayNanos, boolean headerDelay, FractionalPercent percent) {
+    private static FaultDelay create(@Nullable Long delayNanos, boolean headerDelay, FractionalPercent percent) {
         return new FaultDelay(delayNanos, headerDelay, percent);
     }
 
-    FaultDelay(
-            @Nullable Long delayNanos, boolean headerDelay, FractionalPercent percent) {
+    FaultDelay(@Nullable Long delayNanos, boolean headerDelay, FractionalPercent percent) {
         this.delayNanos = delayNanos;
         this.headerDelay = headerDelay;
         if (percent == null) {
@@ -62,7 +76,8 @@ final class FaultDelay {
         if (o instanceof FaultDelay) {
             FaultDelay that = (FaultDelay) o;
             return (this.delayNanos == null ? that.delayNanos() == null : this.delayNanos.equals(that.delayNanos()))
-                    && this.headerDelay == that.headerDelay() && this.percent.equals(that.percent());
+                    && this.headerDelay == that.headerDelay()
+                    && this.percent.equals(that.percent());
         }
         return false;
     }
@@ -78,5 +93,4 @@ final class FaultDelay {
         h$ ^= percent.hashCode();
         return h$;
     }
-
 }

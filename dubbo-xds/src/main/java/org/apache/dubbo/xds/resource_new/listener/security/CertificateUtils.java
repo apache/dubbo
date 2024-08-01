@@ -1,9 +1,10 @@
 /*
- * Copyright 2019 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.listener.security;
 
 import java.io.BufferedInputStream;
@@ -50,9 +50,9 @@ public final class CertificateUtils {
 
     private static CertificateFactory factory;
     private static final Pattern KEY_PATTERN = Pattern.compile(
-            "-+BEGIN\\s+.*PRIVATE\\s+KEY[^-]*-+(?:\\s|\\r|\\n)+"  // Header
-                    + "([a-z0-9+/=\\r\\n]+)"                             // Base64 text
-                    + "-+END\\s+.*PRIVATE\\s+KEY[^-]*-+",                  // Footer
+            "-+BEGIN\\s+.*PRIVATE\\s+KEY[^-]*-+(?:\\s|\\r|\\n)+" // Header
+                    + "([a-z0-9+/=\\r\\n]+)" // Base64 text
+                    + "-+END\\s+.*PRIVATE\\s+KEY[^-]*-+", // Footer
             Pattern.CASE_INSENSITIVE);
 
     private static synchronized void initInstance() throws CertificateException {
@@ -67,7 +67,8 @@ public final class CertificateUtils {
      * @param file a {@link File} containing the cert data
      */
     static X509Certificate[] toX509Certificates(File file) throws CertificateException, IOException {
-        try (FileInputStream fis = new FileInputStream(file); BufferedInputStream bis = new BufferedInputStream(fis)) {
+        try (FileInputStream fis = new FileInputStream(file);
+                BufferedInputStream bis = new BufferedInputStream(fis)) {
             return toX509Certificates(bis);
         }
     }
@@ -75,18 +76,18 @@ public final class CertificateUtils {
     /**
      * Generates X509Certificate array from the {@link InputStream}.
      */
-    public static synchronized X509Certificate[] toX509Certificates(InputStream inputStream) throws CertificateException, IOException {
+    public static synchronized X509Certificate[] toX509Certificates(InputStream inputStream)
+            throws CertificateException, IOException {
         initInstance();
         Collection<? extends Certificate> certs = factory.generateCertificates(inputStream);
         return certs.toArray(new X509Certificate[0]);
-
     }
 
     /**
      * See {@link CertificateFactory#generateCertificate(InputStream)}.
      */
-    public static synchronized X509Certificate toX509Certificate(InputStream inputStream) throws CertificateException
-            , IOException {
+    public static synchronized X509Certificate toX509Certificate(InputStream inputStream)
+            throws CertificateException, IOException {
         initInstance();
         Certificate cert = factory.generateCertificate(inputStream);
         return (X509Certificate) cert;
@@ -98,11 +99,9 @@ public final class CertificateUtils {
     public static PrivateKey getPrivateKey(InputStream inputStream) throws Exception {
         ByteBuf encodedKeyBuf = readPrivateKey(inputStream);
         byte[] encodedKey = new byte[encodedKeyBuf.readableBytes()];
-        encodedKeyBuf.readBytes(encodedKey)
-                .release();
+        encodedKeyBuf.readBytes(encodedKey).release();
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(encodedKey);
-        return KeyFactory.getInstance("RSA")
-                .generatePrivate(spec);
+        return KeyFactory.getInstance("RSA").generatePrivate(spec);
     }
 
     private static ByteBuf readPrivateKey(InputStream in) throws KeyException {

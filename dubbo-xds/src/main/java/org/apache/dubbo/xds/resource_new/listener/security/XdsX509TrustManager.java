@@ -1,9 +1,10 @@
 /*
- * Copyright 2019 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.listener.security;
 
 import org.apache.dubbo.common.lang.Nullable;
@@ -59,24 +59,23 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
         this.delegate = delegate;
     }
 
-    private static boolean verifyDnsNameInPattern(
-            String altNameFromCert, StringMatcher sanToVerifyMatcher) {
+    private static boolean verifyDnsNameInPattern(String altNameFromCert, StringMatcher sanToVerifyMatcher) {
         if (StringUtils.isEmpty(altNameFromCert)) {
             return false;
         }
         switch (sanToVerifyMatcher.getMatchPatternCase()) {
             case EXACT:
-                return verifyDnsNameExact(altNameFromCert, sanToVerifyMatcher.getExact(),
-                        sanToVerifyMatcher.getIgnoreCase());
+                return verifyDnsNameExact(
+                        altNameFromCert, sanToVerifyMatcher.getExact(), sanToVerifyMatcher.getIgnoreCase());
             case PREFIX:
-                return verifyDnsNamePrefix(altNameFromCert, sanToVerifyMatcher.getPrefix(),
-                        sanToVerifyMatcher.getIgnoreCase());
+                return verifyDnsNamePrefix(
+                        altNameFromCert, sanToVerifyMatcher.getPrefix(), sanToVerifyMatcher.getIgnoreCase());
             case SUFFIX:
-                return verifyDnsNameSuffix(altNameFromCert, sanToVerifyMatcher.getSuffix(),
-                        sanToVerifyMatcher.getIgnoreCase());
+                return verifyDnsNameSuffix(
+                        altNameFromCert, sanToVerifyMatcher.getSuffix(), sanToVerifyMatcher.getIgnoreCase());
             case CONTAINS:
-                return verifyDnsNameContains(altNameFromCert, sanToVerifyMatcher.getContains(),
-                        sanToVerifyMatcher.getIgnoreCase());
+                return verifyDnsNameContains(
+                        altNameFromCert, sanToVerifyMatcher.getContains(), sanToVerifyMatcher.getIgnoreCase());
             case SAFE_REGEX:
                 return verifyDnsNameSafeRegex(altNameFromCert, sanToVerifyMatcher.getSafeRegex());
             default:
@@ -85,28 +84,27 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
         }
     }
 
-    private static boolean verifyDnsNameSafeRegex(
-            String altNameFromCert, RegexMatcher sanToVerifySafeRegex) {
+    private static boolean verifyDnsNameSafeRegex(String altNameFromCert, RegexMatcher sanToVerifySafeRegex) {
         Pattern safeRegExMatch = Pattern.compile(sanToVerifySafeRegex.getRegex());
         return safeRegExMatch.matches(altNameFromCert);
     }
 
-    private static boolean verifyDnsNamePrefix(
-            String altNameFromCert, String sanToVerifyPrefix, boolean ignoreCase) {
+    private static boolean verifyDnsNamePrefix(String altNameFromCert, String sanToVerifyPrefix, boolean ignoreCase) {
         if (StringUtils.isEmpty(sanToVerifyPrefix)) {
             return false;
         }
-        return ignoreCase ? altNameFromCert.toLowerCase()
-                .startsWith(sanToVerifyPrefix.toLowerCase()) : altNameFromCert.startsWith(sanToVerifyPrefix);
+        return ignoreCase
+                ? altNameFromCert.toLowerCase().startsWith(sanToVerifyPrefix.toLowerCase())
+                : altNameFromCert.startsWith(sanToVerifyPrefix);
     }
 
-    private static boolean verifyDnsNameSuffix(
-            String altNameFromCert, String sanToVerifySuffix, boolean ignoreCase) {
+    private static boolean verifyDnsNameSuffix(String altNameFromCert, String sanToVerifySuffix, boolean ignoreCase) {
         if (StringUtils.isEmpty(sanToVerifySuffix)) {
             return false;
         }
-        return ignoreCase ? altNameFromCert.toLowerCase()
-                .endsWith(sanToVerifySuffix.toLowerCase()) : altNameFromCert.endsWith(sanToVerifySuffix);
+        return ignoreCase
+                ? altNameFromCert.toLowerCase().endsWith(sanToVerifySuffix.toLowerCase())
+                : altNameFromCert.endsWith(sanToVerifySuffix);
     }
 
     private static boolean verifyDnsNameContains(
@@ -114,21 +112,21 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
         if (StringUtils.isEmpty(sanToVerifySubstring)) {
             return false;
         }
-        return ignoreCase ? altNameFromCert.toLowerCase()
-                .contains(sanToVerifySubstring.toLowerCase()) : altNameFromCert.contains(sanToVerifySubstring);
+        return ignoreCase
+                ? altNameFromCert.toLowerCase().contains(sanToVerifySubstring.toLowerCase())
+                : altNameFromCert.contains(sanToVerifySubstring);
     }
 
-    private static boolean verifyDnsNameExact(
-            String altNameFromCert, String sanToVerifyExact, boolean ignoreCase) {
+    private static boolean verifyDnsNameExact(String altNameFromCert, String sanToVerifyExact, boolean ignoreCase) {
         if (StringUtils.isEmpty(sanToVerifyExact)) {
             return false;
         }
-        return ignoreCase ? sanToVerifyExact.equalsIgnoreCase(altNameFromCert) :
-                sanToVerifyExact.equals(altNameFromCert);
+        return ignoreCase
+                ? sanToVerifyExact.equalsIgnoreCase(altNameFromCert)
+                : sanToVerifyExact.equals(altNameFromCert);
     }
 
-    private static boolean verifyDnsNameInSanList(
-            String altNameFromCert, List<StringMatcher> verifySanList) {
+    private static boolean verifyDnsNameInSanList(String altNameFromCert, List<StringMatcher> verifySanList) {
         for (StringMatcher verifySan : verifySanList) {
             if (verifyDnsNameInPattern(altNameFromCert, verifySan)) {
                 return true;
@@ -137,9 +135,8 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
         return false;
     }
 
-    private static boolean verifyOneSanInList(
-            List<?> entry,
-            List<StringMatcher> verifySanList) throws CertificateParsingException {
+    private static boolean verifyOneSanInList(List<?> entry, List<StringMatcher> verifySanList)
+            throws CertificateParsingException {
         // from OkHostnameVerifier.getSubjectAltNames
         if (entry == null || entry.size() < 2) {
             throw new CertificateParsingException("Invalid SAN entry");
@@ -159,8 +156,8 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
     }
 
     // logic from Envoy::Extensions::TransportSockets::Tls::ContextImpl::verifySubjectAltName
-    private static void verifySubjectAltNameInLeaf(
-            X509Certificate cert, List<StringMatcher> verifyList) throws CertificateException {
+    private static void verifySubjectAltNameInLeaf(X509Certificate cert, List<StringMatcher> verifyList)
+            throws CertificateException {
         Collection<List<?>> names = cert.getSubjectAlternativeNames();
         if (names == null || names.isEmpty()) {
             throw new CertificateException("Peer certificate SAN check failed");
@@ -194,19 +191,15 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
     }
 
     @Override
-    public void checkClientTrusted(
-            X509Certificate[] chain,
-            String authType,
-            Socket socket) throws CertificateException {
+    public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
+            throws CertificateException {
         delegate.checkClientTrusted(chain, authType, socket);
         verifySubjectAltNameInChain(chain);
     }
 
     @Override
-    public void checkClientTrusted(
-            X509Certificate[] chain,
-            String authType,
-            SSLEngine sslEngine) throws CertificateException {
+    public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine sslEngine)
+            throws CertificateException {
         delegate.checkClientTrusted(chain, authType, sslEngine);
         verifySubjectAltNameInChain(chain);
     }
@@ -218,10 +211,8 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
     }
 
     @Override
-    public void checkServerTrusted(
-            X509Certificate[] chain,
-            String authType,
-            Socket socket) throws CertificateException {
+    public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
+            throws CertificateException {
         if (socket instanceof SSLSocket) {
             SSLSocket sslSocket = (SSLSocket) socket;
             SSLParameters sslParams = sslSocket.getSSLParameters();
@@ -235,10 +226,8 @@ final class XdsX509TrustManager extends X509ExtendedTrustManager implements X509
     }
 
     @Override
-    public void checkServerTrusted(
-            X509Certificate[] chain,
-            String authType,
-            SSLEngine sslEngine) throws CertificateException {
+    public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine sslEngine)
+            throws CertificateException {
         SSLParameters sslParams = sslEngine.getSSLParameters();
         if (sslParams != null) {
             sslParams.setEndpointIdentificationAlgorithm(null);

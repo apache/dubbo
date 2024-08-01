@@ -1,9 +1,10 @@
 /*
- * Copyright 2020 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.resource_new.common;
 
 import com.google.protobuf.Descriptors.Descriptor;
@@ -52,7 +52,8 @@ public final class MessagePrinter {
                     .add(Listener.getDescriptor())
                     .add(io.envoyproxy.envoy.api.v2.Listener.getDescriptor())
                     .add(HttpConnectionManager.getDescriptor())
-                    .add(io.envoyproxy.envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager.getDescriptor())
+                    .add(io.envoyproxy.envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+                            .getDescriptor())
                     .add(HTTPFault.getDescriptor())
                     .add(io.envoyproxy.envoy.config.filter.http.fault.v2.HTTPFault.getDescriptor())
                     .add(RBAC.getDescriptor())
@@ -72,16 +73,17 @@ public final class MessagePrinter {
                     .add(ClusterLoadAssignment.getDescriptor())
                     .add(io.envoyproxy.envoy.api.v2.ClusterLoadAssignment.getDescriptor());
             try {
-                @SuppressWarnings("unchecked") Class<? extends Message> routeLookupClusterSpecifierClass = (Class<?
-                        extends Message>) Class.forName("io.grpc.lookup.v1.RouteLookupClusterSpecifier");
-                Descriptor descriptor = (Descriptor) routeLookupClusterSpecifierClass.getDeclaredMethod("getDescriptor")
+                @SuppressWarnings("unchecked")
+                Class<? extends Message> routeLookupClusterSpecifierClass =
+                        (Class<? extends Message>) Class.forName("io.grpc.lookup.v1.RouteLookupClusterSpecifier");
+                Descriptor descriptor = (Descriptor) routeLookupClusterSpecifierClass
+                        .getDeclaredMethod("getDescriptor")
                         .invoke(null);
                 registry.add(descriptor);
             } catch (Exception e) {
                 // Ignore. In most cases RouteLookup is not required.
             }
-            return JsonFormat.printer()
-                    .usingTypeRegistry(registry.build());
+            return JsonFormat.printer().usingTypeRegistry(registry.build());
         }
     }
 
