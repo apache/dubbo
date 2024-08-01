@@ -59,11 +59,11 @@ public class DubboShutdownHook extends Thread {
     }
 
     /**
-     * Checks whether external managed {@code ModuleModel} exists, and wait until the corresponding <p>
-     * {@code ApplicationModel} destroyed or the serverShutdownTimeout expired.
+     * Checks whether external managed {@code ModuleModel} exists, and wait until the corresponding external
+     * managed modules of {@code ApplicationModel} has been destroyed or the serverShutdownTimeout expired.
      *
      */
-    private void checkAndWaitForTimeout() {
+    private void checkAndWaitUntilTimeout() {
         long start = System.currentTimeMillis();
         /* To avoid shutdown conflicts between Dubbo and Spring,
          * wait for the modules bound to Spring to be handled by Spring until timeout.
@@ -78,7 +78,6 @@ public class DubboShutdownHook extends Thread {
                         ConfigurationUtils::getServerShutdownTimeout,
                         (existingValue, newValue) -> existingValue,
                         HashMap::new));
-
         for (Map.Entry<ApplicationModel, Integer> entry : serverShutdownWaits.entrySet()) {
             ApplicationModel applicationModel = entry.getKey();
             Integer val = entry.getValue();
@@ -88,15 +87,33 @@ public class DubboShutdownHook extends Thread {
             }
 
             logger.info("Waiting for modules(" + applicationModel.getDesc() + ") managed by Spring to be shutdown.");
-            while (!applicationModel.isDestroyed() && System.currentTimeMillis() - start < val.intValue()) {
+            boolean hasExternalBinding = true;
+            while (hasExternalBinding
+                    && !applicationModel.isDestroyed()
+                    && System.currentTimeMillis() - start < val.intValue()) {
                 try {
                     TimeUnit.MILLISECONDS.sleep(10);
                 } catch (InterruptedException e) {
                     logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
                     Thread.currentThread().interrupt();
                 }
+                hasExternalBinding = false;
+                for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                    if (moduleModel.isLifeCycleManagedExternally()) {
+                        hasExternalBinding = true;
+                        break;
+                    }
+                }
             }
-            logger.info("Module(" + applicationModel.getDesc() + ") managed by Spring has been shutdown.");
+            if (hasExternalBinding) {
+                long usage = System.currentTimeMillis() - start;
+                logger.info("Dubbo wait for application(" + applicationModel.getDesc()
+                        + ") managed by Spring to be shutdown failed, external managed module exists. Total time usage: "
+                        + usage + "ms.");
+            } else {
+                logger.info("Module(" + applicationModel.getDesc()
+                        + ") managed by Spring has been destroyed successfully.");
+            }
         }
     }
 
@@ -106,10 +123,14 @@ public class DubboShutdownHook extends Thread {
             logger.info("Run shutdown hook now.");
         }
 
-        checkAndWaitForTimeout();
+        checkAndWaitUntilTimeout();
 
         // Cleanup all resources arbitrarily when process exit.
         FrameworkModel.destroyAll();
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Complete shutdown hook now.");
+        }
     }
 
     /**
@@ -118,8 +139,6 @@ public class DubboShutdownHook extends Thread {
     public void register() {
         try {
             Runtime.getRuntime().addShutdownHook(this);
-        } catch (IllegalStateException e) {
-            logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "register shutdown hook failed: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "register shutdown hook failed: " + e.getMessage(), e);
         }
