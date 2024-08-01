@@ -168,7 +168,7 @@ public interface Constants {
 
     Set<String> SUPPORT_MESH_TYPE = new HashSet<String>() {
         {
-            addAll(Arrays.asList("istio"));
+            addAll(Arrays.asList("xds"));
         }
     };
 }
