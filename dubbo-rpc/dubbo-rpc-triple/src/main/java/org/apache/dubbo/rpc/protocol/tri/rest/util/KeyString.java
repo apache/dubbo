@@ -96,12 +96,12 @@ public final class KeyString implements CharSequence {
 
     @Override
     public String toString() {
-        return value.substring(offset, length - offset);
+        return value.substring(offset, offset + length);
     }
 
     public int indexOf(char ch, int start) {
         int index = value.indexOf(ch, offset + start);
-        return index == -1 ? -1 : index - offset;
+        return index == -1 || index >= offset + length ? -1 : index - offset;
     }
 
     public boolean regionMatches(int start, String value, int i, int length) {

@@ -145,7 +145,6 @@ public final class RadixTree<T> {
             for (int i = 0, size = directMatches.size(); i < size; i++) {
                 matches.add(directMatches.get(i));
             }
-            return;
         }
 
         matchRecursive(root, path, 1, new HashMap<>(), matches);
@@ -157,11 +156,12 @@ public final class RadixTree<T> {
 
     public List<Match<T>> match(KeyString path) {
         List<Match<T>> matches = directPathMap.get(path);
-        if (matches != null) {
-            return new ArrayList<>(matches);
+        if (matches == null) {
+            matches = new ArrayList<>();
+        } else {
+            matches = new ArrayList<>(matches);
         }
 
-        matches = new ArrayList<>();
         matchRecursive(root, path, 1, new HashMap<>(), matches);
         return matches;
     }
@@ -175,8 +175,10 @@ public final class RadixTree<T> {
         int end = path.indexOf('/', start);
         Node<T> node = current.children.get(new KeyString(path, start, end));
         if (node != null) {
-            if (node.isLeaf()) {
-                addMatch(node, variableMap, matches);
+            if (end == -1) {
+                if (node.isLeaf()) {
+                    addMatch(node, variableMap, matches);
+                }
                 return;
             }
             matchRecursive(node, path, end + 1, variableMap, matches);
@@ -191,13 +193,19 @@ public final class RadixTree<T> {
             if (segment.match(path, start, end, workVariableMap)) {
                 workVariableMap.putAll(variableMap);
                 Node<T> child = entry.getValue();
-                if (segment.isTailMatching() || child.isLeaf()) {
+                if (segment.isTailMatching()) {
                     addMatch(child, workVariableMap, matches);
                 } else {
-                    matchRecursive(child, path, end + 1, workVariableMap, matches);
+                    if (end == -1) {
+                        if (child.isLeaf()) {
+                            addMatch(child, workVariableMap, matches);
+                        }
+                    } else {
+                        matchRecursive(child, path, end + 1, workVariableMap, matches);
+                    }
                 }
                 if (!workVariableMap.isEmpty()) {
-                    workVariableMap = new HashMap<>();
+                    workVariableMap = new LinkedHashMap<>();
                 }
             }
         }
