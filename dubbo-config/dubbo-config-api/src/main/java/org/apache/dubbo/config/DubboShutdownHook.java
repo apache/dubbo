@@ -58,6 +58,14 @@ public class DubboShutdownHook extends Thread {
         return SingletonHelper.INSTANCE;
     }
 
+    private boolean checkExternalManagedModule(ApplicationModel applicationModel) {
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            if (moduleModel.isLifeCycleManagedExternally()) {
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * Checks whether external managed {@code ModuleModel} exists, and wait until the corresponding external
      * managed modules of {@code ApplicationModel} has been destroyed or the serverShutdownTimeout expired.
@@ -78,6 +86,7 @@ public class DubboShutdownHook extends Thread {
                         ConfigurationUtils::getServerShutdownTimeout,
                         (existingValue, newValue) -> existingValue,
                         HashMap::new));
+
         for (Map.Entry<ApplicationModel, Integer> entry : serverShutdownWaits.entrySet()) {
             ApplicationModel applicationModel = entry.getKey();
             Integer val = entry.getValue();
@@ -97,13 +106,7 @@ public class DubboShutdownHook extends Thread {
                     logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
                     Thread.currentThread().interrupt();
                 }
-                hasExternalBinding = false;
-                for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-                    if (moduleModel.isLifeCycleManagedExternally()) {
-                        hasExternalBinding = true;
-                        break;
-                    }
-                }
+                hasExternalBinding = checkExternalManagedModule(applicationModel);
             }
             if (hasExternalBinding) {
                 long usage = System.currentTimeMillis() - start;

@@ -24,10 +24,10 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +58,7 @@ public class DubboShutdownHookTest {
     }
 
     @Test
-    public void testDestoryNoModuleManagedExternally() {
+    void testDestoryNoModuleManagedExternally() {
         boolean hasModuleManagedExternally = false;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.isLifeCycleManagedExternally()) {
@@ -72,9 +72,7 @@ public class DubboShutdownHookTest {
     }
 
     @Test
-    public void testDestoryWithModuleManagedExternally()
-            throws InterruptedException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
-                    SecurityException, InvocationTargetException {
+    void testDestoryWithModuleManagedExternally() throws Exception {
         Field loggerField = ReflectionUtils.findFields(
                         DubboShutdownHook.class,
                         f -> f.getName().equals("logger"),
@@ -95,24 +93,30 @@ public class DubboShutdownHookTest {
         ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
 
         applicationModel.getModuleModels().get(0).setLifeCycleManagedExternally(true);
+
         new Thread(() -> {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(100);
-                    } catch (InterruptedException e) {
-                    }
+                    long now = System.currentTimeMillis();
+                    Awaitility.await()
+                            .atLeast(100, TimeUnit.MILLISECONDS)
+                            .atMost(200, TimeUnit.MILLISECONDS)
+                            .until(() -> {
+                                return System.currentTimeMillis() - now > 100L;
+                            });
                     applicationModel.getModuleModels().get(0).destroy();
                 })
                 .start();
-        TimeUnit.MILLISECONDS.sleep(10);
         dubboShutdownHook.run();
         Assertions.assertTrue(applicationModel.isDestroyed());
 
         verify(spyLogger, atLeastOnce()).info(loggerCaptor.capture());
+
         StringBuffer logBuf = new StringBuffer();
         for (String row : loggerCaptor.getAllValues()) {
             logBuf.append(row).append("\n");
         }
+
         String logs = logBuf.toString();
+
         Assertions.assertTrue(logs.contains("Waiting for modules"));
         Assertions.assertTrue(logs.contains("managed by Spring to be shutdown failed")
                 || logs.contains("managed by Spring has been destroyed successfully."));
