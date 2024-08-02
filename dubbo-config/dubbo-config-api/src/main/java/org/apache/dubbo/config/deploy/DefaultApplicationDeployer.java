@@ -43,7 +43,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -208,9 +207,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onInitialize();
 
-            // register shutdown hook
-            registerShutdownHook();
-
             startConfigCenter();
 
             loadApplicationConfigs();
@@ -230,10 +226,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 logger.info(getIdentifier() + " has been initialized!");
             }
         }
-    }
-
-    private void registerShutdownHook() {
-        DubboShutdownHook.getInstance().register();
     }
 
     private void initModuleDeployers() {

@@ -186,6 +186,8 @@ public final class DubboBootstrap {
         });
         // register DubboBootstrap bean
         applicationModel.getBeanFactory().registerBean(this);
+
+        DubboShutdownHook.getInstance().register();
     }
 
     private void notifyStarted(ApplicationModel applicationModel) {
