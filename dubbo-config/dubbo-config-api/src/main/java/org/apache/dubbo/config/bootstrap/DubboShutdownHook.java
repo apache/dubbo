@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_SHUTDOWN_HOOK;
@@ -137,13 +138,20 @@ class DubboShutdownHook extends Thread {
     }
 
     /**
+     * Ensure register only once.
+     */
+    private final AtomicBoolean registered = new AtomicBoolean(false);
+
+    /**
      * Register the ShutdownHook
      */
     public void register() {
-        try {
-            Runtime.getRuntime().addShutdownHook(this);
-        } catch (Exception e) {
-            logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "register shutdown hook failed: " + e.getMessage(), e);
+        if (!registered.compareAndSet(false, true)) {
+            try {
+                Runtime.getRuntime().addShutdownHook(this);
+            } catch (Exception e) {
+                logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "register shutdown hook failed: " + e.getMessage(), e);
+            }
         }
     }
 }
