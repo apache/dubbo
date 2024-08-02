@@ -16,26 +16,31 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Dubbo LoggerInfo
+ * Dubbo Get Enabled Router Snapshot
  *
  * @since 3.3.0
  */
 @Component
-public class DubboLoggerInfoMetadata {
+public class DubboGetEnabledRouterMetadata {
 
-    public Map<String, Object> loggerInfo() {
-        Map<String, Object> info = new LinkedHashMap<>();
-        info.put("Available logger adapters", LoggerFactory.getAvailableAdapter());
-        info.put("Current Adapter", LoggerFactory.getCurrentAdapter());
-        info.put("Log level", LoggerFactory.getLevel());
-        return info;
+    @Autowired
+    private ApplicationModel applicationModel;
+
+    public Map<String, Object> getEnabledRouter() {
+        Map<String, Object> routerMap = new LinkedHashMap<>();
+        RouterSnapshotSwitcher routerSnapshotSwitcher =
+                applicationModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
+        routerMap.put("Enabled router snapshot", routerSnapshotSwitcher.getEnabledService());
+        return routerMap;
     }
 }

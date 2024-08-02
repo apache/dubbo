@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Dubbo ready
+ * Dubbo Ready
  *
  * @since 3.3.0
  */

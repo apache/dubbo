@@ -17,6 +17,14 @@
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboConfigsMetadataEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboDisableDetailProfilerEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboDisableRouterSnapshotEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboDisableSimpleProfilerEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEnableDetailProfilerEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEnableRouterSnapshotEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEnableSimpleProfilerEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboGetEnabledRouterEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboGetRecentRouterEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboLoggerInfoEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboLsEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboMetadataEndpoint;
@@ -193,5 +201,69 @@ public class DubboEndpointAnnotationAutoConfiguration {
     @CompatibleConditionalOnEnabledEndpoint
     public DubboSwitchLogLevelEndpoint dubboSwitchLogLevelEndpoint() {
         return new DubboSwitchLogLevelEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboDisableDetailProfilerEndpoint dubboDisableDetailProfilerEndpoint() {
+        return new DubboDisableDetailProfilerEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboDisableSimpleProfilerEndpoint dubboDisableSimpleProfilerEndpoint() {
+        return new DubboDisableSimpleProfilerEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboEnableDetailProfilerEndpoint dubboEnableDetailProfilerEndpoint() {
+        return new DubboEnableDetailProfilerEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboEnableSimpleProfilerEndpoint dubboEnableSimpleProfilerEndpoint() {
+        return new DubboEnableSimpleProfilerEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboDisableRouterSnapshotEndpoint dubboDisableRouterSnapshotEndpoint() {
+        return new DubboDisableRouterSnapshotEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboEnableRouterSnapshotEndpoint dubboEnableRouterSnapshotEndpoint() {
+        return new DubboEnableRouterSnapshotEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboGetRecentRouterEndpoint dubboGetRecentRouterEndpoint() {
+        return new DubboGetRecentRouterEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboGetEnabledRouterEndpoint dubboGetEnabledRouterEndpoint() {
+        return new DubboGetEnabledRouterEndpoint();
     }
 }

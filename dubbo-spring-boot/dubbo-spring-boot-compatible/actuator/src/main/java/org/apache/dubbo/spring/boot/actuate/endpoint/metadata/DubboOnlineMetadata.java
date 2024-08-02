@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Dubbo online
+ * Dubbo Online
  *
  * @since 3.3.0
  */

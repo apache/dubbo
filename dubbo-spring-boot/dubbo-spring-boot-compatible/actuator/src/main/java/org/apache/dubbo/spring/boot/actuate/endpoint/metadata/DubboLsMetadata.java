@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Dubbo ls
+ * Dubbo Ls
  *
  * @since 3.3.0
  */

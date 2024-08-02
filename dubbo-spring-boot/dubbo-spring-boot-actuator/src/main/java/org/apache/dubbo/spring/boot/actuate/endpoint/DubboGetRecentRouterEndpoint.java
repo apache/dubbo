@@ -14,28 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
+package org.apache.dubbo.spring.boot.actuate.endpoint;
 
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboGetRecentRouterMetadata;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
+import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 
 /**
- * Dubbo LoggerInfo
+ * Dubbo Get Recent Router Snapshot
  *
  * @since 3.3.0
  */
-@Component
-public class DubboLoggerInfoMetadata {
+@Endpoint(id = "dubbogetrecentroutersnapshot")
+public class DubboGetRecentRouterEndpoint {
 
-    public Map<String, Object> loggerInfo() {
-        Map<String, Object> info = new LinkedHashMap<>();
-        info.put("Available logger adapters", LoggerFactory.getAvailableAdapter());
-        info.put("Current Adapter", LoggerFactory.getCurrentAdapter());
-        info.put("Log level", LoggerFactory.getLevel());
-        return info;
+    @Autowired
+    private DubboGetRecentRouterMetadata dubboGetRecentRouterMetadata;
+
+    @ReadOperation
+    public Map<String, Object> getRecentRouterSnapshot() {
+        return dubboGetRecentRouterMetadata.getRecentRouter();
     }
 }
