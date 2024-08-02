@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 public final class HttpMessageDecoderWrapper implements HttpMessageDecoder {
@@ -44,12 +45,22 @@ public final class HttpMessageDecoderWrapper implements HttpMessageDecoder {
     }
 
     @Override
+    public Object decode(InputStream inputStream, Type targetType, Charset charset) throws DecodeException {
+        return httpMessageDecoder.decode(inputStream, targetType, this.charset);
+    }
+
+    @Override
     public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         return httpMessageDecoder.decode(inputStream, targetTypes, this.charset);
     }
 
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType) throws DecodeException {
+        return httpMessageDecoder.decode(inputStream, targetType, charset);
+    }
+
+    @Override
+    public Object decode(InputStream inputStream, Type targetType) throws DecodeException {
         return httpMessageDecoder.decode(inputStream, targetType, charset);
     }
 

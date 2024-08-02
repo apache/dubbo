@@ -586,7 +586,7 @@ public class ConfigValidationUtils {
             checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
             checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
             checkExtension(config.getScopeModel(), Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
-            checkExtension(config.getScopeModel(), Dispatcher.class, "dispather", config.getDispather());
+            checkExtension(config.getScopeModel(), Dispatcher.class, "dispather", config.getDispatcher());
             checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         }
     }

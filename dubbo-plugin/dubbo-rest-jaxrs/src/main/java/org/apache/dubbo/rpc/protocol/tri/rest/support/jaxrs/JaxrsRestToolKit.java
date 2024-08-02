@@ -21,34 +21,35 @@ import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.DefaultRestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.AbstractRestToolKit;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.ParamConverter;
 
-final class JaxrsRestToolKit extends DefaultRestToolKit {
+final class JaxrsRestToolKit extends AbstractRestToolKit {
 
     private final BeanArgumentBinder binder;
+    private final ParamConverterFactory paramConverterFactory;
 
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
         binder = new BeanArgumentBinder(frameworkModel);
-    }
-
-    @Override
-    public Object convert(Object value, ParameterMeta parameter) {
-        if (MultivaluedMap.class.isAssignableFrom(parameter.getType())) {
-            if (value instanceof MultivaluedMap) {
-                return value;
-            }
-            return typeConverter.convert(value, MultivaluedHashMap.class);
-        }
-        return super.convert(value, parameter);
+        paramConverterFactory = new ParamConverterFactory();
     }
 
     @Override
     public int getDialect() {
         return RestConstants.DIALECT_JAXRS;
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public Object convert(Object value, ParameterMeta parameter) {
+        ParamConverter converter = paramConverterFactory.getParamConverter(
+                parameter.getType(), parameter.getGenericType(), parameter.getRawAnnotations());
+        if (converter != null) {
+            return value instanceof String ? converter.fromString((String) value) : converter.toString(value);
+        }
+        return super.convert(value, parameter);
     }
 
     @Override

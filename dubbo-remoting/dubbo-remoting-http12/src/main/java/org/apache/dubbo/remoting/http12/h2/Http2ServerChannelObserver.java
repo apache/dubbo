@@ -79,7 +79,9 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
                 closed();
             }
         }
-        this.cancellationContext.cancel(throwable);
+        if (cancellationContext != null) {
+            cancellationContext.cancel(throwable);
+        }
         long errorCode = 0;
         if (throwable instanceof ErrorCodeHolder) {
             errorCode = ((ErrorCodeHolder) throwable).getErrorCode();

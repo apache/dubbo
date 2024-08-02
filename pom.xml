@@ -16,9 +16,7 @@
   limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
@@ -144,13 +142,13 @@
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
+    <maven_gmavenplus.version>3.0.2</maven_gmavenplus.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
-    <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
 
     <revision>3.3.0-beta.5-SNAPSHOT</revision>
   </properties>
@@ -357,6 +355,14 @@
           <systemProperties>
             <!-- common shared -->
           </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>${maven_gmavenplus.version}</version>
+        <configuration>
+          <parameters>true</parameters>
         </configuration>
       </plugin>
       <plugin>
@@ -811,6 +817,36 @@
     </profile>
 
     <profile>
+      <id>jdk9-jdk11-spotless</id>
+      <activation>
+        <jdk>[1.8, 11)</jdk>
+      </activation>
+      <properties>
+        <palantirJavaFormat.version>1.1.0</palantirJavaFormat.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk11-jdk21-spotless</id>
+      <activation>
+        <jdk>[11, 21)</jdk>
+      </activation>
+      <properties>
+        <palantirJavaFormat.version>2.28.0</palantirJavaFormat.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk21-spotless</id>
+      <activation>
+        <jdk>[21,)</jdk>
+      </activation>
+      <properties>
+        <palantirJavaFormat.version>2.39.0</palantirJavaFormat.version>
+      </properties>
+    </profile>
+
+    <profile>
       <id>jacoco089</id>
       <properties>
         <maven_jacoco_version>0.8.9</maven_jacoco_version>
@@ -869,6 +905,7 @@
                   <exclude>src/main/java/org/apache/dubbo/common/logger/helpers/MessageFormatter.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/maven/plugin/protoc/DubboProtocCompilerMojo.java</exclude>
                   <exclude>src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java</exclude>
+                  <exclude>src/main/java/org/apache/dubbo/spring/boot/autoconfigure/DubboTriple3AutoConfiguration.java</exclude>
                   <exclude>**/generated-sources/**</exclude>
                 </excludes>
                 <palantirJavaFormat>

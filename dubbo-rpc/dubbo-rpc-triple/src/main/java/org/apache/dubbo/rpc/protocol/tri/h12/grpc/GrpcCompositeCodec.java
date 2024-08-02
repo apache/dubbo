@@ -16,38 +16,62 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.io.StreamUtils;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.protobuf.Message;
-
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
 
 public class GrpcCompositeCodec implements HttpMessageCodec {
 
-    private final ProtobufHttpMessageCodec protobufHttpMessageCodec;
+    private static final String PACKABLE_METHOD_CACHE = "PACKABLE_METHOD_CACHE";
 
-    private final WrapperHttpMessageCodec wrapperHttpMessageCodec;
+    private final URL url;
 
-    public GrpcCompositeCodec(
-            ProtobufHttpMessageCodec protobufHttpMessageCodec, WrapperHttpMessageCodec wrapperHttpMessageCodec) {
-        this.protobufHttpMessageCodec = protobufHttpMessageCodec;
-        this.wrapperHttpMessageCodec = wrapperHttpMessageCodec;
+    private final FrameworkModel frameworkModel;
+
+    private final String mediaType;
+
+    private PackableMethod packableMethod;
+
+    public GrpcCompositeCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
+        this.url = url;
+        this.frameworkModel = frameworkModel;
+        this.mediaType = mediaType;
     }
 
-    public void setEncodeTypes(Class<?>[] encodeTypes) {
-        this.wrapperHttpMessageCodec.setEncodeTypes(encodeTypes);
-    }
-
-    public void setDecodeTypes(Class<?>[] decodeTypes) {
-        this.wrapperHttpMessageCodec.setDecodeTypes(decodeTypes);
+    public void loadPackableMethod(MethodDescriptor methodDescriptor) {
+        if (methodDescriptor instanceof PackableMethod) {
+            packableMethod = (PackableMethod) methodDescriptor;
+            return;
+        }
+        Map<MethodDescriptor, PackableMethod> cacheMap = (Map<MethodDescriptor, PackableMethod>) url.getServiceModel()
+                .getServiceMetadata()
+                .getAttributeMap()
+                .computeIfAbsent(PACKABLE_METHOD_CACHE, k -> new ConcurrentHashMap<>());
+        packableMethod = cacheMap.computeIfAbsent(methodDescriptor, md -> frameworkModel
+                .getExtensionLoader(PackableMethodFactory.class)
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel())
+                        .getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+                .create(methodDescriptor, url, mediaType));
     }
 
     @Override
@@ -58,34 +82,38 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         try {
             int compressed = 0;
             outputStream.write(compressed);
-            if (isProtobuf(data)) {
-                ProtobufWriter.write(protobufHttpMessageCodec, outputStream, data);
-                return;
-            }
-            // wrapper
-            wrapperHttpMessageCodec.encode(outputStream, data);
-        } catch (IOException e) {
+            byte[] bytes = packableMethod.packResponse(data);
+            writeLength(outputStream, bytes.length);
+            outputStream.write(bytes);
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Exception e) {
             throw new EncodeException(e);
         }
     }
 
     @Override
     public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
-        if (isProtoClass(targetType)) {
-            return protobufHttpMessageCodec.decode(inputStream, targetType, charset);
+        try {
+            byte[] data = StreamUtils.readBytes(inputStream);
+            return packableMethod.parseRequest(data);
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DecodeException(e);
         }
-        return wrapperHttpMessageCodec.decode(inputStream, targetType, charset);
     }
 
     @Override
     public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
-        if (targetTypes.length > 1) {
-            return wrapperHttpMessageCodec.decode(inputStream, targetTypes, charset);
+        Object message = decode(inputStream, ArrayUtils.isEmpty(targetTypes) ? null : targetTypes[0], charset);
+        if (message instanceof Object[]) {
+            return (Object[]) message;
         }
-        return HttpMessageCodec.super.decode(inputStream, targetTypes, charset);
+        return new Object[] {message};
     }
 
-    private static void writeLength(OutputStream outputStream, int length) {
+    private void writeLength(OutputStream outputStream, int length) {
         try {
             outputStream.write(((length >> 24) & 0xFF));
             outputStream.write(((length >> 16) & 0xFF));
@@ -99,40 +127,5 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     @Override
     public MediaType mediaType() {
         return MediaType.APPLICATION_GRPC;
-    }
-
-    private static boolean isProtobuf(Object data) {
-        if (data == null) {
-            return false;
-        }
-        return isProtoClass(data.getClass());
-    }
-
-    private static boolean isProtoClass(Class<?> clazz) {
-        while (clazz != Object.class && clazz != null) {
-            Class<?>[] interfaces = clazz.getInterfaces();
-            if (interfaces.length > 0) {
-                for (Class<?> clazzInterface : interfaces) {
-                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                        return true;
-                    }
-                }
-            }
-            clazz = clazz.getSuperclass();
-        }
-        return false;
-    }
-
-    /**
-     * lazy init protobuf class
-     */
-    private static class ProtobufWriter {
-
-        private static void write(HttpMessageCodec codec, OutputStream outputStream, Object data) {
-            int serializedSize = ((Message) data).getSerializedSize();
-            // write length
-            writeLength(outputStream, serializedSize);
-            codec.encode(outputStream, data);
-        }
     }
 }

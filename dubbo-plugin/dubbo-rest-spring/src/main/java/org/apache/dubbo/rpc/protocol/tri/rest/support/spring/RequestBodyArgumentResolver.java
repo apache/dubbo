@@ -50,7 +50,7 @@ public class RequestBodyArgumentResolver extends AbstractSpringArgumentResolver 
             }
             return meta.parameterMeta().bind(request, response);
         }
-        return RequestUtils.decodeBody(request, meta.type());
+        return RequestUtils.decodeBody(request, meta.genericType());
     }
 
     @Override
@@ -66,7 +66,7 @@ public class RequestBodyArgumentResolver extends AbstractSpringArgumentResolver 
         if (RequestUtils.isFormOrMultiPart(request)) {
             return request.formParameterValues(meta.name());
         }
-        return RequestUtils.decodeBody(request, meta.type());
+        return RequestUtils.decodeBody(request, meta.genericType());
     }
 
     @Override
@@ -74,6 +74,6 @@ public class RequestBodyArgumentResolver extends AbstractSpringArgumentResolver 
         if (RequestUtils.isFormOrMultiPart(request)) {
             return RequestUtils.getFormParametersMap(request);
         }
-        return RequestUtils.decodeBody(request, meta.type());
+        return RequestUtils.decodeBody(request, meta.genericType());
     }
 }

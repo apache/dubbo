@@ -27,49 +27,49 @@ import org.slf4j.LoggerFactory;
 
 public class GreeterServiceImpl implements GreeterService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GreeterServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GreeterServiceImpl.class);
 
     @Override
     public HelloReply sayHello(HelloRequest request) {
-        LOG.info("Received sayHello request: {}", request.getName());
+        LOGGER.info("Received sayHello request: {}", request.getName());
         return toReply("Hello " + request.getName());
     }
 
     @Override
     public CompletableFuture<String> sayHelloAsync(String name) {
-        LOG.info("Received sayHelloAsync request: {}", name);
+        LOGGER.info("Received sayHelloAsync request: {}", name);
         return CompletableFuture.supplyAsync(() -> "Hello " + name);
     }
 
     @Override
     public void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
-        LOG.info("Received sayHelloServerStream request");
+        LOGGER.info("Received sayHelloServerStream request");
         for (int i = 1; i < 6; i++) {
-            LOG.info("sayHelloServerStream onNext: {} {} times", request.getName(), i);
+            LOGGER.info("sayHelloServerStream onNext: {} {} times", request.getName(), i);
             responseObserver.onNext(toReply("Hello " + request.getName() + ' ' + i + " times"));
         }
-        LOG.info("sayHelloServerStream onCompleted");
+        LOGGER.info("sayHelloServerStream onCompleted");
         responseObserver.onCompleted();
     }
 
     @Override
     public StreamObserver<HelloRequest> sayHelloBiStream(StreamObserver<HelloReply> responseObserver) {
-        LOG.info("Received sayHelloBiStream request");
+        LOGGER.info("Received sayHelloBiStream request");
         return new StreamObserver<HelloRequest>() {
             @Override
             public void onNext(HelloRequest request) {
-                LOG.info("sayHelloBiStream onNext: {}", request.getName());
+                LOGGER.info("sayHelloBiStream onNext: {}", request.getName());
                 responseObserver.onNext(toReply("Hello " + request.getName()));
             }
 
             @Override
             public void onError(Throwable throwable) {
-                LOG.error("sayHelloBiStream onError", throwable);
+                LOGGER.error("sayHelloBiStream onError", throwable);
             }
 
             @Override
             public void onCompleted() {
-                LOG.info("sayHelloBiStream onCompleted");
+                LOGGER.info("sayHelloBiStream onCompleted");
             }
         };
     }

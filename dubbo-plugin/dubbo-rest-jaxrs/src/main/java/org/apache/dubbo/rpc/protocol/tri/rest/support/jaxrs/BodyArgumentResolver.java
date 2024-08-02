@@ -51,6 +51,6 @@ public class BodyArgumentResolver implements AnnotationBaseArgumentResolver<Anno
                 throw new RestException(e);
             }
         }
-        return RequestUtils.decodeBody(request, type);
+        return RequestUtils.decodeBody(request, parameter.getActualGenericType());
     }
 }

@@ -22,7 +22,6 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @Activate
@@ -30,11 +29,7 @@ public class GrpcCompositeCodecFactory implements HttpMessageEncoderFactory, Htt
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        String serializeName = UrlUtils.serializationOrDefault(url);
-        WrapperHttpMessageCodec wrapperHttpMessageCodec = new WrapperHttpMessageCodec(url, frameworkModel);
-        wrapperHttpMessageCodec.setSerializeType(serializeName);
-        ProtobufHttpMessageCodec protobufHttpMessageCodec = new ProtobufHttpMessageCodec();
-        return new GrpcCompositeCodec(protobufHttpMessageCodec, wrapperHttpMessageCodec);
+        return new GrpcCompositeCodec(url, frameworkModel, mediaType);
     }
 
     @Override

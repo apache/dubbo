@@ -63,32 +63,32 @@ public final class DubboMetadataServiceV2Triple {
 
     private static final StubMethodDescriptor getMetadataInfoMethod = new StubMethodDescriptor(
             "GetMetadataInfo",
-            Revision.class,
+            MetadataRequest.class,
             MetadataInfoV2.class,
             MethodDescriptor.RpcType.UNARY,
             obj -> ((Message) obj).toByteArray(),
             obj -> ((Message) obj).toByteArray(),
-            Revision::parseFrom,
+            MetadataRequest::parseFrom,
             MetadataInfoV2::parseFrom);
 
     private static final StubMethodDescriptor getMetadataInfoAsyncMethod = new StubMethodDescriptor(
             "GetMetadataInfo",
-            Revision.class,
+            MetadataRequest.class,
             CompletableFuture.class,
             MethodDescriptor.RpcType.UNARY,
             obj -> ((Message) obj).toByteArray(),
             obj -> ((Message) obj).toByteArray(),
-            Revision::parseFrom,
+            MetadataRequest::parseFrom,
             MetadataInfoV2::parseFrom);
 
     private static final StubMethodDescriptor getMetadataInfoProxyAsyncMethod = new StubMethodDescriptor(
             "GetMetadataInfoAsync",
-            Revision.class,
+            MetadataRequest.class,
             MetadataInfoV2.class,
             MethodDescriptor.RpcType.UNARY,
             obj -> ((Message) obj).toByteArray(),
             obj -> ((Message) obj).toByteArray(),
-            Revision::parseFrom,
+            MetadataRequest::parseFrom,
             MetadataInfoV2::parseFrom);
 
     static {
@@ -104,15 +104,15 @@ public final class DubboMetadataServiceV2Triple {
         }
 
         @Override
-        public MetadataInfoV2 getMetadataInfo(Revision request) {
+        public MetadataInfoV2 getMetadataInfo(MetadataRequest request) {
             return StubInvocationUtil.unaryCall(invoker, getMetadataInfoMethod, request);
         }
 
-        public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(Revision request) {
+        public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request) {
             return StubInvocationUtil.unaryCall(invoker, getMetadataInfoAsyncMethod, request);
         }
 
-        public void getMetadataInfo(Revision request, StreamObserver<MetadataInfoV2> responseObserver) {
+        public void getMetadataInfo(MetadataRequest request, StreamObserver<MetadataInfoV2> responseObserver) {
             StubInvocationUtil.unaryCall(invoker, getMetadataInfoMethod, request, responseObserver);
         }
     }
@@ -136,7 +136,7 @@ public final class DubboMetadataServiceV2Triple {
         }
 
         @Override
-        public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(Revision request) {
+        public CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request) {
             return CompletableFuture.completedFuture(getMetadataInfo(request));
         }
 
@@ -144,7 +144,7 @@ public final class DubboMetadataServiceV2Triple {
          * This server stream type unary method is <b>only</b> used for generated stub to support async unary method.
          * It will not be called if you are NOT using Dubbo3 generated triple stub and <b>DO NOT</b> implement this method.
          */
-        public void getMetadataInfo(Revision request, StreamObserver<MetadataInfoV2> responseObserver) {
+        public void getMetadataInfo(MetadataRequest request, StreamObserver<MetadataInfoV2> responseObserver) {
             getMetadataInfoAsync(request).whenComplete((r, t) -> {
                 if (t != null) {
                     responseObserver.onError(t);
@@ -168,9 +168,9 @@ public final class DubboMetadataServiceV2Triple {
             pathResolver.addNativeStub("/" + JAVA_SERVICE_NAME + "/GetMetadataInfo");
             pathResolver.addNativeStub("/" + JAVA_SERVICE_NAME + "/GetMetadataInfoAsync");
 
-            BiConsumer<Revision, StreamObserver<MetadataInfoV2>> getMetadataInfoFunc = this::getMetadataInfo;
+            BiConsumer<MetadataRequest, StreamObserver<MetadataInfoV2>> getMetadataInfoFunc = this::getMetadataInfo;
             handlers.put(getMetadataInfoMethod.getMethodName(), new UnaryStubMethodHandler<>(getMetadataInfoFunc));
-            BiConsumer<Revision, StreamObserver<MetadataInfoV2>> getMetadataInfoAsyncFunc =
+            BiConsumer<MetadataRequest, StreamObserver<MetadataInfoV2>> getMetadataInfoAsyncFunc =
                     syncToAsync(this::getMetadataInfo);
             handlers.put(
                     getMetadataInfoProxyAsyncMethod.getMethodName(),
@@ -180,7 +180,7 @@ public final class DubboMetadataServiceV2Triple {
         }
 
         @Override
-        public MetadataInfoV2 getMetadataInfo(Revision request) {
+        public MetadataInfoV2 getMetadataInfo(MetadataRequest request) {
             throw unimplementedMethodException(getMetadataInfoMethod);
         }
 

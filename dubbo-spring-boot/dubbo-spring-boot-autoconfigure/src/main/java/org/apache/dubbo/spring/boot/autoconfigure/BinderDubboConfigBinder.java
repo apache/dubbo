@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
 import java.util.Map;
 
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.springframework.boot.context.properties.bind.BindHandler;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 
 public class Http2MetadataFrame implements Http2Header {
@@ -53,5 +54,12 @@ public class Http2MetadataFrame implements Http2Header {
     @Override
     public boolean isEndStream() {
         return endStream;
+    }
+
+    @Override
+    public String toString() {
+        return "Http2MetadataFrame{method='" + method() + '\'' + ", uri='" + path() + '\'' + ", contentType='"
+                + headers().getFirst(HttpHeaderNames.CONTENT_TYPE.getName()) + "', streamId=" + streamId
+                + ", endStream=" + endStream + '}';
     }
 }

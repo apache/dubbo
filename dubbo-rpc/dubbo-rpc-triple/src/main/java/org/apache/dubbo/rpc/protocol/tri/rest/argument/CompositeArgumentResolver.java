@@ -74,4 +74,8 @@ public final class CompositeArgumentResolver implements ArgumentResolver {
 
         throw new IllegalStateException(Messages.ARGUMENT_COULD_NOT_RESOLVED.format(parameter.getDescription()));
     }
+
+    public ArgumentConverter getArgumentConverter() {
+        return argumentConverter;
+    }
 }

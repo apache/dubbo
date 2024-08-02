@@ -33,8 +33,16 @@ public interface HttpResult<T> {
         return new Builder<>();
     }
 
-    static <T> Builder<T> builder(T body) {
-        return new Builder<T>().body(body);
+    static <T> HttpResult<T> of(T body) {
+        return new Builder<T>().body(body).build();
+    }
+
+    static <T> HttpResult<T> of(int status, T body) {
+        return new Builder<T>().status(status).body(body).build();
+    }
+
+    static <T> HttpResult<T> of(HttpStatus status, T body) {
+        return new Builder<T>().status(status).body(body).build();
     }
 
     static <T> HttpResult<T> status(int status) {
@@ -47,6 +55,10 @@ public interface HttpResult<T> {
 
     static <T> HttpResult<T> ok() {
         return new Builder<T>().status(HttpStatus.OK).build();
+    }
+
+    static <T> HttpResult<T> moved(String url) {
+        return new Builder<T>().moved(url).build();
     }
 
     static <T> HttpResult<T> found(String url) {

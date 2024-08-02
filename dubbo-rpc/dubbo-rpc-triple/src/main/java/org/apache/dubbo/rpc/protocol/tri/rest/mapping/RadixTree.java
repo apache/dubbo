@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment.Type;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.KeyString;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.util.ArrayList;
@@ -39,12 +40,22 @@ import java.util.function.Predicate;
  */
 public final class RadixTree<T> {
 
-    private final Map<String, List<Match<T>>> directPathMap = new HashMap<>();
+    private final Map<KeyString, List<Match<T>>> directPathMap = new HashMap<>();
     private final Node<T> root = new Node<>();
+    private final boolean caseSensitive;
+
+    public RadixTree(boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
+    }
+
+    public RadixTree() {
+        caseSensitive = true;
+    }
 
     public T addPath(PathExpression path, T value) {
         if (path.isDirect()) {
-            List<Match<T>> matches = directPathMap.computeIfAbsent(path.getPath(), k -> new ArrayList<>());
+            KeyString key = new KeyString(path.getPath(), caseSensitive);
+            List<Match<T>> matches = directPathMap.computeIfAbsent(key, k -> new ArrayList<>());
             for (int i = 0, len = matches.size(); i < len; i++) {
                 Match<T> match = matches.get(i);
                 if (match.getValue().equals(value)) {
@@ -73,11 +84,15 @@ public final class RadixTree<T> {
         return null;
     }
 
-    private static <T> Node<T> getChild(Node<T> current, PathSegment segment) {
+    public T addPath(String path, T value) {
+        return addPath(PathExpression.parse(PathUtils.normalize(path)), value);
+    }
+
+    private Node<T> getChild(Node<T> current, PathSegment segment) {
         Node<T> child;
         if (segment.getType() == Type.LITERAL) {
-            Map<Key, Node<T>> children = current.children;
-            Key key = new Key(segment.getValue());
+            Map<KeyString, Node<T>> children = current.children;
+            KeyString key = new KeyString(segment.getValue(), caseSensitive);
             child = children.get(key);
             if (child == null) {
                 child = new Node<>();
@@ -124,36 +139,46 @@ public final class RadixTree<T> {
     /**
      * Ensure that the path is normalized using {@link PathUtils#normalize(String)} before matching.
      */
-    public void match(String path, List<Match<T>> matches) {
+    public void match(KeyString path, List<Match<T>> matches) {
         List<Match<T>> directMatches = directPathMap.get(path);
         if (directMatches != null) {
             for (int i = 0, size = directMatches.size(); i < size; i++) {
                 matches.add(directMatches.get(i));
             }
-            return;
         }
 
         matchRecursive(root, path, 1, new HashMap<>(), matches);
     }
 
-    public List<Match<T>> match(String path) {
+    public void match(String path, List<Match<T>> matches) {
+        match(new KeyString(path, caseSensitive), matches);
+    }
+
+    public List<Match<T>> match(KeyString path) {
         List<Match<T>> matches = directPathMap.get(path);
-        if (matches != null) {
-            return new ArrayList<>(matches);
+        if (matches == null) {
+            matches = new ArrayList<>();
+        } else {
+            matches = new ArrayList<>(matches);
         }
 
-        matches = new ArrayList<>();
         matchRecursive(root, path, 1, new HashMap<>(), matches);
         return matches;
     }
 
+    public List<Match<T>> match(String path) {
+        return match(new KeyString(path, caseSensitive));
+    }
+
     private void matchRecursive(
-            Node<T> current, String path, int start, Map<String, String> variableMap, List<Match<T>> matches) {
+            Node<T> current, KeyString path, int start, Map<String, String> variableMap, List<Match<T>> matches) {
         int end = path.indexOf('/', start);
-        Node<T> node = current.children.get(new Key(path, start, end));
+        Node<T> node = current.children.get(new KeyString(path, start, end));
         if (node != null) {
-            if (node.isLeaf()) {
-                addMatch(node, variableMap, matches);
+            if (end == -1) {
+                if (node.isLeaf()) {
+                    addMatch(node, variableMap, matches);
+                }
                 return;
             }
             matchRecursive(node, path, end + 1, variableMap, matches);
@@ -168,13 +193,19 @@ public final class RadixTree<T> {
             if (segment.match(path, start, end, workVariableMap)) {
                 workVariableMap.putAll(variableMap);
                 Node<T> child = entry.getValue();
-                if (segment.isTailMatching() || child.isLeaf()) {
+                if (segment.isTailMatching()) {
                     addMatch(child, workVariableMap, matches);
                 } else {
-                    matchRecursive(child, path, end + 1, workVariableMap, matches);
+                    if (end == -1) {
+                        if (child.isLeaf()) {
+                            addMatch(child, workVariableMap, matches);
+                        }
+                    } else {
+                        matchRecursive(child, path, end + 1, workVariableMap, matches);
+                    }
                 }
                 if (!workVariableMap.isEmpty()) {
-                    workVariableMap = new HashMap<>();
+                    workVariableMap = new LinkedHashMap<>();
                 }
             }
         }
@@ -235,67 +266,9 @@ public final class RadixTree<T> {
         }
     }
 
-    /**
-     * Zero-copy string key.
-     */
-    private static final class Key implements CharSequence {
-
-        private final String value;
-        private final int offset;
-        private final int length;
-
-        private Key(String value, int start, int end) {
-            this.value = value;
-            offset = start;
-            length = (end == -1 ? value.length() : end) - start;
-        }
-
-        public Key(String value) {
-            this.value = value;
-            offset = 0;
-            length = value.length();
-        }
-
-        @Override
-        public int length() {
-            return length;
-        }
-
-        @Override
-        public char charAt(int index) {
-            return value.charAt(offset + index);
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end) {
-            return value.substring(offset + start, offset + end);
-        }
-
-        @Override
-        public int hashCode() {
-            int h = 0;
-            for (int i = 0; i < length; i++) {
-                h = 31 * h + value.charAt(offset + i);
-            }
-            return h;
-        }
-
-        @Override
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-        public boolean equals(Object obj) {
-            Key other = (Key) obj;
-            return value.regionMatches(offset, other.value, other.offset, length);
-        }
-
-        @Override
-        public String toString() {
-            return value.substring(offset, length - offset);
-        }
-    }
-
     private static final class Node<T> {
 
-        private final Map<Key, Node<T>> children = new HashMap<>();
+        private final Map<KeyString, Node<T>> children = new HashMap<>();
         private final Map<PathSegment, Node<T>> fuzzyChildren = new HashMap<>();
         private final List<Pair<PathExpression, T>> values = new ArrayList<>();
 

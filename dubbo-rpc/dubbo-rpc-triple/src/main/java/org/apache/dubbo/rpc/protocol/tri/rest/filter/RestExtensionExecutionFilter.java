@@ -21,6 +21,10 @@ import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
@@ -31,24 +35,31 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 @Activate(group = CommonConstants.PROVIDER, order = 1000)
 public class RestExtensionExecutionFilter extends RestFilterAdapter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestExtensionExecutionFilter.class);
     private static final String KEY = RestExtensionExecutionFilter.class.getSimpleName();
 
+    private final Map<RestFilter, RadixTree<Boolean>> filterTreeCache = CollectionUtils.newConcurrentHashMap();
     private final ApplicationModel applicationModel;
     private final List<RestExtensionAdapter<Object>> extensionAdapters;
 
@@ -61,7 +72,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
     @Override
     protected Result invoke(Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response)
             throws RpcException {
-        RestFilter[] filters = getFilters(invoker);
+        RestFilter[] filters = matchFilters(getFilters(invoker), request.path());
         DefaultFilterChain chain = new DefaultFilterChain(filters, invocation, () -> invoker.invoke(invocation));
         invocation.put(KEY, chain);
         try {
@@ -91,7 +102,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
             }
             return AsyncRpcResult.newDefaultAsyncResult(invocation);
         } catch (Throwable t) {
-            throw RestException.wrap(t);
+            throw ExceptionUtils.wrap(t);
         }
     }
 
@@ -127,13 +138,65 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         chain.onError(t, request, response);
     }
 
+    private RestFilter[] matchFilters(RestFilter[] filters, String path) {
+        int len = filters.length;
+        BitSet bitSet = new BitSet(len);
+        out:
+        for (int i = 0; i < len; i++) {
+            RestFilter filter = filters[i];
+            String[] patterns = filter.getPatterns();
+            if (ArrayUtils.isEmpty(patterns)) {
+                continue;
+            }
+            RadixTree<Boolean> filterTree = filterTreeCache.computeIfAbsent(filter, f -> {
+                RadixTree<Boolean> tree = new RadixTree<>();
+                for (String pattern : patterns) {
+                    if (StringUtils.isNotEmpty(pattern)) {
+                        if (pattern.charAt(0) == '!') {
+                            tree.addPath(pattern.substring(1), false);
+                        } else {
+                            tree.addPath(pattern, true);
+                        }
+                    }
+                }
+                return tree;
+            });
+
+            List<Match<Boolean>> matches = filterTree.match(path);
+            int size = matches.size();
+            if (size == 0) {
+                bitSet.set(i);
+                continue;
+            }
+            for (int j = 0; j < size; j++) {
+                if (!matches.get(j).getValue()) {
+                    bitSet.set(i);
+                    continue out;
+                }
+            }
+        }
+        if (bitSet.isEmpty()) {
+            return filters;
+        }
+        RestFilter[] matched = new RestFilter[len - bitSet.cardinality()];
+        for (int i = 0, j = 0; i < len; i++) {
+            if (!bitSet.get(i)) {
+                matched[j++] = filters[i];
+            }
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Matched filters for path '{}' is {}", path, Arrays.toString(matched));
+        }
+        return matched;
+    }
+
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private RestFilter[] getFilters(Invoker<?> invoker) {
         URL url = invoker.getUrl();
         RestFilter[] filters = getFilters(url);
         if (filters != null) {
             return filters;
         }
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (invoker) {
             filters = getFilters(url);
             if (filters != null) {
@@ -150,6 +213,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
     }
 
     private RestFilter[] loadFilters(URL url) {
+        LOGGER.info("Loading rest filters for {}", url);
         List<RestFilter> extensions = new ArrayList<>();
 
         // 1. load from extension config
@@ -186,13 +250,29 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
             extension = ((Supplier<?>) extension).get();
         }
         if (extension instanceof RestFilter) {
-            extensions.add((RestFilter) extension);
+            addRestFilter(extension, (RestFilter) extension, extensions);
             return;
         }
         for (RestExtensionAdapter<Object> adapter : extensionAdapters) {
             if (adapter.accept(extension)) {
-                extensions.add(adapter.adapt(extension));
+                addRestFilter(extension, adapter.adapt(extension), extensions);
             }
         }
+    }
+
+    private void addRestFilter(Object extension, RestFilter filter, List<RestFilter> extensions) {
+        extensions.add(filter);
+        if (!LOGGER.isInfoEnabled()) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder(64);
+        sb.append("Rest filter [").append(extension).append("] loaded");
+        if (filter.getPriority() != 0) {
+            sb.append(", priority=").append(filter.getPriority());
+        }
+        if (ArrayUtils.isNotEmpty(filter.getPatterns())) {
+            sb.append(", patterns=").append(Arrays.toString(filter.getPatterns()));
+        }
+        LOGGER.info(sb.toString());
     }
 }

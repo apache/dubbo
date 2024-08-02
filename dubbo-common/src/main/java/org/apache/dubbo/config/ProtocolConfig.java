@@ -643,7 +643,7 @@ public class ProtocolConfig extends AbstractConfig {
         if (sourceConfig == null) {
             return;
         }
-        Field[] targetFields = this.getClass().getDeclaredFields();
+        Field[] targetFields = getClass().getDeclaredFields();
         try {
             Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(sourceConfig);
             for (Field targetField : targetFields) {
