@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint;
 
-import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.AbstractDubboMetadata;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboOnlineMetadata;
 
 import java.util.Map;
@@ -32,7 +31,7 @@ import org.springframework.lang.Nullable;
  * @since 3.3.0
  */
 @Endpoint(id = "dubboonline")
-public class DubboOnlineEndpoint extends AbstractDubboMetadata {
+public class DubboOnlineEndpoint {
 
     @Autowired
     private DubboOnlineMetadata dubboOnlineMetadata;

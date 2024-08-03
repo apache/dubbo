@@ -30,7 +30,7 @@ import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
  * @since 3.3.0
  */
 @Endpoint(id = "dubboready")
-public class DubboReadyEndpoint extends DubboReadyMetadata {
+public class DubboReadyEndpoint {
 
     @Autowired
     private DubboReadyMetadata dubboReadyMetadata;
