@@ -25,7 +25,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -41,7 +43,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class DubboShutdownHookTest {
+class DubboShutdownHookTest {
     private DubboShutdownHook dubboShutdownHook;
     private ApplicationModel applicationModel;
 
@@ -49,7 +51,7 @@ public class DubboShutdownHookTest {
     public void init() {
         FrameworkModel frameworkModel = new FrameworkModel();
         applicationModel = frameworkModel.newApplication();
-        ModuleModel moduleModel = applicationModel.newModule();
+        applicationModel.newModule();
         dubboShutdownHook = DubboShutdownHook.getInstance();
     }
 
@@ -58,8 +60,32 @@ public class DubboShutdownHookTest {
         SysProps.clear();
     }
 
+    private Logger spyOnClzInternalLogger(Class clz) throws IllegalAccessException, InvocationTargetException {
+        Field loggerField = ReflectionUtils.findFields(
+                        clz, f -> f.getName().equals("logger"), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+                .get(0);
+        loggerField.setAccessible(true);
+
+        ErrorTypeAwareLogger hookLogger = (ErrorTypeAwareLogger) loggerField.get(dubboShutdownHook);
+        Method getLogger = ReflectionUtils.findMethod(FailsafeLogger.class, "getLogger", new Class<?>[0])
+                .get();
+        Method setLogger = ReflectionUtils.findMethod(FailsafeLogger.class, "setLogger", Logger.class)
+                .get();
+
+        Logger internalLogger = (Logger) getLogger.invoke(hookLogger, new Object[0]);
+        Logger spyLogger = Mockito.spy(internalLogger);
+        setLogger.invoke(hookLogger, spyLogger);
+
+        return spyLogger;
+    }
+
     @Test
-    void testDestoryNoModuleManagedExternally() {
+    void testDestoryNoModuleManagedExternally() throws IllegalAccessException, InvocationTargetException {
+        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class);
+        when(spyLogger.isInfoEnabled()).thenReturn(true);
+
+        ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
+
         boolean hasModuleManagedExternally = false;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.isLifeCycleManagedExternally()) {
@@ -70,26 +96,23 @@ public class DubboShutdownHookTest {
         Assertions.assertFalse(hasModuleManagedExternally);
         dubboShutdownHook.run();
         Assertions.assertTrue(applicationModel.isDestroyed());
+
+        verify(spyLogger, atLeastOnce()).info(loggerCaptor.capture());
+        StringBuffer logBuf = new StringBuffer();
+        for (String row : loggerCaptor.getAllValues()) {
+            if (!Objects.isNull(row)) {
+                logBuf.append(row).append("\n");
+            }
+        }
+        String logs = logBuf.toString();
+        Assertions.assertTrue(logs.contains("Run shutdown hook now."), "Hook start indicator is required.");
+        Assertions.assertTrue(logs.contains("Complete shutdown hook now."), "Hook end indicator is required.");
     }
 
     @Test
     void testDestoryWithModuleManagedExternally() throws Exception {
-        Field loggerField = ReflectionUtils.findFields(
-                        DubboShutdownHook.class,
-                        f -> f.getName().equals("logger"),
-                        ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
-                .get(0);
-        loggerField.setAccessible(true);
-        ErrorTypeAwareLogger hookLogger = (ErrorTypeAwareLogger) loggerField.get(dubboShutdownHook);
-        Method getLogger = ReflectionUtils.findMethod(FailsafeLogger.class, "getLogger", new Class<?>[0])
-                .get();
-        Method setLogger = ReflectionUtils.findMethod(FailsafeLogger.class, "setLogger", Logger.class)
-                .get();
-        Logger internalLogger = (Logger) getLogger.invoke(hookLogger, new Object[0]);
-
-        Logger spyLogger = Mockito.spy(internalLogger);
+        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class);
         when(spyLogger.isInfoEnabled()).thenReturn(true);
-        setLogger.invoke(hookLogger, spyLogger);
 
         ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
 
@@ -106,21 +129,27 @@ public class DubboShutdownHookTest {
                     applicationModel.getModuleModels().get(0).destroy();
                 })
                 .start();
+
         dubboShutdownHook.run();
+
         Assertions.assertTrue(applicationModel.isDestroyed());
 
         verify(spyLogger, atLeastOnce()).info(loggerCaptor.capture());
-
         StringBuffer logBuf = new StringBuffer();
         for (String row : loggerCaptor.getAllValues()) {
-            logBuf.append(row).append("\n");
+            if (!Objects.isNull(row)) {
+                logBuf.append(row).append("\n");
+            }
         }
-
         String logs = logBuf.toString();
-
-        Assertions.assertTrue(logs.contains("Waiting for modules"));
-        Assertions.assertTrue(logs.contains("managed by Spring to be shutdown failed")
-                || logs.contains("managed by Spring has been destroyed successfully."));
-        Assertions.assertTrue(logs.contains("Complete shutdown hook now."));
+        Assertions.assertTrue(
+                logBuf.toString().contains("Run shutdown hook now."), "Hook start indicator is required.");
+        Assertions.assertTrue(
+                logs.contains("Waiting for modules"), "ManagedExternally Module exists, check and wait is expected.");
+        Assertions.assertTrue(
+                logs.contains("managed by Spring to be shutdown failed")
+                        || logs.contains("managed by Spring has been destroyed successfully."),
+                "ManagedExternally Module should be destroyed or wait timed out.");
+        Assertions.assertTrue(logs.contains("Complete shutdown hook now."), "Hook end indicator is required.");
     }
 }
