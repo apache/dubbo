@@ -41,7 +41,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,7 +60,8 @@ class DubboShutdownHookTest {
         SysProps.clear();
     }
 
-    private Logger spyOnClzInternalLogger(Class<?> clz, Object instance) throws IllegalAccessException, InvocationTargetException {
+    private Logger spyOnClzInternalLogger(Class<?> clz, Object instance)
+            throws IllegalAccessException, InvocationTargetException {
         Field loggerField = ReflectionUtils.findFields(
                         clz, f -> f.getName().equals("logger"), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
                 .get(0);
@@ -143,8 +143,7 @@ class DubboShutdownHookTest {
             }
         }
         String logs = logBuf.toString();
-        Assertions.assertTrue(
-                logs.contains("Run shutdown hook now."), "Hook start indicator is required.");
+        Assertions.assertTrue(logs.contains("Run shutdown hook now."), "Hook start indicator is required.");
         Assertions.assertTrue(
                 logs.contains("Waiting for modules"), "ManagedExternally Module exists, check and wait is expected.");
         Assertions.assertTrue(
@@ -186,8 +185,7 @@ class DubboShutdownHookTest {
             }
         }
         String logs = logBuf.toString();
-        Assertions.assertTrue(
-                logs.contains("Run shutdown hook now."), "Hook start indicator is required.");
+        Assertions.assertTrue(logs.contains("Run shutdown hook now."), "Hook start indicator is required.");
         Assertions.assertTrue(
                 logs.contains("Waiting for modules"), "ManagedExternally Module exists, check and wait is expected.");
         Assertions.assertTrue(
@@ -195,18 +193,18 @@ class DubboShutdownHookTest {
                 "ManagedExternally Module should be destroyed or wait timed out.");
         Assertions.assertTrue(logs.contains("Complete shutdown hook now."), "Hook end indicator is required.");
     }
-    
+
     @Test
     void test_register_twice() throws IllegalAccessException, InvocationTargetException {
         Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class, DubboShutdownHook.getInstance());
         when(spyLogger.isWarnEnabled()).thenReturn(true);
 
         ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
-        
+
         DubboShutdownHook.getInstance().register();
 
         DubboShutdownHook.getInstance().register();
-        
+
         verify(spyLogger, never()).warn(loggerCaptor.capture());
     }
 }
