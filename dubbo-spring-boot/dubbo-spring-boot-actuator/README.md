@@ -169,14 +169,12 @@ Actuator endpoint `dubbo` supports Actuator Endpoints :
 | `dubboenabledetailprofiler` | `false` | `/actuator/dubbo/enableDetailProfiler` | `POST` | Enable the `detail profiler` mode, which is disabled by default, you need to enable the `simple profiler` mode to actually enable it | `application/json` |
 | `dubbodisablesimpleprofiler` | `false` | `/actuator/dubbo/disableSimpleProfiler` | `POST` | Turn off the `simple profiler` mode, and the `detail profiler` will not be enabled after it is turned off | `application/json` |
 | `dubboenablesimpleprofiler` | `false` | `/actuator/dubbo/enableSimpleProfiler` | `POST` | Enable `simple profiler` mode, enabled by default | `application/json` |
+| `dubbosetprofilerwarnpercent` | `false` | `/actuator/dubbo/setProfilerWarnPercent?p={percent}` | `POST` | Control `serialization` alarm frequency (only for classes in the warning list) | `application/json` |
 | `dubbodisableroutersnapshot` | `false` | `/actuator/dubbo/disableRouterSnapshot` or `/actuator/dubbo/disableRouterSnapshot?service=xxx.*` | `POST` | Disable routing result collection mode | `application/json` |
 | `dubboenableroutersnapshot` | `false` | `/actuator/dubbo/enableRouterSnapshot` or `/actuator/dubbo/enableRouterSnapshot?service=xxx.*` | `POST` | Enable routing result collection mode | `application/json` |
 | `dubbogetrecentroutersnapshot` | `true` | `/actuator/dubbo/getRecentRouterSnapshot` | `GET` | Obtain the historical routing status (up to 32 results stored) | `application/json` |
 | `dubbogetenabledroutersnapshot` | `true` | `/actuator/dubbo/getEnabledRouterSnapshot` | `GET` | Get the services that are currently collecting | `application/json` |
-|  |  |  |  |  |  |
-|  |  |  |  |  |  |
-|  |  |  |  |  |  |
-|  |  |  |  |  |  |
+| `dubbogracefulshutdown` | `false` | `/actuator/dubbo/gracefulShutdown` | `POST` | Unregister all services registered by the current IP instance from the registry | `application/json` |
 
 
 
@@ -579,6 +577,15 @@ The performance sampling function can detect the time consumption of various par
 
 Compared with the `simple profiler` mode, the `detail profiler` collects more time-consuming processing of each filter, specific time-consuming protocols, etc. In the `simple profiler` mode, if you find that there is a long time-consuming situation inside the Dubbo framework, you can enable the `detail profiler` mode to better troubleshoot the problem.
 
+`/actuator/dubbo/setProfilerPercent?p={precent}`
+
+`/actuator/dubbo/setProfilerPercent?p={precent}` Control serialization alarm frequency (only for classes in the warning list) :
+```json
+{
+    "Current Dubbo Invocation Profiler warn percent": 0.4
+}
+```
+
 
 
 `/actuator/dubbo/disableRouterSnapshot{?service={servicePatern}}`
@@ -617,6 +624,14 @@ Compared with the `simple profiler` mode, the `detail profiler` collects more ti
     ]
 }
 ```
+
+`/actuator/dubbo/gracefulShutdown` unregister all services registered by the current IP instance from the registry. The difference from 'offline' is that this command will also notify all consumers via TCP connection to stop calling this instance :
+```json
+{
+ "org.apache.dubbo.springboot.demo.DemoService:null": "offline"
+}
+```
+To restore, please execute 'online' to bring all services back online.
 
 
 
@@ -701,9 +716,11 @@ management.endpoint.dubbodisabledetailprofiler.enabled = true
 management.endpoint.dubbodisablesimpleprofiler.enabled = true
 management.endpoint.dubboenabledetailprofiler.enabled = true
 management.endpoint.dubboenablesimpleprofiler.enabled = true
+management.endpoint.dubbosetprofilerwarnpercent.enabled = true
 management.endpoint.dubbodisableroutersnapshot.enabled = true
 management.endpoint.dubboenableroutersnapshot.enabled = true
 management.endpoint.dubbogetrecentroutersnapshot.enabled = true
 management.endpoint.dubbogetenabledroutersnapshot.enabled = true
+management.endpoint.dubbogracefulshutdown.enabled = true
 ```
 

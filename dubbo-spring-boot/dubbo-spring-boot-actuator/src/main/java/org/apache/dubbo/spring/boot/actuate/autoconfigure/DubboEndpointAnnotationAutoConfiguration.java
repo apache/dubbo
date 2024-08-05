@@ -25,6 +25,7 @@ import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEnableRouterSnapshotEn
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEnableSimpleProfilerEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboGetEnabledRouterEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboGetRecentRouterEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboGracefulShutdownEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboLoggerInfoEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboLsEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboMetadataEndpoint;
@@ -38,6 +39,7 @@ import org.apache.dubbo.spring.boot.actuate.endpoint.DubboPropertiesMetadataEndp
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboReadyEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboReferencesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboServicesMetadataEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboSetProfilerWarnPercentEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboShutdownEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboSwitchLogLevelEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboSwitchLoggerEndpoint;
@@ -239,6 +241,14 @@ public class DubboEndpointAnnotationAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnAvailableEndpoint
     @CompatibleConditionalOnEnabledEndpoint
+    public DubboSetProfilerWarnPercentEndpoint dubboSetProfilerWarnPercentEndpoint() {
+        return new DubboSetProfilerWarnPercentEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
     public DubboDisableRouterSnapshotEndpoint dubboDisableRouterSnapshotEndpoint() {
         return new DubboDisableRouterSnapshotEndpoint();
     }
@@ -265,5 +275,13 @@ public class DubboEndpointAnnotationAutoConfiguration {
     @CompatibleConditionalOnEnabledEndpoint
     public DubboGetEnabledRouterEndpoint dubboGetEnabledRouterEndpoint() {
         return new DubboGetEnabledRouterEndpoint();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnAvailableEndpoint
+    @CompatibleConditionalOnEnabledEndpoint
+    public DubboGracefulShutdownEndpoint dubboGracefulShutdownEndpoint() {
+        return new DubboGracefulShutdownEndpoint();
     }
 }
