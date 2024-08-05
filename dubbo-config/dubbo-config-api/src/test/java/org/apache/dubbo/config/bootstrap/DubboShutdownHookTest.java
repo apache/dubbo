@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
@@ -40,11 +41,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.atMostOnce;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class DubboShutdownHookTest {
-    private DubboShutdownHook dubboShutdownHook;
     private ApplicationModel applicationModel;
 
     @BeforeEach
@@ -52,7 +54,6 @@ class DubboShutdownHookTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         applicationModel = frameworkModel.newApplication();
         applicationModel.newModule();
-        dubboShutdownHook = DubboShutdownHook.getInstance();
     }
 
     @AfterEach
@@ -60,13 +61,13 @@ class DubboShutdownHookTest {
         SysProps.clear();
     }
 
-    private Logger spyOnClzInternalLogger(Class clz) throws IllegalAccessException, InvocationTargetException {
+    private Logger spyOnClzInternalLogger(Class<?> clz, Object instance) throws IllegalAccessException, InvocationTargetException {
         Field loggerField = ReflectionUtils.findFields(
                         clz, f -> f.getName().equals("logger"), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
                 .get(0);
         loggerField.setAccessible(true);
 
-        ErrorTypeAwareLogger hookLogger = (ErrorTypeAwareLogger) loggerField.get(dubboShutdownHook);
+        ErrorTypeAwareLogger hookLogger = (ErrorTypeAwareLogger) loggerField.get(instance);
         Method getLogger = ReflectionUtils.findMethod(FailsafeLogger.class, "getLogger", new Class<?>[0])
                 .get();
         Method setLogger = ReflectionUtils.findMethod(FailsafeLogger.class, "setLogger", Logger.class)
@@ -80,8 +81,8 @@ class DubboShutdownHookTest {
     }
 
     @Test
-    void testDestoryNoModuleManagedExternally() throws IllegalAccessException, InvocationTargetException {
-        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class);
+    void test_Destory_With_NoModule_ManagedExternally() throws IllegalAccessException, InvocationTargetException {
+        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class, DubboShutdownHook.getInstance());
         when(spyLogger.isInfoEnabled()).thenReturn(true);
 
         ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
@@ -94,7 +95,7 @@ class DubboShutdownHookTest {
             }
         }
         Assertions.assertFalse(hasModuleManagedExternally);
-        dubboShutdownHook.run();
+        DubboShutdownHook.getInstance().run();
         Assertions.assertTrue(applicationModel.isDestroyed());
 
         verify(spyLogger, atLeastOnce()).info(loggerCaptor.capture());
@@ -110,27 +111,27 @@ class DubboShutdownHookTest {
     }
 
     @Test
-    void testDestoryWithModuleManagedExternally() throws Exception {
-        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class);
+    void test_DestoryTimeout_With_ModuleManagedExternally() throws Exception {
+        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class, DubboShutdownHook.getInstance());
         when(spyLogger.isInfoEnabled()).thenReturn(true);
 
         ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
 
         applicationModel.getModuleModels().get(0).setLifeCycleManagedExternally(true);
-
+        final int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
+        final long now = System.currentTimeMillis();
         new Thread(() -> {
-                    long now = System.currentTimeMillis();
                     Awaitility.await()
-                            .atLeast(100, TimeUnit.MILLISECONDS)
-                            .atMost(200, TimeUnit.MILLISECONDS)
+                            .atLeast(serverShutdownTimeout, TimeUnit.MILLISECONDS)
+                            .atMost(serverShutdownTimeout + 1000, TimeUnit.MILLISECONDS)
                             .until(() -> {
-                                return System.currentTimeMillis() - now > 100L;
+                                return System.currentTimeMillis() - now > serverShutdownTimeout + 200;
                             });
                     applicationModel.getModuleModels().get(0).destroy();
                 })
                 .start();
 
-        dubboShutdownHook.run();
+        DubboShutdownHook.getInstance().run();
 
         Assertions.assertTrue(applicationModel.isDestroyed());
 
@@ -143,13 +144,69 @@ class DubboShutdownHookTest {
         }
         String logs = logBuf.toString();
         Assertions.assertTrue(
-                logBuf.toString().contains("Run shutdown hook now."), "Hook start indicator is required.");
+                logs.contains("Run shutdown hook now."), "Hook start indicator is required.");
         Assertions.assertTrue(
                 logs.contains("Waiting for modules"), "ManagedExternally Module exists, check and wait is expected.");
         Assertions.assertTrue(
-                logs.contains("managed by Spring to be shutdown failed")
-                        || logs.contains("managed by Spring has been destroyed successfully."),
+                logs.contains("managed by Spring to be shutdown failed, external managed module exists."),
+                "ManagedExternally Module destroy - should wait and timed out.");
+        Assertions.assertTrue(logs.contains("Complete shutdown hook now."), "Hook end indicator is required.");
+    }
+
+    @Test
+    void test_DestorySuccessfully_With_Module_ManagedExternally() throws Exception {
+        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class, DubboShutdownHook.getInstance());
+        when(spyLogger.isInfoEnabled()).thenReturn(true);
+
+        ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
+
+        applicationModel.getModuleModels().get(0).setLifeCycleManagedExternally(true);
+        final int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
+        final long now = System.currentTimeMillis();
+        new Thread(() -> {
+                    Awaitility.await()
+                            .atLeast(10, TimeUnit.MILLISECONDS)
+                            .atMost(10000, TimeUnit.MILLISECONDS)
+                            .until(() -> {
+                                return System.currentTimeMillis() - now > Math.min(serverShutdownTimeout, 100) - 50;
+                            });
+                    applicationModel.getModuleModels().get(0).destroy();
+                })
+                .start();
+
+        DubboShutdownHook.getInstance().run();
+
+        Assertions.assertTrue(applicationModel.isDestroyed());
+
+        verify(spyLogger, atLeastOnce()).info(loggerCaptor.capture());
+        StringBuffer logBuf = new StringBuffer();
+        for (String row : loggerCaptor.getAllValues()) {
+            if (!Objects.isNull(row)) {
+                logBuf.append(row).append("\n");
+            }
+        }
+        String logs = logBuf.toString();
+        Assertions.assertTrue(
+                logs.contains("Run shutdown hook now."), "Hook start indicator is required.");
+        Assertions.assertTrue(
+                logs.contains("Waiting for modules"), "ManagedExternally Module exists, check and wait is expected.");
+        Assertions.assertTrue(
+                logs.contains("managed by Spring has been destroyed successfully."),
                 "ManagedExternally Module should be destroyed or wait timed out.");
         Assertions.assertTrue(logs.contains("Complete shutdown hook now."), "Hook end indicator is required.");
+    }
+    
+    @Test
+    void test_register_twice() throws IllegalAccessException, InvocationTargetException {
+        Logger spyLogger = spyOnClzInternalLogger(DubboShutdownHook.class, DubboShutdownHook.getInstance());
+        when(spyLogger.isWarnEnabled()).thenReturn(true);
+
+        ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
+        
+        DubboShutdownHook.getInstance().register();
+
+        DubboShutdownHook.getInstance().register();
+        
+        verify(spyLogger, never()).warn(loggerCaptor.capture());
     }
 }
