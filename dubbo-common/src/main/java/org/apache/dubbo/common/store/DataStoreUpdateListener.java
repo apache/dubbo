@@ -16,24 +16,6 @@
  */
 package org.apache.dubbo.common.store;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-
-import java.util.Map;
-
-@SPI(value = "simple", scope = ExtensionScope.APPLICATION)
-public interface DataStore {
-
-    /**
-     * return a snapshot value of componentName
-     */
-    Map<String, Object> get(String componentName);
-
-    Object get(String componentName, String key);
-
-    void put(String componentName, String key, Object value);
-
-    void remove(String componentName, String key);
-
-    default void addListener(DataStoreUpdateListener dataStoreUpdateListener) {}
+public interface DataStoreUpdateListener {
+    void onUpdate(String componentName, String key, Object value);
 }
