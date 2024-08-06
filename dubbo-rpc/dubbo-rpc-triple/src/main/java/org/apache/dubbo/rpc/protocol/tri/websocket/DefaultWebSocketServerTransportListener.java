@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.websocket;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
@@ -63,7 +64,8 @@ public class DefaultWebSocketServerTransportListener extends GenericHttp2ServerT
     @Override
     protected UnaryServerCallListener startUnary(
             RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
-        return new AutoCloseUnaryServerCallListener(invocation, invoker, responseObserver, getStreamingDecoder());
+        return new AutoCloseUnaryServerCallListener(
+                invocation, invoker, responseObserver, getStreamingDecoder(), applyCustomizeException());
     }
 
     @Override
@@ -71,5 +73,10 @@ public class DefaultWebSocketServerTransportListener extends GenericHttp2ServerT
             RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
         return new AutoCloseServerStreamServerCallListener(
                 invocation, invoker, responseObserver, getStreamingDecoder());
+    }
+
+    @Override
+    protected ExceptionHandler<Throwable, ?> getExceptionHandler() {
+        return null;
     }
 }

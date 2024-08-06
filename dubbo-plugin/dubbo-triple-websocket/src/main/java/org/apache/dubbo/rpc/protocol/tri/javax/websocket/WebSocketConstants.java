@@ -18,8 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.javax.websocket;
 
 public interface WebSocketConstants {
 
-    String SERVER_CONTAINER_SERVLET_CONTEXT_ATTRIBUTE = "javax.websocket.server.ServerContainer";
-
     String UPGRADE_HEADER_NAME = "Upgrade";
 
     String UPGRADE_HEADER_VALUE = "websocket";

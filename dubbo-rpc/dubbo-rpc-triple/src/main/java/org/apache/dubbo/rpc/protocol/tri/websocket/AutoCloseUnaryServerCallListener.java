@@ -30,8 +30,9 @@ public class AutoCloseUnaryServerCallListener extends UnaryServerCallListener {
             RpcInvocation invocation,
             Invoker<?> invoker,
             StreamObserver<Object> responseObserver,
-            StreamingDecoder streamingDecoder) {
-        super(invocation, invoker, responseObserver);
+            StreamingDecoder streamingDecoder,
+            boolean applyCustomizeException) {
+        super(invocation, invoker, responseObserver, applyCustomizeException);
         this.streamingDecoder = streamingDecoder;
     }
 

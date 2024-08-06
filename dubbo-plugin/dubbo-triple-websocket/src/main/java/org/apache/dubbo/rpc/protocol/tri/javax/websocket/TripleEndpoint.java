@@ -48,7 +48,7 @@ public class TripleEndpoint extends Endpoint {
         String path = session.getRequestURI().getPath();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set(Http2Headers.PATH.getName(), path);
-        httpHeaders.set(Http2Headers.METHOD.getName(), HttpMethods.GET.name());
+        httpHeaders.set(Http2Headers.METHOD.getName(), HttpMethods.POST.name());
         Http2Header http2Header = new Http2MetadataFrame(httpHeaders);
 
         URL url = ServletExchanger.getUrl();

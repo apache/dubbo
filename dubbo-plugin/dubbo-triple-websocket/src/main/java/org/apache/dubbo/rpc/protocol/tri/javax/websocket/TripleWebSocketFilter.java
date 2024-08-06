@@ -48,8 +48,7 @@ public class TripleWebSocketFilter extends GenericFilter {
 
     @Override
     public void init() {
-        sc = (ServerContainer)
-                getServletContext().getAttribute(WebSocketConstants.SERVER_CONTAINER_SERVLET_CONTEXT_ATTRIBUTE);
+        sc = (ServerContainer) getServletContext().getAttribute(ServerContainer.class.getName());
     }
 
     @Override

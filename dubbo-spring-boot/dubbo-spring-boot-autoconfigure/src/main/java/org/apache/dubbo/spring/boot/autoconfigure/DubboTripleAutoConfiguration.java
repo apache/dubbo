@@ -36,18 +36,20 @@ import org.springframework.context.annotation.Configuration;
 @Conditional(SpringBoot12Condition.class)
 public class DubboTripleAutoConfiguration {
 
-    public static final String PREFIX = "dubbo.protocol.triple.servlet";
+    public static final String SERVLET_PREFIX = "dubbo.protocol.triple.servlet";
+
+    public static final String WEBSOCKET_PREFIX = "dubbo.protocol.triple.websocket";
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enable")
+    @ConditionalOnProperty(prefix = SERVLET_PREFIX, name = "enable")
     public static class TripleServletConfiguration {
 
         @Bean
         public FilterRegistrationBean<TripleFilter> tripleProtocolFilter(
-                @Value("${" + PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
-                @Value("${" + PREFIX + ".filter-order:-1000000}") int order,
+                @Value("${" + SERVLET_PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
+                @Value("${" + SERVLET_PREFIX + ".filter-order:-1000000}") int order,
                 @Value("${server.port:8080}") int serverPort) {
             ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleFilter> registrationBean = new FilterRegistrationBean<>();
@@ -61,13 +63,13 @@ public class DubboTripleAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enable-websocket")
+    @ConditionalOnProperty(prefix = WEBSOCKET_PREFIX, name = "enable")
     public static class TripleWebSocketConfiguration {
 
         @Bean
         public FilterRegistrationBean<TripleWebSocketFilter> tripleWebSocketFilter(
-                @Value("${" + PREFIX + ".websocket-filter-url-patterns:/*}") String[] urlPatterns,
-                @Value("${" + PREFIX + ".websocket-filter-order:-1000000}") int order,
+                @Value("${" + WEBSOCKET_PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
+                @Value("${" + WEBSOCKET_PREFIX + ".filter-order:-1000000}") int order,
                 @Value("${server.port:8080}") int serverPort) {
             ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleWebSocketFilter> registrationBean = new FilterRegistrationBean<>();
