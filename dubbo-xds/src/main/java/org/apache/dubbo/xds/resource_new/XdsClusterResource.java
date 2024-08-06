@@ -90,8 +90,8 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
             throw new ResourceInvalidException("Invalid message type: " + unpackedMessage.getClass());
         }
         Set<String> certProviderInstances = null;
-        if (args.bootstrapInfo != null && args.bootstrapInfo.certProviders() != null) {
-            certProviderInstances = args.bootstrapInfo.certProviders().keySet();
+        if (args.bootstrapInfo != null && args.bootstrapInfo.getCertProviders() != null) {
+            certProviderInstances = args.bootstrapInfo.getCertProviders().keySet();
         }
         return processCluster((Cluster) unpackedMessage, certProviderInstances, args.serverInfo);
     }

@@ -130,8 +130,8 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
 
     private LdsUpdate processServerSideListener(Listener proto, Args args) throws ResourceInvalidException {
         Set<String> certProviderInstances = null;
-        if (args.bootstrapInfo != null && args.bootstrapInfo.certProviders() != null) {
-            certProviderInstances = args.bootstrapInfo.certProviders().keySet();
+        if (args.bootstrapInfo != null && args.bootstrapInfo.getCertProviders() != null) {
+            certProviderInstances = args.bootstrapInfo.getCertProviders().keySet();
         }
         return LdsUpdate.forTcpListener(
                 parseServerSideListener(proto, args.tlsContextManager, args.filterRegistry, certProviderInstances));
