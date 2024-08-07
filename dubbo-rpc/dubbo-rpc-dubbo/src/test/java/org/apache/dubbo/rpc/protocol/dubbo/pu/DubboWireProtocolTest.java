@@ -25,19 +25,22 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Mockito.verify;
 
 class DubboWireProtocolTest {
+    @InjectMocks
     private DubboWireProtocol dubboWireProtocol;
 
+    @Mock
     private ChannelOperator channelOperator;
 
     @BeforeEach
-    void setUp() {
-        dubboWireProtocol = Mockito.mock(DubboWireProtocol.class);
-        channelOperator = Mockito.mock(ChannelOperator.class);
+    void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this).close();
     }
 
     @Test
