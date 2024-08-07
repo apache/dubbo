@@ -22,9 +22,7 @@ import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,16 +30,14 @@ import java.util.List;
 import static org.mockito.Mockito.verify;
 
 class DubboWireProtocolTest {
-
-    @InjectMocks
     private DubboWireProtocol dubboWireProtocol;
 
-    @Mock
     private ChannelOperator channelOperator;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        dubboWireProtocol = Mockito.mock(DubboWireProtocol.class);
+        channelOperator = Mockito.mock(ChannelOperator.class);
     }
 
     @Test
