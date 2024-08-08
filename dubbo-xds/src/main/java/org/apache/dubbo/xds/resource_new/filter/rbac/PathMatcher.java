@@ -38,7 +38,7 @@ final class PathMatcher implements Matcher {
         this.delegate = delegate;
     }
 
-    public StringMatcher delegate() {
+    public StringMatcher getDelegate() {
         return delegate;
     }
 
@@ -54,7 +54,7 @@ final class PathMatcher implements Matcher {
         }
         if (o instanceof PathMatcher) {
             PathMatcher that = (PathMatcher) o;
-            return this.delegate.equals(that.delegate());
+            return this.delegate.equals(that.getDelegate());
         }
         return false;
     }

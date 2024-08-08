@@ -62,22 +62,33 @@ public class PathMatcher {
     }
 
     @Nullable
-    String path() {
+    public String getPath() {
         return path;
     }
 
     @Nullable
-    String prefix() {
+    public String getPrefix() {
         return prefix;
     }
 
     @Nullable
-    Pattern regEx() {
+    public Pattern getRegEx() {
         return regEx;
     }
 
-    boolean caseSensitive() {
+    boolean isCaseSensitive() {
         return caseSensitive;
+    }
+
+    public boolean isMatch(String input) {
+        if (getPath() != null && !getPath().isEmpty()) {
+            return isCaseSensitive() ? getPath().equals(input) : getPath().equalsIgnoreCase(input);
+        } else if (getPrefix() != null) {
+            return isCaseSensitive()
+                    ? input.startsWith(getPrefix())
+                    : input.toLowerCase().startsWith(getPrefix());
+        }
+        return regEx.matches(input);
     }
 
     public String toString() {
@@ -91,10 +102,10 @@ public class PathMatcher {
         }
         if (o instanceof PathMatcher) {
             PathMatcher that = (PathMatcher) o;
-            return (this.path == null ? that.path() == null : this.path.equals(that.path()))
-                    && (this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix()))
-                    && (this.regEx == null ? that.regEx() == null : this.regEx.equals(that.regEx()))
-                    && this.caseSensitive == that.caseSensitive();
+            return (this.path == null ? that.getPath() == null : this.path.equals(that.getPath()))
+                    && (this.prefix == null ? that.getPrefix() == null : this.prefix.equals(that.getPrefix()))
+                    && (this.regEx == null ? that.getRegEx() == null : this.regEx.equals(that.getRegEx()))
+                    && this.caseSensitive == that.isCaseSensitive();
         }
         return false;
     }

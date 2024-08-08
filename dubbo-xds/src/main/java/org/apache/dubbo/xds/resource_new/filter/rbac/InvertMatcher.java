@@ -26,7 +26,7 @@ final class InvertMatcher implements Matcher {
 
     @Override
     public boolean matches(Object args) {
-        return !toInvertMatcher().matches(args);
+        return !getToInvertMatcher().matches(args);
     }
 
     InvertMatcher(Matcher toInvertMatcher) {
@@ -36,7 +36,7 @@ final class InvertMatcher implements Matcher {
         this.toInvertMatcher = toInvertMatcher;
     }
 
-    public Matcher toInvertMatcher() {
+    public Matcher getToInvertMatcher() {
         return toInvertMatcher;
     }
 
@@ -52,7 +52,7 @@ final class InvertMatcher implements Matcher {
         }
         if (o instanceof InvertMatcher) {
             InvertMatcher that = (InvertMatcher) o;
-            return this.toInvertMatcher.equals(that.toInvertMatcher());
+            return this.toInvertMatcher.equals(that.getToInvertMatcher());
         }
         return false;
     }

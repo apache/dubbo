@@ -31,11 +31,11 @@ public final class FractionMatcher {
         this.denominator = denominator;
     }
 
-    public int numerator() {
+    public int getNumerator() {
         return numerator;
     }
 
-    public int denominator() {
+    public int getDenominator() {
         return denominator;
     }
 
@@ -51,7 +51,7 @@ public final class FractionMatcher {
         }
         if (o instanceof FractionMatcher) {
             FractionMatcher that = (FractionMatcher) o;
-            return this.numerator == that.numerator() && this.denominator == that.denominator();
+            return this.numerator == that.getNumerator() && this.denominator == that.getDenominator();
         }
         return false;
     }

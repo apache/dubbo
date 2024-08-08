@@ -105,32 +105,32 @@ public class RouteAction {
         this.retryPolicy = retryPolicy;
     }
 
-    List<HashPolicy> hashPolicies() {
+    public List<HashPolicy> getHashPolicies() {
         return hashPolicies;
     }
 
     @Nullable
-    Long timeoutNano() {
+    public Long getTimeoutNano() {
         return timeoutNano;
     }
 
     @Nullable
-    String cluster() {
+    public String getCluster() {
         return cluster;
     }
 
     @Nullable
-    List<ClusterWeight> weightedClusters() {
+    public List<ClusterWeight> getWeightedClusters() {
         return weightedClusters;
     }
 
     @Nullable
-    NamedPluginConfig namedClusterSpecifierPluginConfig() {
+    public NamedPluginConfig getNamedClusterSpecifierPluginConfig() {
         return namedClusterSpecifierPluginConfig;
     }
 
     @Nullable
-    RetryPolicy retryPolicy() {
+    public RetryPolicy getRetryPolicy() {
         return retryPolicy;
     }
 
@@ -146,20 +146,21 @@ public class RouteAction {
         }
         if (o instanceof RouteAction) {
             RouteAction that = (RouteAction) o;
-            return this.hashPolicies.equals(that.hashPolicies())
+            return this.hashPolicies.equals(that.getHashPolicies())
                     && (this.timeoutNano == null
-                            ? that.timeoutNano() == null
-                            : this.timeoutNano.equals(that.timeoutNano()))
-                    && (this.cluster == null ? that.cluster() == null : this.cluster.equals(that.cluster()))
+                            ? that.getTimeoutNano() == null
+                            : this.timeoutNano.equals(that.getTimeoutNano()))
+                    && (this.cluster == null ? that.getCluster() == null : this.cluster.equals(that.getCluster()))
                     && (this.weightedClusters == null
-                            ? that.weightedClusters() == null
-                            : this.weightedClusters.equals(that.weightedClusters()))
+                            ? that.getWeightedClusters() == null
+                            : this.weightedClusters.equals(that.getWeightedClusters()))
                     && (this.namedClusterSpecifierPluginConfig == null
-                            ? that.namedClusterSpecifierPluginConfig() == null
-                            : this.namedClusterSpecifierPluginConfig.equals(that.namedClusterSpecifierPluginConfig()))
+                            ? that.getNamedClusterSpecifierPluginConfig() == null
+                            : this.namedClusterSpecifierPluginConfig.equals(
+                                    that.getNamedClusterSpecifierPluginConfig()))
                     && (this.retryPolicy == null
-                            ? that.retryPolicy() == null
-                            : this.retryPolicy.equals(that.retryPolicy()));
+                            ? that.getRetryPolicy() == null
+                            : this.retryPolicy.equals(that.getRetryPolicy()));
         }
         return false;
     }

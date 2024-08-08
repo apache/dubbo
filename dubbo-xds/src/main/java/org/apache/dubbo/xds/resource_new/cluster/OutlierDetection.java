@@ -141,32 +141,32 @@ public class OutlierDetection {
     }
 
     @Nullable
-    Long intervalNanos() {
+    public Long getIntervalNanos() {
         return intervalNanos;
     }
 
     @Nullable
-    Long baseEjectionTimeNanos() {
+    public Long getBaseEjectionTimeNanos() {
         return baseEjectionTimeNanos;
     }
 
     @Nullable
-    Long maxEjectionTimeNanos() {
+    public Long getMaxEjectionTimeNanos() {
         return maxEjectionTimeNanos;
     }
 
     @Nullable
-    Integer maxEjectionPercent() {
+    public Integer getMaxEjectionPercent() {
         return maxEjectionPercent;
     }
 
     @Nullable
-    SuccessRateEjection successRateEjection() {
+    public SuccessRateEjection getSuccessRateEjection() {
         return successRateEjection;
     }
 
     @Nullable
-    FailurePercentageEjection failurePercentageEjection() {
+    public FailurePercentageEjection getFailurePercentageEjection() {
         return failurePercentageEjection;
     }
 
@@ -186,23 +186,23 @@ public class OutlierDetection {
         if (o instanceof OutlierDetection) {
             OutlierDetection that = (OutlierDetection) o;
             return (this.intervalNanos == null
-                            ? that.intervalNanos() == null
-                            : this.intervalNanos.equals(that.intervalNanos()))
+                            ? that.getIntervalNanos() == null
+                            : this.intervalNanos.equals(that.getIntervalNanos()))
                     && (this.baseEjectionTimeNanos == null
-                            ? that.baseEjectionTimeNanos() == null
-                            : this.baseEjectionTimeNanos.equals(that.baseEjectionTimeNanos()))
+                            ? that.getBaseEjectionTimeNanos() == null
+                            : this.baseEjectionTimeNanos.equals(that.getBaseEjectionTimeNanos()))
                     && (this.maxEjectionTimeNanos == null
-                            ? that.maxEjectionTimeNanos() == null
-                            : this.maxEjectionTimeNanos.equals(that.maxEjectionTimeNanos()))
+                            ? that.getMaxEjectionTimeNanos() == null
+                            : this.maxEjectionTimeNanos.equals(that.getMaxEjectionTimeNanos()))
                     && (this.maxEjectionPercent == null
-                            ? that.maxEjectionPercent() == null
-                            : this.maxEjectionPercent.equals(that.maxEjectionPercent()))
+                            ? that.getMaxEjectionPercent() == null
+                            : this.maxEjectionPercent.equals(that.getMaxEjectionPercent()))
                     && (this.successRateEjection == null
-                            ? that.successRateEjection() == null
-                            : this.successRateEjection.equals(that.successRateEjection()))
+                            ? that.getSuccessRateEjection() == null
+                            : this.successRateEjection.equals(that.getSuccessRateEjection()))
                     && (this.failurePercentageEjection == null
-                            ? that.failurePercentageEjection() == null
-                            : this.failurePercentageEjection.equals(that.failurePercentageEjection()));
+                            ? that.getFailurePercentageEjection() == null
+                            : this.failurePercentageEjection.equals(that.getFailurePercentageEjection()));
         }
         return false;
     }

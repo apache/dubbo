@@ -38,7 +38,7 @@ final class RbacConfig implements FilterConfig {
     }
 
     @Nullable
-    AuthConfig authConfig() {
+    public AuthConfig getAuthConfig() {
         return authConfig;
     }
 
@@ -54,7 +54,9 @@ final class RbacConfig implements FilterConfig {
         }
         if (o instanceof RbacConfig) {
             RbacConfig that = (RbacConfig) o;
-            return (this.authConfig == null ? that.authConfig() == null : this.authConfig.equals(that.authConfig()));
+            return (this.authConfig == null
+                    ? that.getAuthConfig() == null
+                    : this.authConfig.equals(that.getAuthConfig()));
         }
         return false;
     }

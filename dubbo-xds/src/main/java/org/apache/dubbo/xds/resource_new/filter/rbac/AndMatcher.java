@@ -51,7 +51,7 @@ final class AndMatcher implements Matcher {
 
     @Override
     public boolean matches(Object args) {
-        for (Matcher m : allMatch()) {
+        for (Matcher m : getAllMatch()) {
             if (!m.matches(args)) {
                 return false;
             }
@@ -59,7 +59,7 @@ final class AndMatcher implements Matcher {
         return true;
     }
 
-    public List<? extends Matcher> allMatch() {
+    public List<? extends Matcher> getAllMatch() {
         return allMatch;
     }
 
@@ -75,7 +75,7 @@ final class AndMatcher implements Matcher {
         }
         if (o instanceof AndMatcher) {
             AndMatcher that = (AndMatcher) o;
-            return this.allMatch.equals(that.allMatch());
+            return this.allMatch.equals(that.getAllMatch());
         }
         return false;
     }

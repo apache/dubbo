@@ -32,7 +32,7 @@ public final class CidrMatcher {
         if (address == null) {
             return false;
         }
-        byte[] cidr = addressPrefix().getAddress();
+        byte[] cidr = getAddressPrefix().getAddress();
         byte[] addr = address.getAddress();
         if (addr.length != cidr.length) {
             return false;
@@ -40,7 +40,7 @@ public final class CidrMatcher {
         BigInteger cidrInt = new BigInteger(cidr);
         BigInteger addrInt = new BigInteger(addr);
 
-        int shiftAmount = 8 * cidr.length - prefixLen();
+        int shiftAmount = 8 * cidr.length - getPrefixLen();
 
         cidrInt = cidrInt.shiftRight(shiftAmount);
         addrInt = addrInt.shiftRight(shiftAmount);
@@ -63,11 +63,11 @@ public final class CidrMatcher {
         this.prefixLen = prefixLen;
     }
 
-    InetAddress addressPrefix() {
+    public InetAddress getAddressPrefix() {
         return addressPrefix;
     }
 
-    int prefixLen() {
+    public int getPrefixLen() {
         return prefixLen;
     }
 
@@ -83,7 +83,7 @@ public final class CidrMatcher {
         }
         if (o instanceof CidrMatcher) {
             CidrMatcher that = (CidrMatcher) o;
-            return this.addressPrefix.equals(that.addressPrefix()) && this.prefixLen == that.prefixLen();
+            return this.addressPrefix.equals(that.getAddressPrefix()) && this.prefixLen == that.getPrefixLen();
         }
         return false;
     }

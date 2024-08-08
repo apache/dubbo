@@ -30,11 +30,11 @@ public class DropOverload {
         this.dropsPerMillion = dropsPerMillion;
     }
 
-    String category() {
+    public String getCategory() {
         return category;
     }
 
-    int dropsPerMillion() {
+    public int getDropsPerMillion() {
         return dropsPerMillion;
     }
 
@@ -50,7 +50,7 @@ public class DropOverload {
         }
         if (o instanceof DropOverload) {
             DropOverload that = (DropOverload) o;
-            return this.category.equals(that.category()) && this.dropsPerMillion == that.dropsPerMillion();
+            return this.category.equals(that.getCategory()) && this.dropsPerMillion == that.getDropsPerMillion();
         }
         return false;
     }

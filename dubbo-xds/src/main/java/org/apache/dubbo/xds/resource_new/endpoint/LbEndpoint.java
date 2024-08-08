@@ -39,15 +39,15 @@ public class LbEndpoint {
         this.isHealthy = isHealthy;
     }
 
-    List<URLAddress> addresses() {
+    public List<URLAddress> getAddresses() {
         return addresses;
     }
 
-    int loadBalancingWeight() {
+    public int getLoadBalancingWeight() {
         return loadBalancingWeight;
     }
 
-    boolean isHealthy() {
+    public boolean isHealthy() {
         return isHealthy;
     }
 
@@ -64,8 +64,8 @@ public class LbEndpoint {
         }
         if (o instanceof LbEndpoint) {
             LbEndpoint that = (LbEndpoint) o;
-            return this.addresses.equals(that.addresses())
-                    && this.loadBalancingWeight == that.loadBalancingWeight()
+            return this.addresses.equals(that.getAddresses())
+                    && this.loadBalancingWeight == that.getLoadBalancingWeight()
                     && this.isHealthy == that.isHealthy();
         }
         return false;

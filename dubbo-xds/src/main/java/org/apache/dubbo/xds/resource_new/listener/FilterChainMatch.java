@@ -95,35 +95,35 @@ public class FilterChainMatch {
     }
     // Getters
 
-    public int destinationPort() {
+    public int getDestinationPort() {
         return destinationPort;
     }
 
-    public List<CidrRange> prefixRanges() {
+    public List<CidrRange> getPrefixRanges() {
         return prefixRanges;
     }
 
-    public List<String> applicationProtocols() {
+    public List<String> getApplicationProtocols() {
         return applicationProtocols;
     }
 
-    public List<CidrRange> sourcePrefixRanges() {
+    public List<CidrRange> getSourcePrefixRanges() {
         return sourcePrefixRanges;
     }
 
-    public ConnectionSourceType connectionSourceType() {
+    public ConnectionSourceType getConnectionSourceType() {
         return connectionSourceType;
     }
 
-    public List<Integer> sourcePorts() {
+    public List<Integer> getSourcePorts() {
         return sourcePorts;
     }
 
-    public List<String> serverNames() {
+    public List<String> getServerNames() {
         return serverNames;
     }
 
-    public String transportProtocol() {
+    public String getTransportProtocol() {
         return transportProtocol;
     }
 
@@ -149,14 +149,14 @@ public class FilterChainMatch {
         }
         if (o instanceof FilterChainMatch) {
             FilterChainMatch that = (FilterChainMatch) o;
-            return this.destinationPort == that.destinationPort()
-                    && this.prefixRanges.equals(that.prefixRanges())
-                    && this.applicationProtocols.equals(that.applicationProtocols())
-                    && this.sourcePrefixRanges.equals(that.sourcePrefixRanges())
-                    && this.connectionSourceType.equals(that.connectionSourceType())
-                    && this.sourcePorts.equals(that.sourcePorts())
-                    && this.serverNames.equals(that.serverNames())
-                    && this.transportProtocol.equals(that.transportProtocol());
+            return this.destinationPort == that.getDestinationPort()
+                    && this.prefixRanges.equals(that.getPrefixRanges())
+                    && this.applicationProtocols.equals(that.getApplicationProtocols())
+                    && this.sourcePrefixRanges.equals(that.getSourcePrefixRanges())
+                    && this.connectionSourceType.equals(that.getConnectionSourceType())
+                    && this.sourcePorts.equals(that.getSourcePorts())
+                    && this.serverNames.equals(that.getServerNames())
+                    && this.transportProtocol.equals(that.getTransportProtocol());
         }
         return false;
     }

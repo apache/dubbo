@@ -155,7 +155,7 @@ public final class HeaderMatcher {
             long numValue;
             try {
                 numValue = Long.parseLong(value);
-                baseMatch = numValue >= range().start() && numValue <= range().end();
+                baseMatch = numValue >= range().getStart() && numValue <= range().getEnd();
             } catch (NumberFormatException ignored) {
                 baseMatch = false;
             }

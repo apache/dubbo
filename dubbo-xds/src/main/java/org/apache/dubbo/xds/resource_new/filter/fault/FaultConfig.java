@@ -47,17 +47,17 @@ final class FaultConfig implements FilterConfig {
     }
 
     @Nullable
-    FaultDelay faultDelay() {
+    public FaultDelay getFaultDelay() {
         return faultDelay;
     }
 
     @Nullable
-    FaultAbort faultAbort() {
+    public FaultAbort getFaultAbort() {
         return faultAbort;
     }
 
     @Nullable
-    Integer maxActiveFaults() {
+    public Integer getMaxActiveFaults() {
         return maxActiveFaults;
     }
 
@@ -74,11 +74,15 @@ final class FaultConfig implements FilterConfig {
         }
         if (o instanceof FaultConfig) {
             FaultConfig that = (FaultConfig) o;
-            return (this.faultDelay == null ? that.faultDelay() == null : this.faultDelay.equals(that.faultDelay()))
-                    && (this.faultAbort == null ? that.faultAbort() == null : this.faultAbort.equals(that.faultAbort()))
+            return (this.faultDelay == null
+                            ? that.getFaultDelay() == null
+                            : this.faultDelay.equals(that.getFaultDelay()))
+                    && (this.faultAbort == null
+                            ? that.getFaultAbort() == null
+                            : this.faultAbort.equals(that.getFaultAbort()))
                     && (this.maxActiveFaults == null
-                            ? that.maxActiveFaults() == null
-                            : this.maxActiveFaults.equals(that.maxActiveFaults()));
+                            ? that.getMaxActiveFaults() == null
+                            : this.maxActiveFaults.equals(that.getMaxActiveFaults()));
         }
         return false;
     }

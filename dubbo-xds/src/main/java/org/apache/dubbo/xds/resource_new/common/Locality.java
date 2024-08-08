@@ -39,15 +39,15 @@ public class Locality {
         this.subZone = subZone;
     }
 
-    String region() {
+    public String getRegion() {
         return region;
     }
 
-    String zone() {
+    public String getZone() {
         return zone;
     }
 
-    String subZone() {
+    public String getSubZone() {
         return subZone;
     }
 
@@ -63,9 +63,9 @@ public class Locality {
         }
         if (o instanceof Locality) {
             Locality that = (Locality) o;
-            return this.region.equals(that.region())
-                    && this.zone.equals(that.zone())
-                    && this.subZone.equals(that.subZone());
+            return this.region.equals(that.getRegion())
+                    && this.zone.equals(that.getZone())
+                    && this.subZone.equals(that.getSubZone());
         }
         return false;
     }

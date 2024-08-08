@@ -39,11 +39,11 @@ final class DestinationPortRangeMatcher implements Matcher {
         this.end = end;
     }
 
-    public int start() {
+    public int getStart() {
         return start;
     }
 
-    public int end() {
+    public int getEnd() {
         return end;
     }
 
@@ -59,7 +59,7 @@ final class DestinationPortRangeMatcher implements Matcher {
         }
         if (o instanceof DestinationPortRangeMatcher) {
             DestinationPortRangeMatcher that = (DestinationPortRangeMatcher) o;
-            return this.start == that.start() && this.end == that.end();
+            return this.start == that.getStart() && this.end == that.getEnd();
         }
         return false;
     }

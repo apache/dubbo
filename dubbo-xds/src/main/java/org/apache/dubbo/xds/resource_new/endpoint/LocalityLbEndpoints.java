@@ -37,15 +37,15 @@ public class LocalityLbEndpoints {
         this.priority = priority;
     }
 
-    List<LbEndpoint> endpoints() {
+    public List<LbEndpoint> getEndpoints() {
         return endpoints;
     }
 
-    public int localityWeight() {
+    public int getLocalityWeight() {
         return localityWeight;
     }
 
-    public int priority() {
+    public int getPriority() {
         return priority;
     }
 
@@ -61,9 +61,9 @@ public class LocalityLbEndpoints {
         }
         if (o instanceof LocalityLbEndpoints) {
             LocalityLbEndpoints that = (LocalityLbEndpoints) o;
-            return this.endpoints.equals(that.endpoints())
-                    && this.localityWeight == that.localityWeight()
-                    && this.priority == that.priority();
+            return this.endpoints.equals(that.getEndpoints())
+                    && this.localityWeight == that.getLocalityWeight()
+                    && this.priority == that.getPriority();
         }
         return false;
     }

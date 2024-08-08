@@ -24,7 +24,9 @@ import org.apache.dubbo.xds.bootstrap.Bootstrapper.ServerInfo;
 import org.apache.dubbo.xds.resource_new.exception.ResourceInvalidException;
 import org.apache.dubbo.xds.resource_new.filter.FilterRegistry;
 import org.apache.dubbo.xds.resource_new.listener.security.TlsContextManager;
+import org.apache.dubbo.xds.resource_new.update.ParsedResource;
 import org.apache.dubbo.xds.resource_new.update.ResourceUpdate;
+import org.apache.dubbo.xds.resource_new.update.ValidatedResourceUpdate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,7 +46,7 @@ import com.google.protobuf.Message;
 import io.envoyproxy.envoy.service.discovery.v3.Resource;
 import io.grpc.LoadBalancerRegistry;
 
-abstract class XdsResourceType<T extends ResourceUpdate> {
+public abstract class XdsResourceType<T extends ResourceUpdate> {
     static final String TYPE_URL_RESOURCE = "type.googleapis.com/envoy.service.discovery.v3.Resource";
     static final String TRANSPORT_SOCKET_NAME_TLS = "envoy.transport_sockets.tls";
     static final String AGGREGATE_CLUSTER_TYPE_NAME = "envoy.clusters.aggregate";
@@ -77,16 +79,9 @@ abstract class XdsResourceType<T extends ResourceUpdate> {
     // differently in this approach. For LDS and CDS resources, the server must return all resources
     // that the client has subscribed to in each request. For RDS and EDS, the server may only return
     // the resources that need an update.
-
-    /**
-     * 不要与 SotW 方法混淆：它是一种机制，在这种机制中，客户端必须在每个请求中指定它感兴趣的所有资源名称。在此方法中，不同的资源类型可能具有不同的行为。 对于 LDS 和 CDS
-     * 资源，服务器必须返回客户端在每个请求中订阅的所有资源。对于 RDS 和 EDS，服务器可能只返回需要更新的资源。
-     *
-     * @return
-     */
     abstract boolean isFullStateOfTheWorld();
 
-    static class Args {
+    public static class Args {
         final ServerInfo serverInfo;
         final String versionInfo;
         final String nonce;
@@ -120,7 +115,7 @@ abstract class XdsResourceType<T extends ResourceUpdate> {
         }
     }
 
-    ValidatedResourceUpdate<T> parse(Args args, List<Any> resources) {
+    public ValidatedResourceUpdate<T> parse(Args args, List<Any> resources) {
         Map<String, ParsedResource<T>> parsedResources = new HashMap<>(resources.size());
         Set<String> unpackedResources = new HashSet<>(resources.size());
         Set<String> invalidResources = new HashSet<>();
@@ -253,45 +248,6 @@ abstract class XdsResourceType<T extends ResourceUpdate> {
                     .getResource();
         } else {
             return resource;
-        }
-    }
-
-    static final class ParsedResource<T extends ResourceUpdate> {
-        private final T resourceUpdate;
-        private final Any rawResource;
-
-        public ParsedResource(T resourceUpdate, Any rawResource) {
-            Assert.notNull(resourceUpdate, "resourceUpdate must not be null");
-            Assert.notNull(rawResource, "rawResource must not be null");
-            this.resourceUpdate = resourceUpdate;
-            this.rawResource = rawResource;
-        }
-
-        T getResourceUpdate() {
-            return resourceUpdate;
-        }
-
-        Any getRawResource() {
-            return rawResource;
-        }
-    }
-
-    static final class ValidatedResourceUpdate<T extends ResourceUpdate> {
-        Map<String, ParsedResource<T>> parsedResources;
-        Set<String> unpackedResources;
-        Set<String> invalidResources;
-        List<String> errors;
-
-        // validated resource update
-        public ValidatedResourceUpdate(
-                Map<String, ParsedResource<T>> parsedResources,
-                Set<String> unpackedResources,
-                Set<String> invalidResources,
-                List<String> errors) {
-            this.parsedResources = parsedResources;
-            this.unpackedResources = unpackedResources;
-            this.invalidResources = invalidResources;
-            this.errors = errors;
         }
     }
 

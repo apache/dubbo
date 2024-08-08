@@ -75,22 +75,22 @@ public class HashPolicy {
         return type;
     }
 
-    boolean isTerminal() {
+    public boolean isTerminal() {
         return isTerminal;
     }
 
     @Nullable
-    String headerName() {
+    public String getHeaderName() {
         return headerName;
     }
 
     @Nullable
-    Pattern regEx() {
+    public Pattern getRegEx() {
         return regEx;
     }
 
     @Nullable
-    String regExSubstitution() {
+    public String getRegExSubstitution() {
         return regExSubstitution;
     }
 
@@ -109,11 +109,13 @@ public class HashPolicy {
             HashPolicy that = (HashPolicy) o;
             return this.type.equals(that.type())
                     && this.isTerminal == that.isTerminal()
-                    && (this.headerName == null ? that.headerName() == null : this.headerName.equals(that.headerName()))
-                    && (this.regEx == null ? that.regEx() == null : this.regEx.equals(that.regEx()))
+                    && (this.headerName == null
+                            ? that.getHeaderName() == null
+                            : this.headerName.equals(that.getHeaderName()))
+                    && (this.regEx == null ? that.getRegEx() == null : this.regEx.equals(that.getRegEx()))
                     && (this.regExSubstitution == null
-                            ? that.regExSubstitution() == null
-                            : this.regExSubstitution.equals(that.regExSubstitution()));
+                            ? that.getRegExSubstitution() == null
+                            : this.regExSubstitution.equals(that.getRegExSubstitution()));
         }
         return false;
     }

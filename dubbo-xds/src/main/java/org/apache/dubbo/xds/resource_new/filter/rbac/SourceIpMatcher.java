@@ -38,7 +38,7 @@ final class SourceIpMatcher implements Matcher {
         this.delegate = delegate;
     }
 
-    public CidrMatcher delegate() {
+    public CidrMatcher getDelegate() {
         return delegate;
     }
 
@@ -54,7 +54,7 @@ final class SourceIpMatcher implements Matcher {
         }
         if (o instanceof SourceIpMatcher) {
             SourceIpMatcher that = (SourceIpMatcher) o;
-            return this.delegate.equals(that.delegate());
+            return this.delegate.equals(that.getDelegate());
         }
         return false;
     }

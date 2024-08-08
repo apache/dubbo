@@ -90,4 +90,8 @@ public final class RouteMatch {
         h$ ^= (fractionMatcher == null) ? 0 : fractionMatcher.hashCode();
         return h$;
     }
+
+    public boolean isPathMatch(String input) {
+        return pathMatcher.isMatch(input);
+    }
 }

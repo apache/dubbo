@@ -33,7 +33,7 @@ final class PolicyMatcher implements Matcher {
 
     @Override
     public boolean matches(Object args) {
-        return permissions().matches(args) && principals().matches(args);
+        return getPermissions().matches(args) && getPrincipals().matches(args);
     }
 
     PolicyMatcher(String name, OrMatcher permissions, OrMatcher principals) {
@@ -51,15 +51,15 @@ final class PolicyMatcher implements Matcher {
         this.principals = principals;
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 
-    public OrMatcher permissions() {
+    public OrMatcher getPermissions() {
         return permissions;
     }
 
-    public OrMatcher principals() {
+    public OrMatcher getPrincipals() {
         return principals;
     }
 
@@ -76,9 +76,9 @@ final class PolicyMatcher implements Matcher {
         }
         if (o instanceof PolicyMatcher) {
             PolicyMatcher that = (PolicyMatcher) o;
-            return this.name.equals(that.name())
-                    && this.permissions.equals(that.permissions())
-                    && this.principals.equals(that.principals());
+            return this.name.equals(that.getName())
+                    && this.permissions.equals(that.getPermissions())
+                    && this.principals.equals(that.getPrincipals());
         }
         return false;
     }

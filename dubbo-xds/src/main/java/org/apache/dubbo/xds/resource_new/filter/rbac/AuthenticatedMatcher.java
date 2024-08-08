@@ -43,7 +43,7 @@ final class AuthenticatedMatcher implements Matcher {
     }
 
     @Nullable
-    public StringMatcher delegate() {
+    public StringMatcher getDelegate() {
         return delegate;
     }
 
@@ -59,7 +59,7 @@ final class AuthenticatedMatcher implements Matcher {
         }
         if (o instanceof AuthenticatedMatcher) {
             AuthenticatedMatcher that = (AuthenticatedMatcher) o;
-            return (this.delegate == null ? that.delegate() == null : this.delegate.equals(that.delegate()));
+            return (this.delegate == null ? that.getDelegate() == null : this.delegate.equals(that.getDelegate()));
         }
         return false;
     }

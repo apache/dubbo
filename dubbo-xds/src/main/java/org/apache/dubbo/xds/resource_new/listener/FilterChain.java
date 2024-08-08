@@ -50,7 +50,7 @@ public class FilterChain {
         this.sslContextProviderSupplier = sslContextProviderSupplier;
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 
@@ -58,7 +58,7 @@ public class FilterChain {
         this.name = name;
     }
 
-    public FilterChainMatch filterChainMatch() {
+    public FilterChainMatch getFilterChainMatch() {
         return filterChainMatch;
     }
 
@@ -66,7 +66,7 @@ public class FilterChain {
         this.filterChainMatch = filterChainMatch;
     }
 
-    public HttpConnectionManager httpConnectionManager() {
+    public HttpConnectionManager getHttpConnectionManager() {
         return httpConnectionManager;
     }
 

@@ -87,16 +87,20 @@ public final class StringMatcher {
         if (args == null) {
             return false;
         }
-        if (exact() != null) {
-            return ignoreCase() ? exact().equalsIgnoreCase(args) : exact().equals(args);
-        } else if (prefix() != null) {
-            return ignoreCase() ? args.toLowerCase().startsWith(prefix().toLowerCase()) : args.startsWith(prefix());
-        } else if (suffix() != null) {
-            return ignoreCase() ? args.toLowerCase().endsWith(suffix().toLowerCase()) : args.endsWith(suffix());
-        } else if (contains() != null) {
-            return args.contains(contains());
+        if (getExact() != null) {
+            return isIgnoreCase()
+                    ? getExact().equalsIgnoreCase(args)
+                    : getExact().equals(args);
+        } else if (getPrefix() != null) {
+            return isIgnoreCase()
+                    ? args.toLowerCase().startsWith(getPrefix().toLowerCase())
+                    : args.startsWith(getPrefix());
+        } else if (getSuffix() != null) {
+            return isIgnoreCase() ? args.toLowerCase().endsWith(getSuffix().toLowerCase()) : args.endsWith(getSuffix());
+        } else if (getContains() != null) {
+            return args.contains(getContains());
         }
-        return regEx().matches(args);
+        return getRegEx().matches(args);
     }
 
     private static StringMatcher create(
@@ -125,31 +129,31 @@ public final class StringMatcher {
     }
 
     @Nullable
-    String exact() {
+    public String getExact() {
         return exact;
     }
 
     @Nullable
-    String prefix() {
+    public String getPrefix() {
         return prefix;
     }
 
     @Nullable
-    String suffix() {
+    public String getSuffix() {
         return suffix;
     }
 
     @Nullable
-    Pattern regEx() {
+    public Pattern getRegEx() {
         return regEx;
     }
 
     @Nullable
-    String contains() {
+    public String getContains() {
         return contains;
     }
 
-    boolean ignoreCase() {
+    public boolean isIgnoreCase() {
         return ignoreCase;
     }
 
@@ -166,12 +170,12 @@ public final class StringMatcher {
         }
         if (o instanceof StringMatcher) {
             StringMatcher that = (StringMatcher) o;
-            return (this.exact == null ? that.exact() == null : this.exact.equals(that.exact()))
-                    && (this.prefix == null ? that.prefix() == null : this.prefix.equals(that.prefix()))
-                    && (this.suffix == null ? that.suffix() == null : this.suffix.equals(that.suffix()))
-                    && (this.regEx == null ? that.regEx() == null : this.regEx.equals(that.regEx()))
-                    && (this.contains == null ? that.contains() == null : this.contains.equals(that.contains()))
-                    && this.ignoreCase == that.ignoreCase();
+            return (this.exact == null ? that.getExact() == null : this.exact.equals(that.getExact()))
+                    && (this.prefix == null ? that.getPrefix() == null : this.prefix.equals(that.getPrefix()))
+                    && (this.suffix == null ? that.getSuffix() == null : this.suffix.equals(that.getSuffix()))
+                    && (this.regEx == null ? that.getRegEx() == null : this.regEx.equals(that.getRegEx()))
+                    && (this.contains == null ? that.getContains() == null : this.contains.equals(that.getContains()))
+                    && this.ignoreCase == that.isIgnoreCase();
         }
         return false;
     }

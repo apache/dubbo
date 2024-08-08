@@ -38,7 +38,7 @@ final class RequestedServerNameMatcher implements Matcher {
         this.delegate = delegate;
     }
 
-    public StringMatcher delegate() {
+    public StringMatcher getDelegate() {
         return delegate;
     }
 
@@ -54,7 +54,7 @@ final class RequestedServerNameMatcher implements Matcher {
         }
         if (o instanceof RequestedServerNameMatcher) {
             RequestedServerNameMatcher that = (RequestedServerNameMatcher) o;
-            return this.delegate.equals(that.delegate());
+            return this.delegate.equals(that.getDelegate());
         }
         return false;
     }

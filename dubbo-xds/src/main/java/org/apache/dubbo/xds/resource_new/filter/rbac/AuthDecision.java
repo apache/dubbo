@@ -37,12 +37,12 @@ final class AuthDecision {
         this.matchingPolicyName = matchingPolicyName;
     }
 
-    public Action decision() {
+    public Action getDecision() {
         return decision;
     }
 
     @Nullable
-    public String matchingPolicyName() {
+    public String getMatchingPolicyName() {
         return matchingPolicyName;
     }
 
@@ -58,10 +58,10 @@ final class AuthDecision {
         }
         if (o instanceof AuthDecision) {
             AuthDecision that = (AuthDecision) o;
-            return this.decision.equals(that.decision())
+            return this.decision.equals(that.getDecision())
                     && (this.matchingPolicyName == null
-                            ? that.matchingPolicyName() == null
-                            : this.matchingPolicyName.equals(that.matchingPolicyName()));
+                            ? that.getMatchingPolicyName() == null
+                            : this.matchingPolicyName.equals(that.getMatchingPolicyName()));
         }
         return false;
     }

@@ -33,6 +33,10 @@ public class RdsUpdate implements ResourceUpdate {
         this.virtualHosts = Collections.unmodifiableList(new ArrayList<>(virtualHosts));
     }
 
+    public List<VirtualHost> getVirtualHosts() {
+        return virtualHosts;
+    }
+
     @Override
     public String toString() {
         return "RdsUpdate{" + "virtualHosts=" + virtualHosts + '}';

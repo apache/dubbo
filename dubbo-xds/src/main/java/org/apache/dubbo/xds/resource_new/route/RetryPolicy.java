@@ -61,24 +61,24 @@ public class RetryPolicy {
         this.perAttemptRecvTimeout = perAttemptRecvTimeout;
     }
 
-    int maxAttempts() {
+    public int getMaxAttempts() {
         return maxAttempts;
     }
 
-    List<Status.Code> retryableStatusCodes() {
+    public List<Status.Code> getRetryableStatusCodes() {
         return retryableStatusCodes;
     }
 
-    Duration initialBackoff() {
+    public Duration getInitialBackoff() {
         return initialBackoff;
     }
 
-    Duration maxBackoff() {
+    public Duration getMaxBackoff() {
         return maxBackoff;
     }
 
     @Nullable
-    Duration perAttemptRecvTimeout() {
+    public Duration getPerAttemptRecvTimeout() {
         return perAttemptRecvTimeout;
     }
 
@@ -94,13 +94,13 @@ public class RetryPolicy {
         }
         if (o instanceof RetryPolicy) {
             RetryPolicy that = (RetryPolicy) o;
-            return this.maxAttempts == that.maxAttempts()
-                    && this.retryableStatusCodes.equals(that.retryableStatusCodes())
-                    && this.initialBackoff.equals(that.initialBackoff())
-                    && this.maxBackoff.equals(that.maxBackoff())
+            return this.maxAttempts == that.getMaxAttempts()
+                    && this.retryableStatusCodes.equals(that.getRetryableStatusCodes())
+                    && this.initialBackoff.equals(that.getInitialBackoff())
+                    && this.maxBackoff.equals(that.getMaxBackoff())
                     && (this.perAttemptRecvTimeout == null
-                            ? that.perAttemptRecvTimeout() == null
-                            : this.perAttemptRecvTimeout.equals(that.perAttemptRecvTimeout()));
+                            ? that.getPerAttemptRecvTimeout() == null
+                            : this.perAttemptRecvTimeout.equals(that.getPerAttemptRecvTimeout()));
         }
         return false;
     }

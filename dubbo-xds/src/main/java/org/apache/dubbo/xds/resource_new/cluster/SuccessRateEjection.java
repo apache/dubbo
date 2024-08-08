@@ -52,22 +52,22 @@ public class SuccessRateEjection {
     }
 
     @Nullable
-    Integer stdevFactor() {
+    public Integer getStdevFactor() {
         return stdevFactor;
     }
 
     @Nullable
-    Integer enforcementPercentage() {
+    public Integer getEnforcementPercentage() {
         return enforcementPercentage;
     }
 
     @Nullable
-    Integer minimumHosts() {
+    public Integer getMinimumHosts() {
         return minimumHosts;
     }
 
     @Nullable
-    Integer requestVolume() {
+    public Integer getRequestVolume() {
         return requestVolume;
     }
 
@@ -85,16 +85,18 @@ public class SuccessRateEjection {
         }
         if (o instanceof SuccessRateEjection) {
             SuccessRateEjection that = (SuccessRateEjection) o;
-            return (this.stdevFactor == null ? that.stdevFactor() == null : this.stdevFactor.equals(that.stdevFactor()))
+            return (this.stdevFactor == null
+                            ? that.getStdevFactor() == null
+                            : this.stdevFactor.equals(that.getStdevFactor()))
                     && (this.enforcementPercentage == null
-                            ? that.enforcementPercentage() == null
-                            : this.enforcementPercentage.equals(that.enforcementPercentage()))
+                            ? that.getEnforcementPercentage() == null
+                            : this.enforcementPercentage.equals(that.getEnforcementPercentage()))
                     && (this.minimumHosts == null
-                            ? that.minimumHosts() == null
-                            : this.minimumHosts.equals(that.minimumHosts()))
+                            ? that.getMinimumHosts() == null
+                            : this.minimumHosts.equals(that.getMinimumHosts()))
                     && (this.requestVolume == null
-                            ? that.requestVolume() == null
-                            : this.requestVolume.equals(that.requestVolume()));
+                            ? that.getRequestVolume() == null
+                            : this.requestVolume.equals(that.getRequestVolume()));
         }
         return false;
     }

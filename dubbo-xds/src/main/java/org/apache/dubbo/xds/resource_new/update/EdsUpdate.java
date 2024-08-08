@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public class EdsUpdate implements ResourceUpdate {
-    final String clusterName;
-    final Map<Locality, LocalityLbEndpoints> localityLbEndpointsMap;
-    final List<DropOverload> dropPolicies;
+    private final String clusterName;
+    private final Map<Locality, LocalityLbEndpoints> localityLbEndpointsMap;
+    private final List<DropOverload> dropPolicies;
 
     public EdsUpdate(
             String clusterName,
@@ -50,6 +50,18 @@ public class EdsUpdate implements ResourceUpdate {
         this.clusterName = clusterName;
         this.localityLbEndpointsMap = localityLbEndpoints;
         this.dropPolicies = dropPolicies;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public Map<Locality, LocalityLbEndpoints> getLocalityLbEndpointsMap() {
+        return localityLbEndpointsMap;
+    }
+
+    public List<DropOverload> getDropPolicies() {
+        return dropPolicies;
     }
 
     @Override

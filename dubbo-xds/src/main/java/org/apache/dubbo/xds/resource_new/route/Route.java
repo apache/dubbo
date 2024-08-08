@@ -58,16 +58,16 @@ public class Route {
         this.filterConfigOverrides = Collections.unmodifiableMap(new HashMap<>(filterConfigOverrides));
     }
 
-    RouteMatch routeMatch() {
+    public RouteMatch getRouteMatch() {
         return routeMatch;
     }
 
     @Nullable
-    RouteAction routeAction() {
+    public RouteAction getRouteAction() {
         return routeAction;
     }
 
-    Map<String, FilterConfig> filterConfigOverrides() {
+    public Map<String, FilterConfig> getFilterConfigOverrides() {
         return filterConfigOverrides;
     }
 
@@ -82,11 +82,11 @@ public class Route {
         }
         if (o instanceof Route) {
             Route that = (Route) o;
-            return this.routeMatch.equals(that.routeMatch())
+            return this.routeMatch.equals(that.getRouteMatch())
                     && (this.routeAction == null
-                            ? that.routeAction() == null
-                            : this.routeAction.equals(that.routeAction()))
-                    && this.filterConfigOverrides.equals(that.filterConfigOverrides());
+                            ? that.getRouteAction() == null
+                            : this.routeAction.equals(that.getRouteAction()))
+                    && this.filterConfigOverrides.equals(that.getFilterConfigOverrides());
         }
         return false;
     }

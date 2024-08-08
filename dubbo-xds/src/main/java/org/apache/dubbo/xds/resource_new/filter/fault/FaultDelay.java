@@ -50,15 +50,15 @@ final class FaultDelay {
     }
 
     @Nullable
-    Long delayNanos() {
+    public Long getDelayNanos() {
         return delayNanos;
     }
 
-    boolean headerDelay() {
+    public boolean getHeaderDelay() {
         return headerDelay;
     }
 
-    FractionalPercent percent() {
+    public FractionalPercent getPercent() {
         return percent;
     }
 
@@ -75,9 +75,11 @@ final class FaultDelay {
         }
         if (o instanceof FaultDelay) {
             FaultDelay that = (FaultDelay) o;
-            return (this.delayNanos == null ? that.delayNanos() == null : this.delayNanos.equals(that.delayNanos()))
-                    && this.headerDelay == that.headerDelay()
-                    && this.percent.equals(that.percent());
+            return (this.delayNanos == null
+                            ? that.getDelayNanos() == null
+                            : this.delayNanos.equals(that.getDelayNanos()))
+                    && this.headerDelay == that.getHeaderDelay()
+                    && this.percent.equals(that.getPercent());
         }
         return false;
     }

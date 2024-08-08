@@ -290,19 +290,19 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
 
     private static List<FilterChainMatch> expandOnPrefixRange(FilterChainMatch filterChainMatch) {
         ArrayList<FilterChainMatch> expandedList = new ArrayList<>();
-        if (filterChainMatch.prefixRanges().isEmpty()) {
+        if (filterChainMatch.getPrefixRanges().isEmpty()) {
             expandedList.add(filterChainMatch);
         } else {
-            for (CidrRange cidrRange : filterChainMatch.prefixRanges()) {
+            for (CidrRange cidrRange : filterChainMatch.getPrefixRanges()) {
                 expandedList.add(FilterChainMatch.create(
-                        filterChainMatch.destinationPort(),
+                        filterChainMatch.getDestinationPort(),
                         Collections.singletonList(cidrRange),
-                        filterChainMatch.applicationProtocols(),
-                        filterChainMatch.sourcePrefixRanges(),
-                        filterChainMatch.connectionSourceType(),
-                        filterChainMatch.sourcePorts(),
-                        filterChainMatch.serverNames(),
-                        filterChainMatch.transportProtocol()));
+                        filterChainMatch.getApplicationProtocols(),
+                        filterChainMatch.getSourcePrefixRanges(),
+                        filterChainMatch.getConnectionSourceType(),
+                        filterChainMatch.getSourcePorts(),
+                        filterChainMatch.getServerNames(),
+                        filterChainMatch.getTransportProtocol()));
             }
         }
         return expandedList;
@@ -311,19 +311,19 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     private static List<FilterChainMatch> expandOnApplicationProtocols(Collection<FilterChainMatch> set) {
         ArrayList<FilterChainMatch> expandedList = new ArrayList<>();
         for (FilterChainMatch filterChainMatch : set) {
-            if (filterChainMatch.applicationProtocols().isEmpty()) {
+            if (filterChainMatch.getApplicationProtocols().isEmpty()) {
                 expandedList.add(filterChainMatch);
             } else {
-                for (String applicationProtocol : filterChainMatch.applicationProtocols()) {
+                for (String applicationProtocol : filterChainMatch.getApplicationProtocols()) {
                     expandedList.add(FilterChainMatch.create(
-                            filterChainMatch.destinationPort(),
-                            filterChainMatch.prefixRanges(),
+                            filterChainMatch.getDestinationPort(),
+                            filterChainMatch.getPrefixRanges(),
                             Collections.singletonList(applicationProtocol),
-                            filterChainMatch.sourcePrefixRanges(),
-                            filterChainMatch.connectionSourceType(),
-                            filterChainMatch.sourcePorts(),
-                            filterChainMatch.serverNames(),
-                            filterChainMatch.transportProtocol()));
+                            filterChainMatch.getSourcePrefixRanges(),
+                            filterChainMatch.getConnectionSourceType(),
+                            filterChainMatch.getSourcePorts(),
+                            filterChainMatch.getServerNames(),
+                            filterChainMatch.getTransportProtocol()));
                 }
             }
         }
@@ -333,19 +333,19 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     private static List<FilterChainMatch> expandOnSourcePrefixRange(Collection<FilterChainMatch> set) {
         ArrayList<FilterChainMatch> expandedList = new ArrayList<>();
         for (FilterChainMatch filterChainMatch : set) {
-            if (filterChainMatch.sourcePrefixRanges().isEmpty()) {
+            if (filterChainMatch.getSourcePrefixRanges().isEmpty()) {
                 expandedList.add(filterChainMatch);
             } else {
-                for (CidrRange cidrRange : filterChainMatch.sourcePrefixRanges()) {
+                for (CidrRange cidrRange : filterChainMatch.getSourcePrefixRanges()) {
                     expandedList.add(FilterChainMatch.create(
-                            filterChainMatch.destinationPort(),
-                            filterChainMatch.prefixRanges(),
-                            filterChainMatch.applicationProtocols(),
+                            filterChainMatch.getDestinationPort(),
+                            filterChainMatch.getPrefixRanges(),
+                            filterChainMatch.getApplicationProtocols(),
                             Collections.singletonList(cidrRange),
-                            filterChainMatch.connectionSourceType(),
-                            filterChainMatch.sourcePorts(),
-                            filterChainMatch.serverNames(),
-                            filterChainMatch.transportProtocol()));
+                            filterChainMatch.getConnectionSourceType(),
+                            filterChainMatch.getSourcePorts(),
+                            filterChainMatch.getServerNames(),
+                            filterChainMatch.getTransportProtocol()));
                 }
             }
         }
@@ -355,19 +355,19 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     private static List<FilterChainMatch> expandOnSourcePorts(Collection<FilterChainMatch> set) {
         ArrayList<FilterChainMatch> expandedList = new ArrayList<>();
         for (FilterChainMatch filterChainMatch : set) {
-            if (filterChainMatch.sourcePorts().isEmpty()) {
+            if (filterChainMatch.getSourcePorts().isEmpty()) {
                 expandedList.add(filterChainMatch);
             } else {
-                for (Integer sourcePort : filterChainMatch.sourcePorts()) {
+                for (Integer sourcePort : filterChainMatch.getSourcePorts()) {
                     expandedList.add(FilterChainMatch.create(
-                            filterChainMatch.destinationPort(),
-                            filterChainMatch.prefixRanges(),
-                            filterChainMatch.applicationProtocols(),
-                            filterChainMatch.sourcePrefixRanges(),
-                            filterChainMatch.connectionSourceType(),
+                            filterChainMatch.getDestinationPort(),
+                            filterChainMatch.getPrefixRanges(),
+                            filterChainMatch.getApplicationProtocols(),
+                            filterChainMatch.getSourcePrefixRanges(),
+                            filterChainMatch.getConnectionSourceType(),
                             Collections.singletonList(sourcePort),
-                            filterChainMatch.serverNames(),
-                            filterChainMatch.transportProtocol()));
+                            filterChainMatch.getServerNames(),
+                            filterChainMatch.getTransportProtocol()));
                 }
             }
         }
@@ -377,19 +377,19 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     private static List<FilterChainMatch> expandOnServerNames(Collection<FilterChainMatch> set) {
         ArrayList<FilterChainMatch> expandedList = new ArrayList<>();
         for (FilterChainMatch filterChainMatch : set) {
-            if (filterChainMatch.serverNames().isEmpty()) {
+            if (filterChainMatch.getServerNames().isEmpty()) {
                 expandedList.add(filterChainMatch);
             } else {
-                for (String serverName : filterChainMatch.serverNames()) {
+                for (String serverName : filterChainMatch.getServerNames()) {
                     expandedList.add(FilterChainMatch.create(
-                            filterChainMatch.destinationPort(),
-                            filterChainMatch.prefixRanges(),
-                            filterChainMatch.applicationProtocols(),
-                            filterChainMatch.sourcePrefixRanges(),
-                            filterChainMatch.connectionSourceType(),
-                            filterChainMatch.sourcePorts(),
+                            filterChainMatch.getDestinationPort(),
+                            filterChainMatch.getPrefixRanges(),
+                            filterChainMatch.getApplicationProtocols(),
+                            filterChainMatch.getSourcePrefixRanges(),
+                            filterChainMatch.getConnectionSourceType(),
+                            filterChainMatch.getSourcePorts(),
                             Collections.singletonList(serverName),
-                            filterChainMatch.transportProtocol()));
+                            filterChainMatch.getTransportProtocol()));
                 }
             }
         }

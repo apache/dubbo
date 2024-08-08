@@ -38,7 +38,7 @@ import com.google.protobuf.Message;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.type.v3.FractionalPercent;
 
-class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
+public class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
     static final String ADS_TYPE_URL_EDS = "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
 
     private static final XdsEndpointResource instance = new XdsEndpointResource();
@@ -101,7 +101,7 @@ class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
             }
 
             LocalityLbEndpoints localityLbEndpoints = structOrError.getStruct();
-            int priority = localityLbEndpoints.priority();
+            int priority = localityLbEndpoints.getPriority();
             maxPriority = Math.max(maxPriority, priority);
             // Note endpoints with health status other than HEALTHY and UNKNOWN are still
             // handed over to watching parties. It is watching parties' responsibility to

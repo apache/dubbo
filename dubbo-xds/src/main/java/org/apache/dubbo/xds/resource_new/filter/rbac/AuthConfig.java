@@ -41,11 +41,11 @@ final class AuthConfig {
         this.action = action;
     }
 
-    public List<PolicyMatcher> policies() {
+    public List<PolicyMatcher> getPolicies() {
         return policies;
     }
 
-    public Action action() {
+    public Action getAction() {
         return action;
     }
 
@@ -61,7 +61,7 @@ final class AuthConfig {
         }
         if (o instanceof AuthConfig) {
             AuthConfig that = (AuthConfig) o;
-            return this.policies.equals(that.policies()) && this.action.equals(that.action());
+            return this.policies.equals(that.getPolicies()) && this.action.equals(that.getAction());
         }
         return false;
     }

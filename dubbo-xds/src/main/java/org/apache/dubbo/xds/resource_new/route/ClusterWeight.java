@@ -42,11 +42,11 @@ public class ClusterWeight {
         this.filterConfigOverrides = Collections.unmodifiableMap(new HashMap<>(filterConfigOverrides));
     }
 
-    String name() {
+    public String getName() {
         return name;
     }
 
-    int weight() {
+    public int getWeight() {
         return weight;
     }
 
@@ -65,8 +65,8 @@ public class ClusterWeight {
         }
         if (o instanceof ClusterWeight) {
             ClusterWeight that = (ClusterWeight) o;
-            return this.name.equals(that.name())
-                    && this.weight == that.weight()
+            return this.name.equals(that.getName())
+                    && this.weight == that.getWeight()
                     && this.filterConfigOverrides.equals(that.filterConfigOverrides());
         }
         return false;

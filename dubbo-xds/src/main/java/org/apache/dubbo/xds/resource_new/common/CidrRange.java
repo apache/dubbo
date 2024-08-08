@@ -33,11 +33,11 @@ public class CidrRange {
         this.prefixLen = prefixLen;
     }
 
-    InetAddress addressPrefix() {
+    public InetAddress getAddressPrefix() {
         return addressPrefix;
     }
 
-    int prefixLen() {
+    public int getPrefixLen() {
         return prefixLen;
     }
 
@@ -53,7 +53,7 @@ public class CidrRange {
         }
         if (o instanceof CidrRange) {
             CidrRange that = (CidrRange) o;
-            return this.addressPrefix.equals(that.addressPrefix()) && this.prefixLen == that.prefixLen();
+            return this.addressPrefix.equals(that.getAddressPrefix()) && this.prefixLen == that.getPrefixLen();
         }
         return false;
     }

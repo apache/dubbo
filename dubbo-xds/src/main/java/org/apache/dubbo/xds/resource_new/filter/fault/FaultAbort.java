@@ -54,15 +54,15 @@ final class FaultAbort {
     }
 
     @Nullable
-    Status status() {
+    public Status getStatus() {
         return status;
     }
 
-    boolean headerAbort() {
+    public boolean getHeaderAbort() {
         return headerAbort;
     }
 
-    FractionalPercent percent() {
+    public FractionalPercent getPercent() {
         return percent;
     }
 
@@ -79,9 +79,9 @@ final class FaultAbort {
         }
         if (o instanceof FaultAbort) {
             FaultAbort that = (FaultAbort) o;
-            return (this.status == null ? that.status() == null : this.status.equals(that.status()))
-                    && this.headerAbort == that.headerAbort()
-                    && this.percent.equals(that.percent());
+            return (this.status == null ? that.getStatus() == null : this.status.equals(that.getStatus()))
+                    && this.headerAbort == that.getHeaderAbort()
+                    && this.percent.equals(that.getPercent());
         }
         return false;
     }

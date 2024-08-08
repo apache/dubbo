@@ -154,62 +154,62 @@ public class CdsUpdate implements ResourceUpdate {
         this.outlierDetection = outlierDetection;
     }
 
-    String clusterName() {
+    public String getClusterName() {
         return clusterName;
     }
 
-    CdsUpdate.ClusterType clusterType() {
+    public CdsUpdate.ClusterType getClusterType() {
         return clusterType;
     }
 
-    Map<String, ?> lbPolicyConfig() {
+    public Map<String, ?> getLbPolicyConfig() {
         return lbPolicyConfig;
     }
 
-    long minRingSize() {
+    public long getMinRingSize() {
         return minRingSize;
     }
 
-    long maxRingSize() {
+    public long getMaxRingSize() {
         return maxRingSize;
     }
 
-    int choiceCount() {
+    public int getChoiceCount() {
         return choiceCount;
     }
 
     @Nullable
-    String edsServiceName() {
+    public String getEdsServiceName() {
         return edsServiceName;
     }
 
     @Nullable
-    String dnsHostName() {
+    public String getDnsHostName() {
         return dnsHostName;
     }
 
     @Nullable
-    Bootstrapper.ServerInfo lrsServerInfo() {
+    public Bootstrapper.ServerInfo getLrsServerInfo() {
         return lrsServerInfo;
     }
 
     @Nullable
-    Long maxConcurrentRequests() {
+    public Long getMaxConcurrentRequests() {
         return maxConcurrentRequests;
     }
 
     @Nullable
-    UpstreamTlsContext upstreamTlsContext() {
+    public UpstreamTlsContext getUpstreamTlsContext() {
         return upstreamTlsContext;
     }
 
     @Nullable
-    List<String> prioritizedClusterNames() {
+    public List<String> getPrioritizedClusterNames() {
         return prioritizedClusterNames;
     }
 
     @Nullable
-    OutlierDetection outlierDetection() {
+    public OutlierDetection getOutlierDetection() {
         return outlierDetection;
     }
 
@@ -220,33 +220,33 @@ public class CdsUpdate implements ResourceUpdate {
         }
         if (o instanceof CdsUpdate) {
             CdsUpdate that = (CdsUpdate) o;
-            return this.clusterName.equals(that.clusterName())
-                    && this.clusterType.equals(that.clusterType())
-                    && this.lbPolicyConfig.equals(that.lbPolicyConfig())
-                    && this.minRingSize == that.minRingSize()
-                    && this.maxRingSize == that.maxRingSize()
-                    && this.choiceCount == that.choiceCount()
+            return this.clusterName.equals(that.getClusterName())
+                    && this.clusterType.equals(that.getClusterType())
+                    && this.lbPolicyConfig.equals(that.getLbPolicyConfig())
+                    && this.minRingSize == that.getMinRingSize()
+                    && this.maxRingSize == that.getMaxRingSize()
+                    && this.choiceCount == that.getChoiceCount()
                     && (this.edsServiceName == null
-                            ? that.edsServiceName() == null
-                            : this.edsServiceName.equals(that.edsServiceName()))
+                            ? that.getEdsServiceName() == null
+                            : this.edsServiceName.equals(that.getEdsServiceName()))
                     && (this.dnsHostName == null
-                            ? that.dnsHostName() == null
-                            : this.dnsHostName.equals(that.dnsHostName()))
+                            ? that.getDnsHostName() == null
+                            : this.dnsHostName.equals(that.getDnsHostName()))
                     && (this.lrsServerInfo == null
-                            ? that.lrsServerInfo() == null
-                            : this.lrsServerInfo.equals(that.lrsServerInfo()))
+                            ? that.getLrsServerInfo() == null
+                            : this.lrsServerInfo.equals(that.getLrsServerInfo()))
                     && (this.maxConcurrentRequests == null
-                            ? that.maxConcurrentRequests() == null
-                            : this.maxConcurrentRequests.equals(that.maxConcurrentRequests()))
+                            ? that.getMaxConcurrentRequests() == null
+                            : this.maxConcurrentRequests.equals(that.getMaxConcurrentRequests()))
                     && (this.upstreamTlsContext == null
-                            ? that.upstreamTlsContext() == null
-                            : this.upstreamTlsContext.equals(that.upstreamTlsContext()))
+                            ? that.getUpstreamTlsContext() == null
+                            : this.upstreamTlsContext.equals(that.getUpstreamTlsContext()))
                     && (this.prioritizedClusterNames == null
-                            ? that.prioritizedClusterNames() == null
-                            : this.prioritizedClusterNames.equals(that.prioritizedClusterNames()))
+                            ? that.getPrioritizedClusterNames() == null
+                            : this.prioritizedClusterNames.equals(that.getPrioritizedClusterNames()))
                     && (this.outlierDetection == null
-                            ? that.outlierDetection() == null
-                            : this.outlierDetection.equals(that.outlierDetection()));
+                            ? that.getOutlierDetection() == null
+                            : this.outlierDetection.equals(that.getOutlierDetection()));
         }
         return false;
     }

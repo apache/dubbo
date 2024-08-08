@@ -33,7 +33,7 @@ final class DestinationPortMatcher implements Matcher {
         this.port = port;
     }
 
-    public int port() {
+    public int getPort() {
         return port;
     }
 
@@ -49,7 +49,7 @@ final class DestinationPortMatcher implements Matcher {
         }
         if (o instanceof DestinationPortMatcher) {
             DestinationPortMatcher that = (DestinationPortMatcher) o;
-            return this.port == that.port();
+            return this.port == that.getPort();
         }
         return false;
     }

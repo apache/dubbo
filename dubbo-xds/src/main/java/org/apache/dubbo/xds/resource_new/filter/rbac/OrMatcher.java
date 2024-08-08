@@ -44,7 +44,7 @@ final class OrMatcher implements Matcher {
 
     @Override
     public boolean matches(Object args) {
-        for (Matcher m : anyMatch()) {
+        for (Matcher m : getAnyMatch()) {
             if (m.matches(args)) {
                 return true;
             }
@@ -59,7 +59,7 @@ final class OrMatcher implements Matcher {
         this.anyMatch = Collections.unmodifiableList(new ArrayList<>(anyMatch));
     }
 
-    public List<? extends Matcher> anyMatch() {
+    public List<? extends Matcher> getAnyMatch() {
         return anyMatch;
     }
 
@@ -75,7 +75,7 @@ final class OrMatcher implements Matcher {
         }
         if (o instanceof OrMatcher) {
             OrMatcher that = (OrMatcher) o;
-            return this.anyMatch.equals(that.anyMatch());
+            return this.anyMatch.equals(that.getAnyMatch());
         }
         return false;
     }

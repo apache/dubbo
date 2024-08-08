@@ -27,11 +27,11 @@ public final class Range {
         this.end = end;
     }
 
-    public long start() {
+    public long getStart() {
         return start;
     }
 
-    public long end() {
+    public long getEnd() {
         return end;
     }
 
@@ -47,7 +47,7 @@ public final class Range {
         }
         if (o instanceof Range) {
             Range that = (Range) o;
-            return this.start == that.start() && this.end == that.end();
+            return this.start == that.getStart() && this.end == that.getEnd();
         }
         return false;
     }

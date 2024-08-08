@@ -38,7 +38,7 @@ final class DestinationIpMatcher implements Matcher {
         this.delegate = delegate;
     }
 
-    public CidrMatcher delegate() {
+    public CidrMatcher getDelegate() {
         return delegate;
     }
 
@@ -54,7 +54,7 @@ final class DestinationIpMatcher implements Matcher {
         }
         if (o instanceof DestinationIpMatcher) {
             DestinationIpMatcher that = (DestinationIpMatcher) o;
-            return this.delegate.equals(that.delegate());
+            return this.delegate.equals(that.getDelegate());
         }
         return false;
     }

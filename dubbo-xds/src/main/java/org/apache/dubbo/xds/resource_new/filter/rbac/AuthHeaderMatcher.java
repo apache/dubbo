@@ -38,7 +38,7 @@ final class AuthHeaderMatcher implements Matcher {
         this.delegate = delegate;
     }
 
-    public HeaderMatcher delegate() {
+    public HeaderMatcher getDelegate() {
         return delegate;
     }
 
@@ -54,7 +54,7 @@ final class AuthHeaderMatcher implements Matcher {
         }
         if (o instanceof AuthHeaderMatcher) {
             AuthHeaderMatcher that = (AuthHeaderMatcher) o;
-            return this.delegate.equals(that.delegate());
+            return this.delegate.equals(that.getDelegate());
         }
         return false;
     }

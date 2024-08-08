@@ -52,11 +52,11 @@ public final class FractionalPercent {
         this.denominatorType = denominatorType;
     }
 
-    int numerator() {
+    public int getNumerator() {
         return numerator;
     }
 
-    DenominatorType denominatorType() {
+    public DenominatorType getDenominatorType() {
         return denominatorType;
     }
 
@@ -72,7 +72,7 @@ public final class FractionalPercent {
         }
         if (o instanceof FractionalPercent) {
             FractionalPercent that = (FractionalPercent) o;
-            return this.numerator == that.numerator() && this.denominatorType.equals(that.denominatorType());
+            return this.numerator == that.getNumerator() && this.denominatorType.equals(that.getDenominatorType());
         }
         return false;
     }

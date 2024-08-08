@@ -48,7 +48,7 @@ public class Listener {
         this.defaultFilterChain = defaultFilterChain;
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 
@@ -57,7 +57,7 @@ public class Listener {
     }
 
     @Nullable
-    public String address() {
+    public String getAddress() {
         return address;
     }
 
@@ -66,7 +66,7 @@ public class Listener {
     }
 
     @Nullable
-    public List<FilterChain> filterChains() {
+    public List<FilterChain> getFilterChains() {
         return filterChains;
     }
 
@@ -74,7 +74,7 @@ public class Listener {
         this.filterChains = filterChains;
     }
 
-    public FilterChain defaultFilterChain() {
+    public FilterChain getDefaultFilterChain() {
         return defaultFilterChain;
     }
 
