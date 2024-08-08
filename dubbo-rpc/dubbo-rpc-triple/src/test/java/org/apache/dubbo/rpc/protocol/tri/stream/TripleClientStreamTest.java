@@ -32,7 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2TripleClientStream;
+import org.apache.dubbo.rpc.protocol.tri.h3.Http3TripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
@@ -79,7 +79,7 @@ class TripleClientStreamTest {
         when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
         when(http2StreamChannel.newPromise()).thenReturn(channel.newPromise());
         when(http2StreamChannel.parent()).thenReturn(channel);
-        AbstractTripleClientStream stream = new Http2TripleClientStream(
+        AbstractTripleClientStream stream = new Http3TripleClientStream(
                 url.getOrDefaultFrameworkModel(),
                 ImmediateEventExecutor.INSTANCE,
                 writeQueue,

@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.http3.Http3TransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListener;
 
-public final class GenericHttp3ServerTransportListener extends GenericHttp2ServerTransportListener
+public class GenericHttp3ServerTransportListener extends GenericHttp2ServerTransportListener
         implements Http3TransportListener {
 
     public GenericHttp3ServerTransportListener(

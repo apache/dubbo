@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListener;
+import org.apache.dubbo.rpc.protocol.tri.h3.GenericHttp3ServerTransportListener;
 
 import java.util.concurrent.Executor;
 
-public class TestServerTransportListener extends GenericHttp2ServerTransportListener {
+public class TestServerTransportListener extends GenericHttp3ServerTransportListener {
 
     public TestServerTransportListener(H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
         super(h2StreamChannel, url, frameworkModel);
