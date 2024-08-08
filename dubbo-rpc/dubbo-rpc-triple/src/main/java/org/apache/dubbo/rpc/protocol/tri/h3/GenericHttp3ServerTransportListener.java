@@ -42,4 +42,5 @@ public class GenericHttp3ServerTransportListener extends GenericHttp2ServerTrans
 
     @Override
     protected void initializeAltSvc(URL url) {}
+
 }
