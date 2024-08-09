@@ -150,7 +150,7 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
 
-    <revision>3.3.0-beta.5-SNAPSHOT</revision>
+    <revision>3.3.0-beta.5</revision>
   </properties>
 
   <dependencyManagement>
