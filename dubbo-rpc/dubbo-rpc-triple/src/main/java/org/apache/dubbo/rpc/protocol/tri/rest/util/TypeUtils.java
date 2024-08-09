@@ -84,24 +84,6 @@ public final class TypeUtils {
 
     private TypeUtils() {}
 
-    public static ClassLoader getDefaultClassLoader() {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return cl == null ? RestUtils.class.getClassLoader() : cl;
-    }
-
-    public static Class<?> loadClass(String className) throws ClassNotFoundException {
-        return getDefaultClassLoader().loadClass(className);
-    }
-
-    public static boolean isPresent(String className) {
-        try {
-            loadClass(className);
-            return true;
-        } catch (Throwable ignored) {
-            return false;
-        }
-    }
-
     public static boolean isSimpleProperty(Class<?> type) {
         return type == null || isSimpleValueType(type) || type.isArray() && isSimpleValueType(type.getComponentType());
     }
@@ -370,6 +352,9 @@ public final class TypeUtils {
     }
 
     public static String buildSig(Method method) {
+        if (method.getParameterCount() == 0) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder(8);
         for (Class<?> type : method.getParameterTypes()) {
             String name = type.getName();

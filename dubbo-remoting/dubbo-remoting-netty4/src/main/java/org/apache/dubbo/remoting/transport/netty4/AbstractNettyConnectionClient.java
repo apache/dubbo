@@ -48,11 +48,15 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(AbstractNettyConnectionClient.class);
 
-    private AtomicReference<Promise<Object>> connectingPromise;
+    private AtomicReference<Promise<Object>> connectingPromiseRef;
+
+    private AtomicReference<io.netty.channel.Channel> channelRef;
+
+    private Promise<Void> connectedPromise;
+
+    private Promise<Void> disconnectedPromise;
 
     private Promise<Void> closePromise;
-
-    private AtomicReference<io.netty.channel.Channel> channel;
 
     private AtomicBoolean isReconnecting;
 
@@ -72,14 +76,16 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
     @Override
     protected void initConnectionClient() {
-        this.remote = getConnectAddress();
-        this.connectingPromise = new AtomicReference<>();
-        this.connectionListener = new ConnectionListener();
-        this.channel = new AtomicReference<>();
-        this.isReconnecting = new AtomicBoolean(false);
-        this.closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
-        this.init = new AtomicBoolean(false);
-        this.increase();
+        remote = getConnectAddress();
+        init = new AtomicBoolean(false);
+        connectingPromiseRef = new AtomicReference<>();
+        channelRef = new AtomicReference<>();
+        connectedPromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
+        disconnectedPromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
+        closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
+        isReconnecting = new AtomicBoolean(false);
+        connectionListener = new ConnectionListener();
+        increase();
     }
 
     protected abstract void initBootstrap() throws Exception;
@@ -115,21 +121,21 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                 LOGGER.debug(String.format("%s aborted to reconnect cause connection closed. ", this));
             }
         }
+
         init.compareAndSet(false, true);
         long start = System.currentTimeMillis();
 
-        createConnectingPromise();
-        Future<Void> promise = performConnect();
+        Future<Void> connectPromise = performConnect();
+        connectPromise.addListener(connectionListener);
 
-        promise.addListener(connectionListener);
-
-        boolean ret = connectingPromise.get().awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
+        boolean ret = getOrCreateConnectingPromise().awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
         // destroy connectingPromise after used
         synchronized (this) {
-            connectingPromise.set(null);
+            connectingPromiseRef.set(null);
         }
-        if (promise.cause() != null) {
-            Throwable cause = promise.cause();
+
+        if (connectPromise.cause() != null) {
+            Throwable cause = connectPromise.cause();
 
             // 6-1 Failed to connect to provider server by other reason.
             RemotingException remotingException = new RemotingException(
@@ -146,7 +152,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                     cause);
 
             throw remotingException;
-        } else if (!ret || !promise.isSuccess()) {
+        } else if (!ret || !connectPromise.isSuccess()) {
             // 6-2 Client-side timeout
             RemotingException remotingException = new RemotingException(
                     this,
@@ -175,6 +181,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         if (!(channel instanceof io.netty.channel.Channel)) {
             return;
         }
+
         io.netty.channel.Channel nettyChannel = ((io.netty.channel.Channel) channel);
         if (isClosed()) {
             nettyChannel.close();
@@ -190,12 +197,19 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             current.close();
         }
 
-        this.channel.set(nettyChannel);
+        channelRef.set(nettyChannel);
+
         // This indicates that the connection is available.
-        if (connectingPromise.get() != null) {
-            connectingPromise.get().trySuccess(CONNECTED_OBJECT);
+        Promise<Object> connectingPromise = connectingPromiseRef.get();
+        if (connectingPromise != null) {
+            connectingPromise.trySuccess(CONNECTED_OBJECT);
         }
+
         nettyChannel.attr(CONNECTION).set(this);
+
+        // Notify the connection is available.
+        connectedPromise.trySuccess(null);
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("%s connected ", this));
         }
@@ -207,7 +221,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             return;
         }
         io.netty.channel.Channel nettyChannel = (io.netty.channel.Channel) channel;
-        if (this.channel.compareAndSet(nettyChannel, null)) {
+        if (channelRef.compareAndSet(nettyChannel, null)) {
             // Ensure the channel is closed
             if (nettyChannel.isOpen()) {
                 nettyChannel.close();
@@ -229,16 +243,17 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
     }
 
     private io.netty.channel.Channel getNettyChannel() {
-        return channel.get();
+        return channelRef.get();
     }
 
     protected void clearNettyChannel() {
-        channel.set(null);
+        channelRef.set(null);
     }
 
     @Override
-    public Object getChannel(Boolean generalizable) {
-        return Boolean.TRUE.equals(generalizable) ? getNettyChannel() : getChannel();
+    @SuppressWarnings("unchecked")
+    public <T> T getChannel(Boolean generalizable) {
+        return Boolean.TRUE.equals(generalizable) ? (T) getNettyChannel() : (T) getChannel();
     }
 
     @Override
@@ -259,20 +274,23 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             }
         }
 
-        createConnectingPromise();
-        connectingPromise.get().awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
+        getOrCreateConnectingPromise().awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
         // destroy connectingPromise after used
         synchronized (this) {
-            connectingPromise.set(null);
+            connectingPromiseRef.set(null);
         }
 
         nettyChannel = getNettyChannel();
         return nettyChannel != null && nettyChannel.isActive();
     }
 
-    @Override
-    public void createConnectingPromise() {
-        connectingPromise.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
+    private Promise<Object> getOrCreateConnectingPromise() {
+        Promise<Object> value = connectingPromiseRef.get();
+        if (value != null) {
+            return value;
+        }
+        connectingPromiseRef.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
+        return connectingPromiseRef.get();
     }
 
     public Promise<Void> getClosePromise() {
@@ -290,12 +308,22 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                     null,
                     "Failed to send request " + request + ", cause: The channel to " + remote + " is closed!");
         }
-        return ((io.netty.channel.Channel) getChannel()).writeAndFlush(request);
+        return getNettyChannel().writeAndFlush(request);
+    }
+
+    @Override
+    public void addConnectedListener(Runnable func) {
+        connectedPromise.addListener(future -> func.run());
+    }
+
+    @Override
+    public void addDisconnectedListener(Runnable func) {
+        disconnectedPromise.addListener(future -> func.run());
     }
 
     @Override
     public void addCloseListener(Runnable func) {
-        getClosePromise().addListener(future -> func.run());
+        closePromise.addListener(future -> func.run());
     }
 
     @Override
@@ -335,6 +363,10 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                         "%s is reconnecting, attempt=%d cause=%s",
                         connectionClient, 0, future.cause().getMessage()));
             }
+
+            // Notify the connection is unavailable.
+            disconnectedPromise.trySuccess(null);
+
             connectivityExecutor.schedule(
                     () -> {
                         try {

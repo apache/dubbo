@@ -26,7 +26,6 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
-import org.apache.dubbo.remoting.exchange.Http3Exchanger;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -42,7 +41,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import io.grpc.health.v1.HealthCheckResponse;
@@ -57,11 +55,8 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_IGNORE_1_0_0_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_SERVLET_ENABLED;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_VERBOSE_ENABLED;
-import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_HTTP3_ENABLED;
-import static org.apache.dubbo.rpc.Constants.HTTP3_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
 
@@ -71,34 +66,32 @@ public class TripleProtocol extends AbstractProtocol {
     private final RequestMappingRegistry mappingRegistry;
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
-    private boolean http3Bound;
 
     public static boolean CONVERT_NO_LOWER_HEADER = false;
     public static boolean IGNORE_1_0_0_VERSION = false;
     public static boolean RESOLVE_FALLBACK_TO_DEFAULT = true;
     public static boolean PASS_THROUGH_STANDARD_HTTP_HEADERS = false;
     public static boolean VERBOSE_ENABLED = false;
-    public static boolean HTTP3_ENABLED = false;
-    public static boolean SERVLET_ENABLED = false;
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         triBuiltinService = new TriBuiltinService(frameworkModel);
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
         mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
-        Set<String> supported =
-                frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions();
-        acceptEncodings = String.join(",", supported);
+        acceptEncodings = String.join(",", frameworkModel.getSupportedExtensions(DeCompressor.class));
+
+        // init env settings
         Configuration conf = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
         CONVERT_NO_LOWER_HEADER = conf.getBoolean(H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY, true);
         IGNORE_1_0_0_VERSION = conf.getBoolean(H2_SETTINGS_IGNORE_1_0_0_KEY, false);
         RESOLVE_FALLBACK_TO_DEFAULT = conf.getBoolean(H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY, true);
         PASS_THROUGH_STANDARD_HTTP_HEADERS = conf.getBoolean(H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS, false);
 
+        // init global settings
         Configuration globalConf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
         VERBOSE_ENABLED = globalConf.getBoolean(H2_SETTINGS_VERBOSE_ENABLED, false);
-        SERVLET_ENABLED = globalConf.getBoolean(H2_SETTINGS_SERVLET_ENABLED, false);
-        HTTP3_ENABLED = globalConf.getBoolean(H3_SETTINGS_HTTP3_ENABLED, false);
+        ServletExchanger.init(globalConf);
+        Http3Exchanger.init(globalConf);
     }
 
     @Override
@@ -176,7 +169,7 @@ public class TripleProtocol extends AbstractProtocol {
                 .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
 
         boolean bindPort = true;
-        if (SERVLET_ENABLED) {
+        if (ServletExchanger.isEnabled()) {
             int port = url.getParameter(BIND_PORT_KEY, url.getPort());
             Integer serverPort = ServletExchanger.getServerPort();
             if (serverPort == null) {
@@ -192,10 +185,8 @@ public class TripleProtocol extends AbstractProtocol {
             PortUnificationExchanger.bind(url, new DefaultPuHandler());
         }
 
-        if (isHttp3Enabled(url)) {
-            Http3Exchanger.bind(url);
-            http3Bound = true;
-        }
+        // try bind http3 port
+        Http3Exchanger.bind(url);
 
         optimizeSerialization(url);
         return exporter;
@@ -205,7 +196,7 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(url.getOrDefaultApplicationModel(), url);
-        AbstractConnectionClient connectionClient = isHttp3Enabled(url)
+        AbstractConnectionClient connectionClient = Http3Exchanger.isEnabled(url)
                 ? Http3Exchanger.connect(url)
                 : PortUnificationExchanger.connect(url, new DefaultPuHandler());
         TripleInvoker<T> invoker =
@@ -234,15 +225,9 @@ public class TripleProtocol extends AbstractProtocol {
             logger.info("Destroying protocol [" + getClass().getSimpleName() + "] ...");
         }
         PortUnificationExchanger.close();
-        if (http3Bound) {
-            Http3Exchanger.close();
-        }
+        Http3Exchanger.close();
         pathResolver.destroy();
         mappingRegistry.destroy();
         super.destroy();
-    }
-
-    public static boolean isHttp3Enabled(URL url) {
-        return HTTP3_ENABLED || url.getParameter(HTTP3_KEY, false);
     }
 }

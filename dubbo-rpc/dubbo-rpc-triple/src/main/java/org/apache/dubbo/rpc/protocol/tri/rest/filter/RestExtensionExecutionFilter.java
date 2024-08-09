@@ -24,6 +24,7 @@ import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
@@ -42,7 +43,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -221,7 +221,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         InstantiationStrategy strategy = new InstantiationStrategy(() -> applicationModel);
         for (String className : StringUtils.tokenize(extensionConfig)) {
             try {
-                Object extension = strategy.instantiate(TypeUtils.loadClass(className));
+                Object extension = strategy.instantiate(ClassUtils.loadClass(className));
                 if (extension instanceof ExtensionAccessorAware) {
                     ((ExtensionAccessorAware) extension).setExtensionAccessor(applicationModel);
                 }
