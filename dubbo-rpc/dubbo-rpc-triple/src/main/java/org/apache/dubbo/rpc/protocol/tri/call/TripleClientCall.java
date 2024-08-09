@@ -191,7 +191,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             data = requestMetadata.packableMethod.packRequest(message);
             int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
             final byte[] compress = requestMetadata.compressor.compress(data);
-            stream.sendMessage(compress, compressed, false).addListener(f -> {
+            stream.sendMessage(compress, compressed).addListener(f -> {
                 if (!f.isSuccess()) {
                     cancelByLocal(f.cause());
                 }

@@ -146,7 +146,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     @Override
-    public ChannelFuture sendMessage(byte[] message, int compressFlag, boolean eos) {
+    public ChannelFuture sendMessage(byte[] message, int compressFlag) {
         ChannelFuture checkResult = preCheck();
         if (!checkResult.isSuccess()) {
             return checkResult;
