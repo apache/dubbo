@@ -28,20 +28,20 @@ class DubboDetectorTest {
     void testDetect_Recognized() {
         DubboDetector detector = new DubboDetector();
         ChannelBuffer in = ChannelBuffers.wrappedBuffer(new byte[] {(byte) 0xda, (byte) 0xbb});
-        assertEquals(DubboDetector.Result.RECOGNIZED, detector.detect(in));
+        assertEquals(DubboDetector.Result.recognized(), detector.detect(in));
     }
 
     @Test
     void testDetect_Unrecognized() {
         DubboDetector detector = new DubboDetector();
         ChannelBuffer in = ChannelBuffers.wrappedBuffer(new byte[] {(byte) 0x00, (byte) 0x00});
-        assertEquals(DubboDetector.Result.UNRECOGNIZED, detector.detect(in));
+        assertEquals(DubboDetector.Result.unrecognized(), detector.detect(in));
     }
 
     @Test
     void testDetect_NeedMoreData() {
         DubboDetector detector = new DubboDetector();
         ChannelBuffer in = ChannelBuffers.wrappedBuffer(new byte[] {(byte) 0xda});
-        assertEquals(DubboDetector.Result.NEED_MORE_DATA, detector.detect(in));
+        assertEquals(DubboDetector.Result.needMoreData(), detector.detect(in));
     }
 }
