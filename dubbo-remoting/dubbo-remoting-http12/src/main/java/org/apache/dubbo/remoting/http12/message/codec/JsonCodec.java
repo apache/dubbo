@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.io.StreamUtils;
-import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.remoting.http12.HttpJsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
@@ -36,7 +36,7 @@ public class JsonCodec implements HttpMessageCodec {
 
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try {
-            os.write(JsonUtils.toJson(data).getBytes(charset));
+            os.write(HttpJsonUtils.toJson(data).getBytes(charset));
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
@@ -46,7 +46,7 @@ public class JsonCodec implements HttpMessageCodec {
 
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
         try {
-            os.write(JsonUtils.toJson(data).getBytes(charset));
+            os.write(HttpJsonUtils.toJson(data).getBytes(charset));
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
@@ -57,7 +57,7 @@ public class JsonCodec implements HttpMessageCodec {
     @Override
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try {
-            return JsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
+            return HttpJsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
@@ -68,7 +68,7 @@ public class JsonCodec implements HttpMessageCodec {
     @Override
     public Object decode(InputStream is, Type targetType, Charset charset) throws DecodeException {
         try {
-            return JsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
+            return HttpJsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
@@ -83,13 +83,13 @@ public class JsonCodec implements HttpMessageCodec {
             if (len == 0) {
                 return new Object[0];
             }
-            Object obj = JsonUtils.toJavaObject(StreamUtils.toString(is, charset), Object.class);
+            Object obj = HttpJsonUtils.toJavaObject(StreamUtils.toString(is, charset), Object.class);
             if (obj instanceof List) {
                 List<?> list = (List<?>) obj;
                 if (list.size() == len) {
                     Object[] results = new Object[len];
                     for (int i = 0; i < len; i++) {
-                        results[i] = JsonUtils.convertObject(list.get(i), targetTypes[i]);
+                        results[i] = HttpJsonUtils.convertObject(list.get(i), targetTypes[i]);
                     }
                     return results;
                 }
@@ -97,7 +97,7 @@ public class JsonCodec implements HttpMessageCodec {
                         "Json array size [" + list.size() + "] must equals arguments count [" + len + "]");
             }
             if (len == 1) {
-                return new Object[] {JsonUtils.convertObject(obj, targetTypes[0])};
+                return new Object[] {HttpJsonUtils.convertObject(obj, targetTypes[0])};
             }
             throw new DecodeException("Json must be array");
         } catch (HttpStatusException e) {

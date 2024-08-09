@@ -31,7 +31,7 @@ import java.util.Map;
 public class JsonUtils {
     private static volatile JsonUtil jsonUtil;
 
-    protected static JsonUtil getJson() {
+    public static JsonUtil getJson() {
         if (jsonUtil == null) {
             synchronized (JsonUtils.class) {
                 if (jsonUtil == null) {
@@ -106,6 +106,10 @@ public class JsonUtils {
 
     public static String toJson(Object obj) {
         return getJson().toJson(obj);
+    }
+
+    public static String toPrettyJson(Object obj) {
+        return getJson().toPrettyJson(obj);
     }
 
     public static List<?> getList(Map<String, ?> obj, String key) {

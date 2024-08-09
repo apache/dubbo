@@ -105,6 +105,8 @@ public interface Constants {
     String H2_SETTINGS_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
     String H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS = "dubbo.rpc.tri.pass-through-standard-http-headers";
 
+    String H2_SETTINGS_JSON_FRAMEWORK_NAME = "dubbo.protocol.triple.rest.json-framework";
+
     String H2_SETTINGS_VERBOSE_ENABLED = "dubbo.protocol.triple.verbose";
     String H2_SETTINGS_SERVLET_ENABLED = "dubbo.protocol.triple.servlet.enabled";
     String H3_SETTINGS_HTTP3_ENABLED = "dubbo.protocol.triple.http3.enabled";

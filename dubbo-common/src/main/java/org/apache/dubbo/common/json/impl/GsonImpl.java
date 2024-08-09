@@ -16,18 +16,20 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import org.apache.dubbo.common.extension.Activate;
+
 import java.lang.reflect.Type;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-public class GsonImpl extends AbstractJsonUtilImpl {
-    // weak reference of com.google.gson.Gson, prevent throw exception when init
-    private volatile Object gsonCache = null;
+@Activate(order = 300, onClass = "com.google.gson.Gson")
+public class GsonImpl extends CustomizableJsonUtil<GsonBuilder, Gson> {
 
     @Override
     public boolean isJson(String json) {
@@ -41,40 +43,44 @@ public class GsonImpl extends AbstractJsonUtilImpl {
 
     @Override
     public <T> T toJavaObject(String json, Type type) {
-        return getGson().fromJson(json, type);
+        return getWriter().fromJson(json, type);
     }
 
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
-        return getGson()
-                .fromJson(json, TypeToken.getParameterized(List.class, clazz).getType());
+        Type type = TypeToken.getParameterized(List.class, clazz).getType();
+        return getWriter().fromJson(json, type);
     }
 
     @Override
     public String toJson(Object obj) {
-        return getGson().toJson(obj);
+        return getWriter().toJson(obj);
+    }
+
+    @Override
+    public String toPrettyJson(Object obj) {
+        return getReader().setPrettyPrinting().create().toJson(obj);
     }
 
     @Override
     public Object convertObject(Object obj, Type type) {
-        Gson gson = getGson();
+        Gson gson = getWriter();
         return gson.fromJson(gson.toJsonTree(obj), type);
     }
 
     @Override
     public Object convertObject(Object obj, Class<?> clazz) {
-        Gson gson = getGson();
+        Gson gson = getWriter();
         return gson.fromJson(gson.toJsonTree(obj), clazz);
     }
 
-    private Gson getGson() {
-        if (gsonCache == null || !(gsonCache instanceof Gson)) {
-            synchronized (this) {
-                if (gsonCache == null || !(gsonCache instanceof Gson)) {
-                    gsonCache = new Gson();
-                }
-            }
-        }
-        return (Gson) gsonCache;
+    @Override
+    protected GsonBuilder newReader() {
+        return new GsonBuilder();
+    }
+
+    @Override
+    protected Gson createWriter() {
+        return getReader().create();
     }
 }

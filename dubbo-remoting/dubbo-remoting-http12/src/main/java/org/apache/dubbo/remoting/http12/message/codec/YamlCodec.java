@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
-import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.remoting.http12.HttpJsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
@@ -60,7 +60,7 @@ public class YamlCodec implements HttpMessageCodec {
         }
 
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
-            return JsonUtils.convertObject(createYaml().load(reader), targetType);
+            return HttpJsonUtils.convertObject(createYaml().load(reader), targetType);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {

@@ -21,9 +21,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.DateUtils;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
+import org.apache.dubbo.remoting.http12.HttpJsonUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.MediaType;
@@ -630,7 +630,7 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         try {
-            return JsonUtils.convertObject(source, targetClass);
+            return HttpJsonUtils.convertObject(source, targetClass);
         } catch (Throwable t) {
             String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
             LOGGER.debug(msg, source, sourceClass, targetClass, t);
@@ -772,7 +772,7 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         try {
-            return JsonUtils.convertObject(source, targetType);
+            return HttpJsonUtils.convertObject(source, targetType);
         } catch (Throwable t) {
             String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
             LOGGER.debug(msg, source, source.getClass(), targetType, t);
@@ -1137,7 +1137,7 @@ public class GeneralTypeConverter implements TypeConverter {
         if (isMaybeJSON(value)) {
             try {
                 if (codecUtils == null || !(targetType instanceof Class)) {
-                    return JsonUtils.toJavaObject(value, targetType);
+                    return HttpJsonUtils.toJavaObject(value, targetType);
                 }
                 return codecUtils
                         .determineHttpMessageDecoder(MediaType.APPLICATION_JSON.getName())

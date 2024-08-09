@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.Http3Exchanger;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
+import org.apache.dubbo.remoting.http12.HttpJsonUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -94,6 +95,8 @@ public class TripleProtocol extends AbstractProtocol {
         VERBOSE_ENABLED = globalConf.getBoolean(H2_SETTINGS_VERBOSE_ENABLED, false);
         SERVLET_ENABLED = globalConf.getBoolean(H2_SETTINGS_SERVLET_ENABLED, false);
         HTTP3_ENABLED = globalConf.getBoolean(H3_SETTINGS_HTTP3_ENABLED, false);
+
+        HttpJsonUtils.init(frameworkModel, globalConf);
     }
 
     @Override

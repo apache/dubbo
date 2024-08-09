@@ -118,11 +118,9 @@ public final class CompositeExceptionHandler implements ExceptionHandler<Throwab
         return cache.computeIfAbsent(type, k -> {
             List<ExceptionHandler> result = new ArrayList<>();
             for (ExceptionHandler handler : exceptionHandlers) {
-                Class<?> supportType = TypeUtils.getSuperGenericType(handler.getClass(), 0);
-                if (supportType != null) {
-                    if (supportType.isAssignableFrom(type)) {
-                        result.add(handler);
-                    }
+                Class<?> supportType = TypeUtils.getSuperGenericType(handler.getClass());
+                if (supportType != null && supportType.isAssignableFrom(type)) {
+                    result.add(handler);
                 }
             }
             return result.isEmpty() ? Collections.emptyList() : result;
