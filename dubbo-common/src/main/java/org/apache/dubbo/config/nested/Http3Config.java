@@ -29,6 +29,13 @@ public class Http3Config implements Serializable {
     private Boolean enabled;
 
     /**
+     * Whether to enable HTTP/3 negotiation
+     * If set to false, HTTP/2 alt-svc negotiation will be skipped, enabling HTTP/3 but disabling HTTP/2 on the consumer side.
+     * <p>The default value is true.
+     */
+    private Boolean negotiation;
+
+    /**
      * See <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_data">set_initial_max_data</a>.
      * <p>The default value is 8MiB.
      */
@@ -121,6 +128,14 @@ public class Http3Config implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getNegotiation() {
+        return negotiation;
+    }
+
+    public void setNegotiation(Boolean negotiation) {
+        this.negotiation = negotiation;
     }
 
     public Integer getInitialMaxData() {

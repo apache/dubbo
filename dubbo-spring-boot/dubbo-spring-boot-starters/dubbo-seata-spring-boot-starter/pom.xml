@@ -32,6 +32,12 @@
   <properties />
 
   <dependencies>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- seata dependency -->
     <dependency>
       <groupId>io.seata</groupId>
