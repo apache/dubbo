@@ -328,7 +328,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             multipleSerialization.serialize(url, requestSerialize, actualResponseType, obj, bos);
-            return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
+            return TripleCustomerProtocolWrapper.TripleResponseWrapper.Builder.newBuilder()
                     .setSerializeType(requestSerialize)
                     .setType(actualResponseType.getName())
                     .setData(bos.toByteArray())
@@ -359,8 +359,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
-            TripleCustomerProtocolWapper.TripleResponseWrapper wrapper =
-                    TripleCustomerProtocolWapper.TripleResponseWrapper.parseFrom(data);
+            TripleCustomerProtocolWrapper.TripleResponseWrapper wrapper =
+                    TripleCustomerProtocolWrapper.TripleResponseWrapper.parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
 
             CodecSupport.checkSerialization(serializeType, allSerialize);
@@ -405,8 +405,8 @@ public class ReflectionPackableMethod implements PackableMethod {
             } else {
                 arguments = (Object[]) obj;
             }
-            final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder =
-                    TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
+            TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder builder =
+                    TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder.newBuilder();
             builder.setSerializeType(serialize);
             for (String type : argumentsType) {
                 builder.addArgTypes(type);
@@ -457,8 +457,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
-            TripleCustomerProtocolWapper.TripleRequestWrapper wrapper =
-                    TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
+            TripleCustomerProtocolWrapper.TripleRequestWrapper wrapper =
+                    TripleCustomerProtocolWrapper.TripleRequestWrapper.parseFrom(data);
 
             String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             CodecSupport.checkSerialization(wrapperSerializeType, allSerialize);
