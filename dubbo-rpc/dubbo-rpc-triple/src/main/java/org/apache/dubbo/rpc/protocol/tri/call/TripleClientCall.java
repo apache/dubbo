@@ -81,8 +81,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         try {
-            final Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
-            listener.onMessage(unpacked, message.length);
+            Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
+            listener.onMessage(unpacked, requestMetadata.packableMethod.getResponseClass(), message.length);
         } catch (Throwable t) {
             TriRpcStatus status = TriRpcStatus.INTERNAL
                     .withDescription("Deserialize response failed")
@@ -95,7 +95,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                     "",
                     String.format(
                             "Failed to deserialize triple response, service=%s, method=%s,connection=%s",
-                            connectionClient, requestMetadata.service, requestMetadata.method.getMethodName()),
+                            requestMetadata.service, requestMetadata.service, requestMetadata.method.getMethodName()),
                     t);
         }
     }

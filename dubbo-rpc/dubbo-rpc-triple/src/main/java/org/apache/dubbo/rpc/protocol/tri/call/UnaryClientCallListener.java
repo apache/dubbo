@@ -34,7 +34,7 @@ public class UnaryClientCallListener implements ClientCall.Listener {
     }
 
     @Override
-    public void onMessage(Object message, int actualContentLength) {
+    public void onMessage(Object message, Class<?> expectReturnClass, int actualContentLength) {
         this.appResponse = message;
         this.actualContentLength = actualContentLength;
     }

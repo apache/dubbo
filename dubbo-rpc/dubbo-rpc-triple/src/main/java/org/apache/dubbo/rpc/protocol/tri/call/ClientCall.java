@@ -42,10 +42,11 @@ public interface ClientCall {
         /**
          * Callback when message received.
          *
-         * @param message message received
+         * @param message             message received
+         * @param expectReturnClass   the expected class of the return value
          * @param actualContentLength actual content length from body
          */
-        void onMessage(Object message, int actualContentLength);
+        void onMessage(Object message, Class<?> expectReturnClass, int actualContentLength);
 
         /**
          * Callback when call is finished.

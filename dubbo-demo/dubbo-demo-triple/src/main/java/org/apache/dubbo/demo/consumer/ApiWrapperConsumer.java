@@ -17,6 +17,7 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -25,16 +26,18 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.GreeterWrapperService;
 import org.apache.dubbo.rpc.Constants;
 
-import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 
 public class ApiWrapperConsumer {
-    public static void main(String[] args) throws IOException {
+
+    public static void main(String[] args) throws InterruptedException {
         ReferenceConfig<GreeterWrapperService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(GreeterWrapperService.class);
         referenceConfig.setCheck(false);
-        referenceConfig.setProtocol("tri");
+        referenceConfig.setProtocol(CommonConstants.TRIPLE);
         referenceConfig.setLazy(true);
+        referenceConfig.setTimeout(100000);
         if (args.length > 0 && Constants.HTTP3_KEY.equals(args[0])) {
             referenceConfig.setParameters(Collections.singletonMap(Constants.HTTP3_KEY, "true"));
         }
@@ -47,12 +50,66 @@ public class ApiWrapperConsumer {
                 .reference(referenceConfig)
                 .start();
 
-        final GreeterWrapperService greeterWrapperService = referenceConfig.get();
+        GreeterWrapperService greeterService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
-        long st = System.currentTimeMillis();
-        String reply = greeterWrapperService.sayHello("haha");
-        // 4MB response
-        System.out.println("Reply length:" + reply.length() + " cost:" + (System.currentTimeMillis() - st));
-        System.in.read();
+        try {
+            System.out.println("Call sayHello");
+            String reply = greeterService.sayHello(buildRequest("triple"));
+            System.out.println("sayHello reply: " + reply);
+
+            System.out.println("Call sayHelloAsync");
+            CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
+            sayHelloAsync.thenAccept(value -> System.out.println("sayHelloAsync reply: " + value));
+
+            StreamObserver<String> responseObserver = new StreamObserver<String>() {
+                @Override
+                public void onNext(String reply) {
+                    System.out.println("sayHelloServerStream onNext: " + reply);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    System.out.println("sayHelloServerStream onError: " + t);
+                }
+
+                @Override
+                public void onCompleted() {
+                    System.out.println("sayHelloServerStream onCompleted");
+                }
+            };
+            System.out.println("Call sayHelloServerStream");
+            greeterService.sayHelloServerStream(buildRequest("triple"), responseObserver);
+
+            StreamObserver<String> biResponseObserver = new StreamObserver<String>() {
+                @Override
+                public void onNext(String reply) {
+                    System.out.println("biRequestObserver onNext: " + reply);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    System.out.println("biResponseObserver onError: " + t);
+                }
+
+                @Override
+                public void onCompleted() {
+                    System.out.println("biResponseObserver onCompleted");
+                }
+            };
+            System.out.println("Call biRequestObserver");
+            StreamObserver<String> biRequestObserver = greeterService.sayHelloBiStream(biResponseObserver);
+            for (int i = 0; i < 5; i++) {
+                biRequestObserver.onNext(buildRequest("triple" + i));
+            }
+            biRequestObserver.onCompleted();
+        } catch (Throwable t) {
+            //noinspection CallToPrintStackTrace
+            t.printStackTrace();
+        }
+        Thread.sleep(2000);
+    }
+
+    private static String buildRequest(String name) {
+        return name;
     }
 }

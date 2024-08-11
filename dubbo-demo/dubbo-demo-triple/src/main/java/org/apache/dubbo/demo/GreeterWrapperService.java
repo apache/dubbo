@@ -16,10 +16,29 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.common.stream.StreamObserver;
+
+import java.util.concurrent.CompletableFuture;
+
 public interface GreeterWrapperService {
 
     /**
      * Sends a greeting
      */
     String sayHello(String request);
+
+    /**
+     * Sends a greeting asynchronously
+     */
+    CompletableFuture<String> sayHelloAsync(String request);
+
+    /**
+     * Sends a greeting with server streaming
+     */
+    void sayHelloServerStream(String request, StreamObserver<String> responseObserver);
+
+    /**
+     * Sends greetings with bi streaming
+     */
+    StreamObserver<String> sayHelloBiStream(StreamObserver<String> responseObserver);
 }
