@@ -19,6 +19,8 @@ package org.apache.dubbo.demo;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
+import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -32,7 +34,7 @@ public class GreeterServiceImpl implements GreeterService {
     @Override
     public HelloReply sayHello(HelloRequest request) {
         LOGGER.info("Received sayHello request: {}", request.getName());
-        return toReply("Hello " + request.getName());
+        return toReply(request.getName());
     }
 
     @Override
@@ -46,7 +48,7 @@ public class GreeterServiceImpl implements GreeterService {
         LOGGER.info("Received sayHelloServerStream request");
         for (int i = 1; i < 6; i++) {
             LOGGER.info("sayHelloServerStream onNext: {} {} times", request.getName(), i);
-            responseObserver.onNext(toReply("Hello " + request.getName() + ' ' + i + " times"));
+            responseObserver.onNext(toReply(request.getName() + ' ' + i + " times"));
         }
         LOGGER.info("sayHelloServerStream onCompleted");
         responseObserver.onCompleted();
@@ -59,7 +61,9 @@ public class GreeterServiceImpl implements GreeterService {
             @Override
             public void onNext(HelloRequest request) {
                 LOGGER.info("sayHelloBiStream onNext: {}", request.getName());
-                responseObserver.onNext(toReply("Hello " + request.getName()));
+                responseObserver.onNext(toReply(request.getName()));
+                responseObserver.onError(new HttpResultPayloadException(HttpResult.error(
+                        "Error " + request.getName())));
             }
 
             @Override
@@ -75,6 +79,6 @@ public class GreeterServiceImpl implements GreeterService {
     }
 
     private static HelloReply toReply(String message) {
-        return HelloReply.newBuilder().setMessage(message).build();
+        return HelloReply.newBuilder().setMessage("Hello " + message).build();
     }
 }

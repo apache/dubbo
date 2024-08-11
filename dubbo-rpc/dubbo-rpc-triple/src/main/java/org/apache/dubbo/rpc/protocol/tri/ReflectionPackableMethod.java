@@ -58,12 +58,16 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final UnPack responseUnpack;
 
     private final boolean needWrapper;
-
-    private final Collection<String> allSerialize;
+    private final Class<?> responseClass;
 
     @Override
     public boolean needWrapper() {
-        return this.needWrapper;
+        return needWrapper;
+    }
+
+    @Override
+    public Class<?> getResponseClass() {
+        return responseClass;
     }
 
     public ReflectionPackableMethod(
@@ -97,6 +101,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         boolean singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
         this.needWrapper = needWrap(method, actualRequestTypes, actualResponseType);
+        this.responseClass = actualResponseType;
         if (!needWrapper) {
             requestPack = new PbArrayPacker(singleArgument);
             responsePack = PB_PACK;
@@ -116,7 +121,6 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
             this.requestUnpack = new WrapRequestUnpack(serialization, url, allSerialize, actualRequestTypes);
         }
-        this.allSerialize = allSerialize;
     }
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
@@ -330,7 +334,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             multipleSerialization.serialize(url, requestSerialize, actualResponseType, obj, bos);
             return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
                     .setSerializeType(requestSerialize)
-                    .setType(actualResponseType.getName())
+                    .setType(obj instanceof Exception ? Exception.class.getName() : actualResponseType.getName())
                     .setData(bos.toByteArray())
                     .build()
                     .toByteArray();
@@ -366,7 +370,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             CodecSupport.checkSerialization(serializeType, allSerialize);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            if (isReturnTriException) {
+            if (isReturnTriException || Exception.class.getName().equals(wrapper.getType())) {
                 return serialization.deserialize(url, serializeType, Exception.class, bais);
             }
             return serialization.deserialize(url, serializeType, returnClass, bais);

@@ -50,6 +50,8 @@ public interface PackableMethod {
         return false;
     }
 
+    Class<?> getResponseClass();
+
     Pack getRequestPack();
 
     Pack getResponsePack();
