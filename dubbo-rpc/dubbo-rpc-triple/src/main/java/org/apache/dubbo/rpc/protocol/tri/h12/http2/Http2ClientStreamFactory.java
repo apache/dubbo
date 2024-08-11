@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.concurrent.Executor;
 
+import io.netty.channel.Channel;
+
 @Activate
 public class Http2ClientStreamFactory implements ClientStreamFactory {
 
@@ -36,6 +38,7 @@ public class Http2ClientStreamFactory implements ClientStreamFactory {
             Executor executor,
             TripleClientCall clientCall,
             TripleWriteQueue writeQueue) {
-        return new Http2TripleClientStream(frameworkModel, executor, client.getChannel(true), clientCall, writeQueue);
+        return new Http2TripleClientStream(
+                frameworkModel, executor, (Channel) client.getChannel(true), clientCall, writeQueue);
     }
 }

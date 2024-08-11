@@ -140,11 +140,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         }
     }
 
-    protected AbstractClient() {
-        needReconnect = false;
-        frameworkModel = null;
-    }
-
     private void initExecutor(URL url) {
         ExecutorRepository executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
 

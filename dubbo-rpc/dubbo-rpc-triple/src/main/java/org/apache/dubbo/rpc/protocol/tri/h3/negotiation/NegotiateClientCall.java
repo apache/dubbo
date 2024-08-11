@@ -57,7 +57,7 @@ public class NegotiateClientCall {
     public CompletableFuture<String> start(URL url) {
         CompletableFuture<String> future = new CompletableFuture<>();
         try {
-            Channel channel = connectionClient.getChannel(true);
+            Channel channel = (Channel) connectionClient.getChannel(true);
             Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(channel);
             bootstrap.handler(new ChannelInboundHandlerAdapter() {
                 @Override

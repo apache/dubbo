@@ -41,7 +41,7 @@ public class AdaptiveClientStreamFactory implements ClientStreamFactory {
             TripleClientCall clientCall,
             TripleWriteQueue writeQueue) {
         if (client instanceof AutoSwitchConnectionClient) {
-            Channel channel = client.getChannel(true);
+            Channel channel = (Channel) client.getChannel(true);
             if (((AutoSwitchConnectionClient) client).isHttp3Connected()) {
                 return new Http3TripleClientStream(frameworkModel, executor, channel, clientCall, writeQueue);
             }
