@@ -27,8 +27,6 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.concurrent.Executor;
 
-import io.netty.channel.Channel;
-
 @Activate(order = -100, onClass = "io.netty.incubator.codec.quic.QuicChannel")
 public class Http3ClientStreamFactory implements ClientStreamFactory {
 
@@ -41,7 +39,7 @@ public class Http3ClientStreamFactory implements ClientStreamFactory {
             TripleWriteQueue writeQueue) {
         if (client instanceof NettyHttp3ConnectionClient) {
             return new Http3TripleClientStream(
-                    frameworkModel, executor, (Channel) client.getChannel(true), clientCall, writeQueue);
+                    frameworkModel, executor, client.getChannel(true), clientCall, writeQueue);
         }
         return null;
     }

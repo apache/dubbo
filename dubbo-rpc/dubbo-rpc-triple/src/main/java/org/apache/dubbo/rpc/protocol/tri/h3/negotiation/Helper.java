@@ -30,11 +30,7 @@ public class Helper {
     private Helper() {}
 
     public static AbstractConnectionClient createAutoSwitchClient(URL url, ChannelHandler handler) {
-        try {
-            return new AutoSwitchConnectionClient(url, PortUnificationExchanger.connect(url, handler));
-        } catch (RemotingException e) {
-            throw new RuntimeException(e);
-        }
+        return new AutoSwitchConnectionClient(url, PortUnificationExchanger.connect(url, handler));
     }
 
     public static AbstractNettyConnectionClient createHttp3Client(URL url, ChannelHandler handler) {
