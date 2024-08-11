@@ -32,9 +32,13 @@ public final class GrpcHttp3ServerTransportListener extends GrpcHttp2ServerTrans
     }
 
     @Override
-    protected Http2ServerChannelObserver newHttp2ServerChannelObserver(
-            FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        return new GrpcHttp3ServerChannelObserver(frameworkModel, h2StreamChannel);
+    protected Http2ServerChannelObserver newResponseObserver(H2StreamChannel h2StreamChannel) {
+        return new GrpcHttp3UnaryServerChannelObserver(getFrameworkModel(), h2StreamChannel);
+    }
+
+    @Override
+    protected Http2ServerChannelObserver newStreamResponseObserver(H2StreamChannel h2StreamChannel) {
+        return new GrpcHttp3ServerChannelObserver(getFrameworkModel(), h2StreamChannel);
     }
 
     @Override

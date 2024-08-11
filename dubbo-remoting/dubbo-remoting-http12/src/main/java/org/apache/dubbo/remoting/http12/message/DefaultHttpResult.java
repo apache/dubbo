@@ -34,6 +34,8 @@ import java.util.Map.Entry;
 
 public class DefaultHttpResult<T> implements HttpResult<T> {
 
+    private static final long serialVersionUID = 1L;
+
     private int status;
     private Map<String, List<String>> headers;
     private T body;

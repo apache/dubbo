@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http1;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpChannel;
@@ -28,7 +27,6 @@ import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerStreamChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
-import org.apache.dubbo.remoting.http12.h1.Http1ServerUnaryChannelObserver;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
@@ -54,16 +52,20 @@ public class DefaultHttp11ServerTransportListener
 
     private final ExecutorSupport executorSupport;
     private final HttpChannel httpChannel;
-    private Http1ServerChannelObserver serverChannelObserver;
+    private Http1ServerChannelObserver responseObserver;
 
     public DefaultHttp11ServerTransportListener(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
         super(frameworkModel, url, httpChannel);
-        executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
-                .getExecutorSupport(url);
+        executorSupport = getExecutorSupport(url);
         this.httpChannel = httpChannel;
-        serverChannelObserver = new Http1ServerUnaryChannelObserver(httpChannel);
-        serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
-        serverChannelObserver.setExceptionHandler(getExceptionHandler());
+        responseObserver = prepareResponseObserver(new Http1UnaryServerChannelObserver(httpChannel));
+    }
+
+    private Http1ServerChannelObserver prepareResponseObserver(Http1ServerChannelObserver responseObserver) {
+        responseObserver.setExceptionCustomizer(getExceptionCustomizer());
+        RpcInvocationBuildContext context = getContext();
+        responseObserver.setResponseEncoder(context == null ? JsonCodec.INSTANCE : context.getHttpMessageEncoder());
+        return responseObserver;
     }
 
     @Override
@@ -78,7 +80,6 @@ public class DefaultHttp11ServerTransportListener
 
         ServerCallListener serverCallListener =
                 startListener(rpcInvocation, context.getMethodDescriptor(), context.getInvoker());
-
         DefaultListeningDecoder listeningDecoder = new DefaultListeningDecoder(
                 context.getHttpMessageDecoder(), context.getMethodMetadata().getActualRequestTypes());
         listeningDecoder.setListener(serverCallListener::onMessage);
@@ -89,12 +90,12 @@ public class DefaultHttp11ServerTransportListener
             RpcInvocation invocation, MethodDescriptor methodDescriptor, Invoker<?> invoker) {
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
-                return new AutoCompleteUnaryServerCallListener(invocation, invoker, serverChannelObserver);
+                return new AutoCompleteUnaryServerCallListener(invocation, invoker, responseObserver);
             case SERVER_STREAM:
-                serverChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
-                serverChannelObserver.setHeadersCustomizer(headers ->
-                        headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.TEXT_EVENT_STREAM.getName()));
-                return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverChannelObserver);
+                responseObserver = prepareResponseObserver(new Http1ServerStreamChannelObserver(httpChannel));
+                responseObserver.addHeadersCustomizer((hs, t) ->
+                        hs.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM.getName()));
+                return new AutoCompleteServerStreamServerCallListener(invocation, invoker, responseObserver);
             default:
                 throw new UnsupportedOperationException("HTTP1.x only support unary and server-stream");
         }
@@ -102,32 +103,26 @@ public class DefaultHttp11ServerTransportListener
 
     @Override
     protected void onMetadataCompletion(RequestMetadata metadata) {
-        serverChannelObserver.setResponseEncoder(getContext().getHttpMessageEncoder());
-        super.onMetadataCompletion(metadata);
+        responseObserver.setResponseEncoder(getContext().getHttpMessageEncoder());
     }
 
     @Override
     protected void onError(Throwable throwable) {
-        serverChannelObserver.onError(throwable);
+        responseObserver.onError(throwable);
     }
 
     @Override
     protected void initializeAltSvc(URL url) {
         String protocolId = Http3Exchanger.isEnabled(url) ? "h3" : "h2";
-        int bindPort = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
-        serverChannelObserver.setAltSvc(protocolId + "=\":" + bindPort + "\"");
+        String value = protocolId + "=\":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort()) + '"';
+        responseObserver.addHeadersCustomizer((hs, t) -> hs.set(HttpHeaderNames.ALT_SVC.getName(), value));
     }
 
-    @Override
-    protected void onFinally(HttpInputMessage message) {
-        serverChannelObserver.close();
-    }
+    private static final class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {
 
-    private static class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {
-
-        public AutoCompleteUnaryServerCallListener(
+        AutoCompleteUnaryServerCallListener(
                 RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
-            super(invocation, invoker, responseObserver, false);
+            super(invocation, invoker, responseObserver);
         }
 
         @Override
@@ -137,9 +132,9 @@ public class DefaultHttp11ServerTransportListener
         }
     }
 
-    private static class AutoCompleteServerStreamServerCallListener extends ServerStreamServerCallListener {
+    private static final class AutoCompleteServerStreamServerCallListener extends ServerStreamServerCallListener {
 
-        public AutoCompleteServerStreamServerCallListener(
+        AutoCompleteServerStreamServerCallListener(
                 RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
             super(invocation, invoker, responseObserver);
         }

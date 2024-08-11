@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 import java.io.Serializable;
 
@@ -35,9 +36,11 @@ import static org.apache.dubbo.rpc.RpcException.TIMEOUT_TERMINATE;
 import static org.apache.dubbo.rpc.RpcException.UNKNOWN_EXCEPTION;
 
 /**
- * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+ * See <a href="https://github.com/grpc/grpc/blob/master/doc/statuscodes.md">status codes</a>
  */
 public class TriRpcStatus implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final TriRpcStatus OK = fromCode(Code.OK);
     public static final TriRpcStatus UNKNOWN = fromCode(Code.UNKNOWN);
@@ -74,6 +77,10 @@ public class TriRpcStatus implements Serializable {
     }
 
     public static TriRpcStatus getStatus(Throwable throwable, String description) {
+        if (throwable instanceof HttpStatusException) {
+            int statusCode = ((HttpStatusException) throwable).getStatusCode();
+            return new TriRpcStatus(httpStatusToGrpcCode(statusCode), throwable, description);
+        }
         if (throwable instanceof StatusRpcException) {
             return ((StatusRpcException) throwable).getStatus();
         }

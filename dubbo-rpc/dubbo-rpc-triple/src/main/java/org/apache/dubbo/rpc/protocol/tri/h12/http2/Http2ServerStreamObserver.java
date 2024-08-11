@@ -46,7 +46,7 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
     public void setCompression(String compression) {
         CompressibleEncoder compressibleEncoder = new CompressibleEncoder(getResponseEncoder());
         compressibleEncoder.setCompressor(Compressor.getCompressor(frameworkModel, compression));
-        super.setResponseEncoder(compressibleEncoder);
+        setResponseEncoder(compressibleEncoder);
     }
 
     @Override
@@ -56,14 +56,14 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
 
     @Override
     public Map<String, Object> getResponseAttachments() {
-        return this.attachments;
+        return attachments;
     }
 
     @Override
     protected HttpMetadata encodeTrailers(Throwable throwable) {
-        HttpMetadata httpMetadata = super.encodeTrailers(throwable);
-        HttpHeaders headers = httpMetadata.headers();
+        HttpMetadata metadata = super.encodeTrailers(throwable);
+        HttpHeaders headers = metadata.headers();
         StreamUtils.putHeaders(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
-        return httpMetadata;
+        return metadata;
     }
 }

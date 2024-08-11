@@ -60,6 +60,16 @@ public final class HttpUtils {
         return HttpResponseStatus.valueOf(status).reasonPhrase();
     }
 
+    public static String toStatusString(int statusCode) {
+        if (statusCode == 200) {
+            return HttpStatus.OK.getStatusString();
+        }
+        if (statusCode == 500) {
+            return HttpStatus.INTERNAL_SERVER_ERROR.getStatusString();
+        }
+        return Integer.toString(statusCode);
+    }
+
     public static List<HttpCookie> decodeCookies(String value) {
         List<HttpCookie> cookies = new ArrayList<>();
         for (Cookie c : ServerCookieDecoder.LAX.decodeAll(value)) {
@@ -196,7 +206,7 @@ public final class HttpUtils {
         return new DefaultFileUploadAdapter((FileUpload) item);
     }
 
-    private static class DefaultFileUploadAdapter implements HttpRequest.FileUpload {
+    private static final class DefaultFileUploadAdapter implements HttpRequest.FileUpload {
         private final FileUpload fu;
         private InputStream inputStream;
 

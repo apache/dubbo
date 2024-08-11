@@ -33,15 +33,13 @@ public final class GenericHttp3ServerTransportListener extends GenericHttp2Serve
     }
 
     @Override
-    protected Http2ServerChannelObserver newHttp2ServerChannelObserver(
-            FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        return new Http3ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
+    protected Http2ServerChannelObserver newResponseObserver(H2StreamChannel h2StreamChannel) {
+        return new Http3ServerUnaryChannelObserver(getFrameworkModel(), h2StreamChannel);
     }
 
     @Override
-    protected Http2ServerChannelObserver newHttp2ServerUnaryChannelObserver(
-            FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        return new Http3ServerUnaryChannelObserver(frameworkModel, h2StreamChannel);
+    protected Http2ServerChannelObserver newStreamResponseObserver(H2StreamChannel h2StreamChannel) {
+        return new Http3ServerUnaryChannelObserver(getFrameworkModel(), h2StreamChannel);
     }
 
     @Override

@@ -132,6 +132,8 @@ com.alibaba.dubbo.rpc.service.GenericException
 org.apache.dubbo.rpc.service.GenericException
 org.apache.dubbo.rpc.RpcException
 org.apache.dubbo.remoting.http12.ErrorResponse
+org.apache.dubbo.remoting.http12.message.DefaultHttpResult
+org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException
 org.apache.dubbo.common.url.component.ServiceConfigURL
 org.apache.dubbo.common.URL
 org.apache.dubbo.common.url.component.URLAddress
