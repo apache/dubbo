@@ -22,13 +22,17 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.listener.LdsListener;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
+import org.apache.dubbo.xds.resource_new.XdsListenerResource;
+import org.apache.dubbo.xds.resource_new.XdsResourceType;
+import org.apache.dubbo.xds.resource_new.update.LdsUpdate;
+import org.apache.dubbo.xds.resource_new.update.ValidatedResourceUpdate;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
@@ -40,11 +44,14 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_PARSING_XDS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class LdsProtocol extends AbstractProtocol<Listener> {
+public class LdsProtocol extends AbstractProtocol<LdsUpdate> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
+
+    private static final XdsListenerResource xdsListenerResource = XdsListenerResource.getInstance();
 
     public LdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
         super(adsObserver, node, checkInterval, applicationModel);
@@ -63,14 +70,24 @@ public class LdsProtocol extends AbstractProtocol<Listener> {
     }
 
     @Override
-    protected Map<String, Listener> decodeDiscoveryResponse(DiscoveryResponse response) {
-        if (getTypeUrl().equals(response.getTypeUrl())) {
-            return response.getResourcesList().stream()
-                    .map(LdsProtocol::unpackListener)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toConcurrentMap(Listener::getName, Function.identity()));
+    protected Map<String, LdsUpdate> decodeDiscoveryResponse(DiscoveryResponse response) {
+        if (!getTypeUrl().equals(response.getTypeUrl())) {
+            return Collections.emptyMap();
         }
-        return Collections.emptyMap();
+
+        if (!getTypeUrl().equals(response.getTypeUrl())) {
+            return Collections.emptyMap();
+        }
+        ValidatedResourceUpdate<LdsUpdate> validatedResourceUpdate =
+                xdsListenerResource.parse(XdsResourceType.xdsResourceTypeArgs, response.getResourcesList());
+        if (!validatedResourceUpdate.getErrors().isEmpty()) {
+            logger.error(
+                    REGISTRY_ERROR_PARSING_XDS,
+                    validatedResourceUpdate.getErrors().toArray());
+        }
+        return validatedResourceUpdate.getParsedResources().entrySet().stream()
+                .collect(Collectors.toConcurrentMap(
+                        Entry::getKey, e -> e.getValue().getResourceUpdate()));
     }
 
     private Set<String> decodeResourceToListener(Listener resource) {

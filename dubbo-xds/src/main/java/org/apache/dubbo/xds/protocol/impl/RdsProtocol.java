@@ -22,39 +22,32 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 import org.apache.dubbo.xds.protocol.XdsResourceListener;
-import org.apache.dubbo.xds.resource.XdsRoute;
-import org.apache.dubbo.xds.resource.XdsRouteAction;
-import org.apache.dubbo.xds.resource.XdsRouteConfiguration;
-import org.apache.dubbo.xds.resource.XdsRouteMatch;
-import org.apache.dubbo.xds.resource.XdsVirtualHost;
+import org.apache.dubbo.xds.resource_new.XdsResourceType;
+import org.apache.dubbo.xds.resource_new.XdsRouteConfigureResource;
+import org.apache.dubbo.xds.resource_new.update.LdsUpdate;
+import org.apache.dubbo.xds.resource_new.update.RdsUpdate;
+import org.apache.dubbo.xds.resource_new.update.ValidatedResourceUpdate;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.config.listener.v3.Filter;
-import io.envoyproxy.envoy.config.listener.v3.Listener;
-import io.envoyproxy.envoy.config.route.v3.Route;
-import io.envoyproxy.envoy.config.route.v3.RouteAction;
-import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
-import io.envoyproxy.envoy.config.route.v3.RouteMatch;
-import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
-import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_PARSING_XDS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
+public class RdsProtocol extends AbstractProtocol<RdsUpdate> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
+
+    private static final XdsRouteConfigureResource xdsRouteConfigureResource = XdsRouteConfigureResource.getInstance();
 
     public RdsProtocol(AdsObserver adsObserver, Node node, int checkInterval, ApplicationModel applicationModel) {
         super(adsObserver, node, checkInterval, applicationModel);
@@ -81,122 +74,131 @@ public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
     //    }
 
     @Override
-    protected Map<String, XdsRouteConfiguration> decodeDiscoveryResponse(DiscoveryResponse response) {
-        if (getTypeUrl().equals(response.getTypeUrl())) {
-            return response.getResourcesList().stream()
-                    .map(RdsProtocol::unpackRouteConfiguration)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toConcurrentMap(RouteConfiguration::getName, this::parseRouteConfiguration));
-        }
-
-        return Collections.emptyMap();
-    }
-
-    public List<XdsRouteConfiguration> parse(DiscoveryResponse response) {
-
+    protected Map<String, RdsUpdate> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (!getTypeUrl().equals(response.getTypeUrl())) {
-            return null;
+            return Collections.emptyMap();
         }
-
-        return response.getResourcesList().stream()
-                .map(RdsProtocol::unpackRouteConfiguration)
-                .filter(Objects::nonNull)
-                .map(this::parseRouteConfiguration)
-                .collect(Collectors.toList());
-    }
-
-    public XdsRouteConfiguration parseRouteConfiguration(RouteConfiguration routeConfiguration) {
-        XdsRouteConfiguration xdsRouteConfiguration = new XdsRouteConfiguration();
-        xdsRouteConfiguration.setName(routeConfiguration.getName());
-
-        List<XdsVirtualHost> xdsVirtualHosts = routeConfiguration.getVirtualHostsList().stream()
-                .map(this::parseVirtualHost)
-                .collect(Collectors.toList());
-
-        Map<String, XdsVirtualHost> xdsVirtualHostMap = new HashMap<>();
-
-        xdsVirtualHosts.forEach(xdsVirtualHost -> {
-            String domain = xdsVirtualHost.getDomains().get(0).split("\\.")[0];
-            xdsVirtualHostMap.put(domain, xdsVirtualHost);
-            // for (String domain : xdsVirtualHost.getDomains()) {
-            //     xdsVirtualHostMap.put(domain, xdsVirtualHost);
-            // }
-        });
-
-        xdsRouteConfiguration.setVirtualHosts(xdsVirtualHostMap);
-        return xdsRouteConfiguration;
-    }
-
-    public XdsVirtualHost parseVirtualHost(VirtualHost virtualHost) {
-        XdsVirtualHost xdsVirtualHost = new XdsVirtualHost();
-
-        List<String> domains = virtualHost.getDomainsList();
-
-        List<XdsRoute> xdsRoutes =
-                virtualHost.getRoutesList().stream().map(this::parseRoute).collect(Collectors.toList());
-
-        xdsVirtualHost.setName(virtualHost.getName());
-        xdsVirtualHost.setRoutes(xdsRoutes);
-        xdsVirtualHost.setDomains(domains);
-        return xdsVirtualHost;
-    }
-
-    public XdsRoute parseRoute(Route route) {
-        XdsRoute xdsRoute = new XdsRoute();
-
-        XdsRouteMatch xdsRouteMatch = parseRouteMatch(route.getMatch());
-        XdsRouteAction xdsRouteAction = parseRouteAction(route.getRoute());
-
-        xdsRoute.setRouteMatch(xdsRouteMatch);
-        xdsRoute.setRouteAction(xdsRouteAction);
-        return xdsRoute;
-    }
-
-    public XdsRouteMatch parseRouteMatch(RouteMatch routeMatch) {
-        XdsRouteMatch xdsRouteMatch = new XdsRouteMatch();
-        String prefix = routeMatch.getPrefix();
-        String path = routeMatch.getPath();
-
-        xdsRouteMatch.setPrefix(prefix);
-        xdsRouteMatch.setPath(path);
-        return xdsRouteMatch;
-    }
-
-    public XdsRouteAction parseRouteAction(RouteAction routeAction) {
-        XdsRouteAction xdsRouteAction = new XdsRouteAction();
-
-        String cluster = routeAction.getCluster();
-
-        if (cluster.equals("")) {
-            System.out.println("parse weight clusters");
+        ValidatedResourceUpdate<RdsUpdate> updates =
+                xdsRouteConfigureResource.parse(XdsResourceType.xdsResourceTypeArgs, response.getResourcesList());
+        if (!updates.getInvalidResources().isEmpty()) {
+            logger.error(REGISTRY_ERROR_PARSING_XDS, updates.getErrors().toArray());
         }
-
-        xdsRouteAction.setCluster(cluster);
-
-        return xdsRouteAction;
+        return updates.getParsedResources().entrySet().stream()
+                .collect(Collectors.toConcurrentMap(
+                        Entry::getKey, v -> v.getValue().getResourceUpdate()));
     }
 
-    public XdsResourceListener<Listener> getLdsListener() {
+    //    public List<XdsRouteConfiguration> parse(DiscoveryResponse response) {
+    //
+    //        if (!getTypeUrl().equals(response.getTypeUrl())) {
+    //            return null;
+    //        }
+    //
+    //        return response.getResourcesList().stream()
+    //                .map(RdsProtocol::unpackRouteConfiguration)
+    //                .filter(Objects::nonNull)
+    //                .map(this::parseRouteConfiguration)
+    //                .collect(Collectors.toList());
+    //    }
+    //
+    //    public XdsRouteConfiguration parseRouteConfiguration(RouteConfiguration routeConfiguration) {
+    //        XdsRouteConfiguration xdsRouteConfiguration = new XdsRouteConfiguration();
+    //        xdsRouteConfiguration.setName(routeConfiguration.getName());
+    //
+    //        List<XdsVirtualHost> xdsVirtualHosts = routeConfiguration.getVirtualHostsList().stream()
+    //                .map(this::parseVirtualHost)
+    //                .collect(Collectors.toList());
+    //
+    //        Map<String, XdsVirtualHost> xdsVirtualHostMap = new HashMap<>();
+    //
+    //        xdsVirtualHosts.forEach(xdsVirtualHost -> {
+    //            String domain = xdsVirtualHost.getDomains().get(0).split("\\.")[0];
+    //            xdsVirtualHostMap.put(domain, xdsVirtualHost);
+    //            // for (String domain : xdsVirtualHost.getDomains()) {
+    //            //     xdsVirtualHostMap.put(domain, xdsVirtualHost);
+    //            // }
+    //        });
+    //
+    //        xdsRouteConfiguration.setVirtualHosts(xdsVirtualHostMap);
+    //        return xdsRouteConfiguration;
+    //    }
+    //
+    //    public XdsVirtualHost parseVirtualHost(VirtualHost virtualHost) {
+    //        XdsVirtualHost xdsVirtualHost = new XdsVirtualHost();
+    //
+    //        List<String> domains = virtualHost.getDomainsList();
+    //
+    //        List<XdsRoute> xdsRoutes =
+    //                virtualHost.getRoutesList().stream().map(this::parseRoute).collect(Collectors.toList());
+    //
+    //        xdsVirtualHost.setName(virtualHost.getName());
+    //        xdsVirtualHost.setRoutes(xdsRoutes);
+    //        xdsVirtualHost.setDomains(domains);
+    //        return xdsVirtualHost;
+    //    }
+    //
+    //    public XdsRoute parseRoute(Route route) {
+    //        XdsRoute xdsRoute = new XdsRoute();
+    //
+    //        XdsRouteMatch xdsRouteMatch = parseRouteMatch(route.getMatch());
+    //        XdsRouteAction xdsRouteAction = parseRouteAction(route.getRoute());
+    //
+    //        xdsRoute.setRouteMatch(xdsRouteMatch);
+    //        xdsRoute.setRouteAction(xdsRouteAction);
+    //        return xdsRoute;
+    //    }
+    //
+    //    public XdsRouteMatch parseRouteMatch(RouteMatch routeMatch) {
+    //        XdsRouteMatch xdsRouteMatch = new XdsRouteMatch();
+    //        String prefix = routeMatch.getPrefix();
+    //        String path = routeMatch.getPath();
+    //
+    //        xdsRouteMatch.setPrefix(prefix);
+    //        xdsRouteMatch.setPath(path);
+    //        return xdsRouteMatch;
+    //    }
+    //
+    //    public XdsRouteAction parseRouteAction(RouteAction routeAction) {
+    //        XdsRouteAction xdsRouteAction = new XdsRouteAction();
+    //
+    //        String cluster = routeAction.getCluster();
+    //
+    //        if (cluster.equals("")) {
+    //            System.out.println("parse weight clusters");
+    //        }
+    //
+    //        xdsRouteAction.setCluster(cluster);
+    //
+    //        return xdsRouteAction;
+    //    }
+    //
+    public XdsResourceListener<LdsUpdate> getLdsListener() {
         return ldsListener;
     }
 
-    private final XdsResourceListener<Listener> ldsListener = resource -> {
+    private final XdsResourceListener<LdsUpdate> ldsListener = resource -> {
+
+        //        Set<String> set = resource.stream()
+        //                .flatMap(e -> listenerToConnectionManagerNames(e).stream())
+        //                .collect(Collectors.toSet());
+
         Set<String> set = resource.stream()
-                .flatMap(e -> listenerToConnectionManagerNames(e).stream())
+                .flatMap(l -> l.getListener().getFilterChains().stream())
+                .map(c -> c.getHttpConnectionManager().getRdsName())
                 .collect(Collectors.toSet());
         this.subscribeResource(set);
     };
 
-    private Set<String> listenerToConnectionManagerNames(Listener resource) {
-        return resource.getFilterChainsList().stream()
-                .flatMap(e -> e.getFiltersList().stream())
-                .map(Filter::getTypedConfig)
-                .map(this::unpackHttpConnectionManager)
-                .filter(Objects::nonNull)
-                .map(HttpConnectionManager::getRds)
-                .map(Rds::getRouteConfigName)
-                .collect(Collectors.toSet());
-    }
+    //    private Set<String> listenerToConnectionManagerNames(Listener resource) {
+    //        return resource.getFilterChainsList().stream()
+    //                .flatMap(e -> e.getFiltersList().stream())
+    //                .map(Filter::getTypedConfig)
+    //                .map(this::unpackHttpConnectionManager)
+    //                .filter(Objects::nonNull)
+    //                .map(HttpConnectionManager::getRds)
+    //                .map(Rds::getRouteConfigName)
+    //                .collect(Collectors.toSet());
+    //    }
 
     private HttpConnectionManager unpackHttpConnectionManager(Any any) {
         try {
@@ -209,13 +211,13 @@ public class RdsProtocol extends AbstractProtocol<XdsRouteConfiguration> {
             return null;
         }
     }
-
-    private static RouteConfiguration unpackRouteConfiguration(Any any) {
-        try {
-            return any.unpack(RouteConfiguration.class);
-        } catch (InvalidProtocolBufferException e) {
-            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
-            return null;
-        }
-    }
+    //
+    //    private static RouteConfiguration unpackRouteConfiguration(Any any) {
+    //        try {
+    //            return any.unpack(RouteConfiguration.class);
+    //        } catch (InvalidProtocolBufferException e) {
+    //            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
+    //            return null;
+    //        }
+    //    }
 }

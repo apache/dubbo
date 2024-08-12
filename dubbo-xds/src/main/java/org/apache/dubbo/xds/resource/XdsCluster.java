@@ -18,6 +18,7 @@ package org.apache.dubbo.xds.resource;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.xds.resource_new.endpoint.LbEndpoint;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class XdsCluster<T> {
 
     private String lbPolicy;
 
-    private List<XdsEndpoint> xdsEndpoints;
+    private List<LbEndpoint> xdsEndpoints;
 
     public BitList<Invoker<T>> getInvokers() {
         return invokers;
@@ -54,11 +55,11 @@ public class XdsCluster<T> {
         this.lbPolicy = lbPolicy;
     }
 
-    public List<XdsEndpoint> getXdsEndpoints() {
+    public List<LbEndpoint> getXdsEndpoints() {
         return xdsEndpoints;
     }
 
-    public void setXdsEndpoints(List<XdsEndpoint> xdsEndpoints) {
+    public void setXdsEndpoints(List<LbEndpoint> xdsEndpoints) {
         this.xdsEndpoints = xdsEndpoints;
     }
 }

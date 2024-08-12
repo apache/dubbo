@@ -28,9 +28,9 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.apache.dubbo.xds.PilotExchanger;
 import org.apache.dubbo.xds.resource.XdsCluster;
-import org.apache.dubbo.xds.resource.XdsClusterWeight;
-import org.apache.dubbo.xds.resource.XdsRoute;
-import org.apache.dubbo.xds.resource.XdsVirtualHost;
+import org.apache.dubbo.xds.resource_new.route.ClusterWeight;
+import org.apache.dubbo.xds.resource_new.route.Route;
+import org.apache.dubbo.xds.resource_new.route.VirtualHost;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     private final PilotExchanger pilotExchanger;
 
-    private Map<String, XdsVirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
+    private Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
     private Map<String, XdsCluster> xdsClusterMap = new ConcurrentHashMap<>();
 
@@ -81,17 +81,17 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
     private String matchCluster(Invocation invocation) {
         String cluster = null;
         String serviceName = invocation.getInvoker().getUrl().getParameter("provided-by");
-        XdsVirtualHost xdsVirtualHost = pilotExchanger.getXdsVirtualHostMap().get(serviceName);
+        VirtualHost xdsVirtualHost = pilotExchanger.getXdsVirtualHostMap().get(serviceName);
 
         // match route
-        for (XdsRoute xdsRoute : xdsVirtualHost.getRoutes()) {
+        for (Route xdsRoute : xdsVirtualHost.getRoutes()) {
             // match path
             String path = "/" + invocation.getInvoker().getUrl().getPath() + "/" + RpcUtils.getMethodName(invocation);
-            if (xdsRoute.getRouteMatch().isMatch(path)) {
+            if (xdsRoute.getRouteMatch().isPathMatch(path)) {
                 cluster = xdsRoute.getRouteAction().getCluster();
                 // if weighted cluster
                 if (cluster == null) {
-                    cluster = computeWeightCluster(xdsRoute.getRouteAction().getClusterWeights());
+                    cluster = computeWeightCluster(xdsRoute.getRouteAction().getWeightedClusters());
                 }
             }
             if (cluster != null) break;
@@ -100,12 +100,12 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
         return cluster;
     }
 
-    private String computeWeightCluster(List<XdsClusterWeight> weightedClusters) {
+    private String computeWeightCluster(List<ClusterWeight> weightedClusters) {
         int totalWeight = Math.max(
-                weightedClusters.stream().mapToInt(XdsClusterWeight::getWeight).sum(), 1);
+                weightedClusters.stream().mapToInt(ClusterWeight::getWeight).sum(), 1);
 
         int target = ThreadLocalRandom.current().nextInt(1, totalWeight + 1);
-        for (XdsClusterWeight xdsClusterWeight : weightedClusters) {
+        for (ClusterWeight xdsClusterWeight : weightedClusters) {
             int weight = xdsClusterWeight.getWeight();
             target -= weight;
             if (target <= 0) {

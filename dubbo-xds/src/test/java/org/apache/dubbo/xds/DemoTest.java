@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.auth.DemoService;
 import org.apache.dubbo.xds.directory.XdsDirectory;
 import org.apache.dubbo.xds.resource.XdsCluster;
-import org.apache.dubbo.xds.resource.XdsVirtualHost;
+import org.apache.dubbo.xds.resource_new.route.VirtualHost;
 import org.apache.dubbo.xds.router.XdsRouter;
 
 import java.util.Arrays;
@@ -101,7 +101,7 @@ public class DemoTest {
         Mockito.when(invocation.getInvoker()).thenReturn(invoker);
 
         while (true) {
-            Map<String, XdsVirtualHost> xdsVirtualHostMap = xdsDirectory.getXdsVirtualHostMap();
+            Map<String, VirtualHost> xdsVirtualHostMap = xdsDirectory.getXdsVirtualHostMap();
             Map<String, ? extends XdsCluster<?>> xdsClusterMap = xdsDirectory.getXdsClusterMap();
             if (!xdsVirtualHostMap.isEmpty() && !xdsClusterMap.isEmpty()) {
                 // xdsRouterDemo.route(invokers, url, invocation, false, null);

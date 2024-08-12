@@ -22,11 +22,16 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 import org.apache.dubbo.xds.protocol.XdsResourceListener;
+import org.apache.dubbo.xds.resource_new.XdsEndpointResource;
+import org.apache.dubbo.xds.resource_new.XdsResourceType;
+import org.apache.dubbo.xds.resource_new.update.CdsUpdate;
+import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
+import org.apache.dubbo.xds.resource_new.update.ValidatedResourceUpdate;
 
+import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
@@ -36,14 +41,18 @@ import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_PARSING_XDS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class EdsProtocol extends AbstractProtocol<ClusterLoadAssignment> {
+public class EdsProtocol extends AbstractProtocol<EdsUpdate> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
-    private XdsResourceListener<Cluster> clusterListener = clusters -> {
-        Set<String> clusterNames = clusters.stream().map(Cluster::getName).collect(Collectors.toSet());
+    private static final XdsEndpointResource xdsEndpointResource = XdsEndpointResource.getInstance();
+
+    private XdsResourceListener<CdsUpdate> clusterListener = clusters -> {
+        Set<String> clusterNames =
+                clusters.stream().map(CdsUpdate::getClusterName).collect(Collectors.toSet());
         this.subscribeResource(clusterNames);
     };
 
@@ -56,19 +65,25 @@ public class EdsProtocol extends AbstractProtocol<ClusterLoadAssignment> {
         return "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
     }
 
-    public XdsResourceListener<Cluster> getCdsListener() {
+    public XdsResourceListener<CdsUpdate> getCdsListener() {
         return clusterListener;
     }
 
     @Override
-    protected Map<String, ClusterLoadAssignment> decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, EdsUpdate> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (!getTypeUrl().equals(response.getTypeUrl())) {
-            return null;
+            return Collections.emptyMap();
         }
-        return response.getResourcesList().stream()
-                .map(EdsProtocol::unpackClusterLoadAssignment)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toConcurrentMap(ClusterLoadAssignment::getClusterName, Function.identity()));
+        ValidatedResourceUpdate<EdsUpdate> validatedResourceUpdate =
+                xdsEndpointResource.parse(XdsResourceType.xdsResourceTypeArgs, response.getResourcesList());
+        if (!validatedResourceUpdate.getErrors().isEmpty()) {
+            logger.error(
+                    REGISTRY_ERROR_PARSING_XDS,
+                    validatedResourceUpdate.getErrors().toArray());
+        }
+        return validatedResourceUpdate.getParsedResources().entrySet().stream()
+                .collect(Collectors.toConcurrentMap(
+                        Entry::getKey, e -> e.getValue().getResourceUpdate()));
     }
 
     private static ClusterLoadAssignment unpackClusterLoadAssignment(Any any) {

@@ -93,8 +93,7 @@ public class XdsChannel {
                             .sslContext(context)
                             .build();
                 }
-            }
-            else {
+            } else {
                 Bootstrapper bootstrapper = new Bootstrapper();
                 Bootstrapper.BootstrapInfo bootstrapInfo = bootstrapper.bootstrap();
                 URLAddress address =

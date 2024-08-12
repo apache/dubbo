@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.envoyproxy.envoy.config.cluster.v3.Cluster;
+
 public class CdsUpdate implements ResourceUpdate {
 
     enum ClusterType {
@@ -125,6 +127,8 @@ public class CdsUpdate implements ResourceUpdate {
     @Nullable
     private final OutlierDetection outlierDetection;
 
+    private Cluster rawCluster;
+
     private CdsUpdate(
             String clusterName,
             ClusterType clusterType,
@@ -211,6 +215,14 @@ public class CdsUpdate implements ResourceUpdate {
     @Nullable
     public OutlierDetection getOutlierDetection() {
         return outlierDetection;
+    }
+
+    public Cluster getRawCluster() {
+        return rawCluster;
+    }
+
+    public void setRawCluster(Cluster rawCluster) {
+        this.rawCluster = rawCluster;
     }
 
     @Override

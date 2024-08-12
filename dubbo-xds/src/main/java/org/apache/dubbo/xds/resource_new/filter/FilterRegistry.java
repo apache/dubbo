@@ -35,7 +35,7 @@ public class FilterRegistry {
 
     private FilterRegistry() {}
 
-    static synchronized FilterRegistry getDefaultRegistry() {
+    public static synchronized FilterRegistry getDefaultRegistry() {
         if (instance == null) {
             instance = newRegistry().register(FaultFilter.INSTANCE, RouterFilter.INSTANCE, RbacFilter.INSTANCE);
         }

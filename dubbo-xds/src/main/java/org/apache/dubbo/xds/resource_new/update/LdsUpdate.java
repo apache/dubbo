@@ -26,6 +26,7 @@ public class LdsUpdate implements ResourceUpdate {
 
     private HttpConnectionManager httpConnectionManager;
     private Listener listener;
+    private io.envoyproxy.envoy.config.listener.v3.Listener rawListener;
 
     public LdsUpdate(HttpConnectionManager httpConnectionManager, Listener listener) {
         this.httpConnectionManager = httpConnectionManager;
@@ -46,6 +47,14 @@ public class LdsUpdate implements ResourceUpdate {
 
     public void setListener(Listener listener) {
         this.listener = listener;
+    }
+
+    public io.envoyproxy.envoy.config.listener.v3.Listener getRawListener() {
+        return rawListener;
+    }
+
+    public void setRawListener(io.envoyproxy.envoy.config.listener.v3.Listener rawListener) {
+        this.rawListener = rawListener;
     }
 
     @Override

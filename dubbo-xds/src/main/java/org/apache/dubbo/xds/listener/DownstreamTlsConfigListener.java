@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.XdsException;
+import org.apache.dubbo.xds.resource_new.update.LdsUpdate;
 import org.apache.dubbo.xds.security.authn.DownstreamTlsConfig;
 import org.apache.dubbo.xds.security.authn.GeneralTlsConfig;
 import org.apache.dubbo.xds.security.authn.TlsResourceResolver;
@@ -27,6 +28,7 @@ import org.apache.dubbo.xds.security.authn.TlsResourceResolver;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -56,12 +58,14 @@ public class DownstreamTlsConfigListener implements LdsListener {
     }
 
     @Override
-    public void onResourceUpdate(List<Listener> listeners) {
+    public void onResourceUpdate(List<LdsUpdate> listeners) {
         if (CollectionUtils.isEmpty(listeners)) {
             return;
         }
         Map<String, DownstreamTlsConfig> downstreamConfigs = new HashMap<>(4);
-        for (Listener listener : listeners) {
+        List<Listener> listenerList =
+                listeners.stream().map(LdsUpdate::getRawListener).collect(Collectors.toList()); // TODO temporary
+        for (Listener listener : listenerList) {
             // only choose inbound listeners
             if (!LDS_VIRTUAL_INBOUND.equals(listener.getName())) {
                 continue;

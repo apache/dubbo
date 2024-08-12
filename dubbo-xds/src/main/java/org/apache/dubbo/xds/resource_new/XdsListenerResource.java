@@ -106,11 +106,14 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
         }
         Listener listener = (Listener) unpackedMessage;
 
+        LdsUpdate ldsUpdate;
         if (listener.hasApiListener()) {
-            return processClientSideListener(listener, args);
+            ldsUpdate = processClientSideListener(listener, args);
         } else {
-            return processServerSideListener(listener, args);
+            ldsUpdate = processServerSideListener(listener, args);
         }
+        ldsUpdate.setRawListener(listener); // TODO temp solution for compatibility
+        return ldsUpdate;
     }
 
     private LdsUpdate processClientSideListener(Listener listener, Args args) throws ResourceInvalidException {

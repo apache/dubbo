@@ -81,6 +81,9 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
     // the resources that need an update.
     abstract boolean isFullStateOfTheWorld();
 
+    public static final Args xdsResourceTypeArgs =
+            new Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null); // TODO
+
     public static class Args {
         final ServerInfo serverInfo;
         final String versionInfo;

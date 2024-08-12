@@ -29,11 +29,11 @@ import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.xds.PilotExchanger;
 import org.apache.dubbo.xds.resource.XdsCluster;
-import org.apache.dubbo.xds.resource.XdsClusterWeight;
-import org.apache.dubbo.xds.resource.XdsEndpoint;
-import org.apache.dubbo.xds.resource.XdsRoute;
-import org.apache.dubbo.xds.resource.XdsRouteAction;
-import org.apache.dubbo.xds.resource.XdsVirtualHost;
+import org.apache.dubbo.xds.resource_new.endpoint.LbEndpoint;
+import org.apache.dubbo.xds.resource_new.route.ClusterWeight;
+import org.apache.dubbo.xds.resource_new.route.Route;
+import org.apache.dubbo.xds.resource_new.route.RouteAction;
+import org.apache.dubbo.xds.resource_new.route.VirtualHost;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,7 +56,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     private Protocol protocol;
 
-    private final Map<String, XdsVirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
+    private final Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
     private final Map<String, XdsCluster<T>> xdsClusterMap = new ConcurrentHashMap<>();
 
@@ -79,7 +79,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         }
     }
 
-    public Map<String, XdsVirtualHost> getXdsVirtualHostMap() {
+    public Map<String, VirtualHost> getXdsVirtualHostMap() {
         return xdsVirtualHostMap;
     }
 
@@ -111,7 +111,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         return super.getInvokers();
     }
 
-    public void onRdsChange(String applicationName, XdsVirtualHost xdsVirtualHost) {
+    public void onRdsChange(String applicationName, VirtualHost xdsVirtualHost) {
         Set<String> oldCluster = getAllCluster();
         xdsVirtualHostMap.put(applicationName, xdsVirtualHost);
         Set<String> newCluster = getAllCluster();
@@ -124,12 +124,12 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         }
         Set<String> clusters = new HashSet<>();
         xdsVirtualHostMap.forEach((applicationName, xdsVirtualHost) -> {
-            for (XdsRoute xdsRoute : xdsVirtualHost.getRoutes()) {
-                XdsRouteAction action = xdsRoute.getRouteAction();
+            for (Route xdsRoute : xdsVirtualHost.getRoutes()) {
+                RouteAction action = xdsRoute.getRouteAction();
                 if (action.getCluster() != null) {
                     clusters.add(action.getCluster());
-                } else if (CollectionUtils.isNotEmpty(action.getClusterWeights())) {
-                    for (XdsClusterWeight weightedCluster : action.getClusterWeights()) {
+                } else if (CollectionUtils.isNotEmpty(action.getWeightedClusters())) {
+                    for (ClusterWeight weightedCluster : action.getWeightedClusters()) {
                         clusters.add(weightedCluster.getName());
                     }
                 }
@@ -160,11 +160,11 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
     public void onEdsChange(String clusterName, XdsCluster<T> xdsCluster) {
         xdsClusterMap.put(clusterName, xdsCluster);
         String lbPolicy = xdsCluster.getLbPolicy();
-        List<XdsEndpoint> xdsEndpoints = xdsCluster.getXdsEndpoints();
+        List<LbEndpoint> xdsEndpoints = xdsCluster.getXdsEndpoints();
         BitList<Invoker<T>> invokers = new BitList<>(Collections.emptyList());
         xdsEndpoints.forEach(e -> {
-            String ip = e.getAddress();
-            int port = e.getPortValue();
+            String ip = e.getAddresses().getFirst().getAddress();
+            int port = e.getAddresses().getFirst().getPort();
             URL url = new URL(this.protocolName, ip, port, this.serviceType.getName(), this.url.getParameters());
             // set cluster name
             url = url.addParameter("clusterID", clusterName);

@@ -121,7 +121,10 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
 
         updateBuilder.lbPolicyConfig(lbPolicyConfig);
 
-        return updateBuilder.build();
+        CdsUpdate cdsUpdate = updateBuilder.build();
+        cdsUpdate.setRawCluster(cluster); // TODO temp solution for compatibility
+
+        return cdsUpdate;
     }
 
     private static StructOrError<CdsUpdate.Builder> parseAggregateCluster(Cluster cluster) {
