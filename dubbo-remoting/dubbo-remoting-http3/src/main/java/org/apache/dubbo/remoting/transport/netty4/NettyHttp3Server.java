@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
+import org.apache.dubbo.remoting.http3.QuicSslContexts;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3FrameCodec;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.transport.AbstractServer;
@@ -88,15 +89,10 @@ public class NettyHttp3Server extends AbstractServer {
         NettyHttp3ProtocolSelectorHandler selectorHandler =
                 new NettyHttp3ProtocolSelectorHandler(getUrl(), frameworkModel);
 
-        SelfSignedCertificate certificate = new SelfSignedCertificate();
-        QuicSslContext context = QuicSslContextBuilder.forServer(
-                        certificate.privateKey(), null, certificate.certificate())
-                .applicationProtocols(Http3.supportedApplicationProtocols())
-                .build();
 
         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
         io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicServerCodecBuilder(), getUrl())
-                .sslContext(context)
+                .sslContext(QuicSslContexts.buildServerSslContext(getUrl()))
                 .maxIdleTimeout(idleTimeout, MILLISECONDS)
                 .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
                 .handler(new ChannelInitializer<QuicChannel>() {
