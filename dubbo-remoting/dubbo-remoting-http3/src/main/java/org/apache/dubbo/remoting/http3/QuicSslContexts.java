@@ -1,12 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.remoting.http3;
-
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
-import io.netty.util.CharsetUtil;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -32,6 +40,14 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.Collection;
 
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.incubator.codec.http3.Http3;
+import io.netty.incubator.codec.quic.QuicSslContext;
+import io.netty.incubator.codec.quic.QuicSslContextBuilder;
+import io.netty.util.CharsetUtil;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
 public class QuicSslContexts {
@@ -39,7 +55,8 @@ public class QuicSslContexts {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QuicSslContexts.class);
 
     public static QuicSslContext buildServerSslContext(URL url) throws Exception {
-        CertManager certManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(CertManager.class);
+        CertManager certManager =
+                url.getOrDefaultApplicationModel().getBeanFactory().getBean(CertManager.class);
         ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url, url.toInetSocketAddress());
         if (providerConnectionConfig == null) {
             SelfSignedCertificate certificate = new SelfSignedCertificate();
@@ -58,7 +75,8 @@ public class QuicSslContexts {
             serverTrustCertStream = providerConnectionConfig.getTrustCertInputStream();
             String password = providerConnectionConfig.getPassword();
 
-            KeyManagerFactory keyManagerFactory = buildKeyManagerFactory(serverKeyCertChainPathStream, serverPrivateKeyPathStream, password);
+            KeyManagerFactory keyManagerFactory =
+                    buildKeyManagerFactory(serverKeyCertChainPathStream, serverPrivateKeyPathStream, password);
             TrustManagerFactory trustManagerFactory =
                     serverTrustCertStream != null ? buildTrustManagerFactory(serverTrustCertStream) : null;
             quicSslContextBuilder = QuicSslContextBuilder.forServer(keyManagerFactory, password);
@@ -76,14 +94,17 @@ public class QuicSslContexts {
         }
 
         try {
-            return quicSslContextBuilder.applicationProtocols(Http3.supportedApplicationProtocols()).build();
+            return quicSslContextBuilder
+                    .applicationProtocols(Http3.supportedApplicationProtocols())
+                    .build();
         } catch (Exception e) {
             throw new IllegalStateException("Build QuicSslContext failed. I will create an SelfTrustManager", e);
         }
     }
 
     public static QuicSslContext buildClientSslContext(URL url) {
-        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+        CertManager certManager =
+                url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
         Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
 
         if (consumerConnectionConfig == null) {
@@ -107,10 +128,13 @@ public class QuicSslContexts {
                         .build();
             }
 
-            return builder.applicationProtocols(Http3.supportedApplicationProtocols()).build();
+            return builder.applicationProtocols(Http3.supportedApplicationProtocols())
+                    .build();
 
         } catch (Exception e) {
-            throw new IllegalArgumentException("Could not find certificate file or the quic certificate is invalid. I will create an InsecureTrustManager", e);
+            throw new IllegalArgumentException(
+                    "Could not find certificate file or the quic certificate is invalid. I will create an InsecureTrustManager",
+                    e);
         } finally {
             safeCloseStream(clientTrustCertCollectionPath);
         }
@@ -151,7 +175,8 @@ public class QuicSslContexts {
             keyStore.setCertificateEntry("cert-" + i++, cert);
         }
 
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        TrustManagerFactory trustManagerFactory =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keyStore);
         return trustManagerFactory;
     }

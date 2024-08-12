@@ -43,7 +43,6 @@ public class ApiConsumer {
         if (args.length > 0 && Constants.HTTP3_KEY.equals(args[0])) {
             referenceConfig.setParameters(Collections.singletonMap(Constants.HTTP3_KEY, "true"));
         }
-
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap
                 .application(new ApplicationConfig("dubbo-demo-triple-api-consumer"))
