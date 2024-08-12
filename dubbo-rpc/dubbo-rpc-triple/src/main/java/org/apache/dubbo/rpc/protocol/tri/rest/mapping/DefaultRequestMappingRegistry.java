@@ -184,6 +184,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     @Override
     public void unregister(Invoker<?> invoker) {
+        if (tree == null) {
+            return;
+        }
         lock.writeLock().lock();
         try {
             tree.remove(mapping -> mapping.meta.getInvoker() == invoker);
