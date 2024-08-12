@@ -63,13 +63,13 @@ public final class MethodMeta extends AnnotationSupport {
 
         int count = rpcType == RpcType.SERVER_STREAM ? 1 : method.getParameterCount();
         List<List<Parameter>> parameterHierarchies = new ArrayList<>(count);
-        for (int i = 0, len = hierarchy.size(); i < len; i++) {
+        for (int i = 0, size = hierarchy.size(); i < size; i++) {
             Method m = hierarchy.get(i);
             Parameter[] mps = m.getParameters();
             for (int j = 0; j < count; j++) {
                 List<Parameter> parameterHierarchy;
                 if (parameterHierarchies.size() <= j) {
-                    parameterHierarchy = new ArrayList<>(len);
+                    parameterHierarchy = new ArrayList<>(size);
                     parameterHierarchies.add(parameterHierarchy);
                 } else {
                     parameterHierarchy = parameterHierarchies.get(j);

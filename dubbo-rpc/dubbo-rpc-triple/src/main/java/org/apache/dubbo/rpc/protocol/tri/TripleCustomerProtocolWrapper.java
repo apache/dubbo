@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class TripleCustomerProtocolWapper {
+public class TripleCustomerProtocolWrapper {
 
     static int makeTag(int fieldNumber, int wireType) {
         return fieldNumber << 3 | wireType;

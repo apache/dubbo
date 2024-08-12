@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
@@ -42,11 +46,18 @@ public class NamedValueMeta {
     }
 
     public String name() {
+        if (name == null) {
+            throw new RestException(Messages.ARGUMENT_NAME_MISSING, type);
+        }
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isNameEmpty() {
+        return StringUtils.isEmpty(name);
     }
 
     public boolean required() {
