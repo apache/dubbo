@@ -26,6 +26,8 @@ import java.util.Map;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface JsonUtil {
 
+    String getName();
+
     boolean isSupport();
 
     boolean isJson(String json);

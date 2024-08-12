@@ -46,6 +46,11 @@ import com.alibaba.fastjson.util.TypeUtils;
 public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfig> {
 
     @Override
+    public String getName() {
+        return "fastjson";
+    }
+
+    @Override
     public boolean isJson(String json) {
         try {
             Object obj = JSON.parse(json);

@@ -34,6 +34,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public class JacksonImpl extends CustomizableJsonUtil<Void, JsonMapper> {
 
     @Override
+    public String getName() {
+        return "jackson";
+    }
+
+    @Override
     public boolean isJson(String json) {
         try {
             JsonNode node = getWriter().readTree(json);

@@ -32,6 +32,11 @@ import com.google.gson.reflect.TypeToken;
 public class GsonImpl extends CustomizableJsonUtil<GsonBuilder, Gson> {
 
     @Override
+    public String getName() {
+        return "gson";
+    }
+
+    @Override
     public boolean isJson(String json) {
         try {
             JsonElement jsonElement = JsonParser.parseString(json);

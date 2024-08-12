@@ -34,6 +34,11 @@ import com.alibaba.fastjson2.util.TypeUtils;
 public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSONWriter.Context> {
 
     @Override
+    public String getName() {
+        return "fastjson2";
+    }
+
+    @Override
     public boolean isJson(String json) {
         return JSONValidator.from(json).validate();
     }
