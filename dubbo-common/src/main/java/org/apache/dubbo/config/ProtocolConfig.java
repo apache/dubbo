@@ -32,6 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.JSON_CHECK_LEVEL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
@@ -283,10 +284,12 @@ public class ProtocolConfig extends AbstractConfig {
                             .getPreferSerialization();
         }
 
-        if (triple == null) {
-            triple = new TripleConfig();
+        if (TRIPLE.equals(name)) {
+            if (triple == null) {
+                triple = new TripleConfig();
+            }
+            triple.checkDefault();
         }
-        triple.checkDefault();
     }
 
     @Parameter(excluded = true)
