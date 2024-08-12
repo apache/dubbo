@@ -24,7 +24,6 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageAdapterFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtension;
 
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 
 @Activate(order = -100, onClass = "javax.servlet.http.HttpServletRequest")
@@ -37,7 +36,7 @@ public final class ServletHttpMessageAdapterFactory
 
     public ServletHttpMessageAdapterFactory(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        servletContext = Helper.createDummyServletContext(frameworkModel);
+        servletContext = (ServletContext) createDummyServletContext(frameworkModel);
         httpSessionFactory = getHttpSessionFactory(frameworkModel);
     }
 
@@ -60,7 +59,11 @@ public final class ServletHttpMessageAdapterFactory
         return new ServletHttpResponseAdapter();
     }
 
-    public FilterConfig adaptFilterConfig(String filterName) {
-        return Helper.createDummyFilterConfig(filterName, frameworkModel, servletContext);
+    public Object adaptFilterConfig(String filterName) {
+        return new DummyFilterConfig(filterName, frameworkModel, servletContext);
+    }
+
+    private Object createDummyServletContext(FrameworkModel frameworkModel) {
+        return new DummyServletContext(frameworkModel);
     }
 }

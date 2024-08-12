@@ -30,7 +30,6 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
-import org.apache.dubbo.remoting.http12.message.codec.UrlEncodeFormCodec;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -172,7 +171,7 @@ final class TestRunnerImpl implements TestRunner {
             HttpMessageEncoder encoder;
             Object coder;
             if (isForm) {
-                encoder = new UrlEncodeFormCodec(null);
+                encoder = UrlEncodeFormEncoder.INSTANCE;
                 coder = context.getHttpMessageDecoder();
             } else {
                 encoder = context.getHttpMessageEncoder();

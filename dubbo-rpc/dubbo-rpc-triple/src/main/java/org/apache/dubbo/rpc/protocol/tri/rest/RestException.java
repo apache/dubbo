@@ -47,13 +47,13 @@ public class RestException extends HttpStatusException {
     public RestException(Messages message, Object... arguments) {
         super(message.statusCode(), message.format(arguments));
         this.message = message;
-        displayMessage = message.formatLocalized(arguments);
+        displayMessage = message.formatDisplay(arguments);
     }
 
     public RestException(Throwable cause, Messages message, Object... arguments) {
         super(message.statusCode(), message.format(arguments), ExceptionUtils.unwrap(cause));
         this.message = message;
-        displayMessage = message.formatLocalized(arguments);
+        displayMessage = message.formatDisplay(arguments);
     }
 
     public String getErrorCode() {

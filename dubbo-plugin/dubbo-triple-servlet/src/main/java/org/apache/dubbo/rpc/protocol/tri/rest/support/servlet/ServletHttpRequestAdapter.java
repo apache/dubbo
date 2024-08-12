@@ -236,7 +236,7 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
     }
 
     @Override
-    public Part getPart(String name) {
+    public FileUploadPart getPart(String name) {
         return Helper.convert(part(name));
     }
 
