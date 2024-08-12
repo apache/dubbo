@@ -35,7 +35,9 @@ import java.util.Collection;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
 public class QuicSslContexts {
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QuicSslContexts.class);
+
     public static QuicSslContext buildServerSslContext(URL url) throws Exception {
         CertManager certManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(CertManager.class);
         ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url, url.toInetSocketAddress());
@@ -57,7 +59,8 @@ public class QuicSslContexts {
             String password = providerConnectionConfig.getPassword();
 
             KeyManagerFactory keyManagerFactory = buildKeyManagerFactory(serverKeyCertChainPathStream, serverPrivateKeyPathStream, password);
-            TrustManagerFactory trustManagerFactory = serverTrustCertStream != null ? buildTrustManagerFactory(serverTrustCertStream) : null;
+            TrustManagerFactory trustManagerFactory =
+                    serverTrustCertStream != null ? buildTrustManagerFactory(serverTrustCertStream) : null;
             quicSslContextBuilder = QuicSslContextBuilder.forServer(keyManagerFactory, password);
             if (trustManagerFactory != null) {
                 // TODO: forward test for ClientAuth.REQUIRE
@@ -66,21 +69,20 @@ public class QuicSslContexts {
 
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
-        }finally {
+        } finally {
             safeCloseStream(serverKeyCertChainPathStream);
             safeCloseStream(serverPrivateKeyPathStream);
             safeCloseStream(serverTrustCertStream);
         }
 
         try {
-            return quicSslContextBuilder
-                    .applicationProtocols(Http3.supportedApplicationProtocols())
-                    .build();
+            return quicSslContextBuilder.applicationProtocols(Http3.supportedApplicationProtocols()).build();
         } catch (Exception e) {
             throw new IllegalStateException("Build QuicSslContext failed. I will create an SelfTrustManager", e);
         }
     }
-    public static QuicSslContext buildClientSslContext(URL url){
+
+    public static QuicSslContext buildClientSslContext(URL url) {
         CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
         Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
 
@@ -88,7 +90,8 @@ public class QuicSslContexts {
             logger.warn("Provider certificate is incorrect. using insecure certificate.");
             return QuicSslContextBuilder.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .applicationProtocols(Http3.supportedApplicationProtocols()).build();
+                    .applicationProtocols(Http3.supportedApplicationProtocols())
+                    .build();
         }
         QuicSslContextBuilder builder = QuicSslContextBuilder.forClient();
         InputStream clientTrustCertCollectionPath = null;
@@ -100,19 +103,19 @@ public class QuicSslContexts {
             } else {
                 return QuicSslContextBuilder.forClient()
                         .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                        .applicationProtocols(Http3.supportedApplicationProtocols()).build();
+                        .applicationProtocols(Http3.supportedApplicationProtocols())
+                        .build();
             }
 
-            return builder
-                    .applicationProtocols(Http3.supportedApplicationProtocols()).build();
+            return builder.applicationProtocols(Http3.supportedApplicationProtocols()).build();
 
         } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Could not find certificate file or the quic certificate is invalid. I will create an InsecureTrustManager", e);
+            throw new IllegalArgumentException("Could not find certificate file or the quic certificate is invalid. I will create an InsecureTrustManager", e);
         } finally {
             safeCloseStream(clientTrustCertCollectionPath);
         }
     }
+
     private static void safeCloseStream(InputStream stream) {
         if (stream == null) {
             return;
@@ -123,7 +126,9 @@ public class QuicSslContexts {
             logger.warn(TRANSPORT_FAILED_CLOSE_STREAM, "", "", "Failed to close a stream.", e);
         }
     }
-    public static KeyManagerFactory buildKeyManagerFactory(InputStream keyCertChainStream, InputStream privateKeyStream, String password) throws Exception {
+
+    public static KeyManagerFactory buildKeyManagerFactory(
+            InputStream keyCertChainStream, InputStream privateKeyStream, String password) throws Exception {
         X509Certificate[] certChain = getCertificates(keyCertChainStream);
         PrivateKey key = getPrivateKey(privateKeyStream, "RSA");
 
