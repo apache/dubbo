@@ -16,48 +16,121 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 public class TriplePathResolver implements PathResolver {
 
-    private final ConcurrentHashMap<String, Invoker<?>> path2Invoker = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Object> nativeStub = new ConcurrentHashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(TripleProtocol.class);
+
+    private final Map<String, Invoker<?>> mapping = CollectionUtils.newConcurrentHashMap();
+    private final Map<String, Boolean> nativeStubs = CollectionUtils.newConcurrentHashMap();
+
+    @Override
+    public void register(Invoker<?> invoker) {
+        URL url = invoker.getUrl();
+        String serviceKey = url.getServiceKey();
+        String serviceInterface = url.getServiceModel().getServiceModel().getInterfaceName();
+
+        register0(serviceKey, serviceInterface, invoker, url);
+
+        // Path patten: '{interfaceName}' or '{contextPath}/{interfaceName}'
+        String path = url.getPath();
+        int index = path.lastIndexOf('/');
+        if (index == -1) {
+            return;
+        }
+        String fallbackPath = path.substring(0, index + 1) + serviceInterface;
+        register0(URL.buildKey(path, url.getGroup(), url.getVersion()), fallbackPath, invoker, url);
+    }
+
+    private void register0(String path, String fallbackPath, Invoker<?> invoker, URL url) {
+        // register default mapping
+        Invoker<?> previous = mapping.put(path, invoker);
+        if (previous != null) {
+            if (path.equals(fallbackPath)) {
+                LOGGER.info(
+                        "Already exists an invoker[{}] on path[{}], dubbo will override with invoker[{}]",
+                        previous.getUrl(),
+                        path,
+                        url);
+            } else {
+                throw new IllegalStateException(String.format(
+                        "Already exists an invoker[%s] on path[%s], failed to add invoker[%s], please use a unique path.",
+                        previous.getUrl(), path, url));
+            }
+        } else {
+            LOGGER.debug("Register triple grpc mapping: '{}' -> invoker{}", path, url);
+        }
+
+        // register fallback mapping
+        if (TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT && !path.equals(fallbackPath)) {
+            previous = mapping.putIfAbsent(fallbackPath, invoker);
+            if (previous != null) {
+                LOGGER.info(
+                        "Already exists an invoker[{}] on path[{}], dubbo will skip override with invoker[{}]",
+                        previous.getUrl(),
+                        fallbackPath,
+                        url);
+            } else {
+                LOGGER.info("Register fallback triple grpc mapping: '{}' -> invoker{}", fallbackPath, url);
+            }
+        }
+    }
+
+    @Override
+    public void unregister(Invoker<?> invoker) {
+        URL url = invoker.getUrl();
+        mapping.remove(url.getServiceKey());
+        if (TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
+            mapping.remove(url.getServiceModel().getServiceModel().getInterfaceName());
+        }
+    }
 
     @Override
     public Invoker<?> add(String path, Invoker<?> invoker) {
-        return path2Invoker.put(path, invoker);
+        return mapping.put(path, invoker);
     }
 
     @Override
     public Invoker<?> addIfAbsent(String path, Invoker<?> invoker) {
-        return path2Invoker.putIfAbsent(path, invoker);
+        return mapping.putIfAbsent(path, invoker);
     }
 
     @Override
-    public Invoker<?> resolve(String path) {
-        return path2Invoker.get(path);
+    public Invoker<?> resolve(String path, String group, String version) {
+        Invoker<?> invoker = mapping.get(URL.buildKey(path, group, version));
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
+            invoker = mapping.get(URL.buildKey(path, group, TripleConstant.DEFAULT_VERSION));
+            if (invoker == null) {
+                invoker = mapping.get(path);
+            }
+        }
+        return invoker;
     }
 
-    @Override
     public boolean hasNativeStub(String path) {
-        return nativeStub.containsKey(path);
+        return nativeStubs.containsKey(path);
     }
 
     @Override
     public void addNativeStub(String path) {
-        nativeStub.put(path, 0);
+        nativeStubs.put(path, Boolean.TRUE);
     }
 
     @Override
     public void remove(String path) {
-        path2Invoker.remove(path);
+        mapping.remove(path);
     }
 
     @Override
     public void destroy() {
-        path2Invoker.clear();
+        mapping.clear();
     }
 }

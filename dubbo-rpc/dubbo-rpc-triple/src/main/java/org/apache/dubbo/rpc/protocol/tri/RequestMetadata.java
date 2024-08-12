@@ -55,7 +55,7 @@ public class RequestMetadata {
         header.scheme(scheme)
                 .authority(address)
                 .method(HttpMethod.POST.asciiName())
-                .path("/" + service + "/" + method.getMethodName())
+                .path(RequestPath.toFullPath(service, method.getMethodName()))
                 .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), MediaType.APPLICATION_GRPC_PROTO.getName())
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);

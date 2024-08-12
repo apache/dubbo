@@ -36,25 +36,16 @@ import org.springframework.http.HttpStatus;
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;
-    private volatile RestToolKit toolKit;
+    private final RestToolKit toolKit;
     private CorsMeta globalCorsMeta;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
+        toolKit = new SpringRestToolKit(frameworkModel);
     }
 
     @Override
     public RestToolKit getRestToolKit() {
-        RestToolKit toolKit = this.toolKit;
-        if (toolKit == null) {
-            synchronized (this) {
-                toolKit = this.toolKit;
-                if (toolKit == null) {
-                    toolKit = new SpringRestToolKit(frameworkModel);
-                    this.toolKit = toolKit;
-                }
-            }
-        }
         return toolKit;
     }
 

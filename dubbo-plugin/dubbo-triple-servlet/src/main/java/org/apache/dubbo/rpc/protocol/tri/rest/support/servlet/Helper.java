@@ -16,20 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 
-import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.http.Part;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,7 +62,7 @@ final class Helper {
         return cookie;
     }
 
-    public static Part convert(FileUpload part) {
+    public static FileUploadPart convert(FileUpload part) {
         return new FileUploadPart(part);
     }
 
@@ -83,75 +75,5 @@ final class Helper {
             result.add(convert(part));
         }
         return result;
-    }
-
-    public static final class FileUploadPart implements Part {
-
-        private final FileUpload fileUpload;
-
-        public FileUploadPart(FileUpload fileUpload) {
-            this.fileUpload = fileUpload;
-        }
-
-        @Override
-        public InputStream getInputStream() {
-            return fileUpload.inputStream();
-        }
-
-        @Override
-        public String getContentType() {
-            return fileUpload.contentType();
-        }
-
-        @Override
-        public String getName() {
-            return fileUpload.name();
-        }
-
-        @Override
-        public String getSubmittedFileName() {
-            return fileUpload.filename();
-        }
-
-        @Override
-        public long getSize() {
-            return fileUpload.size();
-        }
-
-        @Override
-        public void write(String fileName) {
-            try (FileOutputStream fos = new FileOutputStream(fileName)) {
-                StreamUtils.copy(fileUpload.inputStream(), fos);
-            } catch (IOException e) {
-                throw new RestException(e);
-            }
-        }
-
-        @Override
-        public void delete() {}
-
-        @Override
-        public String getHeader(String name) {
-            return null;
-        }
-
-        @Override
-        public Collection<String> getHeaders(String name) {
-            return null;
-        }
-
-        @Override
-        public Collection<String> getHeaderNames() {
-            return Collections.emptyList();
-        }
-    }
-
-    public static ServletContext createDummyServletContext(FrameworkModel frameworkModel) {
-        return new DummyServletContext(frameworkModel);
-    }
-
-    public static FilterConfig createDummyFilterConfig(
-            String filterName, FrameworkModel frameworkModel, ServletContext servletContext) {
-        return new DummyFilterConfig(filterName, frameworkModel, servletContext);
     }
 }

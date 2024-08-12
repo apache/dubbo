@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
+import org.apache.dubbo.rpc.protocol.tri.RequestPath;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
@@ -41,18 +42,16 @@ public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSup
         }
 
         RequestMetadata httpMetadata = (RequestMetadata) data;
-        HttpHeaders headers = httpMetadata.headers();
-
-        String path = httpMetadata.path();
-        int index = path.indexOf('/', 1);
-        if (index == -1) {
+        RequestPath path = RequestPath.parse(httpMetadata.path());
+        if (path == null) {
             return null;
         }
 
-        String interfaceName = path.substring(1, index);
-        String version = getHeader(headers, TripleHeaderEnum.SERVICE_VERSION, RestConstants.HEADER_SERVICE_VERSION);
-        String group = getHeader(headers, TripleHeaderEnum.SERVICE_GROUP, RestConstants.HEADER_SERVICE_GROUP);
-        return new ServiceKey(interfaceName, version, group);
+        HttpHeaders headers = httpMetadata.headers();
+        return new ServiceKey(
+                path.getServiceInterface(),
+                getHeader(headers, TripleHeaderEnum.SERVICE_VERSION, RestConstants.HEADER_SERVICE_VERSION),
+                getHeader(headers, TripleHeaderEnum.SERVICE_GROUP, RestConstants.HEADER_SERVICE_GROUP));
     }
 
     private static String getHeader(HttpHeaders headers, TripleHeaderEnum en, String key) {

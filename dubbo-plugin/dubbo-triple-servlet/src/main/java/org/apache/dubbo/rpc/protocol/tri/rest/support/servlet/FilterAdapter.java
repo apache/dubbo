@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestFilter;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 
 import javax.servlet.Filter;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -53,7 +54,7 @@ public final class FilterAdapter implements RestExtensionAdapter<Filter> {
     public RestFilter adapt(Filter extension) {
         try {
             String filterName = extension.getClass().getSimpleName();
-            extension.init(adapterFactory.adaptFilterConfig(filterName));
+            extension.init((FilterConfig) adapterFactory.adaptFilterConfig(filterName));
         } catch (ServletException e) {
             throw new RestException(e);
         }

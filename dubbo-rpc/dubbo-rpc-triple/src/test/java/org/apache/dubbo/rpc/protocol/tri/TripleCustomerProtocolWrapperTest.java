@@ -25,15 +25,15 @@ import com.google.protobuf.ByteString;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TripleCustomerProtocolWapperTest {
+public class TripleCustomerProtocolWrapperTest {
 
     @Test
     void testVarInt() {
         int seed = 3;
         while (seed < Integer.MAX_VALUE && seed > 0) {
-            byte[] varIntBytes = TripleCustomerProtocolWapper.varIntEncode(seed);
+            byte[] varIntBytes = TripleCustomerProtocolWrapper.varIntEncode(seed);
             ByteBuffer buffer = ByteBuffer.wrap(varIntBytes);
-            int numDecodeFromVarIntByte = TripleCustomerProtocolWapper.readRawVarint32(buffer);
+            int numDecodeFromVarIntByte = TripleCustomerProtocolWrapper.readRawVarint32(buffer);
             Assertions.assertEquals(seed, numDecodeFromVarIntByte);
             seed = seed * 7;
         }
@@ -42,9 +42,9 @@ public class TripleCustomerProtocolWapperTest {
     @Test
     void testRangeViaInt() {
         for (int index = 0; index < 100000; index++) {
-            byte[] varIntBytes = TripleCustomerProtocolWapper.varIntEncode(index);
+            byte[] varIntBytes = TripleCustomerProtocolWrapper.varIntEncode(index);
             ByteBuffer buffer = ByteBuffer.wrap(varIntBytes);
-            int numDecodeFromVarIntByte = TripleCustomerProtocolWapper.readRawVarint32(buffer);
+            int numDecodeFromVarIntByte = TripleCustomerProtocolWrapper.readRawVarint32(buffer);
             Assertions.assertEquals(index, numDecodeFromVarIntByte);
         }
     }
@@ -52,9 +52,9 @@ public class TripleCustomerProtocolWapperTest {
     @Test
     void testTripleRequestWrapperWithOnlySerializeType() {
         String serialize = "hession";
-        TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder =
-                TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
-        TripleCustomerProtocolWapper.TripleRequestWrapper tripleRequestWrapper =
+        TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder builder =
+                TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder.newBuilder();
+        TripleCustomerProtocolWrapper.TripleRequestWrapper tripleRequestWrapper =
                 builder.setSerializeType(serialize).build();
         final TripleWrapper.TripleRequestWrapper.Builder pbbuilder =
                 TripleWrapper.TripleRequestWrapper.newBuilder().setSerializeType(serialize);
@@ -69,9 +69,9 @@ public class TripleCustomerProtocolWapperTest {
         byte[] secondArg = "i am second arg".getBytes(StandardCharsets.UTF_8);
 
         String serialize = "hession";
-        TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder =
-                TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
-        TripleCustomerProtocolWapper.TripleRequestWrapper tripleRequestWrapper = builder.setSerializeType(serialize)
+        TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder builder =
+                TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder.newBuilder();
+        TripleCustomerProtocolWrapper.TripleRequestWrapper tripleRequestWrapper = builder.setSerializeType(serialize)
                 .addArgTypes("com.google.protobuf.ByteString")
                 .addArgTypes("org.apache.dubbo.common.URL")
                 .addArgs(firstArg)
@@ -95,9 +95,9 @@ public class TripleCustomerProtocolWapperTest {
         byte[] secondArg = "i am second arg".getBytes(StandardCharsets.UTF_8);
 
         String serialize = "hession4";
-        TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder =
-                TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
-        TripleCustomerProtocolWapper.TripleRequestWrapper tripleRequestWrapper = builder.setSerializeType(serialize)
+        TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder builder =
+                TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder.newBuilder();
+        TripleCustomerProtocolWrapper.TripleRequestWrapper tripleRequestWrapper = builder.setSerializeType(serialize)
                 .addArgTypes("com.google.protobuf.ByteString")
                 .addArgTypes("org.apache.dubbo.common.URL")
                 .addArgs(firstArg)
@@ -110,8 +110,8 @@ public class TripleCustomerProtocolWapperTest {
                 .addArgs(ByteString.copyFrom(firstArg))
                 .addArgs(ByteString.copyFrom(secondArg));
 
-        TripleCustomerProtocolWapper.TripleRequestWrapper parseFrom =
-                TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
+        TripleCustomerProtocolWrapper.TripleRequestWrapper parseFrom =
+                TripleCustomerProtocolWrapper.TripleRequestWrapper.parseFrom(
                         pbbuilder.build().toByteArray());
         Assertions.assertEquals(parseFrom.getSerializeType(), tripleRequestWrapper.getSerializeType());
         Assertions.assertArrayEquals(
@@ -125,9 +125,9 @@ public class TripleCustomerProtocolWapperTest {
     void testTripleResponseWrapperWithNullData() {
         String serializeType = "hession4";
         String type = "String";
-        TripleCustomerProtocolWapper.TripleResponseWrapper.Builder builder =
-                TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder();
-        TripleCustomerProtocolWapper.TripleResponseWrapper tripleResponseWrapper =
+        TripleCustomerProtocolWrapper.TripleResponseWrapper.Builder builder =
+                TripleCustomerProtocolWrapper.TripleResponseWrapper.Builder.newBuilder();
+        TripleCustomerProtocolWrapper.TripleResponseWrapper tripleResponseWrapper =
                 builder.setSerializeType(serializeType).setType(type).build();
         TripleWrapper.TripleResponseWrapper.Builder pbBuilder =
                 TripleWrapper.TripleResponseWrapper.newBuilder().setType(type).setSerializeType(serializeType);
@@ -155,9 +155,9 @@ public class TripleCustomerProtocolWapperTest {
                 + " */";
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
 
-        TripleCustomerProtocolWapper.TripleResponseWrapper.Builder builder =
-                TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder();
-        TripleCustomerProtocolWapper.TripleResponseWrapper tripleResponseWrapper = builder.setSerializeType(
+        TripleCustomerProtocolWrapper.TripleResponseWrapper.Builder builder =
+                TripleCustomerProtocolWrapper.TripleResponseWrapper.Builder.newBuilder();
+        TripleCustomerProtocolWrapper.TripleResponseWrapper tripleResponseWrapper = builder.setSerializeType(
                         serializeType)
                 .setType(type)
                 .setData(dataBytes)
@@ -194,8 +194,8 @@ public class TripleCustomerProtocolWapperTest {
                 .setData(ByteString.copyFrom(dataBytes))
                 .setSerializeType(serializeType);
         byte[] pbRawBytes = pbBuilder.build().toByteArray();
-        TripleCustomerProtocolWapper.TripleResponseWrapper tripleResponseWrapper =
-                TripleCustomerProtocolWapper.TripleResponseWrapper.parseFrom(pbRawBytes);
+        TripleCustomerProtocolWrapper.TripleResponseWrapper tripleResponseWrapper =
+                TripleCustomerProtocolWrapper.TripleResponseWrapper.parseFrom(pbRawBytes);
         Assertions.assertArrayEquals(pbRawBytes, tripleResponseWrapper.toByteArray());
         Assertions.assertArrayEquals(dataBytes, tripleResponseWrapper.getData());
         Assertions.assertEquals(serializeType, tripleResponseWrapper.getSerializeType());
