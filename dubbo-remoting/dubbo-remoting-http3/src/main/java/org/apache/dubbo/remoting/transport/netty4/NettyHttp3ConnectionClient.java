@@ -72,8 +72,7 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
                 .maxIdleTimeout(idleTimeout, MILLISECONDS)
                 .sslContext(QuicSslContexts.buildClientSslContext(getUrl()))
                 .build();
-        io.netty.channel.Channel nettyDatagramChannel = new Bootstrap()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout())
+        io.netty.channel.Channel nettyDatagramChannel = new Bootstrap().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout())
                 .group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP.get())
                 .channel(NioDatagramChannel.class)
                 .handler(new ChannelInitializer<NioDatagramChannel>() {
@@ -90,19 +89,17 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
 
         int heartbeat = UrlUtils.getHeartbeat(getUrl());
         NettyConnectionHandler connectionHandler = new NettyConnectionHandler(this);
-        bootstrap = QuicChannel.newBootstrap(nettyDatagramChannel)
-                .handler(new ChannelInitializer<QuicChannel>() {
-                    @Override
-                    protected void initChannel(QuicChannel ch) {
-                        ch.pipeline()
-                                .addLast(new IdleStateHandler(heartbeat, 0, 0, MILLISECONDS))
-                                .addLast(Constants.CONNECTION_HANDLER_NAME, connectionHandler)
-                                .addLast(new Http3ClientConnectionHandler());
+        bootstrap = QuicChannel.newBootstrap(nettyDatagramChannel).handler(new ChannelInitializer<QuicChannel>() {
+            @Override
+            protected void initChannel(QuicChannel ch) {
+                ch.pipeline()
+                        .addLast(new IdleStateHandler(heartbeat, 0, 0, MILLISECONDS))
+                        .addLast(Constants.CONNECTION_HANDLER_NAME, connectionHandler)
+                        .addLast(new Http3ClientConnectionHandler());
 
-                        ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
-                    }
-                })
-                .remoteAddress(getConnectAddress());
+                ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
+            }
+        }).remoteAddress(getConnectAddress());
     }
 
     @Override

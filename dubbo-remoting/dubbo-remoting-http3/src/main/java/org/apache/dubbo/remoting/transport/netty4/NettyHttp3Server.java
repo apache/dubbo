@@ -86,9 +86,7 @@ public class NettyHttp3Server extends AbstractServer {
         channels = nettyServerHandler.getChannels();
 
         FrameworkModel frameworkModel = ScopeModelUtil.getFrameworkModel(getUrl().getScopeModel());
-        NettyHttp3ProtocolSelectorHandler selectorHandler =
-                new NettyHttp3ProtocolSelectorHandler(getUrl(), frameworkModel);
-
+        NettyHttp3ProtocolSelectorHandler selectorHandler = new NettyHttp3ProtocolSelectorHandler(getUrl(), frameworkModel);
 
         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
         io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicServerCodecBuilder(), getUrl())
@@ -116,8 +114,7 @@ public class NettyHttp3Server extends AbstractServer {
 
         // bind
         try {
-            ChannelFuture channelFuture = bootstrap
-                    .group(bossGroup)
+            ChannelFuture channelFuture = bootstrap.group(bossGroup)
                     .channel(NioDatagramChannel.class)
                     .handler(codec)
                     .bind(getBindAddress());
