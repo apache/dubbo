@@ -526,6 +526,7 @@ public class ClassUtils {
         ClassLoader tccl = thread.getContextClassLoader();
         if (classLoader == null || classLoader.equals(tccl)) {
             runnable.run();
+            return;
         }
         thread.setContextClassLoader(classLoader);
         try {
