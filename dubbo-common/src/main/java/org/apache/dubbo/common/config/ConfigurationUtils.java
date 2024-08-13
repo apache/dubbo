@@ -126,20 +126,14 @@ public final class ConfigurationUtils {
         Configuration configuration = getGlobalConfiguration(scopeModel);
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
 
-        if (StringUtils.isNotEmpty(value)) {
-            try {
-                timeout = Integer.parseInt(value);
-            } catch (Exception e) {
-                // ignore
-            }
-        } else {
+        if (StringUtils.isNumeric(value, false)) {
+            timeout = Integer.parseInt(value);
+        }
+
+        if (StringUtils.isEmpty(value)) {
             value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_SECONDS_KEY));
-            if (StringUtils.isNotEmpty(value)) {
-                try {
-                    timeout = Integer.parseInt(value) * 1000;
-                } catch (Exception e) {
-                    // ignore
-                }
+            if (StringUtils.isNumeric(value, false)) {
+                timeout = Integer.parseInt(value) * 1000;
             }
         }
 
