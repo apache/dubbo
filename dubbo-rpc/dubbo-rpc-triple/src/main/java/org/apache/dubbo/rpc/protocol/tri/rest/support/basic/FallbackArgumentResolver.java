@@ -122,7 +122,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         return resolveValue(meta, request, response);
     }
 
-    private static class FallbackNamedValueMeta extends NamedValueMeta {
+    private static final class FallbackNamedValueMeta extends NamedValueMeta {
 
         private final boolean noBodyParam;
         private final int paramCount;

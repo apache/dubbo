@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.common.store;
 
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
-
-public interface ServerStreamObserver<T> extends CallStreamObserver<T> {}
+public interface DataStoreUpdateListener {
+    void onUpdate(String componentName, String key, Object value);
+}

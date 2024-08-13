@@ -129,7 +129,7 @@ public abstract class AnnotationSupport {
         return arrayCache.computeIfAbsent(FIND_KEY, k -> {
             List<? extends AnnotatedElement> elements = getAnnotatedElements();
             List<AnnotationMeta> metas = new ArrayList<>();
-            for (int i = 0, len = elements.size(); i < len; i++) {
+            for (int i = 0, size = elements.size(); i < size; i++) {
                 AnnotatedElement element = elements.get(i);
                 Annotation[] annotations = element.getAnnotations();
                 for (Annotation annotation : annotations) {
@@ -146,7 +146,7 @@ public abstract class AnnotationSupport {
     public final <A extends Annotation> AnnotationMeta<A> findAnnotation(Class<A> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, FIND_KEY), k -> {
                     List<? extends AnnotatedElement> elements = getAnnotatedElements();
-                    for (int i = 0, len = elements.size(); i < len; i++) {
+                    for (int i = 0, size = elements.size(); i < size; i++) {
                         AnnotatedElement element = elements.get(i);
                         Annotation annotation = element.getDeclaredAnnotation(annotationType);
                         if (annotation != null) {
@@ -173,7 +173,7 @@ public abstract class AnnotationSupport {
     public final <A extends Annotation> AnnotationMeta<A> findMergedAnnotation(Class<A> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, FIND_MERGED_KEY), k -> {
                     List<? extends AnnotatedElement> elements = getAnnotatedElements();
-                    for (int i = 0, len = elements.size(); i < len; i++) {
+                    for (int i = 0, size = elements.size(); i < size; i++) {
                         AnnotatedElement element = elements.get(i);
                         Annotation[] annotations = element.getDeclaredAnnotations();
                         for (Annotation annotation : annotations) {

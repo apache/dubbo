@@ -173,7 +173,7 @@ class PathExpressionTest extends Specification {
             '/resources/**'                  | '/resources/a/b/c'            | true
             '/resources/{*path}'             | '/resources/a/b/c'            | [path: 'a/b/c']
             '/resources/*'                   | '/resources/a'                | true
-            '/resources/*'                   | '/resources/a/b/c'            | true
+            '/resources/{*}'                 | '/resources/a/b/c'            | true
             '/{id:\\d+}'                     | '/123'                        | [id: '123']
             '/{id:\\d+}'                     | '/one'                        | false
             '/a?cd/ef'                       | '/abcd/ef'                    | true
@@ -194,8 +194,8 @@ class PathExpressionTest extends Specification {
         expect:
             parse(path).match(value) != null
         where:
-            path           | value
-            '/resources/*' | '/resources/a/b/c'
+            path             | value
+            '/resources/{*}' | '/resources/a/b/c'
     }
 
     def "CompareTo"() {

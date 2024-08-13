@@ -17,13 +17,13 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.io.StreamUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -40,10 +40,12 @@ public final class PlainTextCodec implements HttpMessageCodec {
                 os.write((data.toString()).getBytes(charset));
                 return;
             }
-        } catch (IOException e) {
-            throw new EncodeException(e);
+            os.write(JsonUtils.toJson(data).getBytes(charset));
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new EncodeException("Error encoding plain text", t);
         }
-        throw new EncodeException("'text/plain' media-type only supports String as return type.");
     }
 
     @Override
@@ -54,8 +56,8 @@ public final class PlainTextCodec implements HttpMessageCodec {
             }
         } catch (HttpStatusException e) {
             throw e;
-        } catch (Exception e) {
-            throw new DecodeException(e);
+        } catch (Throwable t) {
+            throw new EncodeException("Error decoding plain text", t);
         }
         throw new DecodeException("'text/plain' media-type only supports String as method param.");
     }
