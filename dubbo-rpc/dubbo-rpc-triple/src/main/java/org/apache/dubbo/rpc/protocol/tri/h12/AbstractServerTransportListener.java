@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpChannel;
@@ -100,6 +101,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 onError(t);
             }
         });
+        LOGGER.error("88-1", "test1");
+        LOGGER.warn("88-2", "test2");
+        LOGGER.log(Level.ERROR, "88-3", "test3");
+        LOGGER.log(Level.WARN, "88-4", "test4");
     }
 
     protected Executor initializeExecutor(HEADER metadata) {
