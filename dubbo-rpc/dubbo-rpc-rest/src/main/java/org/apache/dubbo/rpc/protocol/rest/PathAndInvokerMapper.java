@@ -55,11 +55,15 @@ public class PathAndInvokerMapper {
 
         metadataMap.forEach((pathMatcher, value) -> {
             if (pathMatcher.hasPathVariable()) {
-                addPathMatcherToPathMap(pathMatcher, pathToServiceMapContainPathVariable,
-                    InvokerAndRestMethodMetadataPair.pair(invoker, value));
+                addPathMatcherToPathMap(
+                        pathMatcher,
+                        pathToServiceMapContainPathVariable,
+                        InvokerAndRestMethodMetadataPair.pair(invoker, value));
             } else {
-                addPathMatcherToPathMap(pathMatcher, pathToServiceMapNoPathVariable,
-                    InvokerAndRestMethodMetadataPair.pair(invoker, value));
+                addPathMatcherToPathMap(
+                        pathMatcher,
+                        pathToServiceMapNoPathVariable,
+                        InvokerAndRestMethodMetadataPair.pair(invoker, value));
             }
         });
     }
@@ -116,10 +120,11 @@ public class PathAndInvokerMapper {
             // old`s method desc,else ,throw double check exception
             // true when reExport
             if (!invokerRestMethodMetadataPair.compareServiceMethod(beforeMetadata)) {
-                throw new DoublePathCheckException(
-                    "dubbo rest double path check error, current path is: " + pathMatcher + " ,and service method is: "
+                throw new DoublePathCheckException("dubbo rest double path check error, current path is: " + pathMatcher
+                        + " ,and service method is: "
                         + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod()
-                        + "before service  method is: " + beforeMetadata.getRestMethodMetadata().getReflectMethod());
+                        + "before service  method is: "
+                        + beforeMetadata.getRestMethodMetadata().getReflectMethod());
             }
         }
 
