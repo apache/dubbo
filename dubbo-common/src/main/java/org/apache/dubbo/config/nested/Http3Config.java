@@ -16,11 +16,20 @@
  */
 package org.apache.dubbo.config.nested;
 
+import org.apache.dubbo.config.support.Parameter;
+
 import java.io.Serializable;
 
 public class Http3Config implements Serializable {
 
     private static final long serialVersionUID = -4443828713331129834L;
+
+    public static final int DEFAULT_INITIAL_MAX_DATA = 8_388_608;
+    public static final int DEFAULT_INITIAL_MAX_STREAM_DATA_BIDI_LOCAL = 1_048_576;
+    public static final int DEFAULT_INITIAL_MAX_STREAM_DATA_BIDI_REMOTE = 1_048_576;
+    public static final int DEFAULT_INITIAL_MAX_STREAM_DATA_UNI = 1_048_576;
+    public static final long DEFAULT_INITIAL_MAX_STREAMS_BIDI = 1_073_741_824;
+    public static final long DEFAULT_INITIAL_MAX_STREAMS_UNI = 1_073_741_824;
 
     /**
      * Whether to enable HTTP/3 support
@@ -127,6 +136,11 @@ public class Http3Config implements Serializable {
         return initialMaxData;
     }
 
+    @Parameter(excluded = true)
+    public int getInitialMaxDataOrDefault() {
+        return initialMaxData == null ? DEFAULT_INITIAL_MAX_DATA : initialMaxData;
+    }
+
     public void setInitialMaxData(Integer initialMaxData) {
         this.initialMaxData = initialMaxData;
     }
@@ -151,12 +165,26 @@ public class Http3Config implements Serializable {
         return initialMaxStreamDataBidiLocal;
     }
 
+    @Parameter(excluded = true)
+    public int getInitialMaxStreamDataBidiLocalOrDefault() {
+        return initialMaxStreamDataBidiLocal == null
+                ? DEFAULT_INITIAL_MAX_STREAM_DATA_BIDI_LOCAL
+                : initialMaxStreamDataBidiLocal;
+    }
+
     public void setInitialMaxStreamDataBidiLocal(Integer initialMaxStreamDataBidiLocal) {
         this.initialMaxStreamDataBidiLocal = initialMaxStreamDataBidiLocal;
     }
 
     public Integer getInitialMaxStreamDataBidiRemote() {
         return initialMaxStreamDataBidiRemote;
+    }
+
+    @Parameter(excluded = true)
+    public int getInitialMaxStreamDataBidiRemoteOrDefault() {
+        return initialMaxStreamDataBidiRemote == null
+                ? DEFAULT_INITIAL_MAX_STREAM_DATA_BIDI_REMOTE
+                : initialMaxStreamDataBidiRemote;
     }
 
     public void setInitialMaxStreamDataBidiRemote(Integer initialMaxStreamDataBidiRemote) {
@@ -167,6 +195,11 @@ public class Http3Config implements Serializable {
         return initialMaxStreamDataUni;
     }
 
+    @Parameter(excluded = true)
+    public int getInitialMaxStreamDataUniOrDefault() {
+        return initialMaxStreamDataUni == null ? DEFAULT_INITIAL_MAX_STREAM_DATA_UNI : initialMaxStreamDataUni;
+    }
+
     public void setInitialMaxStreamDataUni(Integer initialMaxStreamDataUni) {
         this.initialMaxStreamDataUni = initialMaxStreamDataUni;
     }
@@ -175,12 +208,22 @@ public class Http3Config implements Serializable {
         return initialMaxStreamsBidi;
     }
 
+    @Parameter(excluded = true)
+    public long getInitialMaxStreamsBidiOrDefault() {
+        return initialMaxStreamsBidi == null ? DEFAULT_INITIAL_MAX_STREAMS_BIDI : initialMaxStreamsBidi;
+    }
+
     public void setInitialMaxStreamsBidi(Long initialMaxStreamsBidi) {
         this.initialMaxStreamsBidi = initialMaxStreamsBidi;
     }
 
     public Long getInitialMaxStreamsUni() {
         return initialMaxStreamsUni;
+    }
+
+    @Parameter(excluded = true)
+    public long getInitialMaxStreamsUniOrDefault() {
+        return initialMaxStreamsUni == null ? DEFAULT_INITIAL_MAX_STREAMS_UNI : initialMaxStreamsUni;
     }
 
     public void setInitialMaxStreamsUni(Long initialMaxStreamsUni) {
@@ -225,26 +268,5 @@ public class Http3Config implements Serializable {
 
     public void setCcAlgorithm(String ccAlgorithm) {
         this.ccAlgorithm = ccAlgorithm;
-    }
-
-    public void checkDefault() {
-        if (initialMaxData == null) {
-            initialMaxData = 1 << 23;
-        }
-        if (initialMaxStreamDataBidiLocal == null) {
-            initialMaxStreamDataBidiLocal = 1 << 20;
-        }
-        if (initialMaxStreamDataBidiRemote == null) {
-            initialMaxStreamDataBidiRemote = 1 << 20;
-        }
-        if (initialMaxStreamDataUni == null) {
-            initialMaxStreamDataUni = 1 << 20;
-        }
-        if (initialMaxStreamsBidi == null) {
-            initialMaxStreamsBidi = (long) 1 << 30;
-        }
-        if (initialMaxStreamsUni == null) {
-            initialMaxStreamsUni = (long) 1 << 30;
-        }
     }
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.transport.netty4;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.Http3Config;
-import org.apache.dubbo.config.nested.TripleConfig;
 
 import io.netty.incubator.codec.quic.QuicCodecBuilder;
 import io.netty.incubator.codec.quic.QuicCongestionControlAlgorithm;
@@ -30,18 +29,14 @@ final class Helper {
 
     @SuppressWarnings("unchecked")
     static <T extends QuicCodecBuilder<T>> T configCodec(QuicCodecBuilder<T> builder, URL url) {
-        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
-        Http3Config config = tripleConfig.getHttp3();
-        if (config == null) {
-            config = new Http3Config();
-        }
-        config.checkDefault();
-        builder.initialMaxData(config.getInitialMaxData())
-                .initialMaxStreamDataBidirectionalLocal(config.getInitialMaxStreamDataBidiLocal())
-                .initialMaxStreamDataBidirectionalRemote(config.getInitialMaxStreamDataBidiRemote())
-                .initialMaxStreamDataUnidirectional(config.getInitialMaxStreamDataUni())
-                .initialMaxStreamsBidirectional(config.getInitialMaxStreamsBidi())
-                .initialMaxStreamsUnidirectional(config.getInitialMaxStreamsUni());
+        Http3Config config =
+                ConfigManager.getProtocolOrDefault(url).getTripleOrDefault().getHttp3OrDefault();
+        builder.initialMaxData(config.getInitialMaxDataOrDefault())
+                .initialMaxStreamDataBidirectionalLocal(config.getInitialMaxStreamDataBidiLocalOrDefault())
+                .initialMaxStreamDataBidirectionalRemote(config.getInitialMaxStreamDataBidiRemoteOrDefault())
+                .initialMaxStreamDataUnidirectional(config.getInitialMaxStreamDataUniOrDefault())
+                .initialMaxStreamsBidirectional(config.getInitialMaxStreamsBidiOrDefault())
+                .initialMaxStreamsUnidirectional(config.getInitialMaxStreamsUniOrDefault());
 
         if (config.getRecvQueueLen() != null && config.getSendQueueLen() != null) {
             builder.datagram(config.getRecvQueueLen(), config.getSendQueueLen());

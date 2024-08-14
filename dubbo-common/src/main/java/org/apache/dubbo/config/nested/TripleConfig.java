@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.nested;
 
 import org.apache.dubbo.config.support.Nested;
+import org.apache.dubbo.config.support.Parameter;
 
 import java.io.Serializable;
 
@@ -26,6 +27,19 @@ import java.io.Serializable;
 public class TripleConfig implements Serializable {
 
     private static final long serialVersionUID = -3682252713701362155L;
+
+    public static final int DEFAULT_MAX_BODY_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_RESPONSE_BODY_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_CHUNK_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_HEADER_SIZE = 8_192;
+    public static final int DEFAULT_MAX_INITIAL_LINE_LENGTH = 4_096;
+    public static final int DEFAULT_INITIAL_BUFFER_SIZE = 16_384;
+    public static final int DEFAULT_HEADER_TABLE_SIZE = 4_096;
+    public static final boolean DEFAULT_ENABLE_PUSH = false;
+    public static final int DEFAULT_MAX_CONCURRENT_STREAMS = Integer.MAX_VALUE;
+    public static final int DEFAULT_INITIAL_WINDOW_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_FRAME_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_HEADER_LIST_SIZE = 32_768;
 
     /**
      * Whether enable verbose mode.
@@ -143,12 +157,22 @@ public class TripleConfig implements Serializable {
         return maxBodySize;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxBodySizeOrDefault() {
+        return maxBodySize == null ? DEFAULT_MAX_BODY_SIZE : maxBodySize;
+    }
+
     public void setMaxBodySize(Integer maxBodySize) {
         this.maxBodySize = maxBodySize;
     }
 
     public Integer getMaxResponseBodySize() {
         return maxResponseBodySize;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxResponseBodySizeOrDefault() {
+        return maxResponseBodySize == null ? DEFAULT_MAX_RESPONSE_BODY_SIZE : maxResponseBodySize;
     }
 
     public void setMaxResponseBodySize(Integer maxResponseBodySize) {
@@ -159,12 +183,22 @@ public class TripleConfig implements Serializable {
         return maxChunkSize;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxChunkSizeOrDefault() {
+        return maxChunkSize == null ? DEFAULT_MAX_CHUNK_SIZE : maxChunkSize;
+    }
+
     public void setMaxChunkSize(Integer maxChunkSize) {
         this.maxChunkSize = maxChunkSize;
     }
 
     public Integer getMaxHeaderSize() {
         return maxHeaderSize;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxHeaderSizeOrDefault() {
+        return maxHeaderSize == null ? DEFAULT_MAX_HEADER_SIZE : maxHeaderSize;
     }
 
     public void setMaxHeaderSize(Integer maxHeaderSize) {
@@ -175,12 +209,22 @@ public class TripleConfig implements Serializable {
         return maxInitialLineLength;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxInitialLineLengthOrDefault() {
+        return maxInitialLineLength == null ? DEFAULT_MAX_INITIAL_LINE_LENGTH : maxInitialLineLength;
+    }
+
     public void setMaxInitialLineLength(Integer maxInitialLineLength) {
         this.maxInitialLineLength = maxInitialLineLength;
     }
 
     public Integer getInitialBufferSize() {
         return initialBufferSize;
+    }
+
+    @Parameter(excluded = true)
+    public int getInitialBufferSizeOrDefault() {
+        return initialBufferSize == null ? DEFAULT_INITIAL_BUFFER_SIZE : initialBufferSize;
     }
 
     public void setInitialBufferSize(Integer initialBufferSize) {
@@ -191,12 +235,22 @@ public class TripleConfig implements Serializable {
         return headerTableSize;
     }
 
+    @Parameter(excluded = true)
+    public int getHeaderTableSizeOrDefault() {
+        return headerTableSize == null ? DEFAULT_HEADER_TABLE_SIZE : headerTableSize;
+    }
+
     public void setHeaderTableSize(Integer headerTableSize) {
         this.headerTableSize = headerTableSize;
     }
 
     public Boolean getEnablePush() {
         return enablePush;
+    }
+
+    @Parameter(excluded = true)
+    public boolean getEnablePushOrDefault() {
+        return enablePush == null ? DEFAULT_ENABLE_PUSH : enablePush;
     }
 
     public void setEnablePush(Boolean enablePush) {
@@ -207,12 +261,22 @@ public class TripleConfig implements Serializable {
         return maxConcurrentStreams;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxConcurrentStreamsOrDefault() {
+        return maxConcurrentStreams == null ? DEFAULT_MAX_CONCURRENT_STREAMS : maxConcurrentStreams;
+    }
+
     public void setMaxConcurrentStreams(Integer maxConcurrentStreams) {
         this.maxConcurrentStreams = maxConcurrentStreams;
     }
 
     public Integer getInitialWindowSize() {
         return initialWindowSize;
+    }
+
+    @Parameter(excluded = true)
+    public int getInitialWindowSizeOrDefault() {
+        return initialWindowSize == null ? DEFAULT_INITIAL_WINDOW_SIZE : initialWindowSize;
     }
 
     public void setInitialWindowSize(Integer initialWindowSize) {
@@ -223,12 +287,22 @@ public class TripleConfig implements Serializable {
         return maxFrameSize;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxFrameSizeOrDefault() {
+        return maxFrameSize == null ? DEFAULT_MAX_FRAME_SIZE : maxFrameSize;
+    }
+
     public void setMaxFrameSize(Integer maxFrameSize) {
         this.maxFrameSize = maxFrameSize;
     }
 
     public Integer getMaxHeaderListSize() {
         return maxHeaderListSize;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxHeaderListSizeOrDefault() {
+        return maxHeaderListSize == null ? DEFAULT_MAX_HEADER_LIST_SIZE : maxHeaderListSize;
     }
 
     public void setMaxHeaderListSize(Integer maxHeaderListSize) {
@@ -239,11 +313,27 @@ public class TripleConfig implements Serializable {
         return rest;
     }
 
+    @Parameter(excluded = true)
+    public RestConfig getRestOrDefault() {
+        if (rest == null) {
+            rest = new RestConfig();
+        }
+        return rest;
+    }
+
     public void setRest(RestConfig rest) {
         this.rest = rest;
     }
 
     public Http3Config getHttp3() {
+        return http3;
+    }
+
+    @Parameter(excluded = true)
+    public Http3Config getHttp3OrDefault() {
+        if (http3 == null) {
+            http3 = new Http3Config();
+        }
         return http3;
     }
 
@@ -257,44 +347,5 @@ public class TripleConfig implements Serializable {
 
     public void setServlet(ServletConfig servlet) {
         this.servlet = servlet;
-    }
-
-    public void checkDefault() {
-        if (maxBodySize == null) {
-            maxBodySize = 1 << 23;
-        }
-        if (maxResponseBodySize == null) {
-            maxResponseBodySize = 1 << 23;
-        }
-        if (maxChunkSize == null) {
-            maxChunkSize = 1 << 23;
-        }
-        if (maxHeaderSize == null) {
-            maxHeaderSize = 8192;
-        }
-        if (maxInitialLineLength == null) {
-            maxInitialLineLength = 4096;
-        }
-        if (initialBufferSize == null) {
-            initialBufferSize = 16384;
-        }
-        if (headerTableSize == null) {
-            headerTableSize = 4096;
-        }
-        if (enablePush == null) {
-            enablePush = false;
-        }
-        if (maxConcurrentStreams == null) {
-            maxConcurrentStreams = Integer.MAX_VALUE;
-        }
-        if (initialWindowSize == null) {
-            initialWindowSize = 1 << 23;
-        }
-        if (maxFrameSize == null) {
-            maxFrameSize = 1 << 23;
-        }
-        if (maxHeaderListSize == null) {
-            maxHeaderListSize = 1 << 15;
-        }
     }
 }
