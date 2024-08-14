@@ -117,7 +117,7 @@ public class TripleProtocol extends AbstractProtocol {
                 mappingRegistry.unregister(invoker);
 
                 // set service status to NOT_SERVING
-                setServiceStatus(url, ServingStatus.NOT_SERVING);
+                setServiceStatus(url, false);
 
                 exporterMap.remove(key);
             }
@@ -134,7 +134,7 @@ public class TripleProtocol extends AbstractProtocol {
         mappingRegistry.register(invoker);
 
         // set service status to SERVING
-        setServiceStatus(url, ServingStatus.SERVING);
+        setServiceStatus(url, true);
 
         // init server executor
         ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
@@ -149,8 +149,9 @@ public class TripleProtocol extends AbstractProtocol {
         return exporter;
     }
 
-    private void setServiceStatus(URL url, ServingStatus status) {
+    private void setServiceStatus(URL url, boolean serving) {
         if (triBuiltinService.enable()) {
+            ServingStatus status = serving ? ServingStatus.SERVING : ServingStatus.NOT_SERVING;
             triBuiltinService.getHealthStatusManager().setStatus(url.getServiceKey(), status);
             triBuiltinService.getHealthStatusManager().setStatus(url.getServiceInterface(), status);
         }
