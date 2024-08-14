@@ -37,6 +37,8 @@ import org.apache.dubbo.config.metadata.ExporterDeployListener;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
@@ -50,10 +52,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Maps;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -61,10 +67,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.metadata.MetadataConstants.REPORT_CONSUMER_URL_KEY;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
@@ -139,12 +150,28 @@ class DubboBootstrapTest {
 
     @Test
     void testLoadRegistries() {
-        SysProps.setProperty("dubbo.registry.address", "addr1");
-
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setInterface(DemoService.class);
         serviceConfig.setRef(new DemoServiceImpl());
         serviceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
+
+        String registryId = "nacosRegistry";
+        String namespace1 = "test";
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.setId(registryId);
+        registryConfig.setAddress("nacos://addr1:8848");
+        Map<String, String> registryParamMap = Maps.newHashMap();
+        registryParamMap.put(CONFIG_NAMESPACE_KEY, namespace1);
+        registryConfig.setParameters(registryParamMap);
+
+        String namespace2 = "test2";
+        RegistryConfig registryConfig2 = new RegistryConfig();
+        registryConfig2.setAddress("polaris://addr1:9999");
+        Map<String, String> registryParamMap2 = Maps.newHashMap();
+        registryParamMap2.put(CONFIG_NAMESPACE_KEY, namespace2);
+        registryConfig2.setParameters(registryParamMap2);
+
+        serviceConfig.setRegistries(Arrays.asList(registryConfig, registryConfig2));
 
         // load configs from props
         DubboBootstrap.getInstance().initialize();
@@ -154,15 +181,103 @@ class DubboBootstrapTest {
         // ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(new
         // CompositeDynamicConfiguration());
         List<URL> urls = ConfigValidationUtils.loadRegistries(serviceConfig, true);
-        Assertions.assertEquals(2, urls.size());
-        for (URL url : urls) {
+        Assertions.assertEquals(4, urls.size());
+
+        Map<String, List<URL>> urlsMap =
+                urls.stream().collect(Collectors.groupingBy(url -> url.getParameter(REGISTRY_KEY)));
+        Assertions.assertEquals(2, urlsMap.get("nacos").size());
+        for (URL url : urlsMap.get("nacos")) {
             Assertions.assertTrue(url.getProtocol().contains("registry"));
-            Assertions.assertEquals("addr1:9090", url.getAddress());
+            Assertions.assertEquals("addr1:8848", url.getAddress());
             Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
+            Assertions.assertEquals(registryId + ":" + namespace1, url.getParameter(REGISTRY_CLUSTER_KEY));
             Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
             Assertions.assertTrue(url.getParameters().containsKey("pid"));
             Assertions.assertTrue(url.getParameters().containsKey("registry"));
             Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+        }
+
+        Assertions.assertEquals(2, urlsMap.get("polaris").size());
+        for (URL url : urlsMap.get("polaris")) {
+            Assertions.assertTrue(url.getProtocol().contains("registry"));
+            Assertions.assertEquals("addr1:9999", url.getAddress());
+            Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
+            Assertions.assertEquals(DEFAULT_KEY + ":" + namespace2, url.getParameter(REGISTRY_CLUSTER_KEY));
+            Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
+            Assertions.assertTrue(url.getParameters().containsKey("pid"));
+            Assertions.assertTrue(url.getParameters().containsKey("registry"));
+            Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+        }
+    }
+
+    @Test
+    void testRegistryWithMetadataReport() {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        List<RegistryConfig> registryConfigs = new ArrayList<>();
+        List<MetadataReportConfig> metadataReportConfigs = new ArrayList<>();
+
+        String registryId = "nacosRegistry";
+        String namespace1 = "test";
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.setId(registryId);
+        registryConfig.setAddress(zkServerAddress);
+        Map<String, String> registryParamMap = Maps.newHashMap();
+        registryParamMap.put(CONFIG_NAMESPACE_KEY, namespace1);
+        registryConfig.setParameters(registryParamMap);
+        registryConfigs.add(registryConfig);
+
+        MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
+        metadataReportConfig.setRegistry(registryId);
+        metadataReportConfig.setAddress(registryConfig.getAddress());
+        Map<String, String> metadataParamMap = Maps.newHashMap();
+        metadataParamMap.put(CONFIG_NAMESPACE_KEY, namespace1);
+        metadataParamMap.put(REPORT_CONSUMER_URL_KEY, Boolean.TRUE.toString());
+        metadataReportConfig.setParameters(metadataParamMap);
+        metadataReportConfig.setReportMetadata(true);
+        metadataReportConfigs.add(metadataReportConfig);
+
+        String namespace2 = "test2";
+        RegistryConfig registryConfig2 = new RegistryConfig();
+        registryConfig2.setAddress(zkServerAddress);
+        Map<String, String> registryParamMap2 = Maps.newHashMap();
+        registryParamMap2.put(CONFIG_NAMESPACE_KEY, namespace2);
+        registryConfig2.setParameters(registryParamMap2);
+        registryConfigs.add(registryConfig2);
+
+        MetadataReportConfig metadataReportConfig2 = new MetadataReportConfig();
+        metadataReportConfig2.setAddress(registryConfig2.getAddress());
+        Map<String, String> metadataParamMap2 = Maps.newHashMap();
+        metadataParamMap2.put(CONFIG_NAMESPACE_KEY, namespace2);
+        metadataParamMap2.put(REPORT_CONSUMER_URL_KEY, Boolean.TRUE.toString());
+        metadataReportConfig2.setParameters(metadataParamMap2);
+        metadataReportConfig2.setReportMetadata(true);
+        metadataReportConfigs.add(metadataReportConfig2);
+
+        serviceConfig.setRegistries(registryConfigs);
+
+        DubboBootstrap.getInstance()
+                .application(new ApplicationConfig("testRegistryWithMetadataReport"))
+                .registries(registryConfigs)
+                .metadataReports(metadataReportConfigs)
+                .service(serviceConfig)
+                .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+                .start();
+
+        ApplicationModel applicationModel = DubboBootstrap.getInstance().getApplicationModel();
+        MetadataReportInstance metadataReportInstance =
+                applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+
+        Map<String, MetadataReport> metadataReports = metadataReportInstance.getMetadataReports(true);
+        Assertions.assertEquals(2, metadataReports.size());
+
+        List<URL> urls = ConfigValidationUtils.loadRegistries(serviceConfig, true);
+        Assertions.assertEquals(4, urls.size());
+
+        for (URL url : urls) {
+            Assertions.assertTrue(metadataReports.containsKey(url.getParameter(REGISTRY_CLUSTER_KEY)));
         }
     }
 
