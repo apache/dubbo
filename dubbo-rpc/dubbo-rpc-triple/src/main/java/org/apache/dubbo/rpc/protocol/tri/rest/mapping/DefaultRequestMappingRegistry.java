@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -99,15 +101,18 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (sd == null) {
             return;
         }
+        AtomicInteger counter = new AtomicInteger();
+        long start = System.currentTimeMillis();
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
             for (int i = 0, size = resolvers.size(); i < size; i++) {
                 RequestMappingResolver resolver = resolvers.get(i);
                 ServiceMeta serviceMeta = new ServiceMeta(classes, sd, service, url, resolver.getRestToolKit());
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info(
-                            "{} resolve rest mappings from {}",
+                            "{} resolving rest mappings for {} at url [{}]",
                             resolver.getClass().getSimpleName(),
-                            serviceMeta);
+                            serviceMeta,
+                            url.toString(""));
                 }
                 if (!resolver.accept(serviceMeta)) {
                     continue;
@@ -137,13 +142,19 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     }
                     methodMeta.initParameters();
                     MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(md);
-                    register0(methodMapping, new HandlerMeta(invoker, methodMeta, methodMetadata, md, sd));
+                    register0(methodMapping, new HandlerMeta(invoker, methodMeta, methodMetadata, md, sd), counter);
                 });
             }
         });
+        LOGGER.info(
+                "Registered {} REST mappings for service [{}] at url [{}] in {}ms",
+                counter,
+                ClassUtils.toShortString(service),
+                url.toString(""),
+                System.currentTimeMillis() - start);
     }
 
-    private void register0(RequestMapping mapping, HandlerMeta handler) {
+    private void register0(RequestMapping mapping, HandlerMeta handler, AtomicInteger counter) {
         lock.writeLock().lock();
         try {
             Registration registration = new Registration();
@@ -153,9 +164,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 Registration exists = tree.addPath(path, registration);
                 if (exists == null) {
                     if (LOGGER.isDebugEnabled()) {
-                        String msg = "Register rest mapping path: '{}' -> mapping={}, method={}";
+                        String msg = "Register rest mapping: '{}' -> mapping={}, method={}";
                         LOGGER.debug(msg, path, mapping, handler.getMethod());
                     }
+                    counter.incrementAndGet();
                 } else if (LOGGER.isWarnEnabled()) {
                     LOGGER.internalWarn(Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists));
                 }
@@ -167,6 +179,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     @Override
     public void unregister(Invoker<?> invoker) {
+        if (tree == null) {
+            return;
+        }
         lock.writeLock().lock();
         try {
             tree.remove(mapping -> mapping.meta.getInvoker() == invoker);

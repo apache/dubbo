@@ -75,6 +75,24 @@ class GetConfigTest {
     }
 
     @Test
+    void testEmptyId() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel1 = frameworkModel.newApplication();
+
+        applicationModel1.getApplicationConfigManager().setApplication(new ApplicationConfig("app1"));
+
+        ModuleModel moduleModel = applicationModel1.newModule();
+        ProviderConfig providerConfig1 = new ProviderConfig();
+        providerConfig1.setThreadname("test");
+        moduleModel.getConfigManager().addProvider(providerConfig1);
+
+        CommandContext commandContext = new CommandContext("getConfig");
+        commandContext.setHttp(true);
+
+        Assertions.assertNotNull(new GetConfig(frameworkModel).execute(commandContext, null));
+    }
+
+    @Test
     void testFilter1() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel1 = frameworkModel.newApplication();

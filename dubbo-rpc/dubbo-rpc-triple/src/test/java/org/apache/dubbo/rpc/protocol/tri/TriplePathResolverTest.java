@@ -17,27 +17,41 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class TriplePathResolverTest {
 
     private static final PathResolver PATH_RESOLVER =
-            ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
+            FrameworkModel.defaultModel().getDefaultExtension(PathResolver.class);
+
+    private static final String SERVICE_NAME = "DemoService";
 
     private static final Invoker<Object> INVOKER = new Invoker<Object>() {
         @Override
         public URL getUrl() {
-            return null;
+            ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
+            Mockito.when(serviceDescriptor.getInterfaceName()).thenReturn(SERVICE_NAME);
+            ServiceModel serviceModel = Mockito.mock(ServiceModel.class);
+            Mockito.when(serviceModel.getServiceModel()).thenReturn(serviceDescriptor);
+            return URL.valueOf("tri://localhost/demo/" + SERVICE_NAME)
+                    .setServiceInterface(SERVICE_NAME)
+                    .addParameter(CommonConstants.GROUP_KEY, "g1")
+                    .addParameter(CommonConstants.VERSION_KEY, "1.0.1")
+                    .setServiceModel(serviceModel);
         }
 
         @Override
@@ -61,8 +75,8 @@ class TriplePathResolverTest {
 
     @BeforeEach
     public void init() {
-
         PATH_RESOLVER.add("/abc", INVOKER);
+        PATH_RESOLVER.register(INVOKER);
     }
 
     @AfterEach
@@ -73,6 +87,22 @@ class TriplePathResolverTest {
     @Test
     void testResolve() {
         Assertions.assertEquals(INVOKER, getInvokerByPath("/abc"));
+    }
+
+    @Test
+    void testResolveWithContextPath() {
+        String path = "demo/" + SERVICE_NAME;
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(SERVICE_NAME, null, null));
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(path, null, null));
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(SERVICE_NAME, "g1", "1.0.1"));
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(path, "g1", "1.0.1"));
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(SERVICE_NAME, "g2", "1.0.2"));
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(path, "g2", "1.0.2"));
+        TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT = false;
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(SERVICE_NAME, "g1", "1.0.1"));
+        Assertions.assertEquals(INVOKER, PATH_RESOLVER.resolve(path, "g1", "1.0.1"));
+        Assertions.assertNull(PATH_RESOLVER.resolve(SERVICE_NAME, "g2", "1.0.2"));
+        Assertions.assertNull(PATH_RESOLVER.resolve(path, "g2", "1.0.2"));
     }
 
     @Test
@@ -102,7 +132,7 @@ class TriplePathResolverTest {
         Assertions.assertNull(getInvokerByPath("/bcd"));
     }
 
-    private Invoker getInvokerByPath(String path) {
-        return PATH_RESOLVER.resolve(path);
+    private Invoker<?> getInvokerByPath(String path) {
+        return PATH_RESOLVER.resolve(path, null, null);
     }
 }

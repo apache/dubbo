@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -45,7 +43,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import io.grpc.health.v1.HealthCheckResponse;
 import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
@@ -64,8 +61,6 @@ import static org.apache.dubbo.rpc.Constants.H3_SETTINGS_HTTP3_ENABLED;
 import static org.apache.dubbo.rpc.Constants.HTTP3_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
-
-    private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
 
     private final PathResolver pathResolver;
     private final RequestMappingRegistry mappingRegistry;
@@ -110,72 +105,61 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         URL url = invoker.getUrl();
         String key = serviceKey(url);
+
+        // create exporter
         AbstractExporter<T> exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
-                pathResolver.remove(url.getServiceKey());
-                pathResolver.remove(url.getServiceModel().getServiceModel().getInterfaceName());
+                // unregister grpc request mapping
+                pathResolver.unregister(invoker);
+
                 // unregister rest request mapping
                 mappingRegistry.unregister(invoker);
-                // set service status
-                if (triBuiltinService.enable()) {
-                    triBuiltinService
-                            .getHealthStatusManager()
-                            .setStatus(url.getServiceKey(), ServingStatus.NOT_SERVING);
-                    triBuiltinService
-                            .getHealthStatusManager()
-                            .setStatus(url.getServiceInterface(), ServingStatus.NOT_SERVING);
-                }
+
+                // set service status to NOT_SERVING
+                setServiceStatus(url, false);
+
                 exporterMap.remove(key);
             }
         };
-
         exporterMap.put(key, exporter);
 
+        // add invoker
         invokers.add(invoker);
 
-        Invoker<?> previous = pathResolver.add(url.getServiceKey(), invoker);
-        if (previous != null) {
-            if (url.getServiceKey()
-                    .equals(url.getServiceModel().getServiceModel().getInterfaceName())) {
-                logger.info("Already exists an invoker[" + previous.getUrl() + "] on path[" + url.getServiceKey()
-                        + "], dubbo will override with invoker[" + url + "]");
-            } else {
-                throw new IllegalStateException(
-                        "Already exists an invoker[" + previous.getUrl() + "] on path[" + url.getServiceKey()
-                                + "], failed to add invoker[" + url + "] , please use unique serviceKey.");
-            }
-        }
-        if (RESOLVE_FALLBACK_TO_DEFAULT) {
-            previous = pathResolver.addIfAbsent(
-                    url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
-            if (previous != null) {
-                logger.info("Already exists an invoker[" + previous.getUrl() + "] on path["
-                        + url.getServiceModel().getServiceModel().getInterfaceName()
-                        + "], dubbo will skip override with invoker[" + url + "]");
-            } else {
-                logger.info("Add fallback triple invoker[" + url + "] to path["
-                        + url.getServiceModel().getServiceModel().getInterfaceName() + "] with invoker[" + url + "]");
-            }
-        }
+        // register grpc path mapping
+        pathResolver.register(invoker);
 
         // register rest request mapping
         mappingRegistry.register(invoker);
 
-        // set service status
-        if (triBuiltinService.enable()) {
-            triBuiltinService
-                    .getHealthStatusManager()
-                    .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
-            triBuiltinService
-                    .getHealthStatusManager()
-                    .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
-        }
-        // init
+        // set service status to SERVING
+        setServiceStatus(url, true);
+
+        // init server executor
         ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
 
+        // bind server port
+        bindServerPort(url);
+
+        // optimize serialization
+        optimizeSerialization(url);
+
+        return exporter;
+    }
+
+    private void setServiceStatus(URL url, boolean serving) {
+        if (triBuiltinService.enable()) {
+            ServingStatus status = serving ? ServingStatus.SERVING : ServingStatus.NOT_SERVING;
+            triBuiltinService.getHealthStatusManager().setStatus(url.getServiceKey(), status);
+            triBuiltinService.getHealthStatusManager().setStatus(url.getServiceInterface(), status);
+        }
+    }
+
+    private void bindServerPort(URL url) {
         boolean bindPort = true;
+
         if (SERVLET_ENABLED) {
             int port = url.getParameter(BIND_PORT_KEY, url.getPort());
             Integer serverPort = ServletExchanger.getServerPort();
@@ -188,6 +172,7 @@ public class TripleProtocol extends AbstractProtocol {
             }
             ServletExchanger.bind(url);
         }
+
         if (bindPort) {
             PortUnificationExchanger.bind(url, new DefaultPuHandler());
         }
@@ -196,9 +181,6 @@ public class TripleProtocol extends AbstractProtocol {
             Http3Exchanger.bind(url);
             http3Bound = true;
         }
-
-        optimizeSerialization(url);
-        return exporter;
     }
 
     @Override
@@ -231,7 +213,7 @@ public class TripleProtocol extends AbstractProtocol {
     @Override
     public void destroy() {
         if (logger.isInfoEnabled()) {
-            logger.info("Destroying protocol [" + getClass().getSimpleName() + "] ...");
+            logger.info("Destroying protocol [{}] ...", getClass().getSimpleName());
         }
         PortUnificationExchanger.close();
         if (http3Bound) {

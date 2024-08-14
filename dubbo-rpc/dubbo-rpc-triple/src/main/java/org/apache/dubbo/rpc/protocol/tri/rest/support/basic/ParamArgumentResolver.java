@@ -205,7 +205,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
         return RequestUtils.parseMatrixVariableValues(variableMap, meta.name());
     }
 
-    private static class ParamNamedValueMeta extends NamedValueMeta {
+    private static final class ParamNamedValueMeta extends NamedValueMeta {
 
         private final ParamType paramType;
 

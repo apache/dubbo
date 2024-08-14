@@ -61,17 +61,21 @@ public final class PathExpression implements Comparable<PathExpression> {
         }
         Map<String, String> variableMap = new LinkedHashMap<>();
         int start, end = 0;
-        for (PathSegment segment : segments) {
+        for (int i = 0, len = segments.length; i < len; i++) {
+            PathSegment segment = segments[i];
             if (end != -1) {
                 start = end + 1;
                 end = path.indexOf('/', start);
                 if (segment.match(new KeyString(path), start, end, variableMap)) {
+                    if (i == len - 1 && segment.isTailMatching()) {
+                        return variableMap;
+                    }
                     continue;
                 }
             }
             return null;
         }
-        return variableMap;
+        return end == -1 ? variableMap : null;
     }
 
     public int compareTo(PathExpression other, String lookupPath) {
