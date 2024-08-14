@@ -54,13 +54,13 @@ public class PathAndInvokerMapper {
     public void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
 
         metadataMap.forEach((pathMatcher, value) -> {
-	        if (pathMatcher.hasPathVariable()) {
-		        addPathMatcherToPathMap(pathMatcher, pathToServiceMapContainPathVariable,
-			        InvokerAndRestMethodMetadataPair.pair(invoker, value));
-	        } else {
-		        addPathMatcherToPathMap(pathMatcher, pathToServiceMapNoPathVariable,
-			        InvokerAndRestMethodMetadataPair.pair(invoker, value));
-	        }
+            if (pathMatcher.hasPathVariable()) {
+                addPathMatcherToPathMap(pathMatcher, pathToServiceMapContainPathVariable,
+                    InvokerAndRestMethodMetadataPair.pair(invoker, value));
+            } else {
+                addPathMatcherToPathMap(pathMatcher, pathToServiceMapNoPathVariable,
+                    InvokerAndRestMethodMetadataPair.pair(invoker, value));
+            }
         });
     }
 
@@ -112,15 +112,14 @@ public class PathAndInvokerMapper {
 
         InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
         if (beforeMetadata != null) {
-            // cover the old service metadata when  current interface is old interface & current method desc equals
+            // cover the old service metadata when current interface is old interface & current method desc equals
             // old`s method desc,else ,throw double check exception
             // true when reExport
             if (!invokerRestMethodMetadataPair.compareServiceMethod(beforeMetadata)) {
-                throw new DoublePathCheckException("dubbo rest double path check error, current path is: " + pathMatcher
-                        + " ,and service method is: "
+                throw new DoublePathCheckException(
+                    "dubbo rest double path check error, current path is: " + pathMatcher + " ,and service method is: "
                         + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod()
-                        + "before service  method is: "
-                        + beforeMetadata.getRestMethodMetadata().getReflectMethod());
+                        + "before service  method is: " + beforeMetadata.getRestMethodMetadata().getReflectMethod());
             }
         }
 
