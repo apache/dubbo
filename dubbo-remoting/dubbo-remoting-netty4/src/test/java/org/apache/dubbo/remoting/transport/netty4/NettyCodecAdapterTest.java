@@ -16,27 +16,23 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.buffer.AbstractByteBufAllocator;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.embedded.EmbeddedChannel;
-
-import io.netty.handler.codec.DecoderException;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec2;
-
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToByteEncoder;
-
 import org.apache.dubbo.remoting.Constants;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
+import io.netty.buffer.AbstractByteBufAllocator;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.DecoderException;
+import io.netty.handler.codec.MessageToByteEncoder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -81,7 +77,7 @@ class NettyCodecAdapterTest {
         DecoderException decoderException = Assertions.assertThrows(DecoderException.class, () -> {
             embeddedChannel.writeInbound(input);
         });
-        Assertions.assertTrue( decoderException.getCause() instanceof IOException);
+        Assertions.assertTrue(decoderException.getCause() instanceof IOException);
 
         Assertions.assertEquals(0, input.refCnt());
     }
