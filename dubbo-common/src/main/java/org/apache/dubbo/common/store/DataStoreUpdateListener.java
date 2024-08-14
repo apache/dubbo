@@ -14,18 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store.nacos;
+package org.apache.dubbo.common.store;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
-
-/**
- * metadata report factory impl for nacos
- */
-public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
-    @Override
-    protected MetadataReport createMetadataReport(URL url) {
-        return new NacosMetadataReport(url);
-    }
+public interface DataStoreUpdateListener {
+    void onUpdate(String componentName, String key, Object value);
 }

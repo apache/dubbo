@@ -25,11 +25,11 @@ import java.util.zip.GZIPOutputStream;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.unit.DataSize;
-import zipkin2.Call;
-import zipkin2.CheckResult;
-import zipkin2.codec.Encoding;
 import zipkin2.reporter.BytesMessageEncoder;
+import zipkin2.reporter.Call;
+import zipkin2.reporter.CheckResult;
 import zipkin2.reporter.ClosedSenderException;
+import zipkin2.reporter.Encoding;
 import zipkin2.reporter.Sender;
 
 /**

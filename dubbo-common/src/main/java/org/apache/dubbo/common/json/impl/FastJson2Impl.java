@@ -19,9 +19,17 @@ package org.apache.dubbo.common.json.impl;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import com.alibaba.fastjson2.JSONValidator;
 import com.alibaba.fastjson2.JSONWriter;
 
 public class FastJson2Impl extends AbstractJSONImpl {
+
+    @Override
+    public boolean isJson(String json) {
+        JSONValidator validator = JSONValidator.from(json);
+        return validator.validate();
+    }
+
     @Override
     public <T> T toJavaObject(String json, Type type) {
         return com.alibaba.fastjson2.JSON.parseObject(json, type);

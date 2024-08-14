@@ -51,7 +51,7 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
  * @see DubboRelaxedBindingAutoConfiguration
  * @since 2.7.0
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @ConditionalOnClass(name = "org.springframework.boot.context.properties.bind.Binder")
 @AutoConfigureBefore(DubboRelaxedBindingAutoConfiguration.class)
