@@ -47,6 +47,7 @@ public class URLConnectionRestClient implements RestClient {
 
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getURL()).openConnection();
+            requestTemplate.addHeader("connection", "close");
             connection.setConnectTimeout(clientConfig.getConnectTimeout());
             connection.setReadTimeout(clientConfig.getReadTimeout());
             connection.setRequestMethod(requestTemplate.getHttpMethod());
