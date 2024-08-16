@@ -67,7 +67,7 @@ public class ChunkOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-	    if (buffer.maxWritableBytes() < len) {
+        if (buffer.maxWritableBytes() < len) {
             throwExceedPayloadLimitException(buffer.readableBytes() + len);
         }
         buffer.writeBytes(b, off, len);
