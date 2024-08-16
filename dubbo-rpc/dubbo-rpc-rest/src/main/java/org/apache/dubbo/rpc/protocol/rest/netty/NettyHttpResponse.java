@@ -34,6 +34,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
@@ -200,11 +202,11 @@ public class NettyHttpResponse implements HttpResponse {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void transformHeaders(
             NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
-        //        if (nettyResponse.isKeepAlive()) {
-        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        //        } else {
-        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-        //        }
+        if (nettyResponse.isKeepAlive()) {
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        } else {
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+        }
 
         for (Map.Entry<String, List<String>> entry :
                 nettyResponse.getOutputHeaders().entrySet()) {

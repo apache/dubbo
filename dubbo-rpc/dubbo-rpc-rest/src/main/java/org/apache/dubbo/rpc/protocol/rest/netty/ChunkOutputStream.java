@@ -80,7 +80,7 @@ public class ChunkOutputStream extends OutputStream {
         int readable = buffer.readableBytes();
         if (readable == 0) return;
         if (!response.isCommitted()) response.prepareChunkStream();
-        ctx.writeAndFlush(new DefaultHttpContent(buffer.copy()));
+        ctx.write(new DefaultHttpContent(buffer.copy()));
         buffer.clear();
         super.flush();
     }
