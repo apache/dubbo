@@ -74,9 +74,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
             } finally {
                 // write response
                 try {
-                    if (!keepAlive) {
-                        nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONNECTION.getHeader(), "close");
-                    }
+                    nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONNECTION.getHeader(), "close");
                     nettyHttpResponse.finish();
                 } catch (IOException e) {
                     logger.error(

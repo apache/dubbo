@@ -200,11 +200,11 @@ public class NettyHttpResponse implements HttpResponse {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void transformHeaders(
             NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
-        //        if (nettyResponse.isKeepAlive()) {
-        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        //        } else {
-        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-        //        }
+        if (nettyResponse.isKeepAlive()) {
+            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        } else {
+            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+        }
 
         for (Map.Entry<String, List<String>> entry :
                 nettyResponse.getOutputHeaders().entrySet()) {
