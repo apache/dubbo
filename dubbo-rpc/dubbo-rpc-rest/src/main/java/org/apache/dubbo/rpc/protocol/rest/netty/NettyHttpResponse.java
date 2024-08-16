@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.Constants;
@@ -201,9 +203,9 @@ public class NettyHttpResponse implements HttpResponse {
     public static void transformHeaders(
             NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
         if (nettyResponse.isKeepAlive()) {
-            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         } else {
-            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
         }
 
         for (Map.Entry<String, List<String>> entry :
