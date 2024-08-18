@@ -49,6 +49,12 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
     }
 
     @Override
+    /**
+     * Creates a monitor instance based on the given URL.
+     *
+     * @param url The URL containing necessary parameter information for creating the monitor instance.
+     * @return Returns a DubboMonitor instance implementing the Monitor interface.
+     */
     protected Monitor createMonitor(URL url) {
         URLBuilder urlBuilder = URLBuilder.from(url);
         urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));

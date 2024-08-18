@@ -107,6 +107,7 @@ public class DubboMonitor implements Monitor {
                 TimeUnit.MILLISECONDS);
     }
 
+    //The function sends statistical information to a monitoring system.
     public void send() {
         if (logger.isDebugEnabled()) {
             logger.debug("Send statistics to monitor " + getUrl());
@@ -119,7 +120,7 @@ public class DubboMonitor implements Monitor {
             AtomicReference<StatisticsItem> reference = entry.getValue();
             StatisticsItem statisticsItem = reference.get();
 
-            // send statistics data
+            // Construct the URL for sending statistical data by adding various statistical parameters
             URL url = statistics
                     .getUrl()
                     .addParameters(
@@ -147,16 +148,19 @@ public class DubboMonitor implements Monitor {
                             String.valueOf(statisticsItem.getMaxConcurrent()),
                             DEFAULT_PROTOCOL,
                             getUrl().getParameter(DEFAULT_PROTOCOL));
+            // Send the statistical data to the monitoring system
             monitorService.collect(url.toSerializableURL());
 
-            // reset
+            // Reset the statistical data for the next collection period
             StatisticsItem current;
             StatisticsItem update = new StatisticsItem();
             do {
                 current = reference.get();
+                // Initialize update data if current data is null
                 if (current == null) {
                     update.setItems(0, 0, 0, 0, 0, 0);
                 } else {
+                    // Calculate the incremental data for the update
                     update.setItems(
                             current.getSuccess() - statisticsItem.getSuccess(),
                             current.getFailure() - statisticsItem.getFailure(),
@@ -169,6 +173,7 @@ public class DubboMonitor implements Monitor {
         }
     }
 
+    //This function collects URL parameters to update statistics
     @Override
     public void collect(URL url) {
         // data to collect from url
@@ -188,9 +193,11 @@ public class DubboMonitor implements Monitor {
         do {
             current = reference.get();
             if (current == null) {
+                // initialize statistics item
                 update.setItems(
                         success, failure, input, output, elapsed, concurrent, input, output, elapsed, concurrent);
             } else {
+                // aggregate new data with existing data
                 update.setItems(
                         current.getSuccess() + success,
                         current.getFailure() + failure,
