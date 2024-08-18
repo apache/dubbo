@@ -107,7 +107,9 @@ public class DubboMonitor implements Monitor {
                 TimeUnit.MILLISECONDS);
     }
 
-    //The function sends statistical information to a monitoring system.
+    /**
+     * The function sends statistical information to a monitoring system.
+     */
     public void send() {
         if (logger.isDebugEnabled()) {
             logger.debug("Send statistics to monitor " + getUrl());
@@ -173,7 +175,10 @@ public class DubboMonitor implements Monitor {
         }
     }
 
-    //This function collects URL parameters to update statistics
+    /**
+     * This function collects URL parameters to update statistics
+     * @param url
+     */
     @Override
     public void collect(URL url) {
         // data to collect from url
