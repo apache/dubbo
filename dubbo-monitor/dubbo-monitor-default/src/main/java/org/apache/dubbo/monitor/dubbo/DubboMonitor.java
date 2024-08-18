@@ -120,7 +120,7 @@ public class DubboMonitor implements Monitor {
             AtomicReference<StatisticsItem> reference = entry.getValue();
             StatisticsItem statisticsItem = reference.get();
 
-            // Construct the URL for sending statistical data by adding various statistical parameters
+            // send statistics data
             URL url = statistics
                     .getUrl()
                     .addParameters(
@@ -151,7 +151,7 @@ public class DubboMonitor implements Monitor {
             // Send the statistical data to the monitoring system
             monitorService.collect(url.toSerializableURL());
 
-            // Reset the statistical data for the next collection period
+            // reset
             StatisticsItem current;
             StatisticsItem update = new StatisticsItem();
             do {
