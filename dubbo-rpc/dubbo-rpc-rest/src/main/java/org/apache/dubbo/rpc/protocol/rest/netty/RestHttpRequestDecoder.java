@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
+import io.netty.handler.codec.http.HttpUtil;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -56,8 +58,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
     protected void decode(
             ChannelHandlerContext ctx, io.netty.handler.codec.http.FullHttpRequest request, List<Object> out)
             throws Exception {
-        boolean keepAlive = HttpHeaders.isKeepAlive(request);
-
+        boolean keepAlive = HttpUtil.isKeepAlive(request);
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive, url);
         NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx, serviceDeployer);
 
