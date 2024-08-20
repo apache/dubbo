@@ -26,8 +26,8 @@ import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.auth.DemoService;
 import org.apache.dubbo.xds.directory.XdsDirectory;
-import org.apache.dubbo.xds.resource.XdsCluster;
 import org.apache.dubbo.xds.resource_new.route.VirtualHost;
+import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
 import org.apache.dubbo.xds.router.XdsRouter;
 
 import java.util.Arrays;
@@ -102,7 +102,7 @@ public class DemoTest {
 
         while (true) {
             Map<String, VirtualHost> xdsVirtualHostMap = xdsDirectory.getXdsVirtualHostMap();
-            Map<String, ? extends XdsCluster<?>> xdsClusterMap = xdsDirectory.getXdsClusterMap();
+            Map<String, EdsUpdate> xdsClusterMap = xdsDirectory.getXdsEndpointMap();
             if (!xdsVirtualHostMap.isEmpty() && !xdsClusterMap.isEmpty()) {
                 // xdsRouterDemo.route(invokers, url, invocation, false, null);
                 xdsDirectory.list(invocation);

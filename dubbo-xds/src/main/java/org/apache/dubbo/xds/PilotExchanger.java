@@ -24,17 +24,14 @@ import org.apache.dubbo.xds.protocol.impl.CdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.EdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.LdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.RdsProtocol;
-import org.apache.dubbo.xds.resource.XdsCluster;
-import org.apache.dubbo.xds.resource_new.endpoint.LbEndpoint;
 import org.apache.dubbo.xds.resource_new.route.VirtualHost;
+import org.apache.dubbo.xds.resource_new.update.CdsUpdate;
 import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
 import org.apache.dubbo.xds.resource_new.update.RdsUpdate;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class PilotExchanger {
 
@@ -54,7 +51,7 @@ public class PilotExchanger {
 
     private static final Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
-    private static final Map<String, XdsCluster> xdsClusterMap = new ConcurrentHashMap<>();
+    private static final Map<String, EdsUpdate> xdsEndpointMap = new ConcurrentHashMap<>();
 
     private final Map<String, Set<XdsDirectory>> rdsListeners = new ConcurrentHashMap<>();
 
@@ -85,14 +82,12 @@ public class PilotExchanger {
                     }
                 }));
 
-        XdsResourceListener<EdsUpdate> pilotEdsListener = clusterLoadAssignments -> {
-            List<XdsCluster> xdsClusters =
-                    clusterLoadAssignments.stream().map(this::parseCluster).collect(Collectors.toList());
-            xdsClusters.forEach(xdsCluster -> {
-                this.xdsClusterMap.put(xdsCluster.getName(), xdsCluster);
-                if (cdsListeners.containsKey(xdsCluster.getName())) {
-                    for (XdsDirectory listener : cdsListeners.get(xdsCluster.getName())) {
-                        listener.onEdsChange(xdsCluster.getName(), xdsCluster);
+        XdsResourceListener<EdsUpdate> pilotEdsListener = edsUpdates -> {
+            edsUpdates.forEach(edsUpdate -> {
+                this.xdsEndpointMap.put(edsUpdate.getClusterName(), edsUpdate);
+                if (cdsListeners.containsKey(edsUpdate.getClusterName())) {
+                    for (XdsDirectory listener : cdsListeners.get(edsUpdate.getClusterName())) {
+                        listener.onEdsChange(edsUpdate.getClusterName(), edsUpdate);
                     }
                 }
             });
@@ -113,8 +108,8 @@ public class PilotExchanger {
         return xdsVirtualHostMap;
     }
 
-    public static Map<String, XdsCluster> getXdsClusterMap() {
-        return xdsClusterMap;
+    public static Map<String, EdsUpdate> getXdsEndpointMap() {
+        return xdsEndpointMap;
     }
 
     public void subscribeRds(String applicationName, XdsDirectory listener) {
@@ -132,8 +127,8 @@ public class PilotExchanger {
     public void subscribeCds(String clusterName, XdsDirectory listener) {
         cdsListeners.computeIfAbsent(clusterName, key -> new ConcurrentHashSet<>());
         cdsListeners.get(clusterName).add(listener);
-        if (xdsClusterMap.containsKey(clusterName)) {
-            listener.onEdsChange(clusterName, xdsClusterMap.get(clusterName));
+        if (xdsEndpointMap.containsKey(clusterName)) {
+            listener.onEdsChange(clusterName, xdsEndpointMap.get(clusterName));
         }
     }
 
@@ -166,19 +161,5 @@ public class PilotExchanger {
 
     public void destroy() {
         this.adsObserver.destroy();
-    }
-
-    private XdsCluster parseCluster(EdsUpdate edsUpdate) {
-        XdsCluster xdsCluster = new XdsCluster();
-
-        xdsCluster.setName(edsUpdate.getClusterName());
-
-        List<LbEndpoint> xdsEndpoints = edsUpdate.getLocalityLbEndpointsMap().values().stream()
-                .flatMap(e -> e.getEndpoints().stream())
-                .collect(Collectors.toList());
-
-        xdsCluster.setXdsEndpoints(xdsEndpoints);
-
-        return xdsCluster;
     }
 }

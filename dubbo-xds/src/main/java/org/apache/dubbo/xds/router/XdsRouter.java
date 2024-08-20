@@ -27,10 +27,10 @@ import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.apache.dubbo.xds.PilotExchanger;
-import org.apache.dubbo.xds.resource.XdsCluster;
 import org.apache.dubbo.xds.resource_new.route.ClusterWeight;
 import org.apache.dubbo.xds.resource_new.route.Route;
 import org.apache.dubbo.xds.resource_new.route.VirtualHost;
+import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     private Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
-    private Map<String, XdsCluster> xdsClusterMap = new ConcurrentHashMap<>();
+    private Map<String, EdsUpdate> xdsClusterMap = new ConcurrentHashMap<>();
 
     public XdsRouter(URL url) {
         super(url);

@@ -28,12 +28,12 @@ import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.xds.PilotExchanger;
-import org.apache.dubbo.xds.resource.XdsCluster;
 import org.apache.dubbo.xds.resource_new.endpoint.LbEndpoint;
 import org.apache.dubbo.xds.resource_new.route.ClusterWeight;
 import org.apache.dubbo.xds.resource_new.route.Route;
 import org.apache.dubbo.xds.resource_new.route.RouteAction;
 import org.apache.dubbo.xds.resource_new.route.VirtualHost;
+import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class XdsDirectory<T> extends AbstractDirectory<T> {
 
@@ -58,7 +59,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     private final Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
-    private final Map<String, XdsCluster<T>> xdsClusterMap = new ConcurrentHashMap<>();
+    private final Map<String, EdsUpdate> xdsEndpointMap = new ConcurrentHashMap<>();
 
     private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsDirectory.class);
 
@@ -83,8 +84,8 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         return xdsVirtualHostMap;
     }
 
-    public Map<String, XdsCluster<T>> getXdsClusterMap() {
-        return xdsClusterMap;
+    public Map<String, EdsUpdate> getXdsEndpointMap() {
+        return xdsEndpointMap;
     }
 
     public Protocol getProtocol() {
@@ -148,7 +149,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         // remove subscribe cluster
         for (String cluster : removeSubscribe) {
             pilotExchanger.unSubscribeCds(cluster, this);
-            xdsClusterMap.remove(cluster);
+            xdsEndpointMap.remove(cluster);
             // TODO: delete invokers which belong unsubscribed cluster
         }
         // add subscribe cluster
@@ -157,10 +158,12 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         }
     }
 
-    public void onEdsChange(String clusterName, XdsCluster<T> xdsCluster) {
-        xdsClusterMap.put(clusterName, xdsCluster);
-        String lbPolicy = xdsCluster.getLbPolicy();
-        List<LbEndpoint> xdsEndpoints = xdsCluster.getXdsEndpoints();
+    public void onEdsChange(String clusterName, EdsUpdate edsUpdate) {
+        xdsEndpointMap.put(clusterName, edsUpdate);
+//        String lbPolicy = xdsCluster.getLbPolicy();
+        List<LbEndpoint> xdsEndpoints = edsUpdate.getLocalityLbEndpointsMap().values().stream()
+                .flatMap(e -> e.getEndpoints().stream())
+                .collect(Collectors.toList());
         BitList<Invoker<T>> invokers = new BitList<>(Collections.emptyList());
         xdsEndpoints.forEach(e -> {
             String ip = e.getAddresses().getFirst().getAddress();
@@ -169,7 +172,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
             // set cluster name
             url = url.addParameter("clusterID", clusterName);
             // set load balance policy
-            url = url.addParameter("loadbalance", lbPolicy);
+//            url = url.addParameter("loadbalance", lbPolicy);
             //  cluster to invoker
             Invoker<T> invoker = this.protocol.refer(this.serviceType, url);
             invokers.add(invoker);
@@ -178,7 +181,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         // super.getInvokers().addAll(invokers);
         // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor multi clusters.
         super.setInvokers(invokers);
-        xdsCluster.setInvokers(invokers);
+//        xdsCluster.setInvokers(invokers);
     }
 
     @Override
