@@ -27,10 +27,10 @@ import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.apache.dubbo.xds.PilotExchanger;
-import org.apache.dubbo.xds.resource_new.route.ClusterWeight;
-import org.apache.dubbo.xds.resource_new.route.Route;
-import org.apache.dubbo.xds.resource_new.route.VirtualHost;
-import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
+import org.apache.dubbo.xds.resource.route.ClusterWeight;
+import org.apache.dubbo.xds.resource.route.Route;
+import org.apache.dubbo.xds.resource.route.VirtualHost;
+import org.apache.dubbo.xds.resource.update.EdsUpdate;
 
 import java.util.List;
 import java.util.Map;

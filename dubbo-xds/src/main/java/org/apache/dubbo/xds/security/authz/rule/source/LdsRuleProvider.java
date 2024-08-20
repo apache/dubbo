@@ -24,7 +24,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.listener.LdsListener;
-import org.apache.dubbo.xds.resource_new.update.LdsUpdate;
+import org.apache.dubbo.xds.resource.update.LdsUpdate;
 
 import java.util.ArrayList;
 import java.util.Collections;

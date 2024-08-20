@@ -28,12 +28,12 @@ import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.xds.PilotExchanger;
-import org.apache.dubbo.xds.resource_new.endpoint.LbEndpoint;
-import org.apache.dubbo.xds.resource_new.route.ClusterWeight;
-import org.apache.dubbo.xds.resource_new.route.Route;
-import org.apache.dubbo.xds.resource_new.route.RouteAction;
-import org.apache.dubbo.xds.resource_new.route.VirtualHost;
-import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
+import org.apache.dubbo.xds.resource.endpoint.LbEndpoint;
+import org.apache.dubbo.xds.resource.route.ClusterWeight;
+import org.apache.dubbo.xds.resource.route.Route;
+import org.apache.dubbo.xds.resource.route.RouteAction;
+import org.apache.dubbo.xds.resource.route.VirtualHost;
+import org.apache.dubbo.xds.resource.update.EdsUpdate;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -160,7 +160,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     public void onEdsChange(String clusterName, EdsUpdate edsUpdate) {
         xdsEndpointMap.put(clusterName, edsUpdate);
-//        String lbPolicy = xdsCluster.getLbPolicy();
+        //        String lbPolicy = xdsCluster.getLbPolicy();
         List<LbEndpoint> xdsEndpoints = edsUpdate.getLocalityLbEndpointsMap().values().stream()
                 .flatMap(e -> e.getEndpoints().stream())
                 .collect(Collectors.toList());
@@ -172,7 +172,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
             // set cluster name
             url = url.addParameter("clusterID", clusterName);
             // set load balance policy
-//            url = url.addParameter("loadbalance", lbPolicy);
+            //            url = url.addParameter("loadbalance", lbPolicy);
             //  cluster to invoker
             Invoker<T> invoker = this.protocol.refer(this.serviceType, url);
             invokers.add(invoker);
@@ -181,7 +181,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         // super.getInvokers().addAll(invokers);
         // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor multi clusters.
         super.setInvokers(invokers);
-//        xdsCluster.setInvokers(invokers);
+        //        xdsCluster.setInvokers(invokers);
     }
 
     @Override

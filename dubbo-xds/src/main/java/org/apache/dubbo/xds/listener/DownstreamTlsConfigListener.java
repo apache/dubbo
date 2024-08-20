@@ -20,7 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.XdsException;
-import org.apache.dubbo.xds.resource_new.update.LdsUpdate;
+import org.apache.dubbo.xds.resource.update.LdsUpdate;
 import org.apache.dubbo.xds.security.authn.DownstreamTlsConfig;
 import org.apache.dubbo.xds.security.authn.GeneralTlsConfig;
 import org.apache.dubbo.xds.security.authn.TlsResourceResolver;

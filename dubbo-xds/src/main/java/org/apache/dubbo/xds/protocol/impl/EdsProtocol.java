@@ -22,11 +22,11 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
 import org.apache.dubbo.xds.protocol.XdsResourceListener;
-import org.apache.dubbo.xds.resource_new.XdsEndpointResource;
-import org.apache.dubbo.xds.resource_new.XdsResourceType;
-import org.apache.dubbo.xds.resource_new.update.CdsUpdate;
-import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
-import org.apache.dubbo.xds.resource_new.update.ValidatedResourceUpdate;
+import org.apache.dubbo.xds.resource.XdsEndpointResource;
+import org.apache.dubbo.xds.resource.XdsResourceType;
+import org.apache.dubbo.xds.resource.update.CdsUpdate;
+import org.apache.dubbo.xds.resource.update.EdsUpdate;
+import org.apache.dubbo.xds.resource.update.ValidatedResourceUpdate;
 
 import java.util.Collections;
 import java.util.Map;
@@ -34,15 +34,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.envoyproxy.envoy.config.cluster.v3.Cluster;
 import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_PARSING_XDS;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class EdsProtocol extends AbstractProtocol<EdsUpdate> {
 
@@ -84,23 +79,5 @@ public class EdsProtocol extends AbstractProtocol<EdsUpdate> {
         return validatedResourceUpdate.getParsedResources().entrySet().stream()
                 .collect(Collectors.toConcurrentMap(
                         Entry::getKey, e -> e.getValue().getResourceUpdate()));
-    }
-
-    private static ClusterLoadAssignment unpackClusterLoadAssignment(Any any) {
-        try {
-            return any.unpack(ClusterLoadAssignment.class);
-        } catch (InvalidProtocolBufferException e) {
-            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
-            return null;
-        }
-    }
-
-    private static Cluster unpackCluster(Any any) {
-        try {
-            return any.unpack(Cluster.class);
-        } catch (InvalidProtocolBufferException e) {
-            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
-            return null;
-        }
     }
 }

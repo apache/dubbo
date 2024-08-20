@@ -19,7 +19,7 @@ package org.apache.dubbo.xds.listener;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.xds.protocol.XdsResourceListener;
-import org.apache.dubbo.xds.resource_new.update.LdsUpdate;
+import org.apache.dubbo.xds.resource.update.LdsUpdate;
 
 @SPI(scope = ExtensionScope.APPLICATION)
 public interface LdsListener extends XdsResourceListener<LdsUpdate> {}

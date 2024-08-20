@@ -22,10 +22,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.AdsObserver;
 import org.apache.dubbo.xds.listener.CdsListener;
 import org.apache.dubbo.xds.protocol.AbstractProtocol;
-import org.apache.dubbo.xds.resource_new.XdsClusterResource;
-import org.apache.dubbo.xds.resource_new.XdsResourceType;
-import org.apache.dubbo.xds.resource_new.update.CdsUpdate;
-import org.apache.dubbo.xds.resource_new.update.ValidatedResourceUpdate;
+import org.apache.dubbo.xds.resource.XdsClusterResource;
+import org.apache.dubbo.xds.resource.XdsResourceType;
+import org.apache.dubbo.xds.resource.update.CdsUpdate;
+import org.apache.dubbo.xds.resource.update.ValidatedResourceUpdate;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,22 +67,6 @@ public class CdsProtocol extends AbstractProtocol<CdsUpdate> {
         subscribeResource(null);
     }
 
-    //    @Override
-    //    protected Map<String, String> decodeDiscoveryResponse(DiscoveryResponse response) {
-    //        if (getTypeUrl().equals(response.getTypeUrl())) {
-    //            Set<String> set = response.getResourcesList().stream()
-    //                    .map(CdsProtocol::unpackCluster)
-    //                    .filter(Objects::nonNull)
-    //                    .map(Cluster::getName)
-    //                    .collect(Collectors.toSet());
-    //            updateCallback.accept(set);
-    //            // Map<String, ListenerResult> listenerDecodeResult = new ConcurrentHashMap<>();
-    //            // listenerDecodeResult.put(emptyResourceName, new ListenerResult(set));
-    //            // return listenerDecodeResult;
-    //        }
-    //        return new HashMap<>();
-    //    }
-
     @Override
     protected Map<String, CdsUpdate> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (!getTypeUrl().equals(response.getTypeUrl())) {
@@ -99,57 +83,4 @@ public class CdsProtocol extends AbstractProtocol<CdsUpdate> {
                 .collect(Collectors.toConcurrentMap(
                         Entry::getKey, e -> e.getValue().getResourceUpdate()));
     }
-
-    //    private ClusterLoadAssignment unpackClusterLoadAssignment(Any any) {
-    //        try {
-    //            return any.unpack(ClusterLoadAssignment.class);
-    //        } catch (InvalidProtocolBufferException e) {
-    //            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
-    //            return null;
-    //        }
-    //    }
-    //
-    //    public XdsCluster parseCluster(ClusterLoadAssignment cluster) {
-    //        XdsCluster xdsCluster = new XdsCluster();
-    //
-    //        xdsCluster.setName(cluster.getClusterName());
-    //
-    //        List<XdsEndpoint> xdsEndpoints = cluster.getEndpointsList().stream()
-    //                .flatMap(e -> e.getLbEndpointsList().stream())
-    //                .map(LbEndpoint::getEndpoint)
-    //                .map(this::parseEndpoint)
-    //                .collect(Collectors.toList());
-    //
-    //        xdsCluster.setXdsEndpoints(xdsEndpoints);
-    //
-    //        return xdsCluster;
-    //    }
-    //
-    //    public XdsEndpoint parseEndpoint(io.envoyproxy.envoy.config.endpoint.v3.Endpoint endpoint) {
-    //        XdsEndpoint xdsEndpoint = new XdsEndpoint();
-    //        xdsEndpoint.setAddress(endpoint.getAddress().getSocketAddress().getAddress());
-    //        xdsEndpoint.setPortValue(endpoint.getAddress().getSocketAddress().getPortValue());
-    //        return xdsEndpoint;
-    //    }
-    //
-    //    private static Cluster unpackCluster(Any any) {
-    //        try {
-    //            return any.unpack(Cluster.class);
-    //        } catch (InvalidProtocolBufferException e) {
-    //            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
-    //            return null;
-    //        }
-    //    }
-    //
-    //    private static HttpConnectionManager unpackHttpConnectionManager(Any any) {
-    //        try {
-    //            if (!any.is(HttpConnectionManager.class)) {
-    //                return null;
-    //            }
-    //            return any.unpack(HttpConnectionManager.class);
-    //        } catch (InvalidProtocolBufferException e) {
-    //            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
-    //            return null;
-    //        }
-    //    }
 }

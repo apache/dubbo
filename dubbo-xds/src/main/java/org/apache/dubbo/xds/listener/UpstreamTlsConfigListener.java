@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.XdsException;
 import org.apache.dubbo.xds.XdsException.Type;
-import org.apache.dubbo.xds.resource_new.update.CdsUpdate;
+import org.apache.dubbo.xds.resource.update.CdsUpdate;
 import org.apache.dubbo.xds.security.authn.TlsResourceResolver;
 import org.apache.dubbo.xds.security.authn.UpstreamTlsConfig;
 

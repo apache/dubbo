@@ -24,10 +24,9 @@ import org.apache.dubbo.xds.protocol.impl.CdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.EdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.LdsProtocol;
 import org.apache.dubbo.xds.protocol.impl.RdsProtocol;
-import org.apache.dubbo.xds.resource_new.route.VirtualHost;
-import org.apache.dubbo.xds.resource_new.update.CdsUpdate;
-import org.apache.dubbo.xds.resource_new.update.EdsUpdate;
-import org.apache.dubbo.xds.resource_new.update.RdsUpdate;
+import org.apache.dubbo.xds.resource.route.VirtualHost;
+import org.apache.dubbo.xds.resource.update.EdsUpdate;
+import org.apache.dubbo.xds.resource.update.RdsUpdate;
 
 import java.util.Map;
 import java.util.Set;
