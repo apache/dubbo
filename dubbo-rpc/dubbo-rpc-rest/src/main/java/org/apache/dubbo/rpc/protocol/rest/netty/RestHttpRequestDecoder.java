@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
-import io.netty.handler.codec.http.HttpUtil;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,6 +31,7 @@ import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.http.HttpUtil;
 
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
