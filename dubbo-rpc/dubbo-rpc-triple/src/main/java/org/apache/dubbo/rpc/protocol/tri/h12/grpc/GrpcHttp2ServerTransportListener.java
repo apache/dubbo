@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.StatusRpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -69,6 +70,9 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
 
     private static String httpStatusToGrpcStatus(Throwable throwable) {
         // http status code map to grpc status code
+        if (throwable instanceof StatusRpcException) {
+            return String.valueOf(((StatusRpcException) throwable).getStatus().code.code);
+        }
         return String.valueOf(TriRpcStatus.INTERNAL.code.code);
     }
 
