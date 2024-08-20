@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
@@ -38,7 +38,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
  * Because {@link ApplicationShutdownHooks} use {@link java.util.IdentityHashMap}
  * to store the shutdown hooks.
  */
-class DubboShutdownHook extends Thread {
+public class DubboShutdownHook extends Thread {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboShutdownHook.class);
 
@@ -153,5 +153,13 @@ class DubboShutdownHook extends Thread {
                 logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "register shutdown hook failed: " + e.getMessage(), e);
             }
         }
+    }
+
+    /**
+     *
+     * @return indicator of hook registered or not.
+     */
+    public boolean isRegistered() {
+        return registered.get();
     }
 }
