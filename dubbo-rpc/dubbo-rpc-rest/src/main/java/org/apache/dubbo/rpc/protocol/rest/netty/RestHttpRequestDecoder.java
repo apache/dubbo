@@ -33,7 +33,6 @@ import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.http.HttpHeaders;
 
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
