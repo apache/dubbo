@@ -48,44 +48,52 @@ public class GsonImpl extends CustomizableJsonUtil<GsonBuilder, Gson> {
 
     @Override
     public <T> T toJavaObject(String json, Type type) {
-        return getWriter().fromJson(json, type);
+        return getGson().fromJson(json, type);
     }
 
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
         Type type = TypeToken.getParameterized(List.class, clazz).getType();
-        return getWriter().fromJson(json, type);
+        return getGson().fromJson(json, type);
     }
 
     @Override
     public String toJson(Object obj) {
-        return getWriter().toJson(obj);
+        return getGson().toJson(obj);
     }
 
     @Override
     public String toPrettyJson(Object obj) {
-        return getReader().setPrettyPrinting().create().toJson(obj);
+        return getGsonBuilder().setPrettyPrinting().create().toJson(obj);
     }
 
     @Override
     public Object convertObject(Object obj, Type type) {
-        Gson gson = getWriter();
+        Gson gson = getGson();
         return gson.fromJson(gson.toJsonTree(obj), type);
     }
 
     @Override
     public Object convertObject(Object obj, Class<?> clazz) {
-        Gson gson = getWriter();
+        Gson gson = getGson();
         return gson.fromJson(gson.toJsonTree(obj), clazz);
     }
 
+    protected GsonBuilder getGsonBuilder() {
+        return getFirst();
+    }
+
+    protected Gson getGson() {
+        return getSecond();
+    }
+
     @Override
-    protected GsonBuilder newReader() {
+    protected GsonBuilder newFirst() {
         return new GsonBuilder();
     }
 
     @Override
-    protected Gson createWriter() {
-        return getReader().create();
+    protected Gson createSecond() {
+        return getFirst().create();
     }
 }

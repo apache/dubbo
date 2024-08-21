@@ -19,12 +19,12 @@ package org.apache.dubbo.common.json.impl;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.json.JsonUtilCustomizer;
 
-public abstract class CustomizableJsonUtil<READER, WRITER> extends AbstractJsonUtilImpl {
+public abstract class CustomizableJsonUtil<FIRST, SECOND> extends AbstractJsonUtilImpl {
 
     private JsonUtilCustomizer<Object> customizer;
 
-    private volatile READER reader;
-    private volatile WRITER writer;
+    private volatile FIRST first;
+    private volatile SECOND second;
 
     @DisableInject
     public final void setCustomizer(JsonUtilCustomizer<Object> customizer) {
@@ -35,53 +35,53 @@ public abstract class CustomizableJsonUtil<READER, WRITER> extends AbstractJsonU
         return customizer != null;
     }
 
-    public READER getReader() {
-        READER reader = this.reader;
-        if (reader == null) {
+    public final FIRST getFirst() {
+        FIRST first = this.first;
+        if (first == null) {
             synchronized (this) {
-                reader = this.reader;
-                if (reader == null) {
-                    this.reader = reader = createReader();
+                first = this.first;
+                if (first == null) {
+                    this.first = first = createFirst();
                 }
             }
         }
-        return reader;
+        return first;
     }
 
-    public WRITER getWriter() {
-        WRITER writer = this.writer;
-        if (writer == null) {
+    public final SECOND getSecond() {
+        SECOND second = this.second;
+        if (second == null) {
             synchronized (this) {
-                writer = this.writer;
-                if (writer == null) {
-                    this.writer = writer = createWriter();
+                second = this.second;
+                if (second == null) {
+                    this.second = second = createSecond();
                 }
             }
         }
-        return writer;
+        return second;
     }
 
-    protected READER createReader() {
-        READER reader = newReader();
+    protected FIRST createFirst() {
+        FIRST first = newFirst();
         if (customizer != null) {
-            customizer.customize(reader);
+            customizer.customize(first);
         }
-        return reader;
+        return first;
     }
 
-    protected WRITER createWriter() {
-        WRITER writer = newWriter();
+    protected SECOND createSecond() {
+        SECOND second = newSecond();
         if (customizer != null) {
-            customizer.customize(writer);
+            customizer.customize(second);
         }
-        return writer;
+        return second;
     }
 
-    protected READER newReader() {
+    protected FIRST newFirst() {
         throw new UnsupportedOperationException();
     }
 
-    protected WRITER newWriter() {
+    protected SECOND newSecond() {
         throw new UnsupportedOperationException();
     }
 }

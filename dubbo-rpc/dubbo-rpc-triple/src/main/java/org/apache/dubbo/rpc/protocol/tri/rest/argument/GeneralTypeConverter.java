@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -109,15 +110,13 @@ public class GeneralTypeConverter implements TypeConverter {
 
     private final CompositeArgumentConverter converter;
     private final CodecUtils codecUtils;
-
-    public GeneralTypeConverter() {
-        converter = null;
-        codecUtils = null;
-    }
+    private final HttpJsonUtils httpJsonUtils;
 
     public GeneralTypeConverter(FrameworkModel frameworkModel) {
-        converter = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeArgumentConverter.class);
-        codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        converter = beanFactory.getOrRegisterBean(CompositeArgumentConverter.class);
+        codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
+        httpJsonUtils = beanFactory.getOrRegisterBean(HttpJsonUtils.class);
     }
 
     @Override
@@ -161,6 +160,11 @@ public class GeneralTypeConverter implements TypeConverter {
             if (targetClass.isInstance(source)) {
                 return source;
             }
+        }
+
+        Object target = customConvert(source, targetClass);
+        if (target != null) {
+            return target;
         }
 
         if (source instanceof CharSequence) {
@@ -285,7 +289,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 }
             }
 
-            Object target = jsonToObject(str, targetClass);
+            target = jsonToObject(str, targetClass);
             if (target != null) {
                 return target;
             }
@@ -473,15 +477,10 @@ public class GeneralTypeConverter implements TypeConverter {
                 default:
             }
 
-            Object target = jsonToObject(new String(bytes, StandardCharsets.ISO_8859_1), targetClass);
+            target = jsonToObject(new String(bytes, StandardCharsets.ISO_8859_1), targetClass);
             if (target != null) {
                 return target;
             }
-        }
-
-        Object target = customConvert(source, targetClass);
-        if (target != null) {
-            return target;
         }
 
         if (targetClass.isArray()) {
@@ -630,7 +629,7 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         try {
-            return HttpJsonUtils.convertObject(source, targetClass);
+            return httpJsonUtils.convertObject(source, targetClass);
         } catch (Throwable t) {
             String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
             LOGGER.debug(msg, source, sourceClass, targetClass, t);
@@ -772,7 +771,7 @@ public class GeneralTypeConverter implements TypeConverter {
         }
 
         try {
-            return HttpJsonUtils.convertObject(source, targetType);
+            return httpJsonUtils.convertObject(source, targetType);
         } catch (Throwable t) {
             String msg = "JSON convert value '{}' from type [{}] to type [{}] failed";
             LOGGER.debug(msg, source, source.getClass(), targetType, t);
@@ -782,15 +781,15 @@ public class GeneralTypeConverter implements TypeConverter {
     }
 
     protected Object customConvert(Object source, Class<?> targetClass) {
-        return converter == null ? null : converter.convert(source, targetClass);
+        return converter.convert(source, targetClass);
     }
 
     protected Collection customCreateCollection(Class targetClass, int size) {
-        return converter == null ? null : (Collection) converter.convert(size, targetClass);
+        return (Collection) converter.convert(size, targetClass);
     }
 
     protected Map customCreateMap(Class targetClass, int size) {
-        return converter == null ? null : (Map) converter.convert(size, targetClass);
+        return (Map) converter.convert(size, targetClass);
     }
 
     private Collection createCollection(Class targetClass, int size) {
@@ -1099,7 +1098,7 @@ public class GeneralTypeConverter implements TypeConverter {
         return result;
     }
 
-    private static boolean isMaybeJSON(String str) {
+    private static boolean isMaybeJSONObjectOrArray(String str) {
         if (str == null) {
             return false;
         }
@@ -1134,14 +1133,13 @@ public class GeneralTypeConverter implements TypeConverter {
     }
 
     private Object jsonToObject(String value, Type targetType) {
-        if (isMaybeJSON(value)) {
+        if (isMaybeJSONObjectOrArray(value)) {
             try {
-                if (codecUtils == null || !(targetType instanceof Class)) {
-                    return HttpJsonUtils.toJavaObject(value, targetType);
-                }
-                return codecUtils
-                        .determineHttpMessageDecoder(MediaType.APPLICATION_JSON.getName())
-                        .decode(new ByteArrayInputStream(value.getBytes(UTF_8)), (Class<?>) targetType);
+                return targetType instanceof Class
+                        ? codecUtils
+                                .determineHttpMessageDecoder(MediaType.APPLICATION_JSON.getName())
+                                .decode(new ByteArrayInputStream(value.getBytes(UTF_8)), (Class<?>) targetType)
+                        : httpJsonUtils.toJavaObject(value, targetType);
             } catch (Throwable t) {
                 LOGGER.debug("Failed to parse value '{}' from json string '{}'", targetType, value, t);
             }

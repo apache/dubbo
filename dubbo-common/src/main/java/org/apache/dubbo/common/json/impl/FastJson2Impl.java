@@ -46,7 +46,7 @@ public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSON
     @Override
     public <T> T toJavaObject(String json, Type type) {
         if (hasCustomizer()) {
-            return JSON.parseObject(json, type, createReader());
+            return JSON.parseObject(json, type, createReaderContext());
         }
 
         return JSON.parseObject(json, type);
@@ -55,7 +55,7 @@ public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSON
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
         if (hasCustomizer()) {
-            return parseArray(json, clazz, createReader());
+            return parseArray(json, clazz, createReaderContext());
         }
 
         return JSON.parseArray(json, clazz);
@@ -64,7 +64,7 @@ public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSON
     @Override
     public String toJson(Object obj) {
         if (hasCustomizer()) {
-            Context writer = createWriter();
+            Context writer = createWriterContext();
             writer.config(Feature.WriteEnumsUsingName);
             return JSON.toJSONString(obj, writer);
         }
@@ -75,7 +75,7 @@ public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSON
     @Override
     public String toPrettyJson(Object obj) {
         if (hasCustomizer()) {
-            Context writer = createWriter();
+            Context writer = createWriterContext();
             writer.config(Feature.WriteEnumsUsingName, Feature.PrettyFormat);
             return JSON.toJSONString(obj, writer);
         }
@@ -86,7 +86,7 @@ public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSON
     @Override
     public Object convertObject(Object obj, Type type) {
         if (hasCustomizer()) {
-            return TypeUtils.cast(obj, type, getReader().getProvider());
+            return TypeUtils.cast(obj, type, getFirst().getProvider());
         }
 
         return TypeUtils.cast(obj, type);
@@ -95,7 +95,7 @@ public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSON
     @Override
     public Object convertObject(Object obj, Class<?> clazz) {
         if (hasCustomizer()) {
-            return TypeUtils.cast(obj, clazz, getReader().getProvider());
+            return TypeUtils.cast(obj, clazz, getFirst().getProvider());
         }
 
         return TypeUtils.cast(obj, clazz);
@@ -117,13 +117,21 @@ public class FastJson2Impl extends CustomizableJsonUtil<JSONReader.Context, JSON
         }
     }
 
+    protected JSONReader.Context createReaderContext() {
+        return createFirst();
+    }
+
+    protected JSONWriter.Context createWriterContext() {
+        return createSecond();
+    }
+
     @Override
-    protected JSONReader.Context newReader() {
+    protected JSONReader.Context newFirst() {
         return new JSONReader.Context();
     }
 
     @Override
-    protected Context newWriter() {
+    protected Context newSecond() {
         return new JSONWriter.Context();
     }
 }

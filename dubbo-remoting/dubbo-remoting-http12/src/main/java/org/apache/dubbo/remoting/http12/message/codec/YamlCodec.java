@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,6 +42,18 @@ import org.yaml.snakeyaml.representer.Representer;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class YamlCodec implements HttpMessageCodec {
+
+    public static final YamlCodec INSTANCE = new YamlCodec();
+
+    private final HttpJsonUtils httpJsonUtils;
+
+    private YamlCodec() {
+        this(FrameworkModel.defaultModel());
+    }
+
+    public YamlCodec(FrameworkModel frameworkModel) {
+        httpJsonUtils = frameworkModel.getBeanFactory().getOrRegisterBean(HttpJsonUtils.class);
+    }
 
     @Override
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
@@ -60,7 +73,7 @@ public class YamlCodec implements HttpMessageCodec {
         }
 
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
-            return HttpJsonUtils.convertObject(createYaml().load(reader), targetType);
+            return httpJsonUtils.convertObject(createYaml().load(reader), targetType);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {

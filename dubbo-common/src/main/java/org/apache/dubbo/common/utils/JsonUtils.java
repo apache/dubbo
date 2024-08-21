@@ -49,16 +49,16 @@ public class JsonUtils {
         String preferName = SystemPropertyConfigUtils.getSystemProperty(DUBBO_PREFER_JSON_FRAMEWORK_NAME);
 
         ClassLoader classLoader = JsonUtil.class.getClassLoader();
-        JsonUtil jsonUtil1 = loadExtensions(preferName, classLoader, extensions);
-        if (jsonUtil1 != null) {
-            return jsonUtil1;
+        JsonUtil jsonUtil = loadExtensions(preferName, classLoader, extensions);
+        if (jsonUtil != null) {
+            return jsonUtil;
         }
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         if (tccl != null && tccl != classLoader) {
-            jsonUtil1 = loadExtensions(preferName, classLoader, extensions);
-            if (jsonUtil1 != null) {
-                return jsonUtil1;
+            jsonUtil = loadExtensions(preferName, classLoader, extensions);
+            if (jsonUtil != null) {
+                return jsonUtil;
             }
         }
 
@@ -82,7 +82,7 @@ public class JsonUtils {
             try {
                 JsonUtil extension = it.next();
                 if (extension.isSupport()) {
-                    if (extension.getName().equals(name)) {
+                    if (name != null && name.equals(extension.getName())) {
                         return extension;
                     }
                     extensions.put(extension.getName(), extension);

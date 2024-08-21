@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.utils.DateUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -28,7 +27,7 @@ class HttpJsonUtilsTest {
 
     @Test
     void toJson() {
-        HttpJsonUtils.init(FrameworkModel.defaultModel(), new InmemoryConfiguration());
-        assertEquals("\"03/00/2012\"", HttpJsonUtils.toJson(DateUtils.parse("2012-12-03")));
+        HttpJsonUtils httpJsonUtils = new HttpJsonUtils(FrameworkModel.defaultModel());
+        assertEquals("\"03/00/2012\"", httpJsonUtils.toJson(DateUtils.parse("2012-12-03")));
     }
 }

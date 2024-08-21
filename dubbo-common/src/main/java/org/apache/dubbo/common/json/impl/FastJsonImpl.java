@@ -63,7 +63,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
     @Override
     public <T> T toJavaObject(String json, Type type) {
         if (hasCustomizer()) {
-            ReaderConfig conf = getReader();
+            ReaderConfig conf = getReaderConfig();
             return JSON.parseObject(
                     json, type, conf.getConfig(), conf.getProcessor(), conf.getFeatureValues(), conf.getFeatures());
         }
@@ -74,7 +74,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
         if (hasCustomizer()) {
-            ReaderConfig conf = getReader();
+            ReaderConfig conf = getReaderConfig();
             return parseArray(
                     json, clazz, conf.getConfig(), conf.getProcessor(), conf.getFeatureValues(), conf.getFeatures());
         }
@@ -85,7 +85,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
     @Override
     public String toJson(Object obj) {
         if (hasCustomizer()) {
-            WriterConfig conf = getWriter();
+            WriterConfig conf = getWriterConfig();
             int features = conf.getDefaultFeatures();
             features |= SerializerFeature.DisableCircularReferenceDetect.getMask();
             return JSON.toJSONString(
@@ -98,7 +98,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
     @Override
     public String toPrettyJson(Object obj) {
         if (hasCustomizer()) {
-            WriterConfig conf = getWriter();
+            WriterConfig conf = getWriterConfig();
             int features = conf.getDefaultFeatures();
             features |= SerializerFeature.DisableCircularReferenceDetect.getMask();
             features |= SerializerFeature.PrettyFormat.getMask();
@@ -112,7 +112,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
     @Override
     public Object convertObject(Object obj, Type type) {
         if (hasCustomizer()) {
-            return TypeUtils.cast(obj, type, getReader().getConfig());
+            return TypeUtils.cast(obj, type, getReaderConfig().getConfig());
         }
 
         return TypeUtils.cast(obj, type, ParserConfig.getGlobalInstance());
@@ -121,7 +121,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
     @Override
     public Object convertObject(Object obj, Class<?> clazz) {
         if (hasCustomizer()) {
-            return TypeUtils.cast(obj, clazz, getReader().getConfig());
+            return TypeUtils.cast(obj, clazz, getReaderConfig().getConfig());
         }
 
         return TypeUtils.cast(obj, clazz, ParserConfig.getGlobalInstance());
@@ -181,13 +181,21 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
         return list;
     }
 
+    protected ReaderConfig getReaderConfig() {
+        return getFirst();
+    }
+
+    protected WriterConfig getWriterConfig() {
+        return getSecond();
+    }
+
     @Override
-    protected ReaderConfig newReader() {
+    protected ReaderConfig newFirst() {
         return new ReaderConfig();
     }
 
     @Override
-    protected WriterConfig newWriter() {
+    protected WriterConfig newSecond() {
         return new WriterConfig();
     }
 
@@ -226,7 +234,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
             return features;
         }
 
-        public void setFeatures(Feature[] features) {
+        public void setFeatures(Feature... features) {
             this.features = features;
         }
     }
@@ -275,7 +283,7 @@ public class FastJsonImpl extends CustomizableJsonUtil<ReaderConfig, WriterConfi
             return features;
         }
 
-        public void setFeatures(SerializerFeature[] features) {
+        public void setFeatures(SerializerFeature... features) {
             this.features = features;
         }
     }
