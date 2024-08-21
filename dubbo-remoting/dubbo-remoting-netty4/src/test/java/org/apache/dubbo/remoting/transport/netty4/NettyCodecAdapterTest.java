@@ -70,7 +70,7 @@ class NettyCodecAdapterTest {
         EmbeddedChannel embeddedChannel = new EmbeddedChannel();
         embeddedChannel.pipeline().addLast(decoder);
 
-        // 模拟问题数据包
+        // simulate illegal data packet
         ByteBuf input = AbstractByteBufAllocator.DEFAULT.buffer();
         input.writeBytes("testDecodeIllegalPacket".getBytes(StandardCharsets.UTF_8));
 
