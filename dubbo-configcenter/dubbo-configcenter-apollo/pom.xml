@@ -30,7 +30,7 @@
   <description>The Apollo implementation of the configcenter api</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <apollo_mock_server_version>2.2.0</apollo_mock_server_version>
+    <apollo_mock_server_version>2.3.0</apollo_mock_server_version>
   </properties>
 
   <dependencies>
