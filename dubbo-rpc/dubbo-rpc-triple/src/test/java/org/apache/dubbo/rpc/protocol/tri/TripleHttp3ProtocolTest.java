@@ -56,29 +56,14 @@ class TripleHttp3ProtocolTest {
 
         SslConfig sslConfig = new SslConfig();
         sslConfig.setScopeModel(applicationModel);
-        java.net.URL serverCertUrl = TripleHttp3ProtocolTest.class.getResource("/certs/server.pem");
-        java.net.URL serverKeyUrl = TripleHttp3ProtocolTest.class.getResource("/certs/server.key");
-        java.net.URL clientCertUrl = TripleHttp3ProtocolTest.class.getResource("/certs/client.pem");
-        java.net.URL clientKeyUrl = TripleHttp3ProtocolTest.class.getResource("/certs/client.key");
-        java.net.URL trustCertUrl = TripleHttp3ProtocolTest.class.getResource("/certs/ca.pem");
-        Assertions.assertNotNull(serverCertUrl, "serverCertUrl should not be null");
-        sslConfig.setServerKeyCertChainPath(
-                Paths.get(serverCertUrl.toURI()).toAbsolutePath().toString());
-        Assertions.assertNotNull(serverKeyUrl, "serverKeyUrl should not be null");
-        sslConfig.setServerPrivateKeyPath(
-                Paths.get(serverKeyUrl.toURI()).toAbsolutePath().toString());
-        Assertions.assertNotNull(trustCertUrl, "serverKeyUrl should not be null");
-        sslConfig.setServerTrustCertCollectionPath(
-                Paths.get(trustCertUrl.toURI()).toAbsolutePath().toString());
-        Assertions.assertNotNull(clientCertUrl, "clientCertUrl should not be null");
-        sslConfig.setClientKeyCertChainPath(
-                Paths.get(clientCertUrl.toURI()).toAbsolutePath().toString());
-        Assertions.assertNotNull(clientKeyUrl, "serverKeyUrl should not be null");
-        sslConfig.setClientPrivateKeyPath(
-                Paths.get(clientKeyUrl.toURI()).toAbsolutePath().toString());
-        Assertions.assertNotNull(trustCertUrl, "trustCertUrl should not be null");
-        sslConfig.setClientTrustCertCollectionPath(
-                Paths.get(trustCertUrl.toURI()).toAbsolutePath().toString());
+
+        sslConfig.setServerKeyCertChainPath(getAbsolutePath("/certs/server.pem"));
+        sslConfig.setServerPrivateKeyPath(getAbsolutePath("/certs/server.key"));
+        sslConfig.setServerTrustCertCollectionPath(getAbsolutePath("/certs/ca.pem"));
+        sslConfig.setClientKeyCertChainPath(getAbsolutePath("/certs/client.pem"));
+        sslConfig.setClientPrivateKeyPath(getAbsolutePath("/certs/client.key"));
+        sslConfig.setClientTrustCertCollectionPath(getAbsolutePath("/certs/ca.pem"));
+
         configManager.setSsl(sslConfig);
 
         URL providerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
@@ -144,5 +129,11 @@ class TripleHttp3ProtocolTest {
         // resource recycle.
         serviceRepository.destroy();
         System.out.println("serviceRepository destroyed");
+    }
+
+    private String getAbsolutePath(String resourcePath) throws Exception {
+        java.net.URL resourceUrl = TripleHttp3ProtocolTest.class.getResource(resourcePath);
+        Assertions.assertNotNull(resourceUrl, "Cert file '/certs/" + resourcePath + " is required");
+        return Paths.get(resourceUrl.toURI()).toAbsolutePath().toString();
     }
 }
