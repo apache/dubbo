@@ -45,7 +45,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.incubator.codec.http3.Http3;
 import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
@@ -86,8 +85,6 @@ public class NettyHttp3Server extends AbstractServer {
         FrameworkModel frameworkModel = ScopeModelUtil.getFrameworkModel(getUrl().getScopeModel());
         NettyHttp3ProtocolSelectorHandler selectorHandler =
                 new NettyHttp3ProtocolSelectorHandler(getUrl(), frameworkModel);
-
-        SelfSignedCertificate certificate = new SelfSignedCertificate();
 
         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
         io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicServerCodecBuilder(), getUrl())
