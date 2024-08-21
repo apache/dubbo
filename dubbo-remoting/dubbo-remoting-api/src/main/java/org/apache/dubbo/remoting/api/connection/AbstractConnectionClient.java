@@ -52,6 +52,8 @@ public abstract class AbstractConnectionClient extends AbstractClient {
         super(url, handler);
     }
 
+    protected AbstractConnectionClient() {}
+
     public final void increase() {
         COUNTER_UPDATER.set(this, 1L);
     }
@@ -71,7 +73,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     /**
      * Decreases the reference count by 1 and calls {@link this#destroy} if the reference count reaches 0.
      */
-    public final boolean release() {
+    public boolean release() {
         long remainingCount = COUNTER_UPDATER.decrementAndGet(this);
 
         if (remainingCount == 0) {
@@ -98,12 +100,21 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     public abstract boolean isAvailable();
 
     /**
-     * create connecting promise.
+     * add a listener that will be executed when a connection is established.
+     *
+     * @param func execute function
      */
-    public abstract void createConnectingPromise();
+    public abstract void addConnectedListener(Runnable func);
 
     /**
-     * add the listener of close connection event.
+     * Add a listener that will be executed when the connection is disconnected.
+     *
+     * @param func execute function
+     */
+    public abstract void addDisconnectedListener(Runnable func);
+
+    /**
+     * add a listener that will be executed when the connection is closed.
      *
      * @param func execute function
      */
@@ -135,7 +146,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
      * @param generalizable generalizable
      * @return Dubbo Channel or NIOChannel such as NettyChannel
      */
-    public abstract Object getChannel(Boolean generalizable);
+    public abstract <T> T getChannel(Boolean generalizable);
 
     /**
      * Get counter

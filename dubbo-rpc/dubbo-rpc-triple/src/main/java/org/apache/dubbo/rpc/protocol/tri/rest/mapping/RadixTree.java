@@ -56,7 +56,7 @@ public final class RadixTree<T> {
         if (path.isDirect()) {
             KeyString key = new KeyString(path.getPath(), caseSensitive);
             List<Match<T>> matches = directPathMap.computeIfAbsent(key, k -> new ArrayList<>());
-            for (int i = 0, len = matches.size(); i < len; i++) {
+            for (int i = 0, size = matches.size(); i < size; i++) {
                 Match<T> match = matches.get(i);
                 if (match.getValue().equals(value)) {
                     return match.getValue();

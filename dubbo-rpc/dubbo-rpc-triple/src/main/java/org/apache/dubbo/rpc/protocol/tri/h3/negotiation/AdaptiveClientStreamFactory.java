@@ -14,21 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h3;
+package org.apache.dubbo.rpc.protocol.tri.h3.negotiation;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
-import org.apache.dubbo.remoting.transport.netty4.NettyHttp3ConnectionClient;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2TripleClientStream;
+import org.apache.dubbo.rpc.protocol.tri.h3.Http3TripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.concurrent.Executor;
 
-@Activate(order = -100, onClass = "io.netty.incubator.codec.quic.QuicChannel")
-public class Http3ClientStreamFactory implements ClientStreamFactory {
+import io.netty.channel.Channel;
+
+@Activate(order = -90, onClass = "io.netty.incubator.codec.quic.QuicChannel")
+public class AdaptiveClientStreamFactory implements ClientStreamFactory {
 
     @Override
     public ClientStream createClientStream(
@@ -37,9 +40,12 @@ public class Http3ClientStreamFactory implements ClientStreamFactory {
             Executor executor,
             TripleClientCall clientCall,
             TripleWriteQueue writeQueue) {
-        if (client instanceof NettyHttp3ConnectionClient) {
-            return new Http3TripleClientStream(
-                    frameworkModel, executor, client.getChannel(true), clientCall, writeQueue);
+        if (client instanceof AutoSwitchConnectionClient) {
+            Channel channel = client.getChannel(true);
+            if (((AutoSwitchConnectionClient) client).isHttp3Connected()) {
+                return new Http3TripleClientStream(frameworkModel, executor, channel, clientCall, writeQueue);
+            }
+            return new Http2TripleClientStream(frameworkModel, executor, channel, clientCall, writeQueue);
         }
         return null;
     }

@@ -97,6 +97,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 doOnMetadata(metadata);
             } catch (Throwable t) {
                 logError(t);
+                onMetadataError(metadata, t);
                 onError(t);
             }
         });
@@ -152,6 +153,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     protected void onMetadataCompletion(HEADER metadata) {
         // default no op
+    }
+
+    protected void onMetadataError(HEADER metadata, Throwable throwable) {
+        initializeAltSvc(url);
     }
 
     protected void onPrepareData(MESSAGE message) {
