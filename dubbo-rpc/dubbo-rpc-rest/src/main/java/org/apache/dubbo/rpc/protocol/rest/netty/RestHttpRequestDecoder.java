@@ -31,7 +31,7 @@ import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpUtil;
 
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
@@ -56,8 +56,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
     protected void decode(
             ChannelHandlerContext ctx, io.netty.handler.codec.http.FullHttpRequest request, List<Object> out)
             throws Exception {
-        boolean keepAlive = HttpHeaders.isKeepAlive(request);
-
+        boolean keepAlive = HttpUtil.isKeepAlive(request);
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive, url);
         NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx, serviceDeployer);
 
