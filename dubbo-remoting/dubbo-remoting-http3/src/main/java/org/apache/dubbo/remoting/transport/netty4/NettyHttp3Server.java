@@ -26,7 +26,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
-import org.apache.dubbo.remoting.http3.QuicSslContexts;
+import org.apache.dubbo.remoting.http3.Http3SslContexts;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3FrameCodec;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.transport.AbstractServer;
@@ -88,7 +88,7 @@ public class NettyHttp3Server extends AbstractServer {
 
         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
         io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicServerCodecBuilder(), getUrl())
-                .sslContext(QuicSslContexts.buildServerSslContext(getUrl()))
+                .sslContext(Http3SslContexts.buildServerSslContext(getUrl()))
                 .maxIdleTimeout(idleTimeout, MILLISECONDS)
                 .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
                 .handler(new ChannelInitializer<QuicChannel>() {

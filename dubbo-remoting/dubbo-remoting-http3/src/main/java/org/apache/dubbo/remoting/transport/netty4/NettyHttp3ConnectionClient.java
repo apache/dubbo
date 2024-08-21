@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.http3.QuicSslContexts;
+import org.apache.dubbo.remoting.http3.Http3SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,7 +63,7 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
         io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicClientCodecBuilder(), getUrl())
                 .maxIdleTimeout(idleTimeout, MILLISECONDS)
-                .sslContext(QuicSslContexts.buildClientSslContext(getUrl()))
+                .sslContext(Http3SslContexts.buildClientSslContext(getUrl()))
                 .build();
         io.netty.channel.Channel nettyDatagramChannel = new Bootstrap()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout())

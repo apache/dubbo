@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.remoting.http3;
 
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.handler.ssl.ApplicationProtocolNegotiator;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -35,15 +26,25 @@ import org.apache.dubbo.common.ssl.ProviderCert;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSessionContext;
+
 import java.io.InputStream;
 import java.util.List;
+
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.ssl.ApplicationProtocolNegotiator;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.incubator.codec.http3.Http3;
+import io.netty.incubator.codec.quic.QuicSslContext;
+import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 
 public final class Http3SslContexts extends SslContext {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(Http3SslContexts.class);
 
-    private Http3SslContexts() {
-    }
+    private Http3SslContexts() {}
 
     public static QuicSslContext buildServerSslContext(URL url) {
         CertManager certManager = getCertManager(url);
@@ -54,7 +55,7 @@ public final class Http3SslContexts extends SslContext {
         QuicSslContextBuilder builder;
         try {
             try (InputStream privateKeyIn = cert.getPrivateKeyInputStream();
-                 InputStream keyCertChainIn = cert.getKeyCertChainInputStream()) {
+                    InputStream keyCertChainIn = cert.getKeyCertChainInputStream()) {
                 if (keyCertChainIn == null || privateKeyIn == null) {
                     return buildSelfSignedServerSslContext(url);
                 }
@@ -108,8 +109,8 @@ public final class Http3SslContexts extends SslContext {
                 builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
             } else {
                 try (InputStream trustCertIn = cert.getTrustCertInputStream();
-                     InputStream privateKeyIn = cert.getPrivateKeyInputStream();
-                     InputStream keyCertChainIn = cert.getKeyCertChainInputStream()) {
+                        InputStream privateKeyIn = cert.getPrivateKeyInputStream();
+                        InputStream keyCertChainIn = cert.getKeyCertChainInputStream()) {
                     if (trustCertIn != null) {
                         builder.trustManager(toX509Certificates(trustCertIn));
                     }
