@@ -22,12 +22,14 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.XdsException;
 import org.apache.dubbo.xds.XdsException.Type;
+import org.apache.dubbo.xds.resource.update.CdsUpdate;
 import org.apache.dubbo.xds.security.authn.TlsResourceResolver;
 import org.apache.dubbo.xds.security.authn.UpstreamTlsConfig;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.cluster.v3.Cluster;
@@ -51,9 +53,11 @@ public class UpstreamTlsConfigListener implements CdsListener {
     }
 
     @Override
-    public void onResourceUpdate(List<Cluster> resource) {
+    public void onResourceUpdate(List<CdsUpdate> resources) {
         Map<String, UpstreamTlsConfig> configs = new ConcurrentHashMap<>(16);
-        for (Cluster cluster : resource) {
+        List<Cluster> clusters =
+                resources.stream().map(CdsUpdate::getRawCluster).collect(Collectors.toList());
+        for (Cluster cluster : clusters) {
             String serviceName = cluster.getName();
             try {
                 if (!TRANSPORT_SOCKET_NAME.equals(cluster.getTransportSocket().getName())) {

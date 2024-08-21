@@ -28,12 +28,12 @@ import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.xds.PilotExchanger;
-import org.apache.dubbo.xds.resource.XdsCluster;
-import org.apache.dubbo.xds.resource.XdsClusterWeight;
-import org.apache.dubbo.xds.resource.XdsEndpoint;
-import org.apache.dubbo.xds.resource.XdsRoute;
-import org.apache.dubbo.xds.resource.XdsRouteAction;
-import org.apache.dubbo.xds.resource.XdsVirtualHost;
+import org.apache.dubbo.xds.resource.endpoint.LbEndpoint;
+import org.apache.dubbo.xds.resource.route.ClusterWeight;
+import org.apache.dubbo.xds.resource.route.Route;
+import org.apache.dubbo.xds.resource.route.RouteAction;
+import org.apache.dubbo.xds.resource.route.VirtualHost;
+import org.apache.dubbo.xds.resource.update.EdsUpdate;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class XdsDirectory<T> extends AbstractDirectory<T> {
 
@@ -56,9 +57,9 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
 
     private Protocol protocol;
 
-    private final Map<String, XdsVirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
+    private final Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
 
-    private final Map<String, XdsCluster<T>> xdsClusterMap = new ConcurrentHashMap<>();
+    private final Map<String, EdsUpdate> xdsEndpointMap = new ConcurrentHashMap<>();
 
     private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsDirectory.class);
 
@@ -79,12 +80,12 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         }
     }
 
-    public Map<String, XdsVirtualHost> getXdsVirtualHostMap() {
+    public Map<String, VirtualHost> getXdsVirtualHostMap() {
         return xdsVirtualHostMap;
     }
 
-    public Map<String, XdsCluster<T>> getXdsClusterMap() {
-        return xdsClusterMap;
+    public Map<String, EdsUpdate> getXdsEndpointMap() {
+        return xdsEndpointMap;
     }
 
     public Protocol getProtocol() {
@@ -111,7 +112,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         return super.getInvokers();
     }
 
-    public void onRdsChange(String applicationName, XdsVirtualHost xdsVirtualHost) {
+    public void onRdsChange(String applicationName, VirtualHost xdsVirtualHost) {
         Set<String> oldCluster = getAllCluster();
         xdsVirtualHostMap.put(applicationName, xdsVirtualHost);
         Set<String> newCluster = getAllCluster();
@@ -124,12 +125,12 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         }
         Set<String> clusters = new HashSet<>();
         xdsVirtualHostMap.forEach((applicationName, xdsVirtualHost) -> {
-            for (XdsRoute xdsRoute : xdsVirtualHost.getRoutes()) {
-                XdsRouteAction action = xdsRoute.getRouteAction();
+            for (Route xdsRoute : xdsVirtualHost.getRoutes()) {
+                RouteAction action = xdsRoute.getRouteAction();
                 if (action.getCluster() != null) {
                     clusters.add(action.getCluster());
-                } else if (CollectionUtils.isNotEmpty(action.getClusterWeights())) {
-                    for (XdsClusterWeight weightedCluster : action.getClusterWeights()) {
+                } else if (CollectionUtils.isNotEmpty(action.getWeightedClusters())) {
+                    for (ClusterWeight weightedCluster : action.getWeightedClusters()) {
                         clusters.add(weightedCluster.getName());
                     }
                 }
@@ -148,7 +149,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         // remove subscribe cluster
         for (String cluster : removeSubscribe) {
             pilotExchanger.unSubscribeCds(cluster, this);
-            xdsClusterMap.remove(cluster);
+            xdsEndpointMap.remove(cluster);
             // TODO: delete invokers which belong unsubscribed cluster
         }
         // add subscribe cluster
@@ -157,19 +158,21 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         }
     }
 
-    public void onEdsChange(String clusterName, XdsCluster<T> xdsCluster) {
-        xdsClusterMap.put(clusterName, xdsCluster);
-        String lbPolicy = xdsCluster.getLbPolicy();
-        List<XdsEndpoint> xdsEndpoints = xdsCluster.getXdsEndpoints();
+    public void onEdsChange(String clusterName, EdsUpdate edsUpdate) {
+        xdsEndpointMap.put(clusterName, edsUpdate);
+        //        String lbPolicy = xdsCluster.getLbPolicy();
+        List<LbEndpoint> xdsEndpoints = edsUpdate.getLocalityLbEndpointsMap().values().stream()
+                .flatMap(e -> e.getEndpoints().stream())
+                .collect(Collectors.toList());
         BitList<Invoker<T>> invokers = new BitList<>(Collections.emptyList());
         xdsEndpoints.forEach(e -> {
-            String ip = e.getAddress();
-            int port = e.getPortValue();
+            String ip = e.getAddresses().getFirst().getAddress();
+            int port = e.getAddresses().getFirst().getPort();
             URL url = new URL(this.protocolName, ip, port, this.serviceType.getName(), this.url.getParameters());
             // set cluster name
             url = url.addParameter("clusterID", clusterName);
             // set load balance policy
-            url = url.addParameter("loadbalance", lbPolicy);
+            //            url = url.addParameter("loadbalance", lbPolicy);
             //  cluster to invoker
             Invoker<T> invoker = this.protocol.refer(this.serviceType, url);
             invokers.add(invoker);
@@ -178,7 +181,7 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
         // super.getInvokers().addAll(invokers);
         // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor multi clusters.
         super.setInvokers(invokers);
-        xdsCluster.setInvokers(invokers);
+        //        xdsCluster.setInvokers(invokers);
     }
 
     @Override

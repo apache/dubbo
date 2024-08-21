@@ -1,9 +1,10 @@
 /*
- * Copyright 2021 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,13 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.xds.bootstrap;
 
-import com.google.auto.value.AutoValue;
 import io.grpc.Internal;
-
-import java.util.Objects;
 
 /** Represents a network locality. */
 @Internal
@@ -52,10 +49,9 @@ public class Locality {
 
     @Override
     public String toString() {
-        return "Locality{" +
-                "region='" + region + '\'' +
-                ", zone='" + zone + '\'' +
-                ", subZone='" + subZone + '\'' +
-                '}';
+        return "Locality{" + "region='"
+                + region + '\'' + ", zone='"
+                + zone + '\'' + ", subZone='"
+                + subZone + '\'' + '}';
     }
 }

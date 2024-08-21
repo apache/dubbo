@@ -24,10 +24,12 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.listener.LdsListener;
+import org.apache.dubbo.xds.resource.update.LdsUpdate;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -50,16 +52,18 @@ public class LdsRuleProvider implements LdsListener, RuleProvider<HttpFilter> {
     private volatile List<HttpFilter> rbacFilters = Collections.emptyList();
 
     @Override
-    public void onResourceUpdate(List<Listener> listeners) {
+    public void onResourceUpdate(List<LdsUpdate> listeners) {
         if (CollectionUtils.isEmpty(listeners)) {
             return;
         }
         this.rbacFilters = resolveHttpFilter(listeners);
     }
 
-    public static List<HttpFilter> resolveHttpFilter(List<Listener> listeners) {
+    public static List<HttpFilter> resolveHttpFilter(List<LdsUpdate> listeners) {
         List<HttpFilter> httpFilters = new ArrayList<>();
-        for (Listener listener : listeners) {
+        List<Listener> listenerList =
+                listeners.stream().map(LdsUpdate::getRawListener).collect(Collectors.toList());
+        for (Listener listener : listenerList) {
             if (!listener.getName().equals(LDS_VIRTUAL_INBOUND)) {
                 continue;
             }
