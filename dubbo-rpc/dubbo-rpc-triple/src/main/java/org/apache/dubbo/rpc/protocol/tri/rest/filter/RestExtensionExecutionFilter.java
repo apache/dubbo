@@ -190,26 +190,12 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         return matched;
     }
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private RestFilter[] getFilters(Invoker<?> invoker) {
         URL url = invoker.getUrl();
-        RestFilter[] filters = getFilters(url);
-        if (filters != null) {
-            return filters;
-        }
-        synchronized (invoker) {
-            filters = getFilters(url);
-            if (filters != null) {
-                return filters;
-            }
-            filters = loadFilters(url);
-            url.putAttribute(RestConstants.EXTENSIONS_ATTRIBUTE_KEY, filters);
-            return filters;
-        }
-    }
-
-    private RestFilter[] getFilters(URL url) {
-        return (RestFilter[]) url.getAttribute(RestConstants.EXTENSIONS_ATTRIBUTE_KEY);
+        return (RestFilter[]) url.getServiceModel()
+                .getServiceMetadata()
+                .getAttributeMap()
+                .computeIfAbsent(RestConstants.EXTENSIONS_ATTRIBUTE_KEY, k -> loadFilters(url));
     }
 
     private RestFilter[] loadFilters(URL url) {

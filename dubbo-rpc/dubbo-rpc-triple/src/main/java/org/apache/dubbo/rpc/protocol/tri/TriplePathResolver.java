@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -66,7 +67,11 @@ public class TriplePathResolver implements PathResolver {
                         previous.getUrl(), path, url));
             }
         } else {
-            LOGGER.debug("Register triple grpc mapping: '{}' -> invoker{}", path, url);
+            LOGGER.debug(
+                    "Register triple grpc mapping: '{}' -> invoker[{}], service=[{}]",
+                    path,
+                    url,
+                    ClassUtils.toShortString(url.getServiceModel().getProxyObject()));
         }
 
         // register fallback mapping
@@ -79,7 +84,11 @@ public class TriplePathResolver implements PathResolver {
                         fallbackPath,
                         url);
             } else {
-                LOGGER.info("Register fallback triple grpc mapping: '{}' -> invoker{}", fallbackPath, url);
+                LOGGER.info(
+                        "Register fallback triple grpc mapping: '{}' -> invoker[{}], service=[{}]",
+                        fallbackPath,
+                        url,
+                        ClassUtils.toShortString(url.getServiceModel().getProxyObject()));
             }
         }
     }
