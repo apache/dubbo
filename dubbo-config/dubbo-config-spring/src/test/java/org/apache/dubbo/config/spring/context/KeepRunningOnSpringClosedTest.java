@@ -63,7 +63,7 @@ class KeepRunningOnSpringClosedTest {
             Assertions.assertEquals(false, applicationDeployer.isStopped());
             Assertions.assertNotNull(DubboSpringInitializer.findBySpringContext(providerContext));
             Assertions.assertTrue(DubboShutdownHook.getInstance().isRegistered());
-            
+
             // close spring context
             providerContext.close();
 
