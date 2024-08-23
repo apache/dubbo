@@ -196,12 +196,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
 
     public FileSystemDynamicConfiguration(
             File rootDirectory, String encoding, String threadPoolPrefixName, int threadPoolSize, long keepAliveTime) {
-        super(rootDirectory.getAbsolutePath(), threadPoolPrefixName, threadPoolSize, keepAliveTime, DEFAULT_GROUP, -1L);
-        this.rootDirectory = rootDirectory;
-        this.encoding = encoding;
-        this.processingDirectories = initProcessingDirectories();
-        this.listenersRepository = new HashMap<>();
-        registerDubboShutdownHook();
+        this(rootDirectory, encoding, threadPoolPrefixName, threadPoolSize, keepAliveTime, null);
     }
 
     public FileSystemDynamicConfiguration(
