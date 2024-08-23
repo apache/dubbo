@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.metadata.swagger.utils;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Map;
