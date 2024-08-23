@@ -50,7 +50,7 @@ public class RequestPartArgumentResolver extends AbstractSpringArgumentResolver 
 
     @Override
     protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        return request.parts();
+        return meta.type() == byte[].class ? request.part(meta.name()) : request.parts();
     }
 
     @Override

@@ -19,32 +19,66 @@ package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.RequestPath;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
-import org.apache.dubbo.rpc.protocol.tri.h12.HttpRequestHandlerMapping;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
+import org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping;
 
 @Activate(order = -3000)
-public final class GrpcRequestHandlerMapping extends HttpRequestHandlerMapping {
+public final class GrpcRequestHandlerMapping implements RequestHandlerMapping {
 
     public static final GrpcCompositeCodecFactory CODEC_FACTORY = new GrpcCompositeCodecFactory();
 
+    private final FrameworkModel frameworkModel;
+    private final PathResolver pathResolver;
+
     public GrpcRequestHandlerMapping(FrameworkModel frameworkModel) {
-        super(frameworkModel);
+        this.frameworkModel = frameworkModel;
+        pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
     }
 
     @Override
-    protected boolean supportContentType(String contentType) {
-        return contentType != null && contentType.startsWith(MediaType.APPLICATION_GRPC.getName());
-    }
+    public RequestHandler getRequestHandler(URL url, HttpRequest request, HttpResponse response) {
+        String contentType = request.contentType();
+        if (contentType == null || !contentType.startsWith(MediaType.APPLICATION_GRPC.getName())) {
+            return null;
+        }
 
-    @Override
-    protected void determineHttpMessageCodec(RequestHandler handler, URL url, HttpRequest request) {
-        HttpMessageCodec codec = CODEC_FACTORY.createCodec(url, getFrameworkModel(), request.contentType());
+        RequestPath path = RequestPath.parse(request.uri());
+        if (path == null) {
+            throw notFound();
+        }
+
+        String group = request.header(TripleHeaderEnum.SERVICE_GROUP.getHeader());
+        String version = request.header(TripleHeaderEnum.SERVICE_VERSION.getHeader());
+        Invoker<?> invoker = pathResolver.resolve(path.getPath(), group, version);
+        if (invoker == null) {
+            throw notFound();
+        }
+
+        RequestHandler handler = new RequestHandler(invoker);
+        handler.setHasStub(pathResolver.hasNativeStub(path.getStubPath()));
+        handler.setMethodName(path.getMethodName());
+        String serviceName = path.getServiceInterface();
+        handler.setServiceDescriptor(DescriptorUtils.findServiceDescriptor(invoker, serviceName, handler.isHasStub()));
+        HttpMessageCodec codec = CODEC_FACTORY.createCodec(url, frameworkModel, request.contentType());
         handler.setHttpMessageDecoder(codec);
         handler.setHttpMessageEncoder(codec);
+        return handler;
+    }
+
+    private static HttpStatusException notFound() {
+        return new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "Invoker for gRPC not found");
     }
 
     @Override

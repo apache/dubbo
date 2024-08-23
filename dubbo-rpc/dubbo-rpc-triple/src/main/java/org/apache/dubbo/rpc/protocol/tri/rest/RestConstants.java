@@ -23,12 +23,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
 public final class RestConstants {
 
-    public static final String REST = "rest";
-
     public static final String REST_FILTER_KEY = "rest.filter";
     public static final String EXTENSION_KEY = "extension";
     public static final String EXTENSIONS_ATTRIBUTE_KEY = "restExtensionsAttributeKey";
 
+    public static final int DIALECT_BASIC = 0;
     public static final int DIALECT_SPRING_MVC = 1;
     public static final int DIALECT_JAXRS = 2;
 
@@ -40,6 +39,7 @@ public final class RestConstants {
     /* Request Attribute */
     public static final String BODY_ATTRIBUTE = HttpRequest.class.getName() + ".body";
     public static final String BODY_DECODER_ATTRIBUTE = HttpMessageDecoder.class.getName() + ".body";
+    public static final String SIG_ATTRIBUTE = RequestMapping.class.getName() + ".sig";
     public static final String MAPPING_ATTRIBUTE = RequestMapping.class.getName();
     public static final String HANDLER_ATTRIBUTE = HandlerMeta.class.getName();
     public static final String PATH_ATTRIBUTE = "org.springframework.web.util.UrlPathHelper.PATH";
@@ -49,9 +49,7 @@ public final class RestConstants {
             "org.springframework.web.servlet.HandlerMapping.producibleMediaTypes";
 
     /* Configuration Key */
-    public static final String CONFIG_PREFIX = "dubbo.rpc.rest.";
-    public static final String MAX_BODY_SIZE_KEY = CONFIG_PREFIX + "max-body-size";
-    public static final String MAX_RESPONSE_BODY_SIZE_KEY = CONFIG_PREFIX + "max-response-body-size";
+    public static final String CONFIG_PREFIX = "dubbo.protocol.triple.rest.";
     public static final String SUFFIX_PATTERN_MATCH_KEY = CONFIG_PREFIX + "suffix-pattern-match";
     public static final String TRAILING_SLASH_MATCH_KEY = CONFIG_PREFIX + "trailing-slash-match";
     public static final String CASE_SENSITIVE_MATCH_KEY = CONFIG_PREFIX + "case-sensitive-match";

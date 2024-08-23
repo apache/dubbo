@@ -29,13 +29,14 @@
     <module>dubbo-demo-spring-boot-consumer</module>
     <module>dubbo-demo-spring-boot-provider</module>
     <module>dubbo-demo-spring-boot-interface</module>
+    <module>dubbo-demo-spring-boot-servlet</module>
   </modules>
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
     <spring-boot.version>2.7.18</spring-boot.version>
     <spring-boot-maven-plugin.version>2.7.18</spring-boot-maven-plugin.version>
-    <micrometer-core.version>1.13.1</micrometer-core.version>
+    <micrometer-core.version>1.13.2</micrometer-core.version>
   </properties>
 
   <dependencyManagement>
@@ -65,6 +66,25 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>repackage</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
   <profiles>
     <profile>

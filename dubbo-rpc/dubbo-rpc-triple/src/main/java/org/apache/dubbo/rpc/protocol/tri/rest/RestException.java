@@ -17,73 +17,56 @@
 package org.apache.dubbo.rpc.protocol.tri.rest;
 
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 
 public class RestException extends HttpStatusException {
 
     private static final long serialVersionUID = 1L;
 
     private final Messages message;
-
-    public RestException(Messages message, Object... arguments) {
-        super(message.statusCode(), message.format(arguments));
-        this.message = message;
-    }
-
-    public RestException(Throwable cause, Messages message, Object... arguments) {
-        super(message.statusCode(), message.format(arguments), unwrap(cause));
-        this.message = message;
-    }
-
-    public RestException(String message, Throwable cause) {
-        super(500, message, unwrap(cause));
-        this.message = Messages.INTERNAL_ERROR;
-    }
-
-    public RestException(int statusCode, String message) {
-        super(statusCode, message);
-        this.message = Messages.INTERNAL_ERROR;
-    }
+    private final String displayMessage;
 
     public RestException(String message) {
         super(500, message);
         this.message = Messages.INTERNAL_ERROR;
+        displayMessage = null;
     }
 
     public RestException(Throwable cause) {
-        super(500, unwrap(cause));
+        super(500, ExceptionUtils.unwrap(cause));
         message = Messages.INTERNAL_ERROR;
+        displayMessage = null;
+    }
+
+    public RestException(String message, Throwable cause) {
+        super(500, message, ExceptionUtils.unwrap(cause));
+        this.message = Messages.INTERNAL_ERROR;
+        displayMessage = null;
+    }
+
+    public RestException(Messages message, Object... arguments) {
+        super(message.statusCode(), message.format(arguments));
+        this.message = message;
+        displayMessage = message.formatDisplay(arguments);
+    }
+
+    public RestException(Throwable cause, Messages message, Object... arguments) {
+        super(message.statusCode(), message.format(arguments), ExceptionUtils.unwrap(cause));
+        this.message = message;
+        displayMessage = message.formatDisplay(arguments);
     }
 
     public String getErrorCode() {
         return message.name();
     }
 
-    public static RuntimeException wrap(Throwable t) {
-        t = unwrap(t);
-        return t instanceof RuntimeException ? (RuntimeException) t : new RestException(t);
+    @Override
+    public String getDisplayMessage() {
+        return displayMessage == null ? getMessage() : displayMessage;
     }
 
-    public static Throwable unwrap(Throwable t) {
-        while (true) {
-            if (t instanceof UndeclaredThrowableException) {
-                t = ((UndeclaredThrowableException) t).getUndeclaredThrowable();
-            } else if (t instanceof InvocationTargetException) {
-                t = ((InvocationTargetException) t).getTargetException();
-            } else if (t instanceof CompletionException || t instanceof ExecutionException) {
-                Throwable cause = t.getCause();
-                if (cause == t) {
-                    break;
-                }
-                t = cause;
-            } else {
-                break;
-            }
-        }
-        return t;
+    @Override
+    public String toString() {
+        return getClass().getName() + ": status=" + getStatusCode() + ", " + getErrorCode() + ", " + getMessage();
     }
 }

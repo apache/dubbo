@@ -87,6 +87,10 @@ public class ContentNegotiator {
         return null;
     }
 
+    public boolean supportExtension(String extension) {
+        return getMediaTypeByExtension(extension) != null;
+    }
+
     private String getSuitableMediaType(String name) {
         int index = name.indexOf('/');
         if (index == -1 || index == name.length() - 1) {

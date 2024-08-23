@@ -45,6 +45,7 @@ public final class MethodParameterMeta extends ParameterMeta {
         return parameter;
     }
 
+    @Override
     public int getIndex() {
         return index;
     }

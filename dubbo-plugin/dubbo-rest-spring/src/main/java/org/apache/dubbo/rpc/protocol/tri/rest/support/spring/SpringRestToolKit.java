@@ -16,12 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
@@ -32,6 +37,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -48,6 +54,9 @@ import org.springframework.util.PropertyPlaceholderHelper;
 
 final class SpringRestToolKit implements RestToolKit {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpringRestToolKit.class);
+
+    private final Map<MethodParameterMeta, TypeDescriptor> cache = CollectionUtils.newConcurrentHashMap();
     private final ConfigurableBeanFactory beanFactory;
     private final PropertyPlaceholderHelper placeholderHelper;
     private final ConfigurationWrapper configuration;
@@ -97,17 +106,42 @@ final class SpringRestToolKit implements RestToolKit {
 
     @Override
     public Object convert(Object value, ParameterMeta parameter) {
-        TypeDescriptor targetType = (TypeDescriptor) parameter.getTypeDescriptor();
-        if (targetType == null) {
-            MethodParameterMeta meta = (MethodParameterMeta) parameter;
-            targetType = new TypeDescriptor(new MethodParameter(meta.getMethod(), meta.getIndex()));
-            parameter.setTypeDescriptor(targetType);
+        boolean tried = false;
+        if (value instanceof Collection || value instanceof Map) {
+            tried = true;
+            Object target = typeConverter.convert(value, parameter.getGenericType());
+            if (target != null) {
+                return target;
+            }
         }
-        TypeDescriptor sourceType = TypeDescriptor.forObject(value);
-        if (conversionService.canConvert(sourceType, targetType)) {
-            return conversionService.convert(value, sourceType, targetType);
+        if (parameter instanceof MethodParameterMeta) {
+            TypeDescriptor targetType = cache.computeIfAbsent(
+                    (MethodParameterMeta) parameter,
+                    k -> new TypeDescriptor(new MethodParameter(k.getMethod(), k.getIndex())));
+            TypeDescriptor sourceType = TypeDescriptor.forObject(value);
+            if (conversionService.canConvert(sourceType, targetType)) {
+                try {
+                    return conversionService.convert(value, sourceType, targetType);
+                } catch (Throwable t) {
+                    LOGGER.debug(
+                            "Spring convert value '{}' from type [{}] to type [{}] failed",
+                            value,
+                            value.getClass(),
+                            parameter.getGenericType(),
+                            t);
+                }
+            }
         }
-        return typeConverter.convert(value, parameter.getGenericType());
+        Object target = tried ? null : typeConverter.convert(value, parameter.getGenericType());
+        if (target == null && value != null) {
+            throw new RestException(
+                    Messages.ARGUMENT_CONVERT_ERROR,
+                    parameter.getName(),
+                    value,
+                    value.getClass(),
+                    parameter.getGenericType());
+        }
+        return target;
     }
 
     @Override

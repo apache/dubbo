@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.DubboMetadataServiceV2Triple.MetadataServiceV2ImplBase;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataRequest;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,8 +48,8 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
     }
 
     @Override
-    public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(org.apache.dubbo.metadata.Revision revisionV2) {
-        String revision = revisionV2.getValue();
+    public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(MetadataRequest metadataRequestV2) {
+        String revision = metadataRequestV2.getRevision();
         MetadataInfo info = null;
         if (StringUtils.isEmpty(revision)) {
             return null;
@@ -63,7 +64,8 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
         }
 
         if (logger.isWarnEnabled()) {
-            logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", "metadataV2 not found for revision: " + revisionV2);
+            logger.warn(
+                    REGISTRY_FAILED_LOAD_METADATA, "", "", "metadataV2 not found for revision: " + metadataRequestV2);
         }
         return null;
     }

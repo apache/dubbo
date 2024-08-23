@@ -18,16 +18,19 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper.TripleRequestWrapper;
+import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWrapper.TripleRequestWrapper;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -124,9 +127,10 @@ public final class DescriptorUtils {
     }
 
     public static MethodDescriptor findTripleMethodDescriptor(
-            ServiceDescriptor serviceDescriptor, String methodName, byte[] data) {
+            ServiceDescriptor serviceDescriptor, String methodName, InputStream rawMessage) throws IOException {
         MethodDescriptor methodDescriptor = findReflectionMethodDescriptor(serviceDescriptor, methodName);
         if (methodDescriptor == null) {
+            byte[] data = StreamUtils.readBytes(rawMessage);
             List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
             TripleRequestWrapper request = TripleRequestWrapper.parseFrom(data);
             String[] paramTypes = request.getArgTypes().toArray(new String[0]);
@@ -141,6 +145,7 @@ public final class DescriptorUtils {
             if (methodDescriptor == null) {
                 throw new UnimplementedException("method:" + methodName);
             }
+            rawMessage.reset();
         }
         return methodDescriptor;
     }

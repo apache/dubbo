@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.h1;
 
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
@@ -57,5 +58,11 @@ public class DefaultHttp1Request implements Http1Request {
     @Override
     public void close() throws IOException {
         httpInputMessage.close();
+    }
+
+    @Override
+    public String toString() {
+        return "Http1Request{method='" + method() + '\'' + ", uri='" + path() + '\'' + ", contentType='"
+                + headers().getFirst(HttpHeaderNames.CONTENT_TYPE.getName()) + "'}";
     }
 }

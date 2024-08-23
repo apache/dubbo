@@ -25,7 +25,10 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +43,11 @@ import java.util.StringTokenizer;
 public final class RequestUtils {
 
     private RequestUtils() {}
+
+    public static boolean isMultiPart(HttpRequest request) {
+        String contentType = request.contentType();
+        return contentType != null && contentType.startsWith(MediaType.MULTIPART_FORM_DATA.getName());
+    }
 
     public static boolean isFormOrMultiPart(HttpRequest request) {
         String contentType = request.contentType();
@@ -161,18 +169,59 @@ public final class RequestUtils {
         return result == null ? Collections.emptyList() : result;
     }
 
-    public static Object decodeBody(HttpRequest request, Class<?> type) {
+    public static Object decodeBody(HttpRequest request, Type type) {
         HttpMessageDecoder decoder = request.attribute(RestConstants.BODY_DECODER_ATTRIBUTE);
         if (decoder == null) {
             return null;
         }
+        if (decoder.mediaType().isPureText()) {
+            type = String.class;
+        }
+
+        InputStream is = request.inputStream();
+        try {
+            int available = is.available();
+            if (available == 0) {
+                if (type instanceof Class) {
+                    Class<?> clazz = (Class<?>) type;
+                    if (clazz == String.class) {
+                        return StringUtils.EMPTY_STRING;
+                    }
+                    if (clazz == byte[].class) {
+                        return new byte[0];
+                    }
+                }
+                return null;
+            }
+        } catch (IOException e) {
+            throw new DecodeException("Error reading is", e);
+        }
+
+        boolean canMark = is.markSupported();
+        try {
+            if (canMark) {
+                is.mark(Integer.MAX_VALUE);
+            }
+            return decoder.decode(is, type, request.charsetOrDefault());
+        } finally {
+            try {
+                if (canMark) {
+                    is.reset();
+                } else {
+                    is.close();
+                }
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    public static Object decodeBodyAsObject(HttpRequest request) {
         Object value = request.attribute(RestConstants.BODY_ATTRIBUTE);
         if (value == null) {
-            if (decoder.mediaType() == MediaType.TEXT_PLAIN) {
-                type = String.class;
+            value = decodeBody(request, Object.class);
+            if (value != null) {
+                request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
             }
-            value = decoder.decode(request.inputStream(), type, request.charsetOrDefault());
-            request.setAttribute(RestConstants.BODY_ATTRIBUTE, value);
         }
         return value;
     }

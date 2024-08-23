@@ -20,12 +20,12 @@ import java.nio.charset.StandardCharsets;
 
 public enum HttpMethods {
     GET,
+    HEAD,
     POST,
     PUT,
-    DELETE,
-    HEAD,
-    OPTIONS,
     PATCH,
+    DELETE,
+    OPTIONS,
     TRACE;
 
     public static final byte[][] HTTP_METHODS_BYTES;

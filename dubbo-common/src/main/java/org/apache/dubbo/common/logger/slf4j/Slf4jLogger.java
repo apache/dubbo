@@ -52,7 +52,7 @@ public class Slf4jLogger implements Logger {
 
     @Override
     public void trace(String msg, Object... arguments) {
-        if (locationAwareLogger != null) {
+        if (locationAwareLogger != null && locationAwareLogger.isTraceEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(
                     null, FQCN, LocationAwareLogger.TRACE_INT, msg, ft.getArgArray(), ft.getThrowable());
@@ -90,7 +90,7 @@ public class Slf4jLogger implements Logger {
 
     @Override
     public void debug(String msg, Object... arguments) {
-        if (locationAwareLogger != null) {
+        if (locationAwareLogger != null && locationAwareLogger.isDebugEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(
                     null, FQCN, LocationAwareLogger.DEBUG_INT, msg, ft.getArgArray(), ft.getThrowable());
@@ -128,7 +128,7 @@ public class Slf4jLogger implements Logger {
 
     @Override
     public void info(String msg, Object... arguments) {
-        if (locationAwareLogger != null) {
+        if (locationAwareLogger != null && locationAwareLogger.isInfoEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(null, FQCN, LocationAwareLogger.INFO_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
@@ -165,7 +165,7 @@ public class Slf4jLogger implements Logger {
 
     @Override
     public void warn(String msg, Object... arguments) {
-        if (locationAwareLogger != null) {
+        if (locationAwareLogger != null && locationAwareLogger.isWarnEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(null, FQCN, LocationAwareLogger.WARN_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
@@ -202,7 +202,7 @@ public class Slf4jLogger implements Logger {
 
     @Override
     public void error(String msg, Object... arguments) {
-        if (locationAwareLogger != null) {
+        if (locationAwareLogger != null && locationAwareLogger.isErrorEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(
                     null, FQCN, LocationAwareLogger.ERROR_INT, msg, ft.getArgArray(), ft.getThrowable());

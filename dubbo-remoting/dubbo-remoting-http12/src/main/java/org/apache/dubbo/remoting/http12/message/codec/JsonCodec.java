@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -55,6 +56,17 @@ public class JsonCodec implements HttpMessageCodec {
 
     @Override
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
+        try {
+            return JsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new DecodeException("Error decoding json", t);
+        }
+    }
+
+    @Override
+    public Object decode(InputStream is, Type targetType, Charset charset) throws DecodeException {
         try {
             return JsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
         } catch (HttpStatusException e) {

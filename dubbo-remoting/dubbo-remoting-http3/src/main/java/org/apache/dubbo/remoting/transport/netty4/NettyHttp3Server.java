@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
+import org.apache.dubbo.remoting.http3.Http3SslContexts;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3FrameCodec;
 import org.apache.dubbo.remoting.http3.netty4.NettyHttp3ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.transport.AbstractServer;
@@ -44,14 +45,11 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.incubator.codec.http3.Http3;
 import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
 import io.netty.incubator.codec.quic.InsecureQuicTokenHandler;
 import io.netty.incubator.codec.quic.QuicChannel;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.util.concurrent.Future;
 
@@ -88,15 +86,9 @@ public class NettyHttp3Server extends AbstractServer {
         NettyHttp3ProtocolSelectorHandler selectorHandler =
                 new NettyHttp3ProtocolSelectorHandler(getUrl(), frameworkModel);
 
-        SelfSignedCertificate certificate = new SelfSignedCertificate();
-        QuicSslContext context = QuicSslContextBuilder.forServer(
-                        certificate.privateKey(), null, certificate.certificate())
-                .applicationProtocols(Http3.supportedApplicationProtocols())
-                .build();
-
         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
         io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicServerCodecBuilder(), getUrl())
-                .sslContext(context)
+                .sslContext(Http3SslContexts.buildServerSslContext(getUrl()))
                 .maxIdleTimeout(idleTimeout, MILLISECONDS)
                 .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
                 .handler(new ChannelInitializer<QuicChannel>() {

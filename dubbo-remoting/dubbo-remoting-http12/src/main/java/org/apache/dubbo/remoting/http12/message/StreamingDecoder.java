@@ -39,13 +39,6 @@ public interface StreamingDecoder {
          */
         void onFragmentMessage(InputStream rawMessage);
 
-        /**
-         * @param rawMessage raw message
-         */
-        default void onFragmentMessage(InputStream dataHeader, InputStream rawMessage) {
-            onFragmentMessage(rawMessage);
-        }
-
         default void onClose() {}
     }
 

@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
+
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -27,27 +33,43 @@ public final class MethodMeta extends AnnotationSupport {
 
     private final List<Method> hierarchy;
     private final Method method;
-    private final ParameterMeta[] parameters;
+    private MethodDescriptor methodDescriptor;
+    private ParameterMeta[] parameters;
     private final ServiceMeta serviceMeta;
 
-    public MethodMeta(List<Method> hierarchy, ServiceMeta serviceMeta) {
+    public MethodMeta(List<Method> hierarchy, MethodDescriptor methodDescriptor, ServiceMeta serviceMeta) {
         super(serviceMeta.getToolKit());
         this.hierarchy = hierarchy;
-        method = hierarchy.get(0);
-        parameters = initParameters(method, hierarchy);
+        method = initMethod(hierarchy, methodDescriptor);
+        this.methodDescriptor = methodDescriptor;
         this.serviceMeta = serviceMeta;
     }
 
-    private ParameterMeta[] initParameters(Method method, List<Method> hierarchy) {
-        int count = method.getParameterCount();
+    private Method initMethod(List<Method> hierarchy, MethodDescriptor methodDescriptor) {
+        Method method = null;
+        if (methodDescriptor != null) {
+            method = methodDescriptor.getMethod();
+        }
+        return method == null ? hierarchy.get(hierarchy.size() - 1) : method;
+    }
+
+    public void initParameters() {
+        RpcType rpcType = methodDescriptor.getRpcType();
+        if (rpcType == RpcType.CLIENT_STREAM || rpcType == RpcType.BI_STREAM) {
+            Type genericType = TypeUtils.getNestedGenericType(method.getGenericReturnType(), 0);
+            parameters = new ParameterMeta[] {new StreamParameterMeta(getToolKit(), genericType, method, hierarchy)};
+            return;
+        }
+
+        int count = rpcType == RpcType.SERVER_STREAM ? 1 : method.getParameterCount();
         List<List<Parameter>> parameterHierarchies = new ArrayList<>(count);
-        for (int i = 0, len = hierarchy.size(); i < len; i++) {
+        for (int i = 0, size = hierarchy.size(); i < size; i++) {
             Method m = hierarchy.get(i);
             Parameter[] mps = m.getParameters();
             for (int j = 0; j < count; j++) {
                 List<Parameter> parameterHierarchy;
                 if (parameterHierarchies.size() <= j) {
-                    parameterHierarchy = new ArrayList<>(len);
+                    parameterHierarchy = new ArrayList<>(size);
                     parameterHierarchies.add(parameterHierarchy);
                 } else {
                     parameterHierarchy = parameterHierarchies.get(j);
@@ -55,14 +77,13 @@ public final class MethodMeta extends AnnotationSupport {
                 parameterHierarchy.add(mps[j]);
             }
         }
-
         String[] parameterNames = getToolKit().getParameterNames(method);
         ParameterMeta[] parameters = new ParameterMeta[count];
         for (int i = 0; i < count; i++) {
             String parameterName = parameterNames == null ? null : parameterNames[i];
             parameters[i] = new MethodParameterMeta(parameterHierarchies.get(i), parameterName, i, this);
         }
-        return parameters;
+        this.parameters = parameters;
     }
 
     public List<Method> getHierarchy() {
@@ -71,6 +92,14 @@ public final class MethodMeta extends AnnotationSupport {
 
     public Method getMethod() {
         return method;
+    }
+
+    public MethodDescriptor getMethodDescriptor() {
+        return methodDescriptor;
+    }
+
+    public void setMethodDescriptor(MethodDescriptor methodDescriptor) {
+        this.methodDescriptor = methodDescriptor;
     }
 
     public ParameterMeta[] getParameters() {
@@ -117,6 +146,55 @@ public final class MethodMeta extends AnnotationSupport {
 
     @Override
     public String toString() {
-        return "MethodMeta{method=" + method + '}';
+        return "MethodMeta{method=" + toShortString() + ", service=" + serviceMeta.toShortString() + '}';
+    }
+
+    public String toShortString() {
+        return MethodUtils.toShortString(method);
+    }
+
+    private static final class StreamParameterMeta extends ParameterMeta {
+
+        private final Class<?> type;
+        private final Type genericType;
+        private final AnnotatedElement element;
+        private final List<? extends AnnotatedElement> elements;
+
+        StreamParameterMeta(
+                RestToolKit toolKit,
+                Type genericType,
+                AnnotatedElement element,
+                List<? extends AnnotatedElement> elements) {
+            super(toolKit, "value");
+            type = TypeUtils.getActualType(genericType);
+            this.genericType = genericType;
+            this.element = element;
+            this.elements = elements;
+        }
+
+        @Override
+        public String getDescription() {
+            return "Stream parameter [" + element + "]";
+        }
+
+        @Override
+        public Class<?> getType() {
+            return type;
+        }
+
+        @Override
+        public Type getGenericType() {
+            return genericType;
+        }
+
+        @Override
+        protected AnnotatedElement getAnnotatedElement() {
+            return element;
+        }
+
+        @Override
+        protected List<? extends AnnotatedElement> getAnnotatedElements() {
+            return elements;
+        }
     }
 }

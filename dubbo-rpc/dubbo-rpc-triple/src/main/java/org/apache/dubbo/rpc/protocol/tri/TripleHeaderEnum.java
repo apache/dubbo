@@ -127,16 +127,7 @@ public enum TripleHeaderEnum {
                 "te",
                 "trailer",
                 "upgrade",
-                "upgrade-insecure-requests",
-                "user-agent",
-                "x-csrf-token",
-                "x-forwarded-for",
-                "x-forwarded-host",
-                "x-forwarded-proto",
-                "x-http-method-override",
-                "x-real-ip",
-                "x-request-id",
-                "x-requested-with"
+                "upgrade-insecure-requests"
             };
         }
 

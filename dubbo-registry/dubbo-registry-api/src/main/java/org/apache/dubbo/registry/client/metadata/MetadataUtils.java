@@ -24,10 +24,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataRequest;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceV2;
 import org.apache.dubbo.metadata.MetadataServiceV2Detector;
-import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
@@ -343,8 +343,9 @@ public class MetadataUtils {
                 return ((MetadataService) existProxy).getMetadataInfo(revision);
             } else {
                 return MetadataServiceVersionUtils.toV1(((MetadataServiceV2) existProxy)
-                        .getMetadataInfo(
-                                Revision.newBuilder().setValue(revision).build()));
+                        .getMetadataInfo(MetadataRequest.newBuilder()
+                                .setRevision(revision)
+                                .build()));
             }
         }
     }

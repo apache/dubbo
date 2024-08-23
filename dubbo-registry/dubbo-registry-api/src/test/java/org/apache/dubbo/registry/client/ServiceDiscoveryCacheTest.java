@@ -91,4 +91,35 @@ class ServiceDiscoveryCacheTest {
 
         applicationModel.destroy();
     }
+
+    /**
+     * to fix #14126
+     */
+    @Test
+    void testUpdateWhenFirstDoRegisterFail() throws InterruptedException {
+        ApplicationModel applicationModel = FrameworkModel.defaultModel().newApplication();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
+
+        URL registryUrl = URL.valueOf("mock://127.0.0.1:12345").addParameter(METADATA_INFO_CACHE_EXPIRE_KEY, 10);
+        MockServiceDiscovery mockServiceDiscovery =
+                Mockito.spy(new MockServiceDiscovery(applicationModel, registryUrl));
+
+        mockServiceDiscovery.register(URL.valueOf("mock://127.0.0.1:12345")
+                .setServiceInterface("org.apache.dubbo.registry.service.DemoService"));
+
+        Thread.sleep(100);
+        Mockito.doThrow(new RuntimeException())
+                .when(mockServiceDiscovery)
+                .doRegister(Mockito.any(ServiceInstance.class));
+        Assertions.assertThrows(RuntimeException.class, mockServiceDiscovery::update);
+
+        Thread.sleep(100);
+        Mockito.doNothing().when(mockServiceDiscovery).doRegister(Mockito.any(ServiceInstance.class));
+        Assertions.assertDoesNotThrow(mockServiceDiscovery::update);
+
+        Thread.sleep(100);
+        Assertions.assertDoesNotThrow(mockServiceDiscovery::update);
+
+        applicationModel.destroy();
+    }
 }

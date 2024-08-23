@@ -1,1 +1,0 @@
-servlet=org.apache.dubbo.rpc.protocol.tri.rest.support.servlet.ServletHttpMessageAdapterFactory

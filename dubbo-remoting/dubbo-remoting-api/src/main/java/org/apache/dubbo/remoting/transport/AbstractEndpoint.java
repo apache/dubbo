@@ -49,6 +49,8 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                 url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
 
+    protected AbstractEndpoint() {}
+
     protected static Codec2 getChannelCodec(URL url) {
         String codecName = url.getParameter(Constants.CODEC_KEY);
         if (StringUtils.isEmpty(codecName)) {

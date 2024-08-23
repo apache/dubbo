@@ -71,7 +71,7 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
             @Override
             protected void initChannel(SocketChannel ch) {
                 NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
-                final ChannelPipeline pipeline = ch.pipeline();
+                ChannelPipeline pipeline = ch.pipeline();
                 NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
 
                 if (sslContext != null) {

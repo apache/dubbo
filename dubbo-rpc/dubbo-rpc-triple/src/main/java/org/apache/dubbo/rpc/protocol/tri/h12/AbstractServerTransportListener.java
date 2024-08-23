@@ -18,8 +18,10 @@ package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.HttpStatus;
@@ -33,8 +35,12 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.CompositeExceptionHandler;
 import org.apache.dubbo.rpc.protocol.tri.route.DefaultRequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
@@ -42,22 +48,18 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executor;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.REMOTE_ADDRESS_KEY;
+import java.util.function.Supplier;
 
 public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage>
         implements HttpTransportListener<HEADER, MESSAGE> {
 
-    private static final ErrorTypeAwareLogger LOGGER =
-            LoggerFactory.getErrorTypeAwareLogger(AbstractServerTransportListener.class);
+    private static final FluentLogger LOGGER = FluentLogger.of(AbstractServerTransportListener.class);
 
     private final FrameworkModel frameworkModel;
     private final URL url;
     private final HttpChannel httpChannel;
     private final RequestRouter requestRouter;
+    private final ExceptionHandler<Throwable, ?> exceptionHandler;
     private final List<HeaderFilter> headerFilters;
 
     private Executor executor;
@@ -70,6 +72,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.url = url;
         this.httpChannel = httpChannel;
         requestRouter = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestRouter.class);
+        exceptionHandler = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeExceptionHandler.class);
         headerFilters = frameworkModel
                 .getExtensionLoader(HeaderFilter.class)
                 .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
@@ -80,12 +83,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         try {
             executor = initializeExecutor(metadata);
         } catch (Throwable throwable) {
-            LOGGER.error(COMMON_ERROR_USE_THREAD_POOL, "", "", "initialize executor fail.", throwable);
+            LOGGER.error(LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL, "Initialize executor fail.", throwable);
             onError(throwable);
             return;
         }
         if (executor == null) {
-            LOGGER.error(INTERNAL_ERROR, "", "", "executor must be not null.");
+            LOGGER.error(LoggerCodeConstants.INTERNAL_ERROR, "Executor must be not null.");
             onError(new NullPointerException("initializeExecutor return null"));
             return;
         }
@@ -94,6 +97,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 doOnMetadata(metadata);
             } catch (Throwable t) {
                 logError(t);
+                onMetadataError(metadata, t);
                 onError(t);
             }
         });
@@ -151,6 +155,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         // default no op
     }
 
+    protected void onMetadataError(HEADER metadata, Throwable throwable) {
+        initializeAltSvc(url);
+    }
+
     protected void onPrepareData(MESSAGE message) {
         // default no op
     }
@@ -160,14 +168,37 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     }
 
     protected void logError(Throwable t) {
-        if (t instanceof HttpStatusException) {
-            HttpStatusException e = (HttpStatusException) t;
-            if (e.getStatusCode() >= HttpStatus.BAD_REQUEST.getCode()) {
-                LOGGER.debug("http status exception", e);
+        t = ExceptionUtils.unwrap(t);
+        Supplier<String> msg = () -> {
+            StringBuilder sb = new StringBuilder(64);
+            sb.append("An error occurred while processing the http request, ");
+            sb.append(httpMetadata);
+            if (TripleProtocol.VERBOSE_ENABLED) {
+                sb.append(", headers=").append(httpMetadata.headers());
             }
-            return;
-        }
-        LOGGER.error(INTERNAL_ERROR, "", "", "server internal error", t);
+            if (context != null) {
+                MethodDescriptor md = context.getMethodDescriptor();
+                if (md != null) {
+                    sb.append(", method=").append(MethodUtils.toShortString(md.getMethod()));
+                }
+                if (TripleProtocol.VERBOSE_ENABLED) {
+                    Invoker<?> invoker = context.getInvoker();
+                    if (invoker != null) {
+                        URL url = invoker.getUrl();
+                        Object service = url.getServiceModel().getProxyObject();
+                        sb.append(", service=")
+                                .append(service.getClass().getSimpleName())
+                                .append('@')
+                                .append(Integer.toHexString(System.identityHashCode(service)))
+                                .append(", url='")
+                                .append(url)
+                                .append('\'');
+                    }
+                }
+            }
+            return sb.toString();
+        };
+        LOGGER.msg(msg).log(exceptionHandler.resolveLogLevel(t), t);
     }
 
     protected void onError(Throwable throwable) {
@@ -204,6 +235,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             methodDescriptor = DescriptorUtils.findMethodDescriptor(
                     context.getServiceDescriptor(), context.getMethodName(), context.isHasStub());
             context.setMethodDescriptor(methodDescriptor);
+            onSettingMethodDescriptor(methodDescriptor);
         }
         MethodMetadata methodMetadata = context.getMethodMetadata();
         if (methodMetadata == null) {
@@ -223,7 +255,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(StreamUtils.toAttachments(httpMetadata.headers()));
-        inv.put(REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
+        inv.put(TripleConstant.REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
         inv.getAttributes().putAll(context.getAttributes());
         String consumerAppName = httpMetadata.headers().getFirst(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader());
         if (null != consumerAppName) {
@@ -251,18 +283,21 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             }
         } catch (Throwable t) {
             LOGGER.warn(
-                    PROTOCOL_FAILED_PARSE,
-                    "",
-                    "",
-                    String.format(
-                            "Failed to parse request timeout set from:%s, service=%s " + "method=%s",
-                            timeoutString, context.getServiceDescriptor().getInterfaceName(), context.getMethodName()));
+                    LoggerCodeConstants.PROTOCOL_FAILED_PARSE,
+                    "Failed to parse request timeout set from: {}, service={}, method={}",
+                    timeoutString,
+                    context.getServiceDescriptor().getInterfaceName(),
+                    context.getMethodName());
         }
         return invocation;
     }
 
     protected final FrameworkModel getFrameworkModel() {
         return frameworkModel;
+    }
+
+    protected ExceptionHandler<Throwable, ?> getExceptionHandler() {
+        return exceptionHandler;
     }
 
     protected final HEADER getHttpMetadata() {
@@ -277,7 +312,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return httpMessageListener;
     }
 
-    protected void setHttpMessageListener(HttpMessageListener httpMessageListener) {
+    protected final void setHttpMessageListener(HttpMessageListener httpMessageListener) {
         this.httpMessageListener = httpMessageListener;
     }
+
+    protected void onSettingMethodDescriptor(MethodDescriptor methodDescriptor) {}
 }

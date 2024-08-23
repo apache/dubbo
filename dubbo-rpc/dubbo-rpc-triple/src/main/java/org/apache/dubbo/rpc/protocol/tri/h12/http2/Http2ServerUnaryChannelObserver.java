@@ -27,14 +27,14 @@ public class Http2ServerUnaryChannelObserver extends Http2ServerCallToObserverAd
     }
 
     @Override
-    public void doOnNext(Object data) throws Throwable {
+    protected void doOnNext(Object data) throws Throwable {
         HttpOutputMessage httpOutputMessage = buildMessage(data);
         sendHeader(buildMetadata(resolveStatusCode(data), data, httpOutputMessage));
         sendMessage(httpOutputMessage);
     }
 
     @Override
-    public void doOnError(Throwable throwable) throws Throwable {
+    protected void doOnError(Throwable throwable) throws Throwable {
         String statusCode = resolveStatusCode(throwable);
         Object data = buildErrorResponse(statusCode, throwable);
         HttpOutputMessage httpOutputMessage = buildMessage(data);

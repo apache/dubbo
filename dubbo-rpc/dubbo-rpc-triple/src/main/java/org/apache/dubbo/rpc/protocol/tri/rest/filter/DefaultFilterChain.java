@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.AppResponse;
@@ -33,7 +31,7 @@ import java.util.function.Supplier;
 
 final class DefaultFilterChain implements FilterChain, Listener {
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DefaultFilterChain.class);
+    private static final FluentLogger LOGGER = FluentLogger.of(DefaultFilterChain.class);
 
     private final RestFilter[] filters;
     private final Invocation invocation;
@@ -106,11 +104,7 @@ final class DefaultFilterChain implements FilterChain, Listener {
                 try {
                     ((Listener) filter).onResponse(result, request, response);
                 } catch (Throwable t) {
-                    LOGGER.error(
-                            LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
-                            "Call onResponse for filter " + "[" + filter + "] error");
+                    LOGGER.internalError("Call onResponse for filter [{}] error", filter);
                 }
             }
         }
@@ -124,11 +118,7 @@ final class DefaultFilterChain implements FilterChain, Listener {
                 try {
                     ((Listener) filter).onError(t, request, response);
                 } catch (Throwable th) {
-                    LOGGER.error(
-                            LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
-                            "Call onError for filter " + "[" + filter + "] error");
+                    LOGGER.internalError("Call onError for filter [{}] error", filter);
                 }
             }
         }
