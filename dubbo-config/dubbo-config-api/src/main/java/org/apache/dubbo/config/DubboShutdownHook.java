@@ -61,7 +61,7 @@ public class DubboShutdownHook extends Thread {
 
     private boolean checkExternalManagedModule(ApplicationModel applicationModel) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            if (moduleModel.isLifeCycleManagedExternally()) {
+            if (moduleModel.isLifeCycleManagedExternally() && !moduleModel.isDestroyed()) {
                 return true;
             }
         }
@@ -97,7 +97,6 @@ public class DubboShutdownHook extends Thread {
                         (existingValue, newValue) -> existingValue,
                         HashMap::new));
 
-        final long retryInterval = 10;
         for (Map.Entry<ApplicationModel, Integer> entry : serverShutdownWaits.entrySet()) {
             ApplicationModel applicationModel = entry.getKey();
             Integer val = entry.getValue();
@@ -112,7 +111,7 @@ public class DubboShutdownHook extends Thread {
                     && !applicationModel.isDestroyed()
                     && System.currentTimeMillis() - start < val.intValue()) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(retryInterval);
+                    TimeUnit.MILLISECONDS.sleep(10);
                 } catch (InterruptedException e) {
                     logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
                     Thread.currentThread().interrupt();

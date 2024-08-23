@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -62,9 +61,6 @@ public class DubboSpringInitializer {
 
         // init dubbo context
         initContext(context, registry, beanFactory);
-
-        // Register shutdownHook
-        DubboShutdownHook.getInstance().register();
     }
 
     public static boolean remove(BeanDefinitionRegistry registry) {

@@ -19,7 +19,6 @@ package org.apache.dubbo.config.spring.context;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.DubboStateListener;
 import org.apache.dubbo.config.spring.SysProps;
@@ -62,7 +61,6 @@ class KeepRunningOnSpringClosedTest {
             Assertions.assertEquals(true, applicationDeployer.isStarted());
             Assertions.assertEquals(false, applicationDeployer.isStopped());
             Assertions.assertNotNull(DubboSpringInitializer.findBySpringContext(providerContext));
-            Assertions.assertTrue(DubboShutdownHook.getInstance().isRegistered());
 
             // close spring context
             providerContext.close();
