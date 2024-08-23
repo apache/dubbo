@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class PathUtils {
-    private static Logger LOGGER = LoggerFactory.getLogger(PathUtils.class);
     private static final char COLON = ':';
     private static final char OPEN = '{';
     private static final char CLOSE = '}';
@@ -51,7 +50,6 @@ public class PathUtils {
             if (c == OPEN) {
                 String regexBuffer = cutParameter(ci, patterns);
                 if (regexBuffer == null) {
-                    LOGGER.warn("Operation path \"{}\" contains syntax error.", uri);
                     return null;
                 }
                 pathBuffer.append(regexBuffer);
