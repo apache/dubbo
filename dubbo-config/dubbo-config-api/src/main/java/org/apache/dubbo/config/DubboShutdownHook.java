@@ -67,6 +67,15 @@ public class DubboShutdownHook extends Thread {
         }
         return false;
     }
+
+    protected static int getServerShutdownTimeout(ApplicationModel appModel) {
+        try {
+            return ConfigurationUtils.getServerShutdownTimeout(appModel);
+        } catch (RuntimeException re) {
+            return 0;
+        }
+    }
+
     /**
      * Checks whether external managed {@code ModuleModel} exists, and wait until the corresponding external
      * managed modules of {@code ApplicationModel} has been destroyed or the serverShutdownTimeout expired.
@@ -84,15 +93,16 @@ public class DubboShutdownHook extends Thread {
                         appModel.getModuleModels().stream().anyMatch(ModuleModel::isLifeCycleManagedExternally))
                 .collect(Collectors.toMap(
                         appModel -> appModel,
-                        ConfigurationUtils::getServerShutdownTimeout,
+                        DubboShutdownHook::getServerShutdownTimeout,
                         (existingValue, newValue) -> existingValue,
                         HashMap::new));
 
+        final long retryInterval = 10;
         for (Map.Entry<ApplicationModel, Integer> entry : serverShutdownWaits.entrySet()) {
             ApplicationModel applicationModel = entry.getKey();
             Integer val = entry.getValue();
 
-            if (val.intValue() <= 0) {
+            if (val.intValue() <= 0 || applicationModel.isDestroyed()) {
                 continue;
             }
 
@@ -102,7 +112,7 @@ public class DubboShutdownHook extends Thread {
                     && !applicationModel.isDestroyed()
                     && System.currentTimeMillis() - start < val.intValue()) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(10);
+                    TimeUnit.MILLISECONDS.sleep(retryInterval);
                 } catch (InterruptedException e) {
                     logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
                     Thread.currentThread().interrupt();
