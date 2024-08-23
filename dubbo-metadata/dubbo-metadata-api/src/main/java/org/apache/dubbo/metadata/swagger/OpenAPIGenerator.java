@@ -104,8 +104,6 @@ public class OpenAPIGenerator {
             final OpenAPI openAPI;
             final Locale finalLocale = Locale.getDefault();
             if (openAPIService.getCachedOpenAPI(finalLocale) == null) {
-                Instant start = Instant.now();
-
                 // initialize openAPI
                 openAPI = openAPIService.build(finalLocale);
 
