@@ -17,8 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.RestConfig;
@@ -53,12 +52,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger;
-import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.AMBIGUOUS_MAPPING;
-
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
-    private static final ErrorTypeAwareLogger LOGGER = getErrorTypeAwareLogger(DefaultRequestMappingRegistry.class);
+    private static final FluentLogger LOGGER = FluentLogger.of(DefaultRequestMappingRegistry.class);
 
     private final FrameworkModel frameworkModel;
     private final ContentNegotiator contentNegotiator;
@@ -169,8 +165,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     }
                     counter.incrementAndGet();
                 } else if (LOGGER.isWarnEnabled()) {
-                    String msg = Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists);
-                    LOGGER.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", msg);
+                    LOGGER.internalWarn(Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists));
                 }
             }
         } finally {
@@ -270,7 +265,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             Candidate first = candidates.get(0);
             Candidate second = candidates.get(1);
             if (first.mapping.compareTo(second.mapping, request) == 0) {
-                throw new RestMappingException(AMBIGUOUS_MAPPING, path, first, second);
+                throw new RestMappingException(Messages.AMBIGUOUS_MAPPING, path, first, second);
             }
         }
 

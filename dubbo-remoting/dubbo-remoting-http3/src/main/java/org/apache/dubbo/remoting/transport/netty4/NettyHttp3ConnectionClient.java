@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.http3.Http3SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,14 +32,11 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.incubator.codec.http3.Http3;
 import io.netty.incubator.codec.http3.Http3ClientConnectionHandler;
 import io.netty.incubator.codec.quic.QuicChannel;
 import io.netty.incubator.codec.quic.QuicChannelBootstrap;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
@@ -62,14 +60,10 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
 
     @Override
     protected void initBootstrap() throws Exception {
-        QuicSslContext context = QuicSslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .applicationProtocols(Http3.supportedApplicationProtocols())
-                .build();
         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
         io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicClientCodecBuilder(), getUrl())
                 .maxIdleTimeout(idleTimeout, MILLISECONDS)
-                .sslContext(context)
+                .sslContext(Http3SslContexts.buildClientSslContext(getUrl()))
                 .build();
         io.netty.channel.Channel nettyDatagramChannel = new Bootstrap()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout())
