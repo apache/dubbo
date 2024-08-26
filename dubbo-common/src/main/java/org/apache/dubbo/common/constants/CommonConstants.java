@@ -635,6 +635,8 @@ public interface CommonConstants {
 
     String DUBBO_VERSIONS_KEY = "META-INF/dubbo-versions";
 
+    String TRIPLE_PREFIX = "triple.";
+
     /**
      * System-related VM properties
      */

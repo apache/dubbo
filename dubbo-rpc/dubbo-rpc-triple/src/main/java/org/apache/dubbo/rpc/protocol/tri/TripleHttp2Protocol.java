@@ -87,16 +87,16 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @Override
     public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
-        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
+        TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
         Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
-                        .headerTableSize(tripleConfig.getHeaderTableSize())
-                        .pushEnabled(tripleConfig.getEnablePush())
-                        .maxConcurrentStreams(tripleConfig.getMaxConcurrentStreams())
-                        .initialWindowSize(tripleConfig.getInitialWindowSize())
-                        .maxFrameSize(tripleConfig.getMaxFrameSize())
-                        .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
+                        .headerTableSize(tripleConfig.getHeaderTableSizeOrDefault())
+                        .pushEnabled(tripleConfig.getEnablePushOrDefault())
+                        .maxConcurrentStreams(tripleConfig.getMaxConcurrentStreamsOrDefault())
+                        .initialWindowSize(tripleConfig.getInitialWindowSizeOrDefault())
+                        .maxFrameSize(tripleConfig.getMaxFrameSizeOrDefault())
+                        .maxHeaderListSize(tripleConfig.getMaxHeaderListSizeOrDefault()))
                 .frameLogger(CLIENT_LOGGER)
                 .validateHeaders(false)
                 .build();
@@ -132,13 +132,13 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @SuppressWarnings("deprecation")
     private void configurerHttp1Handlers(URL url, List<ChannelHandler> handlers) {
-        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
+        TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
         HttpServerCodec sourceCodec = new HttpServerCodec(
-                tripleConfig.getMaxInitialLineLength(),
-                tripleConfig.getMaxHeaderSize(),
-                tripleConfig.getMaxChunkSize(),
+                tripleConfig.getMaxInitialLineLengthOrDefault(),
+                tripleConfig.getMaxHeaderSizeOrDefault(),
+                tripleConfig.getMaxChunkSizeOrDefault(),
                 false,
-                tripleConfig.getInitialBufferSize());
+                tripleConfig.getInitialBufferSizeOrDefault());
         handlers.add(new ChannelHandlerPretender(sourceCodec));
         // Triple protocol http1 upgrade support
         handlers.add(new ChannelHandlerPretender(new HttpServerUpgradeHandler(
@@ -160,7 +160,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         // If the upgrade was successful, remove the message from the output list
         // so that it's not propagated to the next handler. This request will
         // be propagated as a user event instead.
-        handlers.add(new ChannelHandlerPretender(new HttpObjectAggregator(tripleConfig.getMaxBodySize())));
+        handlers.add(new ChannelHandlerPretender(new HttpObjectAggregator(tripleConfig.getMaxBodySizeOrDefault())));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1Codec()));
         handlers.add(new ChannelHandlerPretender(new NettyHttp1ConnectionHandler(
                 url, frameworkModel, tripleConfig, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
@@ -179,7 +179,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
-        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
+        TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
         Http2FrameCodec codec = buildHttp2FrameCodec(tripleConfig);
         Http2MultiplexHandler handler = buildHttp2MultiplexHandler(url, tripleConfig);
         handlers.add(new ChannelHandlerPretender(new HttpWriteQueueHandler()));
@@ -196,11 +196,11 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                         connection.remote().flowController(new TriHttp2RemoteFlowController(connection, tripleConfig)))
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
-                        .headerTableSize(tripleConfig.getHeaderTableSize())
-                        .maxConcurrentStreams(tripleConfig.getMaxConcurrentStreams())
-                        .initialWindowSize(tripleConfig.getInitialWindowSize())
-                        .maxFrameSize(tripleConfig.getMaxFrameSize())
-                        .maxHeaderListSize(tripleConfig.getMaxHeaderListSize()))
+                        .headerTableSize(tripleConfig.getHeaderTableSizeOrDefault())
+                        .maxConcurrentStreams(tripleConfig.getMaxConcurrentStreamsOrDefault())
+                        .initialWindowSize(tripleConfig.getInitialWindowSizeOrDefault())
+                        .maxFrameSize(tripleConfig.getMaxFrameSizeOrDefault())
+                        .maxHeaderListSize(tripleConfig.getMaxHeaderListSizeOrDefault()))
                 .frameLogger(SERVER_LOGGER)
                 .validateHeaders(false)
                 .build();
