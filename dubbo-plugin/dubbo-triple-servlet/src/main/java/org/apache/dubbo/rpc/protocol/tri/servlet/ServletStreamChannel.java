@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.tri.servlet;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-import org.apache.dubbo.remoting.http12.HttpVersion;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
@@ -130,7 +130,12 @@ final class ServletStreamChannel implements H2StreamChannel {
 
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
-        boolean endStream = ((Http2Header) httpMetadata).isEndStream();
+        boolean endStream = false;
+        boolean isHttp1 = true;
+        if (httpMetadata instanceof Http2Header) {
+            endStream = ((Http2Header) httpMetadata).isEndStream();
+            isHttp1 = false;
+        }
         try {
             HttpHeaders headers = httpMetadata.headers();
             if (endStream) {
@@ -155,6 +160,11 @@ final class ServletStreamChannel implements H2StreamChannel {
                     response.setStatus(Integer.parseInt(values.get(0)));
                     continue;
                 }
+                if (isHttp1
+                        && HttpHeaderNames.TRANSFER_ENCODING.getName().equals(key)
+                        && "chunked".equals(CollectionUtils.first(values))) {
+                    continue;
+                }
                 if (values.size() == 1) {
                     response.setHeader(key, values.get(0));
                 } else {
@@ -175,13 +185,15 @@ final class ServletStreamChannel implements H2StreamChannel {
 
     @Override
     public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
-        boolean endStream = ((Http2OutputMessage) httpOutputMessage).isEndStream();
+        boolean endStream = false;
+        if (httpOutputMessage instanceof Http2OutputMessage) {
+            endStream = ((Http2OutputMessage) httpOutputMessage).isEndStream();
+        } else if (httpOutputMessage == HttpOutputMessage.EMPTY_MESSAGE) {
+            endStream = true;
+        }
         try {
             ByteArrayOutputStream bos = (ByteArrayOutputStream) httpOutputMessage.getBody();
             ServletOutputStream out = response.getOutputStream();
-            if (!HttpVersion.HTTP2.getProtocol().equals(request.getProtocol())) {
-                response.setContentLength(bos.size());
-            }
             bos.writeTo(out);
             out.flush();
         } catch (Throwable t) {

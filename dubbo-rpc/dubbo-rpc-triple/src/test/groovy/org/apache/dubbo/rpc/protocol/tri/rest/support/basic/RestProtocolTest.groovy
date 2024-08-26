@@ -41,6 +41,18 @@ class RestProtocolTest extends BaseServiceTest {
             '/hello.yml?name=world' | 'hello world'
     }
 
+    def "hello world by post"() {
+        expect:
+            runner.post(path, body) == output
+        where:
+            path                | body       | output
+            '/hello?name=world' | null       | 'hello world'
+            '/hello'            | ''         | 'hello '
+            '/hello?name=world' | ''         | 'hello world'
+            '/hello'            | '"world"'  | 'hello world'
+            '/hello?name=world' | '"galaxy"' | 'hello galaxy'
+    }
+
     def "argument test"() {
         expect:
             runner.post(path, body) == output

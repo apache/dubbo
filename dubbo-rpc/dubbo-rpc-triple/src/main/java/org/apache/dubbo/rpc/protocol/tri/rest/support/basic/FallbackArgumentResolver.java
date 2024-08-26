@@ -82,7 +82,11 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 try {
                     Object body = RequestUtils.decodeBody(request, meta.genericType());
                     if (body != null) {
-                        return body;
+                        if (body != RequestUtils.EMPTY_BODY) {
+                            return body;
+                        }
+                        Object value = single ? request.parameter(meta.name()) : request.parameterValues(meta.name());
+                        return value == null ? body : value;
                     }
                 } catch (DecodeException ignored) {
                 }
