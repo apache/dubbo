@@ -82,7 +82,7 @@ public abstract class CuratorFrameworkUtils {
             Method ignore = builderClass.getMethod("ensembleTracker", boolean.class);
             boolean ensembleTrackerFlag = connectionURL.getParameter(ZOOKEEPER_ENSEMBLE_TRACKER_KEY, true);
             builder.ensembleTracker(ensembleTrackerFlag);
-        } catch (NoSuchMethodException | SecurityException ignore) {
+        } catch (Throwable ignore) {
         }
 
         String userInformation = connectionURL.getUserInformation();
