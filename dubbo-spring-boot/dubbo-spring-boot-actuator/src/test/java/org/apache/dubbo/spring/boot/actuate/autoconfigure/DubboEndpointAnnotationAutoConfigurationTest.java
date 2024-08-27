@@ -21,7 +21,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboConfigsMetadataEndpoint;
-import org.apache.dubbo.spring.boot.actuate.endpoint.DubboMetadataEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboPropertiesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboReferencesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboServicesMetadataEndpoint;
@@ -86,7 +86,7 @@ import org.springframework.web.client.RestTemplate;
 class DubboEndpointAnnotationAutoConfigurationTest {
 
     @Autowired
-    private DubboMetadataEndpoint dubboEndpoint;
+    private DubboEndpoint dubboEndpoint;
 
     @Autowired
     private DubboConfigsMetadataEndpoint dubboConfigsMetadataEndpoint;

@@ -34,20 +34,20 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.apache.dubbo.common.Version.getVersion;
 
 /**
- * {@link DubboMetadataEndpoint} Test
+ * {@link DubboEndpoint} Test
  *
- * @see DubboMetadataEndpoint
+ * @see DubboEndpoint
  * @since 2.7.0
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(
-        classes = {DubboMetadataEndpoint.class},
+        classes = {DubboEndpoint.class},
         properties = {"dubbo.application.name = dubbo-demo-application"})
 @EnableAutoConfiguration
 class DubboEndpointTest {
 
     @Autowired
-    private DubboMetadataEndpoint dubboEndpoint;
+    private DubboEndpoint dubboEndpoint;
 
     @BeforeEach
     public void init() {

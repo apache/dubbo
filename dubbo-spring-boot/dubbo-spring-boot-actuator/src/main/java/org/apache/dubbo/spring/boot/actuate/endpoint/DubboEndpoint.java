@@ -16,28 +16,47 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint;
 
+import org.apache.dubbo.spring.boot.actuate.endpoint.configuration.DubboActuatorProperties;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboMetadata;
+import org.apache.dubbo.spring.boot.actuate.endpoint.service.DubboActuatorService;
 
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
+import org.springframework.boot.actuate.endpoint.annotation.Selector;
+import org.springframework.lang.Nullable;
 
 /**
- * Actuator {@link Endpoint} to expose Dubbo Meta Data
+ * Dubbo Actuator {@link Endpoint}
  *
  * @see Endpoint
- * @since 2.7.0
+ * @since 3.3.0
  */
 @Endpoint(id = "dubbo")
-public class DubboMetadataEndpoint {
+public class DubboEndpoint {
+
+    @Autowired
+    private DubboActuatorService dubboActuatorService;
 
     @Autowired
     private DubboMetadata dubboMetadata;
 
+    @Autowired
+    private DubboActuatorProperties dubboActuatorProperties;
+
     @ReadOperation
     public Map<String, Object> invoke() {
         return dubboMetadata.invoke();
+    }
+
+    @ReadOperation
+    public String handleCommand(@Selector String command, @Nullable String[] args) {
+        if (dubboActuatorProperties.isEnabled(command.toLowerCase())) {
+            return dubboActuatorService.invoke(command, args);
+        } else {
+            return ("Invalid command or not enabled");
+        }
     }
 }
