@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -46,6 +47,8 @@ import static org.mockito.Mockito.when;
 
 class DubboShutdownHookTest {
     private ApplicationModel applicationModel;
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboShutdownHookTest.class);
 
     @BeforeEach
     public void init() {
@@ -116,7 +119,8 @@ class DubboShutdownHookTest {
 
         ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
 
-        applicationModel.getModuleModels().get(0).setLifeCycleManagedExternally(true);
+        final ModuleModel firstModuleModel = applicationModel.getModuleModels().get(0);
+        firstModuleModel.setLifeCycleManagedExternally(true);
         final int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
         final long now = System.currentTimeMillis();
         new Thread(() -> {
@@ -126,7 +130,7 @@ class DubboShutdownHookTest {
                             .until(() -> {
                                 return System.currentTimeMillis() - now > serverShutdownTimeout + 200;
                             });
-                    applicationModel.getModuleModels().get(0).destroy();
+                    firstModuleModel.destroy();
                 })
                 .start();
 
@@ -158,22 +162,25 @@ class DubboShutdownHookTest {
 
         ArgumentCaptor<String> loggerCaptor = ArgumentCaptor.forClass(String.class);
 
-        applicationModel.getModuleModels().get(0).setLifeCycleManagedExternally(true);
+        final ModuleModel firstModuleModel = applicationModel.getModuleModels().get(0);
+        firstModuleModel.setLifeCycleManagedExternally(true);
         final int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
         final long now = System.currentTimeMillis();
         new Thread(() -> {
                     Awaitility.await()
                             .atLeast(10, TimeUnit.MILLISECONDS)
-                            .atMost(10000, TimeUnit.MILLISECONDS)
+                            .atMost(serverShutdownTimeout, TimeUnit.MILLISECONDS)
                             .until(() -> {
-                                return System.currentTimeMillis() - now > Math.min(serverShutdownTimeout, 100) - 50;
+                                return System.currentTimeMillis() - now > 10;
                             });
-                    applicationModel.getModuleModels().get(0).destroy();
+                    firstModuleModel.destroy();
+                    applicationModel.destroy();
                 })
                 .start();
 
         DubboShutdownHook.getInstance().run();
-
+        logger.info("Dubbo shutdown hooks-- verify status:(" + applicationModel.getDesc() + ")="
+                + applicationModel.isDestroyed());
         Assertions.assertTrue(applicationModel.isDestroyed());
 
         verify(spyLogger, atLeastOnce()).info(loggerCaptor.capture());

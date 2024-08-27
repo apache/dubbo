@@ -17,26 +17,29 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.GracefulShutdown;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_SHUTDOWN_HOOK;
 
 /**
- * The shutdown hook thread to do the cleanup stuff.
- * This is a singleton in order to ensure there is only one shutdown hook registered.
- * Because {@link ApplicationShutdownHooks} use {@link java.util.IdentityHashMap}
- * to store the shutdown hooks.
+ * The shutdown hook thread to do the cleanup stuff. This is a singleton in
+ * order to ensure there is only one shutdown hook registered. Because
+ * {@link ApplicationShutdownHooks} use {@link java.util.IdentityHashMap} to
+ * store the shutdown hooks.
  */
 public class DubboShutdownHook extends Thread {
 
@@ -68,7 +71,7 @@ public class DubboShutdownHook extends Thread {
         return false;
     }
 
-    protected static int getServerShutdownTimeout(ApplicationModel appModel) {
+    protected int getServerShutdownTimeout(ApplicationModel appModel) {
         try {
             return ConfigurationUtils.getServerShutdownTimeout(appModel);
         } catch (RuntimeException re) {
@@ -76,56 +79,84 @@ public class DubboShutdownHook extends Thread {
         }
     }
 
+    protected Boolean getIgnoreListen(ApplicationModel appModel) {
+        try {
+            return Boolean.parseBoolean(
+                    ConfigurationUtils.getProperty(appModel, CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK));
+        } catch (RuntimeException re) {
+            return Boolean.TRUE;
+        }
+    }
+
+    protected Map<ApplicationModel, Boolean> checkIgnoreListenShutdownHookConf() {
+        Map<ApplicationModel, Boolean> ignoreSettings = new HashMap<>();
+
+        FrameworkModel.getAllInstances().forEach(fwk -> fwk.getApplicationModels()
+                .forEach(app -> ignoreSettings.put(app, getIgnoreListen(app))));
+        return ignoreSettings;
+    }
+
+    protected Map<ApplicationModel, Integer> checkShutdownWaitConf(Map<ApplicationModel, Boolean> ignoreSettings) {
+        Map<ApplicationModel, Integer> appShutdownWaits = new HashMap<>();
+        ignoreSettings.forEach((ApplicationModel k, Boolean v) -> {
+            if (!k.isDestroyed()) {
+                appShutdownWaits.put(k, getServerShutdownTimeout(k));
+            }
+        });
+        return appShutdownWaits;
+    }
+
     /**
-     * Checks whether external managed {@code ModuleModel} exists, and wait until the corresponding external
-     * managed modules of {@code ApplicationModel} has been destroyed or the serverShutdownTimeout expired.
+     * Checks whether external managed {@code ModuleModel} exists, and wait until
+     * the corresponding external managed modules of {@code ApplicationModel} has
+     * been destroyed or the serverShutdownTimeout expired.
      *
      */
-    private void checkAndWaitUntilTimeout() {
-        long start = System.currentTimeMillis();
-        /* To avoid shutdown conflicts between Dubbo and Spring,
-         * wait for the modules bound to Spring to be handled by Spring until timeout.
+    protected void checkAndWaitUntilTimeout(long startms, Map<ApplicationModel, Integer> appShutdownWaits) {
+        /*
+         * To avoid shutdown conflicts between Dubbo and Spring, wait for the modules
+         * bound to Spring to be handled by Spring until timeout.
          */
-        Map<ApplicationModel, Integer> serverShutdownWaits = FrameworkModel.getAllInstances().stream()
-                .flatMap(fwkModel -> fwkModel.getAllApplicationModels().stream())
-                .distinct()
-                .filter(appModel ->
-                        appModel.getModuleModels().stream().anyMatch(ModuleModel::isLifeCycleManagedExternally))
-                .collect(Collectors.toMap(
-                        appModel -> appModel,
-                        DubboShutdownHook::getServerShutdownTimeout,
-                        (existingValue, newValue) -> existingValue,
-                        HashMap::new));
 
-        for (Map.Entry<ApplicationModel, Integer> entry : serverShutdownWaits.entrySet()) {
+        for (Map.Entry<ApplicationModel, Integer> entry : appShutdownWaits.entrySet()) {
             ApplicationModel applicationModel = entry.getKey();
             Integer val = entry.getValue();
 
             if (val.intValue() <= 0 || applicationModel.isDestroyed()) {
                 continue;
             }
-
-            logger.info("Waiting for modules(" + applicationModel.getDesc() + ") managed by Spring to be shutdown.");
-            boolean hasExternalBinding = true;
-            while (hasExternalBinding
-                    && !applicationModel.isDestroyed()
-                    && System.currentTimeMillis() - start < val.intValue()) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(10);
-                } catch (InterruptedException e) {
-                    logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
-                    Thread.currentThread().interrupt();
-                }
-                hasExternalBinding = checkExternalManagedModule(applicationModel);
-            }
+            boolean hasExternalBinding = checkExternalManagedModule(applicationModel);
             if (hasExternalBinding) {
-                long usage = System.currentTimeMillis() - start;
-                logger.info("Dubbo wait for application(" + applicationModel.getDesc()
-                        + ") managed by Spring to be shutdown failed, external managed module exists. Total time usage: "
-                        + usage + "ms.");
-            } else {
-                logger.info("Module(" + applicationModel.getDesc()
-                        + ") managed by Spring has been destroyed successfully.");
+                if (logger.isInfoEnabled()) {
+                    logger.info("Waiting for modules(" + applicationModel.getDesc()
+                            + ") managed by Spring to be shutdown.");
+                }
+                while (!applicationModel.isDestroyed() && System.currentTimeMillis() - startms < val.intValue()) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(10);
+                    } catch (InterruptedException e) {
+                        logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                long usage = System.currentTimeMillis() - startms;
+                if (!applicationModel.isDestroyed()) {
+                    logger.info("Dubbo wait for application(" + applicationModel.getDesc()
+                            + ") managed by Spring to be shutdown failed, external managed module exists. Time usage: "
+                            + usage + "ms");
+                } else {
+                    logger.info("Dubbo wait for application(" + applicationModel.getDesc()
+                            + ") managed by Spring has been destroyed successfully.");
+                }
+            }
+            if (!applicationModel.isDestroyed()) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Dubbo shutdown hooks(" + applicationModel.getDesc() + ") destroying...");
+                }
+                applicationModel.destroy();
+                if (logger.isInfoEnabled()) {
+                    logger.info("Dubbo shutdown hooks(" + applicationModel.getDesc() + ") destroyed.");
+                }
             }
         }
     }
@@ -136,10 +167,23 @@ public class DubboShutdownHook extends Thread {
             logger.info("Run shutdown hook now.");
         }
 
-        checkAndWaitUntilTimeout();
+        long start = System.currentTimeMillis();
 
-        // Cleanup all resources arbitrarily when process exit.
-        FrameworkModel.destroyAll();
+        Map<ApplicationModel, Boolean> appIgnoreSettings = checkIgnoreListenShutdownHookConf();
+        Map<ApplicationModel, Integer> appShutdownWaitSettings = checkShutdownWaitConf(appIgnoreSettings);
+
+        Set<GracefulShutdown> gracefulShutdowns = new HashSet<>();
+        appIgnoreSettings.forEach((ApplicationModel k, Boolean v) -> {
+            if (!v.booleanValue()) {
+                gracefulShutdowns.addAll(GracefulShutdown.getGracefulShutdowns(k.getFrameworkModel()));
+            }
+        });
+
+        for (GracefulShutdown gracefulShutdown : gracefulShutdowns) {
+            gracefulShutdown.readonly();
+        }
+
+        checkAndWaitUntilTimeout(start, appShutdownWaitSettings);
 
         if (logger.isInfoEnabled()) {
             logger.info("Complete shutdown hook now.");
@@ -155,7 +199,7 @@ public class DubboShutdownHook extends Thread {
      * Register the ShutdownHook
      */
     public void register() {
-        if (!registered.compareAndSet(false, true)) {
+        if (registered.compareAndSet(false, true)) {
             try {
                 Runtime.getRuntime().addShutdownHook(this);
             } catch (Exception e) {
