@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
 
 public class ActuatorCommandExecutor implements ActuatorExecutor {
-    private static final Logger log = LoggerFactory.getLogger(DefaultCommandExecutor.class);
+    private static final Logger log = LoggerFactory.getLogger(ActuatorCommandExecutor.class);
     private final ApplicationModel applicationModel;
 
     public ActuatorCommandExecutor(ApplicationModel applicationModel) {
