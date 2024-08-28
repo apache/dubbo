@@ -78,7 +78,7 @@ public class WebSocketStreamChannel implements H2StreamChannel {
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         return new Http2OutputMessageFrame(
-                new LimitedByteArrayOutputStream(256, tripleConfig.getMaxResponseBodySize()), endStream);
+                new LimitedByteArrayOutputStream(256, tripleConfig.getMaxResponseBodySizeOrDefault()), endStream);
     }
 
     @Override

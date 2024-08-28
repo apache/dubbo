@@ -145,6 +145,9 @@ public class TripleConfig implements Serializable {
     @Nested
     private ServletConfig servlet;
 
+    @Nested
+    private WebSocketConfig websocket;
+
     public Boolean getVerbose() {
         return verbose;
     }
@@ -347,5 +350,13 @@ public class TripleConfig implements Serializable {
 
     public void setServlet(ServletConfig servlet) {
         this.servlet = servlet;
+    }
+
+    public WebSocketConfig getWebsocket() {
+        return websocket;
+    }
+
+    public void setWebsocket(WebSocketConfig websocket) {
+        this.websocket = websocket;
     }
 }

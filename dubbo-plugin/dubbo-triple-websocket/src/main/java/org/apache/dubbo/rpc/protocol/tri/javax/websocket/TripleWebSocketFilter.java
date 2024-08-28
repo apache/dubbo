@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.javax.websocket;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 
 import javax.servlet.FilterChain;
 import javax.servlet.GenericFilter;
@@ -32,11 +33,14 @@ import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.UPGRADE_HEADER_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.javax.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_UPGRADE_HEADER_VALUE;
 
 public class TripleWebSocketFilter extends GenericFilter {
 
@@ -54,7 +58,7 @@ public class TripleWebSocketFilter extends GenericFilter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        if (!UpgradeUtil.isWebSocketUpgradeRequest(request, response)) {
+        if (!isWebSocketUpgradeRequest(request, response)) {
             chain.doFilter(request, response);
             return;
         }
@@ -92,5 +96,27 @@ public class TripleWebSocketFilter extends GenericFilter {
             return;
         }
         chain.doFilter(wrappedRequest, hResponse);
+    }
+
+    public boolean isWebSocketUpgradeRequest(ServletRequest request, ServletResponse response) {
+        return ((request instanceof HttpServletRequest)
+                && (response instanceof HttpServletResponse)
+                && headerContainsToken(
+                        (HttpServletRequest) request, UPGRADE_HEADER_KEY, TRIPLE_WEBSOCKET_UPGRADE_HEADER_VALUE)
+                && HttpMethods.GET.name().equals(((HttpServletRequest) request).getMethod()));
+    }
+
+    private boolean headerContainsToken(HttpServletRequest req, String headerName, String target) {
+        Enumeration<String> headers = req.getHeaders(headerName);
+        while (headers.hasMoreElements()) {
+            String header = headers.nextElement();
+            String[] tokens = header.split(",");
+            for (String token : tokens) {
+                if (target.equalsIgnoreCase(token.trim())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

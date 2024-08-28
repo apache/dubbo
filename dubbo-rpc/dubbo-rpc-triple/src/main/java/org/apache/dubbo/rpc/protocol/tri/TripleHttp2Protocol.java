@@ -236,7 +236,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 .checkStartsWith(true)
                 .handleCloseFrames(false)
                 .decoderConfig(WebSocketDecoderConfig.newBuilder()
-                        .maxFramePayloadLength(tripleConfig.getMaxBodySize())
+                        .maxFramePayloadLength(tripleConfig.getMaxBodySizeOrDefault())
                         .build())
                 .build());
     }

@@ -52,7 +52,7 @@ public class TripleEndpoint extends Endpoint {
         Http2Header http2Header = new Http2MetadataFrame(httpHeaders);
 
         URL url = ServletExchanger.getUrl();
-        TripleConfig tripleConfig = ConfigManager.getProtocol(url).getTriple();
+        TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
 
         WebSocketStreamChannel webSocketStreamChannel = new WebSocketStreamChannel(session, tripleConfig);
         WebSocketTransportListener webSocketTransportListener =

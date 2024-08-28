@@ -51,7 +51,8 @@ public class NettyWebSocketChannel implements H2StreamChannel {
     @Override
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         return new Http2OutputMessageFrame(
-                new LimitedByteBufOutputStream(channel.alloc().buffer(), tripleConfig.getMaxResponseBodySize()),
+                new LimitedByteBufOutputStream(
+                        channel.alloc().buffer(), tripleConfig.getMaxResponseBodySizeOrDefault()),
                 endStream);
     }
 

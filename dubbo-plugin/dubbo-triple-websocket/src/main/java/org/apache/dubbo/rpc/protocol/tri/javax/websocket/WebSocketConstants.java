@@ -18,9 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.javax.websocket;
 
 public interface WebSocketConstants {
 
-    String UPGRADE_HEADER_NAME = "Upgrade";
-
-    String UPGRADE_HEADER_VALUE = "websocket";
+    String TRIPLE_WEBSOCKET_UPGRADE_HEADER_VALUE = "websocket";
 
     String TRIPLE_WEBSOCKET_REMOTE_ADDRESS = "tri.websocket.remote.address";
 
