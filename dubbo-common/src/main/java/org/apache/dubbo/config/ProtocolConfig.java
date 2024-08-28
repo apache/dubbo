@@ -36,8 +36,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
 
 /**
  * Configuration for the protocol.
- *
- * @export
  */
 public class ProtocolConfig extends AbstractConfig {
 
@@ -282,11 +280,6 @@ public class ProtocolConfig extends AbstractConfig {
                             .getBean(PreferSerializationProvider.class)
                             .getPreferSerialization();
         }
-
-        if (triple == null) {
-            triple = new TripleConfig();
-        }
-        triple.checkDefault();
     }
 
     @Parameter(excluded = true)
@@ -632,6 +625,14 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public TripleConfig getTriple() {
+        return triple;
+    }
+
+    @Parameter(excluded = true)
+    public TripleConfig getTripleOrDefault() {
+        if (triple == null) {
+            triple = new TripleConfig();
+        }
         return triple;
     }
 

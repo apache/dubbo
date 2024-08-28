@@ -173,22 +173,6 @@ jobs:
           wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
           echo "list the downloaded zookeeper binary archive"
           ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
-      - uses: actions/cache@v3
-        name: "Cache secret key"
-        id: "cache-secret-cert"
-        with:
-          path: ${{ github.workspace }}/.tmp/rsa
-          key: secret-rsa-${{ runner.os }}-${{ github.run_id }}
-      - name: "Create Secret"
-        run: |
-          mkdir -p ${{ github.workspace }}/.tmp/rsa
-          cd ${{ github.workspace }}/.tmp/rsa
-          openssl genrsa -out rsa_private.pem 1024
-          openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
-          echo "Current workflow run id: ${{ github.run_id }}"
-          echo "Start Print Rsa Public Key ---"
-          cat rsa_public.pem
-          echo "--- End Print Rsa Public Key"
 
   unit-test:
     needs: [check-format, build-source, unit-test-prepare]
@@ -224,28 +208,7 @@ jobs:
           key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
           restore-keys: |
             zookeeper-${{ runner.os }}-
-      - uses: actions/cache@v3
-        name: "Cache secret key"
-        id: "cache-secret-cert"
-        with:
-          path: ${{ github.workspace }}/.tmp/rsa
-          key: secret-rsa-${{ runner.os }}-${{ github.run_id }}
-      - name: "Get sonarcloud token"
-        if: ${{ github.repository == 'apache/dubbo' }}
-        run: |
-          curl "http://dubbo-vm.apache.org:8000/token?workflow_id=${{ github.run_id }}" -o ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token
-          openssl rsautl -decrypt -in ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token -out ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token -inkey ${{ github.workspace }}/.tmp/rsa/rsa_private.pem
-      - name: "Test with Maven with SonarCloud Scan"
-        if: ${{ github.repository == 'apache/dubbo' }}
-        timeout-minutes: 90
-        env:
-          # Needed to get some information about the pull request, if any
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          source ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pjacoco,jdk15ge-simple,'!jdk15ge',jacoco089 -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -DtrimStackTrace=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dsonar.coverage.jacoco.xmlReportPaths=dubbo-test/dubbo-dependencies-all/target/site/jacoco-aggregate/jacoco.xml -Dsonar.login=${SONAR_TOKEN}
-      - name: "Test with Maven without SonarCloud Scan"
-        if: ${{ github.repository != 'apache/dubbo' }}
+      - name: "Test with Maven"
         timeout-minutes: 90
         run: |
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Pjacoco,jdk15ge-simple,'!jdk15ge',jacoco089 -DtrimStackTrace=false -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper

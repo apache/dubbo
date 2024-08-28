@@ -82,7 +82,7 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
             TripleConfig config) {
         this.connection = checkNotNull(connection, "connection");
         this.streamByteDistributor = checkNotNull(streamByteDistributor, "streamWriteDistributor");
-        this.initialWindowSize = config.getInitialWindowSize();
+        this.initialWindowSize = config.getInitialWindowSizeOrDefault();
 
         // Add a flow state for the connection.
         stateKey = connection.newKey();

@@ -68,4 +68,9 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         return h2StreamChannel.newOutputMessage(endStream);
     }
+
+    @Override
+    public String toString() {
+        return "Http2ChannelDelegate{" + "h2StreamChannel=" + h2StreamChannel + '}';
+    }
 }

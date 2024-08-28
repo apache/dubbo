@@ -38,8 +38,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.Http3Exchanger;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
-import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -150,7 +150,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     protected void initializeAltSvc(URL url) {
-        if (TripleProtocol.isHttp3Enabled(url)) {
+        if (Http3Exchanger.isEnabled(url)) {
             int bindPort = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
             serverChannelObserver.setAltSvc("h3=\":" + bindPort + "\"");
         }

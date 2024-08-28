@@ -35,8 +35,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ProtocolConfigTest {
@@ -55,30 +53,6 @@ class ProtocolConfigTest {
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-    }
-
-    @Test
-    void testDefaultTripleConfig() {
-        ProtocolConfig protocol = new ProtocolConfig();
-        protocol.refresh();
-        Map<String, String> parameters = new HashMap<>();
-        ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(parameters.isEmpty(), is(false));
-        // http2 default config
-        assertEquals(4096, Integer.parseInt(parameters.get("triple.header.table.size")));
-        assertFalse(Boolean.parseBoolean(parameters.get("triple.enable.push")));
-        assertEquals(Integer.MAX_VALUE, Integer.parseInt(parameters.get("triple.max.concurrent.streams")));
-        assertEquals(1 << 23, Integer.parseInt(parameters.get("triple.initial.window.size")));
-        assertEquals(1 << 23, Integer.parseInt(parameters.get("triple.max.frame.size")));
-        assertEquals(1 << 15, Integer.parseInt(parameters.get("triple.max.header.list.size")));
-
-        // http1 default config
-        assertEquals(1 << 23, Integer.parseInt(parameters.get("triple.max.body.size")));
-        assertEquals(1 << 23, Integer.parseInt(parameters.get("triple.max.response.body.size")));
-        assertEquals(1 << 23, Integer.parseInt(parameters.get("triple.max.chunk.size")));
-        assertEquals(8192, Integer.parseInt(parameters.get("triple.max.header.size")));
-        assertEquals(4096, Integer.parseInt(parameters.get("triple.max.initial.line.length")));
-        assertEquals(16384, Integer.parseInt(parameters.get("triple.initial.buffer.size")));
     }
 
     @Test

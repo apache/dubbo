@@ -20,6 +20,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.DateUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -264,7 +265,7 @@ public class GeneralTypeConverter implements TypeConverter {
                 case "java.util.regex.Pattern":
                     return Pattern.compile(str);
                 case "java.lang.Class":
-                    return TypeUtils.loadClass(str);
+                    return ClassUtils.loadClass(str);
                 case "[B":
                     return str.getBytes(UTF_8);
                 case "[C":

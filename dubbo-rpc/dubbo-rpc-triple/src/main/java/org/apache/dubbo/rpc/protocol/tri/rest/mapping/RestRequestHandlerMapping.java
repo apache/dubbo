@@ -74,6 +74,12 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
         HandlerMeta meta = requestMappingRegistry.lookup(request);
         if (meta == null) {
+            String path = request.attribute(RestConstants.PATH_ATTRIBUTE);
+            if (RestConstants.SLASH.equals(path) && HttpMethods.OPTIONS.name().equals(request.method())) {
+                handleOptionsRequest(request);
+            }
+
+            LOGGER.debug("No handler found for http request: {}", request);
             return null;
         }
 
@@ -124,7 +130,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     private static void handleOptionsRequest(HttpRequest request) {
         RequestMapping mapping = request.attribute(RestConstants.MAPPING_ATTRIBUTE);
-        MethodsCondition condition = mapping.getMethodsCondition();
+        MethodsCondition condition = mapping == null ? null : mapping.getMethodsCondition();
         if (condition == null) {
             throw new HttpResultPayloadException(HttpResult.builder()
                     .status(HttpStatus.NO_CONTENT)
