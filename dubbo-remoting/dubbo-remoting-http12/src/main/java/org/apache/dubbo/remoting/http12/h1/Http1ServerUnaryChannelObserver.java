@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.h1;
 
+import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -26,6 +27,8 @@ import java.io.OutputStream;
 import io.netty.buffer.ByteBufOutputStream;
 
 public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver {
+
+    private static final FluentLogger LOGGER = FluentLogger.of(Http1ServerUnaryChannelObserver.class);
 
     public Http1ServerUnaryChannelObserver(HttpChannel httpChannel) {
         super(httpChannel);
@@ -42,7 +45,13 @@ public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver 
     protected void doOnError(Throwable throwable) throws Throwable {
         String statusCode = resolveStatusCode(throwable);
         Object data = buildErrorResponse(statusCode, throwable);
-        HttpOutputMessage httpOutputMessage = buildMessage(data);
+        HttpOutputMessage httpOutputMessage;
+        try {
+            httpOutputMessage = buildMessage(data);
+        } catch (Throwable t) {
+            LOGGER.internalError("Failed to build message", t);
+            httpOutputMessage = encodeHttpOutputMessage(data);
+        }
         sendHeader(buildMetadata(statusCode, data, httpOutputMessage));
         sendMessage(httpOutputMessage);
     }

@@ -21,7 +21,6 @@ import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 public class GrpcHttp2ServerTransportListenerFactory implements Http2ServerTransportListenerFactory {
 
@@ -32,6 +31,6 @@ public class GrpcHttp2ServerTransportListenerFactory implements Http2ServerTrans
 
     @Override
     public boolean supportContentType(String contentType) {
-        return contentType != null && contentType.startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader());
+        return GrpcUtils.isGrpcRequest(contentType);
     }
 }

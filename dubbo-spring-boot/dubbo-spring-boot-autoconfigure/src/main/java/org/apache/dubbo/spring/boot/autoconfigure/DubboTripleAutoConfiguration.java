@@ -40,7 +40,7 @@ public class DubboTripleAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enable")
+    @ConditionalOnProperty(prefix = PREFIX, name = "enabled")
     public static class TripleServletConfiguration {
 
         @Bean
