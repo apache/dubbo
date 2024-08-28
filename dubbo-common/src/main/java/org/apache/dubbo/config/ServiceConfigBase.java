@@ -119,7 +119,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     public boolean shouldExport() {
         Boolean export = getExport();
         // default value is true
-        return export == null ? true : export;
+        return export == null || export;
     }
 
     @Override
@@ -238,7 +238,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
                 List<ProtocolConfig> protocolConfigs = getConfigManager().getDefaultProtocols();
-                if (protocolConfigs.isEmpty()) {
+                if (CollectionUtils.isEmpty(protocolConfigs)) {
                     throw new IllegalStateException("The default protocol has not been initialized.");
                 }
                 setProtocols(protocolConfigs);

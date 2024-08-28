@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.rpc.Constants;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,7 +28,17 @@ public final class ServletExchanger {
     private static final AtomicReference<URL> url = new AtomicReference<>();
     private static final AtomicReference<Integer> serverPort = new AtomicReference<>();
 
+    private static boolean ENABLED = false;
+
+    public static void init(Configuration configuration) {
+        ENABLED = configuration.getBoolean(Constants.H2_SETTINGS_SERVLET_ENABLED, false);
+    }
+
     private ServletExchanger() {}
+
+    public static boolean isEnabled() {
+        return ENABLED;
+    }
 
     public static void bind(URL url) {
         ServletExchanger.url.compareAndSet(null, url);

@@ -37,8 +37,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.Http3Exchanger;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
-import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.DefaultHttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -113,7 +113,7 @@ public class DefaultHttp11ServerTransportListener
 
     @Override
     protected void initializeAltSvc(URL url) {
-        String protocolId = TripleProtocol.isHttp3Enabled(url) ? "h3" : "h2";
+        String protocolId = Http3Exchanger.isEnabled(url) ? "h3" : "h2";
         int bindPort = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
         serverChannelObserver.setAltSvc(protocolId + "=\":" + bindPort + "\"");
     }

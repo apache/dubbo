@@ -35,7 +35,11 @@ public class MockH2StreamChannel implements H2StreamChannel {
 
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
-        this.httpMetadata = httpMetadata;
+        if (this.httpMetadata == null) {
+            this.httpMetadata = httpMetadata;
+        } else {
+            this.httpMetadata.headers().putAll(httpMetadata.headers());
+        }
         return CompletableFuture.completedFuture(null);
     }
 

@@ -20,15 +20,16 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.RequestPath;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandler;
 import org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping;
 
@@ -47,43 +48,35 @@ public final class GrpcRequestHandlerMapping implements RequestHandlerMapping {
 
     @Override
     public RequestHandler getRequestHandler(URL url, HttpRequest request, HttpResponse response) {
-        String contentType = request.contentType();
-        if (contentType == null || !contentType.startsWith(MediaType.APPLICATION_GRPC.getName())) {
+        if (!GrpcUtils.isGrpcRequest(request.contentType())) {
             return null;
         }
 
-        String uri = request.uri();
-        int index = uri.indexOf('/', 1);
-        if (index == -1) {
-            return null;
-        }
-        if (uri.indexOf('/', index + 1) != -1) {
-            return null;
+        RequestPath path = RequestPath.parse(request.uri());
+        if (path == null) {
+            throw notFound();
         }
 
-        String serviceName = uri.substring(1, index);
-        String version = request.header(TripleHeaderEnum.SERVICE_VERSION.getHeader());
         String group = request.header(TripleHeaderEnum.SERVICE_GROUP.getHeader());
-        String key = URL.buildKey(serviceName, group, version);
-        Invoker<?> invoker = pathResolver.resolve(key);
-        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
-            invoker = pathResolver.resolve(URL.buildKey(serviceName, group, TripleConstant.DEFAULT_VERSION));
-            if (invoker == null) {
-                invoker = pathResolver.resolve(serviceName);
-                if (invoker == null) {
-                    return null;
-                }
-            }
+        String version = request.header(TripleHeaderEnum.SERVICE_VERSION.getHeader());
+        Invoker<?> invoker = pathResolver.resolve(path.getPath(), group, version);
+        if (invoker == null) {
+            throw notFound();
         }
 
         RequestHandler handler = new RequestHandler(invoker);
-        handler.setHasStub(pathResolver.hasNativeStub(uri));
-        handler.setMethodName(uri.substring(index + 1));
+        handler.setHasStub(pathResolver.hasNativeStub(path.getStubPath()));
+        handler.setMethodName(path.getMethodName());
+        String serviceName = path.getServiceInterface();
         handler.setServiceDescriptor(DescriptorUtils.findServiceDescriptor(invoker, serviceName, handler.isHasStub()));
         HttpMessageCodec codec = CODEC_FACTORY.createCodec(url, frameworkModel, request.contentType());
         handler.setHttpMessageDecoder(codec);
         handler.setHttpMessageEncoder(codec);
         return handler;
+    }
+
+    private static HttpStatusException notFound() {
+        return new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "Invoker for gRPC not found");
     }
 
     @Override

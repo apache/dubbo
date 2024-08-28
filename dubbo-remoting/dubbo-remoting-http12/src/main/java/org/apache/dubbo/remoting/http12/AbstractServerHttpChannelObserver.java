@@ -225,7 +225,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
         }
         if (LOGGER.isDebugEnabled()) {
             try {
-                LOGGER.debug("Http response body is: '{}'", JsonUtils.toJson(data));
+                LOGGER.debug("Http response body sent: '{}' by [{}]", JsonUtils.toJson(data), httpChannel);
             } catch (Throwable ignored) {
             }
         }

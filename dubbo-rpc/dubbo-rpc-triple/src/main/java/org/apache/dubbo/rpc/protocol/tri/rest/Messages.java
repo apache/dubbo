@@ -46,30 +46,30 @@ public enum Messages {
     INTERNAL_ERROR("Rest Internal Error");
 
     private final String message;
-    private final String localizedMessage;
+    private final String displayMessage;
     private final int statusCode;
 
     Messages(String message) {
         this.message = message;
-        localizedMessage = null;
+        displayMessage = null;
         statusCode = 500;
     }
 
-    Messages(String message, String localizedMessage) {
+    Messages(String message, String displayMessage) {
         this.message = message;
-        this.localizedMessage = localizedMessage;
+        this.displayMessage = displayMessage;
         statusCode = 500;
     }
 
     Messages(String message, int statusCode) {
         this.message = message;
-        localizedMessage = null;
+        displayMessage = null;
         this.statusCode = statusCode;
     }
 
-    Messages(String message, String localizedMessage, int statusCode) {
+    Messages(String message, String displayMessage, int statusCode) {
         this.message = message;
-        this.localizedMessage = localizedMessage;
+        this.displayMessage = displayMessage;
         this.statusCode = statusCode;
     }
 
@@ -81,9 +81,9 @@ public enum Messages {
         return ArrayUtils.isEmpty(args) ? message : MessageFormat.format(message, args);
     }
 
-    public String formatLocalized(Object... args) {
-        return localizedMessage == null || ArrayUtils.isEmpty(args)
-                ? localizedMessage
-                : MessageFormat.format(localizedMessage, args);
+    public String formatDisplay(Object... args) {
+        return displayMessage == null || ArrayUtils.isEmpty(args)
+                ? displayMessage
+                : MessageFormat.format(displayMessage, args);
     }
 }

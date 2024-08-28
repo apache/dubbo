@@ -183,8 +183,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         }
         byte[] preface = new byte[in.readableBytes()];
         in.readBytes(preface);
-        Set<String> supported =
-                url.getApplicationModel().getExtensionLoader(WireProtocol.class).getSupportedExtensions();
+        Set<String> supported = url.getApplicationModel().getSupportedExtensions(WireProtocol.class);
         LOGGER.error(
                 INTERNAL_ERROR,
                 "unknown error in remoting module",

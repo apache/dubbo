@@ -86,7 +86,11 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 try {
                     Object body = RequestUtils.decodeBody(request, meta.genericType());
                     if (body != null) {
-                        return body;
+                        if (body != RequestUtils.EMPTY_BODY) {
+                            return body;
+                        }
+                        Object value = single ? request.parameter(meta.name()) : request.parameterValues(meta.name());
+                        return value == null ? body : value;
                     }
                 } catch (DecodeException ignored) {
                 }
@@ -126,7 +130,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         return resolveValue(meta, request, response);
     }
 
-    private static class FallbackNamedValueMeta extends NamedValueMeta {
+    private static final class FallbackNamedValueMeta extends NamedValueMeta {
 
         private final boolean noBodyParam;
         private final int paramCount;
