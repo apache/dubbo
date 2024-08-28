@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -26,7 +25,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,7 +87,6 @@ class MockAbstractClusterInvokerTest {
     @SuppressWarnings({"unchecked"})
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("application", "abstractClusterInvokerTest");
         url = url.putAttribute(REFER_KEY, attributes);

@@ -153,7 +153,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-event</artifactId>
+      <artifactId>dubbo-metrics-monitor</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

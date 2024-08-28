@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,7 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 /**
  * Request.
  */
-public class Request {
+public class Request implements Serializable {
 
     private static final AtomicLong INVOKE_ID;
 

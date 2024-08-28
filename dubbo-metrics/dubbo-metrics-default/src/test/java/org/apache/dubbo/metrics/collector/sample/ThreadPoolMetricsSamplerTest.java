@@ -17,6 +17,9 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
+import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
+import org.apache.dubbo.common.event.DubboMulticasterScopeModelInitializer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.store.DataStoreUpdateListener;
@@ -51,6 +54,8 @@ import static org.mockito.Mockito.when;
 public class ThreadPoolMetricsSamplerTest {
 
     ThreadPoolMetricsSampler sampler;
+
+    private DubboMulticasterScopeModelInitializer multicasterRegistry = new DubboMulticasterScopeModelInitializer();
 
     @BeforeEach
     void setUp() {
@@ -139,13 +144,15 @@ public class ThreadPoolMetricsSamplerTest {
     public void setUp2() {
         MockitoAnnotations.openMocks(this);
 
+        when(applicationModel.getBeanFactory()).thenReturn(scopeBeanFactory);
+        when(scopeBeanFactory.getBean(DubboLifecycleEventMulticaster.class))
+                .thenReturn(new DefaultDubboEventMulticaster());
+
         collector = new DefaultMetricsCollector(applicationModel);
         sampler2 = new ThreadPoolMetricsSampler(collector);
 
         when(scopeBeanFactory.getBean(FrameworkExecutorRepository.class)).thenReturn(new FrameworkExecutorRepository());
-
         collector.collectApplication();
-        when(applicationModel.getBeanFactory()).thenReturn(scopeBeanFactory);
         when(applicationModel.getExtensionLoader(DataStore.class)).thenReturn(extensionLoader);
         when(extensionLoader.getDefaultExtension()).thenReturn(dataStore);
     }

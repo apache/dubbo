@@ -1,1 +1,2 @@
 dubbo-common=org.apache.dubbo.common.CommonScopeModelInitializer
+dubbo-multicaster-init=org.apache.dubbo.common.event.DubboMulticasterScopeModelInitializer

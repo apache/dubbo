@@ -16,17 +16,19 @@
  */
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import org.apache.dubbo.common.event.DubboEventBus;
+import org.apache.dubbo.common.utils.TimePair;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.event.MetricsDispatcher;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.registry.client.event.RegistryNotifyEvent;
+import org.apache.dubbo.registry.client.event.RegistryRegisterEvent;
+import org.apache.dubbo.registry.client.event.RegistryRsEvent;
+import org.apache.dubbo.registry.client.event.RegistrySsEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -63,7 +65,6 @@ class RegistryMetricsCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
     }
@@ -76,8 +77,8 @@ class RegistryMetricsCollectorTest {
     @Test
     void testRegisterMetrics() {
 
-        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
-        MetricsEventBus.post(registryEvent, () -> {
+        RegistryRegisterEvent registryEvent = new RegistryRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
+        DubboEventBus.post(registryEvent, () -> {
             List<MetricSample> metricSamples = collector.collect();
             // push success +1 -> other default 0 = APP_LEVEL_KEYS.size()
             Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_KEYS.size(), metricSamples.size());
@@ -94,9 +95,9 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_KEYS.size() + 5, metricSamples.size());
         long c1 = registryEvent.getTimePair().calc();
 
-        registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
+        registryEvent = new RegistryRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         TimePair lastTimePair = registryEvent.getTimePair();
-        MetricsEventBus.post(
+        DubboEventBus.post(
                 registryEvent,
                 () -> {
                     try {
@@ -147,8 +148,8 @@ class RegistryMetricsCollectorTest {
         String serviceName = "demo.gameService";
         List<String> rcNames = Lists.newArrayList("demo1");
 
-        RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2, rcNames);
-        MetricsEventBus.post(registryEvent, () -> {
+        RegistryRsEvent registryEvent = new RegistryRsEvent(applicationModel, serviceName, 2, rcNames);
+        DubboEventBus.post(registryEvent, () -> {
             List<MetricSample> metricSamples = collector.collect();
 
             // push success +1
@@ -169,9 +170,9 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = registryEvent.getTimePair().calc();
-        registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2, rcNames);
+        registryEvent = new RegistryRsEvent(applicationModel, serviceName, 2, rcNames);
         TimePair lastTimePair = registryEvent.getTimePair();
-        MetricsEventBus.post(
+        DubboEventBus.post(
                 registryEvent,
                 () -> {
                     try {
@@ -222,9 +223,9 @@ class RegistryMetricsCollectorTest {
 
         String serviceName = "demo.gameService";
 
-        RegistryEvent subscribeEvent =
-                RegistryEvent.toSsEvent(applicationModel, serviceName, Collections.singletonList("demo1"));
-        MetricsEventBus.post(subscribeEvent, () -> {
+        RegistrySsEvent subscribeEvent =
+                new RegistrySsEvent(applicationModel, serviceName, Collections.singletonList("demo1"));
+        DubboEventBus.post(subscribeEvent, () -> {
             List<MetricSample> metricSamples = collector.collect();
             Assertions.assertTrue(
                     metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
@@ -248,9 +249,9 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = subscribeEvent.getTimePair().calc();
-        subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName, Collections.singletonList("demo1"));
+        subscribeEvent = new RegistrySsEvent(applicationModel, serviceName, Collections.singletonList("demo1"));
         TimePair lastTimePair = subscribeEvent.getTimePair();
-        MetricsEventBus.post(
+        DubboEventBus.post(
                 subscribeEvent,
                 () -> {
                     try {
@@ -299,7 +300,7 @@ class RegistryMetricsCollectorTest {
     @Test
     public void testNotify() {
         Map<String, Integer> lastNumMap = new HashMap<>();
-        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel), () -> {
+        DubboEventBus.post(new RegistryNotifyEvent(applicationModel), () -> {
             try {
                 Thread.sleep(50L);
             } catch (InterruptedException e) {

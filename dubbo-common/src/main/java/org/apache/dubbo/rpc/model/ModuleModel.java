@@ -28,6 +28,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.OrderedObjectCompareUtils;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 
 import java.util.HashMap;
@@ -72,9 +73,9 @@ public class ModuleModel extends ScopeModel {
             ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader =
                     this.getExtensionLoader(ScopeModelInitializer.class);
             Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-            for (ScopeModelInitializer initializer : initializers) {
-                initializer.initializeModuleModel(this);
-            }
+            initializers.stream()
+                    .sorted(OrderedObjectCompareUtils::compareByOrder)
+                    .forEach(initializer -> initializer.initializeModuleModel(this));
             Assert.notNull(getServiceRepository(), "ModuleServiceRepository can not be null");
             Assert.notNull(getConfigManager(), "ModuleConfigManager can not be null");
             Assert.assertTrue(getConfigManager().isInitialized(), "ModuleConfigManager can not be initialized");

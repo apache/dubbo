@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metrics.listener;
 
-import org.apache.dubbo.metrics.collector.CombMetricsCollector;
+import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
@@ -24,11 +24,7 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
  * App-level listener type, in most cases, can use the static method
  * to produce an anonymous listener for general monitoring
  */
-public class MetricsApplicationListener extends AbstractMetricsKeyListener {
-
-    public MetricsApplicationListener(MetricsKey metricsKey) {
-        super(metricsKey);
-    }
+public class MetricsApplicationListener {
 
     /**
      * Perform auto-increment on the monitored key,
@@ -38,7 +34,7 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
      * @param collector  Corresponding collector
      */
     public static AbstractMetricsKeyListener onPostEventBuild(
-            MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+            MetricsKey metricsKey, ApplicationMetricsCollector collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey, event -> collector.increment(metricsKey));
     }
 
@@ -50,7 +46,7 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
      * @param collector  Corresponding collector
      */
     public static AbstractMetricsKeyListener onFinishEventBuild(
-            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, ApplicationMetricsCollector collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey, event -> {
             collector.increment(metricsKey);
             collector.addApplicationRt(placeType.getType(), event.getTimePair().calc());
@@ -61,7 +57,7 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
      * Similar to onFinishEventBuild
      */
     public static AbstractMetricsKeyListener onErrorEventBuild(
-            MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+            MetricsKey metricsKey, MetricsPlaceValue placeType, ApplicationMetricsCollector collector) {
         return AbstractMetricsKeyListener.onError(metricsKey, event -> {
             collector.increment(metricsKey);
             collector.addApplicationRt(placeType.getType(), event.getTimePair().calc());

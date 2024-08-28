@@ -153,7 +153,7 @@
     <!-- metrics -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-metrics-event</artifactId>
+      <artifactId>dubbo-metrics-monitor</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -484,7 +484,7 @@
                   <include>org.apache.dubbo:dubbo-metadata-definition-protobuf</include>
                   <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
                   <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
-                  <include>org.apache.dubbo:dubbo-metrics-event</include>
+                  <include>org.apache.dubbo:dubbo-metrics-monitor</include>
                   <include>org.apache.dubbo:dubbo-metrics-api</include>
                   <include>org.apache.dubbo:dubbo-metrics-default</include>
                   <include>org.apache.dubbo:dubbo-metrics-registry</include>

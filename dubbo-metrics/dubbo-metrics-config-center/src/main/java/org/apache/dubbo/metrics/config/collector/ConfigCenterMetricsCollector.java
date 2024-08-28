@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.metrics.config.collector;
 
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
-import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.config.event.ConfigCenterSubDispatcher;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -42,7 +41,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
  * Config center implementation of {@link MetricsCollector}
  */
 @Activate
-public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCenterEvent> {
+public class ConfigCenterMetricsCollector implements MetricsCollector {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
@@ -51,9 +50,9 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
     private final Map<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
 
     public ConfigCenterMetricsCollector(ApplicationModel applicationModel) {
-        super(null);
         this.applicationModel = applicationModel;
-        super.setEventMulticaster(new ConfigCenterSubDispatcher(this));
+        // bind dispatcher
+        DubboEventBus.addListener(applicationModel, new ConfigCenterSubDispatcher(this));
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {

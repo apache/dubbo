@@ -59,7 +59,8 @@ class PrometheusMetricsReporterTest {
         applicationModel = ApplicationModel.defaultModel();
         metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
         frameworkModel = FrameworkModel.defaultModel();
-        frameworkModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        DefaultMetricsCollector defaultMetricsCollector = new DefaultMetricsCollector(applicationModel);
+        frameworkModel.getBeanFactory().registerBean(defaultMetricsCollector);
     }
 
     @AfterEach

@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -27,9 +28,8 @@ import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.event.RegistrySsEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
@@ -366,8 +366,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 String serviceDiscoveryName =
                         url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
 
-                MetricsEventBus.post(
-                        RegistryEvent.toSsEvent(
+                DubboEventBus.post(
+                        new RegistrySsEvent(
                                 url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
                         () -> {
                             serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);

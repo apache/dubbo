@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.event.DefaultDubboEventMulticaster;
+import org.apache.dubbo.common.event.DubboLifecycleEventMulticaster;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -24,7 +27,10 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.registry.client.event.RegistryEvent;
+import org.apache.dubbo.registry.client.event.RegistryRegisterEvent;
+import org.apache.dubbo.registry.client.event.RegistryRsEvent;
+import org.apache.dubbo.registry.client.event.RegistrySubscribeEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -41,6 +47,7 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -56,6 +63,8 @@ public class RegistryMetricsTest {
     @BeforeEach
     void setUp() {
         this.applicationModel = getApplicationModel();
+        ScopeBeanFactory beanFactory = Mockito.mock(ScopeBeanFactory.class);
+        when(beanFactory.getBean(DubboLifecycleEventMulticaster.class)).thenReturn(new DefaultDubboEventMulticaster());
         this.collector = getTestCollector(this.applicationModel);
         this.collector.setCollectEnabled(true);
     }
@@ -263,19 +272,19 @@ public class RegistryMetricsTest {
 
     RegistryEvent applicationRegister() {
         RegistryEvent event = registerEvent();
-        collector.onEvent(event);
+        collector.dispatcher.onEventBefore(event);
         return event;
     }
 
     RegistryEvent serviceRegister() {
         RegistryEvent event = rsEvent();
-        collector.onEvent(event);
+        collector.dispatcher.onEventBefore(event);
         return event;
     }
 
     RegistryEvent serviceSubscribe() {
         RegistryEvent event = subscribeEvent();
-        collector.onEvent(event);
+        collector.dispatcher.onEventBefore(event);
         return event;
     }
 
@@ -284,30 +293,24 @@ public class RegistryMetricsTest {
     }
 
     void eventSuccess(RegistryEvent event) {
-        collector.onEventFinish(event);
+        collector.dispatcher.onEventFinish(event);
     }
 
     void eventFailed(RegistryEvent event) {
-        collector.onEventError(event);
+        collector.dispatcher.onEventError(event);
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
-        event.setAvailable(true);
-        return event;
+        return new RegistryRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
     }
 
     RegistryEvent rsEvent() {
         List<String> rcNames = Lists.newArrayList("demo1");
-        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
-        event.setAvailable(true);
-        return event;
+        return new RegistryRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
     }
 
-    RegistryEvent subscribeEvent() {
-        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel, "registryClusterName_test");
-        event.setAvailable(true);
-        return event;
+    RegistrySubscribeEvent subscribeEvent() {
+        return new RegistrySubscribeEvent(applicationModel, "registryClusterName_test");
     }
 
     ApplicationModel getApplicationModel() {

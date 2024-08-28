@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metrics.registry.collector;
 
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
@@ -27,7 +28,6 @@ import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.NettyMetricsConstants;
-import org.apache.dubbo.metrics.registry.event.NettyEvent;
 import org.apache.dubbo.metrics.registry.event.NettySubDispatcher;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -39,7 +39,7 @@ import java.util.Optional;
  * Netty implementation of {@link MetricsCollector}
  */
 @Activate
-public class NettyMetricsCollector extends CombMetricsCollector<NettyEvent> {
+public class NettyMetricsCollector extends CombMetricsCollector {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
@@ -62,8 +62,8 @@ public class NettyMetricsCollector extends CombMetricsCollector<NettyEvent> {
                 super.init(rtStatComposite);
             }
         });
-        super.setEventMulticaster(new NettySubDispatcher(this));
         this.applicationModel = applicationModel;
+        DubboEventBus.addListener(applicationModel, new NettySubDispatcher(this));
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {

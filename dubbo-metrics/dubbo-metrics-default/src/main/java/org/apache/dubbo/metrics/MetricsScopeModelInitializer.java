@@ -16,14 +16,20 @@
  */
 package org.apache.dubbo.metrics;
 
+import org.apache.dubbo.common.Ordered;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.metrics.event.MetricsDispatcher;
+import org.apache.dubbo.common.event.DubboEventBus;
+import org.apache.dubbo.common.event.DubboListener;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-public class MetricsScopeModelInitializer implements ScopeModelInitializer {
+import java.util.List;
+
+public class MetricsScopeModelInitializer implements ScopeModelInitializer, Ordered {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {}
@@ -31,9 +37,24 @@ public class MetricsScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(MetricsDispatcher.class);
+        ExtensionLoader<MetricsCollector> extensionLoader = applicationModel.getExtensionLoader(MetricsCollector.class);
+        if (extensionLoader != null) {
+            List<MetricsCollector> customizeCollectors = extensionLoader.getActivateExtensions();
+            for (MetricsCollector customizeCollector : customizeCollectors) {
+                beanFactory.registerBean(customizeCollector);
+            }
+        }
+        MetricsServiceInitializer metricsServiceInitializer = new MetricsServiceInitializer(applicationModel);
+        for (DubboListener<?> dubboListener : metricsServiceInitializer.getDubboListeners()) {
+            DubboEventBus.addListener(applicationModel, dubboListener);
+        }
     }
 
     @Override
     public void initializeModuleModel(ModuleModel moduleModel) {}
+
+    @Override
+    public int getOrder() {
+        return 1;
+    }
 }

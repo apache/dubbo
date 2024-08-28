@@ -16,24 +16,28 @@
  */
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.common.event.AbstractDubboLifecycleListener;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.event.TimeCounterEventMulticaster;
 import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.registry.collector.NettyMetricsCollector;
+import org.apache.dubbo.remoting.transport.netty4.NettyEvent;
 
 import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.dubbo.metrics.MetricsConstants.NETTY_METRICS_MAP;
 
-public final class NettySubDispatcher extends SimpleMetricsEventMulticaster {
+public final class NettySubDispatcher extends AbstractDubboLifecycleListener<NettyEvent> {
+
+    private final TimeCounterEventMulticaster multicaster;
 
     public NettySubDispatcher(NettyMetricsCollector collector) {
-        super.addListener(new AbstractMetricsKeyListener(null) {
+        this.multicaster = new TimeCounterEventMulticaster();
+        this.multicaster.addListener(new AbstractMetricsKeyListener(null) {
             @Override
-            public boolean isSupport(MetricsEvent event) {
+            public boolean support(TimeCounterEvent event) {
                 return true;
             }
 
@@ -46,5 +50,23 @@ public final class NettySubDispatcher extends SimpleMetricsEventMulticaster {
                 });
             }
         });
+    }
+
+    @Override
+    public void onEventBefore(NettyEvent event) {
+        NettyMetricsEvent nettyMetricsEvent = NettyMetricsEvent.toNettyEvent(event);
+        multicaster.publishEvent(nettyMetricsEvent);
+    }
+
+    @Override
+    public void onEventFinish(NettyEvent event) {
+        NettyMetricsEvent nettyMetricsEvent = NettyMetricsEvent.toNettyEvent(event);
+        multicaster.publishFinishEvent(nettyMetricsEvent);
+    }
+
+    @Override
+    public void onEventError(NettyEvent event) {
+        NettyMetricsEvent nettyMetricsEvent = NettyMetricsEvent.toNettyEvent(event);
+        multicaster.publishErrorEvent(nettyMetricsEvent);
     }
 }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -27,12 +28,11 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.RegistryNotifyEvent;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -452,7 +452,7 @@ public class ServiceInstancesChangedListener {
      */
     protected void notifyAddressChanged() {
 
-        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel), () -> {
+        DubboEventBus.post(new RegistryNotifyEvent(applicationModel), () -> {
             Map<String, Integer> lastNumMap = new HashMap<>();
             // 1 different services
             listeners.forEach((serviceKey, listenerSet) -> {

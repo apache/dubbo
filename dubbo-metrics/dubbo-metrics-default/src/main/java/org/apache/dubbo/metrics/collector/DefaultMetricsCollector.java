@@ -17,7 +17,11 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.event.AbstractDubboListener;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.InitServiceMethodEvent;
+import org.apache.dubbo.config.deploy.event.ApplicationStartedEvent;
 import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.sample.ErrorCodeSampler;
@@ -31,8 +35,6 @@ import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.event.DefaultSubDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsInitEvent;
-import org.apache.dubbo.metrics.event.RequestEvent;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
@@ -55,7 +57,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SERV
  * Default implementation of {@link MetricsCollector}
  */
 @Activate
-public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> {
+public class DefaultMetricsCollector extends CombMetricsCollector {
 
     private boolean collectEnabled = false;
 
@@ -73,11 +75,9 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     private final List<MetricsSampler> samplers = new ArrayList<>();
 
-    private final List<MetricsCollector> collectors = new ArrayList<>();
-
-    private final AtomicBoolean initialized = new AtomicBoolean();
-
     private final AtomicBoolean samplesChanged = new AtomicBoolean();
+
+    public final DefaultSubDispatcher listener;
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -95,7 +95,27 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
                         MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
             }
         });
-        super.setEventMulticaster(new DefaultSubDispatcher(this));
+
+        // add listener for init
+        DubboEventBus.addListener(applicationModel, new AbstractDubboListener<InitServiceMethodEvent>() {
+            @Override
+            public void onEvent(InitServiceMethodEvent event) {
+                MetricsInitEvent metricsInitEvent = MetricsInitEvent.toMetricsInitEvent(event);
+                initMetrics(metricsInitEvent);
+            }
+        });
+        DubboEventBus.addListener(applicationModel, new AbstractDubboListener<ApplicationStartedEvent>() {
+            @Override
+            public void onEvent(ApplicationStartedEvent event) {
+                if (isThreadpoolCollectEnabled()) {
+                    registryDefaultSample();
+                }
+            }
+        });
+        // add listener for metrics
+        listener = new DefaultSubDispatcher(this);
+        DubboEventBus.addListener(applicationModel, listener);
+
         this.samplers.add(applicationSampler);
         this.samplers.add(threadPoolSampler);
         this.samplesChanged.set(true);
@@ -169,28 +189,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         return list;
     }
 
-    @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event instanceof RequestEvent || event instanceof MetricsInitEvent;
-    }
-
-    @Override
-    public void onEvent(TimeCounterEvent event) {
-        if (event instanceof MetricsInitEvent) {
-            if (!metricsInitEnabled) {
-                return;
-            }
-            if (initialized.compareAndSet(false, true)) {
-                collectors.addAll(applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class));
-            }
-            collectors.stream().forEach(collector -> collector.initMetrics(event));
-            return;
-        }
-        super.onEvent(event);
-    }
-
-    @Override
-    public void initMetrics(MetricsEvent event) {
+    public void initMetrics(MetricsInitEvent event) {
         MetricsPlaceValue dynamicPlaceType =
                 MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
         INIT_DEFAULT_METHOD_KEYS.stream()

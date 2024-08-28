@@ -17,9 +17,6 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.data.BaseStatComposite;
-import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -31,18 +28,13 @@ import java.util.List;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
-public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E>
-        implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E>, MethodMetricsCollector<E> {
+public abstract class CombMetricsCollector
+        implements ApplicationMetricsCollector, ServiceMetricsCollector, MethodMetricsCollector {
 
     protected final BaseStatComposite stats;
-    private MetricsEventMulticaster eventMulticaster;
 
     public CombMetricsCollector(BaseStatComposite stats) {
         this.stats = stats;
-    }
-
-    protected void setEventMulticaster(MetricsEventMulticaster eventMulticaster) {
-        this.eventMulticaster = eventMulticaster;
     }
 
     @Override
@@ -95,25 +87,6 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
 
     protected List<MetricSample> export(MetricsCategory category) {
         return stats.export(category);
-    }
-
-    public MetricsEventMulticaster getEventMulticaster() {
-        return eventMulticaster;
-    }
-
-    @Override
-    public void onEvent(TimeCounterEvent event) {
-        eventMulticaster.publishEvent(event);
-    }
-
-    @Override
-    public void onEventFinish(TimeCounterEvent event) {
-        eventMulticaster.publishFinishEvent(event);
-    }
-
-    @Override
-    public void onEventError(TimeCounterEvent event) {
-        eventMulticaster.publishErrorEvent(event);
     }
 
     protected BaseStatComposite getStats() {

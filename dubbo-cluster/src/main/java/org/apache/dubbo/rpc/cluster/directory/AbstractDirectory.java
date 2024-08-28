@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -28,9 +29,6 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.LockUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -46,7 +44,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -393,14 +390,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                                 checkConnectivity();
                             }
                         });
-                        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(
-                                applicationModel, getSummary(), getDirectoryMeta()));
+                        DubboEventBus.publish(
+                                new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
                     },
                     reconnectTaskPeriod,
                     TimeUnit.MILLISECONDS);
         }
-        MetricsEventBus.publish(
-                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        DubboEventBus.publish(new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     /**
@@ -416,8 +412,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 refreshInvokerInternal();
             }
         });
-        MetricsEventBus.publish(
-                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        DubboEventBus.publish(new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected Map<String, String> getDirectoryMeta() {
@@ -452,8 +447,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 logger.info("Disable service address: " + invoker.getUrl() + ".");
             }
         });
-        MetricsEventBus.publish(
-                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        DubboEventBus.publish(new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     @Override
@@ -468,8 +462,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 }
             }
         });
-        MetricsEventBus.publish(
-                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        DubboEventBus.publish(new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
@@ -532,8 +525,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             this.invokersInitialized = true;
         });
 
-        MetricsEventBus.publish(
-                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        DubboEventBus.publish(new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     protected void destroyInvokers() {
@@ -550,8 +542,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             result.set(this.validInvokers.add(invoker));
         });
-        MetricsEventBus.publish(
-                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        DubboEventBus.publish(new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
         return result.get();
     }
 
@@ -560,8 +551,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
             result.set(this.validInvokers.remove(invoker));
         });
-        MetricsEventBus.publish(
-                RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
+        DubboEventBus.publish(new DirectoryRefreshEvent(applicationModel, getSummary(), getDirectoryMeta()));
         return result.get();
     }
 
@@ -581,14 +571,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 .collect(Collectors.joining(","));
     }
 
-    private Map<MetricsKey, Map<String, Integer>> getSummary() {
-        Map<MetricsKey, Map<String, Integer>> summaryMap = new HashMap<>();
-
-        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_VALID, groupByServiceKey(getValidInvokers()));
-        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_DISABLE, groupByServiceKey(getDisabledInvokers()));
-        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_TO_RECONNECT, groupByServiceKey(getInvokersToReconnect()));
-        summaryMap.put(MetricsKey.DIRECTORY_METRIC_NUM_ALL, groupByServiceKey(getInvokers()));
-        return summaryMap;
+    private DirectoryRefreshEvent.Summary getSummary() {
+        DirectoryRefreshEvent.Summary summary = new DirectoryRefreshEvent.Summary();
+        summary.directoryNumValidMap = groupByServiceKey(getValidInvokers());
+        summary.directoryNumDisableMap = groupByServiceKey(getDisabledInvokers());
+        summary.directoryNumToReConnectMap = groupByServiceKey(getInvokersToReconnect());
+        summary.directoryNumAllMap = groupByServiceKey(getInvokers());
+        return summary;
     }
 
     private Map<String, Integer> groupByServiceKey(Collection<Invoker<T>> invokers) {

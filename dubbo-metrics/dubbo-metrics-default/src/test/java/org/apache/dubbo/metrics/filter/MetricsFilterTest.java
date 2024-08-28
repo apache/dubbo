@@ -18,11 +18,11 @@ package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.event.DubboEventBus;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.event.RequestMetricsEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
@@ -104,7 +104,7 @@ class MetricsFilterTest {
     @Test
     void testCollectDisabled() {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
-
+        initParam();
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
         metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());
@@ -406,7 +406,7 @@ class MetricsFilterTest {
         result.setException(new RuntimeException("failed"));
         Object eventObj = invocation.get(METRIC_FILTER_EVENT);
         if (eventObj != null) {
-            Assertions.assertDoesNotThrow(() -> MetricsEventBus.after((RequestEvent) eventObj, result));
+            Assertions.assertDoesNotThrow(() -> DubboEventBus.after((RequestMetricsEvent) eventObj, result));
         }
     }
 }
