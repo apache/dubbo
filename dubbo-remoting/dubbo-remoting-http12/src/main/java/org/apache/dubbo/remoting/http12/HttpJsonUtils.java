@@ -18,9 +18,7 @@ package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.json.CompositeJsonUtilCustomizer;
 import org.apache.dubbo.common.json.JsonUtil;
-import org.apache.dubbo.common.json.impl.CustomizableJsonUtil;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -47,15 +45,8 @@ public final class HttpJsonUtils {
                 throw new IllegalStateException("Failed to load json framework: " + name, e);
             }
         }
-        Objects.requireNonNull(jsonUtil, "Dubbo unable to find out any json framework");
 
-        if (jsonUtil instanceof CustomizableJsonUtil) {
-            CompositeJsonUtilCustomizer customizer = new CompositeJsonUtilCustomizer(frameworkModel);
-            if (customizer.isAvailable()) {
-                ((CustomizableJsonUtil<?, ?>) jsonUtil).setCustomizer(customizer);
-            }
-        }
-        this.jsonUtil = jsonUtil;
+        this.jsonUtil = Objects.requireNonNull(jsonUtil, "Dubbo unable to find out any json framework");
     }
 
     public <T> T toJavaObject(String json, Type type) {

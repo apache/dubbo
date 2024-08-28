@@ -29,7 +29,9 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 @Activate(order = 300, onClass = "com.google.gson.Gson")
-public class GsonImpl extends CustomizableJsonUtil<GsonBuilder, Gson> {
+public class GsonImpl extends AbstractJsonUtilImpl {
+
+    private volatile Gson gson;
 
     @Override
     public String getName() {
@@ -64,7 +66,7 @@ public class GsonImpl extends CustomizableJsonUtil<GsonBuilder, Gson> {
 
     @Override
     public String toPrettyJson(Object obj) {
-        return getGsonBuilder().setPrettyPrinting().create().toJson(obj);
+        return createBuilder().setPrettyPrinting().create().toJson(obj);
     }
 
     @Override
@@ -79,21 +81,20 @@ public class GsonImpl extends CustomizableJsonUtil<GsonBuilder, Gson> {
         return gson.fromJson(gson.toJsonTree(obj), clazz);
     }
 
-    protected GsonBuilder getGsonBuilder() {
-        return getFirst();
-    }
-
     protected Gson getGson() {
-        return getSecond();
+        Gson gson = this.gson;
+        if (gson == null) {
+            synchronized (this) {
+                gson = this.gson;
+                if (gson == null) {
+                    this.gson = gson = createBuilder().create();
+                }
+            }
+        }
+        return gson;
     }
 
-    @Override
-    protected GsonBuilder newFirst() {
+    protected GsonBuilder createBuilder() {
         return new GsonBuilder();
-    }
-
-    @Override
-    protected Gson createSecond() {
-        return getFirst().create();
     }
 }

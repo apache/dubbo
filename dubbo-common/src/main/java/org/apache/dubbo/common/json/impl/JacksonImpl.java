@@ -31,7 +31,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper.Builder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Activate(order = 400, onClass = "com.fasterxml.jackson.databind.json.JsonMapper")
-public class JacksonImpl extends CustomizableJsonUtil<Builder, JsonMapper> {
+public class JacksonImpl extends AbstractJsonUtilImpl {
+
+    private volatile JsonMapper mapper;
 
     @Override
     public String getName() {
@@ -98,21 +100,23 @@ public class JacksonImpl extends CustomizableJsonUtil<Builder, JsonMapper> {
     }
 
     protected JsonMapper getMapper() {
-        return getSecond();
+        JsonMapper mapper = this.mapper;
+        if (mapper == null) {
+            synchronized (this) {
+                mapper = this.mapper;
+                if (mapper == null) {
+                    this.mapper = mapper = createBuilder().build();
+                }
+            }
+        }
+        return mapper;
     }
 
-    @Override
-    protected Builder newFirst() {
-        return JsonMapper.builder();
-    }
-
-    @Override
-    protected JsonMapper newSecond() {
-        return createFirst()
+    protected Builder createBuilder() {
+        return JsonMapper.builder()
                 .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .serializationInclusion(Include.NON_NULL)
-                .addModule(new JavaTimeModule())
-                .build();
+                .addModule(new JavaTimeModule());
     }
 }
