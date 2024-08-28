@@ -128,14 +128,14 @@
 
     <!-- Maven plugins -->
     <maven_jar_version>3.4.2</maven_jar_version>
-    <maven_surefire_version>3.3.1</maven_surefire_version>
+    <maven_surefire_version>3.4.0</maven_surefire_version>
     <maven_failsafe_version>3.4.0</maven_failsafe_version>
-    <maven_deploy_version>3.1.2</maven_deploy_version>
+    <maven_deploy_version>3.1.3</maven_deploy_version>
     <maven_compiler_version>3.13.0</maven_compiler_version>
     <maven_source_version>3.3.1</maven_source_version>
     <maven_javadoc_version>3.8.0</maven_javadoc_version>
     <maven_jetty_version>9.4.55.v20240627</maven_jetty_version>
-    <maven_checkstyle_version>3.4.0</maven_checkstyle_version>
+    <maven_checkstyle_version>3.5.0</maven_checkstyle_version>
     <maven_jacoco_version>0.8.12</maven_jacoco_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
     <maven_enforce_version>3.5.0</maven_enforce_version>
@@ -253,7 +253,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.7.1</version>
+          <version>3.8.0</version>
         </plugin>
         <plugin>
           <!-- Do NOT upgrade -->
