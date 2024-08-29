@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -49,8 +48,7 @@ public final class GrpcRequestHandlerMapping implements RequestHandlerMapping {
 
     @Override
     public RequestHandler getRequestHandler(URL url, HttpRequest request, HttpResponse response) {
-        String contentType = request.contentType();
-        if (contentType == null || !contentType.startsWith(MediaType.APPLICATION_GRPC.getName())) {
+        if (!GrpcUtils.isGrpcRequest(request.contentType())) {
             return null;
         }
 

@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc.protocol.tri.servlet;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.HttpVersion;
+import org.apache.dubbo.remoting.http12.h1.Http1InputMessage;
+import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
@@ -31,6 +34,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcHeaderNames;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcHttp2ServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
+import org.apache.dubbo.rpc.protocol.tri.h12.http1.DefaultHttp11ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
@@ -75,11 +79,23 @@ public class TripleFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-        if (!hasGrpcMapping(request) && !mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
-            chain.doFilter(request, response);
-            return;
+        boolean isHttp2 = HttpVersion.HTTP2.getProtocol().equals(request.getProtocol());
+        if (isHttp2) {
+            if (hasGrpcMapping(request) || mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
+                handleHttp2(request, response);
+                return;
+            }
+        } else {
+            if (mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
+                handleHttp1(request, response);
+                return;
+            }
         }
 
+        chain.doFilter(request, response);
+    }
+
+    private void handleHttp2(HttpServletRequest request, HttpServletResponse response) {
         AsyncContext context = request.startAsync(request, response);
         ServletStreamChannel channel = new ServletStreamChannel(request, response, context);
         try {
@@ -101,14 +117,37 @@ public class TripleFilter implements Filter {
         }
     }
 
+    private void handleHttp1(HttpServletRequest request, HttpServletResponse response) {
+        AsyncContext context = request.startAsync(request, response);
+        ServletStreamChannel channel = new ServletStreamChannel(request, response, context);
+        try {
+            Http1ServerTransportListener listener = DefaultHttp11ServerTransportListenerFactory.INSTANCE.newInstance(
+                    channel, ServletExchanger.getUrl(), FrameworkModel.defaultModel());
+            channel.setGrpc(false);
+            context.setTimeout(resolveTimeout(request, false));
+            listener.onMetadata(new HttpMetadataAdapter(request));
+            ServletInputStream is = request.getInputStream();
+            listener.onData(new Http1InputMessage(
+                    is.available() == 0 ? StreamUtils.EMPTY : new ByteArrayInputStream(StreamUtils.readBytes(is))));
+        } catch (Throwable t) {
+            LOGGER.info("Failed to process request", t);
+            channel.writeError(Code.UNKNOWN.code, t);
+        }
+    }
+
     @Override
     public void destroy() {}
 
     private boolean hasGrpcMapping(HttpServletRequest request) {
+        if (!GrpcUtils.isGrpcRequest(request.getContentType())) {
+            return false;
+        }
+
         RequestPath path = RequestPath.parse(request.getRequestURI());
         if (path == null) {
             return false;
         }
+
         String group = request.getHeader(TripleHeaderEnum.SERVICE_GROUP.getHeader());
         String version = request.getHeader(TripleHeaderEnum.SERVICE_VERSION.getHeader());
         return pathResolver.resolve(path.getPath(), group, version) != null;
