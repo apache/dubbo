@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
@@ -44,6 +45,7 @@ class CorsHeaderFilterTest {
     private RequestMapping build;
 
     static class MockCorsHeaderFilter extends CorsHeaderFilter {
+
         public void process(HttpRequest request, HttpResponse response) {
             invoke(null, null, request, response);
         }
@@ -71,7 +73,7 @@ class CorsHeaderFilterTest {
         Mockito.when(request.attribute(RestConstants.MAPPING_ATTRIBUTE)).thenReturn(build);
         Mockito.when(request.uri()).thenReturn("/test.html");
         Mockito.when(request.serverName()).thenReturn("domain1.example");
-        Mockito.when(request.scheme()).thenReturn("http");
+        Mockito.when(request.scheme()).thenReturn(HttpConstants.HTTP);
         Mockito.when(request.serverPort()).thenReturn(80);
         Mockito.when(request.remoteHost()).thenReturn("127.0.0.1");
         response = new DefaultHttpResponse();

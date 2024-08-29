@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 
 public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
+
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(TripleIsolationExecutorSupport.class);
 
@@ -55,7 +56,7 @@ public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSup
     }
 
     private static String getHeader(HttpHeaders headers, TripleHeaderEnum en, String key) {
-        String value = headers.getFirst(en.getHeader());
+        String value = headers.getFirst(en.getKey());
         if (value == null) {
             value = headers.getFirst(key);
         }

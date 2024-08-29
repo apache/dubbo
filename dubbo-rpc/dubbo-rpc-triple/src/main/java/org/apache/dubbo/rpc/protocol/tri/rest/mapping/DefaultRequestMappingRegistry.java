@@ -200,12 +200,12 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     public HandlerMeta lookup(HttpRequest request) {
-        String path = PathUtils.normalize(request.rawPath());
-        request.setAttribute(RestConstants.PATH_ATTRIBUTE, path);
+        String stringPath = PathUtils.normalize(request.uri());
+        request.setAttribute(RestConstants.PATH_ATTRIBUTE, stringPath);
+        KeyString path = new KeyString(stringPath, restConfig.getCaseSensitiveMatchOrDefault());
 
         List<Candidate> candidates = new ArrayList<>();
-        boolean cs = restConfig.getCaseSensitiveMatchOrDefault();
-        tryMatch(request, new KeyString(path, cs), candidates);
+        tryMatch(request, path, candidates);
 
         if (candidates.isEmpty()) {
             int end = path.length();
@@ -213,7 +213,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             if (restConfig.getTrailingSlashMatchOrDefault()) {
                 if (path.charAt(end - 1) == '/') {
                     end--;
-                    tryMatch(request, new KeyString(path, end, cs), candidates);
+                    tryMatch(request, path.subSequence(0, end), candidates);
                 }
             }
 
@@ -224,8 +224,8 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         break;
                     }
                     if (ch == '.' && restConfig.getSuffixPatternMatchOrDefault()) {
-                        if (contentNegotiator.supportExtension(path.substring(i + 1, end))) {
-                            tryMatch(request, new KeyString(path, i, cs), candidates);
+                        if (contentNegotiator.supportExtension(path.toString(i + 1, end))) {
+                            tryMatch(request, path.subSequence(0, i), candidates);
                             if (!candidates.isEmpty()) {
                                 break;
                             }
@@ -233,8 +233,8 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         }
                     }
                     if (ch == '~') {
-                        request.setAttribute(RestConstants.SIG_ATTRIBUTE, path.substring(i + 1, end));
-                        tryMatch(request, new KeyString(path, i, cs), candidates);
+                        request.setAttribute(RestConstants.SIG_ATTRIBUTE, path.toString(i + 1, end));
+                        tryMatch(request, path.subSequence(0, i), candidates);
                         if (!candidates.isEmpty()) {
                             break;
                         }
@@ -249,7 +249,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
         if (size > 1) {
             candidates.sort((c1, c2) -> {
-                int comparison = c1.expression.compareTo(c2.expression, path);
+                int comparison = c1.expression.compareTo(c2.expression, stringPath);
                 if (comparison != 0) {
                     return comparison;
                 }
@@ -318,9 +318,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     @Override
-    public boolean exists(String path, String method) {
-        boolean cs = restConfig.getCaseSensitiveMatchOrDefault();
-        if (tryExists(new KeyString(path, cs), method)) {
+    public boolean exists(String stringPath, String method) {
+        KeyString path = new KeyString(stringPath, restConfig.getCaseSensitiveMatchOrDefault());
+        if (tryExists(path, method)) {
             return true;
         }
 
@@ -328,7 +328,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (restConfig.getTrailingSlashMatchOrDefault()) {
             if (path.charAt(end - 1) == '/') {
                 end--;
-                if (tryExists(new KeyString(path, end, cs), method)) {
+                if (tryExists(path.subSequence(0, end - 1), method)) {
                     return true;
                 }
             }
@@ -340,15 +340,15 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 break;
             }
             if (ch == '.' && restConfig.getSuffixPatternMatchOrDefault()) {
-                if (contentNegotiator.supportExtension(path.substring(i + 1, end))) {
-                    if (tryExists(new KeyString(path, i, cs), method)) {
+                if (contentNegotiator.supportExtension(path.toString(i + 1, end))) {
+                    if (tryExists(path.subSequence(0, i), method)) {
                         return true;
                     }
                     end = i;
                 }
             }
             if (ch == '~') {
-                return tryExists(new KeyString(path, i, cs), method);
+                return tryExists(path.subSequence(0, i), method);
             }
         }
 

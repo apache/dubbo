@@ -116,7 +116,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     public void onComplete(
             TriRpcStatus status,
             Map<String, Object> attachments,
-            Map<String, String> excludeHeaders,
+            Map<CharSequence, String> excludeHeaders,
             boolean isReturnTriException) {
         if (done) {
             return;

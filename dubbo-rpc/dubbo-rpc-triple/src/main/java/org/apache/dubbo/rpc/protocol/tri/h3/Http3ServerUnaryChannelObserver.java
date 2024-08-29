@@ -14,22 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.rpc.protocol.tri.h3;
 
-public enum Http2Headers {
-    PATH(":path"),
+import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ServerUnaryChannelObserver;
 
-    METHOD(":method"),
+public final class Http3ServerUnaryChannelObserver extends Http2ServerUnaryChannelObserver {
 
-    STATUS(":status");
-
-    private final String name;
-
-    Http2Headers(String name) {
-        this.name = name;
+    public Http3ServerUnaryChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        super(frameworkModel, h2StreamChannel);
     }
 
-    public String getName() {
-        return name;
+    @Override
+    protected HttpMetadata encodeHttpMetadata() {
+        return Helper.encodeHttpMetadata();
+    }
+
+    @Override
+    protected HttpMetadata encodeTrailers(Throwable throwable) {
+        return Helper.encodeTrailers();
     }
 }

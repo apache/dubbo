@@ -35,12 +35,12 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invocation.get(TripleConstant.HANDLER_TYPE_KEY) == null) {
+        if (invocation.get(TripleConstants.HANDLER_TYPE_KEY) == null) {
             return invoker.invoke(invocation);
         }
 
-        HttpRequest request = (HttpRequest) invocation.get(TripleConstant.HTTP_REQUEST_KEY);
-        HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
+        HttpRequest request = (HttpRequest) invocation.get(TripleConstants.HTTP_REQUEST_KEY);
+        HttpResponse response = (HttpResponse) invocation.get(TripleConstants.HTTP_RESPONSE_KEY);
         RpcServiceContext context = RpcContext.getServiceContext();
         context.setRemoteAddress(request.remoteHost(), request.remotePort());
         if (context.getLocalAddress() == null) {
@@ -53,11 +53,11 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        if (invocation.get(TripleConstant.HANDLER_TYPE_KEY) == null) {
+        if (invocation.get(TripleConstants.HANDLER_TYPE_KEY) == null) {
             return;
         }
 
-        HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
+        HttpResponse response = (HttpResponse) invocation.get(TripleConstants.HTTP_RESPONSE_KEY);
         if (response.isEmpty()) {
             return;
         }

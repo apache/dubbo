@@ -33,6 +33,7 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -173,7 +174,9 @@ public final class HttpUtils {
                 data,
                 new DefaultHttpHeaders(false),
                 new DefaultHttpHeaders(false));
-        request.headers().forEach(nRequest.headers()::set);
+        HttpHeaders headers = nRequest.headers();
+        request.headers().forEach(e -> headers.add(e.getKey(), e.getValue()));
+
         if (charset == null) {
             return new HttpPostRequestDecoder(DATA_FACTORY, nRequest);
         } else {

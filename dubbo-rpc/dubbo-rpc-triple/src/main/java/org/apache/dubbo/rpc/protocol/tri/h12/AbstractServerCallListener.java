@@ -31,7 +31,7 @@ import java.net.InetSocketAddress;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.REMOTE_ADDRESS_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.REMOTE_ADDRESS_KEY;
 
 public abstract class AbstractServerCallListener implements ServerCallListener {
 

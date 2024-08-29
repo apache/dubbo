@@ -20,7 +20,7 @@ import org.apache.dubbo.remoting.http12.HttpInputMessage;
 
 import java.io.InputStream;
 
-public class Http1InputMessage implements HttpInputMessage {
+public final class Http1InputMessage implements HttpInputMessage {
 
     private final InputStream body;
 

@@ -26,7 +26,7 @@ import java.io.OutputStream;
 
 import io.netty.buffer.ByteBufOutputStream;
 
-public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver {
+public final class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver {
 
     private static final FluentLogger LOGGER = FluentLogger.of(Http1ServerUnaryChannelObserver.class);
 
@@ -61,7 +61,7 @@ public class Http1ServerUnaryChannelObserver extends Http1ServerChannelObserver 
         OutputStream body = outputMessage.getBody();
         if (body instanceof ByteBufOutputStream) {
             int contentLength = ((ByteBufOutputStream) body).writtenBytes();
-            httpMetadata.headers().set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(contentLength));
+            httpMetadata.headers().set(HttpHeaderNames.CONTENT_LENGTH.getKey(), String.valueOf(contentLength));
         }
     }
 }

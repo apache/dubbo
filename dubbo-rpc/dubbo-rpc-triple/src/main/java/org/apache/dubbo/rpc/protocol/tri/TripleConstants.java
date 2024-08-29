@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.util.AsciiString;
 
-public class TripleConstant {
+public final class TripleConstants {
 
     public static final String DEFAULT_VERSION = "1.0.0";
 
@@ -39,4 +39,6 @@ public class TripleConstant {
 
     public static final String TRIPLE_HANDLER_TYPE_REST = "rest";
     public static final String TRIPLE_HANDLER_TYPE_GRPC = "grpc";
+
+    private TripleConstants() {}
 }

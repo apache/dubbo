@@ -116,7 +116,7 @@ public class TriplePathResolver implements PathResolver {
     public Invoker<?> resolve(String path, String group, String version) {
         Invoker<?> invoker = mapping.get(URL.buildKey(path, group, version));
         if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
-            invoker = mapping.get(URL.buildKey(path, group, TripleConstant.DEFAULT_VERSION));
+            invoker = mapping.get(URL.buildKey(path, group, TripleConstants.DEFAULT_VERSION));
             if (invoker == null) {
                 invoker = mapping.get(path);
             }

@@ -37,7 +37,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.CompositeExceptionHandler;
@@ -255,9 +255,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(StreamUtils.toAttachments(httpMetadata.headers()));
-        inv.put(TripleConstant.REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
+        inv.put(TripleConstants.REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
         inv.getAttributes().putAll(context.getAttributes());
-        String consumerAppName = httpMetadata.headers().getFirst(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader());
+        String consumerAppName = httpMetadata.header(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getKey());
         if (null != consumerAppName) {
             inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY, consumerAppName);
         }
@@ -275,7 +275,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected void initializeAltSvc(URL url) {}
 
     protected RpcInvocation onBuildRpcInvocationCompletion(RpcInvocation invocation) {
-        String timeoutString = httpMetadata.headers().getFirst(TripleHeaderEnum.SERVICE_TIMEOUT.getHeader());
+        String timeoutString = httpMetadata.header(TripleHeaderEnum.SERVICE_TIMEOUT.getKey());
         try {
             if (null != timeoutString) {
                 Long timeout = Long.parseLong(timeoutString);

@@ -14,23 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
+package org.apache.dubbo.remoting.http12;
 
-import org.apache.dubbo.remoting.http12.HttpHeaders;
+public final class HttpConstants {
 
-import javax.ws.rs.core.AbstractMultivaluedMap;
+    public static final String TRAILERS = "trailers";
 
-import java.util.List;
-import java.util.Map;
+    public static final String CHUNKED = "chunked";
 
-public final class MultivaluedMapWrapper<K, V> extends AbstractMultivaluedMap<K, V> {
+    public static final String X_FORWARDED_PROTO = "x-forwarded-proto";
+    public static final String X_FORWARDED_HOST = "x-forwarded-host";
+    public static final String X_FORWARDED_PORT = "x-forwarded-port";
 
-    public MultivaluedMapWrapper(Map<K, List<V>> store) {
-        super(store);
-    }
+    public static final String HTTPS = "https";
+    public static final String HTTP = "http";
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public MultivaluedMapWrapper(HttpHeaders headers) {
-        super((Map) headers.asMap());
-    }
+    private HttpConstants() {}
 }

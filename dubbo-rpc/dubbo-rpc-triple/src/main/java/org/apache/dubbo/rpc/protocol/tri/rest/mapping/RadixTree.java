@@ -184,7 +184,7 @@ public final class RadixTree<T> {
         int end = -2;
         if (!current.children.isEmpty()) {
             end = path.indexOf('/', start);
-            Node<T> node = current.children.get(new KeyString(path, start, end));
+            Node<T> node = current.children.get(path.subSequence(start, end));
             if (node != null) {
                 if (end == -1) {
                     if (node.isLeaf()) {
