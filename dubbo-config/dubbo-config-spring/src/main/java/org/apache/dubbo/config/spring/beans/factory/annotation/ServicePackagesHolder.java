@@ -19,6 +19,8 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
+
 /**
  * A temp holder for scanned packages of service.
  */
@@ -66,6 +68,7 @@ public class ServicePackagesHolder {
 
     /**
      * Whether test package is sub package of parent package
+     *
      * @param testPkg
      * @param parent
      * @return
@@ -76,9 +79,6 @@ public class ServicePackagesHolder {
     }
 
     private String normalizePackage(String apackage) {
-        if (!apackage.endsWith(".")) {
-            apackage += ".";
-        }
-        return apackage;
+        return apackage.endsWith(DOT_SEPARATOR) ? apackage : apackage + DOT_SEPARATOR;
     }
 }
