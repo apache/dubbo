@@ -24,6 +24,7 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.CuratorFrameworkFactory.Builder;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -43,6 +45,7 @@ import org.apache.zookeeper.data.ACL;
 
 import static org.apache.curator.x.discovery.ServiceInstance.builder;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.ZOOKEEPER_ENSEMBLE_TRACKER_KEY;
 import static org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery.DEFAULT_GROUP;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.BASE_SLEEP_TIME;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.BLOCK_UNTIL_CONNECTED_UNIT;
@@ -72,6 +75,16 @@ public abstract class CuratorFrameworkUtils {
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(connectionURL.getBackupAddress())
                 .retryPolicy(buildRetryPolicy(connectionURL));
+        try {
+            // use reflect to check method exist to compatibility with curator4, can remove in dubbo3.3 and direct call
+            // the method because 3.3 only supported curator5
+            Class<? extends Builder> builderClass = builder.getClass();
+            Method ignore = builderClass.getMethod("ensembleTracker", boolean.class);
+            boolean ensembleTrackerFlag = connectionURL.getParameter(ZOOKEEPER_ENSEMBLE_TRACKER_KEY, true);
+            builder.ensembleTracker(ensembleTrackerFlag);
+        } catch (Throwable ignore) {
+        }
+
         String userInformation = connectionURL.getUserInformation();
         if (StringUtils.isNotEmpty(userInformation)) {
             builder = builder.authorization("digest", userInformation.getBytes());
