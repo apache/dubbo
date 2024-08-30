@@ -68,7 +68,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadata()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(true);
+        return Optional.ofNullable(collectEnabled).orElse(false);
     }
 
     public void increase(String key, String group, String protocol, String changeTypeName, int size) {
