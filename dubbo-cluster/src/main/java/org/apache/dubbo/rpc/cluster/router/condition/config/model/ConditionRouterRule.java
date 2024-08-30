@@ -41,8 +41,6 @@ public class ConditionRouterRule extends AbstractRouterRule {
         return conditionRouterRule;
     }
 
-    public ConditionRouterRule() {}
-
     public List<String> getConditions() {
         return conditions;
     }

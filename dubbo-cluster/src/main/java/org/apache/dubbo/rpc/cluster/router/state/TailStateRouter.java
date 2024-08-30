@@ -31,10 +31,17 @@ public class TailStateRouter<T> implements StateRouter<T> {
         return INSTANCE;
     }
 
-    private TailStateRouter() {}
+    /**
+     * Singleton private constructor.
+     */
+    private TailStateRouter() {
+        super();
+    }
 
     @Override
-    public void setNextRouter(StateRouter<T> nextRouter) {}
+    public void setNextRouter(StateRouter<T> nextRouter) {
+        // NOOP
+    }
 
     @Override
     public URL getUrl() {
@@ -63,7 +70,9 @@ public class TailStateRouter<T> implements StateRouter<T> {
     }
 
     @Override
-    public void notify(BitList<Invoker<T>> invokers) {}
+    public void notify(BitList<Invoker<T>> invokers) {
+        // NOOP
+    }
 
     @Override
     public String buildSnapshot() {

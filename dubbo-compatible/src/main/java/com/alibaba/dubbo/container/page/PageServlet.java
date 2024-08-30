@@ -56,6 +56,10 @@ public class PageServlet extends HttpServlet {
         return INSTANCE;
     }
 
+    private static void setInstance(PageServlet iNSTANCE) {
+        INSTANCE = iNSTANCE;
+    }
+
     public List<PageHandler> getMenus() {
         return Collections.unmodifiableList(menus);
     }
@@ -63,7 +67,7 @@ public class PageServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        INSTANCE = this;
+        setInstance(this);
         String config = getServletConfig().getInitParameter("pages");
         Collection<String> names;
         if (config != null && config.length() > 0) {

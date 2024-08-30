@@ -74,8 +74,7 @@ public class LogPageHandler implements PageHandler {
         String content = "";
         String modified = "Not exist";
         if (file != null && file.exists()) {
-            try {
-                FileInputStream fis = new FileInputStream(file);
+            try (FileInputStream fis = new FileInputStream(file)) {
                 FileChannel channel = fis.getChannel();
                 size = channel.size();
                 ByteBuffer bb;

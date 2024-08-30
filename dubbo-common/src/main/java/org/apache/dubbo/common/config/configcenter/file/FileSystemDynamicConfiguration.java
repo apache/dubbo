@@ -519,7 +519,9 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     }
 
     @Override
-    protected void doClose() throws Exception {}
+    protected void doClose() throws Exception {
+        // NOOP
+    }
 
     public File getRootDirectory() {
         return rootDirectory;

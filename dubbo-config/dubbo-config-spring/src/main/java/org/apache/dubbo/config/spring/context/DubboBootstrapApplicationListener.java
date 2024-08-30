@@ -61,7 +61,9 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     private boolean shouldInitConfigBeans;
     private ModuleModel moduleModel;
 
-    public DubboBootstrapApplicationListener() {}
+    public DubboBootstrapApplicationListener() {
+        super();
+    }
 
     public DubboBootstrapApplicationListener(boolean shouldInitConfigBeans) {
         // maybe register DubboBootstrapApplicationListener manual during spring context starting

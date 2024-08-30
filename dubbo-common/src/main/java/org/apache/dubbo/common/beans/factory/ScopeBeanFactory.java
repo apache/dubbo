@@ -30,12 +30,14 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -84,22 +86,6 @@ public class ScopeBeanFactory {
         return getOrRegisterBean(name, clazz);
     }
 
-    private <T> T createAndRegisterBean(String name, Class<T> clazz) {
-        checkDestroyed();
-        T instance = getBean(name, clazz);
-        if (instance != null) {
-            throw new ScopeBeanException(
-                    "already exists bean with same name and type, name=" + name + ", type=" + clazz.getName());
-        }
-        try {
-            instance = instantiationStrategy.instantiate(clazz);
-        } catch (Throwable e) {
-            throw new ScopeBeanException("create bean instance failed, type=" + clazz.getName(), e);
-        }
-        registerBean(name, instance);
-        return instance;
-    }
-
     public void registerBean(Object bean) {
         this.registerBean(null, bean);
     }
@@ -124,19 +110,16 @@ public class ScopeBeanFactory {
         return getOrRegisterBean(null, type);
     }
 
-    public <T> T getOrRegisterBean(String name, Class<T> type) {
-        T bean = getBean(name, type);
-        if (bean == null) {
-            // lock by type
-            synchronized (type) {
-                bean = getBean(name, type);
-                if (bean == null) {
-                    bean = createAndRegisterBean(name, type);
-                }
+    private static final Hashtable<Class<?>, ReentrantLock> typeLocks = new Hashtable<>();
+
+    public <T> T getOrRegisterBean(String name, final Class<T> type) {
+        return getOrRegisterBean(name, type, k -> {
+            try {
+                return instantiationStrategy.instantiate(type);
+            } catch (Exception e) {
+                throw new ScopeBeanException("create bean instance failed, type=" + type.getName(), e);
             }
-        }
-        registeredClasses.add(type);
-        return bean;
+        });
     }
 
     public <T> T getOrRegisterBean(Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
@@ -147,13 +130,19 @@ public class ScopeBeanFactory {
             String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
         T bean = getBean(name, type);
         if (bean == null) {
+            typeLocks.putIfAbsent(type, new ReentrantLock());
+            ReentrantLock typeLock = typeLocks.get(type);
             // lock by type
-            synchronized (type) {
+            typeLock.lock();
+            try {
                 bean = getBean(name, type);
                 if (bean == null) {
                     bean = mappingFunction.apply(type);
                     registerBean(name, bean);
+                    registeredClasses.add(type);
                 }
+            } finally {
+                typeLock.unlock();
             }
         }
         return bean;

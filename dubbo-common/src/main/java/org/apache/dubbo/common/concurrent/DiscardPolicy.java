@@ -24,5 +24,7 @@ import java.util.Queue;
 public class DiscardPolicy<E> implements Rejector<E> {
 
     @Override
-    public void reject(final E e, final Queue<E> queue) {}
+    public void reject(final E e, final Queue<E> queue) {
+        // NOOP
+    }
 }

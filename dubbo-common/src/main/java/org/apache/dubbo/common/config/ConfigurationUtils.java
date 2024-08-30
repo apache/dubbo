@@ -280,9 +280,7 @@ public final class ConfigurationUtils {
 
         if (CollectionUtils.isNotEmptyMap(configMap)) {
             Map<String, V> copy;
-            synchronized (configMap) {
-                copy = new HashMap<>(configMap);
-            }
+            copy = new HashMap<>(Collections.unmodifiableMap(configMap));
             for (Map.Entry<String, V> entry : copy.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
@@ -320,11 +318,10 @@ public final class ConfigurationUtils {
         if (!prefix.endsWith(".")) {
             prefix += ".";
         }
-        Map<String, V> copy;
-        synchronized (configMap) {
-            copy = new HashMap<>(configMap);
+        if (Objects.isNull(configMap)) {
+            return false;
         }
-        for (Map.Entry<String, V> entry : copy.entrySet()) {
+        for (Map.Entry<String, V> entry : Collections.unmodifiableMap(configMap).entrySet()) {
             String key = entry.getKey();
             if (StringUtils.startsWithIgnoreCase(key, prefix)
                     && key.length() > prefix.length()
@@ -358,11 +355,11 @@ public final class ConfigurationUtils {
             prefix += ".";
         }
         Set<String> ids = new LinkedHashSet<>();
+        if (Objects.isNull(configMaps)) {
+            return ids;
+        }
         for (Map<String, V> configMap : configMaps) {
-            Map<String, V> copy;
-            synchronized (configMap) {
-                copy = new HashMap<>(configMap);
-            }
+            Map<String, V> copy = Collections.unmodifiableMap(configMap);
             for (Map.Entry<String, V> entry : copy.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();

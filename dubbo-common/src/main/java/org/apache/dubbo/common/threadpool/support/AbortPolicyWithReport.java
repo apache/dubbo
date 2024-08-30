@@ -145,11 +145,19 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         listeners.forEach(listener -> listener.onEvent(new ThreadPoolExhaustedEvent(msg)));
     }
 
+    public static long getLastPrintTime() {
+        return lastPrintTime;
+    }
+
+    public static void setLastPrintTime(long lastPrintTime) {
+        AbortPolicyWithReport.lastPrintTime = lastPrintTime;
+    }
+
     private void dumpJStack() {
         long now = System.currentTimeMillis();
 
         // dump every 10 minutes
-        if (now - lastPrintTime < TEN_MINUTES_MILLS) {
+        if (now - getLastPrintTime() < TEN_MINUTES_MILLS) {
             return;
         }
 
@@ -159,7 +167,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         ExecutorService pool = null;
         try {
             // To avoid multiple dump, check again
-            if (System.currentTimeMillis() - lastPrintTime < TEN_MINUTES_MILLS) {
+            if (System.currentTimeMillis() - getLastPrintTime() < TEN_MINUTES_MILLS) {
                 return;
             }
             pool = Executors.newSingleThreadExecutor();
@@ -186,7 +194,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                     logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
                 }
             });
-            lastPrintTime = System.currentTimeMillis();
+            setLastPrintTime(System.currentTimeMillis());
         } finally {
             guard.release();
             // must shut down thread pool ,if not will lead to OOM

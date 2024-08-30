@@ -80,6 +80,12 @@ class FileSystemDynamicConfigurationTest {
     }
 
     @Test
+    void testNewWithNullURL() throws Exception {
+        new FileSystemDynamicConfiguration((URL) null).close();
+        ;
+    }
+
+    @Test
     void testInit() {
 
         assertEquals(new File(getClassPath(), "config-center"), configuration.getRootDirectory());

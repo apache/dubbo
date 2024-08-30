@@ -467,13 +467,9 @@ public final class NetUtils {
                     logger.warn(
                             "exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface,
                             e);
-                } finally {
-                    if (matched) {
-                        return true;
-                    }
-                    if (networkInterfaceDisplayName.equals(trimIgnoredInterface)) {
-                        return true;
-                    }
+                }
+                if (matched || networkInterfaceDisplayName.equals(trimIgnoredInterface)) {
+                    return true;
                 }
             }
         }
