@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpChannel;
@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.CompositeExceptionHandler;
@@ -49,16 +50,10 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.REMOTE_ADDRESS_KEY;
-
 public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage>
         implements HttpTransportListener<HEADER, MESSAGE> {
 
-    private static final ErrorTypeAwareLogger LOGGER =
-            LoggerFactory.getErrorTypeAwareLogger(AbstractServerTransportListener.class);
+    private static final FluentLogger LOGGER = FluentLogger.of(AbstractServerTransportListener.class);
 
     private final FrameworkModel frameworkModel;
     private final URL url;
@@ -88,12 +83,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         try {
             executor = initializeExecutor(metadata);
         } catch (Throwable throwable) {
-            LOGGER.error(COMMON_ERROR_USE_THREAD_POOL, "", "", "initialize executor fail.", throwable);
+            LOGGER.error(LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL, "Initialize executor fail.", throwable);
             onError(throwable);
             return;
         }
         if (executor == null) {
-            LOGGER.error(INTERNAL_ERROR, "", "", "executor must be not null.");
+            LOGGER.error(LoggerCodeConstants.INTERNAL_ERROR, "Executor must be not null.");
             onError(new NullPointerException("initializeExecutor return null"));
             return;
         }
@@ -102,6 +97,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 doOnMetadata(metadata);
             } catch (Throwable t) {
                 logError(t);
+                onMetadataError(metadata, t);
                 onError(t);
             }
         });
@@ -159,6 +155,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         // default no op
     }
 
+    protected void onMetadataError(HEADER metadata, Throwable throwable) {
+        initializeAltSvc(url);
+    }
+
     protected void onPrepareData(MESSAGE message) {
         // default no op
     }
@@ -198,34 +198,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             }
             return sb.toString();
         };
-        switch (exceptionHandler.resolveLogLevel(t)) {
-            case TRACE:
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace(msg.get(), t);
-                }
-                return;
-            case DEBUG:
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(msg.get(), t);
-                }
-                return;
-            case INFO:
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(msg.get(), t);
-                }
-                return;
-            case WARN:
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn(INTERNAL_ERROR, "", "", msg.get(), t);
-                }
-                return;
-            case ERROR:
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(INTERNAL_ERROR, "", "", msg.get(), t);
-                }
-                return;
-            default:
-        }
+        LOGGER.msg(msg).log(exceptionHandler.resolveLogLevel(t), t);
     }
 
     protected void onError(Throwable throwable) {
@@ -282,7 +255,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(StreamUtils.toAttachments(httpMetadata.headers()));
-        inv.put(REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
+        inv.put(TripleConstant.REMOTE_ADDRESS_KEY, httpChannel.remoteAddress());
         inv.getAttributes().putAll(context.getAttributes());
         String consumerAppName = httpMetadata.headers().getFirst(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader());
         if (null != consumerAppName) {
@@ -310,12 +283,11 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             }
         } catch (Throwable t) {
             LOGGER.warn(
-                    PROTOCOL_FAILED_PARSE,
-                    "",
-                    "",
-                    String.format(
-                            "Failed to parse request timeout set from:%s, service=%s " + "method=%s",
-                            timeoutString, context.getServiceDescriptor().getInterfaceName(), context.getMethodName()));
+                    LoggerCodeConstants.PROTOCOL_FAILED_PARSE,
+                    "Failed to parse request timeout set from: {}, service={}, method={}",
+                    timeoutString,
+                    context.getServiceDescriptor().getInterfaceName(),
+                    context.getMethodName());
         }
         return invocation;
     }

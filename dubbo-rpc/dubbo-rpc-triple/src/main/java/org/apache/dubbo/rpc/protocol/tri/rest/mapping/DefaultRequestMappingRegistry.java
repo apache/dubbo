@@ -17,10 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
@@ -49,15 +48,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger;
-import static org.apache.dubbo.rpc.protocol.tri.rest.Messages.AMBIGUOUS_MAPPING;
-
 public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
 
-    private static final ErrorTypeAwareLogger LOGGER = getErrorTypeAwareLogger(DefaultRequestMappingRegistry.class);
+    private static final FluentLogger LOGGER = FluentLogger.of(DefaultRequestMappingRegistry.class);
 
     private final FrameworkModel frameworkModel;
     private final ContentNegotiator contentNegotiator;
@@ -73,15 +70,12 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         contentNegotiator = frameworkModel.getBeanFactory().getOrRegisterBean(ContentNegotiator.class);
     }
 
-    private void init() {
-        Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-        restConfig = new RestConfig();
-        restConfig.setSuffixPatternMatch(conf.getBoolean(RestConstants.SUFFIX_PATTERN_MATCH_KEY, true));
-        restConfig.setTrailingSlashMatch(conf.getBoolean(RestConstants.TRAILING_SLASH_MATCH_KEY, true));
-        restConfig.setCaseSensitiveMatch(conf.getBoolean(RestConstants.CASE_SENSITIVE_MATCH_KEY, true));
-
+    private void init(Invoker<?> invoker) {
+        restConfig = ConfigManager.getProtocolOrDefault(invoker.getUrl())
+                .getTripleOrDefault()
+                .getRestOrDefault();
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
-        tree = new RadixTree<>(restConfig.getCaseSensitiveMatch());
+        tree = new RadixTree<>(restConfig.getCaseSensitiveMatchOrDefault());
     }
 
     @Override
@@ -90,7 +84,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             lock.writeLock().lock();
             try {
                 if (initialized.compareAndSet(false, true)) {
-                    init();
+                    init(invoker);
                 }
             } finally {
                 lock.writeLock().unlock();
@@ -103,15 +97,18 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (sd == null) {
             return;
         }
+        AtomicInteger counter = new AtomicInteger();
+        long start = System.currentTimeMillis();
         new MethodWalker().walk(service.getClass(), (classes, consumer) -> {
             for (int i = 0, size = resolvers.size(); i < size; i++) {
                 RequestMappingResolver resolver = resolvers.get(i);
                 ServiceMeta serviceMeta = new ServiceMeta(classes, sd, service, url, resolver.getRestToolKit());
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info(
-                            "{} resolve rest mappings from {}",
+                            "{} resolving rest mappings for {} at url [{}]",
                             resolver.getClass().getSimpleName(),
-                            serviceMeta);
+                            serviceMeta,
+                            url.toString(""));
                 }
                 if (!resolver.accept(serviceMeta)) {
                     continue;
@@ -141,13 +138,19 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     }
                     methodMeta.initParameters();
                     MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(md);
-                    register0(methodMapping, new HandlerMeta(invoker, methodMeta, methodMetadata, md, sd));
+                    register0(methodMapping, new HandlerMeta(invoker, methodMeta, methodMetadata, md, sd), counter);
                 });
             }
         });
+        LOGGER.info(
+                "Registered {} REST mappings for service [{}] at url [{}] in {}ms",
+                counter,
+                ClassUtils.toShortString(service),
+                url.toString(""),
+                System.currentTimeMillis() - start);
     }
 
-    private void register0(RequestMapping mapping, HandlerMeta handler) {
+    private void register0(RequestMapping mapping, HandlerMeta handler, AtomicInteger counter) {
         lock.writeLock().lock();
         try {
             Registration registration = new Registration();
@@ -157,12 +160,12 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 Registration exists = tree.addPath(path, registration);
                 if (exists == null) {
                     if (LOGGER.isDebugEnabled()) {
-                        String msg = "Register rest mapping path: '{}' -> mapping={}, method={}";
+                        String msg = "Register rest mapping: '{}' -> mapping={}, method={}";
                         LOGGER.debug(msg, path, mapping, handler.getMethod());
                     }
+                    counter.incrementAndGet();
                 } else if (LOGGER.isWarnEnabled()) {
-                    String msg = Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists);
-                    LOGGER.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", msg);
+                    LOGGER.internalWarn(Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists));
                 }
             }
         } finally {
@@ -172,6 +175,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     @Override
     public void unregister(Invoker<?> invoker) {
+        if (tree == null) {
+            return;
+        }
         lock.writeLock().lock();
         try {
             tree.remove(mapping -> mapping.meta.getInvoker() == invoker);
@@ -198,13 +204,13 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         request.setAttribute(RestConstants.PATH_ATTRIBUTE, path);
 
         List<Candidate> candidates = new ArrayList<>();
-        boolean cs = restConfig.getCaseSensitiveMatch();
+        boolean cs = restConfig.getCaseSensitiveMatchOrDefault();
         tryMatch(request, new KeyString(path, cs), candidates);
 
         if (candidates.isEmpty()) {
             int end = path.length();
 
-            if (restConfig.getTrailingSlashMatch()) {
+            if (restConfig.getTrailingSlashMatchOrDefault()) {
                 if (path.charAt(end - 1) == '/') {
                     end--;
                     tryMatch(request, new KeyString(path, end, cs), candidates);
@@ -217,7 +223,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     if (ch == '/') {
                         break;
                     }
-                    if (ch == '.' && restConfig.getSuffixPatternMatch()) {
+                    if (ch == '.' && restConfig.getSuffixPatternMatchOrDefault()) {
                         if (contentNegotiator.supportExtension(path.substring(i + 1, end))) {
                             tryMatch(request, new KeyString(path, i, cs), candidates);
                             if (!candidates.isEmpty()) {
@@ -259,7 +265,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             Candidate first = candidates.get(0);
             Candidate second = candidates.get(1);
             if (first.mapping.compareTo(second.mapping, request) == 0) {
-                throw new RestMappingException(AMBIGUOUS_MAPPING, path, first, second);
+                throw new RestMappingException(Messages.AMBIGUOUS_MAPPING, path, first, second);
             }
         }
 
@@ -313,13 +319,13 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     @Override
     public boolean exists(String path, String method) {
-        boolean cs = restConfig.getCaseSensitiveMatch();
+        boolean cs = restConfig.getCaseSensitiveMatchOrDefault();
         if (tryExists(new KeyString(path, cs), method)) {
             return true;
         }
 
         int end = path.length();
-        if (restConfig.getTrailingSlashMatch()) {
+        if (restConfig.getTrailingSlashMatchOrDefault()) {
             if (path.charAt(end - 1) == '/') {
                 end--;
                 if (tryExists(new KeyString(path, end, cs), method)) {
@@ -333,7 +339,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             if (ch == '/') {
                 break;
             }
-            if (ch == '.' && restConfig.getSuffixPatternMatch()) {
+            if (ch == '.' && restConfig.getSuffixPatternMatchOrDefault()) {
                 if (contentNegotiator.supportExtension(path.substring(i + 1, end))) {
                     if (tryExists(new KeyString(path, i, cs), method)) {
                         return true;

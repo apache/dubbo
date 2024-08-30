@@ -47,12 +47,13 @@ public class DefaultStreamingDecoder implements StreamingDecoder {
     @Override
     public void close() {
         try {
-            if (!closed) {
-                closed = true;
-                listener.onFragmentMessage(accumulate);
-                accumulate.close();
-                listener.onClose();
+            if (closed) {
+                return;
             }
+            closed = true;
+            listener.onFragmentMessage(accumulate);
+            accumulate.close();
+            listener.onClose();
         } catch (IOException e) {
             throw new DecodeException(e);
         }

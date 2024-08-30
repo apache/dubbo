@@ -27,7 +27,7 @@ dubbo:
     port: ${server.port}
     triple:
       servlet:
-        enable: true
+        enabled: true
   registry:
     id: zk-registry
     address: zookeeper://127.0.0.1:2181

@@ -43,7 +43,6 @@ import org.apache.zookeeper.data.ACL;
 
 import static org.apache.curator.x.discovery.ServiceInstance.builder;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.ZOOKEEPER_ENSEMBLE_TRACKER_KEY;
 import static org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery.DEFAULT_GROUP;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.BASE_SLEEP_TIME;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.BLOCK_UNTIL_CONNECTED_UNIT;
@@ -70,10 +69,8 @@ public abstract class CuratorFrameworkUtils {
 
     public static CuratorFramework buildCuratorFramework(URL connectionURL, ZookeeperServiceDiscovery serviceDiscovery)
             throws Exception {
-        boolean ensembleTracker = connectionURL.getParameter(ZOOKEEPER_ENSEMBLE_TRACKER_KEY, true);
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(connectionURL.getBackupAddress())
-                .ensembleTracker(ensembleTracker)
                 .retryPolicy(buildRetryPolicy(connectionURL));
         String userInformation = connectionURL.getUserInformation();
         if (StringUtils.isNotEmpty(userInformation)) {

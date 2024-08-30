@@ -73,8 +73,16 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
                         TracingConfig.class));
     }
 
-    public static ProtocolConfig getProtocol(URL url) {
-        return url.getOrDefaultApplicationModel().getApplicationConfigManager().getOrAddProtocol(url.getProtocol());
+    public static ProtocolConfig getProtocolOrDefault(URL url) {
+        return getProtocolOrDefault(url.getOrDefaultApplicationModel(), url.getProtocol());
+    }
+
+    public static ProtocolConfig getProtocolOrDefault(String idOrName) {
+        return getProtocolOrDefault(ApplicationModel.defaultModel(), idOrName);
+    }
+
+    private static ProtocolConfig getProtocolOrDefault(ApplicationModel applicationModel, String idOrName) {
+        return applicationModel.getApplicationConfigManager().getOrAddProtocol(idOrName);
     }
 
     // ApplicationConfig correlative methods
@@ -204,10 +212,19 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         if (protocol.isPresent()) {
             return protocol.get();
         }
-        ProtocolConfig protocolConfig = new ProtocolConfig(idOrName);
-        addProtocol(protocolConfig);
+
+        // Avoiding default protocol configuration overriding custom protocol configuration
+        // due to `getOrAddProtocol` being called when they are not loaded
+        idOrName = idOrName + ".default";
+        protocol = getProtocol(idOrName);
+        if (protocol.isPresent()) {
+            return protocol.get();
+        }
+
+        ProtocolConfig protocolConfig = addConfig(new ProtocolConfig(idOrName));
+
         // addProtocol triggers refresh when other protocols exist in the ConfigManager.
-        // So refresh is only done when ProtocolConfig is not refreshed.
+        // so refresh is only done when ProtocolConfig is not refreshed.
         if (!protocolConfig.isRefreshed()) {
             protocolConfig.refresh();
         }

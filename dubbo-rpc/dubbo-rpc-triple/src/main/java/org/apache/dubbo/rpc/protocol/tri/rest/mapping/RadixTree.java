@@ -56,7 +56,7 @@ public final class RadixTree<T> {
         if (path.isDirect()) {
             KeyString key = new KeyString(path.getPath(), caseSensitive);
             List<Match<T>> matches = directPathMap.computeIfAbsent(key, k -> new ArrayList<>());
-            for (int i = 0, len = matches.size(); i < len; i++) {
+            for (int i = 0, size = matches.size(); i < size; i++) {
                 Match<T> match = matches.get(i);
                 if (match.getValue().equals(value)) {
                     return match.getValue();
@@ -145,9 +145,11 @@ public final class RadixTree<T> {
             for (int i = 0, size = directMatches.size(); i < size; i++) {
                 matches.add(directMatches.get(i));
             }
-            return;
         }
 
+        if (root.isLeaf()) {
+            return;
+        }
         matchRecursive(root, path, 1, new HashMap<>(), matches);
     }
 
@@ -157,11 +159,18 @@ public final class RadixTree<T> {
 
     public List<Match<T>> match(KeyString path) {
         List<Match<T>> matches = directPathMap.get(path);
-        if (matches != null) {
-            return new ArrayList<>(matches);
+        if (matches == null) {
+            if (root.isLeaf()) {
+                return Collections.emptyList();
+            }
+            matches = new ArrayList<>();
+        } else {
+            if (root.isLeaf()) {
+                return Collections.unmodifiableList(matches);
+            }
+            matches = new ArrayList<>(matches);
         }
 
-        matches = new ArrayList<>();
         matchRecursive(root, path, 1, new HashMap<>(), matches);
         return matches;
     }
@@ -172,18 +181,26 @@ public final class RadixTree<T> {
 
     private void matchRecursive(
             Node<T> current, KeyString path, int start, Map<String, String> variableMap, List<Match<T>> matches) {
-        int end = path.indexOf('/', start);
-        Node<T> node = current.children.get(new KeyString(path, start, end));
-        if (node != null) {
-            if (node.isLeaf()) {
-                addMatch(node, variableMap, matches);
-                return;
+        int end = -2;
+        if (!current.children.isEmpty()) {
+            end = path.indexOf('/', start);
+            Node<T> node = current.children.get(new KeyString(path, start, end));
+            if (node != null) {
+                if (end == -1) {
+                    if (node.isLeaf()) {
+                        addMatch(node, variableMap, matches);
+                    }
+                    return;
+                }
+                matchRecursive(node, path, end + 1, variableMap, matches);
             }
-            matchRecursive(node, path, end + 1, variableMap, matches);
         }
 
         if (current.fuzzyChildren.isEmpty()) {
             return;
+        }
+        if (end == -2) {
+            end = path.indexOf('/', start);
         }
         Map<String, String> workVariableMap = new LinkedHashMap<>();
         for (Map.Entry<PathSegment, Node<T>> entry : current.fuzzyChildren.entrySet()) {
@@ -191,13 +208,19 @@ public final class RadixTree<T> {
             if (segment.match(path, start, end, workVariableMap)) {
                 workVariableMap.putAll(variableMap);
                 Node<T> child = entry.getValue();
-                if (segment.isTailMatching() || child.isLeaf()) {
+                if (segment.isTailMatching()) {
                     addMatch(child, workVariableMap, matches);
                 } else {
-                    matchRecursive(child, path, end + 1, workVariableMap, matches);
+                    if (end == -1) {
+                        if (child.isLeaf()) {
+                            addMatch(child, workVariableMap, matches);
+                        }
+                    } else {
+                        matchRecursive(child, path, end + 1, workVariableMap, matches);
+                    }
                 }
                 if (!workVariableMap.isEmpty()) {
-                    workVariableMap = new HashMap<>();
+                    workVariableMap = new LinkedHashMap<>();
                 }
             }
         }

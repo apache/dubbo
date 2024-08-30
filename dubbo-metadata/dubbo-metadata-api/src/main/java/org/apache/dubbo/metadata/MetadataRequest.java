@@ -17,68 +17,68 @@
 package org.apache.dubbo.metadata;
 
 /**
- * Protobuf type {@code org.apache.dubbo.metadata.Revision}
+ * Protobuf type {@code org.apache.dubbo.metadata.MetadataRequest}
  */
-public final class Revision extends com.google.protobuf.GeneratedMessageV3
+public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV3
         implements
-        // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.Revision)
-        RevisionOrBuilder {
+        // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.MetadataRequest)
+        MetadataRequestOrBuilder {
     private static final long serialVersionUID = 0L;
-    // Use Revision.newBuilder() to construct.
-    private Revision(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use MetadataRequest.newBuilder() to construct.
+    private MetadataRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
     }
 
-    private Revision() {
-        value_ = "";
+    private MetadataRequest() {
+        revision_ = "";
     }
 
     @Override
     @SuppressWarnings({"unused"})
     protected Object newInstance(UnusedPrivateParameter unused) {
-        return new Revision();
+        return new MetadataRequest();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-        return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_Revision_descriptor;
+        return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_MetadataRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable internalGetFieldAccessorTable() {
-        return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_Revision_fieldAccessorTable
-                .ensureFieldAccessorsInitialized(Revision.class, Builder.class);
+        return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_MetadataRequest_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(MetadataRequest.class, Builder.class);
     }
 
-    public static final int VALUE_FIELD_NUMBER = 1;
+    public static final int REVISION_FIELD_NUMBER = 1;
 
     @SuppressWarnings("serial")
-    private volatile Object value_ = "";
+    private volatile Object revision_ = "";
     /**
-     * <code>string value = 1;</code>
-     * @return The value.
+     * <code>string revision = 1;</code>
+     * @return The revision.
      */
     @Override
-    public String getValue() {
-        Object ref = value_;
+    public String getRevision() {
+        Object ref = revision_;
         if (ref instanceof String) {
             return (String) ref;
         } else {
             com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
             String s = bs.toStringUtf8();
-            value_ = s;
+            revision_ = s;
             return s;
         }
     }
     /**
-     * <code>string value = 1;</code>
-     * @return The bytes for value.
+     * <code>string revision = 1;</code>
+     * @return The bytes for revision.
      */
     @Override
-    public com.google.protobuf.ByteString getValueBytes() {
-        Object ref = value_;
+    public com.google.protobuf.ByteString getRevisionBytes() {
+        Object ref = revision_;
         if (ref instanceof String) {
             com.google.protobuf.ByteString b = com.google.protobuf.ByteString.copyFromUtf8((String) ref);
-            value_ = b;
+            revision_ = b;
             return b;
         } else {
             return (com.google.protobuf.ByteString) ref;
@@ -99,8 +99,8 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
 
     @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(value_)) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 1, value_);
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(revision_)) {
+            com.google.protobuf.GeneratedMessageV3.writeString(output, 1, revision_);
         }
         getUnknownFields().writeTo(output);
     }
@@ -111,8 +111,8 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
         if (size != -1) return size;
 
         size = 0;
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(value_)) {
-            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, value_);
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(revision_)) {
+            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, revision_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
@@ -124,12 +124,12 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Revision)) {
+        if (!(obj instanceof MetadataRequest)) {
             return super.equals(obj);
         }
-        Revision other = (Revision) obj;
+        MetadataRequest other = (MetadataRequest) obj;
 
-        if (!getValue().equals(other.getValue())) return false;
+        if (!getRevision().equals(other.getRevision())) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
     }
@@ -141,69 +141,69 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
         }
         int hash = 41;
         hash = (19 * hash) + getDescriptor().hashCode();
-        hash = (37 * hash) + VALUE_FIELD_NUMBER;
-        hash = (53 * hash) + getValue().hashCode();
+        hash = (37 * hash) + REVISION_FIELD_NUMBER;
+        hash = (53 * hash) + getRevision().hashCode();
         hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
     }
 
-    public static Revision parseFrom(java.nio.ByteBuffer data)
+    public static MetadataRequest parseFrom(java.nio.ByteBuffer data)
             throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
     }
 
-    public static Revision parseFrom(
+    public static MetadataRequest parseFrom(
             java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static Revision parseFrom(com.google.protobuf.ByteString data)
+    public static MetadataRequest parseFrom(com.google.protobuf.ByteString data)
             throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
     }
 
-    public static Revision parseFrom(
+    public static MetadataRequest parseFrom(
             com.google.protobuf.ByteString data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static Revision parseFrom(byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
+    public static MetadataRequest parseFrom(byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
     }
 
-    public static Revision parseFrom(byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+    public static MetadataRequest parseFrom(byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static Revision parseFrom(java.io.InputStream input) throws java.io.IOException {
+    public static MetadataRequest parseFrom(java.io.InputStream input) throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static Revision parseFrom(
+    public static MetadataRequest parseFrom(
             java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Revision parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+    public static MetadataRequest parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static Revision parseDelimitedFrom(
+    public static MetadataRequest parseDelimitedFrom(
             java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Revision parseFrom(com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+    public static MetadataRequest parseFrom(com.google.protobuf.CodedInputStream input) throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
-    public static Revision parseFrom(
+    public static MetadataRequest parseFrom(
             com.google.protobuf.CodedInputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input, extensionRegistry);
@@ -218,7 +218,7 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
         return DEFAULT_INSTANCE.toBuilder();
     }
 
-    public static Builder newBuilder(Revision prototype) {
+    public static Builder newBuilder(MetadataRequest prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
 
@@ -233,23 +233,24 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
         return builder;
     }
     /**
-     * Protobuf type {@code org.apache.dubbo.metadata.Revision}
+     * Protobuf type {@code org.apache.dubbo.metadata.MetadataRequest}
      */
     public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
             implements
-            // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.Revision)
-            RevisionOrBuilder {
+            // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.MetadataRequest)
+            MetadataRequestOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-            return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_Revision_descriptor;
+            return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_MetadataRequest_descriptor;
         }
 
         @Override
         protected FieldAccessorTable internalGetFieldAccessorTable() {
-            return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_Revision_fieldAccessorTable
-                    .ensureFieldAccessorsInitialized(Revision.class, Builder.class);
+            return MetadataServiceV2OuterClass
+                    .internal_static_org_apache_dubbo_metadata_MetadataRequest_fieldAccessorTable
+                    .ensureFieldAccessorsInitialized(MetadataRequest.class, Builder.class);
         }
 
-        // Construct using org.apache.dubbo.metadata.Revision.newBuilder()
+        // Construct using org.apache.dubbo.metadata.MetadataRequest.newBuilder()
         private Builder() {}
 
         private Builder(BuilderParent parent) {
@@ -260,23 +261,23 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
         public Builder clear() {
             super.clear();
             bitField0_ = 0;
-            value_ = "";
+            revision_ = "";
             return this;
         }
 
         @Override
         public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-            return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_Revision_descriptor;
+            return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_MetadataRequest_descriptor;
         }
 
         @Override
-        public Revision getDefaultInstanceForType() {
-            return Revision.getDefaultInstance();
+        public MetadataRequest getDefaultInstanceForType() {
+            return MetadataRequest.getDefaultInstance();
         }
 
         @Override
-        public Revision build() {
-            Revision result = buildPartial();
+        public MetadataRequest build() {
+            MetadataRequest result = buildPartial();
             if (!result.isInitialized()) {
                 throw newUninitializedMessageException(result);
             }
@@ -284,8 +285,8 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
         }
 
         @Override
-        public Revision buildPartial() {
-            Revision result = new Revision(this);
+        public MetadataRequest buildPartial() {
+            MetadataRequest result = new MetadataRequest(this);
             if (bitField0_ != 0) {
                 buildPartial0(result);
             }
@@ -293,27 +294,27 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
             return result;
         }
 
-        private void buildPartial0(Revision result) {
+        private void buildPartial0(MetadataRequest result) {
             int from_bitField0_ = bitField0_;
             if (((from_bitField0_ & 0x00000001) != 0)) {
-                result.value_ = value_;
+                result.revision_ = revision_;
             }
         }
 
         @Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
-            if (other instanceof Revision) {
-                return mergeFrom((Revision) other);
+            if (other instanceof MetadataRequest) {
+                return mergeFrom((MetadataRequest) other);
             } else {
                 super.mergeFrom(other);
                 return this;
             }
         }
 
-        public Builder mergeFrom(Revision other) {
-            if (other == Revision.getDefaultInstance()) return this;
-            if (!other.getValue().isEmpty()) {
-                value_ = other.value_;
+        public Builder mergeFrom(MetadataRequest other) {
+            if (other == MetadataRequest.getDefaultInstance()) return this;
+            if (!other.getRevision().isEmpty()) {
+                revision_ = other.revision_;
                 bitField0_ |= 0x00000001;
                 onChanged();
             }
@@ -343,7 +344,7 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
                             done = true;
                             break;
                         case 10: {
-                            value_ = input.readStringRequireUtf8();
+                            revision_ = input.readStringRequireUtf8();
                             bitField0_ |= 0x00000001;
                             break;
                         } // case 10
@@ -365,71 +366,71 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
 
         private int bitField0_;
 
-        private Object value_ = "";
+        private Object revision_ = "";
         /**
-         * <code>string value = 1;</code>
-         * @return The value.
+         * <code>string revision = 1;</code>
+         * @return The revision.
          */
-        public String getValue() {
-            Object ref = value_;
+        public String getRevision() {
+            Object ref = revision_;
             if (!(ref instanceof String)) {
                 com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
                 String s = bs.toStringUtf8();
-                value_ = s;
+                revision_ = s;
                 return s;
             } else {
                 return (String) ref;
             }
         }
         /**
-         * <code>string value = 1;</code>
-         * @return The bytes for value.
+         * <code>string revision = 1;</code>
+         * @return The bytes for revision.
          */
-        public com.google.protobuf.ByteString getValueBytes() {
-            Object ref = value_;
+        public com.google.protobuf.ByteString getRevisionBytes() {
+            Object ref = revision_;
             if (ref instanceof String) {
                 com.google.protobuf.ByteString b = com.google.protobuf.ByteString.copyFromUtf8((String) ref);
-                value_ = b;
+                revision_ = b;
                 return b;
             } else {
                 return (com.google.protobuf.ByteString) ref;
             }
         }
         /**
-         * <code>string value = 1;</code>
-         * @param value The value to set.
+         * <code>string revision = 1;</code>
+         * @param value The revision to set.
          * @return This builder for chaining.
          */
-        public Builder setValue(String value) {
+        public Builder setRevision(String value) {
             if (value == null) {
                 throw new NullPointerException();
             }
-            value_ = value;
+            revision_ = value;
             bitField0_ |= 0x00000001;
             onChanged();
             return this;
         }
         /**
-         * <code>string value = 1;</code>
+         * <code>string revision = 1;</code>
          * @return This builder for chaining.
          */
-        public Builder clearValue() {
-            value_ = getDefaultInstance().getValue();
+        public Builder clearRevision() {
+            revision_ = getDefaultInstance().getRevision();
             bitField0_ = (bitField0_ & ~0x00000001);
             onChanged();
             return this;
         }
         /**
-         * <code>string value = 1;</code>
-         * @param value The bytes for value to set.
+         * <code>string revision = 1;</code>
+         * @param value The bytes for revision to set.
          * @return This builder for chaining.
          */
-        public Builder setValueBytes(com.google.protobuf.ByteString value) {
+        public Builder setRevisionBytes(com.google.protobuf.ByteString value) {
             if (value == null) {
                 throw new NullPointerException();
             }
             checkByteStringIsUtf8(value);
-            value_ = value;
+            revision_ = value;
             bitField0_ |= 0x00000001;
             onChanged();
             return this;
@@ -445,24 +446,24 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
             return super.mergeUnknownFields(unknownFields);
         }
 
-        // @@protoc_insertion_point(builder_scope:org.apache.dubbo.metadata.Revision)
+        // @@protoc_insertion_point(builder_scope:org.apache.dubbo.metadata.MetadataRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.dubbo.metadata.Revision)
-    private static final Revision DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:org.apache.dubbo.metadata.MetadataRequest)
+    private static final MetadataRequest DEFAULT_INSTANCE;
 
     static {
-        DEFAULT_INSTANCE = new Revision();
+        DEFAULT_INSTANCE = new MetadataRequest();
     }
 
-    public static Revision getDefaultInstance() {
+    public static MetadataRequest getDefaultInstance() {
         return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<Revision> PARSER =
-            new com.google.protobuf.AbstractParser<Revision>() {
+    private static final com.google.protobuf.Parser<MetadataRequest> PARSER =
+            new com.google.protobuf.AbstractParser<MetadataRequest>() {
                 @Override
-                public Revision parsePartialFrom(
+                public MetadataRequest parsePartialFrom(
                         com.google.protobuf.CodedInputStream input,
                         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
                         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -481,17 +482,17 @@ public final class Revision extends com.google.protobuf.GeneratedMessageV3
                 }
             };
 
-    public static com.google.protobuf.Parser<Revision> parser() {
+    public static com.google.protobuf.Parser<MetadataRequest> parser() {
         return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<Revision> getParserForType() {
+    public com.google.protobuf.Parser<MetadataRequest> getParserForType() {
         return PARSER;
     }
 
     @Override
-    public Revision getDefaultInstanceForType() {
+    public MetadataRequest getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
     }
 }

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
@@ -58,8 +57,8 @@ public abstract class NamedValueArgumentResolverSupport {
     }
 
     protected final NamedValueMeta updateNamedValueMeta(ParameterMeta parameterMeta, NamedValueMeta meta) {
-        if (StringUtils.isEmpty(meta.name())) {
-            meta.setName(parameterMeta.getRequiredName());
+        if (meta.isNameEmpty()) {
+            meta.setName(parameterMeta.getName());
         }
 
         Class<?> type = parameterMeta.getActualType();

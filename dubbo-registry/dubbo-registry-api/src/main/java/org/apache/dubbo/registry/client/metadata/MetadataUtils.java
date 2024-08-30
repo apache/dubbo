@@ -24,10 +24,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataRequest;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceV2;
 import org.apache.dubbo.metadata.MetadataServiceV2Detector;
-import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
@@ -70,9 +70,8 @@ public class MetadataUtils {
     public static void publishServiceDefinition(
             URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).isEmpty()) {
-            String msg =
-                    "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
-            logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", msg);
+            logger.info("Remote Metadata Report Server is not provided or unavailable, "
+                    + "will stop registering service definition to remote center!");
             return;
         }
 
@@ -343,8 +342,9 @@ public class MetadataUtils {
                 return ((MetadataService) existProxy).getMetadataInfo(revision);
             } else {
                 return MetadataServiceVersionUtils.toV1(((MetadataServiceV2) existProxy)
-                        .getMetadataInfo(
-                                Revision.newBuilder().setValue(revision).build()));
+                        .getMetadataInfo(MetadataRequest.newBuilder()
+                                .setRevision(revision)
+                                .build()));
             }
         }
     }

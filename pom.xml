@@ -127,15 +127,15 @@
     <jacoco.skip>true</jacoco.skip>
 
     <!-- Maven plugins -->
-    <maven_jar_version>3.4.1</maven_jar_version>
-    <maven_surefire_version>3.3.0</maven_surefire_version>
-    <maven_failsafe_version>3.3.0</maven_failsafe_version>
-    <maven_deploy_version>2.8.2</maven_deploy_version>
+    <maven_jar_version>3.4.2</maven_jar_version>
+    <maven_surefire_version>3.4.0</maven_surefire_version>
+    <maven_failsafe_version>3.4.0</maven_failsafe_version>
+    <maven_deploy_version>3.1.3</maven_deploy_version>
     <maven_compiler_version>3.13.0</maven_compiler_version>
     <maven_source_version>3.3.1</maven_source_version>
-    <maven_javadoc_version>3.7.0</maven_javadoc_version>
-    <maven_jetty_version>9.4.54.v20240208</maven_jetty_version>
-    <maven_checkstyle_version>3.4.0</maven_checkstyle_version>
+    <maven_javadoc_version>3.8.0</maven_javadoc_version>
+    <maven_jetty_version>9.4.55.v20240627</maven_jetty_version>
+    <maven_checkstyle_version>3.5.0</maven_checkstyle_version>
     <maven_jacoco_version>0.8.12</maven_jacoco_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
     <maven_enforce_version>3.5.0</maven_enforce_version>
@@ -149,8 +149,8 @@
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
-
-    <revision>3.3.0-beta.5-SNAPSHOT</revision>
+    <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
+    <revision>3.3.0-beta.6-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -244,7 +244,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.3.2</version>
+          <version>3.4.0</version>
         </plugin>
         <plugin>
           <groupId>org.ops4j.pax.exam</groupId>
@@ -253,7 +253,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.7.0</version>
+          <version>3.8.0</version>
         </plugin>
         <plugin>
           <!-- Do NOT upgrade -->
@@ -416,7 +416,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <useReleaseProfile>false</useReleaseProfile>

@@ -14,31 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message.codec;
+package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
-import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
-import org.apache.dubbo.remoting.http12.message.MediaType;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.function.Supplier;
 
 @Activate
-public final class MultipartDecoderFactory implements HttpMessageDecoderFactory {
-
-    private CodecUtils codecUtils;
-
-    public void setCodecUtils(CodecUtils codecUtils) {
-        this.codecUtils = codecUtils;
-    }
+public class TestRestFilterFactory implements RestExtension, Supplier<RestFilter> {
 
     @Override
-    public HttpMessageDecoder createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return new MultipartDecoder(url, frameworkModel, mediaType, codecUtils);
-    }
-
-    @Override
-    public MediaType mediaType() {
-        return MediaType.MULTIPART_FORM_DATA;
+    public RestFilter get() {
+        return new TestRestFilter(100, "/filter/*", "/*.filter", "!/filter/one");
     }
 }
