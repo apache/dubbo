@@ -16,8 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-public interface HttpTransportListener<HEADER extends HttpMetadata, MESSAGE extends HttpInputMessage>
-        extends AutoCloseable {
+public interface HttpTransportListener<HEADER extends HttpMetadata, MESSAGE extends HttpInputMessage> {
 
     void onMetadata(HEADER metadata);
 

@@ -229,4 +229,19 @@ class RestProtocolTest extends BaseServiceTest {
             '/pbServerStream?request={"service": "3"}' | 3
     }
 
+    def "produce test"() {
+        given:
+            def request = new TestRequest(
+                path: path,
+                accept: accept
+            )
+        expect:
+            runner.post(request) == output
+        where:
+            path                      | accept             | output
+            '/produceTest?name=world' | ''                 | 'world'
+            '/produceTest?name=world' | 'text/plain'       | 'world'
+            '/produceTest?name=world' | 'application/json' | '{"message":"Invoker not found","status":"404"}'
+    }
+
 }

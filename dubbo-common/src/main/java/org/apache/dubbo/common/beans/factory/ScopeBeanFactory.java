@@ -24,15 +24,17 @@ import org.apache.dubbo.common.extension.ExtensionPostProcessor;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,18 +46,19 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 /**
  * A bean factory for internal sharing.
  */
-public class ScopeBeanFactory {
+public final class ScopeBeanFactory {
 
-    protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeBeanFactory.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeBeanFactory.class);
 
     private final ScopeBeanFactory parent;
     private final ExtensionAccessor extensionAccessor;
     private final List<ExtensionPostProcessor> extensionPostProcessors;
-    private final ConcurrentHashMap<Class<?>, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, AtomicInteger> beanNameIdCounterMap = CollectionUtils.newConcurrentHashMap();
     private final List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
     private final AtomicBoolean destroyed = new AtomicBoolean();
     private final Set<Class<?>> registeredClasses = new ConcurrentHashSet<>();
+    private final Map<Pair<Class<?>, String>, Optional<Object>> beanCache = CollectionUtils.newConcurrentHashMap();
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -77,7 +80,7 @@ public class ScopeBeanFactory {
     }
 
     public <T> T registerBean(Class<T> bean) throws ScopeBeanException {
-        return this.getOrRegisterBean(null, bean);
+        return getOrRegisterBean(null, bean);
     }
 
     public <T> T registerBean(String name, Class<T> clazz) throws ScopeBeanException {
@@ -101,7 +104,7 @@ public class ScopeBeanFactory {
     }
 
     public void registerBean(Object bean) {
-        this.registerBean(null, bean);
+        registerBean(null, bean);
     }
 
     public void registerBean(String name, Object bean) {
@@ -118,12 +121,14 @@ public class ScopeBeanFactory {
         initializeBean(name, bean);
 
         registeredBeanInfos.add(new BeanInfo(name, bean));
+        beanCache.entrySet().removeIf(e -> e.getKey().getLeft().isAssignableFrom(beanClass));
     }
 
     public <T> T getOrRegisterBean(Class<T> type) {
         return getOrRegisterBean(null, type);
     }
 
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public <T> T getOrRegisterBean(String name, Class<T> type) {
         T bean = getBean(name, type);
         if (bean == null) {
@@ -143,6 +148,7 @@ public class ScopeBeanFactory {
         return getOrRegisterBean(null, type, mappingFunction);
     }
 
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public <T> T getOrRegisterBean(
             String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
         T bean = getBean(name, type);
@@ -186,7 +192,8 @@ public class ScopeBeanFactory {
     }
 
     private int getNextId(Class<?> beanClass) {
-        return ConcurrentHashMapUtils.computeIfAbsent(beanNameIdCounterMap, beanClass, key -> new AtomicInteger())
+        return beanNameIdCounterMap
+                .computeIfAbsent(beanClass, key -> new AtomicInteger())
                 .incrementAndGet();
     }
 
@@ -203,11 +210,11 @@ public class ScopeBeanFactory {
     }
 
     public <T> T getBean(Class<T> type) {
-        return this.getBean(null, type);
+        return getBean(null, type);
     }
 
     public <T> T getBean(String name, Class<T> type) {
-        T bean = getBeanInternal(name, type);
+        T bean = getBeanFromCache(name, type);
         if (bean == null && parent != null) {
             return parent.getBean(name, type);
         }
@@ -215,8 +222,24 @@ public class ScopeBeanFactory {
     }
 
     @SuppressWarnings("unchecked")
+    private <T> T getBeanFromCache(String name, Class<T> type) {
+        Object value = beanCache
+                .computeIfAbsent(Pair.of(type, name), k -> {
+                    try {
+                        return Optional.ofNullable(getBeanInternal(name, type));
+                    } catch (ScopeBeanException e) {
+                        return Optional.of(e);
+                    }
+                })
+                .orElse(null);
+        if (value instanceof ScopeBeanException) {
+            throw (ScopeBeanException) value;
+        }
+        return (T) value;
+    }
+
+    @SuppressWarnings("unchecked")
     private <T> T getBeanInternal(String name, Class<T> type) {
-        checkDestroyed();
         // All classes are derived from java.lang.Object, cannot filter bean by it
         if (type == Object.class) {
             return null;
@@ -278,6 +301,7 @@ public class ScopeBeanFactory {
                 }
             }
             registeredBeanInfos.clear();
+            beanCache.clear();
         }
     }
 

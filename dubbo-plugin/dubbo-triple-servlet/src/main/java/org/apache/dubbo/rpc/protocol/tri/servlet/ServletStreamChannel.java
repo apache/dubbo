@@ -43,12 +43,17 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 final class ServletStreamChannel implements H2StreamChannel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServletStreamChannel.class);
 
+    private final Queue<Object> writeQueue = new ConcurrentLinkedQueue<>();
+    private final AtomicBoolean writeable = new AtomicBoolean();
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final AsyncContext context;
@@ -93,6 +98,28 @@ final class ServletStreamChannel implements H2StreamChannel {
         }
     }
 
+    public void onWritePossible() {
+        if (writeable.compareAndSet(false, true)) {
+            flushQueue();
+        }
+    }
+
+    private void flushQueue() {
+        if (writeQueue.isEmpty()) {
+            return;
+        }
+        synchronized (writeQueue) {
+            Object obj;
+            while ((obj = writeQueue.poll()) != null) {
+                if (obj instanceof HttpMetadata) {
+                    writeHeaderInternal((HttpMetadata) obj);
+                } else if (obj instanceof HttpOutputMessage) {
+                    writeMessageInternal((HttpOutputMessage) obj);
+                }
+            }
+        }
+    }
+
     @Override
     public CompletableFuture<Void> writeResetFrame(long errorCode) {
         if (isGrpc) {
@@ -129,6 +156,16 @@ final class ServletStreamChannel implements H2StreamChannel {
 
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
+        if (writeable.get()) {
+            flushQueue();
+            writeHeaderInternal(httpMetadata);
+        } else {
+            writeQueue.add(httpMetadata);
+        }
+        return completed();
+    }
+
+    private void writeHeaderInternal(HttpMetadata httpMetadata) {
         boolean endStream = false;
         boolean isHttp1 = true;
         if (httpMetadata instanceof Http2Header) {
@@ -145,11 +182,11 @@ final class ServletStreamChannel implements H2StreamChannel {
                     }
                     return map;
                 });
-                return completed();
+                return;
             }
 
             if (response.isCommitted()) {
-                return completed();
+                return;
             }
 
             for (Entry<CharSequence, String> entry : headers) {
@@ -173,11 +210,20 @@ final class ServletStreamChannel implements H2StreamChannel {
                 context.complete();
             }
         }
-        return completed();
     }
 
     @Override
     public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
+        if (writeable.get()) {
+            flushQueue();
+            writeMessageInternal(httpOutputMessage);
+        } else {
+            writeQueue.add(httpOutputMessage);
+        }
+        return completed();
+    }
+
+    private void writeMessageInternal(HttpOutputMessage httpOutputMessage) {
         boolean endStream = false;
         if (httpOutputMessage instanceof Http2OutputMessage) {
             endStream = ((Http2OutputMessage) httpOutputMessage).isEndStream();
@@ -196,7 +242,6 @@ final class ServletStreamChannel implements H2StreamChannel {
                 context.complete();
             }
         }
-        return completed();
     }
 
     @Override

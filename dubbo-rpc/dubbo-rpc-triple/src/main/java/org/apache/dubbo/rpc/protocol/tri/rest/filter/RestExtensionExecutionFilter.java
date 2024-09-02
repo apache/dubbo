@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.AppResponse;
@@ -58,6 +59,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RestExtensionExecutionFilter.class);
     private static final String KEY = RestExtensionExecutionFilter.class.getSimpleName();
+    private static final String REST_FILTER_CACHE = "REST_FILTER_CACHE";
 
     private final Map<RestFilter, RadixTree<Boolean>> filterTreeCache = CollectionUtils.newConcurrentHashMap();
     private final ApplicationModel applicationModel;
@@ -191,15 +193,10 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
     }
 
     private RestFilter[] getFilters(Invoker<?> invoker) {
-        URL url = invoker.getUrl();
-        return (RestFilter[]) url.getServiceModel()
-                .getServiceMetadata()
-                .getAttributeMap()
-                .computeIfAbsent(RestConstants.EXTENSIONS_ATTRIBUTE_KEY, k -> loadFilters(url));
+        return UrlUtils.computeServiceAttribute(invoker.getUrl(), REST_FILTER_CACHE, this::loadFilters);
     }
 
     private RestFilter[] loadFilters(URL url) {
-        LOGGER.info("Loading rest filters for {}", url);
         List<RestFilter> extensions = new ArrayList<>();
 
         // 1. load from extension config
@@ -228,6 +225,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         // 3. sorts by order
         extensions.sort(Comparator.comparingInt(RestUtils::getPriority));
 
+        LOGGER.info("Rest filters for [{}] loaded: {}", url, extensions);
         return extensions.toArray(new RestFilter[0]);
     }
 
