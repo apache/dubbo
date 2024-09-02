@@ -273,7 +273,7 @@ public abstract class AbstractServerHttpChannelObserver implements CustomizableH
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         closed();
     }
 

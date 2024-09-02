@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.FluentLogger;
-import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
@@ -54,13 +54,13 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         implements HttpTransportListener<HEADER, MESSAGE> {
 
     private static final FluentLogger LOGGER = FluentLogger.of(AbstractServerTransportListener.class);
+    private static final String HEADER_FILTERS_CACHE = "HEADER_FILTERS_CACHE";
 
     private final FrameworkModel frameworkModel;
     private final URL url;
     private final HttpChannel httpChannel;
     private final RequestRouter requestRouter;
     private final ExceptionHandler<Throwable, ?> exceptionHandler;
-    private final List<HeaderFilter> headerFilters;
 
     private Executor executor;
     private HEADER httpMetadata;
@@ -73,9 +73,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.httpChannel = httpChannel;
         requestRouter = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestRouter.class);
         exceptionHandler = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeExceptionHandler.class);
-        headerFilters = frameworkModel
-                .getExtensionLoader(HeaderFilter.class)
-                .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
     }
 
     @Override
@@ -125,6 +122,15 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     @Override
     public void onData(MESSAGE message) {
+        if (executor == null) {
+            try {
+                Throwable t = new NullPointerException("Executor not initialized");
+                logError(t);
+                onError(message, t);
+            } finally {
+                onFinally(message);
+            }
+        }
         executor.execute(() -> {
             try {
                 doOnData(message);
@@ -179,7 +185,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             if (context != null) {
                 MethodDescriptor md = context.getMethodDescriptor();
                 if (md != null) {
-                    sb.append(", method=").append(MethodUtils.toShortString(md.getMethod()));
+                    sb.append(", method=").append(md);
                 }
                 if (TripleProtocol.VERBOSE_ENABLED) {
                     Invoker<?> invoker = context.getInvoker();
@@ -198,7 +204,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             }
             return sb.toString();
         };
-        LOGGER.msg(msg).log(exceptionHandler.resolveLogLevel(t), t);
+        try {
+            LOGGER.msg(msg).log(exceptionHandler.resolveLogLevel(t), t);
+        } catch (Throwable ignored) {
+        }
     }
 
     protected void onError(Throwable throwable) {
@@ -261,12 +270,25 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         if (null != consumerAppName) {
             inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY, consumerAppName);
         }
+
         // customizer RpcInvocation
-        headerFilters.forEach(f -> f.invoke(invoker, inv));
+        HeaderFilter[] headerFilters =
+                UrlUtils.computeServiceAttribute(invoker.getUrl(), HEADER_FILTERS_CACHE, this::loadHeaderFilters);
+        for (HeaderFilter headerFilter : headerFilters) {
+            headerFilter.invoke(invoker, inv);
+        }
 
         initializeAltSvc(url);
 
         return onBuildRpcInvocationCompletion(inv);
+    }
+
+    private HeaderFilter[] loadHeaderFilters(URL url) {
+        List<HeaderFilter> headerFilters = frameworkModel
+                .getExtensionLoader(HeaderFilter.class)
+                .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
+        LOGGER.info("Header filters for [{}] loaded: {}", url, headerFilters);
+        return headerFilters.toArray(new HeaderFilter[0]);
     }
 
     /**

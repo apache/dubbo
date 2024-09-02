@@ -119,7 +119,7 @@ public class DefaultHttp11ServerTransportListener
     }
 
     @Override
-    public void close() throws Exception {
+    protected void onFinally(HttpInputMessage message) {
         serverChannelObserver.close();
     }
 

@@ -211,7 +211,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         getServerChannelObserver().close();
     }
 

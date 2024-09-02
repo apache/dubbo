@@ -256,7 +256,9 @@ public class TripleFilter implements Filter {
         }
 
         @Override
-        public void onWritePossible() {}
+        public void onWritePossible() {
+            channel.onWritePossible();
+        }
 
         @Override
         public void onError(Throwable t) {

@@ -105,7 +105,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         super.close();
         streamingDecoder.onStreamClosed();
     }
