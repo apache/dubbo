@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.xds;
 
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
-public interface XdsListener {
-    void process(DiscoveryResponse discoveryResponse);
+public interface XdsRawResourceListener<T extends ResourceUpdate> {
+    void onResourceUpdate(T resourceUpdate);
 }

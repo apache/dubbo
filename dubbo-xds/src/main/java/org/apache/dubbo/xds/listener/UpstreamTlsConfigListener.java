@@ -52,7 +52,6 @@ public class UpstreamTlsConfigListener implements CdsListener {
         this.tlsConfigRepository = application.getBeanFactory().getOrRegisterBean(XdsTlsConfigRepository.class);
     }
 
-    @Override
     public void onResourceUpdate(List<CdsUpdate> resources) {
         Map<String, UpstreamTlsConfig> configs = new ConcurrentHashMap<>(16);
         List<Cluster> clusters =

@@ -18,122 +18,42 @@ package org.apache.dubbo.xds;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.directory.XdsDirectory;
-import org.apache.dubbo.xds.protocol.XdsResourceListener;
-import org.apache.dubbo.xds.protocol.impl.CdsProtocol;
-import org.apache.dubbo.xds.protocol.impl.EdsProtocol;
-import org.apache.dubbo.xds.protocol.impl.LdsProtocol;
-import org.apache.dubbo.xds.protocol.impl.RdsProtocol;
-import org.apache.dubbo.xds.resource.route.VirtualHost;
-import org.apache.dubbo.xds.resource.update.EdsUpdate;
-import org.apache.dubbo.xds.resource.update.RdsUpdate;
+import org.apache.dubbo.xds.resource.XdsResourceType;
+import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PilotExchanger {
 
+    private int pollingTimeout;
+    private ApplicationModel applicationModel;
     protected final AdsObserver adsObserver;
-
-    protected final LdsProtocol ldsProtocol;
-
-    protected final RdsProtocol rdsProtocol;
-
-    protected final EdsProtocol edsProtocol;
-
-    protected final CdsProtocol cdsProtocol;
 
     private final Set<String> domainObserveRequest = new ConcurrentHashSet<String>();
 
     private static PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
 
-    private static final Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
-
-    private static final Map<String, EdsUpdate> xdsEndpointMap = new ConcurrentHashMap<>();
-
-    private final Map<String, Set<XdsDirectory>> rdsListeners = new ConcurrentHashMap<>();
-
-    private final Map<String, Set<XdsDirectory>> cdsListeners = new ConcurrentHashMap<>();
-
     protected PilotExchanger(URL url) {
-        int pollingTimeout = url.getParameter("pollingTimeout", 10);
+        this.pollingTimeout = url.getParameter("pollingTimeout", 10);
         adsObserver = new AdsObserver(url, NodeBuilder.build());
-
-        this.rdsProtocol =
-                new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
-        this.edsProtocol =
-                new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
-        this.ldsProtocol =
-                new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
-        this.cdsProtocol =
-                new CdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout, url.getOrDefaultApplicationModel());
-
-        XdsResourceListener<RdsUpdate> pilotRdsListener = xdsRouteConfigurations -> xdsRouteConfigurations.forEach(
-                xdsRouteConfiguration -> xdsRouteConfiguration.getVirtualHosts().forEach(virtualHost -> {
-                    String serviceName = virtualHost.getDomains().get(0).split("\\.")[0];
-                    this.xdsVirtualHostMap.put(serviceName, virtualHost);
-                    // when resource update, notify subscribers
-                    if (rdsListeners.containsKey(serviceName)) {
-                        for (XdsDirectory listener : rdsListeners.get(serviceName)) {
-                            listener.onRdsChange(serviceName, virtualHost);
-                        }
-                    }
-                }));
-
-        XdsResourceListener<EdsUpdate> pilotEdsListener = edsUpdates -> {
-            edsUpdates.forEach(edsUpdate -> {
-                this.xdsEndpointMap.put(edsUpdate.getClusterName(), edsUpdate);
-                if (cdsListeners.containsKey(edsUpdate.getClusterName())) {
-                    for (XdsDirectory listener : cdsListeners.get(edsUpdate.getClusterName())) {
-                        listener.onEdsChange(edsUpdate.getClusterName(), edsUpdate);
-                    }
-                }
-            });
-        };
-
-        this.rdsProtocol.registerListen(pilotRdsListener);
-        this.edsProtocol.registerListen(pilotEdsListener);
-        // lds resources callback，listen to all rds resources in the callback function
-        this.ldsProtocol.registerListen(rdsProtocol.getLdsListener());
-        this.cdsProtocol.registerListen(edsProtocol.getCdsListener());
-
-        // cds resources callback，listen to all cds resources in the callback function
-        this.cdsProtocol.subscribeClusters();
-        this.ldsProtocol.subscribeListeners();
+        this.applicationModel = url.getOrDefaultApplicationModel();
     }
 
-    public static Map<String, VirtualHost> getXdsVirtualHostMap() {
-        return xdsVirtualHostMap;
-    }
+    public <T extends ResourceUpdate> void subscribeXdsResource(
+            String resourceName, XdsResourceType<T> resourceType, XdsResourceListener<T> resourceListener) {
+        if (!adsObserver.hasSubscribed(resourceType)) {
+            adsObserver.saveSubscribedType(resourceType);
+        }
 
-    public static Map<String, EdsUpdate> getXdsEndpointMap() {
-        return xdsEndpointMap;
-    }
-
-    public void subscribeRds(String applicationName, XdsDirectory listener) {
-        rdsListeners.computeIfAbsent(applicationName, key -> new ConcurrentHashSet<>());
-        rdsListeners.get(applicationName).add(listener);
-        if (xdsVirtualHostMap.containsKey(applicationName)) {
-            listener.onRdsChange(applicationName, this.xdsVirtualHostMap.get(applicationName));
+        XdsRawResourceProtocol<T> xdsProtocol = adsObserver.addListener(resourceName, resourceType);
+        if (xdsProtocol != null) {
+            xdsProtocol.subscribeResource(resourceName, resourceType, resourceListener);
         }
     }
 
-    public void unSubscribeRds(String applicationName, XdsDirectory listener) {
-        rdsListeners.get(applicationName).remove(listener);
-    }
-
-    public void subscribeCds(String clusterName, XdsDirectory listener) {
-        cdsListeners.computeIfAbsent(clusterName, key -> new ConcurrentHashSet<>());
-        cdsListeners.get(clusterName).add(listener);
-        if (xdsEndpointMap.containsKey(clusterName)) {
-            listener.onEdsChange(clusterName, xdsEndpointMap.get(clusterName));
-        }
-    }
-
-    public void unSubscribeCds(String clusterName, XdsDirectory listener) {
-        cdsListeners.get(clusterName).remove(listener);
-    }
+    public void unSubscribeXdsResource(String clusterName, XdsDirectory listener) {}
 
     public static PilotExchanger initialize(URL url) {
         synchronized (PilotExchanger.class) {

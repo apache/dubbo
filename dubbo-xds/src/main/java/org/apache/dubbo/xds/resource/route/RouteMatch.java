@@ -47,16 +47,16 @@ public final class RouteMatch {
         this.fractionMatcher = fractionMatcher;
     }
 
-    PathMatcher pathMatcher() {
+    public PathMatcher getPathMatcher() {
         return pathMatcher;
     }
 
-    List<HeaderMatcher> headerMatchers() {
+    public List<HeaderMatcher> getHeaderMatchers() {
         return headerMatchers;
     }
 
     @Nullable
-    FractionMatcher fractionMatcher() {
+    public FractionMatcher getFractionMatcher() {
         return fractionMatcher;
     }
 
@@ -71,11 +71,11 @@ public final class RouteMatch {
         }
         if (o instanceof RouteMatch) {
             RouteMatch that = (RouteMatch) o;
-            return this.pathMatcher.equals(that.pathMatcher())
-                    && this.headerMatchers.equals(that.headerMatchers())
+            return this.pathMatcher.equals(that.getPathMatcher())
+                    && this.headerMatchers.equals(that.getHeaderMatchers())
                     && (this.fractionMatcher == null
-                            ? that.fractionMatcher() == null
-                            : this.fractionMatcher.equals(that.fractionMatcher()));
+                            ? that.getFractionMatcher() == null
+                            : this.fractionMatcher.equals(that.getFractionMatcher()));
         }
         return false;
     }
