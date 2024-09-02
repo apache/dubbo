@@ -23,16 +23,9 @@ import org.apache.dubbo.xds.directory.XdsResourceListener;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
 
@@ -44,23 +37,6 @@ public class XdsRawResourceProtocol<T extends ResourceUpdate> {
     protected AdsObserver adsObserver;
 
     protected final Node node;
-
-    protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
-    protected final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-
-    protected final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-
-    protected Set<String> observeResourcesName;
-
-    public static final String emptyResourceName = "emptyResourcesName";
-    private final ReentrantLock resourceLock = new ReentrantLock();
-
-    protected Map<Set<String>, List<Consumer<Map<String, T>>>> consumerObserveMap = new ConcurrentHashMap<>();
-
-    public Map<Set<String>, List<Consumer<Map<String, T>>>> getConsumerObserveMap() {
-        return consumerObserveMap;
-    }
 
     private XdsResourceType<T> resourceTypeInstance;
 
@@ -80,43 +56,6 @@ public class XdsRawResourceProtocol<T extends ResourceUpdate> {
 
     public String getTypeUrl() {
         return resourceTypeInstance.typeUrl();
-    }
-
-    private void discoveryResponseListener(Map<String, T> oldResult, Map<String, T> newResult) {
-        Set<String> changedResourceNames = new HashSet<>();
-        oldResult.forEach((key, origin) -> {
-            if (!Objects.equals(origin, newResult.get(key))) {
-                changedResourceNames.add(key);
-            }
-        });
-        newResult.forEach((key, origin) -> {
-            if (!Objects.equals(origin, oldResult.get(key))) {
-                changedResourceNames.add(key);
-            }
-        });
-        if (changedResourceNames.isEmpty()) {
-            return;
-        }
-
-        logger.info("Receive resource update notification from xds server. Change resource count: "
-                + changedResourceNames.stream() + ". Type: " + getTypeUrl());
-
-        // call once for full data
-        try {
-            readLock.lock();
-            for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
-                if (entry.getKey().stream().noneMatch(changedResourceNames::contains)) {
-                    // none update
-                    continue;
-                }
-
-                Map<String, T> dsResultMap =
-                        entry.getKey().stream().collect(Collectors.toMap(k -> k, v -> newResult.get(v)));
-                entry.getValue().forEach(o -> o.accept(dsResultMap));
-            }
-        } finally {
-            readLock.unlock();
-        }
     }
 
     public void onResourceUpdate(T resourceUpdate) {
