@@ -100,7 +100,7 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
     }
 
     @Override
-    String typeUrl() {
+    public String typeUrl() {
         return ADS_TYPE_URL_RDS;
     }
 
