@@ -110,6 +110,16 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
         }
     }
 
+    @Override
+    public V putIfAbsent(K key, V value) {
+        lock.lock();
+        try {
+            return super.putIfAbsent(key, value);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void lock() {
         lock.lock();
     }
