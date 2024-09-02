@@ -85,6 +85,16 @@ public class ServletHttpResponseAdapter extends DefaultHttpResponse implements H
     }
 
     @Override
+    public void setHeader(String name, String value) {
+        super.setHeader(name, value);
+    }
+
+    @Override
+    public void addHeader(String name, String value) {
+        super.addHeader(name, value);
+    }
+
+    @Override
     public void setIntHeader(String name, int value) {
         setHeader(name, String.valueOf(value));
     }

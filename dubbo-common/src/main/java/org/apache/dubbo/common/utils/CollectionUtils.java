@@ -286,7 +286,7 @@ public class CollectionUtils {
      * @return whether the given Map is empty
      */
     public static boolean isEmptyMap(Map map) {
-        return map == null || map.size() == 0;
+        return map == null || map.isEmpty();
     }
 
     /**

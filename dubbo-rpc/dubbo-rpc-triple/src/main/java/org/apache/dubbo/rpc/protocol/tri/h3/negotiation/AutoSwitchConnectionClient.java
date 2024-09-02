@@ -24,7 +24,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -68,7 +68,7 @@ public class AutoSwitchConnectionClient extends AbstractConnectionClient {
 
     private String getBaseUrl() {
         boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
-        CharSequence scheme = ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
+        CharSequence scheme = ssl ? TripleConstants.HTTPS_SCHEME : TripleConstants.HTTP_SCHEME;
         return scheme + "://" + url.getHost() + ':' + url.getPort() + '/';
     }
 

@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.test;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
-import org.apache.dubbo.remoting.http12.h2.Http2Headers;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 
 import java.io.ByteArrayInputStream;
@@ -27,6 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 
 @SuppressWarnings("unchecked")
 public class TestResponse {
@@ -52,7 +53,7 @@ public class TestResponse {
     }
 
     public int getStatus() {
-        return Integer.parseInt(headers.getFirst(Http2Headers.STATUS.getName()));
+        return Integer.parseInt(headers.getFirst(PseudoHeaderName.STATUS.value()));
     }
 
     public boolean isOk() {
@@ -60,7 +61,7 @@ public class TestResponse {
     }
 
     public String getContentType() {
-        return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getKey());
     }
 
     public <T> T getBody(Class<T> type) {

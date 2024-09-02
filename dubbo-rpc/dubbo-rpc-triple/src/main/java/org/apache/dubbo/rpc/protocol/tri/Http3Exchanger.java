@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
-
 public final class Http3Exchanger {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(Http3Exchanger.class);
@@ -51,14 +49,11 @@ public final class Http3Exchanger {
     private Http3Exchanger() {}
 
     public static void init(Configuration configuration) {
-        boolean enabled = configuration.getBoolean(Constants.H3_SETTINGS_HTTP3_ENABLED, false);
-        if (enabled) {
-            if (HAS_NETTY_HTTP3) {
-                ENABLED = true;
-                NEGOTIATION_ENABLED = configuration.getBoolean(Constants.H3_SETTINGS_HTTP3_NEGOTIATION, true);
-                return;
-            }
-            LOGGER.warn(PROTOCOL_UNSUPPORTED, "", "", "Class for netty http3 not found, HTTP/3 support is not enabled");
+        ENABLED = configuration.getBoolean(Constants.H3_SETTINGS_HTTP3_ENABLED, false);
+        NEGOTIATION_ENABLED = configuration.getBoolean(Constants.H3_SETTINGS_HTTP3_NEGOTIATION, true);
+
+        if (ENABLED && !HAS_NETTY_HTTP3) {
+            throw new IllegalStateException("Class for netty http3 support not found");
         }
     }
 

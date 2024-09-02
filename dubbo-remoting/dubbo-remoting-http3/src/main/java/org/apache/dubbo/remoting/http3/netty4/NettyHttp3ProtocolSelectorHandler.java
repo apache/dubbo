@@ -17,8 +17,6 @@
 package org.apache.dubbo.remoting.http3.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
@@ -48,8 +46,7 @@ public class NettyHttp3ProtocolSelectorHandler extends SimpleChannelInboundHandl
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpMetadata metadata) {
-        HttpHeaders headers = metadata.headers();
-        String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        String contentType = metadata.contentType();
         Http3ServerTransportListenerFactory factory = determineHttp3ServerTransportListenerFactory(contentType);
         if (factory == null) {
             throw new UnsupportedMediaTypeException(contentType);

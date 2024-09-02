@@ -30,7 +30,7 @@ public class Http2ServerCallToObserverAdapter extends Http2ServerStreamObserver
         super(frameworkModel, h2StreamChannel);
         setHeadersCustomizer(headers -> {
             if (exceptionCode != 0) {
-                headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
+                headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getKey(), String.valueOf(exceptionCode));
             }
         });
     }

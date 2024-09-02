@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 
-public class Http2MetadataFrame implements Http2Header {
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
+
+public final class Http2MetadataFrame implements Http2Header {
 
     private final long streamId;
 
@@ -28,7 +29,7 @@ public class Http2MetadataFrame implements Http2Header {
     private final boolean endStream;
 
     public Http2MetadataFrame(HttpHeaders headers) {
-        this(headers, false);
+        this(-1L, headers, false);
     }
 
     public Http2MetadataFrame(HttpHeaders headers, boolean endStream) {
@@ -47,6 +48,16 @@ public class Http2MetadataFrame implements Http2Header {
     }
 
     @Override
+    public String method() {
+        return headers.getFirst(PseudoHeaderName.METHOD.value());
+    }
+
+    @Override
+    public String path() {
+        return headers.getFirst(PseudoHeaderName.PATH.value());
+    }
+
+    @Override
     public long id() {
         return streamId;
     }
@@ -59,7 +70,7 @@ public class Http2MetadataFrame implements Http2Header {
     @Override
     public String toString() {
         return "Http2MetadataFrame{method='" + method() + '\'' + ", uri='" + path() + '\'' + ", contentType='"
-                + headers().getFirst(HttpHeaderNames.CONTENT_TYPE.getName()) + "', streamId=" + streamId
-                + ", endStream=" + endStream + '}';
+                + contentType() + "', streamId=" + streamId + ", endStream="
+                + endStream + '}';
     }
 }

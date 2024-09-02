@@ -83,6 +83,11 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         return new Http2ServerCallToObserverAdapter(frameworkModel, h2StreamChannel);
     }
 
+    protected Http2ServerChannelObserver newHttp2ServerUnaryChannelObserver(
+            FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        return new Http2ServerUnaryChannelObserver(frameworkModel, h2StreamChannel);
+    }
+
     @Override
     protected Executor initializeExecutor(Http2Header metadata) {
         return new SerializingExecutor(executorSupport.getExecutor(metadata));
@@ -123,7 +128,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     protected void onUnary() {
-        serverChannelObserver = new Http2ServerUnaryChannelObserver(frameworkModel, h2StreamChannel);
+        serverChannelObserver = newHttp2ServerUnaryChannelObserver(frameworkModel, h2StreamChannel);
         serverChannelObserver.setResponseEncoder(JsonCodec.INSTANCE);
         serverChannelObserver.setStreamingDecoder(streamingDecoder);
     }

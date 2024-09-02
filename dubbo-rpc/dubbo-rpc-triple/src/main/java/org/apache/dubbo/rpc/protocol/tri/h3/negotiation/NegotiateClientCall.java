@@ -19,7 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.h3.negotiation;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
@@ -32,7 +33,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
@@ -90,7 +90,7 @@ public class NegotiateClientCall {
     private Http2HeadersFrame buildHeaders(URL url) {
         Http2Headers headers = new DefaultHttp2Headers(false);
         boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
-        CharSequence scheme = ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
+        CharSequence scheme = ssl ? TripleConstants.HTTPS_SCHEME : TripleConstants.HTTP_SCHEME;
         headers.scheme(scheme)
                 .authority(url.getAddress())
                 .method(HttpMethod.OPTIONS.asciiName())
@@ -111,11 +111,14 @@ public class NegotiateClientCall {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
+            if (endStream) {
+                return;
+            }
             CharSequence line = headers.status();
             if (line != null) {
                 HttpResponseStatus status = HttpResponseStatus.parseLine(line);
                 if (status.code() < 500) {
-                    CharSequence altSvc = headers.get(HttpHeaderNames.ALT_SVC);
+                    CharSequence altSvc = headers.get(HttpHeaderNames.ALT_SVC.getKey());
                     executor.execute(() -> future.complete(String.valueOf(altSvc)));
                     return;
                 }

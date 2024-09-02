@@ -33,12 +33,11 @@ public class CodeUtilsTest {
     @Test
     void testDetermineHttpCodec() {
         CodecUtils codecUtils = new CodecUtils(FrameworkModel.defaultModel());
-        HttpHeaders headers = new HttpHeaders();
-        headers.put(
-                HttpHeaderNames.CONTENT_TYPE.getName(),
-                Collections.singletonList(MediaType.APPLICATION_JSON.getName()));
-        HttpMessageDecoder decoder =
-                codecUtils.determineHttpMessageDecoder(null, FrameworkModel.defaultModel(), headers.getContentType());
+        HttpHeaders headers = HttpHeaders.create();
+        headers.set(
+                HttpHeaderNames.CONTENT_TYPE.getKey(), Collections.singletonList(MediaType.APPLICATION_JSON.getName()));
+        HttpMessageDecoder decoder = codecUtils.determineHttpMessageDecoder(
+                null, FrameworkModel.defaultModel(), headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getKey()));
         Assertions.assertNotNull(decoder);
         Assertions.assertEquals(JsonPbCodec.class, decoder.getClass());
 

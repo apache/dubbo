@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
+package org.apache.dubbo.rpc.protocol.tri.h3;
 
+import org.apache.dubbo.remoting.http12.HttpConstants;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
+import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 
-import javax.ws.rs.core.AbstractMultivaluedMap;
+import io.netty.incubator.codec.http3.DefaultHttp3Headers;
 
-import java.util.List;
-import java.util.Map;
+public final class Helper {
 
-public final class MultivaluedMapWrapper<K, V> extends AbstractMultivaluedMap<K, V> {
+    private Helper() {}
 
-    public MultivaluedMapWrapper(Map<K, List<V>> store) {
-        super(store);
+    public static HttpMetadata encodeHttpMetadata() {
+        HttpHeaders headers = new NettyHttpHeaders<>(new DefaultHttp3Headers(false, 8));
+        headers.set(HttpHeaderNames.TE.getKey(), HttpConstants.TRAILERS);
+        return new Http2MetadataFrame(headers);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public MultivaluedMapWrapper(HttpHeaders headers) {
-        super((Map) headers.asMap());
+    public static HttpMetadata encodeTrailers() {
+        return new Http2MetadataFrame(new NettyHttpHeaders<>(new DefaultHttp3Headers(false, 4)), true);
     }
 }

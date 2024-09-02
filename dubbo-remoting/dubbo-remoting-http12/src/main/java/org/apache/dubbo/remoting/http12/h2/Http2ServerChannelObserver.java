@@ -20,11 +20,15 @@ import org.apache.dubbo.remoting.http12.AbstractServerHttpChannelObserver;
 import org.apache.dubbo.remoting.http12.ErrorCodeHolder;
 import org.apache.dubbo.remoting.http12.FlowControlStreamObserver;
 import org.apache.dubbo.remoting.http12.HttpChannelObserver;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 import org.apache.dubbo.rpc.CancellationContext;
+
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
 public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver
         implements HttpChannelObserver<Object>,
@@ -47,14 +51,14 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     @Override
     protected HttpMetadata encodeHttpMetadata() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaderNames.TE.getName(), "trailers");
-        return new Http2MetadataFrame(httpHeaders);
+        HttpHeaders headers = new NettyHttpHeaders<>(new DefaultHttp2Headers(false, 8));
+        headers.set(HttpHeaderNames.TE.getKey(), HttpConstants.TRAILERS);
+        return new Http2MetadataFrame(headers);
     }
 
     @Override
     protected HttpMetadata encodeTrailers(Throwable throwable) {
-        return new Http2MetadataFrame(new HttpHeaders(), true);
+        return new Http2MetadataFrame(new NettyHttpHeaders<>(new DefaultHttp2Headers(false, 4)), true);
     }
 
     @Override

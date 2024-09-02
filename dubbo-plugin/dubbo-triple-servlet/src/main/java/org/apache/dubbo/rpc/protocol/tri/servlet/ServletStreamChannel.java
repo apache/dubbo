@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.servlet;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -41,7 +41,6 @@ import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -79,7 +78,7 @@ final class ServletStreamChannel implements H2StreamChannel {
             if (isGrpc) {
                 response.setTrailerFields(() -> {
                     Map<String, String> map = new HashMap<>();
-                    map.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(code));
+                    map.put(TripleHeaderEnum.STATUS_KEY.getName(), String.valueOf(code));
                     return map;
                 });
                 return;
@@ -178,8 +177,8 @@ final class ServletStreamChannel implements H2StreamChannel {
             if (endStream) {
                 response.setTrailerFields(() -> {
                     Map<String, String> map = new HashMap<>();
-                    for (Entry<String, List<String>> entry : headers.entrySet()) {
-                        map.put(entry.getKey(), entry.getValue().get(0));
+                    for (Entry<CharSequence, String> entry : headers) {
+                        map.put(entry.getKey().toString(), entry.getValue());
                     }
                     return map;
                 });
@@ -190,25 +189,19 @@ final class ServletStreamChannel implements H2StreamChannel {
                 return;
             }
 
-            for (Entry<String, List<String>> entry : headers.entrySet()) {
-                String key = entry.getKey();
-                List<String> values = entry.getValue();
+            for (Entry<CharSequence, String> entry : headers) {
+                String key = entry.getKey().toString();
+                String value = entry.getValue();
                 if (HttpHeaderNames.STATUS.getName().equals(key)) {
-                    response.setStatus(Integer.parseInt(values.get(0)));
+                    response.setStatus(Integer.parseInt(value));
                     continue;
                 }
                 if (isHttp1
                         && HttpHeaderNames.TRANSFER_ENCODING.getName().equals(key)
-                        && "chunked".equals(CollectionUtils.first(values))) {
+                        && HttpConstants.CHUNKED.equals(value)) {
                     continue;
                 }
-                if (values.size() == 1) {
-                    response.setHeader(key, values.get(0));
-                } else {
-                    for (int i = 0, size = values.size(); i < size; i++) {
-                        response.addHeader(key, values.get(i));
-                    }
-                }
+                response.addHeader(key, value);
             }
         } catch (Throwable t) {
             LOGGER.info("Failed to write header", t);

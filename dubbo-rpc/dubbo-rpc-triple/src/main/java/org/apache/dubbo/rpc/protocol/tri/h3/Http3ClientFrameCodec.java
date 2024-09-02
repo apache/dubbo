@@ -17,9 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri.h3;
 
 import org.apache.dubbo.remoting.http3.netty4.Http2HeadersAdapter;
+import org.apache.dubbo.remoting.http3.netty4.Http3HeadersAdapter;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-
-import java.util.Map;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -33,13 +32,11 @@ import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
-import io.netty.incubator.codec.http3.DefaultHttp3Headers;
 import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
 import io.netty.incubator.codec.http3.Http3DataFrame;
 import io.netty.incubator.codec.http3.Http3ErrorCode;
 import io.netty.incubator.codec.http3.Http3Exception;
 import io.netty.incubator.codec.http3.Http3GoAwayFrame;
-import io.netty.incubator.codec.http3.Http3Headers;
 import io.netty.incubator.codec.http3.Http3HeadersFrame;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 
@@ -52,7 +49,7 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof Http3HeadersFrame) {
             Http2HeadersAdapter headers = new Http2HeadersAdapter(((Http3HeadersFrame) msg).headers());
-            boolean endStream = headers.contains(TripleHeaderEnum.STATUS_KEY.getHeader());
+            boolean endStream = headers.contains(TripleHeaderEnum.STATUS_KEY.getKey());
             ctx.fireChannelRead(new DefaultHttp2HeadersFrame(headers, endStream));
         } else if (msg instanceof Http3DataFrame) {
             ctx.fireChannelRead(new DefaultHttp2DataFrame(((Http3DataFrame) msg).content()));
@@ -72,11 +69,7 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             Http2HeadersFrame frame = (Http2HeadersFrame) msg;
-            Http3Headers headers = new DefaultHttp3Headers();
-            for (Map.Entry<CharSequence, CharSequence> header : frame.headers()) {
-                headers.set(header.getKey(), header.getValue());
-            }
-            ctx.write(new DefaultHttp3HeadersFrame(headers), promise);
+            ctx.write(new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), promise);
             if (frame.isEndStream()) {
                 ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
             }
