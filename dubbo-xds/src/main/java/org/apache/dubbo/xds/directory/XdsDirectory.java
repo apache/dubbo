@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.xds.PilotExchanger;
-import org.apache.dubbo.xds.XdsResourceListener;
 import org.apache.dubbo.xds.directory.XdsDirectory.LdsUpdateWatcher.RdsUpdateWatcher;
 import org.apache.dubbo.xds.resource.XdsClusterResource;
 import org.apache.dubbo.xds.resource.XdsListenerResource;

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.directory.XdsDirectory;
+import org.apache.dubbo.xds.directory.XdsResourceListener;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 

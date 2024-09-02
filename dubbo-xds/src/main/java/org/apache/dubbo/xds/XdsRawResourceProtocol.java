@@ -19,6 +19,7 @@ package org.apache.dubbo.xds;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.xds.directory.XdsResourceListener;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
 
-public class XdsRawResourceProtocol<T extends ResourceUpdate> implements XdsRawResourceListener<T> {
+public class XdsRawResourceProtocol<T extends ResourceUpdate> {
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(XdsRawResourceProtocol.class);
@@ -118,7 +119,6 @@ public class XdsRawResourceProtocol<T extends ResourceUpdate> implements XdsRawR
         }
     }
 
-    @Override
     public void onResourceUpdate(T resourceUpdate) {
         if (resourceUpdate == null) {
             return;

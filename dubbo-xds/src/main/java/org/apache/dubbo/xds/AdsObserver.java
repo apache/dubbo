@@ -54,7 +54,7 @@ public class AdsObserver {
     private final Node node;
     private volatile XdsChannel xdsChannel;
 
-    private final Map<XdsResourceType<?>, ConcurrentMap<String, XdsRawResourceListener>> rawResourceListeners =
+    private final Map<XdsResourceType<?>, ConcurrentMap<String, XdsRawResourceProtocol>> rawResourceListeners =
             new ConcurrentHashMap<>();
 
     protected StreamObserver<DiscoveryRequest> requestObserver;
@@ -81,7 +81,7 @@ public class AdsObserver {
     @SuppressWarnings("unchecked")
     public <T extends ResourceUpdate> XdsRawResourceProtocol<T> addListener(
             String resourceName, XdsResourceType<T> clusterResourceType) {
-        ConcurrentMap<String, XdsRawResourceListener> resourceListeners =
+        ConcurrentMap<String, XdsRawResourceProtocol> resourceListeners =
                 rawResourceListeners.computeIfAbsent(clusterResourceType, k -> new ConcurrentHashMap<>());
         return (XdsRawResourceProtocol<T>) resourceListeners.computeIfAbsent(
                 resourceName,
@@ -93,10 +93,10 @@ public class AdsObserver {
     }
 
     public Set<String> getResourcesToObserve(XdsResourceType<?> resourceType) {
-        Map<String, XdsRawResourceListener> listenerMap =
+        Map<String, XdsRawResourceProtocol> listenerMap =
                 rawResourceListeners.getOrDefault(resourceType, new ConcurrentHashMap<>());
         Set<String> resourceNames = new HashSet<>();
-        for (Map.Entry<String, XdsRawResourceListener> entry : listenerMap.entrySet()) {
+        for (Map.Entry<String, XdsRawResourceProtocol> entry : listenerMap.entrySet()) {
             resourceNames.add(entry.getKey());
         }
         return resourceNames;
@@ -115,11 +115,11 @@ public class AdsObserver {
                 .collect(Collectors.toConcurrentMap(
                         Entry::getKey, e -> e.getValue().getResourceUpdate()));
 
-        Map<String, XdsRawResourceListener> resourceListenerMap =
+        Map<String, XdsRawResourceProtocol> resourceListenerMap =
                 rawResourceListeners.getOrDefault(resourceTypeInstance, new ConcurrentHashMap<>());
-        for (Map.Entry<String, XdsRawResourceListener> entry : resourceListenerMap.entrySet()) {
+        for (Map.Entry<String, XdsRawResourceProtocol> entry : resourceListenerMap.entrySet()) {
             String resourceName = entry.getKey();
-            XdsRawResourceListener rawResourceListener = entry.getValue();
+            XdsRawResourceProtocol rawResourceListener = entry.getValue();
             if (parsedResources.containsKey(resourceName)) {
                 rawResourceListener.onResourceUpdate(parsedResources.get(resourceName));
             }
