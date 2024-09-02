@@ -72,7 +72,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
 
     abstract String typeName();
 
-    abstract String typeUrl();
+    public abstract String typeUrl();
 
     // Do not confuse with the SotW approach: it is the mechanism in which the client must specify all
     // resource names it is interested in with each request. Different resource types may behave

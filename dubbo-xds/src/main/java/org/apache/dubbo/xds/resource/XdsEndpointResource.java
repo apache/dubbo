@@ -62,7 +62,7 @@ public class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
     }
 
     @Override
-    String typeUrl() {
+    public String typeUrl() {
         return ADS_TYPE_URL_EDS;
     }
 

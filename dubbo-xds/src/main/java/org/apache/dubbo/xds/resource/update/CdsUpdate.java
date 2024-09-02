@@ -31,13 +31,13 @@ import io.envoyproxy.envoy.config.cluster.v3.Cluster;
 
 public class CdsUpdate implements ResourceUpdate {
 
-    enum ClusterType {
+    public enum ClusterType {
         EDS,
         LOGICAL_DNS,
         AGGREGATE
     }
 
-    enum LbPolicy {
+    public enum LbPolicy {
         ROUND_ROBIN,
         RING_HASH,
         LEAST_REQUEST

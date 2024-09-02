@@ -18,16 +18,16 @@
 syntax = "proto3";
 package org.apache.dubbo.metadata;
 
-option go_package = "dubbo.apache.org/dubbo-go/v3/metadata/triple_api";
+option go_package = "dubbo.apache.org/dubbo-go/v3/metadata/triple_api;triple_api";
 option java_package = "org.apache.dubbo.metadata";
 option java_multiple_files = true;
 
 service MetadataServiceV2{
-    rpc GetMetadataInfo(Revision) returns (MetadataInfoV2);
+    rpc GetMetadataInfo(MetadataRequest) returns (MetadataInfoV2);
 }
 
-message Revision{
-    string value = 1;
+message MetadataRequest{
+    string revision = 1;
 }
 
 message MetadataInfoV2{

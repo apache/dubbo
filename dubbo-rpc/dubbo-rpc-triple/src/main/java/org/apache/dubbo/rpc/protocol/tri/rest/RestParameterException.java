@@ -16,23 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest;
 
-import org.apache.dubbo.remoting.http12.HttpStatus;
-
 public class RestParameterException extends RestException {
 
     private static final long serialVersionUID = 1L;
-
-    public RestParameterException(Messages message, Object... arguments) {
-        super(message, arguments);
-    }
-
-    public RestParameterException(Throwable cause, Messages message, Object... arguments) {
-        super(cause, message, arguments);
-    }
-
-    public RestParameterException(String message, Throwable cause) {
-        super(message, cause);
-    }
 
     public RestParameterException(String message) {
         super(message);
@@ -42,8 +28,15 @@ public class RestParameterException extends RestException {
         super(cause);
     }
 
-    @Override
-    public int getStatusCode() {
-        return HttpStatus.PRECONDITION_FAILED.getCode();
+    public RestParameterException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RestParameterException(Messages message, Object... arguments) {
+        super(message, arguments);
+    }
+
+    public RestParameterException(Throwable cause, Messages message, Object... arguments) {
+        super(cause, message, arguments);
     }
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.config.spring.context.config;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
-import com.alibaba.spring.context.config.ConfigurationBeanCustomizer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 

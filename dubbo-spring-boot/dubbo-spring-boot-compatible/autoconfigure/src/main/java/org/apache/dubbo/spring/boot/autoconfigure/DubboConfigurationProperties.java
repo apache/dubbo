@@ -27,10 +27,8 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.RestConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
-import org.apache.dubbo.config.nested.TripleConfig;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -120,12 +118,6 @@ public class DubboConfigurationProperties {
      */
     @NestedConfigurationProperty
     private SslConfig ssl = new SslConfig();
-
-    /**
-     * Configuration properties for rpc.
-     */
-    @NestedConfigurationProperty
-    private RpcConfig rpc = new RpcConfig();
 
     // Multiple Config Bindings
 
@@ -275,14 +267,6 @@ public class DubboConfigurationProperties {
         this.ssl = ssl;
     }
 
-    public RpcConfig getRpc() {
-        return rpc;
-    }
-
-    public void setRpc(RpcConfig rpc) {
-        this.rpc = rpc;
-    }
-
     public Map<String, ModuleConfig> getModules() {
         return modules;
     }
@@ -361,39 +345,5 @@ public class DubboConfigurationProperties {
 
     public void setTracings(Map<String, TracingConfig> tracings) {
         this.tracings = tracings;
-    }
-
-    /**
-     * Configuration for rpc.
-     */
-    public static class RpcConfig {
-
-        /**
-         * The triple config.
-         */
-        @NestedConfigurationProperty
-        private TripleConfig tri;
-
-        /**
-         * The rest config.
-         */
-        @NestedConfigurationProperty
-        private RestConfig rest;
-
-        public TripleConfig getTri() {
-            return tri;
-        }
-
-        public void setTri(TripleConfig tri) {
-            this.tri = tri;
-        }
-
-        public RestConfig getRest() {
-            return rest;
-        }
-
-        public void setRest(RestConfig rest) {
-            this.rest = rest;
-        }
     }
 }

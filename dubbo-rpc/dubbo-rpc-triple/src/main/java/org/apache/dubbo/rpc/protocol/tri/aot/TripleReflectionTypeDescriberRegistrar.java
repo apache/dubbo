@@ -19,6 +19,15 @@ package org.apache.dubbo.rpc.protocol.tri.aot;
 import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
+import org.apache.dubbo.remoting.http12.ErrorResponse;
+import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.CompositeExceptionHandler;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentConverter;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.ContentNegotiator;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
+import org.apache.dubbo.rpc.protocol.tri.route.DefaultRequestRouter;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
@@ -39,6 +48,15 @@ public class TripleReflectionTypeDescriberRegistrar implements ReflectionTypeDes
         typeDescribers.add(buildTypeDescriberWithPublicMethod(TripleServerConnectionHandler.class));
         typeDescribers.add(buildTypeDescriberWithPublicMethod(TripleGoAwayHandler.class));
         typeDescribers.add(buildTypeDescriberWithPublicMethod(TripleHttp2ClientResponseHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(ErrorResponse.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(DefaultRequestMappingRegistry.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(DefaultRequestRouter.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(ContentNegotiator.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(CompositeArgumentResolver.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(CompositeArgumentConverter.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(CompositeExceptionHandler.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(GeneralTypeConverter.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(CodecUtils.class));
         return typeDescribers;
     }
 
@@ -47,5 +65,12 @@ public class TripleReflectionTypeDescriberRegistrar implements ReflectionTypeDes
         memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
         return new TypeDescriber(
                 c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+    }
+
+    private TypeDescriber buildTypeDescriberWithDeclaredConstructors(Class<?> cl) {
+        Set<MemberCategory> memberCategories = new HashSet<>();
+        memberCategories.add(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

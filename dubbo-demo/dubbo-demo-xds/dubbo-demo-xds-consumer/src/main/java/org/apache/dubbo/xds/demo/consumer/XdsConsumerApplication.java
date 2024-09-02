@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 @Service
 @EnableDubbo
 public class XdsConsumerApplication {
-    @DubboReference(providedBy = "dubbo-demo-xds-provider")
+    @DubboReference(providedBy = "echo:7070")
     private DemoService demoService;
 
     public static void main(String[] args) throws InterruptedException {

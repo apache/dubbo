@@ -17,7 +17,6 @@
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
@@ -31,7 +30,6 @@
   <packaging>pom</packaging>
 
   <properties>
-    <revision>3.3.0-beta.5-SNAPSHOT</revision>
     <maven_flatten_version>1.6.0</maven_flatten_version>
     <slf4j_version>1.7.36</slf4j_version>
     <curator5_version>5.1.0</curator5_version>
@@ -40,6 +38,8 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
+
+    <revision>3.3.0-beta.6-SNAPSHOT</revision>
   </properties>
 
   <dependencies>

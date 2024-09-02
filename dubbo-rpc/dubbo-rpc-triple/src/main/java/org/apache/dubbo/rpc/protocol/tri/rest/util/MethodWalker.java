@@ -54,9 +54,6 @@ public final class MethodWalker {
         for (Method method : clazz.getDeclaredMethods()) {
             int modifiers = method.getModifiers();
             if ((modifiers & (Modifier.PUBLIC | Modifier.STATIC)) == Modifier.PUBLIC) {
-                if (Modifier.isAbstract(modifiers) && method.getDeclaredAnnotations().length == 0) {
-                    continue;
-                }
                 methodsMap
                         .computeIfAbsent(Key.of(method), k -> new ArrayList<>())
                         .add(method);

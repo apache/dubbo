@@ -20,8 +20,8 @@ import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.Helper;
-import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JaxrsHttpRequestAdaptee;
-import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JaxrsHttpResponseAdaptee;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JaxrsHttpRequestAdapter;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.JaxrsHttpResponseAdapter;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.MultivaluedMapWrapper;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -107,7 +107,7 @@ final class ContainerRequestContextImpl implements ContainerRequestContext {
     public Request getRequest() {
         Request req = this.req;
         if (req == null) {
-            req = new RequestImpl(new JaxrsHttpRequestAdaptee(request), new JaxrsHttpResponseAdaptee(response));
+            req = new RequestImpl(new JaxrsHttpRequestAdapter(request), new JaxrsHttpResponseAdapter(response));
             this.req = req;
         }
         return req;

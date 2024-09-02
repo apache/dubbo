@@ -24,6 +24,7 @@ import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
+import com.alibaba.nacos.api.naming.selector.NamingSelector;
 import com.alibaba.nacos.api.selector.AbstractSelector;
 
 public class MockNamingService implements NamingService {
@@ -251,4 +252,19 @@ public class MockNamingService implements NamingService {
 
     @Override
     public void shutDown() {}
+
+    @Override
+    public void subscribe(String s, NamingSelector namingSelector, EventListener eventListener) throws NacosException {}
+
+    @Override
+    public void subscribe(String s, String s1, NamingSelector namingSelector, EventListener eventListener)
+            throws NacosException {}
+
+    @Override
+    public void unsubscribe(String s, NamingSelector namingSelector, EventListener eventListener)
+            throws NacosException {}
+
+    @Override
+    public void unsubscribe(String s, String s1, NamingSelector namingSelector, EventListener eventListener)
+            throws NacosException {}
 }

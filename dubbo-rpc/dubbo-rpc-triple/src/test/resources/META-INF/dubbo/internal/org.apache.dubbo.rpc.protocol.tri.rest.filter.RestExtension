@@ -1,0 +1,1 @@
+test-rest-filter-factory=org.apache.dubbo.rpc.protocol.tri.rest.filter.TestRestFilterFactory

@@ -37,7 +37,10 @@ public class SystemPropertyConfigUtils {
             for (Field field : fields) {
                 try {
                     assert systemProperties != null;
-                    systemProperties.add((String) field.get(null));
+                    Object value = field.get(null);
+                    if (value instanceof String) {
+                        systemProperties.add((String) value);
+                    }
                 } catch (IllegalAccessException e) {
                     throw new IllegalStateException(
                             String.format("%s does not have field of %s", clazz.getName(), field.getName()));

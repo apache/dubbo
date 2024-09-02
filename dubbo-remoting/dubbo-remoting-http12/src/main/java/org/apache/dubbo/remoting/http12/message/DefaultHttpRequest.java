@@ -81,6 +81,10 @@ public class DefaultHttpRequest implements HttpRequest {
         }
     }
 
+    public HttpMetadata getMetadata() {
+        return metadata;
+    }
+
     @Override
     public boolean isHttp2() {
         return metadata instanceof Http2Header;
@@ -437,6 +441,11 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
+    public Map<String, List<String>> queryParameters() {
+        return getDecoder().parameters();
+    }
+
+    @Override
     public String formParameter(String name) {
         HttpPostRequestDecoder postDecoder = getPostDecoder();
         if (postDecoder == null) {
@@ -475,7 +484,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 values.add(HttpUtils.readPostValue(item));
             }
         }
-        return values;
+        return values == null ? Collections.emptyList() : values;
     }
 
     @Override
@@ -498,7 +507,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 names.add(item.getName());
             }
         }
-        return names;
+        return names == null ? Collections.emptyList() : names;
     }
 
     @Override
@@ -544,7 +553,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 allNames.add(item.getName());
             }
         }
-        return allNames;
+        return allNames == null ? Collections.emptyList() : allNames;
     }
 
     @Override

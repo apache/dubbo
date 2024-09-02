@@ -81,7 +81,9 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
     private String matchCluster(Invocation invocation) {
         String cluster = null;
         String serviceName = invocation.getInvoker().getUrl().getParameter("provided-by");
-        VirtualHost xdsVirtualHost = pilotExchanger.getXdsVirtualHostMap().get(serviceName);
+        //        VirtualHost xdsVirtualHost = pilotExchanger.getXdsVirtualHostMap().get(serviceName);
+        // FIXME
+        VirtualHost xdsVirtualHost = xdsVirtualHostMap.get(serviceName);
 
         // match route
         for (Route xdsRoute : xdsVirtualHost.getRoutes()) {

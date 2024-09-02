@@ -76,7 +76,7 @@ public class PathMatcher {
         return regEx;
     }
 
-    boolean isCaseSensitive() {
+    public boolean isCaseSensitive() {
         return caseSensitive;
     }
 

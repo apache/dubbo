@@ -22,6 +22,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +65,24 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
         return parameter.getToolKit().convert(value, parameter);
     }
 
+    public Object convert(Object value, Class<?> type) {
+        if (value != null) {
+            if (type.isInstance(value)) {
+                return value;
+            }
+            TypeParameterMeta parameter = new TypeParameterMeta(type);
+            List<ArgumentConverter> converters = getSuitableConverters(value.getClass(), type);
+            Object target;
+            for (int i = 0, size = converters.size(); i < size; i++) {
+                target = converters.get(i).convert(value, parameter);
+                if (target != null) {
+                    return target;
+                }
+            }
+        }
+        return TypeUtils.nullDefault(type);
+    }
+
     private List<ArgumentConverter> getSuitableConverters(Class sourceType, Class targetType) {
         return cache.computeIfAbsent(Pair.of(sourceType, targetType), k -> {
             List<ArgumentConverter> result = new ArrayList<>();
@@ -81,5 +101,30 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
             }
             return result.isEmpty() ? Collections.emptyList() : result;
         });
+    }
+
+    private static class TypeParameterMeta extends ParameterMeta {
+
+        private final Class<?> type;
+
+        TypeParameterMeta(Class<?> type) {
+            super(null, null);
+            this.type = type;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return type;
+        }
+
+        @Override
+        public Type getGenericType() {
+            return type;
+        }
+
+        @Override
+        protected AnnotatedElement getAnnotatedElement() {
+            return Object.class;
+        }
     }
 }

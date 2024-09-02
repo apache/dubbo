@@ -462,4 +462,19 @@ public interface MethodUtils {
             return -1;
         }
     }
+
+    static String toShortString(Method method) {
+        StringBuilder sb = new StringBuilder(64);
+        sb.append(method.getDeclaringClass().getName());
+        sb.append('.').append(method.getName()).append('(');
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        for (int i = 0, len = parameterTypes.length; i < len; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(parameterTypes[i].getSimpleName());
+        }
+        sb.append(')');
+        return sb.toString();
+    }
 }

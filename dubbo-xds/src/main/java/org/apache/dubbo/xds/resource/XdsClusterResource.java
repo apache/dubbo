@@ -69,7 +69,7 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
     }
 
     @Override
-    String typeUrl() {
+    public String typeUrl() {
         return ADS_TYPE_URL_CDS;
     }
 

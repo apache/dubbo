@@ -65,6 +65,12 @@ public class CorsMeta {
         return new Builder();
     }
 
+    public static CorsMeta combine(CorsMeta source, CorsMeta other) {
+        return source == null || source.isEmpty()
+                ? other == null || other.isEmpty() ? null : other.applyDefault()
+                : source.combine(other).applyDefault();
+    }
+
     public String[] getAllowedOrigins() {
         return allowedOrigins;
     }
@@ -105,24 +111,24 @@ public class CorsMeta {
     public CorsMeta applyDefault() {
         String[] allowedOriginArray = null;
         Pattern[] allowedOriginPatternArray = null;
-        if (this.allowedOrigins.length == 0) {
+        if (allowedOrigins.length == 0) {
             allowedOriginArray = new String[] {ANY_VALUE};
             allowedOriginPatternArray = new Pattern[] {null};
         }
 
         String[] allowedMethodArray = null;
-        if (this.allowedMethods.length == 0) {
+        if (allowedMethods.length == 0) {
             allowedMethodArray =
                     new String[] {HttpMethods.GET.name(), HttpMethods.HEAD.name(), HttpMethods.POST.name()};
         }
 
         String[] allowedHeaderArray = null;
-        if (this.allowedHeaders.length == 0) {
+        if (allowedHeaders.length == 0) {
             allowedHeaderArray = new String[] {ANY_VALUE};
         }
 
         Long maxAgeValue = null;
-        if (this.maxAge == null) {
+        if (maxAge == null) {
             maxAgeValue = 1800L;
         }
 
@@ -134,10 +140,10 @@ public class CorsMeta {
         }
 
         return new CorsMeta(
-                allowedOriginArray == null ? this.allowedOrigins : allowedOriginArray,
-                allowedOriginPatternArray == null ? this.allowedOriginsPatterns : allowedOriginPatternArray,
-                allowedMethodArray == null ? this.allowedMethods : allowedMethodArray,
-                allowedHeaderArray == null ? this.allowedHeaders : allowedHeaderArray,
+                allowedOriginArray == null ? allowedOrigins : allowedOriginArray,
+                allowedOriginPatternArray == null ? allowedOriginsPatterns : allowedOriginPatternArray,
+                allowedMethodArray == null ? allowedMethods : allowedMethodArray,
+                allowedHeaderArray == null ? allowedHeaders : allowedHeaderArray,
                 exposedHeaders,
                 allowCredentials,
                 maxAgeValue);
@@ -158,7 +164,7 @@ public class CorsMeta {
     }
 
     /**
-     * Merge two arrays of CORS config values, with the other array having higher priority.
+     * Merge two arrays of CORS config values, the other array having higher priority.
      */
     private static String[] combine(String[] source, String[] other) {
         if (other.length == 0) {

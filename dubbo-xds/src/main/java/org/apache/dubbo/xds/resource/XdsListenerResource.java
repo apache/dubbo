@@ -90,7 +90,7 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     }
 
     @Override
-    String typeUrl() {
+    public String typeUrl() {
         return ADS_TYPE_URL_LDS;
     }
 

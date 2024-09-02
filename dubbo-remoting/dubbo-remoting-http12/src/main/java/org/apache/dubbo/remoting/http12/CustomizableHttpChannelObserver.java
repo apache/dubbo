@@ -23,4 +23,6 @@ public interface CustomizableHttpChannelObserver<T> extends HttpChannelObserver<
     void setTrailersCustomizer(TrailersCustomizer trailersCustomizer);
 
     void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer);
+
+    void setExceptionHandler(ExceptionHandler<Throwable, ?> exceptionHandler);
 }

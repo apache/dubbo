@@ -21,16 +21,20 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * PathResolver maintains a mapping between request path and Invoker for multiple protocols.
+ * PathResolver maintains a mapping between request paths and invokers for multiple protocols.
  */
 @SPI(value = CommonConstants.TRIPLE, scope = ExtensionScope.FRAMEWORK)
 public interface PathResolver {
+
+    void register(Invoker<?> invoker);
+
+    void unregister(Invoker<?> invoker);
 
     Invoker<?> add(String path, Invoker<?> invoker);
 
     Invoker<?> addIfAbsent(String path, Invoker<?> invoker);
 
-    Invoker<?> resolve(String path);
+    Invoker<?> resolve(String path, String group, String version);
 
     boolean hasNativeStub(String path);
 

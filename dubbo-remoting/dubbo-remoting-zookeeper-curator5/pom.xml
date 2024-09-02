@@ -47,11 +47,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-common</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-framework</artifactId>
       <version>${curator5_version}</version>
