@@ -38,7 +38,7 @@ public class MockH2StreamChannel implements H2StreamChannel {
         if (this.httpMetadata == null) {
             this.httpMetadata = httpMetadata;
         } else {
-            this.httpMetadata.headers().putAll(httpMetadata.headers());
+            this.httpMetadata.headers().add(httpMetadata.headers());
         }
         return CompletableFuture.completedFuture(null);
     }

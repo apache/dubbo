@@ -39,6 +39,10 @@ public enum HttpMethods {
         }
     }
 
+    public boolean is(String name) {
+        return name().equals(name);
+    }
+
     @SuppressWarnings("StringEquality")
     public static HttpMethods of(String name) {
         // fast-path

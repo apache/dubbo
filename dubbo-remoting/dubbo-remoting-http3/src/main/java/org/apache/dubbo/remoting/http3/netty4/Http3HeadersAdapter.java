@@ -27,11 +27,11 @@ import io.netty.handler.codec.Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.incubator.codec.http3.Http3Headers;
 
-public final class Http2HeadersAdapter implements Http2Headers {
+public final class Http3HeadersAdapter implements Http3Headers {
 
-    private final Http3Headers headers;
+    private final Http2Headers headers;
 
-    public Http2HeadersAdapter(Http3Headers headers) {
+    public Http3HeadersAdapter(Http2Headers headers) {
         this.headers = headers;
     }
 
@@ -46,31 +46,31 @@ public final class Http2HeadersAdapter implements Http2Headers {
     }
 
     @Override
-    public Http2Headers method(CharSequence value) {
+    public Http3Headers method(CharSequence value) {
         headers.method(value);
         return this;
     }
 
     @Override
-    public Http2Headers scheme(CharSequence value) {
+    public Http3Headers scheme(CharSequence value) {
         headers.scheme(value);
         return this;
     }
 
     @Override
-    public Http2Headers authority(CharSequence value) {
+    public Http3Headers authority(CharSequence value) {
         headers.authority(value);
         return this;
     }
 
     @Override
-    public Http2Headers path(CharSequence value) {
+    public Http3Headers path(CharSequence value) {
         headers.path(value);
         return this;
     }
 
     @Override
-    public Http2Headers status(CharSequence value) {
+    public Http3Headers status(CharSequence value) {
         headers.status(value);
         return this;
     }
@@ -391,199 +391,199 @@ public final class Http2HeadersAdapter implements Http2Headers {
     }
 
     @Override
-    public Http2Headers add(CharSequence charSequence, CharSequence charSequence2) {
+    public Http3Headers add(CharSequence charSequence, CharSequence charSequence2) {
         headers.add(charSequence, charSequence2);
         return this;
     }
 
     @Override
-    public Http2Headers add(CharSequence charSequence, Iterable<? extends CharSequence> iterable) {
+    public Http3Headers add(CharSequence charSequence, Iterable<? extends CharSequence> iterable) {
         headers.add(charSequence, iterable);
         return this;
     }
 
     @Override
-    public Http2Headers add(CharSequence charSequence, CharSequence... charSequences) {
+    public Http3Headers add(CharSequence charSequence, CharSequence... charSequences) {
         headers.add(charSequence, charSequences);
         return this;
     }
 
     @Override
-    public Http2Headers addObject(CharSequence charSequence, Object o) {
+    public Http3Headers addObject(CharSequence charSequence, Object o) {
         headers.addObject(charSequence, o);
         return this;
     }
 
     @Override
-    public Http2Headers addObject(CharSequence charSequence, Iterable<?> iterable) {
+    public Http3Headers addObject(CharSequence charSequence, Iterable<?> iterable) {
         headers.addObject(charSequence, iterable);
         return this;
     }
 
     @Override
-    public Http2Headers addObject(CharSequence charSequence, Object... objects) {
+    public Http3Headers addObject(CharSequence charSequence, Object... objects) {
         headers.addObject(charSequence, objects);
         return this;
     }
 
     @Override
-    public Http2Headers addBoolean(CharSequence charSequence, boolean b) {
+    public Http3Headers addBoolean(CharSequence charSequence, boolean b) {
         headers.addBoolean(charSequence, b);
         return this;
     }
 
     @Override
-    public Http2Headers addByte(CharSequence charSequence, byte b) {
+    public Http3Headers addByte(CharSequence charSequence, byte b) {
         headers.addByte(charSequence, b);
         return this;
     }
 
     @Override
-    public Http2Headers addChar(CharSequence charSequence, char c) {
+    public Http3Headers addChar(CharSequence charSequence, char c) {
         headers.addChar(charSequence, c);
         return this;
     }
 
     @Override
-    public Http2Headers addShort(CharSequence charSequence, short i) {
+    public Http3Headers addShort(CharSequence charSequence, short i) {
         headers.addShort(charSequence, i);
         return this;
     }
 
     @Override
-    public Http2Headers addInt(CharSequence charSequence, int i) {
+    public Http3Headers addInt(CharSequence charSequence, int i) {
         headers.addInt(charSequence, i);
         return this;
     }
 
     @Override
-    public Http2Headers addLong(CharSequence charSequence, long l) {
+    public Http3Headers addLong(CharSequence charSequence, long l) {
         headers.addLong(charSequence, l);
         return this;
     }
 
     @Override
-    public Http2Headers addFloat(CharSequence charSequence, float v) {
+    public Http3Headers addFloat(CharSequence charSequence, float v) {
         headers.addFloat(charSequence, v);
         return this;
     }
 
     @Override
-    public Http2Headers addDouble(CharSequence charSequence, double v) {
+    public Http3Headers addDouble(CharSequence charSequence, double v) {
         headers.addDouble(charSequence, v);
         return this;
     }
 
     @Override
-    public Http2Headers addTimeMillis(CharSequence charSequence, long l) {
+    public Http3Headers addTimeMillis(CharSequence charSequence, long l) {
         headers.addTimeMillis(charSequence, l);
         return this;
     }
 
     @Override
-    public Http2Headers add(Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
+    public Http3Headers add(Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
         this.headers.add(headers);
         return this;
     }
 
     @Override
-    public Http2Headers set(CharSequence charSequence, CharSequence charSequence2) {
+    public Http3Headers set(CharSequence charSequence, CharSequence charSequence2) {
         headers.set(charSequence, charSequence2);
         return this;
     }
 
     @Override
-    public Http2Headers set(CharSequence charSequence, Iterable<? extends CharSequence> iterable) {
+    public Http3Headers set(CharSequence charSequence, Iterable<? extends CharSequence> iterable) {
         headers.set(charSequence, iterable);
         return this;
     }
 
     @Override
-    public Http2Headers set(CharSequence charSequence, CharSequence... charSequences) {
+    public Http3Headers set(CharSequence charSequence, CharSequence... charSequences) {
         headers.set(charSequence, charSequences);
         return this;
     }
 
     @Override
-    public Http2Headers setObject(CharSequence charSequence, Object o) {
+    public Http3Headers setObject(CharSequence charSequence, Object o) {
         headers.setObject(charSequence, o);
         return this;
     }
 
     @Override
-    public Http2Headers setObject(CharSequence charSequence, Iterable<?> iterable) {
+    public Http3Headers setObject(CharSequence charSequence, Iterable<?> iterable) {
         headers.setObject(charSequence, iterable);
         return this;
     }
 
     @Override
-    public Http2Headers setObject(CharSequence charSequence, Object... objects) {
+    public Http3Headers setObject(CharSequence charSequence, Object... objects) {
         headers.setObject(charSequence, objects);
         return this;
     }
 
     @Override
-    public Http2Headers setBoolean(CharSequence charSequence, boolean b) {
+    public Http3Headers setBoolean(CharSequence charSequence, boolean b) {
         headers.setBoolean(charSequence, b);
         return this;
     }
 
     @Override
-    public Http2Headers setByte(CharSequence charSequence, byte b) {
+    public Http3Headers setByte(CharSequence charSequence, byte b) {
         headers.setByte(charSequence, b);
         return this;
     }
 
     @Override
-    public Http2Headers setChar(CharSequence charSequence, char c) {
+    public Http3Headers setChar(CharSequence charSequence, char c) {
         headers.setChar(charSequence, c);
         return this;
     }
 
     @Override
-    public Http2Headers setShort(CharSequence charSequence, short i) {
+    public Http3Headers setShort(CharSequence charSequence, short i) {
         headers.setShort(charSequence, i);
         return this;
     }
 
     @Override
-    public Http2Headers setInt(CharSequence charSequence, int i) {
+    public Http3Headers setInt(CharSequence charSequence, int i) {
         headers.setInt(charSequence, i);
         return this;
     }
 
     @Override
-    public Http2Headers setLong(CharSequence charSequence, long l) {
+    public Http3Headers setLong(CharSequence charSequence, long l) {
         headers.setLong(charSequence, l);
         return this;
     }
 
     @Override
-    public Http2Headers setFloat(CharSequence charSequence, float v) {
+    public Http3Headers setFloat(CharSequence charSequence, float v) {
         headers.setFloat(charSequence, v);
         return this;
     }
 
     @Override
-    public Http2Headers setDouble(CharSequence charSequence, double v) {
+    public Http3Headers setDouble(CharSequence charSequence, double v) {
         headers.setDouble(charSequence, v);
         return this;
     }
 
     @Override
-    public Http2Headers setTimeMillis(CharSequence charSequence, long l) {
+    public Http3Headers setTimeMillis(CharSequence charSequence, long l) {
         headers.setTimeMillis(charSequence, l);
         return this;
     }
 
     @Override
-    public Http2Headers set(Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
+    public Http3Headers set(Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
         this.headers.set(headers);
         return this;
     }
 
     @Override
-    public Http2Headers setAll(Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
+    public Http3Headers setAll(Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
         this.headers.setAll(headers);
         return this;
     }
@@ -594,7 +594,7 @@ public final class Http2HeadersAdapter implements Http2Headers {
     }
 
     @Override
-    public Http2Headers clear() {
+    public Http3Headers clear() {
         headers.clear();
         return this;
     }
@@ -616,11 +616,11 @@ public final class Http2HeadersAdapter implements Http2Headers {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof Http2Headers && headers.equals(obj);
+        return this == obj || obj instanceof Http3Headers && headers.equals(obj);
     }
 
     @Override
     public String toString() {
-        return "Http2HeadersAdapter{headers=" + headers + '}';
+        return "Http3HeadersAdapter{headers=" + headers + '}';
     }
 }

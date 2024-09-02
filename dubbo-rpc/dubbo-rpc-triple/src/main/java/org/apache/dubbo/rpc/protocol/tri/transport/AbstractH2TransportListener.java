@@ -20,7 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
@@ -52,10 +52,10 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         Map<String, Object> attachments = new HashMap<>(trailers.size());
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
-            if (key.endsWith(TripleConstant.HEADER_BIN_SUFFIX)
-                    && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
+            if (key.endsWith(TripleConstants.HEADER_BIN_SUFFIX)
+                    && key.length() > TripleConstants.HEADER_BIN_SUFFIX.length()) {
                 try {
-                    String realKey = key.substring(0, key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
+                    String realKey = key.substring(0, key.length() - TripleConstants.HEADER_BIN_SUFFIX.length());
                     byte[] value = StreamUtils.decodeASCIIByte(header.getValue().toString());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
@@ -93,14 +93,14 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         return attachments;
     }
 
-    protected Map<String, String> filterReservedHeaders(Http2Headers trailers) {
+    protected Map<CharSequence, String> filterReservedHeaders(Http2Headers trailers) {
         if (trailers == null) {
             return Collections.emptyMap();
         }
-        Map<String, String> excludeHeaders = new HashMap<>(trailers.size());
+        Map<CharSequence, String> excludeHeaders = new HashMap<>(trailers.size());
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
-            String key = header.getKey().toString();
-            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+            CharSequence key = header.getKey();
+            if (TripleHeaderEnum.containsExcludeAttachments(key.toString())) {
                 excludeHeaders.put(key, trailers.getAndRemove(key).toString());
             }
         }

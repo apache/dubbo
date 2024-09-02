@@ -39,7 +39,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestHttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder.TProvider;
@@ -184,7 +184,7 @@ final class TestRunnerImpl implements TestRunner {
                 }
             }
 
-            HttpRequest hRequest = (HttpRequest) context.getAttributes().get(TripleConstant.HTTP_REQUEST_KEY);
+            HttpRequest hRequest = (HttpRequest) context.getAttributes().get(TripleConstants.HTTP_REQUEST_KEY);
             if (CollectionUtils.isEmpty(request.getBodies())) {
                 if (HttpMethods.supportBody(hRequest.method())) {
                     listener.onData(END);
@@ -199,7 +199,7 @@ final class TestRunnerImpl implements TestRunner {
                         encoder.encode(bos, body);
                         bytes = bos.toByteArray();
                     }
-                    listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(bytes)));
+                    listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(bytes), false));
                 }
                 listener.onData(END);
             }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.h1;
 
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
@@ -24,7 +25,7 @@ import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
 import java.io.IOException;
 
-public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver {
+public final class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver {
 
     private static final String SERVER_SENT_EVENT_DATA_PREFIX = "data:";
     private static final String SERVER_SENT_EVENT_LF = "\n\n";
@@ -38,9 +39,9 @@ public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver
 
     @Override
     protected HttpMetadata encodeHttpMetadata() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaderNames.TRANSFER_ENCODING.getName(), "chunked");
-        return new Http1Metadata(httpHeaders);
+        HttpHeaders headers = HttpHeaders.create();
+        headers.set(HttpHeaderNames.TRANSFER_ENCODING.getKey(), HttpConstants.CHUNKED);
+        return new Http1Metadata(headers);
     }
 
     @Override

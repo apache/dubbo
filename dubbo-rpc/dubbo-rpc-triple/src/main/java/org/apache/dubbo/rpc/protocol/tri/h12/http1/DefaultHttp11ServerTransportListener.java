@@ -93,7 +93,7 @@ public class DefaultHttp11ServerTransportListener
             case SERVER_STREAM:
                 serverChannelObserver = new Http1ServerStreamChannelObserver(httpChannel);
                 serverChannelObserver.setHeadersCustomizer(headers ->
-                        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM.getName()));
+                        headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.TEXT_EVENT_STREAM.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, serverChannelObserver);
             default:
                 throw new UnsupportedOperationException("HTTP1.x only support unary and server-stream");

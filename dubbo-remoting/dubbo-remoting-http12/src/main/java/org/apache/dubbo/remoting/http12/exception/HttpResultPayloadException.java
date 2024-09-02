@@ -44,7 +44,23 @@ public class HttpResultPayloadException extends HttpStatusException {
         return this;
     }
 
-    public HttpResult<?> getResult() {
-        return result;
+    @SuppressWarnings("unchecked")
+    public <T> HttpResult<T> getResult() {
+        return (HttpResult<T>) result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getBody() {
+        return (T) result.getBody();
+    }
+
+    @Override
+    public String getMessage() {
+        return String.valueOf(result);
+    }
+
+    @Override
+    public String toString() {
+        return "HttpResultPayloadException{result=" + result + '}';
     }
 }

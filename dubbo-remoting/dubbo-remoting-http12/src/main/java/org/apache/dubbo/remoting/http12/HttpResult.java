@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
 
 import java.util.List;
@@ -29,6 +30,10 @@ public interface HttpResult<T> {
 
     T getBody();
 
+    default HttpResultPayloadException toPayload() {
+        return new HttpResultPayloadException(this);
+    }
+
     static <T> Builder<T> builder() {
         return new Builder<>();
     }
@@ -38,11 +43,18 @@ public interface HttpResult<T> {
     }
 
     static <T> HttpResult<T> of(int status, T body) {
+        if (body instanceof String) {
+            if (status == HttpStatus.MOVED_PERMANENTLY.getCode()) {
+                return moved((String) body);
+            } else if (status == HttpStatus.FOUND.getCode()) {
+                return found((String) body);
+            }
+        }
         return new Builder<T>().status(status).body(body).build();
     }
 
     static <T> HttpResult<T> of(HttpStatus status, T body) {
-        return new Builder<T>().status(status).body(body).build();
+        return of(status.getCode(), body);
     }
 
     static <T> HttpResult<T> status(int status) {
@@ -50,7 +62,7 @@ public interface HttpResult<T> {
     }
 
     static <T> HttpResult<T> status(HttpStatus status) {
-        return new Builder<T>().status(status).build();
+        return status(status.getCode());
     }
 
     static <T> HttpResult<T> ok() {

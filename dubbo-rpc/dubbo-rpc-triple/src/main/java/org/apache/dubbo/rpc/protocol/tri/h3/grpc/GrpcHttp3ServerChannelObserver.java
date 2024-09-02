@@ -16,24 +16,28 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h3.grpc;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
-import org.apache.dubbo.remoting.http3.Http3ServerTransportListenerFactory;
-import org.apache.dubbo.remoting.http3.Http3TransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.h3.Helper;
 
-@Activate(order = -100, onClass = "com.google.protobuf.Message")
-public class GrpcHttp3ServerTransportListenerFactory implements Http3ServerTransportListenerFactory {
+public final class GrpcHttp3ServerChannelObserver extends Http2ServerCallToObserverAdapter {
 
-    @Override
-    public Http3TransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel) {
-        return new GrpcHttp3ServerTransportListener(streamChannel, url, frameworkModel);
+    public GrpcHttp3ServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        super(frameworkModel, h2StreamChannel);
     }
 
     @Override
-    public boolean supportContentType(String contentType) {
-        return GrpcUtils.isGrpcRequest(contentType);
+    protected HttpMetadata encodeHttpMetadata() {
+        return Helper.encodeHttpMetadata();
     }
+
+    @Override
+    protected HttpMetadata encodeTrailers(Throwable throwable) {
+        return Helper.encodeTrailers();
+    }
+
+    @Override
+    protected void doOnError(Throwable throwable) {}
 }

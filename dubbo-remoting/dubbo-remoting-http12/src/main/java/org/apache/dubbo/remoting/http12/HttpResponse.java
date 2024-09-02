@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public interface HttpResponse {
 
@@ -28,27 +27,27 @@ public interface HttpResponse {
 
     void setStatus(int status);
 
-    String header(String name);
+    String header(CharSequence name);
 
-    Date dateHeader(String name);
+    Date dateHeader(CharSequence name);
 
-    List<String> headerValues(String name);
+    List<String> headerValues(CharSequence name);
 
-    boolean hasHeader(String name);
+    boolean hasHeader(CharSequence name);
 
     Collection<String> headerNames();
 
-    Map<String, List<String>> headers();
+    HttpHeaders headers();
 
-    void addHeader(String name, String value);
+    void addHeader(CharSequence name, String value);
 
-    void addHeader(String name, Date value);
+    void addHeader(CharSequence name, Date value);
 
-    void setHeader(String name, String value);
+    void setHeader(CharSequence name, String value);
 
-    void setHeader(String name, Date value);
+    void setHeader(CharSequence name, Date value);
 
-    void setHeader(String name, List<String> value);
+    void setHeader(CharSequence name, List<String> value);
 
     void addCookie(HttpCookie cookie);
 

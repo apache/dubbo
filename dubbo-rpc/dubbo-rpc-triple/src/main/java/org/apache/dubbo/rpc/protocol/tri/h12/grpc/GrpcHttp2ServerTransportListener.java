@@ -102,7 +102,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     private void processGrpcHeaders(Http2Header metadata) {
-        String messageEncoding = metadata.headers().getFirst(GrpcHeaderNames.GRPC_ENCODING.getName());
+        String messageEncoding = metadata.header(GrpcHeaderNames.GRPC_ENCODING.getName());
         if (null != messageEncoding) {
             if (!Identity.MESSAGE_ENCODING.equals(messageEncoding)) {
                 DeCompressor compressor = DeCompressor.getCompressor(getFrameworkModel(), messageEncoding);
@@ -117,7 +117,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
 
     @Override
     protected RpcInvocation onBuildRpcInvocationCompletion(RpcInvocation invocation) {
-        String timeoutString = getHttpMetadata().headers().getFirst(GrpcHeaderNames.GRPC_TIMEOUT.getName());
+        String timeoutString = getHttpMetadata().header(GrpcHeaderNames.GRPC_TIMEOUT.getName());
         try {
             if (null != timeoutString) {
                 Long timeout = GrpcUtils.parseTimeoutToMills(timeoutString);
