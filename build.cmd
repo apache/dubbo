@@ -44,12 +44,12 @@ set TEST_SKIP=true
 goto parse_args
 
 :print_help
-echo Usage: %0 [options]
+echo Usage: %~n0 [options]
 echo Fast local compilation with incremental build and caching
 echo Options:
 echo   -c    Execute clean goal (removes build artifacts)
-echo   -i    Execute install goal (builds and installs the project)
 echo   -p    Execute compile goal (compiles the source code)
+echo   -i    Execute install goal (builds and installs the project)
 echo   -t    Execute test goal (runs the tests)
 echo   -s    Execute spotless:apply (format the code)
 echo   -d    Execute dependency:tree (displays the dependency tree)
@@ -58,44 +58,48 @@ echo   -f    Specify profiles, default is %PROFILES%
 echo   -h    Display this help message
 echo.
 echo Examples:
-echo   %0 -c -i                    Execute clean, install goals
-echo   %0 -s                       Execute spotless:apply
-echo   %0 -t -m dubbo-config       Execute test goal for dubbo-config module
-echo   %0 -c -p -m dubbo-common    Execute clean, compile the dubbo-common module
-echo   %0 -d                       Display the dependency tree
+echo   %~n0                          Execute install goal compilation
+echo   %~n0 -m                       Execute a minimal compilation
+echo   %~n0 -c -i                    Execute clean, install goals compilation
+echo   %~n0 -s                       Execute spotless:apply
+echo   %~n0 -d                       Display the dependency tree
+echo   %~n0 -t -m dubbo-config       Execute test goal for dubbo-config module
+echo   %~n0 -c -p -m dubbo-common    Execute clean, compile the dubbo-common module
 exit /b
 
 :parse_args
 set ARG=%~1
 if "%ARG%"=="" goto check_args
-if "%ARG%"=="-c" set ARGS=%ARGS% clean
-if "%ARG%"=="-i" set ARGS=%ARGS% install
-if "%ARG%"=="-p" set ARGS=%ARGS% compile
-if "%ARG%"=="-t" (
+if "%ARG%"=="-c" (
+    set ARGS=%ARGS% clean
+) else if "%ARG%"=="-p" (
+    set ARGS=%ARGS% compile
+) else if "%ARG%"=="-i" (
+    set ARGS=%ARGS% install
+) else if "%ARG%"=="-t" (
     set ARGS=%ARGS% test
     set TEST_SKIP=false
-)
-if "%ARG%"=="-s" (
+) else if "%ARG%"=="-s" (
     set ARGS=%ARGS% spotless:apply
     set PROFILES=sources
-)
-if "%ARG%"=="-d" set ARGS=%ARGS% dependency:tree
-    if "%ARG%"=="-m" (
+) else if "%ARG%"=="-d" (
+    set ARGS=%ARGS% dependency:tree
+) else if "%ARG%"=="-m" (
     if "%~2"=="" (
         set MODULES= -pl %DEFAULT_MODULES% -am
     ) else (
         set MODULES= -pl %~2 -am
         shift
     )
-)
-if "%ARG%"=="-f" (
+) else if "%ARG%"=="-f" (
     set PROFILES=%~2
     shift
-)
-if "%ARG%"=="-h" goto print_help
-if "%ARG:~0,1%" neq "-" (
+) else if "%ARG%"=="-h" (
+    goto print_help
+) else (
     set ARGS=%ARGS% %ARG%
 )
+
 shift
 goto parse_args
 

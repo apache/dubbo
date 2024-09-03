@@ -80,7 +80,6 @@
     <module>dubbo-cluster</module>
     <module>dubbo-registry</module>
     <module>dubbo-config</module>
-    <module>dubbo-demo</module>
     <module>dubbo-plugin</module>
     <module>dubbo-serialization</module>
     <module>dubbo-compatible</module>
@@ -953,6 +952,15 @@
       <properties>
         <spotless.skip>true</spotless.skip>
       </properties>
+    </profile>
+    <profile>
+      <id>demo</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>dubbo-demo</module>
+      </modules>
     </profile>
   </profiles>
 
