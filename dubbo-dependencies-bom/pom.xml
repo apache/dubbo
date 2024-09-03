@@ -116,7 +116,7 @@
     <jel_version>3.0.1-b12</jel_version>
     <jcache_version>1.1.1</jcache_version>
     <apollo_client_version>2.3.0</apollo_client_version>
-    <snakeyaml_version>2.2</snakeyaml_version>
+    <snakeyaml_version>2.3</snakeyaml_version>
     <commons_lang3_version>3.17.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.13.3</micrometer.version>
