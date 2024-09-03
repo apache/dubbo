@@ -275,7 +275,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: samples-test-list
           path: test/jobs/
@@ -314,7 +314,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: samples-test-result-${{matrix.jdk}}
           path: test/jobs/
@@ -373,7 +373,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: integration-test-list
           path: test/jobs/
@@ -412,7 +412,7 @@ jobs:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: integration-test-result-${{matrix.jdk}}
           path: test/jobs/

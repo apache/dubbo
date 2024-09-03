@@ -271,7 +271,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: samples-test-list
           path: test/jobs/
@@ -316,7 +316,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: samples-test-result
           path: test/jobs/
@@ -375,7 +375,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: test-list
           path: test/jobs/
@@ -420,7 +420,7 @@ jobs:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: test-result
           path: test/jobs/
@@ -448,7 +448,7 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - name: "Restore class result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: "class-file"
           path: ${{ github.workspace }}
@@ -457,12 +457,12 @@ jobs:
           cd ${{ github.workspace }}/dubbo
           unzip -o ${{ github.workspace }}/class.zip
       - name: "Restore jacoco exec"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: samples-jacoco-result
           path: dubbo-samples/target/
       - name: "Restore integration jacoco exec"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: jacoco-result
           path: dubbo-integration-cases/target/
@@ -475,7 +475,7 @@ jobs:
           cd ${{ github.workspace }}/dubbo-integration-cases/test/dubbo-test-jacoco-merger
           mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-integration-cases ${{github.workspace}}/dubbo"
       - name: "Restore coverage result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: coverage-result
           path: dubbo/
