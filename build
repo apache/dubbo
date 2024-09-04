@@ -50,8 +50,8 @@ print_help() {
     echo "Fast local compilation with incremental build and caching"
     echo "Options:"
     echo "  -c    Execute clean goal (removes build artifacts)"
-    echo "  -i    Execute install goal (builds and installs the project)"
     echo "  -p    Execute compile goal (compiles the source code)"
+    echo "  -i    Execute install goal (builds and installs the project)"
     echo "  -t    Execute test goal (runs the tests)"
     echo "  -s    Execute spotless:apply (format the code)"
     echo "  -d    Execute dependency:tree (displays the dependency tree)"
@@ -60,38 +60,40 @@ print_help() {
     echo "  -h    Display this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 -ci                    Execute clean, install goals"
+    echo "  $0                        Execute install goal compilation"
+    echo "  $0 -m                     Execute a minimal compilation"
+    echo "  $0 -ci                    Execute clean, install goals compilation"
     echo "  $0 -s                     Execute spotless:apply"
+    echo "  $0 -d                     Display the dependency tree"
     echo "  $0 -t -m dubbo-config     Execute test goal for dubbo-config module"
     echo "  $0 -cp -m dubbo-common    Execute clean, compile the dubbo-common module"
-    echo "  $0 -d                     Display the dependency tree"
     exit 0
 }
 
-while getopts ":ciptdsm:f:h" opt; do
+while getopts ":cpitstdm:f:h" opt; do
   case $opt in
     c)
       ARGS="$ARGS clean"
       ;;
-    i)
-      ARGS="$ARGS install"
-      ;;
     p)
       ARGS="$ARGS compile"
+      ;;
+    i)
+      ARGS="$ARGS install"
       ;;
     t)
       ARGS="$ARGS test"
       export MAVEN_OPTS=$(echo "$MAVEN_OPTS" | sed 's/-Dmaven\.test\.skip=true/-Dmaven.test.skip=false/')
       ;;
-    d)
-      ARGS="$ARGS dependency:tree"
-      ;;
     s)
       ARGS="$ARGS spotless:apply"
       PROFILES="sources"
       ;;
+    d)
+      ARGS="$ARGS dependency:tree"
+      ;;
     m)
-      MODULES="-pl $OPTARG -am"
+      MODULES=" -pl $OPTARG -am"
       ;;
     f)
       PROFILES="$OPTARG"
@@ -103,23 +105,15 @@ while getopts ":ciptdsm:f:h" opt; do
       if [ "$OPTARG" = "m" ]; then
         MODULES=" -pl $DEFAULT_MODULES -am"
       else
-        echo "Error: Unknown option -$OPTARG" >&2
-        print_help
-        exit 1
+        ARGS="$ARGS $@"
       fi
       ;;
   esac
 done
 
-shift $((OPTIND -1))
-
-if [ -z "$ARGS" ] && [ -z "$@" ]; then
-  ARGS="install"
-fi
-
-if [ -n "$@" ]; then
-  ARGS="$ARGS $@"
+if [ -z "$ARGS" ] ; then
+  ARGS=" install"
 fi
 
 set -x
-$CMD $ARGS$MODULES -P $PROFILES
+$CMD$ARGS$MODULES -P $PROFILES
