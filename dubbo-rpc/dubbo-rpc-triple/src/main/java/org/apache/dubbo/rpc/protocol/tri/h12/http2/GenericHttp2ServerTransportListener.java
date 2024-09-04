@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
@@ -34,7 +33,6 @@ import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.Http3Exchanger;
@@ -47,13 +45,11 @@ import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
 import java.io.InputStream;
-import java.util.concurrent.Executor;
 
 public class GenericHttp2ServerTransportListener extends AbstractServerTransportListener<Http2Header, Http2InputMessage>
         implements Http2TransportListener {
 
     private final H2StreamChannel h2StreamChannel;
-    private final ExecutorSupport executorSupport;
     private final StreamingDecoder streamingDecoder;
     private Http2ServerChannelObserver responseObserver;
     private ServerCallListener serverCallListener;
@@ -62,7 +58,6 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
             H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
         super(frameworkModel, url, h2StreamChannel);
         this.h2StreamChannel = h2StreamChannel;
-        executorSupport = getExecutorSupport(url);
         streamingDecoder = newStreamingDecoder();
         responseObserver = prepareResponseObserver(newResponseObserver(h2StreamChannel));
     }
@@ -86,11 +81,6 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         responseObserver.setCancellationContext(RpcContext.getCancellationContext());
         responseObserver.setStreamingDecoder(streamingDecoder);
         return responseObserver;
-    }
-
-    @Override
-    protected Executor initializeExecutor(Http2Header metadata) {
-        return new SerializingExecutor(executorSupport.getExecutor(metadata));
     }
 
     @Override
