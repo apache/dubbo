@@ -399,6 +399,113 @@ class FileTest {
     }
 
     @Test
+    void checkDubboAllNettyShade() throws DocumentException {
+        File baseFile = getBaseFile();
+
+        List<File> poms = new LinkedList<>();
+        readPoms(baseFile, poms);
+
+        SAXReader reader = new SAXReader();
+
+        List<String> artifactIds = poms.stream()
+                .map(f -> {
+                    try {
+                        return reader.read(f);
+                    } catch (DocumentException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .map(Document::getRootElement)
+                .map(doc -> doc.elementText("artifactId"))
+                .sorted()
+                .collect(Collectors.toList());
+
+        Assertions.assertEquals(poms.size(), artifactIds.size());
+
+        List<String> deployedArtifactIds = poms.stream()
+                .map(f -> {
+                    try {
+                        return reader.read(f);
+                    } catch (DocumentException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .map(Document::getRootElement)
+                .filter(doc -> Objects.isNull(doc.element("properties"))
+                        || (!Objects.equals("true", doc.element("properties").elementText("skip_maven_deploy"))
+                                && !Objects.equals(
+                                        "true", doc.element("properties").elementText("maven.deploy.skip"))))
+                .filter(doc -> !Objects.equals("pom", doc.elementText("packaging")))
+                .map(doc -> doc.elementText("artifactId"))
+                .sorted()
+                .collect(Collectors.toList());
+
+        String dubboAllPath = "dubbo-distribution" + File.separator + "dubbo-all-shaded" + File.separator + "pom.xml";
+        Document dubboAll = reader.read(new File(getBaseFile(), dubboAllPath));
+        List<String> artifactIdsInDubboAll =
+                dubboAll.getRootElement().element("build").element("plugins").elements("plugin").stream()
+                        .filter(ele -> ele.elementText("artifactId").equals("maven-shade-plugin"))
+                        .map(ele -> ele.element("executions"))
+                        .map(ele -> ele.elements("execution"))
+                        .flatMap(Collection::stream)
+                        .filter(ele -> ele.elementText("phase").equals("package"))
+                        .map(ele -> ele.element("configuration"))
+                        .map(ele -> ele.element("artifactSet"))
+                        .map(ele -> ele.element("includes"))
+                        .map(ele -> ele.elements("include"))
+                        .flatMap(Collection::stream)
+                        .map(Element::getText)
+                        .filter(artifactId -> artifactId.startsWith("org.apache.dubbo:"))
+                        .map(artifactId -> artifactId.substring("org.apache.dubbo:".length()))
+                        .collect(Collectors.toList());
+
+        List<String> expectedArtifactIds = new LinkedList<>(deployedArtifactIds);
+        expectedArtifactIds.removeAll(artifactIdsInDubboAll);
+        expectedArtifactIds.removeIf(artifactId -> ignoredModules.stream()
+                .anyMatch(pattern -> pattern.matcher(artifactId).matches()));
+        expectedArtifactIds.removeIf(artifactId -> ignoredModulesInDubboAll.stream()
+                .anyMatch(pattern -> pattern.matcher(artifactId).matches()));
+
+        Assertions.assertTrue(
+                expectedArtifactIds.isEmpty(),
+                "Newly created modules must be added to dubbo-all-shaded (dubbo-distribution" + File.separator + "dubbo-all-shaded"
+                        + File.separator + "pom.xml in shade plugin). Found modules: " + expectedArtifactIds);
+
+        List<String> unexpectedArtifactIds = new LinkedList<>(artifactIdsInDubboAll);
+        unexpectedArtifactIds.removeIf(artifactId -> !artifactIds.contains(artifactId));
+        unexpectedArtifactIds.removeAll(deployedArtifactIds);
+        Assertions.assertTrue(
+                unexpectedArtifactIds.isEmpty(),
+                "Undeploy dependencies should not be added to dubbo-all-shaded (dubbo-distribution" + File.separator
+                        + "dubbo-all-shaded" + File.separator + "pom.xml in shade plugin). Found modules: "
+                        + unexpectedArtifactIds);
+
+        unexpectedArtifactIds = new LinkedList<>();
+        for (String artifactId : artifactIdsInDubboAll) {
+            if (!artifactIds.contains(artifactId)) {
+                continue;
+            }
+            if (ignoredModulesInDubboAllShade.stream()
+                    .anyMatch(pattern -> pattern.matcher(artifactId).matches())) {
+                continue;
+            }
+            if (ignoredModules.stream()
+                    .anyMatch(pattern -> pattern.matcher(artifactId).matches())) {
+                unexpectedArtifactIds.add(artifactId);
+            }
+            if (ignoredModulesInDubboAll.stream()
+                    .anyMatch(pattern -> pattern.matcher(artifactId).matches())) {
+                unexpectedArtifactIds.add(artifactId);
+            }
+        }
+        Assertions.assertTrue(
+                unexpectedArtifactIds.isEmpty(),
+                "Unexpected dependencies should not be added to dubbo-all-shaded (dubbo-distribution" + File.separator
+                        + "dubbo-all-shaded" + File.separator + "pom.xml in shade plugin). Found modules: "
+                        + unexpectedArtifactIds);
+    }
+
+    @Test
     void checkDubboTransform() throws DocumentException {
         File baseFile = getBaseFile();
         List<String> spis = new LinkedList<>();
