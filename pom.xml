@@ -956,12 +956,13 @@
     <profile>
       <id>demo</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>!demo.skip</name>
+        </property>
       </activation>
       <modules>
         <module>dubbo-demo</module>
       </modules>
     </profile>
   </profiles>
-
 </project>
