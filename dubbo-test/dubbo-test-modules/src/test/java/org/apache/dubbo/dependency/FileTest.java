@@ -44,6 +44,7 @@ class FileTest {
     private static final List<Pattern> ignoredModules = new LinkedList<>();
     private static final List<Pattern> ignoredArtifacts = new LinkedList<>();
     private static final List<Pattern> ignoredModulesInDubboAll = new LinkedList<>();
+    private static final List<Pattern> ignoredModulesInDubboAllShade = new LinkedList<>();
 
     static {
         ignoredModules.add(Pattern.compile("dubbo-apache-release"));
@@ -72,6 +73,8 @@ class FileTest {
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-config-spring6.*"));
         ignoredModulesInDubboAll.add(Pattern.compile(".*spring-boot.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-maven-plugin"));
+
+        ignoredModulesInDubboAllShade.add(Pattern.compile("dubbo-plugin-loom"));
     }
 
     @Test
@@ -373,6 +376,10 @@ class FileTest {
         unexpectedArtifactIds = new LinkedList<>();
         for (String artifactId : artifactIdsInDubboAll) {
             if (!artifactIds.contains(artifactId)) {
+                continue;
+            }
+            if (ignoredModulesInDubboAllShade.stream()
+                    .anyMatch(pattern -> pattern.matcher(artifactId).matches())) {
                 continue;
             }
             if (ignoredModules.stream()
