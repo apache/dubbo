@@ -120,7 +120,7 @@ jobs:
           shopt -s globstar
           zip ${{ github.workspace }}/class.zip **/target/classes/* -r
       - name: "Upload class result"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "class-file"
           path: ${{ github.workspace }}/class.zip
@@ -129,7 +129,7 @@ jobs:
         run: zip ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
       - name: "Upload checkstyle file if failure"
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "checkstyle-file"
           path: ${{ github.workspace }}/checkstyle.zip
@@ -214,7 +214,7 @@ jobs:
         run: |
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Pjacoco,jdk15ge-simple,'!jdk15ge',jacoco089 -DtrimStackTrace=false -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Upload coverage result"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-result
           path: "**/target/site/**/jacoco.xml"
@@ -233,7 +233,7 @@ jobs:
         run: |
           bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: samples-test-list
           path: test/jobs
@@ -271,7 +271,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: samples-test-list
           path: test/jobs/
@@ -294,13 +294,13 @@ jobs:
         run: |
           cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: samples-jacoco-result
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: samples-test-result
           path: test/jobs/*-result*
@@ -316,7 +316,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Download test result"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: samples-test-result
           path: test/jobs/
@@ -337,7 +337,7 @@ jobs:
         run: |
           bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-list
           path: test/jobs
@@ -375,7 +375,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: test-list
           path: test/jobs/
@@ -398,13 +398,13 @@ jobs:
         run: |
           cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-result
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-result
           path: test/jobs/*-result*
@@ -420,7 +420,7 @@ jobs:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Download test result"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: test-result
           path: test/jobs/
@@ -448,7 +448,7 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - name: "Restore class result"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: "class-file"
           path: ${{ github.workspace }}
@@ -457,12 +457,12 @@ jobs:
           cd ${{ github.workspace }}/dubbo
           unzip -o ${{ github.workspace }}/class.zip
       - name: "Restore jacoco exec"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: samples-jacoco-result
           path: dubbo-samples/target/
       - name: "Restore integration jacoco exec"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: jacoco-result
           path: dubbo-integration-cases/target/
@@ -475,7 +475,7 @@ jobs:
           cd ${{ github.workspace }}/dubbo-integration-cases/test/dubbo-test-jacoco-merger
           mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-integration-cases ${{github.workspace}}/dubbo"
       - name: "Restore coverage result"
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: coverage-result
           path: dubbo/
@@ -518,7 +518,7 @@ jobs:
       - name: "Upload error code inspection result"
         # always() should not be used here, since we don't need to handle the 'canceled' situation.
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "error-inspection-result"
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
