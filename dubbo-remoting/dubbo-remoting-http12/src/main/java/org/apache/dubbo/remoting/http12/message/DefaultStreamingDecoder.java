@@ -28,7 +28,7 @@ public class DefaultStreamingDecoder implements StreamingDecoder {
 
     protected final CompositeInputStream accumulate = new CompositeInputStream();
 
-    protected FragmentListener listener;
+    protected FragmentListener listener = NoopFragmentListener.NOOP;
 
     @Override
     public void request(int numMessages) {

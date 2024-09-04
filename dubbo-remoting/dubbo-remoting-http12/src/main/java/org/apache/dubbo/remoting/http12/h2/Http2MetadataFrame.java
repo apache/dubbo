@@ -69,7 +69,7 @@ public final class Http2MetadataFrame implements Http2Header {
 
     @Override
     public String toString() {
-        return "Http2MetadataFrame{method='" + method() + '\'' + ", uri='" + path() + '\'' + ", contentType='"
+        return "Http2MetadataFrame{method='" + method() + '\'' + ", path='" + path() + '\'' + ", contentType='"
                 + contentType() + "', streamId=" + streamId + ", endStream="
                 + endStream + '}';
     }

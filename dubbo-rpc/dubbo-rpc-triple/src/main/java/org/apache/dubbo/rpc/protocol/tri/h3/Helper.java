@@ -29,10 +29,10 @@ public final class Helper {
 
     private Helper() {}
 
-    public static HttpMetadata encodeHttpMetadata() {
+    public static HttpMetadata encodeHttpMetadata(boolean endStream) {
         HttpHeaders headers = new NettyHttpHeaders<>(new DefaultHttp3Headers(false, 8));
         headers.set(HttpHeaderNames.TE.getKey(), HttpConstants.TRAILERS);
-        return new Http2MetadataFrame(headers);
+        return new Http2MetadataFrame(headers, endStream);
     }
 
     public static HttpMetadata encodeTrailers() {

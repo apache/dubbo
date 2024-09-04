@@ -14,12 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
-import java.util.function.Consumer;
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 
-@FunctionalInterface
-public interface HeadersCustomizer extends Consumer<HttpHeaders> {
+public class Http2StreamServerChannelObserver extends Http2ServerStreamObserver {
 
-    HeadersCustomizer NO_OP = headers -> {};
+    public Http2StreamServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        super(frameworkModel, h2StreamChannel);
+    }
+
+    @Override
+    protected String getDisplayMessage(Throwable throwable) {
+        return TripleProtocol.VERBOSE_ENABLED
+                ? ExceptionUtils.buildVerboseMessage(throwable)
+                : super.getDisplayMessage(throwable);
+    }
 }
