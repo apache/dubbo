@@ -479,6 +479,7 @@
                   <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                   <include>org.apache.dubbo:dubbo-serialization-fastjson2</include>
                   <include>org.apache.dubbo:dubbo-serialization-jdk</include>
+                  <include>org.apache.dubbo:dubbo-plugin-loom</include>
                   <include>io.netty:*</include>
                 </includes>
               </artifactSet>
@@ -922,7 +923,31 @@
 
   <profiles>
     <profile>
+      <id>loom</id>
+      <activation>
+        <jdk>[21,)</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-plugin-loom</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>release</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-plugin-loom</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
