@@ -30,8 +30,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -58,6 +58,10 @@ public class ScopeBeanFactory {
     private InstantiationStrategy instantiationStrategy;
     private final AtomicBoolean destroyed = new AtomicBoolean();
     private final Set<Class<?>> registeredClasses = new ConcurrentHashSet<>();
+    /*
+     * Bean creation and registration thread-safe control, even across scope-model.
+     */
+    private static final Map<Class<?>, ReentrantLock> typeLocks = new ConcurrentHashMap<>();
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -91,35 +95,38 @@ public class ScopeBeanFactory {
     }
 
     public void registerBean(String name, Object bean) {
+        this.registerBean(name, bean.getClass(), bean);
+    }
+
+    public void registerBean(String name, Class<?> type, Object bean) {
         checkDestroyed();
         // avoid duplicated register same bean
         if (containsBean(name, bean)) {
             return;
         }
 
-        Class<?> beanClass = bean.getClass();
         if (name == null) {
-            name = beanClass.getName() + "#" + getNextId(beanClass);
+            name = type.getName() + "#" + getNextId(type);
         }
         initializeBean(name, bean);
 
         registeredBeanInfos.add(new BeanInfo(name, bean));
+        registeredClasses.add(type);
     }
 
     public <T> T getOrRegisterBean(Class<T> type) {
         return getOrRegisterBean(null, type);
     }
 
-    private static final Hashtable<Class<?>, ReentrantLock> typeLocks = new Hashtable<>();
-
     public <T> T getOrRegisterBean(String name, final Class<T> type) {
-        return getOrRegisterBean(name, type, k -> {
+        Function<? super Class<T>, ? extends T> func = (Class<T> k) -> {
             try {
-                return instantiationStrategy.instantiate(type);
+                return instantiationStrategy.instantiate(k);
             } catch (Exception e) {
                 throw new ScopeBeanException("create bean instance failed, type=" + type.getName(), e);
             }
-        });
+        };
+        return getOrRegisterBean(name, type, func);
     }
 
     public <T> T getOrRegisterBean(Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
@@ -138,8 +145,7 @@ public class ScopeBeanFactory {
                 bean = getBean(name, type);
                 if (bean == null) {
                     bean = mappingFunction.apply(type);
-                    registerBean(name, bean);
-                    registeredClasses.add(type);
+                    registerBean(name, type, bean);
                 }
             } finally {
                 typeLock.unlock();
