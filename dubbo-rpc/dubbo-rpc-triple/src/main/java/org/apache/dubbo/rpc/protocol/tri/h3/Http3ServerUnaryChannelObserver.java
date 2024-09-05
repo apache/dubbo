@@ -14,17 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.h3;
 
-import java.util.function.BiConsumer;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2UnaryServerChannelObserver;
 
-@FunctionalInterface
-public interface TrailersCustomizer extends BiConsumer<HttpHeaders, Throwable>, HeadersCustomizer {
+public final class Http3ServerUnaryChannelObserver extends Http2UnaryServerChannelObserver {
 
-    TrailersCustomizer NO_OP = (headers, throwable) -> {};
+    public Http3ServerUnaryChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        super(frameworkModel, h2StreamChannel);
+    }
 
     @Override
-    default void accept(HttpHeaders headers) {
-        this.accept(headers, null);
+    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
+        return Helper.encodeHttpMetadata(endStream);
+    }
+
+    @Override
+    protected HttpMetadata encodeTrailers(Throwable throwable) {
+        return Helper.encodeTrailers();
     }
 }

@@ -31,7 +31,7 @@ import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestHttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
@@ -149,6 +149,6 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     @Override
     public String getType() {
-        return TripleConstant.TRIPLE_HANDLER_TYPE_REST;
+        return TripleConstants.TRIPLE_HANDLER_TYPE_REST;
     }
 }

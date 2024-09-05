@@ -14,29 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.http2;
+package org.apache.dubbo.rpc.protocol.tri.h3.grpc;
 
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcStreamServerChannelObserver;
+import org.apache.dubbo.rpc.protocol.tri.h3.Helper;
 
-public class Http2ServerCallToObserverAdapter extends Http2ServerStreamObserver
-        implements ServerCallToObserverAdapter<Object> {
+public final class GrpcHttp3ServerChannelObserver extends GrpcStreamServerChannelObserver {
 
-    private int exceptionCode;
-
-    public Http2ServerCallToObserverAdapter(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+    public GrpcHttp3ServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
         super(frameworkModel, h2StreamChannel);
-        setHeadersCustomizer(headers -> {
-            if (exceptionCode != 0) {
-                headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
-            }
-        });
     }
 
     @Override
-    public void setExceptionCode(int exceptionCode) {
-        this.exceptionCode = exceptionCode;
+    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
+        return Helper.encodeHttpMetadata(endStream);
+    }
+
+    @Override
+    protected HttpMetadata encodeTrailers(Throwable throwable) {
+        return Helper.encodeTrailers();
     }
 }

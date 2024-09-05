@@ -58,6 +58,8 @@ ij_java_extends_list_wrap = normal
 ij_java_extends_keyword_wrap = normal
 ij_java_binary_operation_wrap = normal
 ij_java_binary_operation_sign_on_next_line = true
+ij_java_generate_final_locals = false
+ij_java_generate_final_parameters = false
 
 [*.groovy]
 max_line_length = 180

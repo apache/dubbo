@@ -14,18 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.rpc.protocol.tri.h3.grpc;
 
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUnaryServerChannelObserver;
+import org.apache.dubbo.rpc.protocol.tri.h3.Helper;
 
-public class GrpcServerChannelObserver extends Http2ServerCallToObserverAdapter {
+public class GrpcHttp3UnaryServerChannelObserver extends GrpcUnaryServerChannelObserver {
 
-    public GrpcServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+    public GrpcHttp3UnaryServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
         super(frameworkModel, h2StreamChannel);
     }
 
     @Override
-    protected void doOnError(Throwable throwable) {}
+    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
+        return Helper.encodeHttpMetadata(endStream);
+    }
+
+    @Override
+    protected HttpMetadata encodeTrailers(Throwable throwable) {
+        return Helper.encodeTrailers();
+    }
 }

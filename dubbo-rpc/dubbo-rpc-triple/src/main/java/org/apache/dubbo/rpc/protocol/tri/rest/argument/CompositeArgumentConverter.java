@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -31,6 +33,8 @@ import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class CompositeArgumentConverter implements ArgumentConverter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompositeArgumentConverter.class);
 
     private final List<ArgumentConverter> converters;
     private final Map<Pair<Class, Class>, List<ArgumentConverter>> cache = CollectionUtils.newConcurrentHashMap();
@@ -103,11 +107,15 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
                     result.add(converter);
                 }
             }
-            return result.isEmpty() ? Collections.emptyList() : result;
+            if (result.isEmpty()) {
+                return Collections.emptyList();
+            }
+            LOGGER.info("Found suitable ArgumentConverter for [{}], converters: {}", sourceType, result);
+            return result;
         });
     }
 
-    private static class TypeParameterMeta extends ParameterMeta {
+    private static final class TypeParameterMeta extends ParameterMeta {
 
         private final Class<?> type;
 

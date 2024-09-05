@@ -52,7 +52,7 @@ public interface ClientStream extends Stream {
         default void onComplete(
                 TriRpcStatus status,
                 Map<String, Object> attachments,
-                Map<String, String> reserved,
+                Map<CharSequence, String> reserved,
                 boolean isReturnTriException) {
             onComplete(status, attachments);
         }

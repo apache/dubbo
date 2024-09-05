@@ -14,15 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-public interface CustomizableHttpChannelObserver<T> extends HttpChannelObserver<T> {
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-    void setHeadersCustomizer(HeadersCustomizer headersCustomizer);
+public class GrpcUnaryServerChannelObserver extends GrpcStreamServerChannelObserver {
 
-    void setTrailersCustomizer(TrailersCustomizer trailersCustomizer);
+    public GrpcUnaryServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
+        super(frameworkModel, h2StreamChannel);
+    }
 
-    void setErrorResponseCustomizer(ErrorResponseCustomizer errorResponseCustomizer);
-
-    void setExceptionHandler(ExceptionHandler<Throwable, ?> exceptionHandler);
+    @Override
+    protected Throwable customizeError(Throwable throwable) {
+        throwable = super.customizeError(throwable);
+        if (throwable == null) {
+            doOnCompleted(null);
+        }
+        return throwable;
+    }
 }

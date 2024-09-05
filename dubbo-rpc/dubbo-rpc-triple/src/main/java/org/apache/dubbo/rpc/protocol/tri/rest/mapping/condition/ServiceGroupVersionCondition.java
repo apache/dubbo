@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
@@ -70,7 +70,7 @@ public final class ServiceGroupVersionCondition implements Condition<ServiceGrou
     }
 
     private static String getHeader(HttpRequest request, TripleHeaderEnum en, String key) {
-        String value = request.header(en.getHeader());
+        String value = request.header(en.getKey());
         if (value == null) {
             value = request.header(key);
         }
@@ -82,7 +82,7 @@ public final class ServiceGroupVersionCondition implements Condition<ServiceGrou
             if (Objects.equals(version, condition.version)) {
                 return 9;
             }
-            if (Objects.equals(TripleConstant.DEFAULT_VERSION, condition.version)) {
+            if (Objects.equals(TripleConstants.DEFAULT_VERSION, condition.version)) {
                 return 8;
             }
             return group == null ? 5 : 7;
@@ -90,7 +90,7 @@ public final class ServiceGroupVersionCondition implements Condition<ServiceGrou
             if (Objects.equals(version, condition.version)) {
                 return 6;
             }
-            if (Objects.equals(TripleConstant.DEFAULT_VERSION, condition.version)) {
+            if (Objects.equals(TripleConstants.DEFAULT_VERSION, condition.version)) {
                 return 4;
             }
             return 3;

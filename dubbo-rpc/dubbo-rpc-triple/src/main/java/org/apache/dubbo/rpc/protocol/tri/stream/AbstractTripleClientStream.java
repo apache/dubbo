@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
@@ -209,9 +211,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         }
 
         void finishProcess(TriRpcStatus status, Http2Headers trailers, boolean isReturnTriException) {
-            final Map<String, String> reserved = filterReservedHeaders(trailers);
+            final Map<CharSequence, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments =
-                    headersToMap(trailers, () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()));
+                    headersToMap(trailers, () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getKey()));
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
@@ -229,9 +231,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             if (httpStatus == null) {
                 return TriRpcStatus.INTERNAL.withDescription("Missing HTTP status code");
             }
-            final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
-            if (contentType == null
-                    || !contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())) {
+            final CharSequence contentType = headers.get(HttpHeaderNames.CONTENT_TYPE.getKey());
+            if (contentType == null || !GrpcUtils.isGrpcRequest(contentType.toString())) {
                 return TriRpcStatus.fromCode(TriRpcStatus.httpStatusToGrpcCode(httpStatus))
                         .withDescription("invalid content-type: " + contentType);
             }
@@ -259,8 +260,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             transportError = validateHeaderStatus(headers);
 
             // todo support full payload compressor
-            CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
-            CharSequence triExceptionCode = headers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
+            CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getKey());
+            CharSequence triExceptionCode = headers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getKey());
             if (triExceptionCode != null) {
                 Integer triExceptionCodeNum = Integer.parseInt(triExceptionCode.toString());
                 if (!(triExceptionCodeNum.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS))) {
@@ -298,17 +299,18 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             if (transportError == null && !headerReceived) {
                 transportError = validateHeaderStatus(trailers);
             }
-            if (transportError != null) {
-                transportError = transportError.appendDescription("trailers: " + trailers);
+            this.trailers = trailers;
+            TriRpcStatus status;
+            if (transportError == null) {
+                status = statusFromTrailers(trailers);
             } else {
-                this.trailers = trailers;
-                TriRpcStatus status = statusFromTrailers(trailers);
-                if (deframer == null) {
-                    finishProcess(status, trailers, false);
-                }
-                if (deframer != null) {
-                    deframer.close();
-                }
+                transportError = transportError.appendDescription("trailers: " + trailers);
+                status = transportError;
+            }
+            if (deframer == null) {
+                finishProcess(status, trailers, false);
+            } else {
+                deframer.close();
             }
         }
 
@@ -316,10 +318,10 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
          * Extract the response status from trailers.
          */
         private TriRpcStatus statusFromTrailers(Http2Headers trailers) {
-            final Integer intStatus = trailers.getInt(TripleHeaderEnum.STATUS_KEY.getHeader());
+            final Integer intStatus = trailers.getInt(TripleHeaderEnum.STATUS_KEY.getKey());
             TriRpcStatus status = intStatus == null ? null : TriRpcStatus.fromCode(intStatus);
             if (status != null) {
-                final CharSequence message = trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader());
+                final CharSequence message = trailers.get(TripleHeaderEnum.MESSAGE_KEY.getKey());
                 if (message != null) {
                     final String description = TriRpcStatus.decodeMessage(message.toString());
                     status = status.withDescription(description);
@@ -341,7 +343,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             return status.appendDescription("missing GRPC status, inferred error from HTTP status code");
         }
 
-        private TriRpcStatus getStatusFromTrailers(Map<String, String> metadata) {
+        private TriRpcStatus getStatusFromTrailers(Map<CharSequence, String> metadata) {
             if (null == metadata) {
                 return null;
             }
@@ -349,10 +351,10 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 return null;
             }
             // second get status detail
-            if (!metadata.containsKey(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
+            if (!metadata.containsKey(TripleHeaderEnum.STATUS_DETAIL_KEY.getKey())) {
                 return null;
             }
-            final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader()));
+            final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getKey()));
             byte[] statusDetailBin = StreamUtils.decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {

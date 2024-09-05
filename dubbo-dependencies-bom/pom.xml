@@ -92,7 +92,7 @@
     <spring_version>5.3.39</spring_version>
     <spring_security_version>5.8.14</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.14.18</byte-buddy_version>
+    <byte-buddy_version>1.15.1</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.112.Final</netty4_version>
     <netty_http3_version>0.0.28.Final</netty_http3_version>
@@ -117,8 +117,8 @@
     <jel_version>3.0.1-b12</jel_version>
     <jcache_version>1.1.1</jcache_version>
     <apollo_client_version>2.3.0</apollo_client_version>
-    <snakeyaml_version>2.2</snakeyaml_version>
-    <commons_lang3_version>3.16.0</commons_lang3_version>
+    <snakeyaml_version>2.3</snakeyaml_version>
+    <commons_lang3_version>3.17.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.13.3</micrometer.version>
     <opentelemetry.version>1.39.0</opentelemetry.version>

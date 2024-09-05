@@ -94,26 +94,30 @@ public final class NettyCodecAdapter {
         protected void decode(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
 
             ChannelBuffer message = new NettyBackedChannelBuffer(input);
+            try {
+                NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
 
-            NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-
-            // decode object.
-            do {
-                int saveReaderIndex = message.readerIndex();
-                Object msg = codec.decode(channel, message);
-                if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
-                    message.readerIndex(saveReaderIndex);
-                    break;
-                } else {
-                    // is it possible to go here ?
-                    if (saveReaderIndex == message.readerIndex()) {
-                        throw new IOException("Decode without read data.");
+                // decode object.
+                do {
+                    int saveReaderIndex = message.readerIndex();
+                    Object msg = codec.decode(channel, message);
+                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
+                        message.readerIndex(saveReaderIndex);
+                        break;
+                    } else {
+                        // is it possible to go here ?
+                        if (saveReaderIndex == message.readerIndex()) {
+                            throw new IOException("Decode without read data.");
+                        }
+                        if (msg != null) {
+                            out.add(msg);
+                        }
                     }
-                    if (msg != null) {
-                        out.add(msg);
-                    }
-                }
-            } while (message.readable());
+                } while (message.readable());
+            } catch (Throwable t) {
+                message.skipBytes(message.readableBytes());
+                throw t;
+            }
         }
     }
 }

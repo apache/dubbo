@@ -16,9 +16,18 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+public final class HttpConstants {
 
-public interface HttpChannelObserver<T> extends StreamObserver<T>, AutoCloseable {
+    public static final String TRAILERS = "trailers";
 
-    HttpChannel getHttpChannel();
+    public static final String CHUNKED = "chunked";
+
+    public static final String X_FORWARDED_PROTO = "x-forwarded-proto";
+    public static final String X_FORWARDED_HOST = "x-forwarded-host";
+    public static final String X_FORWARDED_PORT = "x-forwarded-port";
+
+    public static final String HTTPS = "https";
+    public static final String HTTP = "http";
+
+    private HttpConstants() {}
 }

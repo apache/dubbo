@@ -16,10 +16,20 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import java.util.function.Consumer;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-@FunctionalInterface
-public interface HeadersCustomizer extends Consumer<HttpHeaders> {
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-    HeadersCustomizer NO_OP = headers -> {};
+public interface ServerHttpChannelObserver<H extends HttpChannel> extends StreamObserver<Object>, AutoCloseable {
+
+    H getHttpChannel();
+
+    void addHeadersCustomizer(BiConsumer<HttpHeaders, Throwable> headersCustomizer);
+
+    void addTrailersCustomizer(BiConsumer<HttpHeaders, Throwable> trailersCustomizer);
+
+    void setExceptionCustomizer(Function<Throwable, ?> exceptionCustomizer);
+
+    void close();
 }

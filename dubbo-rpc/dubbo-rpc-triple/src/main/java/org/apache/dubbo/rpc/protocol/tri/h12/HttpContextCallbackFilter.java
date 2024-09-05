@@ -14,50 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 
-@Activate(group = CommonConstants.PROVIDER, order = -29000)
-public class HttpContextFilter implements Filter, BaseFilter.Listener {
+@Activate(group = CommonConstants.PROVIDER, order = 29000)
+public class HttpContextCallbackFilter implements Filter, BaseFilter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invocation.get(TripleConstant.HANDLER_TYPE_KEY) == null) {
-            return invoker.invoke(invocation);
-        }
-
-        HttpRequest request = (HttpRequest) invocation.get(TripleConstant.HTTP_REQUEST_KEY);
-        HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
-        RpcServiceContext context = RpcContext.getServiceContext();
-        context.setRemoteAddress(request.remoteHost(), request.remotePort());
-        if (context.getLocalAddress() == null) {
-            context.setLocalAddress(request.localHost(), request.localPort());
-        }
-        context.setRequest(request);
-        context.setResponse(response);
         return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        if (invocation.get(TripleConstant.HANDLER_TYPE_KEY) == null) {
+        Object handlerType = invocation.get(TripleConstants.HANDLER_TYPE_KEY);
+        if (handlerType == null) {
             return;
         }
 
-        HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
+        Throwable exception = appResponse.getException();
+        if (exception instanceof HttpResultPayloadException) {
+            Object value = TripleConstants.TRIPLE_HANDLER_TYPE_GRPC.equals(handlerType)
+                    ? HttpResult.of(exception)
+                    : ((HttpResultPayloadException) exception).getResult();
+            appResponse.setValue(value);
+            appResponse.setException(null);
+            return;
+        }
+
+        HttpResponse response = (HttpResponse) invocation.get(TripleConstants.HTTP_RESPONSE_KEY);
         if (response.isEmpty()) {
             return;
         }
@@ -71,10 +68,10 @@ public class HttpContextFilter implements Filter, BaseFilter.Listener {
         HttpResult<Object> result = response.toHttpResult();
         if (result.getBody() instanceof Throwable) {
             appResponse.setException((Throwable) result.getBody());
-            return;
+        } else {
+            appResponse.setValue(result);
+            appResponse.setException(null);
         }
-        appResponse.setValue(result);
-        appResponse.setException(null);
     }
 
     @Override
