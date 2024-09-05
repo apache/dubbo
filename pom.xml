@@ -115,7 +115,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.build.outputTimestamp>2020-04-01T08:04:00Z</project.build.outputTimestamp>
     <argline>-server -Xms256m -Xmx512m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
-            -Djava.net.preferIPv4Stack=true</argline>
+      -Djava.net.preferIPv4Stack=true</argline>
     <arguments />
     <jacocoArgLine />
     <profile.name>oss</profile.name>
@@ -605,9 +605,10 @@
                   <consoleOutput>true</consoleOutput>
                   <failOnViolation>true</failOnViolation>
                   <skip>${checkstyle_unix.skip}</skip>
-                  <resourceExcludes>**/target/**/*</resourceExcludes>
-                  <resourceExcludes>**/generated/**/*
-                                        **/generated-sources/**/*</resourceExcludes>
+                  <resourceExcludes>**/target/**/*,
+                    **/generated/**/*,
+                    **/generated-sources/**/*</resourceExcludes>
+                  <excludes>**/target/**/*</excludes>
                 </configuration>
               </execution>
             </executions>
