@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
@@ -48,7 +49,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_IGNORE_1_0_0_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
@@ -154,7 +154,7 @@ public class TripleProtocol extends AbstractProtocol {
         boolean bindPort = true;
 
         if (ServletExchanger.isEnabled()) {
-            int port = url.getParameter(BIND_PORT_KEY, url.getPort());
+            int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
             Integer serverPort = ServletExchanger.getServerPort();
             if (serverPort == null) {
                 if (NetUtils.isPortInUsed(port)) {

@@ -14,18 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
+package org.apache.dubbo.remoting.http12;
 
-import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ServerCallToObserverAdapter;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-public class GrpcServerChannelObserver extends Http2ServerCallToObserverAdapter {
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-    public GrpcServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(frameworkModel, h2StreamChannel);
-    }
+public interface ServerHttpChannelObserver<H extends HttpChannel> extends StreamObserver<Object>, AutoCloseable {
 
-    @Override
-    protected void doOnError(Throwable throwable) {}
+    H getHttpChannel();
+
+    void addHeadersCustomizer(BiConsumer<HttpHeaders, Throwable> headersCustomizer);
+
+    void addTrailersCustomizer(BiConsumer<HttpHeaders, Throwable> trailersCustomizer);
+
+    void setExceptionCustomizer(Function<Throwable, ?> exceptionCustomizer);
+
+    void close();
 }

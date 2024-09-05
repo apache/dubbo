@@ -46,7 +46,7 @@ public enum HttpHeaderNames {
 
     TE(io.netty.handler.codec.http.HttpHeaderNames.TE),
 
-    ALT_SVC(io.netty.handler.codec.http.HttpHeaderNames.ALT_SVC);
+    ALT_SVC("alt-svc");
 
     private final String name;
     private final CharSequence key;

@@ -21,7 +21,7 @@ import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
 import org.apache.dubbo.remoting.http12.ErrorResponse;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
-import org.apache.dubbo.rpc.protocol.tri.h12.http2.CompositeExceptionHandler;
+import org.apache.dubbo.rpc.protocol.tri.h12.CompositeExceptionHandler;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;

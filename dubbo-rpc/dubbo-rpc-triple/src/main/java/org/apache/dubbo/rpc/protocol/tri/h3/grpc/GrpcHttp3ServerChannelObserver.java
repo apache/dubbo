@@ -19,25 +19,22 @@ package org.apache.dubbo.rpc.protocol.tri.h3.grpc;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcStreamServerChannelObserver;
 import org.apache.dubbo.rpc.protocol.tri.h3.Helper;
 
-public final class GrpcHttp3ServerChannelObserver extends Http2ServerCallToObserverAdapter {
+public final class GrpcHttp3ServerChannelObserver extends GrpcStreamServerChannelObserver {
 
     public GrpcHttp3ServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
         super(frameworkModel, h2StreamChannel);
     }
 
     @Override
-    protected HttpMetadata encodeHttpMetadata() {
-        return Helper.encodeHttpMetadata();
+    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
+        return Helper.encodeHttpMetadata(endStream);
     }
 
     @Override
     protected HttpMetadata encodeTrailers(Throwable throwable) {
         return Helper.encodeTrailers();
     }
-
-    @Override
-    protected void doOnError(Throwable throwable) {}
 }

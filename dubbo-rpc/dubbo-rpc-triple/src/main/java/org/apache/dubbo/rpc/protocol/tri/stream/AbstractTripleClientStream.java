@@ -299,17 +299,18 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             if (transportError == null && !headerReceived) {
                 transportError = validateHeaderStatus(trailers);
             }
-            if (transportError != null) {
-                transportError = transportError.appendDescription("trailers: " + trailers);
+            this.trailers = trailers;
+            TriRpcStatus status;
+            if (transportError == null) {
+                status = statusFromTrailers(trailers);
             } else {
-                this.trailers = trailers;
-                TriRpcStatus status = statusFromTrailers(trailers);
-                if (deframer == null) {
-                    finishProcess(status, trailers, false);
-                }
-                if (deframer != null) {
-                    deframer.close();
-                }
+                transportError = transportError.appendDescription("trailers: " + trailers);
+                status = transportError;
+            }
+            if (deframer == null) {
+                finishProcess(status, trailers, false);
+            } else {
+                deframer.close();
             }
         }
 

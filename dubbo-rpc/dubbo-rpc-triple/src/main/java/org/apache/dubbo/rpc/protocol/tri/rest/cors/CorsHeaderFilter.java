@@ -255,7 +255,8 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     }
 
     private static boolean isPreFlightRequest(HttpRequest request, String origin) {
-        return request.method().equals(HttpMethods.OPTIONS.name()) && origin != null
+        return HttpMethods.OPTIONS.is(request.method())
+                && origin != null
                 && request.hasHeader(ACCESS_CONTROL_REQUEST_METHOD);
     }
 

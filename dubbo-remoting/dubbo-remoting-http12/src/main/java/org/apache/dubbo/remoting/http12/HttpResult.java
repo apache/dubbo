@@ -19,10 +19,11 @@ package org.apache.dubbo.remoting.http12;
 import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public interface HttpResult<T> {
+public interface HttpResult<T> extends Serializable {
 
     int getStatus();
 
