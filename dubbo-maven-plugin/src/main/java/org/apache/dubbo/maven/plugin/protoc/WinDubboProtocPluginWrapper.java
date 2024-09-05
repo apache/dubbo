@@ -56,7 +56,7 @@ public class WinDubboProtocPluginWrapper implements DubboProtocPluginWrapper {
                 "jre/bin/client/jvm.dll",
                 "bin/client/jvm.dll");
         final File winRun4JIniFile =
-                new File(dubboProtocPlugin.getPluginDirectory(), dubboProtocPlugin.getId() + ".ini");
+                new File(dubboProtocPlugin.getPluginDirectory(), "protoc-gen-" + dubboProtocPlugin.getId() + ".ini");
 
         if (winJvmDataModel != null) {
             if (!(winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64))) {
