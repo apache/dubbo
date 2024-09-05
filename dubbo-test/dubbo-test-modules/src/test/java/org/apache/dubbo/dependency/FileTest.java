@@ -468,8 +468,9 @@ class FileTest {
 
         Assertions.assertTrue(
                 expectedArtifactIds.isEmpty(),
-                "Newly created modules must be added to dubbo-all-shaded (dubbo-distribution" + File.separator + "dubbo-all-shaded"
-                        + File.separator + "pom.xml in shade plugin). Found modules: " + expectedArtifactIds);
+                "Newly created modules must be added to dubbo-all-shaded (dubbo-distribution" + File.separator
+                        + "dubbo-all-shaded" + File.separator + "pom.xml in shade plugin). Found modules: "
+                        + expectedArtifactIds);
 
         List<String> unexpectedArtifactIds = new LinkedList<>(artifactIdsInDubboAll);
         unexpectedArtifactIds.removeIf(artifactId -> !artifactIds.contains(artifactId));
