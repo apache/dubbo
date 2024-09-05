@@ -138,4 +138,8 @@ public interface Constants {
     String RULE_VERSION_V27 = "v2.7";
 
     String RULE_VERSION_V30 = "v3.0";
+
+    String RULE_VERSION_V31 = "v3.1";
+
+    public static final int DefaultRouteConditionSubSetWeight = 100;
 }

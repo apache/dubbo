@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
@@ -37,69 +36,74 @@ import org.springframework.http.HttpStatus;
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;
-    private volatile RestToolKit toolKit;
+    private final RestToolKit toolKit;
     private CorsMeta globalCorsMeta;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
+        toolKit = new SpringRestToolKit(frameworkModel);
     }
 
     @Override
     public RestToolKit getRestToolKit() {
-        RestToolKit toolKit = this.toolKit;
-        if (toolKit == null) {
-            synchronized (this) {
-                toolKit = this.toolKit;
-                if (toolKit == null) {
-                    toolKit = new SpringRestToolKit(frameworkModel);
-                    this.toolKit = toolKit;
-                }
-            }
-        }
         return toolKit;
     }
 
     @Override
     public RequestMapping resolve(ServiceMeta serviceMeta) {
         AnnotationMeta<?> requestMapping = serviceMeta.findMergedAnnotation(Annotations.RequestMapping);
-        if (requestMapping == null) {
+        AnnotationMeta<?> httpExchange = serviceMeta.findMergedAnnotation(Annotations.HttpExchange);
+        if (requestMapping == null && httpExchange == null) {
             return null;
         }
-        AnnotationMeta<?> responseStatus = serviceMeta.findMergedAnnotation(Annotations.ResponseStatus);
-        AnnotationMeta<?> crossOrigin = serviceMeta.findMergedAnnotation(Annotations.CrossOrigin);
-        String[] methods = requestMapping.getStringArray("method");
-        return builder(requestMapping, responseStatus)
+
+        String[] methods = requestMapping == null
+                ? httpExchange.getStringArray("method")
+                : requestMapping.getStringArray("method");
+        String[] paths = requestMapping == null ? httpExchange.getValueArray() : requestMapping.getValueArray();
+        return builder(requestMapping, httpExchange, serviceMeta.findMergedAnnotation(Annotations.ResponseStatus))
                 .method(methods)
                 .name(serviceMeta.getType().getSimpleName())
+                .path(paths)
                 .contextPath(serviceMeta.getContextPath())
-                .cors(buildCorsMeta(crossOrigin, methods))
+                .cors(buildCorsMeta(serviceMeta.findMergedAnnotation(Annotations.CrossOrigin), methods))
                 .build();
     }
 
     @Override
     public RequestMapping resolve(MethodMeta methodMeta) {
         AnnotationMeta<?> requestMapping = methodMeta.findMergedAnnotation(Annotations.RequestMapping);
-        if (requestMapping == null) {
+        AnnotationMeta<?> httpExchange = methodMeta.findMergedAnnotation(Annotations.HttpExchange);
+        if (requestMapping == null && httpExchange == null) {
             AnnotationMeta<?> exceptionHandler = methodMeta.getAnnotation(Annotations.ExceptionHandler);
             if (exceptionHandler != null) {
+                methodMeta.initParameters();
                 methodMeta.getServiceMeta().addExceptionHandler(methodMeta);
             }
             return null;
         }
+
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
-        AnnotationMeta<?> responseStatus = methodMeta.findMergedAnnotation(Annotations.ResponseStatus);
-        AnnotationMeta<?> crossOrigin = methodMeta.findMergedAnnotation(Annotations.CrossOrigin);
-        String[] methods = requestMapping.getStringArray("method");
-        return builder(requestMapping, responseStatus)
+        String name = methodMeta.getMethod().getName();
+        String[] methods = requestMapping == null
+                ? httpExchange.getStringArray("method")
+                : requestMapping.getStringArray("method");
+        String[] paths = requestMapping == null ? httpExchange.getValueArray() : requestMapping.getValueArray();
+        if (paths.length == 0) {
+            paths = new String[] {'/' + name};
+        }
+        return builder(requestMapping, httpExchange, methodMeta.findMergedAnnotation(Annotations.ResponseStatus))
                 .method(methods)
-                .name(methodMeta.getMethod().getName())
+                .name(name)
+                .path(paths)
                 .contextPath(serviceMeta.getContextPath())
-                .custom(new ServiceVersionCondition(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion()))
-                .cors(buildCorsMeta(crossOrigin, methods))
+                .service(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion())
+                .cors(buildCorsMeta(methodMeta.findMergedAnnotation(Annotations.CrossOrigin), methods))
                 .build();
     }
 
-    private Builder builder(AnnotationMeta<?> requestMapping, AnnotationMeta<?> responseStatus) {
+    private Builder builder(
+            AnnotationMeta<?> requestMapping, AnnotationMeta<?> httpExchange, AnnotationMeta<?> responseStatus) {
         Builder builder = RequestMapping.builder();
         if (responseStatus != null) {
             HttpStatus value = responseStatus.getEnum("value");
@@ -109,8 +113,11 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
                 builder.responseReason(reason);
             }
         }
-        return builder.path(requestMapping.getValueArray())
-                .param(requestMapping.getStringArray("params"))
+        if (requestMapping == null) {
+            return builder.consume(httpExchange.getStringArray("contentType"))
+                    .produce(httpExchange.getStringArray("accept"));
+        }
+        return builder.param(requestMapping.getStringArray("params"))
                 .header(requestMapping.getStringArray("headers"))
                 .consume(requestMapping.getStringArray("consumes"))
                 .produce(requestMapping.getStringArray("produces"));

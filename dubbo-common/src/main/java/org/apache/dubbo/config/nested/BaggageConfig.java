@@ -27,6 +27,8 @@ import java.util.List;
  */
 public class BaggageConfig implements Serializable {
 
+    private static final long serialVersionUID = -4750259290735346439L;
+
     /**
      * Whether baggage is enabled or not.
      */

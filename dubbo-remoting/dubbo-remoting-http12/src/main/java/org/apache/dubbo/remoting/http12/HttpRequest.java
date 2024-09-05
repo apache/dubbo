@@ -42,23 +42,23 @@ public interface HttpRequest extends RequestMetadata {
 
     String query();
 
-    String header(String name);
+    String header(CharSequence name);
 
-    List<String> headerValues(String name);
+    List<String> headerValues(CharSequence name);
 
-    Date dateHeader(String name);
+    Date dateHeader(CharSequence name);
 
-    boolean hasHeader(String name);
+    boolean hasHeader(CharSequence name);
 
     Collection<String> headerNames();
 
     HttpHeaders headers();
 
-    void setHeader(String name, String value);
+    void setHeader(CharSequence name, String value);
 
-    void setHeader(String name, List<String> values);
+    void setHeader(CharSequence name, List<String> values);
 
-    void setHeader(String name, Date value);
+    void setHeader(CharSequence name, Date value);
 
     Collection<HttpCookie> cookies();
 
@@ -115,6 +115,8 @@ public interface HttpRequest extends RequestMetadata {
     List<String> queryParameterValues(String name);
 
     Collection<String> queryParameterNames();
+
+    Map<String, List<String>> queryParameters();
 
     String formParameter(String name);
 

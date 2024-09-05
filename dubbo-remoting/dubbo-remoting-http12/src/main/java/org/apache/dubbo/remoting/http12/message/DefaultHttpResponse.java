@@ -24,22 +24,20 @@ import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.HttpUtils;
+import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import io.netty.handler.codec.DateFormatter;
 
 public class DefaultHttpResponse implements HttpResponse {
 
-    private final HttpHeaders headers = new HttpHeaders();
-
+    private HttpHeaders headers;
     private int status;
     private String contentType;
     private String charset;
@@ -61,80 +59,83 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     @Override
-    public String header(String name) {
-        return headers.getFirst(name);
+    public String header(CharSequence name) {
+        return headers == null ? null : headers.getFirst(name);
     }
 
     @Override
-    public Date dateHeader(String name) {
-        String value = headers.getFirst(name);
+    public Date dateHeader(CharSequence name) {
+        String value = header(name);
         return StringUtils.isEmpty(value) ? null : DateFormatter.parseHttpDate(value);
     }
 
     @Override
-    public List<String> headerValues(String name) {
-        return headers.get(name);
+    public List<String> headerValues(CharSequence name) {
+        return headers == null ? Collections.emptyList() : headers.get(name);
     }
 
     @Override
-    public boolean hasHeader(String name) {
-        return headers.containsKey(name);
+    public boolean hasHeader(CharSequence name) {
+        return headers != null && headers.containsKey(name);
     }
 
     @Override
     public Collection<String> headerNames() {
-        return headers.keySet();
+        return headers == null ? Collections.emptyList() : headers.names();
     }
 
     @Override
-    public Map<String, List<String>> headers() {
-        return Collections.unmodifiableMap(headers);
+    public HttpHeaders headers() {
+        if (headers == null) {
+            headers = HttpHeaders.create();
+        }
+        return headers;
     }
 
     @Override
-    public void addHeader(String name, String value) {
+    public void addHeader(CharSequence name, String value) {
         if (committed) {
             return;
         }
-        headers.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
+        headers().add(name, value);
     }
 
     @Override
-    public void addHeader(String name, Date value) {
+    public void addHeader(CharSequence name, Date value) {
         addHeader(name, DateFormatter.format(value));
     }
 
     @Override
-    public void setHeader(String name, String value) {
+    public void setHeader(CharSequence name, String value) {
         if (committed) {
             return;
         }
-        headers.set(name, value);
+        headers().set(name, value);
     }
 
     @Override
-    public void setHeader(String name, Date value) {
+    public void setHeader(CharSequence name, Date value) {
         setHeader(name, DateFormatter.format(value));
     }
 
     @Override
-    public void setHeader(String name, List<String> values) {
+    public void setHeader(CharSequence name, List<String> values) {
         if (committed) {
             return;
         }
-        headers.put(name, values);
+        headers().set(name, values);
     }
 
     @Override
     public void addCookie(HttpCookie cookie) {
-        addHeader("set-cookie", HttpUtils.encodeCookie(cookie));
+        addHeader(HttpHeaderNames.SET_COOKIE.getKey(), HttpUtils.encodeCookie(cookie));
     }
 
     @Override
     public String contentType() {
         String contentType = this.contentType;
         if (contentType == null) {
-            contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+            contentType = header(HttpHeaderNames.CONTENT_TYPE.getKey());
             contentType = contentType == null ? StringUtils.EMPTY_STRING : contentType.trim();
             this.contentType = contentType;
         }
@@ -192,7 +193,7 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public String locale() {
-        return headers.getFirst("content-language");
+        return header(HttpHeaderNames.CONTENT_LANGUAGE.getKey());
     }
 
     @Override
@@ -200,7 +201,7 @@ public class DefaultHttpResponse implements HttpResponse {
         if (committed) {
             return;
         }
-        headers.set("content-language", locale);
+        setHeader(HttpHeaderNames.CONTENT_LANGUAGE.getKey(), locale);
     }
 
     @Override
@@ -236,7 +237,7 @@ public class DefaultHttpResponse implements HttpResponse {
     public void sendRedirect(String location) {
         check();
         setStatus(HttpStatus.FOUND.getCode());
-        setHeader("location", location);
+        setHeader(HttpHeaderNames.LOCATION.getKey(), location);
         commit();
     }
 
@@ -257,13 +258,7 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public boolean isEmpty() {
-        if (status != 0) {
-            return false;
-        }
-        if (!headers.isEmpty()) {
-            return false;
-        }
-        return isContentEmpty();
+        return status == 0 && (headers == null || headers.isEmpty()) && isContentEmpty();
     }
 
     @Override
@@ -295,8 +290,8 @@ public class DefaultHttpResponse implements HttpResponse {
     @Override
     public void reset() {
         check();
+        headers = null;
         status = 0;
-        headers.clear();
         contentType = null;
         body = null;
         resetBuffer();
@@ -325,36 +320,25 @@ public class DefaultHttpResponse implements HttpResponse {
     @Override
     @SuppressWarnings("unchecked")
     public HttpResult<Object> toHttpResult() {
+        Builder<Object> builder = HttpResult.builder();
         int status = this.status;
-        Map<String, List<String>> headers = this.headers;
         Object body = this.body;
+        builder.headers(headers);
+
         if (body instanceof HttpResult) {
             HttpResult<Object> result = (HttpResult<Object>) body;
             if (result.getStatus() != 0) {
                 status = result.getStatus();
             }
-            Map<String, List<String>> rHeaders = result.getHeaders();
-            if (rHeaders != null && !rHeaders.isEmpty()) {
-                headers = new HttpHeaders();
-                headers.putAll(this.headers);
-                for (Map.Entry<String, List<String>> entry : rHeaders.entrySet()) {
-                    String key = entry.getKey();
-                    if ("set-cookie".equalsIgnoreCase(key)) {
-                        headers.computeIfAbsent(key, k -> new ArrayList<>()).addAll(entry.getValue());
-                    } else {
-                        headers.put(key, entry.getValue());
-                    }
-                }
+            if (result.getBody() != null) {
+                body = result.getBody();
             }
-            body = result.getBody();
+            builder.headers(result.getHeaders());
         }
-        if (status == 0) {
-            status = HttpStatus.OK.getCode();
-        }
-        if (body == null) {
-            body = outputStream;
-        }
-        return HttpResult.builder(body).status(status).headers(headers).build();
+
+        return builder.status(status == 0 ? HttpStatus.OK.getCode() : status)
+                .body(body == null ? outputStream : body)
+                .build();
     }
 
     @Override

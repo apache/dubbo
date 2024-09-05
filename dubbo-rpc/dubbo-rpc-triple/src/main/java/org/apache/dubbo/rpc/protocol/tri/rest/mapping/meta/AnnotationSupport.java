@@ -61,7 +61,7 @@ public abstract class AnnotationSupport {
         });
     }
 
-    public final Annotation[] getRealAnnotations() {
+    public final Annotation[] getRawAnnotations() {
         AnnotationMeta[] annotations = getAnnotations();
         int len = annotations.length;
         Annotation[] result = new Annotation[len];
@@ -71,7 +71,7 @@ public abstract class AnnotationSupport {
         return result;
     }
 
-    public final AnnotationMeta getAnnotation(Class<? extends Annotation> annotationType) {
+    public final <A extends Annotation> AnnotationMeta<A> getAnnotation(Class<A> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, GET_KEY), k -> {
                     AnnotatedElement element = getAnnotatedElement();
                     Annotation annotation = element.getAnnotation(annotationType);
@@ -87,7 +87,7 @@ public abstract class AnnotationSupport {
         return annotationEnum.isPresent() ? getAnnotation(annotationEnum.type()) : null;
     }
 
-    public final boolean isAnnotated(Class<Annotation> annotationType) {
+    public final boolean isAnnotated(Class<? extends Annotation> annotationType) {
         return getAnnotation(annotationType) != null;
     }
 
@@ -95,7 +95,7 @@ public abstract class AnnotationSupport {
         return getAnnotation(annotationEnum) != null;
     }
 
-    public final AnnotationMeta getMergedAnnotation(Class<Annotation> annotationType) {
+    public final <A extends Annotation> AnnotationMeta<A> getMergedAnnotation(Class<A> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, GET_MERGED_KEY), k -> {
                     AnnotatedElement element = getAnnotatedElement();
                     Annotation[] annotations = element.getAnnotations();
@@ -117,7 +117,7 @@ public abstract class AnnotationSupport {
         return annotationEnum.isPresent() ? getMergedAnnotation(annotationEnum.type()) : null;
     }
 
-    public final boolean isMergedAnnotated(Class<Annotation> annotationType) {
+    public final boolean isMergedAnnotated(Class<? extends Annotation> annotationType) {
         return getMergedAnnotation(annotationType) != null;
     }
 
@@ -129,7 +129,7 @@ public abstract class AnnotationSupport {
         return arrayCache.computeIfAbsent(FIND_KEY, k -> {
             List<? extends AnnotatedElement> elements = getAnnotatedElements();
             List<AnnotationMeta> metas = new ArrayList<>();
-            for (int i = 0, len = elements.size(); i < len; i++) {
+            for (int i = 0, size = elements.size(); i < size; i++) {
                 AnnotatedElement element = elements.get(i);
                 Annotation[] annotations = element.getAnnotations();
                 for (Annotation annotation : annotations) {
@@ -143,10 +143,10 @@ public abstract class AnnotationSupport {
         });
     }
 
-    public final AnnotationMeta findAnnotation(Class<Annotation> annotationType) {
+    public final <A extends Annotation> AnnotationMeta<A> findAnnotation(Class<A> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, FIND_KEY), k -> {
                     List<? extends AnnotatedElement> elements = getAnnotatedElements();
-                    for (int i = 0, len = elements.size(); i < len; i++) {
+                    for (int i = 0, size = elements.size(); i < size; i++) {
                         AnnotatedElement element = elements.get(i);
                         Annotation annotation = element.getDeclaredAnnotation(annotationType);
                         if (annotation != null) {
@@ -162,18 +162,18 @@ public abstract class AnnotationSupport {
         return annotationEnum.isPresent() ? findAnnotation(annotationEnum.type()) : null;
     }
 
-    public final boolean isHierarchyAnnotated(Class<Annotation> annotationType) {
-        return getMergedAnnotation(annotationType) != null;
+    public final boolean isHierarchyAnnotated(Class<? extends Annotation> annotationType) {
+        return findAnnotation(annotationType) != null;
     }
 
     public final boolean isHierarchyAnnotated(AnnotationEnum annotationEnum) {
-        return getMergedAnnotation(annotationEnum) != null;
+        return findAnnotation(annotationEnum) != null;
     }
 
-    public final AnnotationMeta findMergedAnnotation(Class<Annotation> annotationType) {
+    public final <A extends Annotation> AnnotationMeta<A> findMergedAnnotation(Class<A> annotationType) {
         return cache.computeIfAbsent(Pair.of(annotationType, FIND_MERGED_KEY), k -> {
                     List<? extends AnnotatedElement> elements = getAnnotatedElements();
-                    for (int i = 0, len = elements.size(); i < len; i++) {
+                    for (int i = 0, size = elements.size(); i < size; i++) {
                         AnnotatedElement element = elements.get(i);
                         Annotation[] annotations = element.getDeclaredAnnotations();
                         for (Annotation annotation : annotations) {
@@ -196,7 +196,7 @@ public abstract class AnnotationSupport {
         return annotationEnum.isPresent() ? findMergedAnnotation(annotationEnum.type()) : null;
     }
 
-    public final boolean isMergedHierarchyAnnotated(Class<Annotation> annotationType) {
+    public final boolean isMergedHierarchyAnnotated(Class<? extends Annotation> annotationType) {
         return findMergedAnnotation(annotationType) != null;
     }
 

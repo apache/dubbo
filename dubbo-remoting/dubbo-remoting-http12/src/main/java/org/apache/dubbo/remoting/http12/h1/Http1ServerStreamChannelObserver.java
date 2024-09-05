@@ -17,45 +17,42 @@
 package org.apache.dubbo.remoting.http12.h1;
 
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class Http1ServerStreamChannelObserver extends Http1ServerChannelObserver {
 
-    private static final String SERVER_SENT_EVENT_DATA_PREFIX = "data:";
-    private static final String SERVER_SENT_EVENT_LF = "\n\n";
-
-    private static final byte[] SERVER_SENT_EVENT_DATA_PREFIX_BYTES = SERVER_SENT_EVENT_DATA_PREFIX.getBytes();
-    private static final byte[] SERVER_SENT_EVENT_LF_BYTES = SERVER_SENT_EVENT_LF.getBytes();
+    private static final byte[] SERVER_SENT_EVENT_DATA_PREFIX_BYTES = "data:".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] SERVER_SENT_EVENT_LF_BYTES = "\n\n".getBytes(StandardCharsets.US_ASCII);
 
     public Http1ServerStreamChannelObserver(HttpChannel httpChannel) {
         super(httpChannel);
     }
 
     @Override
-    protected HttpMetadata encodeHttpMetadata() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaderNames.TRANSFER_ENCODING.getName(), "chunked");
-        return new Http1Metadata(httpHeaders);
+    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
+        HttpHeaders headers = HttpHeaders.create();
+        headers.set(HttpHeaderNames.TRANSFER_ENCODING.getKey(), HttpConstants.CHUNKED);
+        return new Http1Metadata(headers);
     }
 
     @Override
-    protected void preOutputMessage(HttpOutputMessage httpMessage) throws IOException {
-        HttpOutputMessage httpOutputMessage = this.getHttpChannel().newOutputMessage();
-        httpOutputMessage
-                .getBody()
-                .write(SERVER_SENT_EVENT_DATA_PREFIX_BYTES, 0, SERVER_SENT_EVENT_DATA_PREFIX_BYTES.length);
-        this.getHttpChannel().writeMessage(httpOutputMessage);
+    protected void preOutputMessage(HttpOutputMessage message) throws IOException {
+        HttpOutputMessage prefixMessage = getHttpChannel().newOutputMessage();
+        prefixMessage.getBody().write(SERVER_SENT_EVENT_DATA_PREFIX_BYTES);
+        getHttpChannel().writeMessage(prefixMessage);
     }
 
     @Override
-    protected void postOutputMessage(HttpOutputMessage httpMessage) throws IOException {
-        HttpOutputMessage httpOutputMessage = this.getHttpChannel().newOutputMessage();
-        httpOutputMessage.getBody().write(SERVER_SENT_EVENT_LF_BYTES, 0, SERVER_SENT_EVENT_LF_BYTES.length);
-        this.getHttpChannel().writeMessage(httpOutputMessage);
+    protected void postOutputMessage(HttpOutputMessage message) throws IOException {
+        HttpOutputMessage lfMessage = getHttpChannel().newOutputMessage();
+        lfMessage.getBody().write(SERVER_SENT_EVENT_LF_BYTES);
+        getHttpChannel().writeMessage(lfMessage);
     }
 }

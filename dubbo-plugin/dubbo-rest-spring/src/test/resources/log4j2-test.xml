@@ -22,7 +22,9 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils" level="error"/>
+        <Logger name="org.apache.dubbo.rpc.protocol.tri.h12" level="debug"/>
+        <Logger name="org.apache.dubbo.rpc.protocol.tri.rest" level="debug"/>
+        <Logger name="org.apache.dubbo.remoting.http12" level="debug"/>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>

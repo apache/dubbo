@@ -19,17 +19,18 @@ package org.apache.dubbo.remoting.http12.h2;
 import org.apache.dubbo.remoting.http12.AbstractServerHttpChannelObserver;
 import org.apache.dubbo.remoting.http12.ErrorCodeHolder;
 import org.apache.dubbo.remoting.http12.FlowControlStreamObserver;
-import org.apache.dubbo.remoting.http12.HttpChannelObserver;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 import org.apache.dubbo.rpc.CancellationContext;
 
-public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver
-        implements HttpChannelObserver<Object>,
-                FlowControlStreamObserver<Object>,
-                Http2CancelableStreamObserver<Object> {
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+
+public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver<H2StreamChannel>
+        implements FlowControlStreamObserver<Object>, Http2CancelableStreamObserver<Object> {
 
     private CancellationContext cancellationContext;
 
@@ -46,20 +47,15 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
-    protected HttpMetadata encodeHttpMetadata() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaderNames.TE.getName(), "trailers");
-        return new Http2MetadataFrame(httpHeaders);
+    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
+        HttpHeaders headers = new NettyHttpHeaders<>(new DefaultHttp2Headers(false, 8));
+        headers.set(HttpHeaderNames.TE.getKey(), HttpConstants.TRAILERS);
+        return new Http2MetadataFrame(headers, endStream);
     }
 
     @Override
     protected HttpMetadata encodeTrailers(Throwable throwable) {
-        return new Http2MetadataFrame(new HttpHeaders(), true);
-    }
-
-    @Override
-    public H2StreamChannel getHttpChannel() {
-        return (H2StreamChannel) super.getHttpChannel();
+        return new Http2MetadataFrame(new NettyHttpHeaders<>(new DefaultHttp2Headers(false, 4)), true);
     }
 
     @Override
@@ -79,7 +75,9 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
                 closed();
             }
         }
-        this.cancellationContext.cancel(throwable);
+        if (cancellationContext != null) {
+            cancellationContext.cancel(throwable);
+        }
         long errorCode = 0;
         if (throwable instanceof ErrorCodeHolder) {
             errorCode = ((ErrorCodeHolder) throwable).getErrorCode();
@@ -89,12 +87,12 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     @Override
     public void request(int count) {
-        this.streamingDecoder.request(count);
+        streamingDecoder.request(count);
     }
 
     @Override
     public void disableAutoFlowControl() {
-        this.autoRequestN = false;
+        autoRequestN = false;
     }
 
     @Override
@@ -103,7 +101,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         super.close();
         streamingDecoder.onStreamClosed();
     }

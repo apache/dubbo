@@ -36,8 +36,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
 
 /**
  * Configuration for the protocol.
- *
- * @export
  */
 public class ProtocolConfig extends AbstractConfig {
 
@@ -238,6 +236,11 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private String jsonCheckLevel;
 
+    /**
+     * Indicates whether to support no interface.
+     */
+    private Boolean noInterfaceSupport;
+
     @Nested
     private TripleConfig triple;
 
@@ -282,11 +285,6 @@ public class ProtocolConfig extends AbstractConfig {
                             .getBean(PreferSerializationProvider.class)
                             .getPreferSerialization();
         }
-
-        if (triple == null) {
-            triple = new TripleConfig();
-        }
-        triple.checkDefault();
     }
 
     @Parameter(excluded = true)
@@ -631,7 +629,23 @@ public class ProtocolConfig extends AbstractConfig {
         this.extProtocol = extProtocol;
     }
 
+    public Boolean isNoInterfaceSupport() {
+        return noInterfaceSupport;
+    }
+
+    public void setNoInterfaceSupport(Boolean noInterfaceSupport) {
+        this.noInterfaceSupport = noInterfaceSupport;
+    }
+
     public TripleConfig getTriple() {
+        return triple;
+    }
+
+    @Parameter(excluded = true)
+    public TripleConfig getTripleOrDefault() {
+        if (triple == null) {
+            triple = new TripleConfig();
+        }
         return triple;
     }
 
@@ -643,7 +657,7 @@ public class ProtocolConfig extends AbstractConfig {
         if (sourceConfig == null) {
             return;
         }
-        Field[] targetFields = this.getClass().getDeclaredFields();
+        Field[] targetFields = getClass().getDeclaredFields();
         try {
             Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(sourceConfig);
             for (Field targetField : targetFields) {

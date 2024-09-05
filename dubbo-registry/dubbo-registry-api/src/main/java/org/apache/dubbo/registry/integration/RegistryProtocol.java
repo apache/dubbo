@@ -1102,10 +1102,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                         .getConfiguration()
                                         .convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                                     for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-                                        if (!moduleModel
-                                                .getServiceRepository()
-                                                .getExportedServices()
-                                                .isEmpty()) {
+                                        if (null != moduleModel.getServiceRepository()
+                                                && !moduleModel
+                                                        .getServiceRepository()
+                                                        .getExportedServices()
+                                                        .isEmpty()) {
                                             moduleModel
                                                     .getExtensionLoader(GovernanceRuleRepository.class)
                                                     .getDefaultExtension()

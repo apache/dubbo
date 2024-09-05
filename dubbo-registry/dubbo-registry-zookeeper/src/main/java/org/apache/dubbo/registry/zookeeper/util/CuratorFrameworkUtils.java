@@ -24,6 +24,7 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.CuratorFrameworkFactory.Builder;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -70,11 +72,19 @@ public abstract class CuratorFrameworkUtils {
 
     public static CuratorFramework buildCuratorFramework(URL connectionURL, ZookeeperServiceDiscovery serviceDiscovery)
             throws Exception {
-        boolean ensembleTracker = connectionURL.getParameter(ZOOKEEPER_ENSEMBLE_TRACKER_KEY, true);
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(connectionURL.getBackupAddress())
-                .ensembleTracker(ensembleTracker)
                 .retryPolicy(buildRetryPolicy(connectionURL));
+        try {
+            // use reflect to check method exist to compatibility with curator4, can remove in dubbo3.3 and direct call
+            // the method because 3.3 only supported curator5
+            Class<? extends Builder> builderClass = builder.getClass();
+            Method ignore = builderClass.getMethod("ensembleTracker", boolean.class);
+            boolean ensembleTrackerFlag = connectionURL.getParameter(ZOOKEEPER_ENSEMBLE_TRACKER_KEY, true);
+            builder.ensembleTracker(ensembleTrackerFlag);
+        } catch (Throwable ignore) {
+        }
+
         String userInformation = connectionURL.getUserInformation();
         if (StringUtils.isNotEmpty(userInformation)) {
             builder = builder.authorization("digest", userInformation.getBytes());

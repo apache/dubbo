@@ -23,6 +23,8 @@ import java.io.Serializable;
  */
 public class SamplingConfig implements Serializable {
 
+    private static final long serialVersionUID = -7456034528275916549L;
+
     /**
      * Probability in the range from 0.0 to 1.0 that a trace will be sampled.
      */

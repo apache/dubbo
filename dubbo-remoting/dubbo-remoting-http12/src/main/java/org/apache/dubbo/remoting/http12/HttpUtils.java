@@ -33,7 +33,9 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.CookieHeaderNames.SameSite;
@@ -53,6 +55,20 @@ public final class HttpUtils {
     public static final String CHARSET_PREFIX = "charset=";
 
     private HttpUtils() {}
+
+    public static String getStatusMessage(int status) {
+        return HttpResponseStatus.valueOf(status).reasonPhrase();
+    }
+
+    public static String toStatusString(int statusCode) {
+        if (statusCode == 200) {
+            return HttpStatus.OK.getStatusString();
+        }
+        if (statusCode == 500) {
+            return HttpStatus.INTERNAL_SERVER_ERROR.getStatusString();
+        }
+        return Integer.toString(statusCode);
+    }
 
     public static List<HttpCookie> decodeCookies(String value) {
         List<HttpCookie> cookies = new ArrayList<>();
@@ -168,7 +184,9 @@ public final class HttpUtils {
                 data,
                 new DefaultHttpHeaders(false),
                 new DefaultHttpHeaders(false));
-        request.headers().forEach(nRequest.headers()::set);
+        HttpHeaders headers = nRequest.headers();
+        request.headers().forEach(e -> headers.add(e.getKey(), e.getValue()));
+
         if (charset == null) {
             return new HttpPostRequestDecoder(DATA_FACTORY, nRequest);
         } else {
@@ -188,7 +206,7 @@ public final class HttpUtils {
         return new DefaultFileUploadAdapter((FileUpload) item);
     }
 
-    private static class DefaultFileUploadAdapter implements HttpRequest.FileUpload {
+    private static final class DefaultFileUploadAdapter implements HttpRequest.FileUpload {
         private final FileUpload fu;
         private InputStream inputStream;
 

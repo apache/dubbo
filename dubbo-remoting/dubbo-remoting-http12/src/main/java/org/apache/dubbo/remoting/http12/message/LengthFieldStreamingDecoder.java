@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -46,8 +44,6 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     private final int lengthFieldLength;
 
     private int requiredLength;
-
-    private InputStream dataHeader = StreamUtils.EMPTY;
 
     public LengthFieldStreamingDecoder() {
         this(4);
@@ -147,16 +143,12 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     private void processHeader() throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(lengthFieldOffset + lengthFieldLength);
         byte[] offsetData = new byte[lengthFieldOffset];
         int ignore = accumulate.read(offsetData);
-        bos.write(offsetData);
         processOffset(new ByteArrayInputStream(offsetData), lengthFieldOffset);
         byte[] lengthBytes = new byte[lengthFieldLength];
         ignore = accumulate.read(lengthBytes);
-        bos.write(lengthBytes);
         requiredLength = bytesToInt(lengthBytes);
-        this.dataHeader = new ByteArrayInputStream(bos.toByteArray());
 
         // Continue reading the frame body.
         state = DecodeState.PAYLOAD;
@@ -184,8 +176,8 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         requiredLength = lengthFieldOffset + lengthFieldLength;
     }
 
-    protected void invokeListener(InputStream inputStream) {
-        this.listener.onFragmentMessage(dataHeader, inputStream);
+    public void invokeListener(InputStream inputStream) {
+        this.listener.onFragmentMessage(inputStream);
     }
 
     protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {

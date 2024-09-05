@@ -32,12 +32,11 @@ public class HttpResultPayloadException extends HttpStatusException {
 
     public HttpResultPayloadException(int statusCode, Object body) {
         super(statusCode);
-        result = HttpResult.builder(body).status(statusCode).build();
+        result = HttpResult.of(statusCode, body);
     }
 
     public HttpResultPayloadException(Object body) {
-        super(HttpStatus.OK.getCode());
-        result = HttpResult.builder(body).ok().build();
+        this(HttpStatus.OK.getCode(), body);
     }
 
     @Override
@@ -45,7 +44,23 @@ public class HttpResultPayloadException extends HttpStatusException {
         return this;
     }
 
-    public HttpResult<?> getResult() {
-        return result;
+    @SuppressWarnings("unchecked")
+    public <T> HttpResult<T> getResult() {
+        return (HttpResult<T>) result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getBody() {
+        return (T) result.getBody();
+    }
+
+    @Override
+    public String getMessage() {
+        return String.valueOf(result);
+    }
+
+    @Override
+    public String toString() {
+        return "HttpResultPayloadException{result=" + result + '}';
     }
 }

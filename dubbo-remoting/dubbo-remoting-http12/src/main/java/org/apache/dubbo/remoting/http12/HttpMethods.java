@@ -20,12 +20,12 @@ import java.nio.charset.StandardCharsets;
 
 public enum HttpMethods {
     GET,
+    HEAD,
     POST,
     PUT,
-    DELETE,
-    HEAD,
-    OPTIONS,
     PATCH,
+    DELETE,
+    OPTIONS,
     TRACE;
 
     public static final byte[][] HTTP_METHODS_BYTES;
@@ -37,6 +37,10 @@ public enum HttpMethods {
         for (int i = 0; i < len; i++) {
             HTTP_METHODS_BYTES[i] = methods[i].name().getBytes(StandardCharsets.ISO_8859_1);
         }
+    }
+
+    public boolean is(String name) {
+        return name().equals(name);
     }
 
     @SuppressWarnings("StringEquality")

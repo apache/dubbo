@@ -21,19 +21,11 @@ import java.io.OutputStream;
 
 import io.netty.buffer.ByteBufOutputStream;
 
-public class Http2OutputMessageFrame implements Http2OutputMessage {
+public final class Http2OutputMessageFrame implements Http2OutputMessage {
 
     private final OutputStream body;
 
     private final boolean endStream;
-
-    public Http2OutputMessageFrame(OutputStream body) {
-        this(body, false);
-    }
-
-    public Http2OutputMessageFrame(boolean endStream) {
-        this(null, endStream);
-    }
 
     public Http2OutputMessageFrame(OutputStream body, boolean endStream) {
         this.body = body;

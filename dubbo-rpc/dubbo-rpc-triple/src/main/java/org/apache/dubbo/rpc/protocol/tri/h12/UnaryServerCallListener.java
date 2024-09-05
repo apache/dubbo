@@ -18,21 +18,13 @@ package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.TriRpcStatus;
 
 public class UnaryServerCallListener extends AbstractServerCallListener {
-
-    private boolean applyCustomizeException = false;
 
     public UnaryServerCallListener(
             RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
-    }
-
-    public void setApplyCustomizeException(boolean applyCustomizeException) {
-        this.applyCustomizeException = applyCustomizeException;
     }
 
     @Override
@@ -51,26 +43,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    protected void onResponseException(Throwable t) {
-        if (applyCustomizeException) {
-            TriRpcStatus status = TriRpcStatus.getStatus(t);
-            int exceptionCode = status.code.code;
-            if (exceptionCode == TriRpcStatus.UNKNOWN.code.code) {
-                exceptionCode = RpcException.BIZ_EXCEPTION;
-            }
-            if (responseObserver instanceof ServerCallToObserverAdapter) {
-                ((ServerCallToObserverAdapter<Object>) responseObserver).setExceptionCode(exceptionCode);
-            }
-            onReturn(t);
-        } else {
-            super.onResponseException(t);
-        }
-    }
-
-    @Override
-    public void onCancel(long code) {
-        // ignore
-    }
+    public void onCancel(long code) {}
 
     @Override
     public void onComplete() {

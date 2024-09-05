@@ -21,11 +21,9 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 
-final class HttpMetadataAdapter implements Http2Header {
+public final class HttpMetadataAdapter implements Http2Header {
 
     private final HttpServletRequest request;
 
@@ -35,20 +33,22 @@ final class HttpMetadataAdapter implements Http2Header {
         this.request = request;
     }
 
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+
     @Override
     public HttpHeaders headers() {
         HttpHeaders headers = this.headers;
         if (headers == null) {
-            headers = new HttpHeaders();
+            headers = HttpHeaders.create();
             Enumeration<String> en = request.getHeaderNames();
             while (en.hasMoreElements()) {
                 String key = en.nextElement();
-                List<String> values = new ArrayList<>(1);
                 Enumeration<String> ven = request.getHeaders(key);
                 while (ven.hasMoreElements()) {
-                    values.add(ven.nextElement());
+                    headers.add(key, ven.nextElement());
                 }
-                headers.put(key, values);
             }
             this.headers = headers;
         }
@@ -64,11 +64,6 @@ final class HttpMetadataAdapter implements Http2Header {
     public String path() {
         String query = request.getQueryString();
         return query == null ? request.getRequestURI() : request.getRequestURI() + '?' + query;
-    }
-
-    @Override
-    public String status() {
-        return null;
     }
 
     @Override

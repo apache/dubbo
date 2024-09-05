@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.http12.message;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -49,6 +50,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 
 public class DefaultHttpRequest implements HttpRequest {
 
@@ -79,6 +81,10 @@ public class DefaultHttpRequest implements HttpRequest {
         } else {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public HttpMetadata getMetadata() {
+        return metadata;
     }
 
     @Override
@@ -123,29 +129,29 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
-    public String header(String name) {
+    public String header(CharSequence name) {
         return headers.getFirst(name);
     }
 
     @Override
-    public List<String> headerValues(String name) {
+    public List<String> headerValues(CharSequence name) {
         return headers.get(name);
     }
 
     @Override
-    public Date dateHeader(String name) {
+    public Date dateHeader(CharSequence name) {
         String value = headers.getFirst(name);
         return StringUtils.isEmpty(value) ? null : DateFormatter.parseHttpDate(value);
     }
 
     @Override
-    public boolean hasHeader(String name) {
+    public boolean hasHeader(CharSequence name) {
         return headers.containsKey(name);
     }
 
     @Override
     public Collection<String> headerNames() {
-        return headers.keySet();
+        return headers.names();
     }
 
     @Override
@@ -154,25 +160,25 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
-    public void setHeader(String name, String value) {
+    public void setHeader(CharSequence name, String value) {
         headers.set(name, value);
     }
 
     @Override
-    public void setHeader(String name, Date value) {
+    public void setHeader(CharSequence name, Date value) {
         headers.set(name, DateFormatter.format(value));
     }
 
     @Override
-    public void setHeader(String name, List<String> values) {
-        headers.put(name, values);
+    public void setHeader(CharSequence name, List<String> values) {
+        headers.set(name, values);
     }
 
     @Override
     public Collection<HttpCookie> cookies() {
         List<HttpCookie> cookies = this.cookies;
         if (cookies == null) {
-            cookies = HttpUtils.decodeCookies(header("cookie"));
+            cookies = HttpUtils.decodeCookies(header(HttpHeaderNames.COOKIE.getKey()));
             this.cookies = cookies;
         }
         return cookies;
@@ -182,7 +188,7 @@ public class DefaultHttpRequest implements HttpRequest {
     public HttpCookie cookie(String name) {
         List<HttpCookie> cookies = this.cookies;
         if (cookies == null) {
-            cookies = HttpUtils.decodeCookies(header("cookie"));
+            cookies = HttpUtils.decodeCookies(header(HttpHeaderNames.COOKIE.getKey()));
             this.cookies = cookies;
         }
         for (int i = 0, size = cookies.size(); i < size; i++) {
@@ -196,7 +202,7 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public int contentLength() {
-        String value = headers.getFirst(HttpHeaderNames.CONTENT_LENGTH.getName());
+        String value = headers.getFirst(HttpHeaderNames.CONTENT_LENGTH.getKey());
         return value == null ? 0 : Integer.parseInt(value);
     }
 
@@ -204,7 +210,7 @@ public class DefaultHttpRequest implements HttpRequest {
     public String contentType() {
         String contentType = this.contentType;
         if (contentType == null) {
-            contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+            contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getKey());
             contentType = contentType == null ? StringUtils.EMPTY_STRING : contentType.trim();
             this.contentType = contentType;
         }
@@ -219,7 +225,7 @@ public class DefaultHttpRequest implements HttpRequest {
 
     private void setContentType0(String contentType) {
         this.contentType = contentType;
-        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), contentType());
+        headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), contentType());
     }
 
     @Override
@@ -267,7 +273,7 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public String accept() {
-        return headers.getFirst(HttpHeaderNames.ACCEPT.getName());
+        return headers.getFirst(HttpHeaderNames.ACCEPT.getKey());
     }
 
     @Override
@@ -279,7 +285,7 @@ public class DefaultHttpRequest implements HttpRequest {
     public List<Locale> locales() {
         List<Locale> locales = this.locales;
         if (locales == null) {
-            locales = HttpUtils.parseAcceptLanguage(headers.getFirst("accept-language"));
+            locales = HttpUtils.parseAcceptLanguage(headers.getFirst(HttpHeaderNames.CONTENT_LANGUAGE.getKey()));
             if (locales.isEmpty()) {
                 locales.add(Locale.getDefault());
             }
@@ -290,11 +296,11 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public String scheme() {
-        String scheme = headers.getFirst("x-forwarded-proto");
+        String scheme = headers.getFirst(HttpConstants.X_FORWARDED_PROTO);
         if (isHttp2()) {
-            scheme = headers.getFirst(":scheme");
+            scheme = headers.getFirst(PseudoHeaderName.SCHEME.value());
         }
-        return scheme == null ? "https" : scheme;
+        return scheme == null ? HttpConstants.HTTPS : scheme;
     }
 
     @Override
@@ -305,7 +311,11 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public String serverName() {
-        String host = getHost0();
+        String host = headers.getFirst(HttpConstants.X_FORWARDED_HOST);
+        if (host != null) {
+            return host;
+        }
+        host = getHost0();
         if (host != null) {
             int index = host.lastIndexOf(':');
             return index == -1 ? host : host.substring(0, index);
@@ -315,7 +325,7 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public int serverPort() {
-        String port = headers.getFirst("x-forwarded-port");
+        String port = headers.getFirst(HttpConstants.X_FORWARDED_PORT);
         if (port != null) {
             return Integer.parseInt(port);
         }
@@ -328,7 +338,7 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     private String getHost0() {
-        return headers.getFirst(isHttp2() ? ":authority" : "host");
+        return headers.getFirst(isHttp2() ? PseudoHeaderName.AUTHORITY.value() : HttpHeaderNames.HOST.getKey());
     }
 
     @Override
@@ -437,6 +447,11 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
+    public Map<String, List<String>> queryParameters() {
+        return getDecoder().parameters();
+    }
+
+    @Override
     public String formParameter(String name) {
         HttpPostRequestDecoder postDecoder = getPostDecoder();
         if (postDecoder == null) {
@@ -475,7 +490,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 values.add(HttpUtils.readPostValue(item));
             }
         }
-        return values;
+        return values == null ? Collections.emptyList() : values;
     }
 
     @Override
@@ -498,7 +513,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 names.add(item.getName());
             }
         }
-        return names;
+        return names == null ? Collections.emptyList() : names;
     }
 
     @Override
@@ -544,7 +559,7 @@ public class DefaultHttpRequest implements HttpRequest {
                 allNames.add(item.getName());
             }
         }
-        return allNames;
+        return allNames == null ? Collections.emptyList() : allNames;
     }
 
     @Override

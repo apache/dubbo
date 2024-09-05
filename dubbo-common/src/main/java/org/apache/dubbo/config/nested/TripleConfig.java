@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.config.nested;
 
+import org.apache.dubbo.config.support.Nested;
+import org.apache.dubbo.config.support.Parameter;
+
 import java.io.Serializable;
 
 /**
@@ -25,15 +28,37 @@ public class TripleConfig implements Serializable {
 
     private static final long serialVersionUID = -3682252713701362155L;
 
+    public static final int DEFAULT_MAX_BODY_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_RESPONSE_BODY_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_CHUNK_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_HEADER_SIZE = 8_192;
+    public static final int DEFAULT_MAX_INITIAL_LINE_LENGTH = 4_096;
+    public static final int DEFAULT_INITIAL_BUFFER_SIZE = 16_384;
+    public static final int DEFAULT_HEADER_TABLE_SIZE = 4_096;
+    public static final boolean DEFAULT_ENABLE_PUSH = false;
+    public static final int DEFAULT_MAX_CONCURRENT_STREAMS = Integer.MAX_VALUE;
+    public static final int DEFAULT_INITIAL_WINDOW_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_FRAME_SIZE = 8_388_608;
+    public static final int DEFAULT_MAX_HEADER_LIST_SIZE = 32_768;
+
     /**
-     * Maximum allowed size for HTTP1 request bodies.
+     * Whether enable verbose mode.
+     * When true, the application will produce detailed logging output
+     * to help with debugging and monitoring. This is useful for
+     * troubleshooting and understanding the application's behavior in detail.
+     * <p>The default value is false.
+     */
+    private Boolean verbose;
+
+    /**
+     * Maximum allowed size for HTTP request bodies.
      * Limits the size of request to prevent excessively large request.
      * <p>The default value is 8MiB.
      */
     private Integer maxBodySize;
 
     /**
-     * Maximum allowed size for HTTP1 response bodies.
+     * Maximum allowed size for HTTP response bodies.
      * Limits the size of responses to prevent excessively large response.
      * <p>The default value is 8MiB.
      */
@@ -41,10 +66,11 @@ public class TripleConfig implements Serializable {
 
     /**
      * Set the maximum chunk size.
-     * HTTP requests and responses can be quite large, in which case it's better to process the data as a stream of
-     * chunks.
+     * HTTP requests and responses can be quite large,
+     * in which case it's better to process the data as a stream of chunks.
      * This sets the limit, in bytes, at which Netty will send a chunk down the pipeline.
      * <p>The default value is 8MiB.
+     * <p>For HTTP/1
      */
     private Integer maxChunkSize;
 
@@ -53,6 +79,7 @@ public class TripleConfig implements Serializable {
      * This limits how much memory Netty will use when parsing HTTP header key-value pairs.
      * You would typically set this to the same value as {@link #setMaxInitialLineLength(Integer)}.
      * <p>The default value is 8KiB.
+     * <p>For HTTP/1
      */
     private Integer maxHeaderSize;
 
@@ -61,159 +88,78 @@ public class TripleConfig implements Serializable {
      * This limits how much memory Netty will use when parsed the initial HTTP header line.
      * You would typically set this to the same value as {@link #setMaxHeaderSize(Integer)}.
      * <p>The default value is 4096.
+     * <p>For HTTP/1
      */
     private Integer maxInitialLineLength;
 
     /**
      * Set the initial size of the temporary buffer used when parsing the lines of the HTTP headers.
      * <p>The default value is 16384 octets.
+     * <p>For HTTP/1
      */
     private Integer initialBufferSize;
 
     /**
      * The header table size.
+     * <p>For HTTP/1
      */
     private Integer headerTableSize;
 
     /**
-     * Whether to enable push, default is false.
+     * Whether to enable push
+     * <p>The default value is false.
+     * <p>For HTTP/2
      */
     private Boolean enablePush;
 
     /**
      * Maximum concurrent streams.
+     * <p>For HTTP/2
      */
     private Integer maxConcurrentStreams;
 
     /**
      * Initial window size.
+     * <p>For HTTP/2
      */
     private Integer initialWindowSize;
 
     /**
      * Maximum frame size.
+     * <p>For HTTP/2
      */
     private Integer maxFrameSize;
 
     /**
      * Maximum header list size.
+     * <p>For HTTP/2
      */
     private Integer maxHeaderListSize;
 
-    /**
-     * Enable http3 support
-     * <p>The default value is false.
-     */
-    private Boolean enableHttp3;
+    @Nested
+    private RestConfig rest;
 
-    /**
-     * See <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_data">set_initial_max_data</a>.
-     * <p>The default value is 8MiB.
-     */
-    private Integer http3InitialMaxData;
+    @Nested
+    private Http3Config http3;
 
-    /**
-     * If configured this will enable <a href="https://tools.ietf.org/html/draft-ietf-quic-datagram-01">Datagram support.</a>
-     */
-    private Integer http3RecvQueueLen;
+    @Nested
+    private ServletConfig servlet;
 
-    /**
-     * If configured this will enable <a href="https://tools.ietf.org/html/draft-ietf-quic-datagram-01">Datagram support.</a>
-     */
-    private Integer http3SendQueueLen;
+    public Boolean getVerbose() {
+        return verbose;
+    }
 
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_stream_data_bidi_local">set_initial_max_stream_data_bidi_local</a>.
-     * <p>The default value is 1MiB.
-     */
-    private Integer http3InitialMaxStreamDataBidiLocal;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_stream_data_bidi_remote">set_initial_max_stream_data_bidi_remote</a>.
-     * <p>The default value is 1MiB.
-     */
-    private Integer http3InitialMaxStreamDataBidiRemote;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_stream_data_uni">set_initial_max_stream_data_uni</a>.
-     * <p>The default value is 0.
-     */
-    private Integer http3InitialMaxStreamDataUni;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_streams_bidi">set_initial_max_streams_bidi</a>.
-     * <p>The default value is 1B(2^30).
-     */
-    private Long http3InitialMaxStreamsBidi;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_initial_max_streams_uni">set_initial_max_streams_uni</a>.
-     * <p>
-     * <p>The default value is 1B(2^30).
-     */
-    private Long http3InitialMaxStreamsUni;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_ack_delay_exponent">set_ack_delay_exponent</a>.
-     * <p>The default value is 3.
-     */
-    private Integer http3MaxAckDelayExponent;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_max_ack_delay">set_max_ack_delay</a>.
-     * <p>The default value is 25 milliseconds.
-     */
-    private Integer http3MaxAckDelay;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.set_disable_active_migration">set_disable_active_migration</a>.
-     * <p>The default value is {@code false}.
-     */
-    private Boolean http3DisableActiveMigration;
-
-    /**
-     * See
-     * <a href="https://docs.rs/quiche/0.6.0/quiche/struct.Config.html#method.enable_hystart">enable_hystart</a>.
-     * <p>The default value is {@code true}.
-     */
-    private Boolean http3EnableHystart;
-
-    /**
-     * Sets the congestion control algorithm to use.
-     * <p>Supported algorithms are {@code "RENO"} or {@code "CUBIC"} or {@code "BBR"}.
-     * <p>The default value is {@code "CUBIC"}.
-     */
-    private String http3CcAlgorithm;
-
-    /**
-     * Enable servlet support, requests are transport through the servlet container,
-     * which only supports unary calls due to protocol limitations
-     * <p>The default value is false.
-     */
-    private Boolean enableServlet;
-
-    /**
-     * The URL patterns that the servlet filter will be registered for.
-     * <p>The default value is '/*'.
-     */
-    private String[] servletFilterUrlPatterns;
-
-    /**
-     * The order of the servlet filter.
-     * <p>The default value is -1000000.
-     */
-    private Integer servletFilterOrder;
+    public void setVerbose(Boolean verbose) {
+        this.verbose = verbose;
+    }
 
     public Integer getMaxBodySize() {
         return maxBodySize;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxBodySizeOrDefault() {
+        return maxBodySize == null ? DEFAULT_MAX_BODY_SIZE : maxBodySize;
     }
 
     public void setMaxBodySize(Integer maxBodySize) {
@@ -224,12 +170,22 @@ public class TripleConfig implements Serializable {
         return maxResponseBodySize;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxResponseBodySizeOrDefault() {
+        return maxResponseBodySize == null ? DEFAULT_MAX_RESPONSE_BODY_SIZE : maxResponseBodySize;
+    }
+
     public void setMaxResponseBodySize(Integer maxResponseBodySize) {
         this.maxResponseBodySize = maxResponseBodySize;
     }
 
     public Integer getMaxChunkSize() {
         return maxChunkSize;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxChunkSizeOrDefault() {
+        return maxChunkSize == null ? DEFAULT_MAX_CHUNK_SIZE : maxChunkSize;
     }
 
     public void setMaxChunkSize(Integer maxChunkSize) {
@@ -240,12 +196,22 @@ public class TripleConfig implements Serializable {
         return maxHeaderSize;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxHeaderSizeOrDefault() {
+        return maxHeaderSize == null ? DEFAULT_MAX_HEADER_SIZE : maxHeaderSize;
+    }
+
     public void setMaxHeaderSize(Integer maxHeaderSize) {
         this.maxHeaderSize = maxHeaderSize;
     }
 
     public Integer getMaxInitialLineLength() {
         return maxInitialLineLength;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxInitialLineLengthOrDefault() {
+        return maxInitialLineLength == null ? DEFAULT_MAX_INITIAL_LINE_LENGTH : maxInitialLineLength;
     }
 
     public void setMaxInitialLineLength(Integer maxInitialLineLength) {
@@ -256,12 +222,22 @@ public class TripleConfig implements Serializable {
         return initialBufferSize;
     }
 
+    @Parameter(excluded = true)
+    public int getInitialBufferSizeOrDefault() {
+        return initialBufferSize == null ? DEFAULT_INITIAL_BUFFER_SIZE : initialBufferSize;
+    }
+
     public void setInitialBufferSize(Integer initialBufferSize) {
         this.initialBufferSize = initialBufferSize;
     }
 
     public Integer getHeaderTableSize() {
         return headerTableSize;
+    }
+
+    @Parameter(excluded = true)
+    public int getHeaderTableSizeOrDefault() {
+        return headerTableSize == null ? DEFAULT_HEADER_TABLE_SIZE : headerTableSize;
     }
 
     public void setHeaderTableSize(Integer headerTableSize) {
@@ -272,12 +248,22 @@ public class TripleConfig implements Serializable {
         return enablePush;
     }
 
+    @Parameter(excluded = true)
+    public boolean getEnablePushOrDefault() {
+        return enablePush == null ? DEFAULT_ENABLE_PUSH : enablePush;
+    }
+
     public void setEnablePush(Boolean enablePush) {
         this.enablePush = enablePush;
     }
 
     public Integer getMaxConcurrentStreams() {
         return maxConcurrentStreams;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxConcurrentStreamsOrDefault() {
+        return maxConcurrentStreams == null ? DEFAULT_MAX_CONCURRENT_STREAMS : maxConcurrentStreams;
     }
 
     public void setMaxConcurrentStreams(Integer maxConcurrentStreams) {
@@ -288,12 +274,22 @@ public class TripleConfig implements Serializable {
         return initialWindowSize;
     }
 
+    @Parameter(excluded = true)
+    public int getInitialWindowSizeOrDefault() {
+        return initialWindowSize == null ? DEFAULT_INITIAL_WINDOW_SIZE : initialWindowSize;
+    }
+
     public void setInitialWindowSize(Integer initialWindowSize) {
         this.initialWindowSize = initialWindowSize;
     }
 
     public Integer getMaxFrameSize() {
         return maxFrameSize;
+    }
+
+    @Parameter(excluded = true)
+    public int getMaxFrameSizeOrDefault() {
+        return maxFrameSize == null ? DEFAULT_MAX_FRAME_SIZE : maxFrameSize;
     }
 
     public void setMaxFrameSize(Integer maxFrameSize) {
@@ -304,182 +300,52 @@ public class TripleConfig implements Serializable {
         return maxHeaderListSize;
     }
 
+    @Parameter(excluded = true)
+    public int getMaxHeaderListSizeOrDefault() {
+        return maxHeaderListSize == null ? DEFAULT_MAX_HEADER_LIST_SIZE : maxHeaderListSize;
+    }
+
     public void setMaxHeaderListSize(Integer maxHeaderListSize) {
         this.maxHeaderListSize = maxHeaderListSize;
     }
 
-    public Boolean getEnableHttp3() {
-        return enableHttp3;
+    public RestConfig getRest() {
+        return rest;
     }
 
-    public void setEnableHttp3(Boolean enableHttp3) {
-        this.enableHttp3 = enableHttp3;
-    }
-
-    public Integer getHttp3InitialMaxData() {
-        return http3InitialMaxData;
-    }
-
-    public void setHttp3InitialMaxData(Integer http3InitialMaxData) {
-        this.http3InitialMaxData = http3InitialMaxData;
-    }
-
-    public Integer getHttp3RecvQueueLen() {
-        return http3RecvQueueLen;
-    }
-
-    public void setHttp3RecvQueueLen(Integer http3RecvQueueLen) {
-        this.http3RecvQueueLen = http3RecvQueueLen;
-    }
-
-    public Integer getHttp3SendQueueLen() {
-        return http3SendQueueLen;
-    }
-
-    public void setHttp3SendQueueLen(Integer http3SendQueueLen) {
-        this.http3SendQueueLen = http3SendQueueLen;
-    }
-
-    public Integer getHttp3InitialMaxStreamDataBidiLocal() {
-        return http3InitialMaxStreamDataBidiLocal;
-    }
-
-    public void setHttp3InitialMaxStreamDataBidiLocal(Integer http3InitialMaxStreamDataBidiLocal) {
-        this.http3InitialMaxStreamDataBidiLocal = http3InitialMaxStreamDataBidiLocal;
-    }
-
-    public Integer getHttp3InitialMaxStreamDataBidiRemote() {
-        return http3InitialMaxStreamDataBidiRemote;
-    }
-
-    public void setHttp3InitialMaxStreamDataBidiRemote(Integer http3InitialMaxStreamDataBidiRemote) {
-        this.http3InitialMaxStreamDataBidiRemote = http3InitialMaxStreamDataBidiRemote;
-    }
-
-    public Integer getHttp3InitialMaxStreamDataUni() {
-        return http3InitialMaxStreamDataUni;
-    }
-
-    public void setHttp3InitialMaxStreamDataUni(Integer http3InitialMaxStreamDataUni) {
-        this.http3InitialMaxStreamDataUni = http3InitialMaxStreamDataUni;
-    }
-
-    public Long getHttp3InitialMaxStreamsBidi() {
-        return http3InitialMaxStreamsBidi;
-    }
-
-    public void setHttp3InitialMaxStreamsBidi(Long http3InitialMaxStreamsBidi) {
-        this.http3InitialMaxStreamsBidi = http3InitialMaxStreamsBidi;
-    }
-
-    public Long getHttp3InitialMaxStreamsUni() {
-        return http3InitialMaxStreamsUni;
-    }
-
-    public void setHttp3InitialMaxStreamsUni(Long http3InitialMaxStreamsUni) {
-        this.http3InitialMaxStreamsUni = http3InitialMaxStreamsUni;
-    }
-
-    public Integer getHttp3MaxAckDelayExponent() {
-        return http3MaxAckDelayExponent;
-    }
-
-    public void setHttp3MaxAckDelayExponent(Integer http3MaxAckDelayExponent) {
-        this.http3MaxAckDelayExponent = http3MaxAckDelayExponent;
-    }
-
-    public Integer getHttp3MaxAckDelay() {
-        return http3MaxAckDelay;
-    }
-
-    public void setHttp3MaxAckDelay(Integer http3MaxAckDelay) {
-        this.http3MaxAckDelay = http3MaxAckDelay;
-    }
-
-    public Boolean getHttp3DisableActiveMigration() {
-        return http3DisableActiveMigration;
-    }
-
-    public void setHttp3DisableActiveMigration(Boolean http3DisableActiveMigration) {
-        this.http3DisableActiveMigration = http3DisableActiveMigration;
-    }
-
-    public Boolean getHttp3EnableHystart() {
-        return http3EnableHystart;
-    }
-
-    public void setHttp3EnableHystart(Boolean http3EnableHystart) {
-        this.http3EnableHystart = http3EnableHystart;
-    }
-
-    public String getHttp3CcAlgorithm() {
-        return http3CcAlgorithm;
-    }
-
-    public void setHttp3CcAlgorithm(String http3CcAlgorithm) {
-        this.http3CcAlgorithm = http3CcAlgorithm;
-    }
-
-    public Boolean getEnableServlet() {
-        return enableServlet;
-    }
-
-    public void setEnableServlet(Boolean enableServlet) {
-        this.enableServlet = enableServlet;
-    }
-
-    public String[] getServletFilterUrlPatterns() {
-        return servletFilterUrlPatterns;
-    }
-
-    public void setServletFilterUrlPatterns(String[] servletFilterUrlPatterns) {
-        this.servletFilterUrlPatterns = servletFilterUrlPatterns;
-    }
-
-    public Integer getServletFilterOrder() {
-        return servletFilterOrder;
-    }
-
-    public void setServletFilterOrder(Integer servletFilterOrder) {
-        this.servletFilterOrder = servletFilterOrder;
-    }
-
-    public void checkDefault() {
-        if (maxBodySize == null) {
-            maxBodySize = 1 << 23;
+    @Parameter(excluded = true)
+    public RestConfig getRestOrDefault() {
+        if (rest == null) {
+            rest = new RestConfig();
         }
-        if (maxResponseBodySize == null) {
-            maxResponseBodySize = 1 << 23;
+        return rest;
+    }
+
+    public void setRest(RestConfig rest) {
+        this.rest = rest;
+    }
+
+    public Http3Config getHttp3() {
+        return http3;
+    }
+
+    @Parameter(excluded = true)
+    public Http3Config getHttp3OrDefault() {
+        if (http3 == null) {
+            http3 = new Http3Config();
         }
-        if (maxChunkSize == null) {
-            maxChunkSize = 1 << 23;
-        }
-        if (maxHeaderSize == null) {
-            maxHeaderSize = 8192;
-        }
-        if (maxInitialLineLength == null) {
-            maxInitialLineLength = 4096;
-        }
-        if (initialBufferSize == null) {
-            initialBufferSize = 16384;
-        }
-        if (headerTableSize == null) {
-            headerTableSize = 4096;
-        }
-        if (enablePush == null) {
-            enablePush = false;
-        }
-        if (maxConcurrentStreams == null) {
-            maxConcurrentStreams = Integer.MAX_VALUE;
-        }
-        if (initialWindowSize == null) {
-            initialWindowSize = 1 << 23;
-        }
-        if (maxFrameSize == null) {
-            maxFrameSize = 1 << 23;
-        }
-        if (maxHeaderListSize == null) {
-            maxHeaderListSize = 1 << 15;
-        }
+        return http3;
+    }
+
+    public void setHttp3(Http3Config http3) {
+        this.http3 = http3;
+    }
+
+    public ServletConfig getServlet() {
+        return servlet;
+    }
+
+    public void setServlet(ServletConfig servlet) {
+        this.servlet = servlet;
     }
 }

@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
+import static org.apache.dubbo.common.utils.MethodUtils.toShortString;
 
 public class ReflectionMethodDescriptor implements MethodDescriptor {
     private static final ErrorTypeAwareLogger logger =
@@ -182,5 +183,10 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
         result = 31 * result + Arrays.hashCode(parameterClasses);
         result = 31 * result + Arrays.hashCode(returnTypes);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ReflectionMethodDescriptor{method='" + toShortString(method) + "', rpcType=" + rpcType + '}';
     }
 }

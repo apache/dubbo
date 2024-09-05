@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.PathParserException;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.KeyString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +32,8 @@ public final class PathSegment implements Comparable<PathSegment> {
     private String value;
     private List<String> variables;
     private Pattern pattern;
+
+    private KeyString keyValue;
 
     public PathSegment(Type type, String value) {
         this.type = type;
@@ -106,33 +108,43 @@ public final class PathSegment implements Comparable<PathSegment> {
         return type == Type.WILDCARD_TAIL || type == Type.PATTERN_MULTI;
     }
 
-    public boolean match(String path, int start, int end, Map<String, String> variableMap) {
+    public boolean match(KeyString path, int start, int end, Map<String, String> variableMap) {
         switch (type) {
             case SLASH:
             case LITERAL:
-                return path.regionMatches(start, value, 0, value.length());
+                if (keyValue == null) {
+                    keyValue = new KeyString(value);
+                }
+                return path.regionMatches(start, keyValue);
             case WILDCARD_TAIL:
                 if (variables != null) {
-                    variableMap.put(getVariable(), path.substring(start));
+                    variableMap.put(getVariable(), path.toString(start));
                 }
                 return true;
             case VARIABLE:
                 if (variables != null) {
-                    variableMap.put(getVariable(), StringUtils.substring(path, start, end));
+                    variableMap.put(getVariable(), path.toString(start, end));
                 }
                 return true;
             case PATTERN:
-                return matchPattern(StringUtils.substring(path, start, end), variableMap);
+                return matchPattern(path.toString(start, end), variableMap);
             case PATTERN_MULTI:
-                return matchPattern(path.substring(start), variableMap);
+                return matchPattern(path.toString(start), variableMap);
             default:
                 return false;
         }
     }
 
+    public boolean match(String path, int start, int end, Map<String, String> variableMap) {
+        return match(new KeyString(path), start, end, variableMap);
+    }
+
     private boolean matchPattern(String path, Map<String, String> variableMap) {
         Matcher matcher = getPattern().matcher(path);
         if (matcher.matches()) {
+            if (variables == null) {
+                return true;
+            }
             for (int i = 0, size = variables.size(); i < size; i++) {
                 String variable = variables.get(i);
                 variableMap.put(variable, matcher.group(variable));
@@ -183,7 +195,7 @@ public final class PathSegment implements Comparable<PathSegment> {
         }
         int size = variables == null ? 0 : variables.size();
         int otherSize = other.variables == null ? 0 : other.variables.size();
-        return size - otherSize;
+        return otherSize - size;
     }
 
     public enum Type {

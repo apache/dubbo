@@ -60,7 +60,7 @@ public class DubboConfigApplicationListener
         }
     }
 
-    public void init() {
+    public synchronized void init() {
         // It's expected to be notified at
         // org.springframework.context.support.AbstractApplicationContext.registerListeners(),
         // before loading non-lazy singleton beans. At this moment, all BeanFactoryPostProcessor have been processed,

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.PathParserException;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 
 import javax.annotation.Nonnull;
 
@@ -88,6 +89,12 @@ public final class PathUtils {
                 return path2;
             }
         } else if (path1.indexOf('{') == -1) {
+            if (path1.indexOf('*') != -1) {
+                if (PathExpression.parse(path1).match(path2) != null) {
+                    return path2;
+                }
+            }
+
             int starDotPos1 = path1.lastIndexOf("*.");
             if (starDotPos1 > -1) {
                 String ext1 = path1.substring(starDotPos1 + 1);
@@ -100,7 +107,7 @@ public final class PathUtils {
                     file2 = path2.substring(0, dotPos2);
                     ext2 = path2.substring(dotPos2);
                 }
-                boolean ext1All = ext1.equals(".*");
+                boolean ext1All = ext1.equals(".*") || ext1.isEmpty();
                 boolean ext2All = ext2.equals(".*") || ext2.isEmpty();
                 if (!ext1All && !ext2All) {
                     throw new PathParserException(Messages.CANNOT_COMBINE_PATHS, path1, path2);
@@ -240,8 +247,24 @@ public final class PathUtils {
             }
             end = i;
         }
+        switch (state) {
+            case State.DOT:
+                end--;
+                break;
+            case State.DOT_DOT:
+                if (buf == null) {
+                    buf = new StringBuilder(len);
+                }
+                if (end > 2) {
+                    buf.append(path, start, end - 2);
+                    buf.setLength(buf.lastIndexOf(RestConstants.SLASH) + 1);
+                    start = -1;
+                }
+                break;
+            default:
+        }
         if (buf == null) {
-            return path;
+            return start == -1 ? path : path.substring(start, end + 1);
         }
         if (start != -1) {
             buf.append(path, start, end + 1);
