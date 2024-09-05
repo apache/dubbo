@@ -22,6 +22,15 @@ env:
     -XX:+UseStringDeduplication
     -XX:-TieredCompilation
     -XX:TieredStopAtLevel=1
+    -Dmaven.javadoc.skip=true
+    -Dmaven.wagon.http.retryHandler.count=5
+    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
+  MAVEN_ARGS: >-
+    -e
+    --batch-mode
+    --no-snapshot-updates
+    --no-transfer-progress
+    --fail-fast
 
 jobs:
   check-format:
@@ -81,7 +90,7 @@ jobs:
           java-version: 21
       - name: "Compile Dubbo (Linux)"
         run: |
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -Pskip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
       - name: "Check Dependencies' License"
         uses: apache/skywalking-eyes/dependency@e1a02359b239bd28de3f6d35fdc870250fa513d5
         env:
@@ -107,13 +116,13 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - name: "Set current date as env variable"
-        run: echo "DATE_NOW=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
       - name: "Restore local Maven repository cache"
         uses: actions/cache/restore@v4
         id: cache-maven-repository
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.DATE_NOW }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
       - name: "Restore common local Maven repository cache"
         uses: actions/cache/restore@v4
         if: steps.cache-maven-repository.outputs.cache-hit != 'true'
@@ -122,21 +131,23 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: "Dubbo cache"
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
       - name: "Build Dubbo with Maven"
         run: |
           cd ./dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean install -Psources,skip-spotless,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+          ./mvnw ${{ env.MAVEN_ARGS }} clean install -Psources,'!demo',skip-spotless,checkstyle -Dmaven.test.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Save local Maven repository cache"
         uses: actions/cache/save@v4
         if: steps.cache-maven-repository.outputs.cache-hit != 'true'
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.DATE_NOW }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
+      - name: "Inspect dubbo cache"
+        run: find ~/.m2/repository/org/apache/dubbo -type f
+      - name: "Save dubbo cache"
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
       - name: "Pack class result"
         run: |
           shopt -s globstar
@@ -205,6 +216,7 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       CURRENT_ROLE: ${{ matrix.case-role }}
+      ZOOKEEPER_VERSION: 3.6.3
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v3
@@ -216,12 +228,12 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - name: "Set current date as env variable"
-        run: echo "DATE_NOW=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
       - name: "Cache local Maven repository"
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.DATE_NOW }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
@@ -237,7 +249,7 @@ jobs:
         timeout-minutes: 90
         run: |
           set -o pipefail
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Pjacoco,jdk15ge-simple,'!jdk15ge',jacoco089 -DtrimStackTrace=false -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
+          ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge','!demo',skip-spotless,jacoco089 -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
       - name: "Print test error log"
         if: failure()
         run: cat test_errors.log
@@ -283,17 +295,17 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Set current date as env variable"
-        run: echo "DATE_NOW=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
       - name: "Cache local Maven repository"
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.DATE_NOW }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Restore Dubbo cache"
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -389,17 +401,17 @@ jobs:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Set current date as env variable"
-        run: echo "DATE_NOW=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
       - name: "Cache local Maven repository"
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.DATE_NOW }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Restore Dubbo cache"
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -535,17 +547,25 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 21
-
+      - name: "Restore local Maven repository cache"
+        uses: actions/cache/restore@v4
+        id: cache-maven-repository
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
       - name: "Compile Dubbo (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
       - name: "Run Error Code Inspecting"
         env:
           DUBBO_ECI_REPORT_AS_ERROR: true
         run: |
           cd ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector
-          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Ddubbo.eci.report-as-error=${DUBBO_ECI_REPORT_AS_ERROR} -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
+          ../mvnw ${{ env.MAVEN_ARGS }} -T 2C package exec:java -Ddubbo.eci.report-as-error=${DUBBO_ECI_REPORT_AS_ERROR} -Dmaven.test.skip=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
 
       - name: "Upload error code inspection result"
         # always() should not be used here, since we don't need to handle the 'canceled' situation.
@@ -587,12 +607,12 @@ jobs:
       - name: "Compile Dubbo (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
 
       - name: "Compile and run Dubbo demo for native (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-interface
-          MVNW="${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C -Dmaven.test.skip=true"
+          MVNW="${{ github.workspace }}/dubbo/mvnw ${{ env.MAVEN_ARGS }} -T 2C -Dmaven.test.skip=true"
           $MVNW clean install
           cd ../dubbo-demo-native-provider
           $MVNW clean package -P native  native:compile

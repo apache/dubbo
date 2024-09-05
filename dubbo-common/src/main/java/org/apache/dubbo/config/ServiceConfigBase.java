@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RegisterTypeEnum;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -308,7 +309,11 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
 
         for (ProtocolConfig protocol : protocols) {
-            if (Constants.REST_PROTOCOL.equals(protocol.getName())) {
+            String name = protocol.getName();
+            if (CommonConstants.TRIPLE.equals(name) && Boolean.TRUE.equals(protocol.isNoInterfaceSupport())) {
+                return true;
+            }
+            if (Constants.REST_PROTOCOL.equals(name)) {
                 return true;
             }
         }
