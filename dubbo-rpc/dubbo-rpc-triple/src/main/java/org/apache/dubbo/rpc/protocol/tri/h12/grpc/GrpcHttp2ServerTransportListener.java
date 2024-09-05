@@ -41,6 +41,7 @@ import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportLi
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
@@ -53,6 +54,37 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
 
     public GrpcHttp2ServerTransportListener(H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
         super(h2StreamChannel, url, frameworkModel);
+    }
+
+    @Override
+    protected void onBeforeMetadata(Http2Header metadata) {}
+
+    @Override
+    protected Executor initializeExecutor(URL url, Http2Header metadata) {
+        return getExecutor(url, metadata);
+    }
+
+    @Override
+    protected void onPrepareMetadata(Http2Header metadata) {
+        doRoute(metadata);
+    }
+
+    @Override
+    protected void onMetadataCompletion(Http2Header metadata) {
+        processGrpcHeaders(metadata);
+        super.onMetadataCompletion(metadata);
+    }
+
+    private void processGrpcHeaders(Http2Header metadata) {
+        String messageEncoding = metadata.header(GrpcHeaderNames.GRPC_ENCODING.getName());
+        if (messageEncoding != null && !Identity.MESSAGE_ENCODING.equals(messageEncoding)) {
+            DeCompressor compressor = DeCompressor.getCompressor(getFrameworkModel(), messageEncoding);
+            if (compressor == null) {
+                throw new UnimplementedException(
+                        GrpcHeaderNames.GRPC_ENCODING.getName() + " '" + messageEncoding + "'");
+            }
+            ((GrpcStreamingDecoder) getStreamingDecoder()).setDeCompressor(compressor);
+        }
     }
 
     @Override
@@ -101,24 +133,6 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
     }
 
     @Override
-    protected void onMetadataCompletion(Http2Header metadata) {
-        processGrpcHeaders(metadata);
-        super.onMetadataCompletion(metadata);
-    }
-
-    private void processGrpcHeaders(Http2Header metadata) {
-        String messageEncoding = metadata.header(GrpcHeaderNames.GRPC_ENCODING.getName());
-        if (messageEncoding != null && !Identity.MESSAGE_ENCODING.equals(messageEncoding)) {
-            DeCompressor compressor = DeCompressor.getCompressor(getFrameworkModel(), messageEncoding);
-            if (compressor == null) {
-                throw new UnimplementedException(
-                        GrpcHeaderNames.GRPC_ENCODING.getName() + " '" + messageEncoding + "'");
-            }
-            ((GrpcStreamingDecoder) getStreamingDecoder()).setDeCompressor(compressor);
-        }
-    }
-
-    @Override
     protected RpcInvocation onBuildRpcInvocationCompletion(RpcInvocation invocation) {
         String timeoutString = getHttpMetadata().header(GrpcHeaderNames.GRPC_TIMEOUT.getName());
         try {
@@ -147,9 +161,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
 
     @Override
     protected void setMethodDescriptor(MethodDescriptor methodDescriptor) {
-        GrpcCompositeCodec grpcCompositeCodec =
-                (GrpcCompositeCodec) getContext().getHttpMessageDecoder();
-        grpcCompositeCodec.loadPackableMethod(methodDescriptor);
+        ((GrpcCompositeCodec) getContext().getHttpMessageDecoder()).loadPackableMethod(methodDescriptor);
         super.setMethodDescriptor(methodDescriptor);
     }
 

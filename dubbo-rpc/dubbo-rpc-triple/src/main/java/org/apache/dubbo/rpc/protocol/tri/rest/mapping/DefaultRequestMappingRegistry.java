@@ -143,7 +143,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             }
         });
         LOGGER.info(
-                "Registered {} REST mappings for service [{}] at url [{}] in {}ms",
+                "Registered {} rest mappings for service [{}] at url [{}] in {}ms",
                 counter,
                 ClassUtils.toShortString(service),
                 url.toString(""),

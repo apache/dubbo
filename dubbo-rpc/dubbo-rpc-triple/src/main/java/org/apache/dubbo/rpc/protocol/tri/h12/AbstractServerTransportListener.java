@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
@@ -32,7 +33,6 @@ import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
@@ -79,56 +79,65 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
     }
 
-    protected static ExecutorSupport getExecutorSupport(URL url) {
-        return ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
-                .getExecutorSupport(url);
-    }
-
     @Override
-    public void onMetadata(HEADER metadata) {
+    public final void onMetadata(HEADER metadata) {
+        httpMetadata = metadata;
+        exceptionCustomizerWrapper.setMetadata(metadata);
+
         try {
-            executor = initializeExecutor(metadata);
-        } catch (Throwable throwable) {
-            LOGGER.error(LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL, "Initialize executor fail.", throwable);
-            onError(throwable);
+            onBeforeMetadata(metadata);
+        } catch (Throwable t) {
+            logError(t);
+            onMetadataError(metadata, t);
+            return;
+        }
+
+        try {
+            executor = initializeExecutor(url, metadata);
+        } catch (Throwable t) {
+            LOGGER.error(LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL, "Initialize executor failed.", t);
+            onError(t);
             return;
         }
         if (executor == null) {
-            LOGGER.internalError("Executor must be not null.");
-            onError(new NullPointerException("initializeExecutor return null"));
+            LOGGER.internalError("Executor must not be null.");
+            onError(new NullPointerException("Initialize executor return null"));
             return;
         }
+
         executor.execute(() -> {
             try {
-                doOnMetadata(metadata);
+                onPrepareMetadata(metadata);
+                setHttpMessageListener(buildHttpMessageListener());
+                onMetadataCompletion(metadata);
             } catch (Throwable t) {
                 logError(t);
                 onMetadataError(metadata, t);
-                onError(t);
             }
         });
     }
 
-    /**
-     * default direct executor
-     */
-    protected Executor initializeExecutor(HEADER metadata) {
-        return Runnable::run;
+    protected void onBeforeMetadata(HEADER metadata) {
+        doRoute(metadata);
     }
 
-    protected void doOnMetadata(HEADER metadata) {
-        onPrepareMetadata(metadata);
-        httpMetadata = metadata;
-        exceptionCustomizerWrapper.setMetadata(metadata);
-
+    protected final void doRoute(HEADER metadata) {
         context = requestRouter.route(url, metadata, httpChannel);
         if (context == null) {
             throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "Invoker not found");
         }
-
         exceptionCustomizerWrapper.setMethodDescriptor(context.getMethodDescriptor());
-        setHttpMessageListener(buildHttpMessageListener());
-        onMetadataCompletion(metadata);
+    }
+
+    protected Executor initializeExecutor(URL url, HEADER metadata) {
+        url = context.getInvoker().getUrl();
+        return getExecutor(url, url);
+    }
+
+    protected final Executor getExecutor(URL url, Object data) {
+        return new SerializingExecutor(ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+                .getExecutorSupport(url)
+                .getExecutor(data));
     }
 
     protected void onPrepareMetadata(HEADER metadata) {
@@ -143,6 +152,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     protected void onMetadataError(HEADER metadata, Throwable throwable) {
         initializeAltSvc(url);
+        onError(throwable);
     }
 
     /**
@@ -151,7 +161,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected void initializeAltSvc(URL url) {}
 
     @Override
-    public void onData(MESSAGE message) {
+    public final void onData(MESSAGE message) {
         if (executor == null) {
             try {
                 Throwable t = new NullPointerException("Executor not initialized");
@@ -160,6 +170,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             } finally {
                 onDataFinally(message);
             }
+            return;
         }
         executor.execute(() -> {
             try {
@@ -178,7 +189,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             return;
         }
         onPrepareData(message);
-        // decode message
         httpMessageListener.onMessage(message.getBody());
         onDataCompletion(message);
     }
@@ -208,11 +218,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     }
 
     private void logError(Throwable t) {
-        t = ExceptionUtils.unwrap(t);
         Supplier<String> msg = () -> {
-            StringBuilder sb = new StringBuilder(64);
-            sb.append("An error occurred while processing the http request, ");
-            sb.append(httpMetadata);
+            StringBuilder sb = new StringBuilder(128);
+            sb.append("An error occurred while processing the http request with ")
+                    .append(getClass().getSimpleName())
+                    .append(", ")
+                    .append(httpMetadata);
             if (TripleProtocol.VERBOSE_ENABLED) {
                 sb.append(", headers=").append(httpMetadata.headers());
             }
@@ -238,7 +249,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             }
             return sb.toString();
         };
-        LOGGER.msg(msg).log(exceptionCustomizerWrapper.resolveLogLevel(t), t);
+        Throwable th = ExceptionUtils.unwrap(t);
+        LOGGER.msg(msg).log(exceptionCustomizerWrapper.resolveLogLevel(th), th);
     }
 
     protected final RpcInvocation buildRpcInvocation(RpcInvocationBuildContext context) {

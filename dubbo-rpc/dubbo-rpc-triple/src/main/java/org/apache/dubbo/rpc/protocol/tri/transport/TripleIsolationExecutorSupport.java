@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -37,22 +36,25 @@ public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSup
     }
 
     @Override
-    protected ServiceKey getServiceKey(Object data) {
-        if (!(data instanceof RequestMetadata)) {
-            return null;
+    protected String getServiceKey(Object data) {
+        if (data instanceof RequestMetadata) {
+            RequestMetadata httpMetadata = (RequestMetadata) data;
+            RequestPath path = RequestPath.parse(httpMetadata.path());
+            if (path == null) {
+                return null;
+            }
+            HttpHeaders headers = httpMetadata.headers();
+            return URL.buildKey(
+                    path.getServiceInterface(),
+                    getHeader(headers, TripleHeaderEnum.SERVICE_GROUP, RestConstants.HEADER_SERVICE_GROUP),
+                    getHeader(headers, TripleHeaderEnum.SERVICE_VERSION, RestConstants.HEADER_SERVICE_VERSION));
         }
 
-        RequestMetadata httpMetadata = (RequestMetadata) data;
-        RequestPath path = RequestPath.parse(httpMetadata.path());
-        if (path == null) {
-            return null;
+        if (data instanceof URL) {
+            return ((URL) data).getServiceKey();
         }
 
-        HttpHeaders headers = httpMetadata.headers();
-        return new ServiceKey(
-                path.getServiceInterface(),
-                getHeader(headers, TripleHeaderEnum.SERVICE_VERSION, RestConstants.HEADER_SERVICE_VERSION),
-                getHeader(headers, TripleHeaderEnum.SERVICE_GROUP, RestConstants.HEADER_SERVICE_GROUP));
+        return null;
     }
 
     private static String getHeader(HttpHeaders headers, TripleHeaderEnum en, String key) {
