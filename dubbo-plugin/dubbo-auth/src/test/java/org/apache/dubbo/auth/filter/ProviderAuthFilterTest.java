@@ -57,6 +57,7 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
                 .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
@@ -72,6 +73,7 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
                 .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
@@ -89,6 +91,7 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
                 .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
@@ -104,6 +107,7 @@ class ProviderAuthFilterTest {
     void testAuthFailedWhenNoAccessKeyPair() {
         URL url = URL.valueOf("dubbo://10.10.10.10:2181")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
                 .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
@@ -131,6 +135,7 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
                 .addParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, true)
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
                 .addParameter(Constants.AUTH_KEY, true);
 
         Invoker invoker = mock(Invoker.class);
@@ -168,6 +173,7 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
                 .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);

@@ -52,6 +52,7 @@ class ConsumerSignFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
                 .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);

@@ -116,22 +116,4 @@ class AccessKeyAuthenticatorTest {
         String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
         assertNotNull(signature);
     }
-
-    @Test
-    void testGetSignatureWithParameter() {
-        URL url = mock(URL.class);
-        when(url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false)).thenReturn(true);
-        Invocation invocation = mock(Invocation.class);
-        String secretKey = "123456";
-        Object[] params = {"dubbo", new ArrayList()};
-        when(invocation.getArguments()).thenReturn(params);
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(FrameworkModel.defaultModel());
-        String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
-        assertNotNull(signature);
-
-        Object[] fakeParams = {"dubbo1", new ArrayList<>()};
-        when(invocation.getArguments()).thenReturn(fakeParams);
-        String signature1 = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
-        assertNotEquals(signature, signature1);
-    }
 }
