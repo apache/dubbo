@@ -456,7 +456,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         @Override
         public void onClose() {
-            listener.onClose();
+            executor.execute(listener::onClose);
         }
     }
 }

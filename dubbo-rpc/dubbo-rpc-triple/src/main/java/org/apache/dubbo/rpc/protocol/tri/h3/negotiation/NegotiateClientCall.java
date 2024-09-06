@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -139,7 +140,7 @@ public class NegotiateClientCall {
             if (future.isDone()) {
                 return;
             }
-            executor.execute(() -> future.completeExceptionally(new RuntimeException("Canceled by remote")));
+            cancelByRemote(TriRpcStatus.CANCELLED.code.code);
         }
     }
 }
