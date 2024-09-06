@@ -129,6 +129,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         keySet.add("trailer");
         keySet.add("upgrade");
         keySet.add("upgrade-insecure-requests");
+        keySet.add("user-agent");
 
         UNLOADING_KEYS = new TrieTree(keySet);
     }
