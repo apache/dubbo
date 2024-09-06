@@ -86,6 +86,48 @@ public class ContextFilter implements Filter, Filter.Listener {
         UNLOADING_KEYS.add(ASYNC_KEY);
         UNLOADING_KEYS.add(TAG_KEY);
         UNLOADING_KEYS.add(FORCE_USE_TAG);
+
+        // Remove HTTP headers to avoid being passed to the following invoke chain.
+        UNLOADING_KEYS.add("accept");
+        UNLOADING_KEYS.add("accept-charset");
+        UNLOADING_KEYS.add("accept-datetime");
+        UNLOADING_KEYS.add("accept-encoding");
+        UNLOADING_KEYS.add("accept-language");
+        UNLOADING_KEYS.add("access-control-request-headers");
+        UNLOADING_KEYS.add("access-control-request-method");
+        UNLOADING_KEYS.add("authorization");
+        UNLOADING_KEYS.add("cache-control");
+        UNLOADING_KEYS.add("connection");
+        UNLOADING_KEYS.add("content-length");
+        UNLOADING_KEYS.add("content-md5");
+        UNLOADING_KEYS.add("content-type");
+        UNLOADING_KEYS.add("cookie");
+        UNLOADING_KEYS.add("date");
+        UNLOADING_KEYS.add("dnt");
+        UNLOADING_KEYS.add("expect");
+        UNLOADING_KEYS.add("forwarded");
+        UNLOADING_KEYS.add("from");
+        UNLOADING_KEYS.add("host");
+        UNLOADING_KEYS.add("http2-settings");
+        UNLOADING_KEYS.add("if-match");
+        UNLOADING_KEYS.add("if-modified-since");
+        UNLOADING_KEYS.add("if-none-match");
+        UNLOADING_KEYS.add("if-range");
+        UNLOADING_KEYS.add("if-unmodified-since");
+        UNLOADING_KEYS.add("max-forwards");
+        UNLOADING_KEYS.add("origin");
+        UNLOADING_KEYS.add("pragma");
+        UNLOADING_KEYS.add("proxy-authorization");
+        UNLOADING_KEYS.add("range");
+        UNLOADING_KEYS.add("referer");
+        UNLOADING_KEYS.add("sec-fetch-dest");
+        UNLOADING_KEYS.add("sec-fetch-mode");
+        UNLOADING_KEYS.add("sec-fetch-site");
+        UNLOADING_KEYS.add("sec-fetch-user");
+        UNLOADING_KEYS.add("te");
+        UNLOADING_KEYS.add("trailer");
+        UNLOADING_KEYS.add("upgrade");
+        UNLOADING_KEYS.add("upgrade-insecure-requests");
     }
 
     @Override
