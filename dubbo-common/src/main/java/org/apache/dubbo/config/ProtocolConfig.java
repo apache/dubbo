@@ -19,6 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.serialization.PreferSerializationProvider;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.nested.TripleConfig;
+import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -34,8 +36,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
 
 /**
  * Configuration for the protocol.
- *
- * @export
  */
 public class ProtocolConfig extends AbstractConfig {
 
@@ -237,6 +237,14 @@ public class ProtocolConfig extends AbstractConfig {
      * JSON check level for serialization.
      */
     private String jsonCheckLevel;
+
+    /**
+     * Indicates whether to support no interface.
+     */
+    private Boolean noInterfaceSupport;
+
+    @Nested
+    private TripleConfig triple;
 
     public ProtocolConfig() {}
 
@@ -629,13 +637,36 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setPreferredProtocol(String preferredProtocol) {
         this.preferredProtocol = preferredProtocol;
+      
+    public Boolean isNoInterfaceSupport() {
+        return noInterfaceSupport;
+    }
+
+    public void setNoInterfaceSupport(Boolean noInterfaceSupport) {
+        this.noInterfaceSupport = noInterfaceSupport;
+    }
+
+    public TripleConfig getTriple() {
+        return triple;
+    }
+
+    @Parameter(excluded = true)
+    public TripleConfig getTripleOrDefault() {
+        if (triple == null) {
+            triple = new TripleConfig();
+        }
+        return triple;
+    }
+
+    public void setTriple(TripleConfig triple) {
+        this.triple = triple;
     }
 
     public void mergeProtocol(ProtocolConfig sourceConfig) {
         if (sourceConfig == null) {
             return;
         }
-        Field[] targetFields = this.getClass().getDeclaredFields();
+        Field[] targetFields = getClass().getDeclaredFields();
         try {
             Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(sourceConfig);
             for (Field targetField : targetFields) {

@@ -19,22 +19,22 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
-    private final ZookeeperTransporter zookeeperTransporter;
+    private final ZookeeperClientManager zookeeperClientManager;
 
     private final ApplicationModel applicationModel;
 
     public ZookeeperDynamicConfigurationFactory(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.zookeeperTransporter = ZookeeperTransporter.getExtension(applicationModel);
+        this.zookeeperClientManager = ZookeeperClientManager.getInstance(applicationModel);
     }
 
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
-        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter, applicationModel);
+        return new ZookeeperDynamicConfiguration(url, zookeeperClientManager, applicationModel);
     }
 }

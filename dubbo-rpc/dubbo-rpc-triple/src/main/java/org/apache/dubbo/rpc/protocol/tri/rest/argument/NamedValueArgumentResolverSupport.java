@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
@@ -26,11 +25,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class NamedValueArgumentResolverSupport {
 
@@ -38,18 +35,17 @@ public abstract class NamedValueArgumentResolverSupport {
 
     protected final Object resolve(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
         Class<?> type = meta.type();
-        Object arg;
         if (type.isArray() || Collection.class.isAssignableFrom(type)) {
-            arg = resolveCollectionValue(meta, request, response);
-        } else if (Map.class.isAssignableFrom(type)) {
-            arg = resolveMapValue(meta, request, response);
-        } else {
-            arg = resolveValue(meta, request, response);
+            return resolveCollectionValue(meta, request, response);
+        }
+        if (Map.class.isAssignableFrom(type)) {
+            return resolveMapValue(meta, request, response);
+        }
+        Object arg = resolveValue(meta, request, response);
+        if (arg != null) {
+            return filterValue(arg, meta);
         }
 
-        if (arg != null) {
-            return StringUtils.EMPTY_STRING.equals(arg) ? meta.defaultValue() : arg;
-        }
         arg = meta.defaultValue();
         if (arg != null) {
             return arg;
@@ -61,28 +57,31 @@ public abstract class NamedValueArgumentResolverSupport {
     }
 
     protected final NamedValueMeta updateNamedValueMeta(ParameterMeta parameterMeta, NamedValueMeta meta) {
-        if (StringUtils.isEmpty(meta.name())) {
-            meta.setName(parameterMeta.getRequiredName());
+        if (meta.isNameEmpty()) {
+            meta.setName(parameterMeta.getName());
         }
 
-        Class<?> type = parameterMeta.getType();
-        Type genericType = parameterMeta.getGenericType();
-        if (type == Optional.class) {
-            Class<?> actualType = TypeUtils.getNestedType(genericType, 0);
-            meta.setType(actualType == null ? Object.class : actualType);
-        } else {
-            meta.setType(type);
-        }
+        Class<?> type = parameterMeta.getActualType();
+        meta.setType(type);
+        meta.setGenericType(parameterMeta.getActualGenericType());
         if (type.isArray()) {
-            meta.setNestedTypes(new Class<?>[] {type.getComponentType()});
+            meta.setNestedTypes(new Class<?>[] {type});
         } else {
-            meta.setNestedTypes(TypeUtils.getNestedTypes(genericType));
+            meta.setNestedTypes(TypeUtils.getNestedActualTypes(meta.genericType()));
         }
         meta.setParameterMeta(parameterMeta);
         return meta;
     }
 
+    protected String emptyDefaultValue(NamedValueMeta meta) {
+        return meta.defaultValue();
+    }
+
     protected abstract Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response);
+
+    protected Object filterValue(Object value, NamedValueMeta meta) {
+        return value;
+    }
 
     protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
         return resolveValue(meta, request, response);

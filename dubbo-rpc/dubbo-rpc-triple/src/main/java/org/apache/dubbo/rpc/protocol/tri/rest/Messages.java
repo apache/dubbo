@@ -30,27 +30,46 @@ public enum Messages {
     REGEX_PATTERN_INVALID("Invalid regex pattern ''{0}'' for path ''{0}''"),
     NO_MORE_DATA_ALLOWED("No more data allowed after '{*...}' or '**' pattern segment for path ''{0}'' at index {1}"),
     CANNOT_COMBINE_PATHS("Cannot combine paths: ''{0}'' vs ''{1}''"),
-    DUPLICATE_MAPPING("Duplicate mapping for ''{0}'': current={1}, exists={2}"),
-    AMBIGUOUS_MAPPING("Ambiguous mapping for ''{0}'': {{1}, {2}}"),
-    EXTENSION_INIT_FAILED("Rest extension: ''{0}'' initialization failed for invoker: ''{1}''"),
+    DUPLICATE_MAPPING(
+            "Duplicate mapping for ''{0}'': mapping={1}, method={2}, exists={3}", "Duplicate mapping for ''{0}''"),
+    AMBIGUOUS_MAPPING("Ambiguous mapping for ''{0}'': [{1}, {2}]", "Ambiguous mapping for ''{0}''"),
+    EXTENSION_INIT_FAILED(
+            "Rest extension: ''{0}'' initialization failed for invoker: ''{1}''",
+            "Rest extension initialization failed"),
     ARGUMENT_NAME_MISSING("Name for argument of type [{0}] not specified, and parameter name information not "
-            + "available via reflection. Ensure that the compiler uses the '-parameters' flag."),
-    ARGUMENT_VALUE_MISSING("Missing argument ''{0}'' for method parameter of type [{1}]", 412),
-    ARGUMENT_CONVERT_ERROR("Convert argument ''{0}'' value [{1}] from type [{2}] to type [{3}] error", 412),
+            + "available via reflection. Ensure that the compiler uses the '-parameters' flag"),
+    ARGUMENT_VALUE_MISSING("Missing argument ''{0}'' for method parameter of type [{1}]", 400),
+    ARGUMENT_CONVERT_ERROR("Could not convert argument ''{0}'' value ''{1}'' from type [{2}] to type [{3}]", 400),
     ARGUMENT_COULD_NOT_RESOLVED("Could not resolve ''{0}'', no suitable resolver", 400),
     ARGUMENT_BIND_ERROR("Bind argument ''{0}'' of type [{1}] error", 400),
-    INTERNAL_ERROR("Rest internal error");
+    BAD_REQUEST("Rest Bad Request", 400),
+    INTERNAL_ERROR("Rest Internal Error");
 
     private final String message;
+    private final String displayMessage;
     private final int statusCode;
 
     Messages(String message) {
         this.message = message;
+        displayMessage = null;
+        statusCode = 500;
+    }
+
+    Messages(String message, String displayMessage) {
+        this.message = message;
+        this.displayMessage = displayMessage;
         statusCode = 500;
     }
 
     Messages(String message, int statusCode) {
         this.message = message;
+        displayMessage = null;
+        this.statusCode = statusCode;
+    }
+
+    Messages(String message, String displayMessage, int statusCode) {
+        this.message = message;
+        this.displayMessage = displayMessage;
         this.statusCode = statusCode;
     }
 
@@ -60,5 +79,11 @@ public enum Messages {
 
     public String format(Object... args) {
         return ArrayUtils.isEmpty(args) ? message : MessageFormat.format(message, args);
+    }
+
+    public String formatDisplay(Object... args) {
+        return displayMessage == null || ArrayUtils.isEmpty(args)
+                ? displayMessage
+                : MessageFormat.format(displayMessage, args);
     }
 }

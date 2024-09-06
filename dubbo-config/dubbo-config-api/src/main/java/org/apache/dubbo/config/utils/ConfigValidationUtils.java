@@ -82,6 +82,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_IP_TO_REGISTRY;
@@ -108,6 +109,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGIST
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INTERFACE;
 import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_REGISTER_MODE_DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL_TYPE;
@@ -218,6 +220,14 @@ public class ConfigValidationUtils {
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
+                    String registryCluster = config.getId();
+                    if (isEmpty(registryCluster)) {
+                        registryCluster = DEFAULT_KEY;
+                    }
+                    if (map.containsKey(CONFIG_NAMESPACE_KEY)) {
+                        registryCluster += ":" + map.get(CONFIG_NAMESPACE_KEY);
+                    }
+                    map.put(REGISTRY_CLUSTER_KEY, registryCluster);
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
@@ -576,7 +586,7 @@ public class ConfigValidationUtils {
             checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
             checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
             checkExtension(config.getScopeModel(), Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
-            checkExtension(config.getScopeModel(), Dispatcher.class, "dispather", config.getDispather());
+            checkExtension(config.getScopeModel(), Dispatcher.class, "dispather", config.getDispatcher());
             checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         }
     }

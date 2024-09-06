@@ -19,23 +19,17 @@ package org.apache.dubbo.remoting.http12.h1;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 
-public class Http1RequestMetadata implements RequestMetadata {
+public final class Http1RequestMetadata implements RequestMetadata {
 
-    private HttpHeaders headers;
+    private final HttpHeaders headers;
 
-    private String method;
+    private final String method;
 
-    private String path;
+    private final String path;
 
-    public void setHeaders(HttpHeaders headers) {
+    public Http1RequestMetadata(HttpHeaders headers, String method, String path) {
         this.headers = headers;
-    }
-
-    public void setMethod(String method) {
         this.method = method;
-    }
-
-    public void setPath(String path) {
         this.path = path;
     }
 

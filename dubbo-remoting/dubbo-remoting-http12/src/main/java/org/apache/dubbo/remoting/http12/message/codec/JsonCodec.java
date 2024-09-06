@@ -17,14 +17,17 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.io.StreamUtils;
-import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.remoting.http12.HttpJsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -32,9 +35,21 @@ public class JsonCodec implements HttpMessageCodec {
 
     public static final JsonCodec INSTANCE = new JsonCodec();
 
+    private final HttpJsonUtils httpJsonUtils;
+
+    protected JsonCodec() {
+        this(FrameworkModel.defaultModel());
+    }
+
+    public JsonCodec(FrameworkModel frameworkModel) {
+        httpJsonUtils = frameworkModel.getBeanFactory().getOrRegisterBean(HttpJsonUtils.class);
+    }
+
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try {
-            os.write(JsonUtils.toJson(data).getBytes(charset));
+            os.write(httpJsonUtils.toJson(data).getBytes(charset));
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable t) {
             throw new EncodeException("Error encoding json", t);
         }
@@ -42,7 +57,9 @@ public class JsonCodec implements HttpMessageCodec {
 
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
         try {
-            os.write(JsonUtils.toJson(data).getBytes(charset));
+            os.write(httpJsonUtils.toJson(data).getBytes(charset));
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable t) {
             throw new EncodeException("Error encoding json", t);
         }
@@ -51,7 +68,20 @@ public class JsonCodec implements HttpMessageCodec {
     @Override
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try {
-            return JsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
+            return httpJsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new DecodeException("Error decoding json", t);
+        }
+    }
+
+    @Override
+    public Object decode(InputStream is, Type targetType, Charset charset) throws DecodeException {
+        try {
+            return httpJsonUtils.toJavaObject(StreamUtils.toString(is, charset), targetType);
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable t) {
             throw new DecodeException("Error decoding json", t);
         }
@@ -61,13 +91,16 @@ public class JsonCodec implements HttpMessageCodec {
     public Object[] decode(InputStream is, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         try {
             int len = targetTypes.length;
-            Object obj = JsonUtils.toJavaObject(StreamUtils.toString(is, charset), Object.class);
+            if (len == 0) {
+                return new Object[0];
+            }
+            Object obj = httpJsonUtils.toJavaObject(StreamUtils.toString(is, charset), Object.class);
             if (obj instanceof List) {
                 List<?> list = (List<?>) obj;
                 if (list.size() == len) {
                     Object[] results = new Object[len];
                     for (int i = 0; i < len; i++) {
-                        results[i] = JsonUtils.convertObject(list.get(i), targetTypes[i]);
+                        results[i] = httpJsonUtils.convertObject(list.get(i), targetTypes[i]);
                     }
                     return results;
                 }
@@ -75,10 +108,10 @@ public class JsonCodec implements HttpMessageCodec {
                         "Json array size [" + list.size() + "] must equals arguments count [" + len + "]");
             }
             if (len == 1) {
-                return new Object[] {JsonUtils.convertObject(obj, targetTypes[0])};
+                return new Object[] {httpJsonUtils.convertObject(obj, targetTypes[0])};
             }
             throw new DecodeException("Json must be array");
-        } catch (DecodeException e) {
+        } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
             throw new DecodeException("Error decoding json", t);

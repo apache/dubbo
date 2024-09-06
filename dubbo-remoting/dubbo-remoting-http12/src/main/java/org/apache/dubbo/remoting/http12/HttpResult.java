@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public interface HttpResult<T> {
+public interface HttpResult<T> extends Serializable {
 
     int getStatus();
 
@@ -29,12 +31,31 @@ public interface HttpResult<T> {
 
     T getBody();
 
+    default HttpResultPayloadException toPayload() {
+        return new HttpResultPayloadException(this);
+    }
+
     static <T> Builder<T> builder() {
         return new Builder<>();
     }
 
-    static <T> Builder<T> builder(T body) {
-        return new Builder<T>().body(body);
+    static <T> HttpResult<T> of(T body) {
+        return new Builder<T>().body(body).build();
+    }
+
+    static <T> HttpResult<T> of(int status, T body) {
+        if (body instanceof String) {
+            if (status == HttpStatus.MOVED_PERMANENTLY.getCode()) {
+                return moved((String) body);
+            } else if (status == HttpStatus.FOUND.getCode()) {
+                return found((String) body);
+            }
+        }
+        return new Builder<T>().status(status).body(body).build();
+    }
+
+    static <T> HttpResult<T> of(HttpStatus status, T body) {
+        return of(status.getCode(), body);
     }
 
     static <T> HttpResult<T> status(int status) {
@@ -42,11 +63,15 @@ public interface HttpResult<T> {
     }
 
     static <T> HttpResult<T> status(HttpStatus status) {
-        return new Builder<T>().status(status).build();
+        return status(status.getCode());
     }
 
     static <T> HttpResult<T> ok() {
         return new Builder<T>().status(HttpStatus.OK).build();
+    }
+
+    static <T> HttpResult<T> moved(String url) {
+        return new Builder<T>().moved(url).build();
     }
 
     static <T> HttpResult<T> found(String url) {

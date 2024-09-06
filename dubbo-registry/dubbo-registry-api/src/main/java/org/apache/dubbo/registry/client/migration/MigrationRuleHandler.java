@@ -23,6 +23,8 @@ import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 
@@ -35,33 +37,43 @@ public class MigrationRuleHandler<T> {
     private volatile MigrationStep currentStep;
     private volatile Float currentThreshold = 0f;
     private final URL consumerURL;
+    private final ReentrantLock lock = new ReentrantLock();
 
     public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
         this.migrationInvoker = invoker;
         this.consumerURL = url;
     }
 
-    public synchronized void doMigrate(MigrationRule rule) {
-        if (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker) {
-            refreshInvoker(MigrationStep.FORCE_APPLICATION, 1.0f, rule);
-            return;
-        }
-
-        // initial step : APPLICATION_FIRST
-        MigrationStep step = MigrationStep.APPLICATION_FIRST;
-        float threshold = -1f;
-
+    public void doMigrate(MigrationRule rule) {
+        lock.lock();
         try {
-            step = rule.getStep(consumerURL);
-            threshold = rule.getThreshold(consumerURL);
-        } catch (Exception e) {
-            logger.error(
-                    REGISTRY_NO_PARAMETERS_URL, "", "", "Failed to get step and threshold info from rule: " + rule, e);
-        }
+            if (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker) {
+                refreshInvoker(MigrationStep.FORCE_APPLICATION, 1.0f, rule);
+                return;
+            }
 
-        if (refreshInvoker(step, threshold, rule)) {
-            // refresh success, update rule
-            setMigrationRule(rule);
+            // initial step : APPLICATION_FIRST
+            MigrationStep step = MigrationStep.APPLICATION_FIRST;
+            float threshold = -1f;
+
+            try {
+                step = rule.getStep(consumerURL);
+                threshold = rule.getThreshold(consumerURL);
+            } catch (Exception e) {
+                logger.error(
+                        REGISTRY_NO_PARAMETERS_URL,
+                        "",
+                        "",
+                        "Failed to get step and threshold info from rule: " + rule,
+                        e);
+            }
+
+            if (refreshInvoker(step, threshold, rule)) {
+                // refresh success, update rule
+                setMigrationRule(rule);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 

@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialization.ClassHolder;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -52,6 +54,8 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     private final ModuleModel moduleModel;
 
+    private final ClassHolder classHolder;
+
     private volatile boolean autoTrustSerializeClass = true;
 
     private volatile int trustSerializeClassLevel = Integer.MAX_VALUE;
@@ -62,6 +66,8 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
         FrameworkModel frameworkModel = moduleModel.getApplicationModel().getFrameworkModel();
         serializeSecurityManager = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
+        classHolder =
+                NativeDetector.inNativeImage() ? frameworkModel.getBeanFactory().getBean(ClassHolder.class) : null;
 
         refreshStatus();
         refreshCheck();
@@ -210,7 +216,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         Set<Type> markedClass = new HashSet<>();
         checkClass(markedClass, clazz);
 
-        addToAllow(clazz.getName());
+        addToAllow(clazz);
 
         Method[] methodsToExport = clazz.getMethods();
 
@@ -291,7 +297,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        addToAllow(clazz.getName());
+        addToAllow(clazz);
 
         if (ClassUtils.isSimpleType(clazz) || clazz.isPrimitive() || clazz.isArray()) {
             return;
@@ -337,11 +343,17 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void addToAllow(String className) {
+    private void addToAllow(Class<?> clazz) {
+        if (classHolder != null) {
+            classHolder.storeClass(clazz);
+        }
+
+        String className = clazz.getName();
         // ignore jdk
         if (className.startsWith("java.")
                 || className.startsWith("javax.")
                 || className.startsWith("com.sun.")
+                || className.startsWith("jakarta.")
                 || className.startsWith("sun.")
                 || className.startsWith("jdk.")) {
             serializeSecurityManager.addToAllowed(className);

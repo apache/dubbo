@@ -110,6 +110,7 @@ class AggregateMetricsCollectorTest {
         aggregationConfig.setBucketNum(12);
         aggregationConfig.setTimeWindowSeconds(120);
         metricsConfig.setAggregation(aggregationConfig);
+        metricsConfig.setEnableRpc(true);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
         metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);

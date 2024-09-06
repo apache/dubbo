@@ -108,7 +108,7 @@ public final class ProducesCondition implements Condition<ProducesCondition, Htt
     }
 
     private List<MediaTypeExpression> getAcceptedMediaTypes(HttpRequest request) {
-        List<String> values = request.headerValues(HttpHeaderNames.ACCEPT.getName());
+        List<String> values = request.headerValues(HttpHeaderNames.ACCEPT.getKey());
         if (CollectionUtils.isEmpty(values)) {
             return MediaTypeExpression.ALL_LIST;
         }

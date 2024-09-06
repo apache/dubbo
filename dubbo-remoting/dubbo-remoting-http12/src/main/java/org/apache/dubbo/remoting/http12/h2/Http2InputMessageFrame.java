@@ -16,31 +16,26 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
+import org.apache.dubbo.common.utils.ClassUtils;
+
 import java.io.InputStream;
 
-public class Http2InputMessageFrame implements Http2InputMessage {
+public final class Http2InputMessageFrame implements Http2InputMessage {
 
-    private int id;
+    private final long streamId;
 
     private final InputStream body;
 
     private final boolean endStream;
 
-    public Http2InputMessageFrame(InputStream body) {
-        this(body, false);
-    }
-
-    public Http2InputMessageFrame(boolean endStream) {
-        this(null, endStream);
-    }
-
     public Http2InputMessageFrame(InputStream body, boolean endStream) {
+        this(-1L, body, endStream);
+    }
+
+    public Http2InputMessageFrame(long streamId, InputStream body, boolean endStream) {
+        this.streamId = streamId;
         this.body = body;
         this.endStream = endStream;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     @Override
@@ -54,12 +49,18 @@ public class Http2InputMessageFrame implements Http2InputMessage {
     }
 
     @Override
-    public int id() {
-        return id;
+    public long id() {
+        return streamId;
     }
 
     @Override
     public boolean isEndStream() {
         return endStream;
+    }
+
+    @Override
+    public String toString() {
+        return "Http2InputMessageFrame{body=" + ClassUtils.toShortString(body) + ", body=" + streamId + ", endStream="
+                + endStream + '}';
     }
 }

@@ -99,6 +99,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
     private final PackableMethodFactory packableMethodFactory;
     private final Map<MethodDescriptor, PackableMethod> packableMethodCache = new ConcurrentHashMap<>();
+    private static Compressor compressor;
 
     public TripleInvoker(
             Class<T> serviceType,
@@ -120,14 +121,19 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private static AsciiString getSchemeFromUrl(URL url) {
         boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
-        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
+        return ssl ? TripleConstants.HTTPS_SCHEME : TripleConstants.HTTP_SCHEME;
     }
 
     private static Compressor getCompressorFromEnv() {
-        Configuration configuration = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
-        String compressorKey = configuration.getString(COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
-        return Compressor.getCompressor(
-                ScopeModelUtil.getFrameworkModel(ApplicationModel.defaultModel()), compressorKey);
+        Compressor compressor = TripleInvoker.compressor;
+        if (compressor == null) {
+            ApplicationModel model = ApplicationModel.defaultModel();
+            Configuration configuration = ConfigurationUtils.getEnvConfiguration(model);
+            String compressorKey = configuration.getString(COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
+            compressor = Compressor.getCompressor(ScopeModelUtil.getFrameworkModel(model), compressorKey);
+            TripleInvoker.compressor = compressor;
+        }
+        return compressor;
     }
 
     @Override

@@ -31,7 +31,7 @@ import java.net.InetSocketAddress;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.REMOTE_ADDRESS_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.REMOTE_ADDRESS_KEY;
 
 public abstract class AbstractServerCallListener implements ServerCallListener {
 
@@ -60,15 +60,15 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                 (InetSocketAddress) invocation.getAttributes().remove(REMOTE_ADDRESS_KEY);
         RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
         String remoteApp = (String) invocation.getAttributes().remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
-        if (null != remoteApp) {
+        if (remoteApp != null) {
             RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
             invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
         }
         try {
-            final long stInMillis = System.currentTimeMillis();
-            final Result response = invoker.invoke(invocation);
+            long stInMillis = System.currentTimeMillis();
+            Result response = invoker.invoke(invocation);
             if (response.hasException()) {
-                onResponseException(response.getException());
+                responseObserver.onError(response.getException());
                 return;
             }
             response.whenCompleteWithContext((r, t) -> {
@@ -80,10 +80,10 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                     return;
                 }
                 if (r.hasException()) {
-                    onResponseException(r.getException());
+                    responseObserver.onError(r.getException());
                     return;
                 }
-                final long cost = System.currentTimeMillis() - stInMillis;
+                long cost = System.currentTimeMillis() - stInMillis;
                 Long timeout = (Long) invocation.get("timeout");
                 if (timeout != null && timeout < cost) {
                     LOGGER.error(
@@ -105,10 +105,6 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();
         }
-    }
-
-    protected void onResponseException(Throwable t) {
-        responseObserver.onError(t);
     }
 
     public abstract void onReturn(Object value);

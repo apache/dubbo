@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -461,5 +463,38 @@ public interface MethodUtils {
         } catch (Exception e) {
             return -1;
         }
+    }
+
+    static String toShortString(Method method) {
+        StringBuilder sb = new StringBuilder(64);
+        sb.append(method.getDeclaringClass().getName());
+        sb.append('.').append(method.getName()).append('(');
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        for (int i = 0, len = parameterTypes.length; i < len; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(parameterTypes[i].getSimpleName());
+        }
+        sb.append(')');
+        return sb.toString();
+    }
+
+    static String toShortString(MethodDescriptor md) {
+        Method method = md.getMethod();
+        if (method == null) {
+            StringBuilder sb = new StringBuilder(64);
+            sb.append(md.getMethodName()).append('(');
+            Class<?>[] parameterTypes = md.getParameterClasses();
+            for (int i = 0, len = parameterTypes.length; i < len; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append(parameterTypes[i].getSimpleName());
+            }
+            sb.append(')');
+            return sb.toString();
+        }
+        return toShortString(method);
     }
 }

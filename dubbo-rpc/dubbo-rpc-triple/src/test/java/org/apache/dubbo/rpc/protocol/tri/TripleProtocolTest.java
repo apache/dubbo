@@ -45,7 +45,7 @@ class TripleProtocolTest {
 
     @Test
     void testDemoProtocol() throws Exception {
-        IGreeter serviceImpl = new IGreeterImpl();
+        IGreeterImpl serviceImpl = new IGreeterImpl();
 
         int availablePort = NetUtils.getAvailablePort();
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
@@ -101,8 +101,7 @@ class TripleProtocolTest {
         Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), SERVER_MSG);
         Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
         // verify server
-        MockStreamObserver serverOutboundMessageSubscriber =
-                (MockStreamObserver) ((IGreeterImpl) serviceImpl).getMockStreamObserver();
+        MockStreamObserver serverOutboundMessageSubscriber = (MockStreamObserver) serviceImpl.getMockStreamObserver();
         serverOutboundMessageSubscriber.getLatch().await(1000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(REQUEST_MSG, serverOutboundMessageSubscriber.getOnNextData());
         Assertions.assertTrue(serverOutboundMessageSubscriber.isOnCompleted());

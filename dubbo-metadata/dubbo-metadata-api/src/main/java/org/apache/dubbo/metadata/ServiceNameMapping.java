@@ -25,11 +25,12 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
 import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
@@ -88,7 +89,10 @@ public interface ServiceNameMapping extends Destroyable {
         if (StringUtils.isBlank(content)) {
             return emptySet();
         }
-        return new TreeSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
+        return new TreeSet<>(of(content.split(COMMA_SEPARATOR))
+                .map(String::trim)
+                .filter(StringUtils::isNotEmpty)
+                .collect(toSet()));
     }
 
     static Set<String> getMappingByUrl(URL consumerURL) {

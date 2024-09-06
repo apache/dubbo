@@ -16,20 +16,65 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GreeterServiceImpl implements GreeterService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GreeterServiceImpl.class);
 
     @Override
     public HelloReply sayHello(HelloRequest request) {
-        return HelloReply.newBuilder().setMessage("Hello " + request.getName()).build();
+        LOGGER.info("Received sayHello request: {}", request.getName());
+        return toReply("Hello " + request.getName());
     }
 
     @Override
     public CompletableFuture<String> sayHelloAsync(String name) {
-        return CompletableFuture.supplyAsync(() -> name);
+        LOGGER.info("Received sayHelloAsync request: {}", name);
+        return CompletableFuture.supplyAsync(() -> "Hello " + name);
+    }
+
+    @Override
+    public void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
+        LOGGER.info("Received sayHelloServerStream request");
+        for (int i = 1; i < 6; i++) {
+            LOGGER.info("sayHelloServerStream onNext: {} {} times", request.getName(), i);
+            responseObserver.onNext(toReply("Hello " + request.getName() + ' ' + i + " times"));
+        }
+        LOGGER.info("sayHelloServerStream onCompleted");
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public StreamObserver<HelloRequest> sayHelloBiStream(StreamObserver<HelloReply> responseObserver) {
+        LOGGER.info("Received sayHelloBiStream request");
+        return new StreamObserver<HelloRequest>() {
+            @Override
+            public void onNext(HelloRequest request) {
+                LOGGER.info("sayHelloBiStream onNext: {}", request.getName());
+                responseObserver.onNext(toReply("Hello " + request.getName()));
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                LOGGER.error("sayHelloBiStream onError", throwable);
+            }
+
+            @Override
+            public void onCompleted() {
+                LOGGER.info("sayHelloBiStream onCompleted");
+            }
+        };
+    }
+
+    private static HelloReply toReply(String message) {
+        return HelloReply.newBuilder().setMessage(message).build();
     }
 }

@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 
 import java.util.ArrayList;
 import java.util.List;

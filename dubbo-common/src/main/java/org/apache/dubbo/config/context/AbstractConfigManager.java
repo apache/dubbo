@@ -419,7 +419,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         List<C> list = configsMap.values().stream()
                 .filter(c -> TRUE.equals(AbstractConfigManager.isDefaultConfig(c)))
                 .collect(Collectors.toList());
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             return list;
         }
 
@@ -635,10 +635,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
      * @return
      */
     protected <T extends AbstractConfig> boolean isNeedValidation(T config) {
-        if (config instanceof MetadataReportConfig) {
-            return false;
-        }
-        return true;
+        return !(config instanceof MetadataReportConfig);
     }
 
     private ConfigValidator getConfigValidator() {
@@ -656,14 +653,11 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
      * @return
      */
     protected <T extends AbstractConfig> boolean isRequired(Class<T> clazz) {
-        if (clazz == RegistryConfig.class
-                || clazz == MetadataReportConfig.class
-                || clazz == MonitorConfig.class
-                || clazz == MetricsConfig.class
-                || clazz == TracingConfig.class) {
-            return false;
-        }
-        return true;
+        return clazz != RegistryConfig.class
+                && clazz != MetadataReportConfig.class
+                && clazz != MonitorConfig.class
+                && clazz != MetricsConfig.class
+                && clazz != TracingConfig.class;
     }
 
     private <T extends AbstractConfig> boolean shouldAddDefaultConfig(Class<T> clazz) {

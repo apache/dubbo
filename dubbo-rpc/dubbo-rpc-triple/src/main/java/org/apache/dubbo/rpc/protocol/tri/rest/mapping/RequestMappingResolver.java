@@ -33,5 +33,9 @@ public interface RequestMappingResolver {
 
     RequestMapping resolve(ServiceMeta serviceMeta);
 
+    default boolean accept(MethodMeta methodMeta) {
+        return true;
+    }
+
     RequestMapping resolve(MethodMeta methodMeta);
 }

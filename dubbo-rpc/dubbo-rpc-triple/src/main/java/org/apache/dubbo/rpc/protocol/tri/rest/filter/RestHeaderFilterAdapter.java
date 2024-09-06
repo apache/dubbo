@@ -19,24 +19,24 @@ package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.HeaderFilter;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 
 public abstract class RestHeaderFilterAdapter implements HeaderFilter {
 
     @Override
     public RpcInvocation invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException {
-        if (TripleConstant.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstant.HANDLER_TYPE_KEY))) {
-            HttpRequest request = (HttpRequest) invocation.get(TripleConstant.HTTP_REQUEST_KEY);
-            HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
-            return invoke(invoker, invocation, request, response);
+        if (TripleConstants.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstants.HANDLER_TYPE_KEY))) {
+            HttpRequest request = (HttpRequest) invocation.get(TripleConstants.HTTP_REQUEST_KEY);
+            HttpResponse response = (HttpResponse) invocation.get(TripleConstants.HTTP_RESPONSE_KEY);
+            invoke(invoker, invocation, request, response);
         }
         return invocation;
     }
 
-    protected abstract RpcInvocation invoke(
-            Invoker<?> invoker, Invocation invocation, HttpRequest request, HttpResponse response) throws RpcException;
+    protected abstract void invoke(
+            Invoker<?> invoker, RpcInvocation invocation, HttpRequest request, HttpResponse response)
+            throws RpcException;
 }

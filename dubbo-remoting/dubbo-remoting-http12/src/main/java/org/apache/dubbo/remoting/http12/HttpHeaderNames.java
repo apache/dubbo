@@ -16,26 +16,56 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
+import io.netty.util.AsciiString;
+
 public enum HttpHeaderNames {
-    STATUS(":status"),
+    STATUS(PseudoHeaderName.STATUS.value()),
 
-    CONTENT_TYPE("content-type"),
+    PATH(PseudoHeaderName.PATH.value()),
 
-    CONTENT_LENGTH("content-length"),
+    ACCEPT(io.netty.handler.codec.http.HttpHeaderNames.ACCEPT),
 
-    TRANSFER_ENCODING("transfer-encoding"),
+    CONTENT_TYPE(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE),
 
-    TE("te"),
+    CONTENT_LENGTH(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH),
 
-    ACCEPT("accept");
+    CONTENT_LANGUAGE(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LANGUAGE),
+
+    TRANSFER_ENCODING(io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING),
+
+    LOCATION(io.netty.handler.codec.http.HttpHeaderNames.LOCATION),
+
+    HOST(io.netty.handler.codec.http.HttpHeaderNames.HOST),
+
+    COOKIE(io.netty.handler.codec.http.HttpHeaderNames.COOKIE),
+
+    SET_COOKIE(io.netty.handler.codec.http.HttpHeaderNames.SET_COOKIE),
+
+    LAST_MODIFIED(io.netty.handler.codec.http.HttpHeaderNames.LAST_MODIFIED),
+
+    TE(io.netty.handler.codec.http.HttpHeaderNames.TE),
+
+    ALT_SVC("alt-svc");
 
     private final String name;
+    private final CharSequence key;
 
     HttpHeaderNames(String name) {
         this.name = name;
+        key = AsciiString.cached(name);
+    }
+
+    HttpHeaderNames(CharSequence key) {
+        name = key.toString();
+        this.key = key;
     }
 
     public String getName() {
         return name;
+    }
+
+    public CharSequence getKey() {
+        return key;
     }
 }

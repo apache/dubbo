@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 public class NamedValueMeta {
@@ -24,6 +29,7 @@ public class NamedValueMeta {
     private final boolean required;
     private final String defaultValue;
     private Class<?> type;
+    private Type genericType;
     private Class<?>[] nestedTypes;
     private ParameterMeta parameterMeta;
 
@@ -40,11 +46,18 @@ public class NamedValueMeta {
     }
 
     public String name() {
+        if (name == null) {
+            throw new RestException(Messages.ARGUMENT_NAME_MISSING, type);
+        }
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isNameEmpty() {
+        return StringUtils.isEmpty(name);
     }
 
     public boolean required() {
@@ -61,6 +74,14 @@ public class NamedValueMeta {
 
     public void setType(Class<?> type) {
         this.type = type;
+    }
+
+    public Type genericType() {
+        return genericType;
+    }
+
+    public void setGenericType(Type genericType) {
+        this.genericType = genericType;
     }
 
     public Class<?> nestedType() {
@@ -99,6 +120,9 @@ public class NamedValueMeta {
         }
         if (type != null) {
             sb.append(", type=").append(type);
+            if (genericType != type) {
+                sb.append(", genericType=").append(genericType);
+            }
         }
         if (nestedTypes != null) {
             sb.append(", nestedTypes=").append(Arrays.toString(nestedTypes));

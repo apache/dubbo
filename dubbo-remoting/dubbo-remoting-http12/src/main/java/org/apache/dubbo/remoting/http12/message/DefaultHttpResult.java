@@ -17,6 +17,9 @@
 package org.apache.dubbo.remoting.http12.message;
 
 import org.apache.dubbo.common.utils.DateUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 
@@ -27,8 +30,11 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class DefaultHttpResult<T> implements HttpResult<T> {
+
+    private static final long serialVersionUID = 1L;
 
     private int status;
     private Map<String, List<String>> headers;
@@ -67,6 +73,7 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
     }
 
     public static final class Builder<T> {
+
         private int status;
         private Map<String, List<String>> headers;
         private T body;
@@ -85,8 +92,12 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
             return status(HttpStatus.OK.getCode());
         }
 
+        public Builder<T> moved(String url) {
+            return status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaderNames.LOCATION.getName(), url);
+        }
+
         public Builder<T> found(String url) {
-            return status(HttpStatus.FOUND).header("location", url);
+            return status(HttpStatus.FOUND).header(HttpHeaderNames.LOCATION.getName(), url);
         }
 
         public Builder<T> error() {
@@ -94,39 +105,84 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
         }
 
         public Builder<T> headers(Map<String, List<String>> headers) {
-            this.headers = headers;
+            if (headers == null || headers.isEmpty()) {
+                return this;
+            }
+            Map<String, List<String>> hrs = this.headers;
+            if (hrs == null) {
+                this.headers = new LinkedHashMap<>(headers);
+            } else {
+                hrs.putAll(headers);
+            }
+            return this;
+        }
+
+        public Builder<T> headers(HttpHeaders headers) {
+            if (headers == null || headers.isEmpty()) {
+                return this;
+            }
+            Map<String, List<String>> hrs = this.headers;
+            if (hrs == null) {
+                hrs = new LinkedHashMap<>(headers.size());
+            }
+            for (Entry<CharSequence, String> entry : headers) {
+                CharSequence key = entry.getKey();
+                if (HttpHeaderNames.SET_COOKIE.getKey().equals(key)) {
+                    hrs.computeIfAbsent(key.toString(), k -> new ArrayList<>(1)).add(entry.getValue());
+                } else {
+                    hrs.put(key.toString(), Collections.singletonList(entry.getValue()));
+                }
+            }
             return this;
         }
 
         public Builder<T> header(String key, List<String> values) {
-            getHeaders().put(key, values);
+            headers().put(key, values);
             return this;
         }
 
         public Builder<T> header(String key, String... values) {
-            getHeaders().put(key, Arrays.asList(values));
+            headers().put(key, Arrays.asList(values));
             return this;
         }
 
         public Builder<T> header(String key, String value) {
-            getHeaders().put(key, Collections.singletonList(value));
+            headers().put(key, Collections.singletonList(value));
             return this;
+        }
+
+        public Builder<T> headerIf(String key, String value) {
+            return StringUtils.isEmpty(value) ? this : header(key, value);
         }
 
         public Builder<T> header(String key, Date value) {
             return header(key, DateUtils.formatHeader(value));
         }
 
+        public Builder<T> header(String key, Object value) {
+            return header(key, String.valueOf(value));
+        }
+
+        public Builder<T> headerIf(String key, Object value) {
+            return value == null ? this : header(key, value);
+        }
+
         public Builder<T> addHeader(String key, String value) {
-            getHeaders().computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+            headers().computeIfAbsent(key, k -> new ArrayList<>()).add(value);
             return this;
         }
 
-        private Map<String, List<String>> getHeaders() {
+        public Builder<T> from(HttpResult<T> result) {
+            status = result.getStatus();
+            headers = result.getHeaders() == null ? null : new LinkedHashMap<>(result.getHeaders());
+            body = result.getBody();
+            return this;
+        }
+
+        private Map<String, List<String>> headers() {
             Map<String, List<String>> headers = this.headers;
             if (headers == null) {
-                headers = new LinkedHashMap<>();
-                this.headers = headers;
+                this.headers = headers = new LinkedHashMap<>();
             }
             return headers;
         }

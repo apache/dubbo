@@ -24,6 +24,7 @@ import java.util.Set;
 
 import static org.apache.dubbo.remoting.http12.HttpMethods.GET;
 import static org.apache.dubbo.remoting.http12.HttpMethods.HEAD;
+import static org.apache.dubbo.remoting.http12.HttpMethods.OPTIONS;
 
 public final class MethodsCondition implements Condition<MethodsCondition, HttpRequest> {
 
@@ -37,6 +38,10 @@ public final class MethodsCondition implements Condition<MethodsCondition, HttpR
         this.methods = methods;
     }
 
+    public Set<String> getMethods() {
+        return methods;
+    }
+
     @Override
     public MethodsCondition combine(MethodsCondition other) {
         Set<String> set = new HashSet<>(methods);
@@ -47,12 +52,23 @@ public final class MethodsCondition implements Condition<MethodsCondition, HttpR
     @Override
     public MethodsCondition match(HttpRequest request) {
         String method = request.method();
+
+        if (OPTIONS.is(method)) {
+            if (request.hasHeader("origin") && request.hasHeader("access-control-request-method")) {
+                return new MethodsCondition(OPTIONS.name());
+            } else {
+                return this;
+            }
+        }
+
         if (methods.contains(method)) {
             return new MethodsCondition(method);
         }
-        if (HEAD.name().equals(method) && methods.contains(GET.name())) {
+
+        if (HEAD.is(method) && methods.contains(GET.name())) {
             return new MethodsCondition(GET.name());
         }
+
         return null;
     }
 

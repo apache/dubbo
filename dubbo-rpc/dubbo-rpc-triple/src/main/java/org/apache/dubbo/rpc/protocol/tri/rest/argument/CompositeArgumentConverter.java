@@ -16,12 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +33,8 @@ import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class CompositeArgumentConverter implements ArgumentConverter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompositeArgumentConverter.class);
 
     private final List<ArgumentConverter> converters;
     private final Map<Pair<Class, Class>, List<ArgumentConverter>> cache = CollectionUtils.newConcurrentHashMap();
@@ -63,6 +69,28 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
         return parameter.getToolKit().convert(value, parameter);
     }
 
+    public Object convert(Object value, Class<?> type) {
+        if (value == null) {
+            return null;
+        }
+
+        if (type.isInstance(value)) {
+            return value;
+        }
+
+        TypeParameterMeta parameter = new TypeParameterMeta(type);
+        List<ArgumentConverter> converters = getSuitableConverters(value.getClass(), type);
+        Object target;
+        for (int i = 0, size = converters.size(); i < size; i++) {
+            target = converters.get(i).convert(value, parameter);
+            if (target != null) {
+                return target;
+            }
+        }
+
+        return null;
+    }
+
     private List<ArgumentConverter> getSuitableConverters(Class sourceType, Class targetType) {
         return cache.computeIfAbsent(Pair.of(sourceType, targetType), k -> {
             List<ArgumentConverter> result = new ArrayList<>();
@@ -79,7 +107,36 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
                     result.add(converter);
                 }
             }
-            return result.isEmpty() ? Collections.emptyList() : result;
+            if (result.isEmpty()) {
+                return Collections.emptyList();
+            }
+            LOGGER.info("Found suitable ArgumentConverter for [{}], converters: {}", sourceType, result);
+            return result;
         });
+    }
+
+    private static final class TypeParameterMeta extends ParameterMeta {
+
+        private final Class<?> type;
+
+        TypeParameterMeta(Class<?> type) {
+            super(null, null);
+            this.type = type;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return type;
+        }
+
+        @Override
+        public Type getGenericType() {
+            return type;
+        }
+
+        @Override
+        protected AnnotatedElement getAnnotatedElement() {
+            return Object.class;
+        }
     }
 }

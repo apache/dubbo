@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
@@ -28,5 +29,18 @@ public interface GreeterService {
      */
     HelloReply sayHello(HelloRequest request);
 
+    /**
+     * Sends a greeting asynchronously
+     */
     CompletableFuture<String> sayHelloAsync(String request);
+
+    /**
+     * Sends a greeting with server streaming
+     */
+    void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> responseObserver);
+
+    /**
+     * Sends greetings with bi streaming
+     */
+    StreamObserver<HelloRequest> sayHelloBiStream(StreamObserver<HelloReply> responseObserver);
 }

@@ -20,16 +20,28 @@ import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 import com.google.protobuf.Message;
+import com.google.protobuf.Message.Builder;
 import com.google.protobuf.util.JsonFormat;
 
 public final class JsonPbCodec extends JsonCodec {
+
+    public static final JsonPbCodec INSTANCE = new JsonPbCodec();
+
+    private JsonPbCodec() {}
+
+    public JsonPbCodec(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
@@ -49,15 +61,24 @@ public final class JsonPbCodec extends JsonCodec {
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try {
             if (isProtobuf(targetType)) {
-                Message.Builder newBuilder = (Message.Builder)
+                Builder newBuilder = (Builder)
                         MethodUtils.findMethod(targetType, "newBuilder").invoke(null);
                 JsonFormat.parser().ignoringUnknownFields().merge(StreamUtils.toString(is, charset), newBuilder);
                 return newBuilder.build();
             }
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }
         return super.decode(is, targetType, charset);
+    }
+
+    @Override
+    public Object decode(InputStream is, Type targetType, Charset charset) throws DecodeException {
+        return targetType instanceof Class
+                ? decode(is, (Class<?>) targetType, charset)
+                : super.decode(is, targetType, charset);
     }
 
     @Override
@@ -67,6 +88,8 @@ public final class JsonPbCodec extends JsonCodec {
                 // protobuf only support one parameter
                 return new Object[] {decode(is, targetTypes[0], charset)};
             }
+        } catch (HttpStatusException e) {
+            throw e;
         } catch (Throwable e) {
             throw new DecodeException("Error decoding jsonPb", e);
         }

@@ -16,21 +16,16 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
-public class Http2OutputMessageFrame implements Http2OutputMessage {
+import io.netty.buffer.ByteBufOutputStream;
+
+public final class Http2OutputMessageFrame implements Http2OutputMessage {
 
     private final OutputStream body;
 
     private final boolean endStream;
-
-    public Http2OutputMessageFrame(OutputStream body) {
-        this(body, false);
-    }
-
-    public Http2OutputMessageFrame(boolean endStream) {
-        this(null, endStream);
-    }
 
     public Http2OutputMessageFrame(OutputStream body, boolean endStream) {
         this.body = body;
@@ -40,6 +35,14 @@ public class Http2OutputMessageFrame implements Http2OutputMessage {
     @Override
     public OutputStream getBody() {
         return body;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (body instanceof ByteBufOutputStream) {
+            ((ByteBufOutputStream) body).buffer().release();
+        }
+        body.close();
     }
 
     @Override

@@ -54,6 +54,7 @@ public final class {{className}} {
     private static final StubServiceDescriptor serviceDescriptor = new StubServiceDescriptor(SERVICE_NAME,{{interfaceClassName}}.class);
 
     static {
+        org.apache.dubbo.rpc.protocol.tri.service.SchemaDescriptorRegistry.addSchemaDescriptor(SERVICE_NAME,{{outerClassName}}.getDescriptor());
         StubSuppliers.addSupplier(SERVICE_NAME, {{className}}::newStub);
         StubSuppliers.addSupplier({{interfaceClassName}}.JAVA_SERVICE_NAME,  {{className}}::newStub);
         StubSuppliers.addDescriptor(SERVICE_NAME, serviceDescriptor);

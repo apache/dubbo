@@ -45,7 +45,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        Object value = RequestUtils.decodeBody(request, meta.type());
+        Object value = RequestUtils.decodeBody(request, meta.genericType());
         if (value != null) {
             return value;
         }
@@ -65,7 +65,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 throw new RestException(e);
             }
         }
-        Object value = RequestUtils.decodeBody(request, meta.type());
+        Object value = RequestUtils.decodeBody(request, meta.genericType());
         if (value != null) {
             return value;
         }
@@ -77,7 +77,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
     protected Object resolveMapValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        Object value = RequestUtils.decodeBody(request, meta.type());
+        Object value = RequestUtils.decodeBody(request, meta.genericType());
         if (value != null) {
             return value;
         }

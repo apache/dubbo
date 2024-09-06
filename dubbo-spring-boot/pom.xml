@@ -41,7 +41,7 @@
   <properties>
     <spring-boot.version>2.7.18</spring-boot.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
-    <byte-buddy.version>1.14.13</byte-buddy.version>
+    <byte-buddy.version>1.15.0</byte-buddy.version>
     <mockito_version>4.11.0</mockito_version>
   </properties>
 
@@ -188,6 +188,23 @@
       <properties>
         <spring-boot.version>2.2.8.RELEASE</spring-boot.version>
       </properties>
+    </profile>
+
+    <profile>
+      <id>jdk-version-ge-17</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-spring-boot-3-autoconfigure</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>release</id>
+      <modules>
+        <module>dubbo-spring-boot-3-autoconfigure</module>
+      </modules>
     </profile>
   </profiles>
 </project>

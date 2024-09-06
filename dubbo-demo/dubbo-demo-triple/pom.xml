@@ -128,6 +128,15 @@
       <artifactId>protobuf-java</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-http3</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
@@ -149,13 +158,9 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-        <version>${maven_protobuf_plugin_version}</version>
-        <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
-          <pluginId>triple-java</pluginId>
-        </configuration>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-maven-plugin</artifactId>
+        <version>${project.version}</version>
         <executions>
           <execution>
             <goals>

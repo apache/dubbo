@@ -32,28 +32,38 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CodecUtils {
 
+    private final FrameworkModel frameworkModel;
     private final List<HttpMessageDecoderFactory> decoderFactories;
     private final List<HttpMessageEncoderFactory> encoderFactories;
     private final Map<String, Optional<HttpMessageEncoderFactory>> encoderCache = new ConcurrentHashMap<>();
     private final Map<String, Optional<HttpMessageDecoderFactory>> decoderCache = new ConcurrentHashMap<>();
 
     public CodecUtils(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
         decoderFactories = frameworkModel.getActivateExtensions(HttpMessageDecoderFactory.class);
         encoderFactories = frameworkModel.getActivateExtensions(HttpMessageEncoderFactory.class);
-        decoderFactories.forEach(factory -> decoderCache.put(factory.mediaType().getName(), Optional.of(factory)));
-        encoderFactories.forEach(factory -> encoderCache.put(factory.mediaType().getName(), Optional.of(factory)));
+        decoderFactories.forEach(f -> decoderCache.putIfAbsent(f.mediaType().getName(), Optional.of(f)));
+        encoderFactories.forEach(f -> encoderCache.putIfAbsent(f.mediaType().getName(), Optional.of(f)));
     }
 
-    public HttpMessageDecoder determineHttpMessageDecoder(URL url, FrameworkModel frameworkModel, String mediaType) {
+    public HttpMessageDecoder determineHttpMessageDecoder(URL url, String mediaType) {
         return determineHttpMessageDecoderFactory(mediaType)
                 .orElseThrow(() -> new UnsupportedMediaTypeException(mediaType))
                 .createCodec(url, frameworkModel, mediaType);
     }
 
-    public HttpMessageEncoder determineHttpMessageEncoder(URL url, FrameworkModel frameworkModel, String mediaType) {
+    public HttpMessageDecoder determineHttpMessageDecoder(String mediaType) {
+        return determineHttpMessageDecoder(null, mediaType);
+    }
+
+    public HttpMessageEncoder determineHttpMessageEncoder(URL url, String mediaType) {
         return determineHttpMessageEncoderFactory(mediaType)
                 .orElseThrow(() -> new UnsupportedMediaTypeException(mediaType))
                 .createCodec(url, frameworkModel, mediaType);
+    }
+
+    public HttpMessageEncoder determineHttpMessageEncoder(String mediaType) {
+        return determineHttpMessageEncoder(null, mediaType);
     }
 
     public Optional<HttpMessageDecoderFactory> determineHttpMessageDecoderFactory(String mediaType) {

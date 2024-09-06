@@ -17,13 +17,15 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.CreateStreamQueueCommand;
@@ -32,6 +34,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2TripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
@@ -78,7 +81,7 @@ class TripleClientStreamTest {
         when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
         when(http2StreamChannel.newPromise()).thenReturn(channel.newPromise());
         when(http2StreamChannel.parent()).thenReturn(channel);
-        TripleClientStream stream = new TripleClientStream(
+        AbstractTripleClientStream stream = new Http2TripleClientStream(
                 url.getOrDefaultFrameworkModel(),
                 ImmediateEventExecutor.INSTANCE,
                 writeQueue,
@@ -88,7 +91,7 @@ class TripleClientStreamTest {
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
-        requestMetadata.scheme = TripleConstant.HTTP_SCHEME;
+        requestMetadata.scheme = TripleConstants.HTTP_SCHEME;
         requestMetadata.compressor = Compressor.NONE;
         requestMetadata.acceptEncoding = Compressor.NONE.getMessageEncoding();
         requestMetadata.address = url.getAddress();
@@ -99,7 +102,7 @@ class TripleClientStreamTest {
         verify(writeQueue).enqueueFuture(any(HeaderQueueCommand.class), any(Executor.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
-        stream.sendMessage(new byte[0], 0, false);
+        stream.sendMessage(new byte[0], 0);
         verify(writeQueue).enqueueFuture(any(DataQueueCommand.class), any(Executor.class));
         verify(writeQueue, times(2)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
         stream.halfClose();
@@ -113,8 +116,8 @@ class TripleClientStreamTest {
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HttpScheme.HTTP.name()).status(HttpResponseStatus.OK.codeAsText());
-        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TriRpcStatus.OK.code.code + "");
-        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleHeaderEnum.CONTENT_PROTO.getHeader());
+        headers.set(TripleHeaderEnum.STATUS_KEY.getKey(), TriRpcStatus.OK.code.code + "");
+        headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.APPLICATION_GRPC_PROTO.getName());
         transportListener.onHeader(headers, false);
         Assertions.assertTrue(listener.started);
         stream.request(2);

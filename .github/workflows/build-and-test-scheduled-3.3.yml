@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 21
       - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
@@ -490,13 +490,16 @@ jobs:
       - name: "Compile Dubbo (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
 
       - name: "Compile and run Dubbo demo for native (Linux)"
         run: |
-          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-provider
-          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true native:compile
+          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-interface
+          MVNW="${{ github.workspace }}/dubbo/mvnw ${{ env.MAVEN_ARGS }} -T 2C -Dmaven.test.skip=true"
+          $MVNW clean install
+          cd ../dubbo-demo-native-provider
+          $MVNW clean package -P native  native:compile
           nohup ./target/dubbo-demo-native-provider &
-          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-consumer
-          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true native:compile
+          cd ../dubbo-demo-native-consumer
+          $MVNW clean package -P native native:compile
           ./target/dubbo-demo-native-consumer

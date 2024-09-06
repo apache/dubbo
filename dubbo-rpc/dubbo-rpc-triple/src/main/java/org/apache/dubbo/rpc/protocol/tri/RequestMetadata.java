@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -26,7 +27,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.Map;
 
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
@@ -55,18 +55,18 @@ public class RequestMetadata {
         header.scheme(scheme)
                 .authority(address)
                 .method(HttpMethod.POST.asciiName())
-                .path("/" + service + "/" + method.getMethodName())
-                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), MediaType.APPLICATION_GRPC_PROTO.getName())
-                .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
-        setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
-        if (!ignoreDefaultVersion || !"1.0.0".equals(version)) {
-            setIfNotNull(header, TripleHeaderEnum.SERVICE_VERSION.getHeader(), version);
+                .path(RequestPath.toFullPath(service, method.getMethodName()))
+                .set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.APPLICATION_GRPC_PROTO.getName())
+                .set(HttpHeaderNames.TE.getKey(), HttpHeaderValues.TRAILERS);
+        setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getKey(), timeout);
+        if (!ignoreDefaultVersion || !TripleConstants.DEFAULT_VERSION.equals(version)) {
+            setIfNotNull(header, TripleHeaderEnum.SERVICE_VERSION.getKey(), version);
         }
-        setIfNotNull(header, TripleHeaderEnum.SERVICE_GROUP.getHeader(), group);
-        setIfNotNull(header, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), application);
-        setIfNotNull(header, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), acceptEncoding);
+        setIfNotNull(header, TripleHeaderEnum.SERVICE_GROUP.getKey(), group);
+        setIfNotNull(header, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getKey(), application);
+        setIfNotNull(header, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getKey(), acceptEncoding);
         if (!Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())) {
-            setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
+            setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getKey(), compressor.getMessageEncoding());
         }
         StreamUtils.putHeaders(header, attachments, convertNoLowerHeader);
         return header;

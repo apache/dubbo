@@ -55,7 +55,7 @@ public class MetricsFilter implements ScopeModelAware {
                 .getApplicationConfigManager()
                 .getMetrics()
                 .map(MetricsConfig::getEnableRpc)
-                .orElse(true);
+                .orElse(false);
         this.appName = applicationModel.tryGetApplicationName();
         this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
         this.defaultMetricsCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
@@ -87,7 +87,9 @@ public class MetricsFilter implements ScopeModelAware {
     }
 
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        onResponse(result, invoker, invocation, PROVIDER.equals(MetricsSupport.getSide(invocation)));
+        if (rpcMetricsEnable) {
+            onResponse(result, invoker, invocation, PROVIDER.equals(MetricsSupport.getSide(invocation)));
+        }
     }
 
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation, boolean isProvider) {
@@ -102,7 +104,9 @@ public class MetricsFilter implements ScopeModelAware {
     }
 
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        onError(t, invoker, invocation, PROVIDER.equals(MetricsSupport.getSide(invocation)));
+        if (rpcMetricsEnable) {
+            onError(t, invoker, invocation, PROVIDER.equals(MetricsSupport.getSide(invocation)));
+        }
     }
 
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation, boolean isProvider) {
