@@ -27,11 +27,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @Activate(order = -100, onClass = "com.google.protobuf.Message")
 public final class JsonPbCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    private final JsonPbCodec instance = new JsonPbCodec();
-
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return instance;
+        return frameworkModel == FrameworkModel.defaultModel() ? JsonPbCodec.INSTANCE : new JsonPbCodec(frameworkModel);
     }
 
     @Override

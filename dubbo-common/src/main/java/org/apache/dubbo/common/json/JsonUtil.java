@@ -16,14 +16,18 @@
  */
 package org.apache.dubbo.common.json;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface JsonUtil {
+
+    String getName();
+
     boolean isSupport();
 
     boolean isJson(String json);
@@ -33,6 +37,8 @@ public interface JsonUtil {
     <T> List<T> toJavaList(String json, Class<T> clazz);
 
     String toJson(Object obj);
+
+    String toPrettyJson(Object obj);
 
     List<?> getList(Map<String, ?> obj, String key);
 

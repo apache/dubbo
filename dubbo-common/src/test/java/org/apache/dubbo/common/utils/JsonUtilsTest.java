@@ -271,14 +271,22 @@ class JsonUtilsTest {
 
     @Test
     void testGetJson2() {
-        fastjson2Mock = Mockito.mockConstruction(FastJson2Impl.class, (mock, context) -> Mockito.when(mock.isSupport())
-                .thenAnswer(invocation -> allowFastjson2.get()));
-        fastjsonMock = Mockito.mockConstruction(FastJsonImpl.class, (mock, context) -> Mockito.when(mock.isSupport())
-                .thenAnswer(invocation -> allowFastjson.get()));
-        gsonMock = Mockito.mockConstruction(GsonImpl.class, (mock, context) -> Mockito.when(mock.isSupport())
-                .thenAnswer(invocation -> allowGson.get()));
-        jacksonMock = Mockito.mockConstruction(JacksonImpl.class, (mock, context) -> Mockito.when(mock.isSupport())
-                .thenAnswer(invocation -> allowJackson.get()));
+        fastjson2Mock = Mockito.mockConstruction(FastJson2Impl.class, (mock, context) -> {
+            Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowFastjson2.get());
+            Mockito.when(mock.getName()).thenAnswer(invocation -> "fastjson2");
+        });
+        fastjsonMock = Mockito.mockConstruction(FastJsonImpl.class, (mock, context) -> {
+            Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowFastjson.get());
+            Mockito.when(mock.getName()).thenAnswer(invocation -> "fastjson");
+        });
+        gsonMock = Mockito.mockConstruction(GsonImpl.class, (mock, context) -> {
+            Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowGson.get());
+            Mockito.when(mock.getName()).thenAnswer(invocation -> "gson");
+        });
+        jacksonMock = Mockito.mockConstruction(JacksonImpl.class, (mock, context) -> {
+            Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowJackson.get());
+            Mockito.when(mock.getName()).thenAnswer(invocation -> "jackson");
+        });
 
         // default use fastjson2
         setJson(null);
