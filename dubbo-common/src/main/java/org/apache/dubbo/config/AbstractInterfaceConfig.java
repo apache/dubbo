@@ -313,9 +313,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 return;
             }
 
-            if (!interfaceClass.isInterface() && !canSkipInterfaceCheck()) {
-                throw new IllegalStateException(interfaceName + " is not an interface");
-            }
+            checkInterface();
 
             // Auto create MethodConfig/ArgumentConfig according to config props
             Map<String, String> configProperties = subPropsConfiguration.getProperties();
@@ -377,13 +375,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * it is used for skipping the check of interface since dubbo 3.2
-     * rest protocol allow the service is implement class
-     *
-     * @return
+     * rest and triple protocol allow the service is implement class
      */
-    protected boolean canSkipInterfaceCheck() {
-        return false;
-    }
+    protected void checkInterface() {}
 
     protected boolean verifyMethodConfig(
             MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
