@@ -133,5 +133,13 @@ public class NegotiateClientCall {
         public void cancelByRemote(long errorCode) {
             executor.execute(() -> future.completeExceptionally(new RuntimeException("Canceled by remote")));
         }
+
+        @Override
+        public void onClose() {
+            if (future.isDone()) {
+                return;
+            }
+            executor.execute(() -> future.completeExceptionally(new RuntimeException("Canceled by remote")));
+        }
     }
 }

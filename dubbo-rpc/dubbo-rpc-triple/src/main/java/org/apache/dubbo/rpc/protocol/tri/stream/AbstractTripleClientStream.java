@@ -453,5 +453,10 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 finishProcess(transportError, null, false);
             });
         }
+
+        @Override
+        public void onClose() {
+            listener.onClose();
+        }
     }
 }
