@@ -483,6 +483,14 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             executor.execute(() -> listener.onCancelByRemote(
                     TriRpcStatus.CANCELLED.withDescription("Canceled by client ,errorCode=" + errorCode)));
         }
+
+        @Override
+        public void onClose() {
+            if (listener == null) {
+                return;
+            }
+            executor.execute(() -> listener.onCancelByRemote(TriRpcStatus.CANCELLED));
+        }
     }
 
     private static class ServerDecoderListener implements TriDecoder.Listener {
