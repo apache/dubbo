@@ -163,13 +163,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     @Override
     public final void onData(MESSAGE message) {
         if (executor == null) {
-            try {
-                Throwable t = new NullPointerException("Executor not initialized");
-                logError(t);
-                onError(message, t);
-            } finally {
-                onDataFinally(message);
-            }
+            onDataFinally(message);
             return;
         }
         executor.execute(() -> {
