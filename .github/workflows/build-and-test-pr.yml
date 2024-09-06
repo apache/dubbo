@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
-      - name: "Setup Maven"
+      - name: "Setup maven"
         uses: actions/setup-java@v4
         with:
           java-version: 21
@@ -117,13 +117,13 @@ jobs:
           java-version: 21
       - name: "Set current date as env variable"
         run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
-      - name: "Restore local Maven repository cache"
+      - name: "Restore local maven repository cache"
         uses: actions/cache/restore@v4
         id: cache-maven-repository
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
-      - name: "Restore common local Maven repository cache"
+      - name: "Restore common local maven repository cache"
         uses: actions/cache/restore@v4
         if: steps.cache-maven-repository.outputs.cache-hit != 'true'
         with:
@@ -131,23 +131,25 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: "Build Dubbo with Maven"
+      - name: "Clean dubbo cache"
+        run: rm -rf ~/.m2/repository/org/apache/dubbo
+      - name: "Build Dubbo with maven"
         run: |
           cd ./dubbo
           ./mvnw ${{ env.MAVEN_ARGS }} clean install -Psources,'!demo',skip-spotless,checkstyle -Dmaven.test.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
-      - name: "Save local Maven repository cache"
+      - name: "Save dubbo cache"
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+      - name: "Clean dubbo cache"
+        run: rm -rf ~/.m2/repository/org/apache/dubbo
+      - name: "Save local maven repository cache"
         uses: actions/cache/save@v4
         if: steps.cache-maven-repository.outputs.cache-hit != 'true'
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
-      - name: "Inspect dubbo cache"
-        run: find ~/.m2/repository/org/apache/dubbo -type f
-      - name: "Save dubbo cache"
-        uses: actions/cache/restore@v4
-        with:
-          path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
       - name: "Pack class result"
         run: |
           shopt -s globstar
@@ -229,7 +231,7 @@ jobs:
           java-version: 21
       - name: "Set current date as env variable"
         run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
-      - name: "Cache local Maven repository"
+      - name: "Cache local maven repository"
         uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
@@ -245,7 +247,7 @@ jobs:
           key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
           restore-keys: |
             zookeeper-${{ runner.os }}-
-      - name: "Test with Maven"
+      - name: "Test with maven"
         timeout-minutes: 90
         run: |
           set -o pipefail
@@ -270,8 +272,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Prepare test list"
-        run: |
-          bash ./test/scripts/prepare-test.sh
+        run: bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
         uses: actions/upload-artifact@v3
         with:
@@ -296,7 +297,7 @@ jobs:
           ref: master
       - name: "Set current date as env variable"
         run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
-      - name: "Cache local Maven repository"
+      - name: "Restore local maven repository cache"
         uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
@@ -328,13 +329,11 @@ jobs:
           CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
-        run: |
-          cd test && bash ./build-test-image.sh
+        run: cd test && bash ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
       - name: "merge jacoco result"
-        run: |
-          cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
+        run: cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"
         uses: actions/upload-artifact@v3
         with:
@@ -376,8 +375,7 @@ jobs:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Prepare test list"
-        run: |
-          bash ./test/scripts/prepare-test.sh
+        run: bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
         uses: actions/upload-artifact@v3
         with:
@@ -402,7 +400,7 @@ jobs:
           ref: main
       - name: "Set current date as env variable"
         run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
-      - name: "Cache local Maven repository"
+      - name: "Restore local maven repository cache"
         uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
@@ -434,13 +432,11 @@ jobs:
           CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
-        run: |
-          cd test && bash ./build-test-image.sh
+        run: cd test && bash ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
-      - name: "merge jacoco resule"
-        run: |
-          cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
+      - name: "merge jacoco result"
+        run: cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"
         uses: actions/upload-artifact@v3
         with:
@@ -535,19 +531,17 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: "./dubbo"
-
       - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-test-tools'
           ref: main
           path: "./dubbo-test-tools"
-
       - name: "Set up JDK 21"
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: 21
-      - name: "Restore local Maven repository cache"
+      - name: "Restore local maven repository cache"
         uses: actions/cache/restore@v4
         id: cache-maven-repository
         with:
@@ -566,7 +560,6 @@ jobs:
         run: |
           cd ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector
           ../mvnw ${{ env.MAVEN_ARGS }} -T 2C package exec:java -Ddubbo.eci.report-as-error=${DUBBO_ECI_REPORT_AS_ERROR} -Dmaven.test.skip=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
-
       - name: "Upload error code inspection result"
         # always() should not be used here, since we don't need to handle the 'canceled' situation.
         if: ${{ success() || failure() }}
@@ -582,7 +575,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: "./dubbo"
-
       - name: "Setup GraalVM environment"
         uses: graalvm/setup-graalvm@v1
         with:
@@ -591,24 +583,30 @@ jobs:
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
-
       - name: "Setup Zookeeper environment"
         run: |
           wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
           tar -zxvf apache-zookeeper-3.8.4-bin.tar.gz
           mv apache-zookeeper-3.8.4-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.4-bin/conf/zoo.cfg
           apache-zookeeper-3.8.4-bin/bin/zkServer.sh start
-
       - name: "Check environment"
         run: |
           java --version
           native-image --version
-
+      - name: "Set current date as env variable"
+        run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - name: "Restore local maven repository cache"
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
       - name: "Compile Dubbo (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo
           ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
-
       - name: "Compile and run Dubbo demo for native (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-interface
