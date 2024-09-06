@@ -637,7 +637,8 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setPreferredProtocol(String preferredProtocol) {
         this.preferredProtocol = preferredProtocol;
-      
+    }
+
     public Boolean isNoInterfaceSupport() {
         return noInterfaceSupport;
     }
