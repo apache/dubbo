@@ -472,5 +472,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                 finishProcess(transportError, null, false);
             });
         }
+
+        @Override
+        public void onClose() {
+            executor.execute(listener::onClose);
+        }
     }
 }

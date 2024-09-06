@@ -137,6 +137,14 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     }
 
     @Override
+    public void onClose() {
+        if (done) {
+            return;
+        }
+        onCancelByRemote(TriRpcStatus.CANCELLED);
+    }
+
+    @Override
     public void onStart() {
         listener.onStart(TripleClientCall.this);
     }
