@@ -25,5 +25,6 @@
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
+        <Logger name="org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils" level="warn"/>
     </Loggers>
 </Configuration>
