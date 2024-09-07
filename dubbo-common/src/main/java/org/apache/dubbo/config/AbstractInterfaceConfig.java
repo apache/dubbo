@@ -207,6 +207,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private Boolean auth;
 
     /**
+     * Authenticator for authentication
+     */
+    private String authenticator;
+
+    /**
+     * Username for basic authenticator
+     */
+    private String username;
+
+    /**
+     * Password for basic authenticator
+     */
+    private String password;
+
+    /**
      * Use separate instances for services with the same serviceKey (applies when using ReferenceConfig and SimpleReferenceCache together).
      * Directly calling ReferenceConfig.get() will not check this attribute.
      */
@@ -890,6 +905,33 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setAuth(Boolean auth) {
         this.auth = auth;
+    }
+
+    public String getAuthenticator() {
+        return authenticator;
+    }
+
+    public AbstractInterfaceConfig setAuthenticator(String authenticator) {
+        this.authenticator = authenticator;
+        return this;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public AbstractInterfaceConfig setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public AbstractInterfaceConfig setPassword(String password) {
+        this.password = password;
+        return this;
     }
 
     public SslConfig getSslConfig() {

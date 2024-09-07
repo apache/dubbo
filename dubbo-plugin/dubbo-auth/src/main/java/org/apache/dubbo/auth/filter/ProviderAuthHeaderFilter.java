@@ -19,38 +19,46 @@ package org.apache.dubbo.auth.filter;
 import org.apache.dubbo.auth.Constants;
 import org.apache.dubbo.auth.spi.Authenticator;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
-/**
- * The ConsumerSignFilter
- *
- * @see org.apache.dubbo.rpc.Filter
- */
-@Activate(group = CommonConstants.CONSUMER, value = Constants.AUTH_KEY, order = -10000)
-public class ConsumerSignFilter implements Filter {
+import static org.apache.dubbo.rpc.RpcException.AUTHORIZATION_EXCEPTION;
+
+@Activate(value = Constants.AUTH_KEY, order = -20000)
+public class ProviderAuthHeaderFilter implements HeaderFilter {
     private final FrameworkModel frameworkModel;
 
-    public ConsumerSignFilter(FrameworkModel frameworkModel) {
+    public ProviderAuthHeaderFilter(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public RpcInvocation invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException {
         URL url = invoker.getUrl();
         boolean shouldAuth = url.getParameter(Constants.AUTH_KEY, false);
         if (shouldAuth) {
             Authenticator authenticator = frameworkModel
                     .getExtensionLoader(Authenticator.class)
                     .getExtension(url.getParameter(Constants.AUTHENTICATOR_KEY, Constants.DEFAULT_AUTHENTICATOR));
-            authenticator.sign(invocation, url);
+            try {
+                authenticator.authenticate(invocation, url);
+            } catch (Exception e) {
+                Class<?> serviceType = invoker.getInterface();
+                throw new RpcException(
+                        AUTHORIZATION_EXCEPTION,
+                        "Forbid invoke remote service " + serviceType + " method " + RpcUtils.getMethodName(invocation)
+                                + "() from consumer "
+                                + invocation.getAttributes().get(Constants.REMOTE_ADDRESS_KEY) + " to provider "
+                                + RpcContext.getServiceContext().getLocalHost());
+            }
+            invocation.getAttributes().put(Constants.AUTH_SUCCESS, Boolean.TRUE);
         }
-        return invoker.invoke(invocation);
+        return invocation;
     }
 }
