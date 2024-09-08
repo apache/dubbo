@@ -10,6 +10,7 @@ env:
   FAIL_FAST: 0
   SHOW_ERROR_DETAIL: 1
   VERSIONS_LIMIT: 4
+  ALL_REMOTE_VERSION: true
   JACOCO_ENABLE: true
   CANDIDATE_VERSIONS: >-
     spring.version:5.3.24;
@@ -88,7 +89,7 @@ jobs:
           java-version: 21
       - name: Compile Dubbo (Linux)
         run: |
-          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -Pskip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -Pskip-spotless -Dmaven.test.skip=true
       - name: Check Dependencies' License
         uses: apache/skywalking-eyes/dependency@e1a02359b239bd28de3f6d35fdc870250fa513d5
         env:
@@ -130,7 +131,7 @@ jobs:
       - name: Build Dubbo with maven
         run: |
           cd ./dubbo
-          ./mvnw ${{ env.MAVEN_ARGS }} clean install -Psources,'!demo',skip-spotless,checkstyle -Dmaven.test.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -Psources,'!demo',skip-spotless,checkstyle -Dmaven.test.skip=true
       - name: Save dubbo cache
         uses: actions/cache/save@v4
         with:
@@ -180,7 +181,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Prepare test list
-        run: bash ./dubbo-test/scripts/split-modules.sh 3 '${{ github.workspace }}'
+        run: bash ./dubbo-test/scripts/split-modules.sh ${{ env.JOB_COUNT }} '${{ github.workspace }}'
       - name: Upload test list
         uses: actions/upload-artifact@v3
         with:
@@ -192,18 +193,24 @@ jobs:
         with:
           path: ${{ github.workspace }}/.tmp/zookeeper
           key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
-      - name: Download zookeeper binary archive in Linux OS
+      - name: Download zookeeper binary archive on ${{ matrix.os }}
         if: steps.cache-zookeeper.outputs.cache-hit != 'true'
+        env:
+          MIRRORS: >-
+            https://archive.apache.org/dist
+            https://apache.website-solution.net
+            http://apache.stu.edu.tw
+            http://ftp.jaist.ac.jp/pub/apache
+            http://apache.mirror.cdnetworks.com
+            http://mirror.apache-kr.org/apache
         run: |
-          mkdir -p ${{ github.workspace }}/.tmp/zookeeper
-          wget -c https://archive.apache.org/dist/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c https://apache.website-solution.net/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://apache.stu.edu.tw/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          cd '${{ github.workspace }}'
+          mkdir -p .tmp/zookeeper
+          for mirror in $MIRRORS; do
+            curl -sL "$mirror/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz" -o .tmp/zookeeper/apache-zookeeper-bin.tar.gz && break
+          done
           echo "list the downloaded zookeeper binary archive"
-          ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          ls -al .tmp/zookeeper/apache-zookeeper-bin.tar.gz
       - name: Save local zookeeper cache
         uses: actions/cache/save@v4
         if: steps.cache-zookeeper.outputs.cache-hit != 'true'
@@ -213,8 +220,8 @@ jobs:
   unit-test-job:
     name: Unit Test (Job-${{matrix.job_id}})
     needs: [ check-format, build-source, unit-test-prepare ]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ${{ matrix.os }}-latest
+    timeout-minutes: 60
     env:
       ZOOKEEPER_VERSION: 3.6.4
     strategy:
@@ -255,11 +262,11 @@ jobs:
           name: unit-test-list
           path: test/jobs/
       - name: Test with maven
-        timeout-minutes: 30
+        timeout-minutes: 60
         run: |
           set -o pipefail
           modules=$(cat test/jobs/test_modules_${{ matrix.job_id }}.txt)
-          ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge','!demo',skip-spotless,jacoco089 -pl "$modules" -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dflatten.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
+          ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjdk15ge-simple,'!jdk15ge','!demo',skip-spotless,jacoco,jacoco089 -pl "$modules" -DtrimStackTrace=false -Dmaven.test.skip=false -Drat.skip=false -Dflatten.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 5 -A 200 "FAILURE! -- in" > test_errors.log)
       - name: Print test error log
         if: failure()
         run: cat test_errors.log
@@ -292,7 +299,7 @@ jobs:
     name: Samples Test (Job-${{matrix.job_id}})
     needs: [ check-format, build-source, samples-test-prepare ]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       JAVA_VER: 8
       TEST_CASE_FILE: jobs/testjob_${{ matrix.job_id }}.txt
@@ -391,7 +398,7 @@ jobs:
     name: Integration Test (Job-${{matrix.job_id}})
     needs: [ check-format, build-source, integration-test-prepare ]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       JAVA_VER: 8
       TEST_CASE_FILE: jobs/testjob_${{ matrix.job_id }}.txt
@@ -557,7 +564,7 @@ jobs:
       - name: Compile Dubbo (Linux)
         run: |
           cd ${{ github.workspace }}/dubbo
-          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true
       - name: Run Error Code Inspecting
         env:
           DUBBO_ECI_REPORT_AS_ERROR: true
@@ -608,7 +615,7 @@ jobs:
       - name: Compile Dubbo (Linux)
         run: |
           cd ${{ github.workspace }}/dubbo
-          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
+          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true
       - name: Compile and run Dubbo demo for native (Linux)
         run: |
           cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-interface

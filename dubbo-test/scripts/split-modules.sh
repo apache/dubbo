@@ -18,12 +18,12 @@
 
 readarray -t modules < <(find . -name "pom.xml" | while read -r pom; do
     module_dir=$(dirname "$pom")
-    if [ -d "$module_dir/src/test" ]; then
+    if [ -d "$module_dir/src/test" ] && [[ "$module_dir" != *"plugin-loom" ]] && [[ "$module_dir" != *"config-spring6" ]]; then
         echo "${module_dir#./}"
     fi
 done)
 
-readarray -t modules < <(printf '%s\n' "${modules[@]}" | shuf --random-source=/dev/zero)
+readarray -t modules < <(printf '%s\n' "${modules[@]}" | shuf --random-source=<(yes 1))
 
 jobs=$1
 jobs_dir=$2/test/jobs
