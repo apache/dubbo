@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
+import org.apache.dubbo.rpc.support.TrieTree;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,23 +70,68 @@ public class ContextFilter implements Filter, Filter.Listener {
         supportedSelectors = selectorExtensionLoader.getSupportedExtensionInstances();
     }
 
-    private static final Set<String> UNLOADING_KEYS;
+    private static final TrieTree UNLOADING_KEYS;
 
     static {
-        UNLOADING_KEYS = new HashSet<>(16);
-        UNLOADING_KEYS.add(PATH_KEY);
-        UNLOADING_KEYS.add(INTERFACE_KEY);
-        UNLOADING_KEYS.add(GROUP_KEY);
-        UNLOADING_KEYS.add(VERSION_KEY);
-        UNLOADING_KEYS.add(DUBBO_VERSION_KEY);
-        UNLOADING_KEYS.add(TOKEN_KEY);
-        UNLOADING_KEYS.add(TIMEOUT_KEY);
-        UNLOADING_KEYS.add(TIMEOUT_ATTACHMENT_KEY);
+        Set<String> keySet = new HashSet<>();
+        keySet.add(PATH_KEY);
+        keySet.add(INTERFACE_KEY);
+        keySet.add(GROUP_KEY);
+        keySet.add(VERSION_KEY);
+        keySet.add(DUBBO_VERSION_KEY);
+        keySet.add(TOKEN_KEY);
+        keySet.add(TIMEOUT_KEY);
+        keySet.add(TIMEOUT_ATTACHMENT_KEY);
 
         // Remove async property to avoid being passed to the following invoke chain.
-        UNLOADING_KEYS.add(ASYNC_KEY);
-        UNLOADING_KEYS.add(TAG_KEY);
-        UNLOADING_KEYS.add(FORCE_USE_TAG);
+        keySet.add(ASYNC_KEY);
+        keySet.add(TAG_KEY);
+        keySet.add(FORCE_USE_TAG);
+
+        // Remove HTTP headers to avoid being passed to the following invoke chain.
+        keySet.add("accept");
+        keySet.add("accept-charset");
+        keySet.add("accept-datetime");
+        keySet.add("accept-encoding");
+        keySet.add("accept-language");
+        keySet.add("access-control-request-headers");
+        keySet.add("access-control-request-method");
+        keySet.add("authorization");
+        keySet.add("cache-control");
+        keySet.add("connection");
+        keySet.add("content-length");
+        keySet.add("content-md5");
+        keySet.add("content-type");
+        keySet.add("cookie");
+        keySet.add("date");
+        keySet.add("dnt");
+        keySet.add("expect");
+        keySet.add("forwarded");
+        keySet.add("from");
+        keySet.add("host");
+        keySet.add("http2-settings");
+        keySet.add("if-match");
+        keySet.add("if-modified-since");
+        keySet.add("if-none-match");
+        keySet.add("if-range");
+        keySet.add("if-unmodified-since");
+        keySet.add("max-forwards");
+        keySet.add("origin");
+        keySet.add("pragma");
+        keySet.add("proxy-authorization");
+        keySet.add("range");
+        keySet.add("referer");
+        keySet.add("sec-fetch-dest");
+        keySet.add("sec-fetch-mode");
+        keySet.add("sec-fetch-site");
+        keySet.add("sec-fetch-user");
+        keySet.add("te");
+        keySet.add("trailer");
+        keySet.add("upgrade");
+        keySet.add("upgrade-insecure-requests");
+        keySet.add("user-agent");
+
+        UNLOADING_KEYS = new TrieTree(keySet);
     }
 
     @Override
@@ -95,7 +141,7 @@ public class ContextFilter implements Filter, Filter.Listener {
             Map<String, Object> newAttach = new HashMap<>(attachments.size());
             for (Map.Entry<String, Object> entry : attachments.entrySet()) {
                 String key = entry.getKey();
-                if (!UNLOADING_KEYS.contains(key)) {
+                if (!UNLOADING_KEYS.search(key)) {
                     newAttach.put(key, entry.getValue());
                 }
             }

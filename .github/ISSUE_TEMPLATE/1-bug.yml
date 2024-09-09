@@ -71,6 +71,7 @@ body:
       - "Java Integration Cases (apache/dubbo-integration-cases)"
       - "Java SPI Extensions (apache/dubbo-spi-extensions)"
       - "Java Benchmark (apache/dubbo-benchmark)"
+      - "Python SDK (apache/dubbo-python)"
   validations:
     required: true
 

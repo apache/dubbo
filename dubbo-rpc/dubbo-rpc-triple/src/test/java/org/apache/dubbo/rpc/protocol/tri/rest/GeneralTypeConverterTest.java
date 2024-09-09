@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest;
 
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
@@ -30,7 +31,7 @@ class GeneralTypeConverterTest {
 
     @Test
     void convert() throws NoSuchFieldException {
-        GeneralTypeConverter smartConverter = new GeneralTypeConverter();
+        GeneralTypeConverter smartConverter = new GeneralTypeConverter(FrameworkModel.defaultModel());
         smartConverter.convert(
                 "23,56", GeneralTypeConverterTest.class.getField("items").getGenericType());
     }

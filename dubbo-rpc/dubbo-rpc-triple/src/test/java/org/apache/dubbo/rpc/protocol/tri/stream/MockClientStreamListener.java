@@ -37,6 +37,9 @@ public class MockClientStreamListener implements ClientStream.Listener {
     }
 
     @Override
+    public void onClose() {}
+
+    @Override
     public void onMessage(byte[] message, boolean isNeedReturnException) {
         this.message = message;
     }
