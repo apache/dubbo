@@ -49,6 +49,7 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_CONNECTION_INITIAL_WINDOW_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
 
 /**
@@ -89,7 +90,7 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
         this.connection = checkNotNull(connection, "connection");
         this.streamByteDistributor = checkNotNull(streamByteDistributor, "streamWriteDistributor");
         this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
-        this.initialWindowSize = config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
+        this.initialWindowSize = config.getInt(H2_SETTINGS_CONNECTION_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
 
         // Add a flow state for the connection.
         stateKey = connection.newKey();
