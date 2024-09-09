@@ -33,6 +33,14 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
 
     private volatile Object jacksonCache = null;
 
+    private volatile JsonMapper customizedMapper = null;
+
+    public void setCustomizedMapper(JsonMapper customizedMapper) {
+        this.customizedMapper = customizedMapper;
+        // Reset the cache to apply custom configurations
+        this.jacksonCache = null;
+    }
+
     @Override
     public boolean isJson(String json) {
         try {
@@ -86,12 +94,16 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
         if (jacksonCache == null || !(jacksonCache instanceof JsonMapper)) {
             synchronized (this) {
                 if (jacksonCache == null || !(jacksonCache instanceof JsonMapper)) {
-                    jacksonCache = JsonMapper.builder()
-                            .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
-                            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            .serializationInclusion(Include.NON_NULL)
-                            .addModule(new JavaTimeModule())
-                            .build();
+                    if (customizedMapper != null) {
+                        jacksonCache = customizedMapper;
+                    } else {
+                        jacksonCache = JsonMapper.builder()
+                                .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+                                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                                .serializationInclusion(Include.NON_NULL)
+                                .addModule(new JavaTimeModule())
+                                .build();
+                    }
                 }
             }
         }
