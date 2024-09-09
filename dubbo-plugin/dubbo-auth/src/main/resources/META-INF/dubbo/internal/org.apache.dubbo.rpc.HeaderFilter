@@ -1,0 +1,1 @@
+auth=org.apache.dubbo.auth.filter.ProviderAuthHeaderFilter

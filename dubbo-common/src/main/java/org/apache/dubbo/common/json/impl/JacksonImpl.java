@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import org.apache.dubbo.common.extension.Activate;
+
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -24,14 +26,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper.Builder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+@Activate(order = 400, onClass = "com.fasterxml.jackson.databind.json.JsonMapper")
 public class JacksonImpl extends AbstractJsonUtilImpl {
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private volatile Object jacksonCache = null;
+    private volatile JsonMapper mapper;
+
+    @Override
+    public String getName() {
+        return "jackson";
+    }
 
     private volatile JsonMapper customizedMapper = null;
 
@@ -44,7 +51,7 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
     @Override
     public boolean isJson(String json) {
         try {
-            JsonNode node = objectMapper.readTree(json);
+            JsonNode node = getMapper().readTree(json);
             return node.isObject() || node.isArray();
         } catch (JsonProcessingException e) {
             return false;
@@ -54,7 +61,8 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
     @Override
     public <T> T toJavaObject(String json, Type type) {
         try {
-            return getJackson().readValue(json, getJackson().getTypeFactory().constructType(type));
+            JsonMapper mapper = getMapper();
+            return mapper.readValue(json, mapper.getTypeFactory().constructType(type));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
@@ -63,8 +71,8 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
         try {
-            return getJackson()
-                    .readValue(json, getJackson().getTypeFactory().constructCollectionType(List.class, clazz));
+            JsonMapper mapper = getMapper();
+            return mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
@@ -73,25 +81,35 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
     @Override
     public String toJson(Object obj) {
         try {
-            return getJackson().writeValueAsString(obj);
+            return getMapper().writeValueAsString(obj);
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     @Override
+    public String toPrettyJson(Object obj) {
+        try {
+            return getMapper().writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    @Override
     public Object convertObject(Object obj, Type type) {
-        JsonMapper mapper = getJackson();
+        JsonMapper mapper = getMapper();
         return mapper.convertValue(obj, mapper.constructType(type));
     }
 
     @Override
     public Object convertObject(Object obj, Class<?> clazz) {
-        return getJackson().convertValue(obj, clazz);
+        return getMapper().convertValue(obj, clazz);
     }
 
-    private JsonMapper getJackson() {
-        if (jacksonCache == null || !(jacksonCache instanceof JsonMapper)) {
+    protected JsonMapper getMapper() {
+        JsonMapper mapper = this.mapper;
+        if (mapper == null) {
             synchronized (this) {
                 if (jacksonCache == null || !(jacksonCache instanceof JsonMapper)) {
                     if (customizedMapper != null) {
@@ -104,9 +122,20 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
                                 .addModule(new JavaTimeModule())
                                 .build();
                     }
+                mapper = this.mapper;
+                if (mapper == null) {
+                    this.mapper = mapper = createBuilder().build();
                 }
             }
         }
-        return (JsonMapper) jacksonCache;
+        return mapper;
+    }
+
+    protected Builder createBuilder() {
+        return JsonMapper.builder()
+                .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .serializationInclusion(Include.NON_NULL)
+                .addModule(new JavaTimeModule());
     }
 }

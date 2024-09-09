@@ -17,12 +17,13 @@
 package org.apache.dubbo.maven.plugin.protoc;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 public class ProtocMetaData {
 
     private String protocExecutable;
-    private File protoSourceDir;
+    private Collection<File> protoSourceDirs;
     private List<File> protoFiles;
     private File outputDir;
     private DubboProtocPlugin dubboProtocPlugin;
@@ -31,12 +32,12 @@ public class ProtocMetaData {
 
     public ProtocMetaData(
             String protocExecutable,
-            File protoSourceDir,
+            Collection<File> protoSourceDirs,
             List<File> protoFiles,
             File outputDir,
             DubboProtocPlugin dubboProtocPlugin) {
         this.protocExecutable = protocExecutable;
-        this.protoSourceDir = protoSourceDir;
+        this.protoSourceDirs = protoSourceDirs;
         this.protoFiles = protoFiles;
         this.outputDir = outputDir;
         this.dubboProtocPlugin = dubboProtocPlugin;
@@ -50,12 +51,12 @@ public class ProtocMetaData {
         this.protocExecutable = protocExecutable;
     }
 
-    public File getProtoSourceDir() {
-        return protoSourceDir;
+    public Collection<File> getProtoSourceDirs() {
+        return protoSourceDirs;
     }
 
-    public void setProtoSourceDir(File protoSourceDir) {
-        this.protoSourceDir = protoSourceDir;
+    public void setProtoSourceDirs(Collection<File> protoSourceDirs) {
+        this.protoSourceDirs = protoSourceDirs;
     }
 
     public List<File> getProtoFiles() {

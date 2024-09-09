@@ -29,7 +29,7 @@ public final class JsonCodecFactory implements HttpMessageEncoderFactory, HttpMe
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return JsonCodec.INSTANCE;
+        return frameworkModel == FrameworkModel.defaultModel() ? JsonCodec.INSTANCE : new JsonCodec(frameworkModel);
     }
 
     @Override

@@ -80,6 +80,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        transportListener.onClose();
         ctx.close();
     }
 

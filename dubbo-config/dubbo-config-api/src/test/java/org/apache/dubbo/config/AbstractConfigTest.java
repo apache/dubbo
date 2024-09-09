@@ -77,7 +77,7 @@ class AbstractConfigTest {
         protocolConfig.setName("dubbo");
         protocolConfig.setHost("host");
         protocolConfig.setSerialization("fastjson2");
-        protocolConfig.setPreferSerialization("hessian2,java,compactedjava,nativejava");
+        protocolConfig.setPreferSerialization("hessian2");
         ConfigValidationUtils.validateProtocolConfig(protocolConfig);
     }
 
