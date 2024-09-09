@@ -122,7 +122,7 @@ jobs:
     name: Preparation for Unit Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}-latest
     env:
-      JOB_COUNT: 2
+      JOB_COUNT: 1
       ZOOKEEPER_VERSION: 3.6.4
     strategy:
       matrix:
@@ -187,7 +187,7 @@ jobs:
         os: [ ubuntu, windows ]
         jdk: [ 8, 11, 17, 21 ]
         ser: [ hessian2, fastjson2 ]
-        job_id: [ 1, 2 ]
+        job_id: [ 1 ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -223,6 +223,9 @@ jobs:
         with:
           name: unit-test-list
           path: test/jobs/
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' }}
       - name: Test with maven on ${{ matrix.os }}
         timeout-minutes: 60
         run: |
