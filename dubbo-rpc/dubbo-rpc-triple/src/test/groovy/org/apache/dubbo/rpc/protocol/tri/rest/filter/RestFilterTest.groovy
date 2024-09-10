@@ -20,7 +20,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.filter
 import org.apache.dubbo.common.URL
 import org.apache.dubbo.rpc.Invoker
 import org.apache.dubbo.rpc.model.ApplicationModel
-
+import org.apache.dubbo.rpc.model.ServiceMetadata
+import org.apache.dubbo.rpc.model.ServiceModel
 import spock.lang.Specification
 
 class RestFilterTest extends Specification {
@@ -29,7 +30,9 @@ class RestFilterTest extends Specification {
     def "test filter patterns"() {
         given:
             Invoker invoker = Mock(Invoker)
-            invoker.getUrl() >> URL.valueOf("tri://127.0.0.1/test?extension=org.apache.dubbo.rpc.protocol.tri.rest.filter.TestRestFilter")
+            ServiceModel serviceModel = Mock(ServiceModel)
+            serviceModel.getServiceMetadata() >> new ServiceMetadata()
+            invoker.getUrl() >> URL.valueOf("tri://127.0.0.1/test?extension=${TestRestFilter.class.getName()}").setServiceModel(serviceModel)
 
             var filter = new RestExtensionExecutionFilter(ApplicationModel.defaultModel())
         expect:

@@ -17,10 +17,11 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 
 import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.nested.CorsConfig;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 
 public class CorsUtils {
@@ -28,16 +29,17 @@ public class CorsUtils {
     private CorsUtils() {}
 
     public static CorsMeta getGlobalCorsMeta(FrameworkModel frameworkModel) {
-        Configuration config = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-
-        String maxAge = config.getString(RestConstants.MAX_AGE);
+        CorsConfig config = ConfigManager.getProtocolOrDefault(CommonConstants.TRIPLE)
+                .getTripleOrDefault()
+                .getRestOrDefault()
+                .getCorsOrDefault();
         return CorsMeta.builder()
-                .allowedOrigins(getValues(config, RestConstants.ALLOWED_ORIGINS))
-                .allowedMethods(getValues(config, RestConstants.ALLOWED_METHODS))
-                .allowedHeaders(getValues(config, RestConstants.ALLOWED_HEADERS))
-                .allowCredentials(config.getString(RestConstants.ALLOW_CREDENTIALS))
-                .exposedHeaders(getValues(config, RestConstants.EXPOSED_HEADERS))
-                .maxAge(maxAge == null ? null : Long.valueOf(maxAge))
+                .allowedOrigins(config.getAllowedOrigins())
+                .allowedMethods(config.getAllowedMethods())
+                .allowedHeaders(config.getAllowedHeaders())
+                .allowCredentials(config.getAllowCredentials())
+                .exposedHeaders(config.getExposedHeaders())
+                .maxAge(config.getMaxAge())
                 .build();
     }
 

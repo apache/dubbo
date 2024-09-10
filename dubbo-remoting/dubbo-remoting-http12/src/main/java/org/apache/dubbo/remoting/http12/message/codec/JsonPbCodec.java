@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,9 +30,18 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 import com.google.protobuf.Message;
+import com.google.protobuf.Message.Builder;
 import com.google.protobuf.util.JsonFormat;
 
 public final class JsonPbCodec extends JsonCodec {
+
+    public static final JsonPbCodec INSTANCE = new JsonPbCodec();
+
+    private JsonPbCodec() {}
+
+    public JsonPbCodec(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
@@ -51,7 +61,7 @@ public final class JsonPbCodec extends JsonCodec {
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
         try {
             if (isProtobuf(targetType)) {
-                Message.Builder newBuilder = (Message.Builder)
+                Builder newBuilder = (Builder)
                         MethodUtils.findMethod(targetType, "newBuilder").invoke(null);
                 JsonFormat.parser().ignoringUnknownFields().merge(StreamUtils.toString(is, charset), newBuilder);
                 return newBuilder.build();

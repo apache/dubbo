@@ -42,6 +42,8 @@ import java.util.StringTokenizer;
 
 public final class RequestUtils {
 
+    public static final String EMPTY_BODY = "";
+
     private RequestUtils() {}
 
     public static boolean isMultiPart(HttpRequest request) {
@@ -185,7 +187,7 @@ public final class RequestUtils {
                 if (type instanceof Class) {
                     Class<?> clazz = (Class<?>) type;
                     if (clazz == String.class) {
-                        return StringUtils.EMPTY_STRING;
+                        return EMPTY_BODY;
                     }
                     if (clazz == byte[].class) {
                         return new byte[0];

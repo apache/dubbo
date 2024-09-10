@@ -34,7 +34,7 @@ public final class AddressUtils {
 
     public static InetSocketAddress getRemoteAddress(Channel channel) {
         InetSocketAddress address;
-        for (int i = 0, len = ACCESSORS.size(); i < len; i++) {
+        for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
             address = ACCESSORS.get(i).getRemoteAddress(channel);
             if (address != null) {
                 return address;
@@ -45,7 +45,7 @@ public final class AddressUtils {
 
     public static InetSocketAddress getLocalAddress(Channel channel) {
         InetSocketAddress address;
-        for (int i = 0, len = ACCESSORS.size(); i < len; i++) {
+        for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
             address = ACCESSORS.get(i).getLocalAddress(channel);
             if (address != null) {
                 return address;
@@ -56,7 +56,7 @@ public final class AddressUtils {
 
     public static String getRemoteAddressKey(Channel channel) {
         InetSocketAddress address;
-        for (int i = 0, len = ACCESSORS.size(); i < len; i++) {
+        for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
             ChannelAddressAccessor accessor = ACCESSORS.get(i);
             address = accessor.getRemoteAddress(channel);
             if (address != null) {
@@ -72,7 +72,7 @@ public final class AddressUtils {
 
     public static String getLocalAddressKey(Channel channel) {
         InetSocketAddress address;
-        for (int i = 0, len = ACCESSORS.size(); i < len; i++) {
+        for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
             ChannelAddressAccessor accessor = ACCESSORS.get(i);
             address = accessor.getLocalAddress(channel);
             if (address != null) {

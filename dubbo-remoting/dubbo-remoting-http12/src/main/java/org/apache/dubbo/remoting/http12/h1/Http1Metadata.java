@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.http12.h1;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 
-public class Http1Metadata implements HttpMetadata {
+public final class Http1Metadata implements HttpMetadata {
 
     private final HttpHeaders headers;
 

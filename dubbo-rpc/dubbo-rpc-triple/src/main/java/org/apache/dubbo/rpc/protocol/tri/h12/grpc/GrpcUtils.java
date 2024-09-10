@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.util.concurrent.TimeUnit;
 
@@ -47,5 +48,9 @@ public class GrpcUtils {
                 // invalid timeout config
                 return null;
         }
+    }
+
+    public static boolean isGrpcRequest(String contentType) {
+        return contentType != null && contentType.startsWith(MediaType.APPLICATION_GRPC.getName());
     }
 }

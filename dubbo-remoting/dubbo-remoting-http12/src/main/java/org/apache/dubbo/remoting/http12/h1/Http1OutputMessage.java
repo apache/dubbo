@@ -23,7 +23,7 @@ import java.io.OutputStream;
 
 import io.netty.buffer.ByteBufOutputStream;
 
-public class Http1OutputMessage implements HttpOutputMessage {
+public final class Http1OutputMessage implements HttpOutputMessage {
 
     private final OutputStream outputStream;
 

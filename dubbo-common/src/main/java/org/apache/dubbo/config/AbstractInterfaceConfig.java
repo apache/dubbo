@@ -207,6 +207,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private Boolean auth;
 
     /**
+     * Authenticator for authentication
+     */
+    private String authenticator;
+
+    /**
+     * Username for basic authenticator
+     */
+    private String username;
+
+    /**
+     * Password for basic authenticator
+     */
+    private String password;
+
+    /**
      * Use separate instances for services with the same serviceKey (applies when using ReferenceConfig and SimpleReferenceCache together).
      * Directly calling ReferenceConfig.get() will not check this attribute.
      */
@@ -313,9 +328,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 return;
             }
 
-            if (!interfaceClass.isInterface() && !canSkipInterfaceCheck()) {
-                throw new IllegalStateException(interfaceName + " is not an interface");
-            }
+            checkInterface();
 
             // Auto create MethodConfig/ArgumentConfig according to config props
             Map<String, String> configProperties = subPropsConfiguration.getProperties();
@@ -377,13 +390,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * it is used for skipping the check of interface since dubbo 3.2
-     * rest protocol allow the service is implement class
-     *
-     * @return
+     * rest and triple protocol allow the service is implement class
      */
-    protected boolean canSkipInterfaceCheck() {
-        return false;
-    }
+    protected void checkInterface() {}
 
     protected boolean verifyMethodConfig(
             MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
@@ -896,6 +905,33 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setAuth(Boolean auth) {
         this.auth = auth;
+    }
+
+    public String getAuthenticator() {
+        return authenticator;
+    }
+
+    public AbstractInterfaceConfig setAuthenticator(String authenticator) {
+        this.authenticator = authenticator;
+        return this;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public AbstractInterfaceConfig setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public AbstractInterfaceConfig setPassword(String password) {
+        this.password = password;
+        return this;
     }
 
     public SslConfig getSslConfig() {

@@ -34,9 +34,9 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    @SuppressWarnings("all")
+    @SuppressWarnings("unchecked")
     public void onReturn(Object value) {
-        this.requestObserver = (StreamObserver<Object>) value;
+        requestObserver = (StreamObserver<Object>) value;
     }
 
     @Override

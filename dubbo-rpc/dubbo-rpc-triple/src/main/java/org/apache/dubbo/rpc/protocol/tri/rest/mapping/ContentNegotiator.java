@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.config.nested.RestConfig.DEFAULT_FORMAT_PARAMETER_NAME;
+
 public class ContentNegotiator {
 
     private final FrameworkModel frameworkModel;
@@ -119,7 +121,7 @@ public class ContentNegotiator {
         String parameterName = this.parameterName;
         if (parameterName == null) {
             Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-            parameterName = conf.getString(RestConstants.FORMAT_PARAMETER_NAME_KEY, "format");
+            parameterName = conf.getString(RestConstants.FORMAT_PARAMETER_NAME_KEY, DEFAULT_FORMAT_PARAMETER_NAME);
             this.parameterName = parameterName;
         }
         return parameterName;

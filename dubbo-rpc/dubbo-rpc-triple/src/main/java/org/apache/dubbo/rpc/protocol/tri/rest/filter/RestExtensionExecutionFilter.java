@@ -24,8 +24,10 @@ import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.AppResponse;
@@ -42,7 +44,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestInitializeException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RestExtensionExecutionFilter.class);
     private static final String KEY = RestExtensionExecutionFilter.class.getSimpleName();
+    private static final String REST_FILTER_CACHE = "REST_FILTER_CACHE";
 
     private final Map<RestFilter, RadixTree<Boolean>> filterTreeCache = CollectionUtils.newConcurrentHashMap();
     private final ApplicationModel applicationModel;
@@ -190,30 +192,11 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         return matched;
     }
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private RestFilter[] getFilters(Invoker<?> invoker) {
-        URL url = invoker.getUrl();
-        RestFilter[] filters = getFilters(url);
-        if (filters != null) {
-            return filters;
-        }
-        synchronized (invoker) {
-            filters = getFilters(url);
-            if (filters != null) {
-                return filters;
-            }
-            filters = loadFilters(url);
-            url.putAttribute(RestConstants.EXTENSIONS_ATTRIBUTE_KEY, filters);
-            return filters;
-        }
-    }
-
-    private RestFilter[] getFilters(URL url) {
-        return (RestFilter[]) url.getAttribute(RestConstants.EXTENSIONS_ATTRIBUTE_KEY);
+        return UrlUtils.computeServiceAttribute(invoker.getUrl(), REST_FILTER_CACHE, this::loadFilters);
     }
 
     private RestFilter[] loadFilters(URL url) {
-        LOGGER.info("Loading rest filters for {}", url);
         List<RestFilter> extensions = new ArrayList<>();
 
         // 1. load from extension config
@@ -221,7 +204,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         InstantiationStrategy strategy = new InstantiationStrategy(() -> applicationModel);
         for (String className : StringUtils.tokenize(extensionConfig)) {
             try {
-                Object extension = strategy.instantiate(TypeUtils.loadClass(className));
+                Object extension = strategy.instantiate(ClassUtils.loadClass(className));
                 if (extension instanceof ExtensionAccessorAware) {
                     ((ExtensionAccessorAware) extension).setExtensionAccessor(applicationModel);
                 }
@@ -242,6 +225,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
         // 3. sorts by order
         extensions.sort(Comparator.comparingInt(RestUtils::getPriority));
 
+        LOGGER.info("Rest filters for [{}] loaded: {}", url, extensions);
         return extensions.toArray(new RestFilter[0]);
     }
 

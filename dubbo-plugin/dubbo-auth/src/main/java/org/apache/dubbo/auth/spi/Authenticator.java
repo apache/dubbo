@@ -18,10 +18,11 @@ package org.apache.dubbo.auth.spi;
 
 import org.apache.dubbo.auth.exception.RpcAuthenticationException;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
-@SPI("accessKey")
+@SPI(scope = ExtensionScope.FRAMEWORK, value = "basic")
 public interface Authenticator {
 
     /**

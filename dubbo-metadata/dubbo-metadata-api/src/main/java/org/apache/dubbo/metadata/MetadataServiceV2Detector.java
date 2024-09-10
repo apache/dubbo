@@ -20,8 +20,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
-
 public class MetadataServiceV2Detector implements BuiltinServiceDetector {
 
     private static final ErrorTypeAwareLogger logger =
@@ -32,10 +30,7 @@ public class MetadataServiceV2Detector implements BuiltinServiceDetector {
     @Override
     public Class<?> getService() {
         if (!support()) {
-            logger.warn(
-                    COMMON_CLASS_NOT_FOUND,
-                    "",
-                    "",
+            logger.info(
                     "To use MetadataServiceV2, Protobuf dependencies are required. Fallback to MetadataService(V1).");
             return null;
         }
