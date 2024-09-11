@@ -38,6 +38,7 @@ public class TripleConfig implements Serializable {
     public static final boolean DEFAULT_ENABLE_PUSH = false;
     public static final int DEFAULT_MAX_CONCURRENT_STREAMS = Integer.MAX_VALUE;
     public static final int DEFAULT_INITIAL_WINDOW_SIZE = 8_388_608;
+    public static final int DEFAULT_CONNECTION_INITIAL_WINDOW_SIZE_KEY = 65_535;
     public static final int DEFAULT_MAX_FRAME_SIZE = 8_388_608;
     public static final int DEFAULT_MAX_HEADER_LIST_SIZE = 32_768;
 
@@ -276,7 +277,7 @@ public class TripleConfig implements Serializable {
 
     @Parameter(excluded = true)
     public int getInitialWindowSizeOrDefault() {
-        return initialWindowSize == null ? DEFAULT_INITIAL_WINDOW_SIZE : initialWindowSize;
+        return initialWindowSize == null ? DEFAULT_CONNECTION_INITIAL_WINDOW_SIZE_KEY : initialWindowSize;
     }
 
     public void setInitialWindowSize(Integer initialWindowSize) {
