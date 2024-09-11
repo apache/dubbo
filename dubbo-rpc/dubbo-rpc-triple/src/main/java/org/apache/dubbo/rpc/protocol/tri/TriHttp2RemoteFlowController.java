@@ -20,6 +20,9 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2ConnectionAdapter;
@@ -34,9 +37,6 @@ import io.netty.util.internal.UnstableApi;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import static io.netty.handler.codec.http2.Http2CodecUtil.DEFAULT_WINDOW_SIZE;
 import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_WEIGHT;
 import static io.netty.handler.codec.http2.Http2CodecUtil.MIN_WEIGHT;
@@ -49,7 +49,7 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_CONNECTION_INITIAL_WINDOW_SIZE_KEY;
 
 /**
  * This design is learning from {@see io.netty.handler.codec.http2.DefaultHttp2RemoteFlowController} which is in Netty.
@@ -89,7 +89,7 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
         this.connection = checkNotNull(connection, "connection");
         this.streamByteDistributor = checkNotNull(streamByteDistributor, "streamWriteDistributor");
         this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
-        this.initialWindowSize = config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
+        this.initialWindowSize = config.getInt(H2_SETTINGS_CONNECTION_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
 
         // Add a flow state for the connection.
         stateKey = connection.newKey();
