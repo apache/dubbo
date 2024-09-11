@@ -22,10 +22,10 @@ import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
+import java.util.Arrays;
 
 public class ActuatorCommandExecutor implements ActuatorExecutor {
-    private static final Logger log = LoggerFactory.getLogger(ActuatorCommandExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ActuatorCommandExecutor.class);
     private final ApplicationModel applicationModel;
 
     public ActuatorCommandExecutor(ApplicationModel applicationModel) {
@@ -43,20 +43,21 @@ public class ActuatorCommandExecutor implements ActuatorExecutor {
             commandContext = CommandContextFactory.newInstance(commandName, parameters, true);
         }
 
+        logger.info("[Dubbo Actuator QoS] Command Process start. Command: " + commandContext.getCommandName()
+                + ", Args: " + Arrays.toString(commandContext.getArgs()));
+
         BaseCommand command;
         try {
             command = applicationModel
                     .getExtensionLoader(BaseCommand.class)
                     .getExtension(commandContext.getCommandName());
             return command.execute(commandContext, commandContext.getArgs());
-        } catch (Exception qosEx) {
-            log.error(
-                    QOS_UNEXPECTED_EXCEPTION,
-                    "",
-                    "",
-                    "execute commandContext: " + commandContext + " got exception",
-                    qosEx);
-            return qosEx.getMessage();
+        } catch (Throwable t) {
+            logger.info(
+                    "[Dubbo Actuator QoS] Command Process Failed. Command: " + commandContext.getCommandName()
+                            + ", Args: " + Arrays.toString(commandContext.getArgs()),
+                    t);
+            throw t;
         }
     }
 }

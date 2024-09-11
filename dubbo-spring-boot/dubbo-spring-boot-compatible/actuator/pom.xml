@@ -113,4 +113,28 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${maven_exec_version}</version>
+        <configuration>
+          <mainClass>org.apache.dubbo.spring.boot.actuate.endpoint.configuration.DubboEndpointPropertiesGenerator</mainClass>
+          <classpathScope>compile</classpathScope>
+        </configuration>
+        <executions>
+          <execution>
+            <id>generate-actuator-properties</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

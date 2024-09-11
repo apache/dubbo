@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint;
 
+import org.apache.dubbo.qos.command.ActuatorExecutor;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.actuate.endpoint.configuration.DubboActuatorProperties;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboMetadata;
-import org.apache.dubbo.spring.boot.actuate.endpoint.service.DubboActuatorService;
 
 import java.util.Map;
 
@@ -35,10 +36,10 @@ import org.springframework.lang.Nullable;
  * @since 3.3.0
  */
 @Endpoint(id = "dubbo")
-public class DubboEndpoint {
+public class DubboQosEndpoints {
 
     @Autowired
-    private DubboActuatorService dubboActuatorService;
+    private ApplicationModel applicationModel;
 
     @Autowired
     private DubboMetadata dubboMetadata;
@@ -54,7 +55,9 @@ public class DubboEndpoint {
     @ReadOperation
     public String handleCommand(@Selector String command, @Nullable String[] args) {
         if (dubboActuatorProperties.isEnabled(command.toLowerCase())) {
-            return dubboActuatorService.invoke(command, args);
+            ActuatorExecutor actuatorExecutor =
+                    applicationModel.getBeanFactory().getBean(ActuatorExecutor.class);
+            return actuatorExecutor.execute(command, args);
         } else {
             return ("Invalid command or not enabled");
         }

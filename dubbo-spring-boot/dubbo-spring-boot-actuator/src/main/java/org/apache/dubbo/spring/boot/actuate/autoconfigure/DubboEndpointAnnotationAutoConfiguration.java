@@ -17,8 +17,8 @@
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboConfigsMetadataEndpoint;
-import org.apache.dubbo.spring.boot.actuate.endpoint.DubboEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboPropertiesMetadataEndpoint;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboQosEndpoints;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboReferencesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboServicesMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboShutdownEndpoint;
@@ -52,8 +52,8 @@ public class DubboEndpointAnnotationAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnAvailableEndpoint
     @CompatibleConditionalOnEnabledEndpoint
-    public DubboEndpoint dubboEndpoint() {
-        return new DubboEndpoint();
+    public DubboQosEndpoints dubboQosEndpoints() {
+        return new DubboQosEndpoints();
     }
 
     @Bean

@@ -17,7 +17,6 @@
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
 import org.apache.dubbo.spring.boot.actuate.endpoint.configuration.DubboActuatorProperties;
-import org.apache.dubbo.spring.boot.actuate.endpoint.service.DubboActuatorService;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -35,5 +34,5 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 @Configuration
 @AutoConfigureAfter(
         name = {"org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointMetadataAutoConfiguration"})
-@ComponentScan(basePackageClasses = {DubboActuatorService.class, DubboActuatorProperties.class})
+@ComponentScan(basePackageClasses = DubboActuatorProperties.class)
 public class DubboExtensionEndpointAutoConfiguration {}
