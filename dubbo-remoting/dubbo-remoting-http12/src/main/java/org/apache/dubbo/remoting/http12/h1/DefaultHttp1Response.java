@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.http12.HttpMetadata;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class DefaultHttp1Response implements HttpMetadata, HttpInputMessage {
+public final class DefaultHttp1Response implements HttpMetadata, HttpInputMessage {
 
     private final HttpMetadata httpMetadata;
 

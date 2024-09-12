@@ -22,7 +22,7 @@ import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http3.Http3ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http3.Http3TransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
 
 @Activate(order = -100, onClass = "com.google.protobuf.Message")
 public class GrpcHttp3ServerTransportListenerFactory implements Http3ServerTransportListenerFactory {
@@ -34,6 +34,6 @@ public class GrpcHttp3ServerTransportListenerFactory implements Http3ServerTrans
 
     @Override
     public boolean supportContentType(String contentType) {
-        return contentType != null && contentType.startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader());
+        return GrpcUtils.isGrpcRequest(contentType);
     }
 }

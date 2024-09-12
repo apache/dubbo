@@ -21,9 +21,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 
 public final class HttpMetadataAdapter implements Http2Header {
 
@@ -43,16 +41,14 @@ public final class HttpMetadataAdapter implements Http2Header {
     public HttpHeaders headers() {
         HttpHeaders headers = this.headers;
         if (headers == null) {
-            headers = new HttpHeaders();
+            headers = HttpHeaders.create();
             Enumeration<String> en = request.getHeaderNames();
             while (en.hasMoreElements()) {
                 String key = en.nextElement();
-                List<String> values = new ArrayList<>(1);
                 Enumeration<String> ven = request.getHeaders(key);
                 while (ven.hasMoreElements()) {
-                    values.add(ven.nextElement());
+                    headers.add(key, ven.nextElement());
                 }
-                headers.put(key, values);
             }
             this.headers = headers;
         }

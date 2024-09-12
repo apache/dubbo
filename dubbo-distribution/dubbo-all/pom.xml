@@ -418,13 +418,6 @@
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-serialization-jdk</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-      <optional>true</optional>
-    </dependency>
 
     <!-- Transitive dependencies -->
     <dependency>
@@ -446,6 +439,10 @@
     <dependency>
       <groupId>com.alibaba.fastjson2</groupId>
       <artifactId>fastjson2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
     </dependency>
   </dependencies>
   <build>
@@ -515,7 +512,7 @@
                   <include>org.apache.dubbo:dubbo-serialization-api</include>
                   <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                   <include>org.apache.dubbo:dubbo-serialization-fastjson2</include>
-                  <include>org.apache.dubbo:dubbo-serialization-jdk</include>
+                  <include>org.apache.dubbo:dubbo-plugin-loom</include>
                 </includes>
               </artifactSet>
               <transformers>
@@ -945,7 +942,31 @@
 
   <profiles>
     <profile>
+      <id>loom</id>
+      <activation>
+        <jdk>[21,)</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-plugin-loom</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>release</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-plugin-loom</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>

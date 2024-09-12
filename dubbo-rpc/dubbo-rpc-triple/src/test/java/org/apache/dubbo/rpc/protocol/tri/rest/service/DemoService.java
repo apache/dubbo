@@ -68,4 +68,7 @@ public interface DemoService {
     String argNameTest(String name);
 
     void pbServerStream(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver);
+
+    @Mapping(produces = "text/plain")
+    String produceTest(String name);
 }

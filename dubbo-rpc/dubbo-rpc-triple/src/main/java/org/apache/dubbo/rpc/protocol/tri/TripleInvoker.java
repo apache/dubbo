@@ -121,7 +121,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private static AsciiString getSchemeFromUrl(URL url) {
         boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
-        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
+        return ssl ? TripleConstants.HTTPS_SCHEME : TripleConstants.HTTP_SCHEME;
     }
 
     private static Compressor getCompressorFromEnv() {

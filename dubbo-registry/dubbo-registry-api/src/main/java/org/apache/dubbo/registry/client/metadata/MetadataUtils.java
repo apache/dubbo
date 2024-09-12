@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.aot.NativeDetector;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -38,9 +39,11 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
@@ -51,9 +54,11 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.NATIVE_STUB;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
@@ -62,6 +67,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUST
 import static org.apache.dubbo.metadata.util.MetadataServiceVersionUtils.V2;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_VERSION_NAME;
+import static org.apache.dubbo.rpc.Constants.AUTH_KEY;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 
 public class MetadataUtils {
@@ -70,9 +76,8 @@ public class MetadataUtils {
     public static void publishServiceDefinition(
             URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).isEmpty()) {
-            String msg =
-                    "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
-            logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", msg);
+            logger.info("Remote Metadata Report Server is not provided or unavailable, "
+                    + "will stop registering service definition to remote center!");
             return;
         }
 
@@ -163,6 +168,9 @@ public class MetadataUtils {
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
 
         url = url.setServiceModel(consumerModel);
+        if (url.getParameter(AUTH_KEY, false)) {
+            url = url.addParameter(FILTER_KEY, "-default,consumersign");
+        }
 
         RemoteMetadataService remoteMetadataService;
         ProxyFactory proxyFactory =
@@ -170,10 +178,24 @@ public class MetadataUtils {
         if (useV2) {
             Invoker<MetadataServiceV2> invoker = protocol.refer(MetadataServiceV2.class, url);
 
+            if (url.getParameter(AUTH_KEY, false)) {
+                FilterChainBuilder filterChainBuilder = ScopeModelUtil.getExtensionLoader(
+                                FilterChainBuilder.class, url.getScopeModel())
+                        .getDefaultExtension();
+                invoker = filterChainBuilder.buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+            }
+
             remoteMetadataService =
                     new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);
         } else {
             Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
+
+            if (url.getParameter(AUTH_KEY, false)) {
+                FilterChainBuilder filterChainBuilder = ScopeModelUtil.getExtensionLoader(
+                                FilterChainBuilder.class, url.getScopeModel())
+                        .getDefaultExtension();
+                invoker = filterChainBuilder.buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+            }
 
             remoteMetadataService =
                     new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);

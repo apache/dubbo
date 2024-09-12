@@ -121,7 +121,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
                     .ifPresent(metricsConfig ->
                             setCollectEnabled(metricsConfig.getAggregation().getEnabled()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(true);
+        return Optional.ofNullable(collectEnabled).orElse(false);
     }
 
     @Override

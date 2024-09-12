@@ -143,4 +143,9 @@ public class DemoServiceImpl implements DemoService {
         }
         responseObserver.onCompleted();
     }
+
+    @Override
+    public String produceTest(String name) {
+        return name;
+    }
 }

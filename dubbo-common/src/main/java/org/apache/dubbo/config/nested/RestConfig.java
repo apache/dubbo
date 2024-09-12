@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.nested;
 
 import org.apache.dubbo.config.support.Nested;
+import org.apache.dubbo.config.support.Parameter;
 
 import java.io.Serializable;
 
@@ -26,6 +27,11 @@ import java.io.Serializable;
 public class RestConfig implements Serializable {
 
     private static final long serialVersionUID = -8068568976367034755L;
+
+    public static final boolean DEFAULT_TRAILING_SLASH_MATCH = true;
+    public static final boolean DEFAULT_SUFFIX_PATTERN_MATCH = true;
+    public static final boolean DEFAULT_CASE_SENSITIVE_MATCH = true;
+    public static final String DEFAULT_FORMAT_PARAMETER_NAME = "format";
 
     /**
      * Whether path matching should be match paths with a trailing slash.
@@ -57,6 +63,11 @@ public class RestConfig implements Serializable {
     private String formatParameterName;
 
     /**
+     * The json framework to use, make sure that dependencies are imported.
+     */
+    private String jsonFramework;
+
+    /**
      *  The cors configuration.
      */
     @Nested
@@ -64,6 +75,11 @@ public class RestConfig implements Serializable {
 
     public Boolean getTrailingSlashMatch() {
         return trailingSlashMatch;
+    }
+
+    @Parameter(excluded = true)
+    public boolean getTrailingSlashMatchOrDefault() {
+        return trailingSlashMatch == null ? DEFAULT_TRAILING_SLASH_MATCH : trailingSlashMatch;
     }
 
     public void setTrailingSlashMatch(Boolean trailingSlashMatch) {
@@ -74,12 +90,22 @@ public class RestConfig implements Serializable {
         return suffixPatternMatch;
     }
 
+    @Parameter(excluded = true)
+    public boolean getSuffixPatternMatchOrDefault() {
+        return suffixPatternMatch == null ? DEFAULT_SUFFIX_PATTERN_MATCH : suffixPatternMatch;
+    }
+
     public void setSuffixPatternMatch(Boolean suffixPatternMatch) {
         this.suffixPatternMatch = suffixPatternMatch;
     }
 
     public Boolean getCaseSensitiveMatch() {
         return caseSensitiveMatch;
+    }
+
+    @Parameter(excluded = true)
+    public boolean getCaseSensitiveMatchOrDefault() {
+        return caseSensitiveMatch == null ? DEFAULT_CASE_SENSITIVE_MATCH : caseSensitiveMatch;
     }
 
     public void setCaseSensitiveMatch(Boolean caseSensitiveMatch) {
@@ -90,11 +116,32 @@ public class RestConfig implements Serializable {
         return formatParameterName;
     }
 
+    @Parameter(excluded = true)
+    public String getFormatParameterNameOrDefault() {
+        return formatParameterName == null ? DEFAULT_FORMAT_PARAMETER_NAME : formatParameterName;
+    }
+
     public void setFormatParameterName(String formatParameterName) {
         this.formatParameterName = formatParameterName;
     }
 
+    public String getJsonFramework() {
+        return jsonFramework;
+    }
+
+    public void setJsonFramework(String jsonFramework) {
+        this.jsonFramework = jsonFramework;
+    }
+
     public CorsConfig getCors() {
+        return cors;
+    }
+
+    @Parameter(excluded = true)
+    public CorsConfig getCorsOrDefault() {
+        if (cors == null) {
+            cors = new CorsConfig();
+        }
         return cors;
     }
 

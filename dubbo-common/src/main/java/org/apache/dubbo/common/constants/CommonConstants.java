@@ -629,11 +629,15 @@ public interface CommonConstants {
 
     String EXT_PROTOCOL = "ext.protocol";
 
+    String PREFERRED_PROTOCOL = "preferred.protocol";
+
     String IS_EXTRA = "isExtra";
 
     String ZOOKEEPER_ENSEMBLE_TRACKER_KEY = "zookeeper.ensemble.tracker";
 
     String DUBBO_VERSIONS_KEY = "META-INF/dubbo-versions";
+
+    String TRIPLE_PREFIX = "triple.";
 
     /**
      * System-related VM properties

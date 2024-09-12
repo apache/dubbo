@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.test;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
-import org.apache.dubbo.remoting.http12.h2.Http2Headers;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
@@ -30,10 +30,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
+
 @SuppressWarnings("UnusedReturnValue")
 public class TestRequest {
 
-    private final HttpHeaders headers = new HttpHeaders();
+    private final HttpHeaders headers = HttpHeaders.create();
     private final Map<String, String> cookies = new LinkedHashMap<>();
     private final Map<String, Object> params = new LinkedHashMap<>();
     private final Map<String, String> providerParams = new LinkedHashMap<>();
@@ -51,20 +53,20 @@ public class TestRequest {
     public TestRequest() {}
 
     public String getPath() {
-        return headers.getFirst(Http2Headers.PATH.getName());
+        return headers.getFirst(PseudoHeaderName.PATH.value());
     }
 
     public TestRequest setPath(String path) {
-        headers.set(Http2Headers.PATH.getName(), path);
+        headers.set(PseudoHeaderName.PATH.value(), path);
         return this;
     }
 
     public String getMethod() {
-        return headers.getFirst(Http2Headers.METHOD.getName());
+        return headers.getFirst(PseudoHeaderName.METHOD.value());
     }
 
     public TestRequest setMethod(String method) {
-        headers.set(Http2Headers.METHOD.getName(), method);
+        headers.set(PseudoHeaderName.METHOD.value(), method);
         return this;
     }
 
@@ -73,11 +75,13 @@ public class TestRequest {
     }
 
     public String getContentType() {
-        return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getKey());
     }
 
     public TestRequest setContentType(String contentType) {
-        headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), contentType);
+        if (StringUtils.isNotEmpty(contentType)) {
+            headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), contentType);
+        }
         return this;
     }
 
@@ -94,7 +98,9 @@ public class TestRequest {
     }
 
     public TestRequest setAccept(String accept) {
-        headers.set(HttpHeaderNames.ACCEPT.getName(), accept);
+        if (StringUtils.isNotEmpty(accept)) {
+            headers.set(HttpHeaderNames.ACCEPT.getKey(), accept);
+        }
         return this;
     }
 
@@ -120,7 +126,7 @@ public class TestRequest {
                         items.add(obj.toString());
                     }
                 }
-                this.headers.put(entry.getKey(), items);
+                this.headers.add(entry.getKey(), items);
             } else if (value instanceof Object[]) {
                 List<String> items = new ArrayList<>();
                 for (Object obj : (Object[]) value) {
@@ -128,7 +134,7 @@ public class TestRequest {
                         items.add(obj.toString());
                     }
                 }
-                this.headers.put(entry.getKey(), items);
+                this.headers.add(entry.getKey(), items);
             } else if (value != null) {
                 this.headers.set(entry.getKey(), value.toString());
             }

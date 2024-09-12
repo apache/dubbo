@@ -31,7 +31,7 @@ public class TestServerTransportListener extends GenericHttp2ServerTransportList
     }
 
     @Override
-    protected Executor initializeExecutor(Http2Header metadata) {
+    protected Executor initializeExecutor(URL url, Http2Header metadata) {
         return Runnable::run;
     }
 }

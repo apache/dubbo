@@ -493,6 +493,50 @@ public class ClassUtils {
     }
 
     /**
+     * Test the specified class name is present, array class is not supported
+     */
+    public static boolean isPresent(String className) {
+        try {
+            loadClass(className);
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    /**
+     * Load the {@link Class} by the specified name, array class is not supported
+     */
+    public static Class<?> loadClass(String className) throws ClassNotFoundException {
+        ClassLoader cl = null;
+        if (!className.startsWith("org.apache.dubbo")) {
+            try {
+                cl = Thread.currentThread().getContextClassLoader();
+            } catch (Throwable ignored) {
+            }
+        }
+        if (cl == null) {
+            cl = ClassUtils.class.getClassLoader();
+        }
+        return cl.loadClass(className);
+    }
+
+    public static void runWith(ClassLoader classLoader, Runnable runnable) {
+        Thread thread = Thread.currentThread();
+        ClassLoader tccl = thread.getContextClassLoader();
+        if (classLoader == null || classLoader.equals(tccl)) {
+            runnable.run();
+            return;
+        }
+        thread.setContextClassLoader(classLoader);
+        try {
+            runnable.run();
+        } finally {
+            thread.setContextClassLoader(tccl);
+        }
+    }
+
+    /**
      * Resolve the {@link Class} by the specified name and {@link ClassLoader}
      *
      * @param className   the name of {@link Class}

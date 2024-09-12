@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpVersion;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpRequest;
@@ -165,7 +166,7 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
         String scheme = getScheme();
         int port = getServerPort();
         url.append(scheme).append("://").append(getServerName());
-        if (("http".equals(scheme) && port != 80) || ("https".equals(scheme) && port != 443)) {
+        if (HttpConstants.HTTP.equals(scheme) && port != 80 || HttpConstants.HTTPS.equals(scheme) && port != 443) {
             url.append(':');
             url.append(port);
         }
@@ -367,7 +368,7 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
 
     @Override
     public boolean isSecure() {
-        return "https".equals(scheme());
+        return HttpConstants.HTTPS.equals(scheme());
     }
 
     @Override

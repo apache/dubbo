@@ -31,7 +31,7 @@ import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestHttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
@@ -74,6 +74,12 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
         HandlerMeta meta = requestMappingRegistry.lookup(request);
         if (meta == null) {
+            String path = request.attribute(RestConstants.PATH_ATTRIBUTE);
+            if (RestConstants.SLASH.equals(path) && HttpMethods.OPTIONS.name().equals(request.method())) {
+                handleOptionsRequest(request);
+            }
+
+            LOGGER.debug("No handler found for http request: {}", request);
             return null;
         }
 
@@ -99,7 +105,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
                 meta.getParameters(),
                 argumentResolver,
                 typeConverter,
-                codecUtils.determineHttpMessageEncoder(url, frameworkModel, responseMediaType));
+                codecUtils.determineHttpMessageEncoder(url, responseMediaType));
 
         if (HttpMethods.supportBody(method) && !RequestUtils.isFormOrMultiPart(request)) {
             if (StringUtils.isEmpty(requestMediaType)) {
@@ -107,7 +113,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
             }
             request.setAttribute(
                     RestConstants.BODY_DECODER_ATTRIBUTE,
-                    codecUtils.determineHttpMessageDecoder(url, frameworkModel, requestMediaType));
+                    codecUtils.determineHttpMessageDecoder(url, requestMediaType));
         }
 
         LOGGER.debug("Content-type negotiate result: request='{}', response='{}'", requestMediaType, responseMediaType);
@@ -124,7 +130,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     private static void handleOptionsRequest(HttpRequest request) {
         RequestMapping mapping = request.attribute(RestConstants.MAPPING_ATTRIBUTE);
-        MethodsCondition condition = mapping.getMethodsCondition();
+        MethodsCondition condition = mapping == null ? null : mapping.getMethodsCondition();
         if (condition == null) {
             throw new HttpResultPayloadException(HttpResult.builder()
                     .status(HttpStatus.NO_CONTENT)
@@ -143,6 +149,6 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     @Override
     public String getType() {
-        return TripleConstant.TRIPLE_HANDLER_TYPE_REST;
+        return TripleConstants.TRIPLE_HANDLER_TYPE_REST;
     }
 }

@@ -286,7 +286,7 @@ public class CollectionUtils {
      * @return whether the given Map is empty
      */
     public static boolean isEmptyMap(Map map) {
-        return map == null || map.size() == 0;
+        return map == null || map.isEmpty();
     }
 
     /**
@@ -438,22 +438,22 @@ public class CollectionUtils {
         return new LinkedHashSet<>(capacity(expectedSize));
     }
 
-    public static <T, K> Map<K, T> newHashMap(int expectedSize) {
+    public static <K, T> Map<K, T> newHashMap(int expectedSize) {
         return new HashMap<>(capacity(expectedSize));
     }
 
-    public static <T, K> Map<K, T> newLinkedHashMap(int expectedSize) {
+    public static <K, T> Map<K, T> newLinkedHashMap(int expectedSize) {
         return new LinkedHashMap<>(capacity(expectedSize));
     }
 
-    public static <T, K> Map<K, T> newConcurrentHashMap(int expectedSize) {
+    public static <K, T> Map<K, T> newConcurrentHashMap(int expectedSize) {
         if (JRE.JAVA_8.isCurrentVersion()) {
             return new SafeConcurrentHashMap<>(capacity(expectedSize));
         }
         return new ConcurrentHashMap<>(capacity(expectedSize));
     }
 
-    public static <T, K> Map<K, T> newConcurrentHashMap() {
+    public static <K, T> Map<K, T> newConcurrentHashMap() {
         if (JRE.JAVA_8.isCurrentVersion()) {
             return new SafeConcurrentHashMap<>();
         }

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.executor;
 
-import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
@@ -57,15 +56,12 @@ public abstract class AbstractIsolationExecutorSupport implements ExecutorSuppor
         return executorRepository.getExecutor(providerModel, serviceUrls.get(0));
     }
 
-    protected ServiceKey getServiceKey(Object data) {
+    protected String getServiceKey(Object data) {
         return null;
     }
 
     protected ProviderModel getProviderModel(Object data) {
-        ServiceKey serviceKey = getServiceKey(data);
-        if (serviceKey == null) {
-            return null;
-        }
-        return frameworkServiceRepository.lookupExportedService(serviceKey.toString());
+        String serviceKey = getServiceKey(data);
+        return serviceKey == null ? null : frameworkServiceRepository.lookupExportedService(serviceKey);
     }
 }

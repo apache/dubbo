@@ -41,6 +41,18 @@ class RestProtocolTest extends BaseServiceTest {
             '/hello.yml?name=world' | 'hello world'
     }
 
+    def "hello world by post"() {
+        expect:
+            runner.post(path, body) == output
+        where:
+            path                | body       | output
+            '/hello?name=world' | null       | 'hello world'
+            '/hello'            | ''         | 'hello '
+            '/hello?name=world' | ''         | 'hello world'
+            '/hello'            | '"world"'  | 'hello world'
+            '/hello?name=world' | '"galaxy"' | 'hello galaxy'
+    }
+
     def "argument test"() {
         expect:
             runner.post(path, body) == output
@@ -215,6 +227,21 @@ class RestProtocolTest extends BaseServiceTest {
         where:
             path                                       | output
             '/pbServerStream?request={"service": "3"}' | 3
+    }
+
+    def "produce test"() {
+        given:
+            def request = new TestRequest(
+                path: path,
+                accept: accept
+            )
+        expect:
+            runner.post(request) == output
+        where:
+            path                      | accept             | output
+            '/produceTest?name=world' | ''                 | 'world'
+            '/produceTest?name=world' | 'text/plain'       | 'world'
+            '/produceTest?name=world' | 'application/json' | '{"message":"Invoker not found","status":"404"}'
     }
 
 }

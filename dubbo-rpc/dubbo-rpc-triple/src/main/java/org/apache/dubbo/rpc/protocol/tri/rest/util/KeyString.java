@@ -16,51 +16,41 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
+import java.nio.charset.StandardCharsets;
+
+import io.netty.util.internal.MathUtil;
+import io.netty.util.internal.PlatformDependent;
+
 /**
  * Zero-copy string as map key.
  */
 public final class KeyString implements CharSequence {
 
-    private final String value;
+    public static final KeyString EMPTY = new KeyString("");
+
+    private final byte[] value;
     private final int offset;
     private final int length;
     private final boolean caseSensitive;
 
-    public KeyString(String value, int start, int end, boolean caseSensitive) {
-        this.value = value;
-        offset = start;
-        length = (end == -1 ? value.length() : end) - start;
-        this.caseSensitive = caseSensitive;
-    }
+    private int hash;
 
-    public KeyString(String value, int start, int end) {
-        this(value, start, end, true);
-    }
-
-    public KeyString(String value, int end, boolean caseSensitive) {
-        this.value = value;
-        offset = 0;
-        length = end == -1 ? value.length() : end;
-        this.caseSensitive = caseSensitive;
-    }
-
-    public KeyString(String value, int end) {
-        this(value, end, true);
-    }
-
-    public KeyString(String value, boolean caseSensitive) {
-        this.value = value;
-        offset = 0;
-        length = value.length();
-        this.caseSensitive = caseSensitive;
-    }
-
-    public KeyString(String value) {
+    public KeyString(CharSequence value) {
         this(value, false);
     }
 
-    public KeyString(KeyString path, int start, int end) {
-        this(path.value, path.offset + start, path.offset + end, path.caseSensitive);
+    public KeyString(CharSequence value, boolean caseSensitive) {
+        this.value = toBytes(value);
+        offset = 0;
+        length = this.value.length;
+        this.caseSensitive = caseSensitive;
+    }
+
+    private KeyString(byte[] value, int start, int end, boolean caseSensitive) {
+        this.value = value;
+        offset = start;
+        length = end - start;
+        this.caseSensitive = caseSensitive;
     }
 
     @Override
@@ -70,49 +60,185 @@ public final class KeyString implements CharSequence {
 
     @Override
     public char charAt(int index) {
-        return value.charAt(offset + index);
+        if (index < 0 || index >= length) {
+            throw new IndexOutOfBoundsException("index: " + index + " must be in the range [0," + length + ")");
+        }
+        return (char) (PlatformDependent.getByte(value, index + offset) & 0xFF);
     }
 
-    @Override
-    public CharSequence subSequence(int start, int end) {
-        return value.substring(offset + start, offset + end);
+    public byte[] array() {
+        return value;
+    }
+
+    public int offset() {
+        return offset;
+    }
+
+    public KeyString subSequence(int start) {
+        return subSequence(start, length);
+    }
+
+    public KeyString subSequence(int start, int end) {
+        int len = length;
+        if (end < 0) {
+            end = len;
+        }
+        if (MathUtil.isOutOfBounds(start, end - start, len)) {
+            throw new IndexOutOfBoundsException(
+                    "expected: 0 <= start(" + start + ") <= end (" + end + ") <= len(" + len + ')');
+        }
+        if (start == 0 && end == len) {
+            return this;
+        }
+        if (end == start) {
+            return EMPTY;
+        }
+        return new KeyString(value, start + offset, end + offset, caseSensitive);
+    }
+
+    public int indexOf(char ch, int start) {
+        if (ch < 256) {
+            if (start < 0) {
+                start = 0;
+            }
+            byte b = (byte) ch;
+            byte[] value = this.value;
+            int offset = this.offset;
+            for (int i = start + offset, len = length + offset; i < len; i++) {
+                if (value[i] == b) {
+                    return i - offset;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public int lastIndexOf(char ch, int start) {
+        if (ch < 256) {
+            if (start < 0 || start >= length) {
+                start = length - 1;
+            }
+            byte b = (byte) ch;
+            byte[] value = this.value;
+            int offset = this.offset;
+            for (int i = offset + start; i >= offset; i--) {
+                if (value[i] == b) {
+                    return i - offset;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public boolean regionMatches(int start, KeyString other) {
+        return regionMatches(start, other, 0, other.length());
+    }
+
+    public boolean regionMatches(int start, KeyString other, int otherStart, int length) {
+        if (other == null) {
+            throw new NullPointerException("other");
+        }
+        if (otherStart < 0 || length > other.length() - otherStart) {
+            return false;
+        }
+        if (start < 0 || length > length() - start) {
+            return false;
+        }
+        if (caseSensitive) {
+            return PlatformDependent.equals(value, offset, other.value, other.offset, length);
+        }
+        byte[] value = this.value, otherValue = other.value;
+        byte a, b;
+        for (int i = start + offset, j = otherStart + other.offset, end = i + length; i < end; i++, j++) {
+            a = value[i];
+            b = otherValue[j];
+            if (a == b || toLowerCase(a) == toLowerCase(b)) {
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int h = 0;
-        for (int i = 0; i < length; i++) {
-            h = 31 * h + (caseSensitive ? value.charAt(offset + i) : Character.toLowerCase(value.charAt(offset + i)));
+        int h = hash;
+        if (h == 0) {
+            h = PlatformDependent.hashCodeAscii(value, offset, length);
+            hash = h;
         }
         return h;
     }
 
     @Override
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != KeyString.class) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
         KeyString other = (KeyString) obj;
-        return value.regionMatches(!caseSensitive, offset, other.value, other.offset, length);
+        int len = length;
+        if (len != other.length) {
+            return false;
+        }
+        if (caseSensitive) {
+            return PlatformDependent.equals(value, offset, other.value, other.offset, len);
+        }
+        byte[] value = this.value, otherValue = other.value;
+        byte a, b;
+        for (int i = offset, j = other.offset, end = i + len; i < end; i++, j++) {
+            a = value[i];
+            b = otherValue[j];
+            if (a == b || toLowerCase(a) == toLowerCase(b)) {
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 
     @Override
     public String toString() {
-        return value.substring(offset, offset + length);
+        return toString(0, length);
     }
 
-    public int indexOf(char ch, int start) {
-        int index = value.indexOf(ch, offset + start);
-        return index == -1 || index >= offset + length ? -1 : index - offset;
+    public String toString(int start) {
+        return toString(start, length);
     }
 
-    public boolean regionMatches(int start, String value, int i, int length) {
-        return this.value.regionMatches(!caseSensitive, offset + start, value, i, length);
+    @SuppressWarnings("deprecation")
+    public String toString(int start, int end) {
+        int len = length;
+        if (end == -1) {
+            end = len;
+        }
+        int count = end - start;
+        if (count == 0) {
+            return "";
+        }
+        if (MathUtil.isOutOfBounds(start, count, len)) {
+            throw new IndexOutOfBoundsException(
+                    "expected: " + "0 <= start(" + start + ") <= srcIdx + count(" + count + ") <= srcLen(" + len + ')');
+        }
+        return new String(value, 0, start + offset, count);
     }
 
-    public String substring(int start) {
-        return value.substring(offset + start, offset + length);
+    private static byte[] toBytes(CharSequence value) {
+        if (value.getClass() == String.class) {
+            return ((String) value).getBytes(StandardCharsets.ISO_8859_1);
+        }
+        int len = value.length();
+        byte[] array = PlatformDependent.allocateUninitializedArray(len);
+        for (int i = 0; i < len; i++) {
+            char c = value.charAt(i);
+            array[i] = (byte) (c > 255 ? '?' : c);
+        }
+        return array;
     }
 
-    public String substring(int start, int end) {
-        return value.substring(offset + start, offset + (end == -1 ? length : end));
+    private static byte toLowerCase(byte value) {
+        return value >= 'A' && value <= 'Z' ? (byte) (value + 32) : value;
     }
 }

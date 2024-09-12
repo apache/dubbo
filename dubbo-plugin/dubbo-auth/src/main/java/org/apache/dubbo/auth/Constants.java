@@ -18,11 +18,15 @@ package org.apache.dubbo.auth;
 
 public interface Constants {
 
-    String SERVICE_AUTH = "auth";
+    String AUTH_KEY = "auth";
 
-    String AUTHENTICATOR = "authenticator";
+    String AUTHENTICATOR_KEY = "authenticator";
 
-    String DEFAULT_AUTHENTICATOR = "accesskey";
+    String USERNAME_KEY = "username";
+
+    String PASSWORD_KEY = "password";
+
+    String DEFAULT_AUTHENTICATOR = "basic";
 
     String DEFAULT_ACCESS_KEY_STORAGE = "urlstorage";
 
@@ -41,4 +45,11 @@ public interface Constants {
     String SIGNATURE_STRING_FORMAT = "%s#%s#%s#%s";
 
     String PARAMETER_SIGNATURE_ENABLE_KEY = "param.sign";
+
+    String AUTH_SUCCESS = "auth.success";
+
+    String AUTHORIZATION_HEADER_LOWER = "authorization";
+
+    String AUTHORIZATION_HEADER = "Authorization";
+    String REMOTE_ADDRESS_KEY = "tri.remote.address";
 }
