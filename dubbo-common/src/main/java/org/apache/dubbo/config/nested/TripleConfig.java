@@ -126,7 +126,7 @@ public class TripleConfig implements Serializable {
     private Integer initialWindowSize;
 
     /**
-     * Initial connection window size.
+     * Connection initial window size.
      * <p>For HTTP/2
      */
     private Integer connectionInitialWindowSize;
@@ -296,7 +296,9 @@ public class TripleConfig implements Serializable {
 
     @Parameter(excluded = true)
     public Integer getConnectionInitialWindowSizeOrDefault() {
-        return connectionInitialWindowSize == null ? DEFAULT_CONNECTION_INITIAL_WINDOW_SIZE_KEY : connectionInitialWindowSize;
+        return connectionInitialWindowSize == null
+                ? DEFAULT_CONNECTION_INITIAL_WINDOW_SIZE_KEY
+                : connectionInitialWindowSize;
     }
 
     public void setConnectionInitialWindowSize(Integer connectionInitialWindowSize) {
