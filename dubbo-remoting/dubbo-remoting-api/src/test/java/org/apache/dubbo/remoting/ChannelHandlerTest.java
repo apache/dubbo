@@ -31,13 +31,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEFINED_ARGUMENT;
 
 /**
- * ChanelHandlerTest
+ * ChannelHandlerTest
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-class ChanelHandlerTest {
+class ChannelHandlerTest {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ChanelHandlerTest.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ChannelHandlerTest.class);
 
     public static ExchangeClient initClient(String url) {
         // Create client and build connection
@@ -113,12 +113,12 @@ class ChanelHandlerTest {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
-            System.out.println("connected event,chanel;" + channel);
+            System.out.println("connected event,channel;" + channel);
         }
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
-            System.out.println("disconnected event,chanel;" + channel);
+            System.out.println("disconnected event,channel;" + channel);
             initClient(url);
         }
 
