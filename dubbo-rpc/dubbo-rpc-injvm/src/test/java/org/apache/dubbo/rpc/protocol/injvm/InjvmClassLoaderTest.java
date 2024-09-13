@@ -133,7 +133,7 @@ class InjvmClassLoaderTest {
         Assertions.assertEquals(resultClazzCustom3, result1.getClass());
         Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
 
-        // invoke reqeust param should load from classLoader1 ( provider side classLoader )
+        // invoke request param should load from classLoader1 ( provider side classLoader )
         Assertions.assertEquals(
                 classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
