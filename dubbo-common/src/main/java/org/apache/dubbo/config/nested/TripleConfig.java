@@ -38,6 +38,7 @@ public class TripleConfig implements Serializable {
     public static final boolean DEFAULT_ENABLE_PUSH = false;
     public static final int DEFAULT_MAX_CONCURRENT_STREAMS = Integer.MAX_VALUE;
     public static final int DEFAULT_INITIAL_WINDOW_SIZE = 8_388_608;
+    public static final int DEFAULT_CONNECTION_INITIAL_WINDOW_SIZE_KEY = 65_536;
     public static final int DEFAULT_MAX_FRAME_SIZE = 8_388_608;
     public static final int DEFAULT_MAX_HEADER_LIST_SIZE = 32_768;
 
@@ -123,6 +124,12 @@ public class TripleConfig implements Serializable {
      * <p>For HTTP/2
      */
     private Integer initialWindowSize;
+
+    /**
+     * Connection initial window size.
+     * <p>For HTTP/2
+     */
+    private Integer connectionInitialWindowSize;
 
     /**
      * Maximum frame size.
@@ -281,6 +288,21 @@ public class TripleConfig implements Serializable {
 
     public void setInitialWindowSize(Integer initialWindowSize) {
         this.initialWindowSize = initialWindowSize;
+    }
+
+    public Integer getConnectionInitialWindowSize() {
+        return connectionInitialWindowSize;
+    }
+
+    @Parameter(excluded = true)
+    public Integer getConnectionInitialWindowSizeOrDefault() {
+        return connectionInitialWindowSize == null
+                ? DEFAULT_CONNECTION_INITIAL_WINDOW_SIZE_KEY
+                : connectionInitialWindowSize;
+    }
+
+    public void setConnectionInitialWindowSize(Integer connectionInitialWindowSize) {
+        this.connectionInitialWindowSize = connectionInitialWindowSize;
     }
 
     public Integer getMaxFrameSize() {

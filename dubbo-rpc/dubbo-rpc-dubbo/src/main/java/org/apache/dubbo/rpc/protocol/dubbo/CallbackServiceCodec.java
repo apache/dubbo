@@ -318,7 +318,7 @@ public class CallbackServiceCodec {
             // client side error
             throw new IllegalStateException("interface " + interfaceClass
                     + " `s callback instances num exceed providers limit :" + limit + " ,current num: " + (count + 1)
-                    + ". The new callback service will not work !!! you can cancle the callback service which exported before. channel :"
+                    + ". The new callback service will not work !!! you can cancel the callback service which exported before. channel :"
                     + channel);
         } else {
             return false;
