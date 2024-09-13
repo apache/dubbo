@@ -53,7 +53,7 @@ public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObs
     protected void customizeHeaders(HttpHeaders headers, Throwable throwable, HttpOutputMessage message) {
         super.customizeHeaders(headers, throwable, message);
         int contentLength = message == null ? 0 : ((ByteBufOutputStream) message.getBody()).writtenBytes();
-        headers.set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(contentLength));
+        headers.set(HttpHeaderNames.CONTENT_LENGTH.getKey(), String.valueOf(contentLength));
     }
 
     @Override

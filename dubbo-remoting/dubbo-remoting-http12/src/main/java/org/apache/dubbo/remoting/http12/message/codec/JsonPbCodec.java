@@ -47,7 +47,8 @@ public final class JsonPbCodec extends JsonCodec {
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try {
             if (data instanceof Message) {
-                String jsonString = JsonFormat.printer().print((Message) data);
+                String jsonString =
+                        JsonFormat.printer().omittingInsignificantWhitespace().print((Message) data);
                 os.write(jsonString.getBytes(charset));
                 return;
             }

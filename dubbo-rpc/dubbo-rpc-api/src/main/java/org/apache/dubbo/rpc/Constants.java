@@ -114,7 +114,6 @@ public interface Constants {
     String H2_SETTINGS_SERVLET_ENABLED = "dubbo.protocol.triple.servlet.enabled";
     String H3_SETTINGS_HTTP3_ENABLED = "dubbo.protocol.triple.http3.enabled";
     String H3_SETTINGS_HTTP3_NEGOTIATION = "dubbo.protocol.triple.http3.negotiation";
-    String H2_SETTINGS_CONNECTION_INITIAL_WINDOW_SIZE_KEY = "dubbo.rpc.tri.connection-initial-window-size";
 
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";
