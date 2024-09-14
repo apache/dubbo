@@ -514,6 +514,7 @@ class DubboBootstrapTest {
         Assertions.assertFalse(tripleConfig.getEnablePushOrDefault());
         Assertions.assertEquals(Integer.MAX_VALUE, tripleConfig.getMaxConcurrentStreamsOrDefault());
         Assertions.assertEquals(1 << 23, tripleConfig.getInitialWindowSizeOrDefault());
+        Assertions.assertEquals(1 << 16, tripleConfig.getConnectionInitialWindowSizeOrDefault());
         Assertions.assertEquals(1 << 23, tripleConfig.getMaxFrameSizeOrDefault());
         Assertions.assertEquals(1 << 15, tripleConfig.getMaxHeaderListSizeOrDefault());
     }

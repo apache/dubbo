@@ -1,1 +1,2 @@
 accesskey=org.apache.dubbo.auth.AccessKeyAuthenticator
+basic=org.apache.dubbo.auth.BasicAuthenticator

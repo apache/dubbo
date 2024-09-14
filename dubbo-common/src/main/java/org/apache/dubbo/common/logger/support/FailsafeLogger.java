@@ -53,221 +53,221 @@ public class FailsafeLogger implements Logger {
 
     @Override
     public void trace(String msg, Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isTraceEnabled()) {
             return;
         }
         try {
             logger.trace(appendContextMessage(msg), e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void trace(Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isTraceEnabled()) {
             return;
         }
         try {
             logger.trace(e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void trace(String msg) {
-        if (disabled) {
+        if (disabled || !logger.isTraceEnabled()) {
             return;
         }
         try {
             logger.trace(appendContextMessage(msg));
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void trace(String msg, Object... arguments) {
-        if (disabled) {
+        if (disabled || !logger.isTraceEnabled()) {
             return;
         }
         try {
             logger.trace(appendContextMessage(msg), arguments);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void debug(String msg, Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isDebugEnabled()) {
             return;
         }
         try {
             logger.debug(appendContextMessage(msg), e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void debug(Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isDebugEnabled()) {
             return;
         }
         try {
             logger.debug(e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void debug(String msg) {
-        if (disabled) {
+        if (disabled || !logger.isDebugEnabled()) {
             return;
         }
         try {
             logger.debug(appendContextMessage(msg));
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void debug(String msg, Object... arguments) {
-        if (disabled) {
+        if (disabled || !logger.isDebugEnabled()) {
             return;
         }
         try {
             logger.debug(appendContextMessage(msg), arguments);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void info(String msg, Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isInfoEnabled()) {
             return;
         }
         try {
             logger.info(appendContextMessage(msg), e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void info(String msg) {
-        if (disabled) {
+        if (disabled || !logger.isInfoEnabled()) {
             return;
         }
         try {
             logger.info(appendContextMessage(msg));
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void info(String msg, Object... arguments) {
-        if (disabled) {
+        if (disabled || !logger.isInfoEnabled()) {
             return;
         }
         try {
             logger.info(appendContextMessage(msg), arguments);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void warn(String msg, Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isWarnEnabled()) {
             return;
         }
         try {
             logger.warn(appendContextMessage(msg), e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void warn(String msg) {
-        if (disabled) {
+        if (disabled || !logger.isWarnEnabled()) {
             return;
         }
         try {
             logger.warn(appendContextMessage(msg));
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void warn(String msg, Object... arguments) {
-        if (disabled) {
+        if (disabled || !logger.isWarnEnabled()) {
             return;
         }
         try {
             logger.warn(appendContextMessage(msg), arguments);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void error(String msg, Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isErrorEnabled()) {
             return;
         }
         try {
             logger.error(appendContextMessage(msg), e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void error(String msg) {
-        if (disabled) {
+        if (disabled || !logger.isErrorEnabled()) {
             return;
         }
         try {
             logger.error(appendContextMessage(msg));
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void error(String msg, Object... arguments) {
-        if (disabled) {
+        if (disabled || !logger.isErrorEnabled()) {
             return;
         }
         try {
             logger.error(appendContextMessage(msg), arguments);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void error(Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isErrorEnabled()) {
             return;
         }
         try {
             logger.error(e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void info(Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isInfoEnabled()) {
             return;
         }
         try {
             logger.info(e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void warn(Throwable e) {
-        if (disabled) {
+        if (disabled || !logger.isWarnEnabled()) {
             return;
         }
         try {
             logger.warn(e);
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 
@@ -278,7 +278,7 @@ public class FailsafeLogger implements Logger {
         }
         try {
             return logger.isTraceEnabled();
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
             return false;
         }
     }
@@ -290,7 +290,7 @@ public class FailsafeLogger implements Logger {
         }
         try {
             return logger.isDebugEnabled();
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
             return false;
         }
     }
@@ -302,7 +302,7 @@ public class FailsafeLogger implements Logger {
         }
         try {
             return logger.isInfoEnabled();
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
             return false;
         }
     }
@@ -314,7 +314,7 @@ public class FailsafeLogger implements Logger {
         }
         try {
             return logger.isWarnEnabled();
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
             return false;
         }
     }
@@ -326,7 +326,7 @@ public class FailsafeLogger implements Logger {
         }
         try {
             return logger.isErrorEnabled();
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
             return false;
         }
     }

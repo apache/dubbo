@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RegisterTypeEnum;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -47,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
  *
  * @export
  */
+@SuppressWarnings({"rawtypes", "deprecation"})
 public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 3033787999037024738L;
@@ -106,6 +108,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Service.class, service);
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
+    }
+
+    @Override
+    public void setProtocols(List<? extends ProtocolConfig> protocols) {
+        super.setProtocols(protocols);
+        checkInterface();
     }
 
     @Override
@@ -214,7 +222,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     protected void completeCompoundConfigs() {
-        super.completeCompoundConfigs(provider);
+        completeCompoundConfigs(provider);
         if (provider != null) {
             if (notHasSelfProtocolProperty()) {
                 setProtocols(provider.getProtocols());
@@ -268,7 +276,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
-                this.interfaceClass = Class.forName(
+                interfaceClass = Class.forName(
                         interfaceName, true, Thread.currentThread().getContextClassLoader());
             }
         } catch (ClassNotFoundException t) {
@@ -278,7 +286,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     /**
-     * @param interfaceClass
      * @see #setInterface(Class)
      * @deprecated
      */
@@ -287,11 +294,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void setInterface(Class<?> interfaceClass) {
-        // rest protocol  allow  set impl class
-        if (interfaceClass != null && !interfaceClass.isInterface() && !canSkipInterfaceCheck()) {
-            throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
-        }
         this.interfaceClass = interfaceClass;
+        checkInterface();
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
         if (getInterfaceClassLoader() == null) {
             setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
@@ -299,20 +303,24 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
-    public boolean canSkipInterfaceCheck() {
-        // for multipart protocol so for each contain
-        List<ProtocolConfig> protocols = getProtocols();
-
-        if (protocols == null) {
-            return false;
+    public void checkInterface() {
+        if (interfaceClass == null || interfaceClass.isInterface()) {
+            return;
         }
-
+        List<ProtocolConfig> protocols = getProtocols();
+        if (CollectionUtils.isEmpty(protocols)) {
+            return;
+        }
         for (ProtocolConfig protocol : protocols) {
-            if (Constants.REST_PROTOCOL.equals(protocol.getName())) {
-                return true;
+            String name = protocol.getName();
+            if (CommonConstants.TRIPLE.equals(name) && Boolean.TRUE.equals(protocol.isNoInterfaceSupport())) {
+                return;
+            }
+            if (Constants.REST_PROTOCOL.equals(name)) {
+                return;
             }
         }
-        return false;
+        throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
     }
 
     @Transient

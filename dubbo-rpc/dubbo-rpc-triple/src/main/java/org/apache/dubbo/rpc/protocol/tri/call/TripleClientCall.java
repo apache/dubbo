@@ -116,7 +116,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     public void onComplete(
             TriRpcStatus status,
             Map<String, Object> attachments,
-            Map<String, String> excludeHeaders,
+            Map<CharSequence, String> excludeHeaders,
             boolean isReturnTriException) {
         if (done) {
             return;
@@ -133,6 +133,14 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         if (requestMetadata.cancellationContext != null) {
             requestMetadata.cancellationContext.cancel(null);
         }
+    }
+
+    @Override
+    public void onClose() {
+        if (done) {
+            return;
+        }
+        onCancelByRemote(TriRpcStatus.CANCELLED);
     }
 
     @Override

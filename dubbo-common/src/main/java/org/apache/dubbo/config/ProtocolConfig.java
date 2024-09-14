@@ -231,10 +231,17 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private String extProtocol;
 
+    private String preferredProtocol;
+
     /**
      * JSON check level for serialization.
      */
     private String jsonCheckLevel;
+
+    /**
+     * Indicates whether to support no interface.
+     */
+    private Boolean noInterfaceSupport;
 
     @Nested
     private TripleConfig triple;
@@ -622,6 +629,22 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtProtocol(String extProtocol) {
         this.extProtocol = extProtocol;
+    }
+
+    public String getPreferredProtocol() {
+        return preferredProtocol;
+    }
+
+    public void setPreferredProtocol(String preferredProtocol) {
+        this.preferredProtocol = preferredProtocol;
+    }
+
+    public Boolean isNoInterfaceSupport() {
+        return noInterfaceSupport;
+    }
+
+    public void setNoInterfaceSupport(Boolean noInterfaceSupport) {
+        this.noInterfaceSupport = noInterfaceSupport;
     }
 
     public TripleConfig getTriple() {

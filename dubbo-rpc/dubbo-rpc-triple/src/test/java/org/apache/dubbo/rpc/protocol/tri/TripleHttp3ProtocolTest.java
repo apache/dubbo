@@ -21,7 +21,6 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -38,37 +37,39 @@ import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
 
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.rpc.protocol.tri.support.IGreeter.SERVER_MSG;
-
 class TripleHttp3ProtocolTest {
 
     @Test
     void testDemoProtocol() throws Exception {
-        IGreeter serviceImpl = new IGreeterImpl();
+        IGreeterImpl serviceImpl = new IGreeterImpl();
+
         int availablePort = NetUtils.getAvailablePort();
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        ConfigManager configManager = applicationModel.getApplicationConfigManager();
+
+        Map<String, String> settings = new HashMap<>();
+        settings.put(Constants.H3_SETTINGS_HTTP3_ENABLED, "true");
+        settings.put(Constants.H3_SETTINGS_HTTP3_NEGOTIATION, "false");
+        applicationModel.modelEnvironment().updateAppConfigMap(settings);
 
         SslConfig sslConfig = new SslConfig();
         sslConfig.setScopeModel(applicationModel);
-
         sslConfig.setServerKeyCertChainPath(getAbsolutePath("/certs/server.pem"));
         sslConfig.setServerPrivateKeyPath(getAbsolutePath("/certs/server.key"));
         sslConfig.setServerTrustCertCollectionPath(getAbsolutePath("/certs/ca.pem"));
         sslConfig.setClientKeyCertChainPath(getAbsolutePath("/certs/client.pem"));
         sslConfig.setClientPrivateKeyPath(getAbsolutePath("/certs/client.key"));
         sslConfig.setClientTrustCertCollectionPath(getAbsolutePath("/certs/ca.pem"));
-
-        configManager.setSsl(sslConfig);
+        applicationModel.getApplicationConfigManager().setSsl(sslConfig);
 
         URL providerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
-        providerUrl = providerUrl.addParameter(Constants.HTTP3_KEY, "true");
         ModuleServiceRepository serviceRepository =
                 applicationModel.getDefaultModule().getServiceRepository();
         ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
@@ -87,14 +88,16 @@ class TripleHttp3ProtocolTest {
                 applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Invoker<IGreeter> invoker = proxy.getInvoker(serviceImpl, IGreeter.class, providerUrl);
         Exporter<IGreeter> export = protocol.export(invoker);
+
         URL consumerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
         ConsumerModel consumerModel =
                 new ConsumerModel(consumerUrl.getServiceKey(), null, serviceDescriptor, null, null, null);
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
-        consumerUrl = consumerUrl.addParameter(Constants.HTTP3_KEY, "true");
         IGreeter greeterProxy = proxy.getProxy(protocol.refer(IGreeter.class, consumerUrl));
         Thread.sleep(1000);
+
+        Assertions.assertTrue(Http3Exchanger.isEnabled(providerUrl));
 
         // 1. test unaryStream
         String REQUEST_MSG = "hello world";
@@ -115,11 +118,10 @@ class TripleHttp3ProtocolTest {
         inboundMessageObserver.onCompleted();
         outboundMessageSubscriber2.getLatch().await(3000, TimeUnit.MILLISECONDS);
         // verify client
-        Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), SERVER_MSG);
+        Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), IGreeter.SERVER_MSG);
         Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
         // verify server
-        MockStreamObserver serverOutboundMessageSubscriber =
-                (MockStreamObserver) ((IGreeterImpl) serviceImpl).getMockStreamObserver();
+        MockStreamObserver serverOutboundMessageSubscriber = (MockStreamObserver) serviceImpl.getMockStreamObserver();
         serverOutboundMessageSubscriber.getLatch().await(1000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(REQUEST_MSG, serverOutboundMessageSubscriber.getOnNextData());
         Assertions.assertTrue(serverOutboundMessageSubscriber.isOnCompleted());
@@ -131,9 +133,9 @@ class TripleHttp3ProtocolTest {
         System.out.println("serviceRepository destroyed");
     }
 
-    private String getAbsolutePath(String resourcePath) throws Exception {
+    private static String getAbsolutePath(String resourcePath) throws Exception {
         java.net.URL resourceUrl = TripleHttp3ProtocolTest.class.getResource(resourcePath);
-        Assertions.assertNotNull(resourceUrl, "Cert file '/certs/" + resourcePath + " is required");
+        Assertions.assertNotNull(resourceUrl, "Cert file '" + resourcePath + "' is required");
         return Paths.get(resourceUrl.toURI()).toAbsolutePath().toString();
     }
 }

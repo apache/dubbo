@@ -74,6 +74,10 @@ public interface Constants {
 
     String TOKEN_KEY = "token";
 
+    String AUTH_KEY = "auth";
+
+    String AUTHENTICATOR_KEY = "authenticator";
+
     String INTERFACE = "interface";
 
     String INTERFACES = "interfaces";
@@ -105,12 +109,14 @@ public interface Constants {
     String H2_SETTINGS_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
     String H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";
     String H2_SETTINGS_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
-    String H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS = "dubbo.rpc.tri.pass-through-standard-http-headers";
+
+    String H2_SETTINGS_JSON_FRAMEWORK_NAME = "dubbo.protocol.triple.rest.json-framework";
 
     String H2_SETTINGS_VERBOSE_ENABLED = "dubbo.protocol.triple.verbose";
     String H2_SETTINGS_SERVLET_ENABLED = "dubbo.protocol.triple.servlet.enabled";
     String H3_SETTINGS_HTTP3_ENABLED = "dubbo.protocol.triple.http3.enabled";
     String H3_SETTINGS_HTTP3_NEGOTIATION = "dubbo.protocol.triple.http3.negotiation";
+    String H2_SETTINGS_CONNECTION_INITIAL_WINDOW_SIZE_KEY = "dubbo.rpc.tri.connection-initial-window-size";
 
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";

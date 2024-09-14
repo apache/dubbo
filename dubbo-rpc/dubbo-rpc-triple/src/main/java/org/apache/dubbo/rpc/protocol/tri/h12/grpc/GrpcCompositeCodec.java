@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
@@ -34,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
@@ -63,15 +63,14 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
             packableMethod = (PackableMethod) methodDescriptor;
             return;
         }
-        Map<MethodDescriptor, PackableMethod> cacheMap = (Map<MethodDescriptor, PackableMethod>) url.getServiceModel()
-                .getServiceMetadata()
-                .getAttributeMap()
-                .computeIfAbsent(PACKABLE_METHOD_CACHE, k -> new ConcurrentHashMap<>());
-        packableMethod = cacheMap.computeIfAbsent(methodDescriptor, md -> frameworkModel
-                .getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel())
-                        .getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
-                .create(methodDescriptor, url, mediaType));
+
+        packableMethod = UrlUtils.computeServiceAttribute(
+                        url, PACKABLE_METHOD_CACHE, k -> new ConcurrentHashMap<MethodDescriptor, PackableMethod>())
+                .computeIfAbsent(methodDescriptor, md -> frameworkModel
+                        .getExtensionLoader(PackableMethodFactory.class)
+                        .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel())
+                                .getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+                        .create(methodDescriptor, url, mediaType));
     }
 
     @Override

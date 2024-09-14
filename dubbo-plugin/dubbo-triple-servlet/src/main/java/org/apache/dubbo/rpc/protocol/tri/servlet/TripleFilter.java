@@ -150,8 +150,8 @@ public class TripleFilter implements Filter {
             return false;
         }
 
-        String group = request.getHeader(TripleHeaderEnum.SERVICE_GROUP.getHeader());
-        String version = request.getHeader(TripleHeaderEnum.SERVICE_VERSION.getHeader());
+        String group = request.getHeader(TripleHeaderEnum.SERVICE_GROUP.getName());
+        String version = request.getHeader(TripleHeaderEnum.SERVICE_VERSION.getName());
         return pathResolver.resolve(path.getPath(), group, version) != null;
     }
 
@@ -178,7 +178,7 @@ public class TripleFilter implements Filter {
                     }
                 }
             } else {
-                String timeoutString = request.getHeader(TripleHeaderEnum.SERVICE_TIMEOUT.getHeader());
+                String timeoutString = request.getHeader(TripleHeaderEnum.SERVICE_TIMEOUT.getName());
                 if (timeoutString != null) {
                     return Integer.parseInt(timeoutString) + 2000;
                 }
@@ -262,7 +262,9 @@ public class TripleFilter implements Filter {
         }
 
         @Override
-        public void onWritePossible() {}
+        public void onWritePossible() {
+            channel.onWritePossible();
+        }
 
         @Override
         public void onError(Throwable t) {

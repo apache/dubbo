@@ -25,7 +25,6 @@ public final class RestConstants {
 
     public static final String REST_FILTER_KEY = "rest.filter";
     public static final String EXTENSION_KEY = "extension";
-    public static final String EXTENSIONS_ATTRIBUTE_KEY = "restExtensionsAttributeKey";
 
     public static final int DIALECT_BASIC = 0;
     public static final int DIALECT_SPRING_MVC = 1;
