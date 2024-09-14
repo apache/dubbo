@@ -53,7 +53,7 @@ public class WebSocketProtocolSelectorHandler extends SimpleChannelInboundHandle
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
         H2StreamChannel streamChannel = new NettyWebSocketChannel(ctx.channel(), tripleConfig);
         HttpWriteQueueHandler writeQueueHandler = ctx.channel().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {
@@ -63,8 +63,9 @@ public class WebSocketProtocolSelectorHandler extends SimpleChannelInboundHandle
         WebSocketTransportListener webSocketTransportListener =
                 defaultWebSocketServerTransportListenerFactory.newInstance(streamChannel, url, frameworkModel);
         ctx.channel().closeFuture().addListener(future -> webSocketTransportListener.close());
-        ctx.pipeline().addLast(new NettyHttp2FrameHandler(streamChannel, webSocketTransportListener));
-        ctx.pipeline().remove(this);
+        ctx.pipeline()
+                .addLast(new NettyHttp2FrameHandler(streamChannel, webSocketTransportListener))
+                .remove(this);
         ctx.fireChannelRead(msg.retain());
     }
 }

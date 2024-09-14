@@ -36,7 +36,7 @@ public class TripleBinaryMessageHandler implements MessageHandler.Partial<ByteBu
     @Override
     public void onMessage(ByteBuffer messagePart, boolean last) {
         Http2InputMessage http2InputMessage =
-                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.array(), last));
+                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.array(), last), false);
         webSocketTransportListener.onData(http2InputMessage);
     }
 }

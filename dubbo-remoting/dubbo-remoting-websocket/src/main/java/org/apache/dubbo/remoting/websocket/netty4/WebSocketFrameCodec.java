@@ -23,18 +23,17 @@ import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
-import org.apache.dubbo.remoting.http12.h2.Http2Headers;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
+import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1HttpHeaders;
 import org.apache.dubbo.remoting.websocket.FinalFragmentByteBufInputStream;
 import org.apache.dubbo.remoting.websocket.WebSocketHeaderNames;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -91,19 +90,16 @@ public class WebSocketFrameCodec extends ChannelDuplexHandler {
     }
 
     private Http2Header onHandshakeComplete(WebSocketServerProtocolHandler.HandshakeComplete evt) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        for (Map.Entry<String, String> header : evt.requestHeaders()) {
-            httpHeaders.set(header.getKey(), header.getValue());
-        }
-        httpHeaders.set(Http2Headers.PATH.getName(), evt.requestUri());
-        httpHeaders.set(Http2Headers.METHOD.getName(), HttpMethods.POST.name());
+        HttpHeaders httpHeaders = new NettyHttp1HttpHeaders(evt.requestHeaders());
+        httpHeaders.set(HttpHeaderNames.PATH.getName(), evt.requestUri());
+        httpHeaders.set(HttpHeaderNames.METHOD.getName(), HttpMethods.POST.name());
         return new Http2MetadataFrame(httpHeaders);
     }
 
     private Http2InputMessageFrame onDataFrame(WebSocketFrame webSocketFrame) {
         ByteBuf data = webSocketFrame.content();
         return new Http2InputMessageFrame(
-                new FinalFragmentByteBufInputStream(data, true, webSocketFrame.isFinalFragment()));
+                new FinalFragmentByteBufInputStream(data, true, webSocketFrame.isFinalFragment()), false);
     }
 
     private Object onCloseFrame(CloseWebSocketFrame closeWebSocketFrame) {

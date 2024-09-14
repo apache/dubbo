@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.UPGRADE_HEADER_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.UPGRADE_HEADER_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.javax.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_UPGRADE_HEADER_VALUE;
 
 public class TripleWebSocketFilter extends GenericFilter {

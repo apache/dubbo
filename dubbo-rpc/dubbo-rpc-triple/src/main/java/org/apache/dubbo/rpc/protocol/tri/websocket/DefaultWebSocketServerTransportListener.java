@@ -17,34 +17,42 @@
 package org.apache.dubbo.rpc.protocol.tri.websocket;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.Http2Header;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.websocket.FinalFragmentStreamingDecoder;
 import org.apache.dubbo.remoting.websocket.WebSocketHeaderNames;
 import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
-import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
+import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListener;
+
+import java.util.concurrent.Executor;
 
 public class DefaultWebSocketServerTransportListener extends GenericHttp2ServerTransportListener
         implements WebSocketTransportListener {
 
+    private boolean autoClose = false;
+
     public DefaultWebSocketServerTransportListener(
             H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
         super(h2StreamChannel, url, frameworkModel);
-        getServerChannelObserver().setTrailersCustomizer(this::webSocketTrailersCustomize);
     }
 
-    private void webSocketTrailersCustomize(HttpHeaders httpHeaders, Throwable throwable) {
-        if (throwable != null) {
-            httpHeaders.set(WebSocketHeaderNames.WEBSOCKET_MESSAGE.getName(), throwable.getMessage());
-        }
+    @Override
+    protected void onBeforeMetadata(Http2Header metadata) {}
+
+    @Override
+    protected Executor initializeExecutor(URL url, Http2Header metadata) {
+        return getExecutor(url, metadata);
+    }
+
+    @Override
+    protected void onPrepareMetadata(Http2Header metadata) {
+        doRoute(metadata);
     }
 
     @Override
@@ -53,30 +61,47 @@ public class DefaultWebSocketServerTransportListener extends GenericHttp2ServerT
     }
 
     @Override
-    protected Http2ServerChannelObserver newHttp2ServerChannelObserver(
-            FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        return new WebSocketServerChannelObserver(frameworkModel, h2StreamChannel);
+    protected Http2ServerChannelObserver newResponseObserver(H2StreamChannel h2StreamChannel) {
+        return new WebSocketServerChannelObserver(getFrameworkModel(), h2StreamChannel);
     }
 
     @Override
-    protected void onUnary() {}
-
-    @Override
-    protected UnaryServerCallListener startUnary(
-            RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
-        return new AutoCloseUnaryServerCallListener(
-                invocation, invoker, responseObserver, getStreamingDecoder(), applyCustomizeException());
+    protected Http2ServerChannelObserver newStreamResponseObserver(H2StreamChannel h2StreamChannel) {
+        return new WebSocketServerChannelObserver(getFrameworkModel(), h2StreamChannel);
     }
 
     @Override
-    protected ServerStreamServerCallListener startServerStreaming(
-            RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
-        return new AutoCloseServerStreamServerCallListener(
-                invocation, invoker, responseObserver, getStreamingDecoder());
+    protected Http2ServerChannelObserver prepareResponseObserver(Http2ServerChannelObserver responseObserver) {
+        responseObserver.addTrailersCustomizer(this::customizeWebSocketStatus);
+        return super.prepareResponseObserver(responseObserver);
     }
 
     @Override
-    protected ExceptionHandler<Throwable, ?> getExceptionHandler() {
-        return null;
+    protected void prepareUnaryServerCall() {
+        autoClose = true;
+        super.prepareUnaryServerCall();
+    }
+
+    @Override
+    protected void prepareStreamServerCall() {
+        if (getContext().getMethodDescriptor().getRpcType().equals(RpcType.SERVER_STREAM)) {
+            autoClose = true;
+        }
+        super.prepareStreamServerCall();
+    }
+
+    @Override
+    protected void onDataCompletion(Http2InputMessage message) {
+        if (autoClose) {
+            getStreamingDecoder().close();
+            return;
+        }
+        super.onDataCompletion(message);
+    }
+
+    private void customizeWebSocketStatus(HttpHeaders httpHeaders, Throwable throwable) {
+        if (throwable != null) {
+            httpHeaders.set(WebSocketHeaderNames.WEBSOCKET_MESSAGE.getName(), throwable.getMessage());
+        }
     }
 }

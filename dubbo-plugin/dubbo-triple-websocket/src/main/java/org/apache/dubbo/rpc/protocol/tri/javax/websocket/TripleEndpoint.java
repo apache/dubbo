@@ -20,14 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.TripleConfig;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
-import org.apache.dubbo.remoting.http12.h2.Http2Headers;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
+import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
@@ -46,9 +47,9 @@ public class TripleEndpoint extends Endpoint {
     @Override
     public void onOpen(Session session, EndpointConfig config) {
         String path = session.getRequestURI().getPath();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(Http2Headers.PATH.getName(), path);
-        httpHeaders.set(Http2Headers.METHOD.getName(), HttpMethods.POST.name());
+        HttpHeaders httpHeaders = new DefaultHttpHeaders();
+        httpHeaders.set(HttpHeaderNames.PATH.getName(), path);
+        httpHeaders.set(HttpHeaderNames.METHOD.getName(), HttpMethods.POST.name());
         Http2Header http2Header = new Http2MetadataFrame(httpHeaders);
 
         URL url = ServletExchanger.getUrl();

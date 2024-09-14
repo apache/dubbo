@@ -34,7 +34,7 @@ public class TripleTextMessageHandler implements MessageHandler.Partial<String> 
     @Override
     public void onMessage(String messagePart, boolean last) {
         Http2InputMessage http2InputMessage =
-                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.getBytes(), last));
+                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.getBytes(), last), false);
         webSocketTransportListener.onData(http2InputMessage);
     }
 }

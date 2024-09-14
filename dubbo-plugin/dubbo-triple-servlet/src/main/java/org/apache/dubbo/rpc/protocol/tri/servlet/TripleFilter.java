@@ -59,7 +59,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.UPGRADE_HEADER_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.UPGRADE_HEADER_KEY;
 
 public class TripleFilter implements Filter {
 

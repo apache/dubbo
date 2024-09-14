@@ -19,9 +19,9 @@ package org.apache.dubbo.rpc.protocol.tri.websocket;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2StreamServerChannelObserver;
 
-public class WebSocketServerChannelObserver extends Http2ServerCallToObserverAdapter {
+public class WebSocketServerChannelObserver extends Http2StreamServerChannelObserver {
 
     protected WebSocketServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
         super(frameworkModel, h2StreamChannel);
@@ -29,7 +29,8 @@ public class WebSocketServerChannelObserver extends Http2ServerCallToObserverAda
 
     @Override
     protected void doOnNext(Object data) throws Throwable {
-        HttpOutputMessage httpOutputMessage = buildMessage(data);
+        int statusCode = resolveStatusCode(data);
+        HttpOutputMessage httpOutputMessage = buildMessage(statusCode, data);
         sendMessage(httpOutputMessage);
     }
 
