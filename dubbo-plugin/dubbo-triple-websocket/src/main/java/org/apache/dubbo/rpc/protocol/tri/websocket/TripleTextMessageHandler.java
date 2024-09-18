@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.javax.websocket;
+package org.apache.dubbo.rpc.protocol.tri.websocket;
 
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
@@ -23,20 +23,18 @@ import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
 
 import javax.websocket.MessageHandler;
 
-import java.nio.ByteBuffer;
-
-public class TripleBinaryMessageHandler implements MessageHandler.Partial<ByteBuffer> {
+public class TripleTextMessageHandler implements MessageHandler.Partial<String> {
 
     private final WebSocketTransportListener webSocketTransportListener;
 
-    public TripleBinaryMessageHandler(WebSocketTransportListener webSocketTransportListener) {
+    public TripleTextMessageHandler(WebSocketTransportListener webSocketTransportListener) {
         this.webSocketTransportListener = webSocketTransportListener;
     }
 
     @Override
-    public void onMessage(ByteBuffer messagePart, boolean last) {
+    public void onMessage(String messagePart, boolean last) {
         Http2InputMessage http2InputMessage =
-                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.array(), last), false);
+                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.getBytes(), last), false);
         webSocketTransportListener.onData(http2InputMessage);
     }
 }

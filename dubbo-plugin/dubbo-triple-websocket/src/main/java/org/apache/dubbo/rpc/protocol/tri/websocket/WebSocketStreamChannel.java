@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.javax.websocket;
+package org.apache.dubbo.rpc.protocol.tri.websocket;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.nested.TripleConfig;
@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_REMOTE_ADDRESS;
+
 public class WebSocketStreamChannel implements H2StreamChannel {
 
     private final Session session;
@@ -56,7 +58,7 @@ public class WebSocketStreamChannel implements H2StreamChannel {
         this.session = session;
         this.tripleConfig = tripleConfig;
         Map<String, List<String>> requestParameterMap = session.getRequestParameterMap();
-        List<String> remoteAddressData = requestParameterMap.get(WebSocketConstants.TRIPLE_WEBSOCKET_REMOTE_ADDRESS);
+        List<String> remoteAddressData = requestParameterMap.get(TRIPLE_WEBSOCKET_REMOTE_ADDRESS);
         this.remoteAddress = InetSocketAddress.createUnresolved(
                 remoteAddressData.get(0), Integer.parseInt(remoteAddressData.get(1)));
         this.localAddress = InetSocketAddress.createUnresolved(

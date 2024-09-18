@@ -17,8 +17,8 @@
 package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
-import org.apache.dubbo.rpc.protocol.tri.javax.websocket.TripleWebSocketFilter;
 import org.apache.dubbo.rpc.protocol.tri.servlet.TripleFilter;
+import org.apache.dubbo.rpc.protocol.tri.websocket.TripleWebSocketFilter;
 
 import javax.servlet.Filter;
 

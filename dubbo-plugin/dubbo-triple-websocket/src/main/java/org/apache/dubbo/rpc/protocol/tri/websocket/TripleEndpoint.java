@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.javax.websocket;
+package org.apache.dubbo.rpc.protocol.tri.websocket;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.StreamUtils;
@@ -32,7 +32,6 @@ import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
-import org.apache.dubbo.rpc.protocol.tri.websocket.DefaultWebSocketServerTransportListenerFactory;
 
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
@@ -40,7 +39,7 @@ import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.Session;
 
-import static org.apache.dubbo.rpc.protocol.tri.javax.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_LISTENER;
+import static org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_LISTENER;
 
 public class TripleEndpoint extends Endpoint {
 

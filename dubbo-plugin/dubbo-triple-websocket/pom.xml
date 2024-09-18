@@ -29,7 +29,7 @@
   <properties>
     <servlet4_version>4.0.1</servlet4_version>
     <websocket_version>1.1</websocket_version>
-    <sources_directory>${project.build.directory}/generated-sources/java/org/apache/dubbo/rpc/protocol/tri/jakarta/websocket</sources_directory>
+    <sources_directory>${project.build.directory}/generated-sources/java/org/apache/dubbo/rpc/protocol/tri</sources_directory>
   </properties>
 
   <dependencies>
@@ -93,10 +93,10 @@
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <copy overwrite="true" todir="${sources_directory}">
-                      <fileset dir="src/main/java/org/apache/dubbo/rpc/protocol/tri/javax/websocket" />
+                    <copy overwrite="true" todir="${sources_directory}/websocket/jakarta">
+                      <fileset dir="src/main/java/org/apache/dubbo/rpc/protocol/tri/websocket" excludes="WebSocketConstants.java" />
                     </copy>
-                    <replace token="tri.javax.websocket;" value="tri.jakarta.websocket;">
+                    <replace token="tri.websocket;" value="tri.websocket.jakarta;">
                       <fileset dir="${sources_directory}" />
                     </replace>
                     <replace token="javax.servlet" value="jakarta.servlet">
@@ -104,6 +104,11 @@
                     </replace>
                     <replace token="javax.websocket" value="jakarta.websocket">
                       <fileset dir="${sources_directory}" />
+                    </replace>
+                    <replace file="${sources_directory}/websocket/jakarta/TripleEndpoint.java">
+                      <replacetoken>import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;</replacetoken>
+                      <replacevalue><![CDATA[import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
+import org.apache.dubbo.rpc.protocol.tri.websocket.DefaultWebSocketServerTransportListenerFactory;]]></replacevalue>
                     </replace>
                   </target>
                 </configuration>

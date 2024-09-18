@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.javax.websocket;
+package org.apache.dubbo.rpc.protocol.tri.websocket;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -40,7 +40,8 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.UPGRADE_HEADER_KEY;
-import static org.apache.dubbo.rpc.protocol.tri.javax.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_UPGRADE_HEADER_VALUE;
+import static org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_REMOTE_ADDRESS;
+import static org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_UPGRADE_HEADER_VALUE;
 
 public class TripleWebSocketFilter extends GenericFilter {
 
@@ -73,7 +74,7 @@ public class TripleWebSocketFilter extends GenericFilter {
         }
         Map<String, String[]> copiedMap = new HashMap<>(hRequest.getParameterMap());
         copiedMap.put(
-                WebSocketConstants.TRIPLE_WEBSOCKET_REMOTE_ADDRESS,
+                TRIPLE_WEBSOCKET_REMOTE_ADDRESS,
                 new String[] {hRequest.getRemoteHost(), String.valueOf(hRequest.getRemotePort())});
         HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(hRequest) {
             @Override
