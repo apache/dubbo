@@ -29,7 +29,7 @@
 
   <properties>
     <dubbo.version>${revision}</dubbo.version>
-    <protobuf-java.version>3.25.0</protobuf-java.version>
+    <protobuf-java.version>3.25.5</protobuf-java.version>
   </properties>
 
   <dependencies>
