@@ -42,8 +42,8 @@ public class HttpMessageCodecManagerTest {
         ArgInfo argInfo = new ArgInfo();
         argInfo.setActualType(RegistrationResult.class);
         argInfo.setParamType(RegistrationResult.class);
-        Object o =
-            HttpMessageCodecManager.httpMessageDecode(byteArrayOutputStream.toByteArray(), argInfo, MediaType.TEXT_XML);
+        Object o = HttpMessageCodecManager.httpMessageDecode(
+                byteArrayOutputStream.toByteArray(), argInfo, MediaType.TEXT_XML);
 
         Assertions.assertEquals(registrationResult, o);
 

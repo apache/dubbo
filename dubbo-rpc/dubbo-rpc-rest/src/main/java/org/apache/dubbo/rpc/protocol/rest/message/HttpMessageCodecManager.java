@@ -18,14 +18,12 @@ package org.apache.dubbo.rpc.protocol.rest.message;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.ArgInfo;
-import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 import org.apache.dubbo.rpc.protocol.rest.pair.MessageCodecResultPair;
 
 import java.io.OutputStream;
-import java.lang.reflect.Type;
 import java.util.Set;
 
 public class HttpMessageCodecManager {
@@ -33,8 +31,7 @@ public class HttpMessageCodecManager {
             .getExtensionLoader(HttpMessageCodec.class)
             .getSupportedExtensionInstances();
 
-    public static Object httpMessageDecode(byte[] body, ArgInfo argInfo, MediaType mediaType)
-            throws Exception {
+    public static Object httpMessageDecode(byte[] body, ArgInfo argInfo, MediaType mediaType) throws Exception {
         Class<?> type = argInfo.getParamType();
         if (body == null || body.length == 0) {
             return null;

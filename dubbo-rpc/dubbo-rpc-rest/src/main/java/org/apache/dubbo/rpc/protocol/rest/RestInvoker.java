@@ -110,9 +110,9 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                             Method reflectMethod = restMethodMetadata.getReflectMethod();
                             mediaType =
                                     MediaTypeUtil.convertMediaType(reflectMethod.getReturnType(), r.getContentType());
-                           ArgInfo argInfo = new ArgInfo();
-                           argInfo.setParamType(reflectMethod.getReturnType());
-                           argInfo.setActualType(reflectMethod.getGenericReturnType());
+                            ArgInfo argInfo = new ArgInfo();
+                            argInfo.setParamType(reflectMethod.getReturnType());
+                            argInfo.setActualType(reflectMethod.getGenericReturnType());
                             Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(), argInfo, mediaType);
                             appResponse.setValue(value);
                             // resolve response attribute & attachment

@@ -27,11 +27,8 @@ import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *  body is form
@@ -43,7 +40,7 @@ public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
     public Object decode(byte[] body, ArgInfo argInfo) throws Exception {
         Class<?> targetType = argInfo.getParamType();
         Object map = DataParseUtils.multipartFormConvert(body, targetType);
-        Map valuesMap = (Map)map;
+        Map valuesMap = (Map) map;
         if (Map.class.isAssignableFrom(targetType)) {
             return map;
         } else if (DataParseUtils.isTextType(targetType)) {
