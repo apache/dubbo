@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.message.codec.XMLCodec;
@@ -38,11 +39,11 @@ public class HttpMessageCodecManagerTest {
         HttpMessageCodecManager.httpMessageEncode(
                 byteArrayOutputStream, registrationResult, null, MediaType.TEXT_XML, null);
 
+        ArgInfo argInfo = new ArgInfo();
+        argInfo.setActualType(RegistrationResult.class);
+        argInfo.setParamType(RegistrationResult.class);
         Object o = HttpMessageCodecManager.httpMessageDecode(
-                byteArrayOutputStream.toByteArray(),
-                RegistrationResult.class,
-                RegistrationResult.class,
-                MediaType.TEXT_XML);
+                byteArrayOutputStream.toByteArray(), argInfo, MediaType.TEXT_XML);
 
         Assertions.assertEquals(registrationResult, o);
 
