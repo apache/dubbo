@@ -29,6 +29,13 @@ public class ServletConfig implements Serializable {
     private Boolean enabled;
 
     /**
+     * Maximum concurrent streams.
+     * <p>For HTTP/2
+     * <p>The default value is {@link Integer#MAX_VALUE}.
+     */
+    private Integer maxConcurrentStreams;
+
+    /**
      * The URL patterns that the servlet filter will be registered for.
      * <p>The default value is '/*'.
      */
@@ -46,6 +53,14 @@ public class ServletConfig implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Integer getMaxConcurrentStreams() {
+        return maxConcurrentStreams;
+    }
+
+    public void setMaxConcurrentStreams(Integer maxConcurrentStreams) {
+        this.maxConcurrentStreams = maxConcurrentStreams;
     }
 
     public String[] getFilterUrlPatterns() {
