@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.message;
 
-import java.lang.reflect.Type;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 
 public interface HttpMessageDecode<InputStream> {
 
-    Object decode(InputStream body, Class<?> targetType, Type actualTYpe) throws Exception;
+    Object decode(InputStream body, ArgInfo argInfo) throws Exception;
 }

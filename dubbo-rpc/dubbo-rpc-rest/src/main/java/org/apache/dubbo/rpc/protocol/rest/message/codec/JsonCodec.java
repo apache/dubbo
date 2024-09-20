@@ -19,13 +19,13 @@ package org.apache.dubbo.rpc.protocol.rest.message.codec;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,8 +46,8 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     }
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType, Type actualType) throws Exception {
-        return DataParseUtils.jsonConvert(actualType, body);
+    public Object decode(byte[] body, ArgInfo argInfo) throws Exception {
+        return DataParseUtils.jsonConvert(argInfo.actualReflectType(), body);
     }
 
     @Override

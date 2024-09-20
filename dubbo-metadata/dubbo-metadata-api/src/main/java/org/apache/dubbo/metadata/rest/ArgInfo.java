@@ -160,6 +160,10 @@ public class ArgInfo {
         return actualType;
     }
 
+    public void setActualType(Type actualType) {
+        this.actualType = actualType;
+    }
+
     @Override
     public String toString() {
         return "ArgInfo{" + "index="

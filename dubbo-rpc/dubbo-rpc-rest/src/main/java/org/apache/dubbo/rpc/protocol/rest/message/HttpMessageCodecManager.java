@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.message;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
@@ -31,15 +33,16 @@ public class HttpMessageCodecManager {
             .getExtensionLoader(HttpMessageCodec.class)
             .getSupportedExtensionInstances();
 
-    public static Object httpMessageDecode(byte[] body, Class<?> type, Type actualType, MediaType mediaType)
+    public static Object httpMessageDecode(byte[] body, ArgInfo argInfo, MediaType mediaType)
             throws Exception {
+        Class<?> type = argInfo.getParamType();
         if (body == null || body.length == 0) {
             return null;
         }
 
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType, type) || typeJudge(mediaType, type, httpMessageCodec)) {
-                return httpMessageCodec.decode(body, type, actualType);
+                return httpMessageCodec.decode(body, argInfo);
             }
         }
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);

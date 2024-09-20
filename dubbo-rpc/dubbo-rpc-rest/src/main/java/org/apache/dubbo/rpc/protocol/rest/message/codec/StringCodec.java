@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 
 import java.io.OutputStream;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
 public class StringCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
+    public Object decode(byte[] body, ArgInfo argInfo) throws Exception {
         if (body == null || body.length == 0) {
             return null;
         }

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
@@ -31,7 +32,6 @@ import javax.xml.transform.sax.SAXSource;
 
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.lang.reflect.Type;
 
 import org.xml.sax.InputSource;
 
@@ -42,7 +42,7 @@ import org.xml.sax.InputSource;
 public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
+    public Object decode(byte[] body, ArgInfo argInfo) throws Exception {
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
@@ -53,7 +53,7 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
         Source xmlSource =
                 new SAXSource(spf.newSAXParser().getXMLReader(), new InputSource(new StringReader(new String(body))));
 
-        JAXBContext context = JAXBContext.newInstance(targetType);
+        JAXBContext context = JAXBContext.newInstance(argInfo.getParamType());
         Unmarshaller unmarshaller = context.createUnmarshaller();
         return unmarshaller.unmarshal(xmlSource);
     }

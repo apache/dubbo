@@ -20,12 +20,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 
 import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 @Activate(onClass = "javax.ws.rs.core.Response")
@@ -58,7 +58,7 @@ public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStr
     }
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
+    public Object decode(byte[] body, ArgInfo argInfo) throws Exception {
         if (null == body || body.length == 0) {
             return null;
         }
