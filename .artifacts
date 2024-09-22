@@ -96,7 +96,6 @@ dubbo-spring-boot-3-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
 dubbo-spring-boot-compatible
 dubbo-observability-spring-boot-starters
-dubbo-observability-spring-boot-autoconfigure
 dubbo-tracing-brave-zipkin-spring-boot-starter
 dubbo-tracing-otel-zipkin-spring-boot-starter
 dubbo-tracing-otel-otlp-spring-boot-starter
