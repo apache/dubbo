@@ -30,7 +30,7 @@
   <description>Apache Dubbo Zookeeper Spring Boot Starter</description>
 
   <properties>
-    <zookeeper_version>3.8.3</zookeeper_version>
+    <zookeeper_version>3.8.4</zookeeper_version>
   </properties>
 
   <dependencies>
