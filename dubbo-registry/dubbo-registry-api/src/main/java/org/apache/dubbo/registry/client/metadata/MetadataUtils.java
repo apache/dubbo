@@ -186,7 +186,7 @@ public class MetadataUtils {
             }
 
             remoteMetadataService =
-                    new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);
+                    new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), invoker, internalModel);
         } else {
             Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
 
@@ -198,7 +198,7 @@ public class MetadataUtils {
             }
 
             remoteMetadataService =
-                    new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);
+                    new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), invoker, internalModel);
         }
 
         Object metadataServiceProxy = remoteMetadataService.getInternalProxy();
@@ -320,28 +320,36 @@ public class MetadataUtils {
 
         private MetadataServiceV2 proxyV2;
 
+        private Invoker<?> invoker;
+
         private final ModuleModel internalModel;
 
-        public RemoteMetadataService(ConsumerModel consumerModel, MetadataService proxy, ModuleModel internalModel) {
+        public RemoteMetadataService(
+                ConsumerModel consumerModel, MetadataService proxy, Invoker<?> invoker, ModuleModel internalModel) {
             this.consumerModel = consumerModel;
             this.proxy = proxy;
+            this.invoker = invoker;
             this.internalModel = internalModel;
         }
 
         public RemoteMetadataService(
-                ConsumerModel consumerModel, MetadataServiceV2 proxyV2, ModuleModel internalModel) {
+                ConsumerModel consumerModel, MetadataServiceV2 proxyV2, Invoker<?> invoker, ModuleModel internalModel) {
             this.consumerModel = consumerModel;
             this.proxyV2 = proxyV2;
+            this.invoker = invoker;
             this.internalModel = internalModel;
         }
 
         public void destroy() {
+            // proxy is a reflection proxy that implements Destroyable, call of $destroy() will delegate to
+            // invoker.destroy()
             if (proxy instanceof Destroyable) {
                 ((Destroyable) proxy).$destroy();
             }
 
-            if (proxyV2 instanceof Destroyable) {
-                ((Destroyable) proxyV2).$destroy();
+            // proxyV2 is a stub proxy, so it's not an instance of Destroyable
+            if (proxyV2 != null) {
+                this.invoker.destroy();
             }
 
             internalModel.getServiceRepository().unregisterConsumer(consumerModel);
