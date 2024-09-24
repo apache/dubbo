@@ -61,13 +61,17 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     /**
      * Increments the reference count by 1.
      */
-    public final AbstractConnectionClient retain() {
+    public final boolean retain() {
         long oldCount = COUNTER_UPDATER.getAndIncrement(this);
         if (oldCount <= 0) {
             COUNTER_UPDATER.getAndDecrement(this);
-            throw new AssertionError("This instance has been destroyed");
+            logger.warn(
+                    "Retain failed, because connection {} has been destroyed but not yet removed, will create a new one instead."
+                            + " Check logs below to confirm that this connection finally gets removed to make sure there's no potential memory leak!",
+                    remote);
+            return false;
         }
-        return this;
+        return true;
     }
 
     /**
@@ -77,6 +81,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
         long remainingCount = COUNTER_UPDATER.decrementAndGet(this);
 
         if (remainingCount == 0) {
+            logger.info("Destroying connection to {}, because the reference count reaches 0", remote);
             destroy();
             return true;
         } else if (remainingCount <= -1) {
