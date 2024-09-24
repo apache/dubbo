@@ -341,13 +341,13 @@ public class MetadataUtils {
         }
 
         public void destroy() {
-            // proxy is a reflection proxy that implements Destroyable, call of $destroy() will delegate to
+            // proxy is a reflection proxy that implements Destroyable, call $destroy() will delegate to
             // invoker.destroy()
             if (proxy instanceof Destroyable) {
                 ((Destroyable) proxy).$destroy();
             }
 
-            // proxyV2 is a stub proxy, so it's not an instance of Destroyable
+            // proxyV2 is a stub proxy so it's not an instance of Destroyable
             if (proxyV2 != null) {
                 this.invoker.destroy();
             }
