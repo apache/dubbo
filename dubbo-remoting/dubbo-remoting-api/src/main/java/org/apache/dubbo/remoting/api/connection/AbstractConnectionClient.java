@@ -66,6 +66,9 @@ public abstract class AbstractConnectionClient extends AbstractClient {
         if (oldCount <= 0) {
             COUNTER_UPDATER.getAndDecrement(this);
             logger.warn(
+                    PROTOCOL_ERROR_CLOSE_CLIENT,
+                    "",
+                    "",
                     "Retain failed, because connection {} has been destroyed but not yet removed, will create a new one instead."
                             + " Check logs below to confirm that this connection finally gets removed to make sure there's no potential memory leak!",
                     remote);
