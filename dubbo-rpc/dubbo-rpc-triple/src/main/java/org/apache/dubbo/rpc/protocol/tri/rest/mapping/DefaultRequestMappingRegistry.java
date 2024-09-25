@@ -45,6 +45,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,6 +61,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private final ContentNegotiator contentNegotiator;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final AtomicBoolean initialized = new AtomicBoolean();
+    private final Map<RequestMapping, HandlerMeta> handlerMetaMap = new HashMap<>();
 
     private RestConfig restConfig;
     private List<RequestMappingResolver> resolvers;
@@ -167,10 +169,15 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 } else if (LOGGER.isWarnEnabled()) {
                     LOGGER.internalWarn(Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists));
                 }
+                handlerMetaMap.put(mapping, handler);
             }
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    public Map<RequestMapping, HandlerMeta> getRegistrations() {
+        return handlerMetaMap;
     }
 
     @Override

@@ -24,6 +24,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.swagger.OpenAPIGenerator;
+import org.apache.dubbo.metadata.swagger.model.OpenAPI;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -62,6 +64,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     private String instanceMetadata;
 
     public static final String VERSION = "1.0.0";
+
+    private final OpenAPIGenerator openAPIGenerator = new OpenAPIGenerator();
 
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -212,6 +216,11 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
         instanceMetadataChangedListenerMap.put(consumerId, listener);
         return instanceMetadata;
+    }
+
+    @Override
+    public OpenAPI getOpenAPI() {
+        return openAPIGenerator.getOpenApi();
     }
 
     private SortedSet<String> getServiceURLs(
