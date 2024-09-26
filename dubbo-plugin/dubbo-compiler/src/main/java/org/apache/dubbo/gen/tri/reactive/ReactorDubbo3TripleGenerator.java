@@ -51,7 +51,7 @@ public class ReactorDubbo3TripleGenerator extends AbstractGenerator {
     }
 
     @Override
-    protected boolean enableMultipleTemplateFiles() {
+    protected boolean useMultipleTemplate(boolean multipleFiles) {
         return true;
     }
 }
