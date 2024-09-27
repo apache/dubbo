@@ -32,6 +32,9 @@ import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1ConnectionHandler;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameCodec;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
+import org.apache.dubbo.remoting.websocket.netty4.WebSocketFrameCodec;
+import org.apache.dubbo.remoting.websocket.netty4.WebSocketProtocolSelectorHandler;
+import org.apache.dubbo.remoting.websocket.netty4.WebSocketServerUpgradeCodec;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector;
@@ -40,16 +43,23 @@ import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportLi
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
+import org.apache.dubbo.rpc.protocol.tri.websocket.DefaultWebSocketServerTransportListenerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerUpgradeHandler;
+import io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolConfig;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.codec.http2.Http2CodecUtil;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
@@ -152,6 +162,21 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                                 new TripleServerConnectionHandler(),
                                 buildHttp2MultiplexHandler(url, tripleConfig),
                                 new TripleTailHandler());
+                    } else if (AsciiString.contentEquals(HttpHeaderValues.WEBSOCKET, protocol)) {
+                        return new WebSocketServerUpgradeCodec(
+                                Arrays.asList(
+                                        HttpObjectAggregator.class,
+                                        NettyHttp1Codec.class,
+                                        NettyHttp1ConnectionHandler.class),
+                                new WebSocketServerCompressionHandler(),
+                                new HttpWriteQueueHandler(),
+                                new WebSocketProtocolSelectorHandler(
+                                        url,
+                                        frameworkModel,
+                                        tripleConfig,
+                                        DefaultWebSocketServerTransportListenerFactory.INSTANCE),
+                                buildWebSocketServerProtocolHandler(tripleConfig),
+                                new WebSocketFrameCodec());
                     }
                     // Not upgrade request
                     return null;
@@ -204,5 +229,15 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 .frameLogger(SERVER_LOGGER)
                 .validateHeaders(false)
                 .build();
+    }
+
+    private WebSocketServerProtocolHandler buildWebSocketServerProtocolHandler(TripleConfig tripleConfig) {
+        return new WebSocketServerProtocolHandler(WebSocketServerProtocolConfig.newBuilder()
+                .checkStartsWith(true)
+                .handleCloseFrames(false)
+                .decoderConfig(WebSocketDecoderConfig.newBuilder()
+                        .maxFramePayloadLength(tripleConfig.getMaxBodySizeOrDefault())
+                        .build())
+                .build());
     }
 }

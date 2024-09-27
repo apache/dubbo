@@ -108,6 +108,7 @@
     <protobuf-java_version>3.25.5</protobuf-java_version>
     <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
     <servlet_version>3.1.0</servlet_version>
+    <jakarta_websocket_version>2.2.0</jakarta_websocket_version>
     <jakarta_servlet_version>6.1.0</jakarta_servlet_version>
     <jetty_version>9.4.56.v20240826</jetty_version>
     <validation_new_version>3.1.0</validation_new_version>
@@ -410,6 +411,18 @@
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>${jakarta_servlet_version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.websocket</groupId>
+        <artifactId>jakarta.websocket-api</artifactId>
+        <version>${jakarta_websocket_version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.websocket</groupId>
+        <artifactId>jakarta.websocket-client-api</artifactId>
+        <version>${jakarta_websocket_version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>

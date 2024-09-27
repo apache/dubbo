@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta.StreamParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -60,6 +61,9 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 }
             }
             paramCount = methodMeta.getMethodDescriptor().getRpcType() != RpcType.UNARY ? 1 : paramMetas.length;
+        } else if (param instanceof StreamParameterMeta) {
+            paramCount = 1;
+            noBodyParam = false;
         }
         return new FallbackNamedValueMeta(param.isAnnotated(Annotations.Nonnull), noBodyParam, paramCount);
     }

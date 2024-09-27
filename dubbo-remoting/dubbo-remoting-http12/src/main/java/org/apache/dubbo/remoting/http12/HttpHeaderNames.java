@@ -24,6 +24,8 @@ public enum HttpHeaderNames {
 
     PATH(PseudoHeaderName.PATH.value()),
 
+    METHOD(PseudoHeaderName.METHOD.value()),
+
     ACCEPT(io.netty.handler.codec.http.HttpHeaderNames.ACCEPT),
 
     CONTENT_TYPE(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE),

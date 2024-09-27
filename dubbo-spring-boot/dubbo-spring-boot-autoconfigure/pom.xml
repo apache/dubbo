@@ -84,6 +84,12 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>javax.websocket</groupId>
+      <artifactId>javax.websocket-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Test Dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

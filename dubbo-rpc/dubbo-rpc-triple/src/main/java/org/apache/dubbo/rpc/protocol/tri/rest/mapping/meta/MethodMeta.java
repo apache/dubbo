@@ -153,7 +153,7 @@ public final class MethodMeta extends AnnotationSupport {
         return MethodUtils.toShortString(method);
     }
 
-    private static final class StreamParameterMeta extends ParameterMeta {
+    public static final class StreamParameterMeta extends ParameterMeta {
 
         private final Class<?> type;
         private final Type genericType;
