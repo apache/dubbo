@@ -45,7 +45,7 @@ public class DubboTripleAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enabled")
+    @ConditionalOnProperty(prefix = PREFIX, name = "enabled", havingValue = "true")
     public static class TripleServletConfiguration {
 
         @Bean
@@ -63,15 +63,17 @@ public class DubboTripleAutoConfiguration {
 
         @Bean
         @ConditionalOnClass(Http2Protocol.class)
-        WebServerFactoryCustomizer<ConfigurableTomcatWebServerFactory> tripleTomcatHttp2Customizer(
-                @Value("${" + PREFIX + ".max-concurrent-streams:2147483647}") int maxConcurrentStreams) {
+        @ConditionalOnProperty(prefix = PREFIX, name = "max-concurrent-streams")
+        public WebServerFactoryCustomizer<ConfigurableTomcatWebServerFactory> tripleTomcatHttp2Customizer(
+                @Value("${" + PREFIX + ".max-concurrent-streams}") int maxConcurrentStreams) {
             return factory -> factory.addConnectorCustomizers(connector -> {
                 ProtocolHandler handler = connector.getProtocolHandler();
                 for (UpgradeProtocol upgradeProtocol : handler.findUpgradeProtocols()) {
                     if (upgradeProtocol instanceof Http2Protocol) {
                         Http2Protocol protocol = (Http2Protocol) upgradeProtocol;
-                        protocol.setMaxConcurrentStreams(maxConcurrentStreams);
-                        protocol.setMaxConcurrentStreamExecution(maxConcurrentStreams);
+                        int value = maxConcurrentStreams <= 0 ? Integer.MAX_VALUE : maxConcurrentStreams;
+                        protocol.setMaxConcurrentStreams(value);
+                        protocol.setMaxConcurrentStreamExecution(value);
                     }
                 }
             });

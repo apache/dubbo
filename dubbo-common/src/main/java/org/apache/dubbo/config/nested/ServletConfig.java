@@ -31,7 +31,8 @@ public class ServletConfig implements Serializable {
     /**
      * Maximum concurrent streams.
      * <p>For HTTP/2
-     * <p>The default value is {@link Integer#MAX_VALUE}.
+     * <p>Note that the default value for tomcat is 20. Highly recommended to change it to {@link Integer#MAX_VALUE}
+     * <p>If set to zero or a negative number, the actual value will be set to {@link Integer#MAX_VALUE}.
      */
     private Integer maxConcurrentStreams;
 
