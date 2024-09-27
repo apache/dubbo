@@ -125,8 +125,10 @@ public class TripleFilter implements Filter {
                     channel, ServletExchanger.getUrl(), FrameworkModel.defaultModel());
             channel.setGrpc(false);
             context.setTimeout(resolveTimeout(request, false));
-            listener.onMetadata(new HttpMetadataAdapter(request));
             ServletInputStream is = request.getInputStream();
+            response.getOutputStream().setWriteListener(new TripleWriteListener(channel));
+
+            listener.onMetadata(new HttpMetadataAdapter(request));
             listener.onData(new Http1InputMessage(
                     is.available() == 0 ? StreamUtils.EMPTY : new ByteArrayInputStream(StreamUtils.readBytes(is))));
         } catch (Throwable t) {
