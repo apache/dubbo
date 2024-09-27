@@ -29,10 +29,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
-import io.prometheus.client.exporter.PushGateway;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.prometheus.metrics.exporter.pushgateway.PushGateway;
+import io.prometheus.metrics.exporter.pushgateway.PushGateway.Builder;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_JOB_NAME;
@@ -80,11 +80,14 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
             NamedThreadFactory threadFactory = new NamedThreadFactory("prometheus-push-job", true);
             pushJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-            PushGateway pushGateway = new PushGateway(baseUrl);
+            Builder pushGatewayBuilder = PushGateway.builder()
+                    .address(baseUrl)
+                    .job(job)
+                    .registry(prometheusRegistry.getPrometheusRegistry());
             if (!StringUtils.isBlank(username)) {
-                pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
+                pushGatewayBuilder.basicAuth(username, password);
             }
-
+            PushGateway pushGateway = pushGatewayBuilder.build();
             pushJobExecutor.scheduleWithFixedDelay(
                     () -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
         }
@@ -93,7 +96,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
     protected void push(PushGateway pushGateway, String job) {
         try {
             resetIfSamplesChanged();
-            pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
+            pushGateway.push();
         } catch (IOException e) {
             logger.error(
                     COMMON_METRICS_COLLECTOR_EXCEPTION,

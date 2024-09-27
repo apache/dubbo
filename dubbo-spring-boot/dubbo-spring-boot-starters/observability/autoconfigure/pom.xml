@@ -141,16 +141,6 @@
       <version>${project.version}</version>
       <optional>true</optional>
     </dependency>
-
-    <!-- prometheus client -->
-    <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient_pushgateway</artifactId>
-    </dependency>
   </dependencies>
 
 </project>

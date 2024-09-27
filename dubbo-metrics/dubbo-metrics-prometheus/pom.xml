@@ -29,6 +29,7 @@
   <description>The prometheus metrics module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
+    <prometheus-core.version>1.3.1</prometheus-core.version>
   </properties>
   <dependencies>
     <dependency>
@@ -43,11 +44,17 @@
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
     <dependency>
       <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient_pushgateway</artifactId>
+      <artifactId>prometheus-metrics-core</artifactId>
+      <version>${prometheus-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>prometheus-metrics-exporter-pushgateway</artifactId>
+      <version>${prometheus-core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
