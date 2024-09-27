@@ -45,6 +45,10 @@
       <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-otlp</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.tdunning</groupId>
       <artifactId>t-digest</artifactId>
     </dependency>
