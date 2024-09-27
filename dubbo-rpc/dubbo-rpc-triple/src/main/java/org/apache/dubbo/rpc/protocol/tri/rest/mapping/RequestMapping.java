@@ -119,6 +119,18 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return methodsCondition == null || methodsCondition.getMethods().contains(method);
     }
 
+    public boolean matchParams(HttpRequest request) {
+        return paramsCondition == null || paramsCondition.match(request) != null;
+    }
+
+    public boolean matchConsumes(HttpRequest request) {
+        return consumesCondition == null || consumesCondition.match(request) != null;
+    }
+
+    public boolean matchProduces(HttpRequest request) {
+        return producesCondition == null || producesCondition.match(request) != null;
+    }
+
     @Override
     public RequestMapping match(HttpRequest request) {
         return doMatch(request, null);
@@ -194,10 +206,6 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
     public String getName() {
         return name;
-    }
-
-    public String getSig() {
-        return sig;
     }
 
     public PathCondition getPathCondition() {

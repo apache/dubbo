@@ -29,7 +29,7 @@
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
-    <curator5_version>5.1.0</curator5_version>
+    <curator5_version>5.7.0</curator5_version>
     <zookeeper_version>3.8.4</zookeeper_version>
   </properties>
 
@@ -199,7 +199,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.10.2</version>
+            <version>0.10.3</version>
             <configuration>
               <classesDirectory>${project.build.outputDirectory}</classesDirectory>
               <metadataRepository>
