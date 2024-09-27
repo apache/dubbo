@@ -68,6 +68,11 @@ public class RestConfig implements Serializable {
     private String jsonFramework;
 
     /**
+     * The disallowed content-types.
+     */
+    private String[] disallowedContentTypes;
+
+    /**
      *  The cors configuration.
      */
     @Nested
@@ -131,6 +136,14 @@ public class RestConfig implements Serializable {
 
     public void setJsonFramework(String jsonFramework) {
         this.jsonFramework = jsonFramework;
+    }
+
+    public String[] getDisallowedContentTypes() {
+        return disallowedContentTypes;
+    }
+
+    public void setDisallowedContentTypes(String[] disallowedContentTypes) {
+        this.disallowedContentTypes = disallowedContentTypes;
     }
 
     public CorsConfig getCors() {

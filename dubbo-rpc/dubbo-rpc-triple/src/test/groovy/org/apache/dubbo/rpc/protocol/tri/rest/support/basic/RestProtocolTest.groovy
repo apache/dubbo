@@ -241,7 +241,27 @@ class RestProtocolTest extends BaseServiceTest {
             path                      | accept             | output
             '/produceTest?name=world' | ''                 | 'world'
             '/produceTest?name=world' | 'text/plain'       | 'world'
-            '/produceTest?name=world' | 'application/json' | '{"message":"Invoker not found","status":"404"}'
+            '/produceTest?name=world' | 'application/json' | '{"message":"Could not find acceptable representation","status":"406"}'
+    }
+
+    def "mismatch test"() {
+        given:
+            def request = new TestRequest(
+                method: method,
+                path: path,
+                contentType: contentType,
+                accept: accept
+            )
+        expect:
+            runner.run(request, String.class) == output
+        where:
+            method | path                       | contentType        | accept             | output
+            'POST' | '/mismatchTest?name=world' | 'text/plain'       | 'text/plain'       | 'world'
+            'POST' | '/mismatchTest1'           | 'text/plain'       | 'text/plain'       | '{"message":"Invoker not found","status":"404"}'
+            'GET'  | '/mismatchTest'            | ''                 | ''                 | '{"message":"Request method \'GET\' not supported","status":"405"}'
+            'POST' | '/mismatchTest'            | 'application/json' | 'text/plain'       | '{"message":"Content type \'application/json\' not supported","status":"415"}'
+            'POST' | '/mismatchTest'            | 'text/plain'       | 'application/json' | '{"message":"Could not find acceptable representation","status":"406"}'
+            'POST' | '/mismatchTest?name=earth' | 'text/plain'       | 'text/plain'       | '{"message":"Unsatisfied query parameter conditions","status":"400"}'
     }
 
 }
