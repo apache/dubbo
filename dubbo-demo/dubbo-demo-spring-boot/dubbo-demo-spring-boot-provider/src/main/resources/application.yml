@@ -14,16 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-spring.application.name=dubbo-springboot-demo-provider
+spring:
+  application:
+    name: dubbo-springboot-demo-provider
 
-dubbo.application.name=${spring.application.name}
-dubbo.protocol.name=dubbo
-dubbo.protocol.port=-1
-dubbo.registry.address=zookeeper://127.0.0.1:2181
-dubbo.registry.id=zk-registry
-dubbo.config-center.address=zookeeper://127.0.0.1:2181
-dubbo.metadata-report.address=zookeeper://127.0.0.1:2181
-dubbo.metrics.protocol=prometheus
-dubbo.metrics.enable-jvm=true
-dubbo.scan.base-packages=org.apache.dubbo.samples.provider.service
-
+dubbo:
+  application:
+    name: ${spring.application.name}
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    id: zk-registry
+    address: zookeeper://127.0.0.1:2181
+  config-center:
+    address: zookeeper://127.0.0.1:2181
+  metadata-report:
+    address: zookeeper://127.0.0.1:2181
+  metrics:
+    protocol: prometheus
+    enable-jvm: true
+    enable-registry: true
+    aggregation:
+      enabled: true
+    prometheus:
+      exporter:
+        enabled: true
+    enable-metadata: true
