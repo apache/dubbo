@@ -92,7 +92,7 @@ final class TestRunnerImpl implements TestRunner {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "resource"})
+    @SuppressWarnings("unchecked")
     public TestResponse run(TestRequest request) {
         MockH2StreamChannel channel = new MockH2StreamChannel();
         URL url = new URL(TestProtocol.NAME, TestProtocol.HOST, TestProtocol.PORT, request.getProviderParams());

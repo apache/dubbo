@@ -34,6 +34,8 @@ public enum HttpHeaderNames {
 
     TRANSFER_ENCODING(io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING),
 
+    CACHE_CONTROL(io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL),
+
     LOCATION(io.netty.handler.codec.http.HttpHeaderNames.LOCATION),
 
     HOST(io.netty.handler.codec.http.HttpHeaderNames.HOST),

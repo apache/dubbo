@@ -66,7 +66,7 @@ public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObs
                 throw new IllegalArgumentException("Unsupported body type: " + body.getClass());
             }
         }
-        headers.set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(contentLength));
+        headers.set(HttpHeaderNames.CONTENT_LENGTH.getKey(), String.valueOf(contentLength));
     }
 
     @Override
