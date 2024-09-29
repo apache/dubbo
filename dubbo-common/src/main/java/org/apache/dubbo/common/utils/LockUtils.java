@@ -39,7 +39,6 @@ public class LockUtils {
                         "Try to lock failed, timeout: " + timeout,
                         new TimeoutException());
             }
-            runnable.run();
         } catch (InterruptedException e) {
             logger.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Try to lock failed", e);
             Thread.currentThread().interrupt();
@@ -50,5 +49,6 @@ public class LockUtils {
                 // ignore
             }
         }
+        runnable.run();
     }
 }

@@ -166,6 +166,7 @@ public class MetadataUtils {
         ServiceInstance instance = selectInstance(instances);
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
         MetadataInfo metadataInfo;
+        boolean interrupted = Thread.currentThread().isInterrupted();
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
@@ -193,6 +194,14 @@ public class MetadataUtils {
                             + " from instance " + instance.getAddress(),
                     e);
             metadataInfo = null;
+        } finally {
+            logger.info("After getting metadata from instance " + instance.getAddress() + ", interrupted status for "
+                    + Thread.currentThread().getName() + " is " + Thread.interrupted() + ". "
+                    + "If it was interrupted, this may caused by Metadata fetch timeout.");
+            if (interrupted) {
+                logger.info("Resetting interrupted status for " + Thread.currentThread().getName() + " to true due to "
+                        + "previous interrupted status.");
+            }
         }
 
         if (metadataInfo == null) {
