@@ -39,7 +39,9 @@ public class DubboActuatorProperties {
     public boolean isEnabled(String command) {
         if (StringUtils.hasText(command)) {
             Boolean enabled = endpoint.get("dubbo" + command + ".enabled");
-            return enabled == null || enabled;
-        } else return false;
+            return enabled != null && enabled;
+        } else {
+            return false;
+        }
     }
 }
