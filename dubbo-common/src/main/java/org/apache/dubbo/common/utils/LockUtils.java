@@ -31,17 +31,20 @@ public class LockUtils {
 
     public static void safeLock(Lock lock, int timeout, Runnable runnable) {
         try {
-            if (!lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
-                logger.error(
-                        LoggerCodeConstants.INTERNAL_ERROR,
-                        "",
-                        "",
-                        "Try to lock failed, timeout: " + timeout,
-                        new TimeoutException());
+            boolean interrupted = false;
+            try {
+                if (!lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
+                    logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "",
+                            "Try to lock failed, timeout: " + timeout, new TimeoutException());
+                }
+            } catch (InterruptedException e) {
+                logger.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Try to lock failed", e);
+                interrupted = true;
             }
-        } catch (InterruptedException e) {
-            logger.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Try to lock failed", e);
-            Thread.currentThread().interrupt();
+            runnable.run();
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         } finally {
             try {
                 lock.unlock();
@@ -49,6 +52,5 @@ public class LockUtils {
                 // ignore
             }
         }
-        runnable.run();
     }
 }
