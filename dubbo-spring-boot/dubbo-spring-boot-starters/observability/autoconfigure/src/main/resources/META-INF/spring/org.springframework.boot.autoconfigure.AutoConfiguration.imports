@@ -1,6 +1,0 @@
-org.apache.dubbo.spring.boot.observability.autoconfigure.otel.OpenTelemetryAutoConfiguration
-org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration
-org.apache.dubbo.spring.boot.observability.autoconfigure.DubboObservationAutoConfiguration
-org.apache.dubbo.spring.boot.observability.autoconfigure.brave.BraveAutoConfiguration
-org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin.ZipkinAutoConfiguration
-org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.otlp.OtlpAutoConfiguration

@@ -525,11 +525,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-observability-spring-boot-autoconfigure</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-tracing-otel-zipkin-spring-boot-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
