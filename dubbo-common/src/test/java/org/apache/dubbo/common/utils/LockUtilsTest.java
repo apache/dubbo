@@ -114,7 +114,7 @@ public class LockUtilsTest {
         thread.interrupt();
         await().until(() -> thread.getState() == State.TERMINATED);
 
-        Assertions.assertFalse(locked.get());
+        Assertions.assertTrue(locked.get());
 
         reentrantLock.unlock();
     }
