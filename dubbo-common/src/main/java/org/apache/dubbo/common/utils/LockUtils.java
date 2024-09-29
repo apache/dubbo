@@ -34,8 +34,12 @@ public class LockUtils {
             boolean interrupted = false;
             try {
                 if (!lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
-                    logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "",
-                            "Try to lock failed, timeout: " + timeout, new TimeoutException());
+                    logger.error(
+                            LoggerCodeConstants.INTERNAL_ERROR,
+                            "",
+                            "",
+                            "Try to lock failed, timeout: " + timeout,
+                            new TimeoutException());
                 }
             } catch (InterruptedException e) {
                 logger.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Try to lock failed", e);
