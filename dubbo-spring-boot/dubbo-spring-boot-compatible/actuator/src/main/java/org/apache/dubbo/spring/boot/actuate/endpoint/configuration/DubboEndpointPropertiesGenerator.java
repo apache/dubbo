@@ -98,7 +98,6 @@ public class DubboEndpointPropertiesGenerator {
         }
     }
 
-    // 根据提取的关键字生成新的配置
     private static Set<String> generateDubboProperties(Set<String> keywords) {
         Set<String> properties = new LinkedHashSet<>();
         for (String keyword : keywords) {
