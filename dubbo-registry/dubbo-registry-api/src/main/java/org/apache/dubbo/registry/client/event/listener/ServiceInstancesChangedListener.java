@@ -243,13 +243,9 @@ public class ServiceInstancesChangedListener {
                         TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 logger.error(
-                        INTERNAL_ERROR,
-                        "unknown error in registry module",
-                        "",
-                        "Error submitting async retry task.");
+                        INTERNAL_ERROR, "unknown error in registry module", "", "Error submitting async retry task.");
             }
-            logger.warn(
-                    INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
+            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
         }
     }
 
