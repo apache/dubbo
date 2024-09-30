@@ -23,22 +23,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
-@ConfigurationProperties(prefix = "management")
+@ConfigurationProperties(prefix = "management.endpoint")
 public class DubboActuatorProperties {
 
-    private Map<String, Boolean> endpoint;
+    private Map<String, Boolean> dubbo;
 
-    public Map<String, Boolean> getEndpoint() {
-        return endpoint;
+    public Map<String, Boolean> getDubbo() {
+        return dubbo;
     }
 
-    public void setEndpoint(Map<String, Boolean> endpoint) {
-        this.endpoint = endpoint;
+    public void setDubbo(Map<String, Boolean> dubbo) {
+        this.dubbo = dubbo;
     }
 
     public boolean isEnabled(String command) {
         if (StringUtils.hasText(command)) {
-            Boolean enabled = endpoint.get("dubbo" + command + ".enabled");
+            Boolean enabled = dubbo.get(command + ".enabled");
             return enabled != null && enabled;
         } else {
             return false;
