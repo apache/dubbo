@@ -29,8 +29,11 @@ import java.util.List;
 import java.util.Locale;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -51,6 +54,7 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 
 public final class HttpUtils {
 
+    public static final ByteBufAllocator HEAP_ALLOC = new UnpooledByteBufAllocator(false, false);
     public static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
     public static final String CHARSET_PREFIX = "charset=";
 
@@ -164,7 +168,13 @@ public final class HttpUtils {
             if (canMark) {
                 inputStream.mark(Integer.MAX_VALUE);
             }
-            data = Unpooled.wrappedBuffer(StreamUtils.readBytes(inputStream));
+            if (inputStream.available() == 0) {
+                data = Unpooled.EMPTY_BUFFER;
+            } else {
+                data = HEAP_ALLOC.buffer();
+                ByteBufOutputStream os = new ByteBufOutputStream(data);
+                StreamUtils.copy(inputStream, os);
+            }
         } catch (IOException e) {
             throw new DecodeException("Error while reading post data: " + e.getMessage(), e);
         } finally {
