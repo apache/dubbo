@@ -174,6 +174,20 @@ class RestProtocolTest extends BaseServiceTest {
             '/argTest' | 'Sam is 8 years old'
     }
 
+    def "urlEncodeForm body test"() {
+        given:
+            def request = new TestRequest(
+                path: path,
+                contentType: MediaType.APPLICATION_FROM_URLENCODED,
+                body: body
+            )
+        expect:
+            runner.post(request) == output
+        where:
+            path       | body             | output
+            '/argTest' | 'name=Sam&age=8' | 'Sam is 8 years old'
+    }
+
     def "override mapping test"() {
         expect:
             runner.get(path) == output
