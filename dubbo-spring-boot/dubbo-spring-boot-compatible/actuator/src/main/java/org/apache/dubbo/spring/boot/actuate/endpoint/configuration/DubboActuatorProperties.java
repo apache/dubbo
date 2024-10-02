@@ -14,30 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.actuate.endpoint;
-
-import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboMetadata;
+package org.apache.dubbo.spring.boot.actuate.endpoint.configuration;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
-import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
-/**
- * Actuator {@link Endpoint} to expose Dubbo Meta Data
- *
- * @see Endpoint
- * @since 2.7.0
- */
-@Endpoint(id = "dubbo")
-public class DubboMetadataEndpoint {
+@Component
+@ConfigurationProperties(prefix = "management.endpoint")
+public class DubboActuatorProperties {
 
-    @Autowired
-    private DubboMetadata dubboMetadata;
+    private Map<String, Boolean> dubbo;
 
-    @ReadOperation
-    public Map<String, Object> invoke() {
-        return dubboMetadata.invoke();
+    public Map<String, Boolean> getDubbo() {
+        return dubbo;
+    }
+
+    public void setDubbo(Map<String, Boolean> dubbo) {
+        this.dubbo = dubbo;
+    }
+
+    public boolean isEnabled(String command) {
+        if (StringUtils.hasText(command)) {
+            Boolean enabled = dubbo.get(command + ".enabled");
+            return enabled != null && enabled;
+        } else {
+            return false;
+        }
     }
 }

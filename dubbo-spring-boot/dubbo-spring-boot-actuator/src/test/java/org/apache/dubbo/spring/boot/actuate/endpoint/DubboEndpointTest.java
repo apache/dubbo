@@ -34,20 +34,20 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.apache.dubbo.common.Version.getVersion;
 
 /**
- * {@link DubboMetadataEndpoint} Test
+ * {@link DubboQosEndpoints} Test
  *
- * @see DubboMetadataEndpoint
+ * @see DubboQosEndpoints
  * @since 2.7.0
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(
-        classes = {DubboMetadataEndpoint.class},
+        classes = {DubboQosEndpoints.class},
         properties = {"dubbo.application.name = dubbo-demo-application"})
 @EnableAutoConfiguration
 class DubboEndpointTest {
 
     @Autowired
-    private DubboMetadataEndpoint dubboEndpoint;
+    private DubboQosEndpoints dubboQosEndpoints;
 
     @BeforeEach
     public void init() {
@@ -62,7 +62,7 @@ class DubboEndpointTest {
     @Test
     void testInvoke() {
 
-        Map<String, Object> metadata = dubboEndpoint.invoke();
+        Map<String, Object> metadata = dubboQosEndpoints.invoke();
 
         Assert.assertNotNull(metadata.get("timestamp"));
 
