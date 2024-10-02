@@ -79,7 +79,7 @@ final class SpringRestToolKit implements RestToolKit {
             configuration = new ConfigurationWrapper(applicationModel);
         }
         if (context != null && context.containsBean("mvcConversionService")) {
-            conversionService = context.getBean(ConversionService.class, "mvcConversionService");
+            conversionService = context.getBean("mvcConversionService", ConversionService.class);
         } else {
             conversionService = DefaultConversionService.getSharedInstance();
         }
