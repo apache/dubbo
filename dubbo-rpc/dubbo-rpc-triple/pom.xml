@@ -113,8 +113,8 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <artifactId>junit-platform-engine</artifactId>
           <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-engine</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
