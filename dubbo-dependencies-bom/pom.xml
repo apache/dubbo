@@ -98,7 +98,7 @@
     <netty_http3_version>0.0.28.Final</netty_http3_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
-    <fastjson_version>1.2.83</fastjson_version>
+    <fastjson_version>1.2.83_noneautotype</fastjson_version>
     <fastjson2_version>2.0.53</fastjson2_version>
     <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.7.0</curator_version>
