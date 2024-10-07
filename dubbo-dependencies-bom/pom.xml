@@ -154,7 +154,7 @@
     <groovy_version>4.0.23</groovy_version>
 
     <!-- Test libs -->
-    <junit_jupiter_version>5.9.3</junit_jupiter_version>
+    <junit_jupiter_version>5.11.2</junit_jupiter_version>
     <junit_version>4.13.2</junit_version>
     <awaitility_version>4.2.2</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
