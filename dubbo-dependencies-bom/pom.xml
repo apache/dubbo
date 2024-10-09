@@ -187,7 +187,7 @@
     <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
 
-    <revision>3.3.1</revision>
+    <revision>3.3.2-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>

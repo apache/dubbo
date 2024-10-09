@@ -39,7 +39,7 @@
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
 
-    <revision>3.3.1</revision>
+    <revision>3.3.2-SNAPSHOT</revision>
   </properties>
 
   <dependencies>
