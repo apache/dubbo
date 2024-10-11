@@ -32,7 +32,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -169,7 +168,7 @@ public final class HttpUtils {
                 inputStream.mark(Integer.MAX_VALUE);
             }
             if (inputStream.available() == 0) {
-                data = Unpooled.EMPTY_BUFFER;
+                return null;
             } else {
                 data = HEAP_ALLOC.buffer();
                 ByteBufOutputStream os = new ByteBufOutputStream(data);

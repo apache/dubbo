@@ -24,6 +24,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.test.BaseServiceTest
 import org.apache.dubbo.rpc.protocol.tri.test.TestRequest
 import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder
 
+import io.netty.buffer.AbstractByteBuf
+import io.netty.util.ResourceLeakDetector
+
 class RestProtocolTest extends BaseServiceTest {
 
     @Override
@@ -174,8 +177,14 @@ class RestProtocolTest extends BaseServiceTest {
             '/argTest' | 'Sam is 8 years old'
     }
 
+    @SuppressWarnings('GroovyAccessibility')
     def "urlEncodeForm body test"() {
         given:
+            def level = ResourceLeakDetector.level
+            def leaks = AbstractByteBuf.leakDetector.allLeaks
+            ResourceLeakDetector.level = ResourceLeakDetector.Level.PARANOID
+            leaks.clear()
+        and:
             def request = new TestRequest(
                 path: path,
                 contentType: MediaType.APPLICATION_FROM_URLENCODED,
@@ -183,9 +192,13 @@ class RestProtocolTest extends BaseServiceTest {
             )
         expect:
             runner.post(request) == output
+            leaks.empty
+        cleanup:
+            ResourceLeakDetector.level = level
         where:
             path       | body             | output
             '/argTest' | 'name=Sam&age=8' | 'Sam is 8 years old'
+            '/argTest' | '' | 'null is 0 years old'
     }
 
     def "override mapping test"() {
