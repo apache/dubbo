@@ -76,9 +76,7 @@ public class NettyClient extends AbstractClient {
     /**
      * netty client bootstrap
      */
-    private static final GlobalResourceInitializer<EventLoopGroup> EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(
-            () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
-            EventExecutorGroup::shutdownGracefully);
+    private static final GlobalResourceInitializer<EventLoopGroup> EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(() -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"), EventExecutorGroup::shutdownGracefully);
 
     private Bootstrap bootstrap;
 
@@ -117,8 +115,7 @@ public class NettyClient extends AbstractClient {
     }
 
     protected void initBootstrap(NettyClientHandler nettyClientHandler) {
-        bootstrap
-                .group(EVENT_LOOP_GROUP.get())
+        bootstrap.group(EVENT_LOOP_GROUP.get())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.TCP_FASTOPEN_CONNECT, true)
@@ -146,20 +143,15 @@ public class NettyClient extends AbstractClient {
                         .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
                         .addLast("handler", nettyClientHandler);
 
-                String socksProxyHost =
-                        ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
+                String socksProxyHost = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
                 if (socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
-                    int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(
-                            getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
+                    int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
 
-                    String socksProxyUserName =
-                            ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_USER_NAME);
+                    String socksProxyUserName = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_USER_NAME);
 
-                    String socksProxyPassWord =
-                            ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PASSWORD);
+                    String socksProxyPassWord = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PASSWORD);
 
-                    Socks5ProxyHandler socks5ProxyHandler =
-                            new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort), socksProxyUserName, socksProxyPassWord);
+                    Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort), socksProxyUserName, socksProxyPassWord);
                     ch.pipeline().addFirst(socks5ProxyHandler);
                 }
             }
@@ -178,8 +170,7 @@ public class NettyClient extends AbstractClient {
             InetSocketAddress connectAddress;
             // first try ipv6 address
             if (ipv6Address != null && getUrl().getParameter(CommonConstants.IPV6_KEY) != null) {
-                connectAddress =
-                        new InetSocketAddress(getUrl().getParameter(CommonConstants.IPV6_KEY), getUrl().getPort());
+                connectAddress = new InetSocketAddress(getUrl().getParameter(CommonConstants.IPV6_KEY), getUrl().getPort());
                 try {
                     doConnect(connectAddress);
                     return;
@@ -242,18 +233,11 @@ public class NettyClient extends AbstractClient {
 
                 // 6-1 Failed to connect to provider server by other reason.
 
-                RemotingException remotingException = new RemotingException(
-                        this,
+                RemotingException remotingException = new RemotingException(this,
                         "client(url: " + getUrl() + ") failed to connect to server " + serverAddress
-                                + ", error message is:" + cause.getMessage(),
-                        cause);
+                                + ", error message is:" + cause.getMessage(), cause);
 
-                logger.error(
-                        TRANSPORT_FAILED_CONNECT_PROVIDER,
-                        "network disconnected",
-                        "",
-                        "Failed to connect to provider server by other reason.",
-                        cause);
+                logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "", "Failed to connect to provider server by other reason.", cause);
 
                 throw remotingException;
 
@@ -261,20 +245,13 @@ public class NettyClient extends AbstractClient {
 
                 // 6-2 Client-side timeout
 
-                RemotingException remotingException = new RemotingException(
-                        this,
-                        "client(url: " + getUrl() + ") failed to connect to server "
-                                + serverAddress + " client-side timeout "
-                                + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
-                                + "ms) from netty client "
-                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+                RemotingException remotingException = new RemotingException(this,
+                        "client(url: " + getUrl() + ") failed to connect to server " + serverAddress
+                                + " client-side timeout " + getConnectTimeout() + "ms (elapsed: " + (
+                                System.currentTimeMillis() - start) + "ms) from netty client " + NetUtils.getLocalHost()
+                                + " using dubbo version " + Version.getVersion());
 
-                logger.error(
-                        TRANSPORT_CLIENT_CONNECT_TIMEOUT,
-                        "provider crash",
-                        "",
-                        "Client-side timeout.",
-                        remotingException);
+                logger.error(TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "", "Client-side timeout.", remotingException);
 
                 throw remotingException;
             }
