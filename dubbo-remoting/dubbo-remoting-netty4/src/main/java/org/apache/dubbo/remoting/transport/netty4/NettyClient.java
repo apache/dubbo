@@ -149,6 +149,7 @@ public class NettyClient extends AbstractClient {
                 String socksProxyHost =
                         ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
                 if (socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
+
                     int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(
                             getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
 
