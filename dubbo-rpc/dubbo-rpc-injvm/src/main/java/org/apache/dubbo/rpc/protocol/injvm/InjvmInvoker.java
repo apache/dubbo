@@ -75,7 +75,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
     private final boolean shouldIgnoreSameModule;
 
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
-            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "false"));
 
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);

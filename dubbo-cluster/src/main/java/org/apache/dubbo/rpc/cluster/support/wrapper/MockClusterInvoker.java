@@ -49,7 +49,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MockClusterInvoker.class);
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
-            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "false"));
 
     private final Directory<T> directory;
 

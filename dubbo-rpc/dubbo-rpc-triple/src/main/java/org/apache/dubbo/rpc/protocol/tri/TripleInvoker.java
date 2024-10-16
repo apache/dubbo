@@ -96,7 +96,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
 
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
-            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "false"));
     private final PackableMethodFactory packableMethodFactory;
     private final Map<MethodDescriptor, PackableMethod> packableMethodCache = new ConcurrentHashMap<>();
     private static Compressor compressor;

@@ -73,7 +73,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     private final int serverShutdownTimeout;
 
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
-            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "false"));
 
     public DubboInvoker(Class<T> serviceType, URL url, ClientsProvider clientsProvider) {
         this(serviceType, url, clientsProvider, null);
