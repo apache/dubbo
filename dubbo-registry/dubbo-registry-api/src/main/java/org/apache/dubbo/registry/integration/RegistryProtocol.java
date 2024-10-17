@@ -90,12 +90,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MERGEABLE_CLUSTER_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNSUPPORTED_CATEGORY;
@@ -123,6 +125,8 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
 import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.rpc.Constants.AUTHENTICATOR_KEY;
+import static org.apache.dubbo.rpc.Constants.AUTH_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
@@ -139,10 +143,32 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
  */
 public class RegistryProtocol implements Protocol, ScopeModelAware {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
-        APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, PREFER_SERIALIZATION_KEY, CLUSTER_KEY,
-                CONNECTIONS_KEY, DEPRECATED_KEY,
-        GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-        WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY, IPV6_KEY, PACKABLE_METHOD_FACTORY_KEY
+        APPLICATION_KEY,
+        CODEC_KEY,
+        EXCHANGER_KEY,
+        SERIALIZATION_KEY,
+        PREFER_SERIALIZATION_KEY,
+        CLUSTER_KEY,
+        CONNECTIONS_KEY,
+        DEPRECATED_KEY,
+        GROUP_KEY,
+        LOADBALANCE_KEY,
+        MOCK_KEY,
+        PATH_KEY,
+        TIMEOUT_KEY,
+        TOKEN_KEY,
+        VERSION_KEY,
+        WARMUP_KEY,
+        WEIGHT_KEY,
+        DUBBO_VERSION_KEY,
+        RELEASE_KEY,
+        SIDE_KEY,
+        IPV6_KEY,
+        PACKABLE_METHOD_FACTORY_KEY,
+        AUTH_KEY,
+        AUTHENTICATOR_KEY,
+        USERNAME_KEY,
+        PASSWORD_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {

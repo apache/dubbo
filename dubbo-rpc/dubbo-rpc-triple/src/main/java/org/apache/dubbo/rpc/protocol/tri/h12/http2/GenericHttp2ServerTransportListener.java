@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.DefaultStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.Invoker;
@@ -71,7 +72,11 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     protected Http2ServerChannelObserver newStreamResponseObserver(H2StreamChannel h2StreamChannel) {
-        return new Http2StreamServerChannelObserver(getFrameworkModel(), h2StreamChannel);
+        Http2ServerChannelObserver responseObserver =
+                new Http2SseServerChannelObserver(getFrameworkModel(), h2StreamChannel);
+        responseObserver.addHeadersCustomizer(
+                (hs, t) -> hs.set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.TEXT_EVENT_STREAM.getName()));
+        return responseObserver;
     }
 
     protected Http2ServerChannelObserver prepareResponseObserver(Http2ServerChannelObserver responseObserver) {
@@ -124,7 +129,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     protected void initializeAltSvc(URL url) {
         if (Http3Exchanger.isEnabled(url)) {
             String value = "h3=\":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort()) + '"';
-            responseObserver.addHeadersCustomizer((hs, t) -> hs.set(HttpHeaderNames.ALT_SVC.getName(), value));
+            responseObserver.addHeadersCustomizer((hs, t) -> hs.set(HttpHeaderNames.ALT_SVC.getKey(), value));
         }
     }
 

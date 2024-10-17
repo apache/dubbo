@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.remoting.http12.rest.Param;
 import org.apache.dubbo.rpc.protocol.tri.rest.service.User.Group;
@@ -71,4 +72,7 @@ public interface DemoService {
 
     @Mapping(produces = "text/plain")
     String produceTest(String name);
+
+    @Mapping(method = HttpMethods.POST, consumes = "text/plain", produces = "text/plain", params = "name=world")
+    String mismatchTest(String name);
 }

@@ -105,7 +105,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
                 meta.getParameters(),
                 argumentResolver,
                 typeConverter,
-                codecUtils.determineHttpMessageEncoder(url, frameworkModel, responseMediaType));
+                codecUtils.determineHttpMessageEncoder(url, responseMediaType));
 
         if (HttpMethods.supportBody(method) && !RequestUtils.isFormOrMultiPart(request)) {
             if (StringUtils.isEmpty(requestMediaType)) {
@@ -113,7 +113,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
             }
             request.setAttribute(
                     RestConstants.BODY_DECODER_ATTRIBUTE,
-                    codecUtils.determineHttpMessageDecoder(url, frameworkModel, requestMediaType));
+                    codecUtils.determineHttpMessageDecoder(url, requestMediaType));
         }
 
         LOGGER.debug("Content-type negotiate result: request='{}', response='{}'", requestMediaType, responseMediaType);

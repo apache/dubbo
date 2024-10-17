@@ -34,6 +34,8 @@ public enum HttpHeaderNames {
 
     TRANSFER_ENCODING(io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING),
 
+    CACHE_CONTROL(io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL),
+
     LOCATION(io.netty.handler.codec.http.HttpHeaderNames.LOCATION),
 
     HOST(io.netty.handler.codec.http.HttpHeaderNames.HOST),
@@ -46,7 +48,7 @@ public enum HttpHeaderNames {
 
     TE(io.netty.handler.codec.http.HttpHeaderNames.TE),
 
-    ALT_SVC(io.netty.handler.codec.http.HttpHeaderNames.ALT_SVC);
+    ALT_SVC("alt-svc");
 
     private final String name;
     private final CharSequence key;

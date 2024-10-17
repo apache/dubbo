@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 
+import static org.apache.dubbo.rpc.RpcException.AUTHORIZATION_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.LIMIT_EXCEEDED_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.METHOD_NOT_FOUND;
@@ -125,6 +126,9 @@ public class TriRpcStatus implements Serializable {
                 break;
             case FORBIDDEN_EXCEPTION:
                 code = Code.PERMISSION_DENIED;
+                break;
+            case AUTHORIZATION_EXCEPTION:
+                code = Code.UNAUTHENTICATED;
                 break;
             case LIMIT_EXCEEDED_EXCEPTION:
             case NETWORK_EXCEPTION:

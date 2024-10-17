@@ -63,6 +63,16 @@ public class RestConfig implements Serializable {
     private String formatParameterName;
 
     /**
+     * The json framework to use, make sure that dependencies are imported.
+     */
+    private String jsonFramework;
+
+    /**
+     * The disallowed content-types.
+     */
+    private String[] disallowedContentTypes;
+
+    /**
      *  The cors configuration.
      */
     @Nested
@@ -118,6 +128,22 @@ public class RestConfig implements Serializable {
 
     public void setFormatParameterName(String formatParameterName) {
         this.formatParameterName = formatParameterName;
+    }
+
+    public String getJsonFramework() {
+        return jsonFramework;
+    }
+
+    public void setJsonFramework(String jsonFramework) {
+        this.jsonFramework = jsonFramework;
+    }
+
+    public String[] getDisallowedContentTypes() {
+        return disallowedContentTypes;
+    }
+
+    public void setDisallowedContentTypes(String[] disallowedContentTypes) {
+        this.disallowedContentTypes = disallowedContentTypes;
     }
 
     public CorsConfig getCors() {

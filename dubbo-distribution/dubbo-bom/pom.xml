@@ -462,11 +462,6 @@
         <artifactId>dubbo-serialization-fastjson2</artifactId>
         <version>${project.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-serialization-jdk</artifactId>
-        <version>${project.version}</version>
-      </dependency>
 
       <!-- spring-boot -->
       <dependency>
@@ -527,11 +522,6 @@
         <artifactId>dubbo-observability-spring-boot-starters</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-observability-spring-boot-autoconfigure</artifactId>
-        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
