@@ -196,7 +196,7 @@ public final class NetUtils {
     }
 
     static boolean isValidV4Address(InetAddress address) {
-        if (address == null || address.isLoopbackAddress()) {
+        if (address == null || address.isLoopbackAddress() || address.isLinkLocalAddress()) {
             return false;
         }
 
