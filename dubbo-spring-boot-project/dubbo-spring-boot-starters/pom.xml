@@ -20,9 +20,9 @@
 
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-spring-boot-project</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>dubbo-spring-boot-starters</artifactId>

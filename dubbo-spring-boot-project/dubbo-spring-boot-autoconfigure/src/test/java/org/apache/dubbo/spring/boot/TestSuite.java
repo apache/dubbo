@@ -16,13 +16,19 @@
  */
 package org.apache.dubbo.spring.boot;
 
-import org.apache.dubbo.spring.boot.autoconfigure.RelaxedDubboConfigBinderTest;
+import org.apache.dubbo.spring.boot.autoconfigure.CompatibleDubboAutoConfigurationTest;
+import org.apache.dubbo.spring.boot.autoconfigure.CompatibleDubboAutoConfigurationTestWithoutProperties;
+import org.apache.dubbo.spring.boot.autoconfigure.base.DubboAutoConfigurationOnMultipleConfigTest;
+import org.apache.dubbo.spring.boot.autoconfigure.base.DubboAutoConfigurationOnSingleConfigTest;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    RelaxedDubboConfigBinderTest.class,
+    CompatibleDubboAutoConfigurationTest.class,
+    CompatibleDubboAutoConfigurationTestWithoutProperties.class,
+    DubboAutoConfigurationOnMultipleConfigTest.class,
+    DubboAutoConfigurationOnSingleConfigTest.class
 })
 public class TestSuite {}

@@ -30,6 +30,7 @@ import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
 import io.micrometer.core.instrument.observation.MeterObservationHandler;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.handler.TracingAwareMeterObservationHandler;
 import io.micrometer.tracing.handler.TracingObservationHandler;
 import org.springframework.beans.BeansException;
@@ -184,10 +185,11 @@ public class DubboObservationAutoConfiguration
             @ConditionalOnClass(
                     name = {
                         "io.micrometer.tracing.handler.TracingAwareMeterObservationHandler",
-                        "io.micrometer.tracing.Tracer"
+                        "io.micrometer.tracing.Tracer",
+                        "io.micrometer.core.instrument.MeterRegistry"
                     })
             TracingAwareMeterObservationHandler<Observation.Context> tracingAwareMeterObservationHandler(
-                    MeterRegistry meterRegistry, io.micrometer.tracing.Tracer tracer) {
+                    MeterRegistry meterRegistry, Tracer tracer) {
                 DefaultMeterObservationHandler delegate = new DefaultMeterObservationHandler(meterRegistry);
                 return new TracingAwareMeterObservationHandler<>(delegate, tracer);
             }

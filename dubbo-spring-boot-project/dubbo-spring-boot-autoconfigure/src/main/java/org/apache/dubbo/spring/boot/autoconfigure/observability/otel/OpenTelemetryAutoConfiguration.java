@@ -228,6 +228,7 @@ public class OpenTelemetryAutoConfiguration {
                 name = "type",
                 havingValue = "W3C",
                 matchIfMissing = true)
+        @ConditionalOnClass(name = {"io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext"})
         io.opentelemetry.context.propagation.TextMapPropagator w3cTextMapPropagatorWithBaggage(
                 io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext otelCurrentTraceContext) {
             List<String> remoteFields =

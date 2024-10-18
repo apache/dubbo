@@ -487,11 +487,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-project</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-spring-boot-3-autoconfigure</artifactId>
         <version>${project.version}</version>
       </dependency>
