@@ -1,0 +1,10 @@
+org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.DubboListenerAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBinding2AutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.DubboTripleAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.observability.otel.OpenTelemetryAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.observability.DubboMicrometerTracingAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.observability.DubboObservationAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.observability.brave.BraveAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.observability.zipkin.ZipkinAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.observability.otlp.OtlpAutoConfiguration

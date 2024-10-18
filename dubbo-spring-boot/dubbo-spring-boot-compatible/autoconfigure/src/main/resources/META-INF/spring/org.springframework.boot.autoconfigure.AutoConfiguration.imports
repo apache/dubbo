@@ -1,3 +1,0 @@
-org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration
-org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBindingAutoConfiguration
-org.apache.dubbo.spring.boot.autoconfigure.DubboListenerAutoConfiguration

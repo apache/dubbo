@@ -88,14 +88,16 @@ dubbo-serialization
 dubbo-serialization-api
 dubbo-serialization-fastjson2
 dubbo-serialization-hessian2
+dubbo-spring-boot-project
 dubbo-spring-boot
 dubbo-spring-boot-actuator
+dubbo-spring-boot-actuator-autoconfigure
 dubbo-spring-boot-actuator-compatible
 dubbo-spring-boot-autoconfigure
 dubbo-spring-boot-3-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
+dubbo-spring-boot-actuator-autoconfigure-compatible
 dubbo-spring-boot-compatible
-dubbo-observability-spring-boot-starters
 dubbo-tracing-brave-zipkin-spring-boot-starter
 dubbo-tracing-otel-zipkin-spring-boot-starter
 dubbo-tracing-otel-otlp-spring-boot-starter
