@@ -140,7 +140,7 @@ public final class StreamUtils {
                 String str = encodeBase64ASCII((byte[]) value);
                 consumer.accept(key + TripleConstants.HEADER_BIN_SUFFIX, str);
             } else {
-                LOGGER.warn(
+                LOGGER.info(
                         PROTOCOL_UNSUPPORTED,
                         "",
                         "",
