@@ -84,6 +84,12 @@ public @interface Mapping {
     String[] produces() default {};
 
     /**
+     * Specifies the request body fields that the mapped handler consumes.
+     * Example: "user", "message".
+     */
+    String[] requestBody() default {};
+
+    /**
      * Indicates whether the mapping is enabled.
      * Defaults to {@code true}. If set to {@code false}, the mapping will be ignored.
      */
