@@ -88,7 +88,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         OperationService operationService = applicationModel.getBeanFactory().getOrRegisterBean(OperationService.class);
         RequestBodyService requestBodyService = new RequestBodyService(parameterService);
 
-        RequestService requestService = new RequestService(parameterService,requestBodyService,operationService);
+        RequestService requestService = new RequestService(parameterService, requestBodyService, operationService);
         openAPIGenerator =
                 new OpenAPIGenerator(defaultRequestMappingRegistry, requestService, openAPIService, responseService);
     }
