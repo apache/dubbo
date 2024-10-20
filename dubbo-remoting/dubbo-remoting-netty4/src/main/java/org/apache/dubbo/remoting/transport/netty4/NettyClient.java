@@ -153,14 +153,16 @@ public class NettyClient extends AbstractClient {
                     int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(
                             getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
 
-                    String socksProxyUserName =
-                            ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_USER_NAME);
+                    String socksProxyUserName = ConfigurationUtils.getProperty(
+                            getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_USER_NAME);
 
-                    String socksProxyPassWord =
-                            ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PASSWORD);
+                    String socksProxyPassWord = ConfigurationUtils.getProperty(
+                            getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PASSWORD);
 
-                    Socks5ProxyHandler socks5ProxyHandler =
-                            new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort), socksProxyUserName, socksProxyPassWord);
+                    Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(
+                            new InetSocketAddress(socksProxyHost, socksProxyPort),
+                            socksProxyUserName,
+                            socksProxyPassWord);
                     ch.pipeline().addFirst(socks5ProxyHandler);
                 }
             }
