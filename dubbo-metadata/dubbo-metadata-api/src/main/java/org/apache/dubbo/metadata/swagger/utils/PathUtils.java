@@ -50,7 +50,6 @@ public class PathUtils {
             if (c == OPEN) {
                 String regexBuffer = cutParameter(ci, patterns);
                 if (regexBuffer == null) {
-                    LOGGER.warn("Operation path \"{}\" contains syntax error.", uri);
                     return null;
                 }
                 pathBuffer.append(regexBuffer);

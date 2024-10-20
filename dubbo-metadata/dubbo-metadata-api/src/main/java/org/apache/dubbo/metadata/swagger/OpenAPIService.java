@@ -92,7 +92,6 @@ public class OpenAPIService {
                 String jsonString = jackson.toJson(openAPI);
                 calculatedOpenAPI = jackson.toJavaObject(jsonString, OpenAPI.class);
             } catch (JsonParseException e) {
-                LOGGER.warn("Json Processing Exception occurred: {}", e.getMessage());
                 calculatedOpenAPI = openAPI;
             }
         }
