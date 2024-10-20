@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -31,6 +32,10 @@ public final class ParamsCondition implements Condition<ParamsCondition, HttpReq
 
     private ParamsCondition(Set<NameValueExpression> expressions) {
         this.expressions = expressions;
+    }
+
+    public Set<NameValueExpression> getExpressions() {
+        return Collections.unmodifiableSet(expressions);
     }
 
     @Override

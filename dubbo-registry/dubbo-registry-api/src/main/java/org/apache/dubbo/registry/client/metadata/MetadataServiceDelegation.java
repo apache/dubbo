@@ -24,15 +24,25 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.swagger.OpenAPIGenerator;
+import org.apache.dubbo.metadata.swagger.OpenAPIService;
+import org.apache.dubbo.metadata.swagger.ParameterService;
+import org.apache.dubbo.metadata.swagger.RequestBodyService;
+import org.apache.dubbo.metadata.swagger.RequestService;
+import org.apache.dubbo.metadata.swagger.ResponseService;
+import org.apache.dubbo.metadata.swagger.model.OpenAPI;
+import org.apache.dubbo.metadata.swagger.model.OperationService;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -55,6 +65,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
+    private final OpenAPIGenerator openAPIGenerator;
     private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap =
             new ConcurrentHashMap<>();
     private URL url;
@@ -66,6 +77,20 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         registryManager = RegistryManager.getInstance(applicationModel);
+        DefaultRequestMappingRegistry defaultRequestMappingRegistry =
+                applicationModel.getBeanFactory().getBean(DefaultRequestMappingRegistry.class);
+        ResponseService responseService = applicationModel.getBeanFactory().getOrRegisterBean(ResponseService.class);
+
+        OpenAPI openAPI = new OpenAPI();
+        OpenAPIService openAPIService = new OpenAPIService(openAPI);
+
+        ParameterService parameterService = applicationModel.getBeanFactory().getOrRegisterBean(ParameterService.class);
+        OperationService operationService = applicationModel.getBeanFactory().getOrRegisterBean(OperationService.class);
+        RequestBodyService requestBodyService = new RequestBodyService(parameterService);
+
+        RequestService requestService = new RequestService(parameterService,requestBodyService,operationService);
+        openAPIGenerator =
+                new OpenAPIGenerator(defaultRequestMappingRegistry, requestService, openAPIService, responseService);
     }
 
     /**
@@ -212,6 +237,11 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
         instanceMetadataChangedListenerMap.put(consumerId, listener);
         return instanceMetadata;
+    }
+
+    @Override
+    public OpenAPI getOpenAPI() {
+        return openAPIGenerator.getOpenApi(Locale.US);
     }
 
     private SortedSet<String> getServiceURLs(

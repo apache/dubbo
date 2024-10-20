@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.swagger.model.OpenAPI;
 
 import java.util.Collections;
 import java.util.List;
@@ -226,4 +227,6 @@ public interface MetadataService {
      * @since 3.0
      */
     String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener);
+
+    OpenAPI getOpenAPI();
 }

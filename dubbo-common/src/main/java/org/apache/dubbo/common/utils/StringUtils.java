@@ -1362,4 +1362,62 @@ public final class StringUtils {
         }
         return tokens;
     }
+
+    public static String trimToNull(String substring) {
+        if (substring == null) {
+            return null;
+        }
+        String trimmed = substring.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    public static boolean contains(CharSequence seq, CharSequence searchSeq) {
+        return (seq != null && searchSeq != null) && indexOf(seq, searchSeq, 0) >= 0;
+    }
+
+    private static int indexOf(CharSequence cs, CharSequence searchChar, int start) {
+        String searchString = searchChar.toString(); // 将 searchChar 转为 String
+
+        if (cs instanceof String) {
+            return ((String) cs).indexOf(searchString, start);
+        } else if (cs instanceof StringBuilder) {
+            return ((StringBuilder) cs).indexOf(searchString, start);
+        } else if (cs instanceof StringBuffer) {
+            return ((StringBuffer) cs).indexOf(searchString, start);
+        } else {
+            return cs.toString().indexOf(searchString, start);
+        }
+    }
+
+    public static boolean containsAny(CharSequence cs, CharSequence... searchCharSequences) {
+        return containsAny(StringUtils::contains, cs, searchCharSequences);
+    }
+
+    private static boolean containsAny(
+            ToBooleanBiFunction<CharSequence, CharSequence> test,
+            CharSequence cs,
+            CharSequence... searchCharSequences) {
+
+        if (!isEmpty(cs) && searchCharSequences != null && searchCharSequences.length > 0) {
+            for (CharSequence searchCharSequence : searchCharSequences) {
+                if (test.applyAsBoolean(cs, searchCharSequence)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isEmpty(CharSequence cs) {
+        return cs == null || cs.length() == 0;
+    }
+
+    public static String defaultIfEmpty(String str, String defaultStr) {
+        return isEmpty(str) ? defaultStr : str;
+    }
+
+    @FunctionalInterface
+    private interface ToBooleanBiFunction<T, U> {
+        boolean applyAsBoolean(T t, U u);
+    }
 }

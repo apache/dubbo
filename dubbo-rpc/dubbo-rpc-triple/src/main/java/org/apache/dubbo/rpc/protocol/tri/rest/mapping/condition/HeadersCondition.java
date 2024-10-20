@@ -46,6 +46,10 @@ public final class HeadersCondition implements Condition<HeadersCondition, HttpR
         this.expressions = expressions == null ? Collections.emptySet() : expressions;
     }
 
+    public Set<NameValueExpression> getExpressions() {
+        return Collections.unmodifiableSet(expressions);
+    }
+
     private HeadersCondition(Set<NameValueExpression> expressions) {
         this.expressions = expressions;
     }

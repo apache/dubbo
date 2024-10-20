@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private RestConfig restConfig;
     private List<RequestMappingResolver> resolvers;
     private RadixTree<Registration> tree;
+    private final Map<RequestMapping, HandlerMeta> handlerMetaMap = new HashMap<>();
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -169,6 +171,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 } else if (LOGGER.isWarnEnabled()) {
                     LOGGER.internalWarn(Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists));
                 }
+                handlerMetaMap.put(mapping, handler);
             }
         } finally {
             lock.writeLock().unlock();
@@ -186,6 +189,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    public Map<RequestMapping, HandlerMeta> getRegistrations() {
+        return handlerMetaMap;
     }
 
     @Override
