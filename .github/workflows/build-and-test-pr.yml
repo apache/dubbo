@@ -182,7 +182,7 @@ jobs:
     strategy:
       fail-fast: false
     env:
-      ZOOKEEPER_VERSION: 3.6.3
+      ZOOKEEPER_VERSION: 3.7.3
     steps:
       - name: "Cache zookeeper binary archive"
         uses: actions/cache@v3
@@ -218,7 +218,7 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       CURRENT_ROLE: ${{ matrix.case-role }}
-      ZOOKEEPER_VERSION: 3.6.3
+      ZOOKEEPER_VERSION: 3.7.3
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v3
