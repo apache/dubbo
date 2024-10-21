@@ -94,7 +94,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
      * Whether set future to Thread Local when invocation mode is sync
      */
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
-            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
+            CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "false"));
 
     // -- Constructor
 
