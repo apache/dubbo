@@ -49,13 +49,9 @@ public class ProviderAuthHeaderFilter implements HeaderFilter {
             try {
                 authenticator.authenticate(invocation, url);
             } catch (Exception e) {
-                Class<?> serviceType = invoker.getInterface();
                 throw new RpcException(
                         AUTHORIZATION_EXCEPTION,
-                        "Forbid invoke remote service " + serviceType + " method " + RpcUtils.getMethodName(invocation)
-                                + "() from consumer "
-                                + invocation.getAttributes().get(Constants.REMOTE_ADDRESS_KEY) + " to provider "
-                                + RpcContext.getServiceContext().getLocalHost());
+                        "No Auth.");
             }
             invocation.getAttributes().put(Constants.AUTH_SUCCESS, Boolean.TRUE);
         }
