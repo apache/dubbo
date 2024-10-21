@@ -17,22 +17,40 @@
 package org.apache.dubbo.common.serialize.fastjson2;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
+import java.util.Arrays;
+
 public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        Class<?> aClass = null;
+        boolean classExist = false;
         try {
-            aClass = com.alibaba.fastjson2.JSONB.class;
+            for (String className : Arrays.asList(
+                    "com.alibaba.fastjson2.JSONB",
+                    "com.alibaba.fastjson2.reader.ObjectReaderCreatorASM",
+                    "com.alibaba.fastjson2.writer.ObjectWriterCreatorASM",
+                    "com.alibaba.fastjson2.JSONValidator",
+                    "com.alibaba.fastjson2.JSONFactory",
+                    "com.alibaba.fastjson2.JSONWriter",
+                    "com.alibaba.fastjson2.util.TypeUtils",
+                    "com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler")) {
+                Class<?> aClass =
+                        ClassUtils.forName(className, Thread.currentThread().getContextClassLoader());
+                if (aClass == null) {
+                    throw new ClassNotFoundException(className);
+                }
+            }
+            classExist = true;
         } catch (Throwable ignored) {
         }
 
-        if (aClass != null) {
+        if (classExist) {
             ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
             beanFactory.registerBean(Fastjson2CreatorManager.class);
             beanFactory.registerBean(Fastjson2SecurityManager.class);
