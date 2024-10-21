@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.NATIVE_STUB;
@@ -233,6 +234,7 @@ public class MetadataUtils {
 
         String version = metadata.get(METADATA_SERVICE_VERSION_NAME);
         url = url.putAttribute(METADATA_SERVICE_VERSION_NAME, version);
+        url = url.addParameter(CHECK_KEY, false);
 
         return url;
     }

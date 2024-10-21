@@ -24,8 +24,8 @@ import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
-import org.apache.dubbo.remoting.http12.h1.Http1ServerStreamChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
+import org.apache.dubbo.remoting.http12.h1.Http1SseServerChannelObserver;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
@@ -81,9 +81,9 @@ public class DefaultHttp11ServerTransportListener
             case UNARY:
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, responseObserver);
             case SERVER_STREAM:
-                responseObserver = prepareResponseObserver(new Http1ServerStreamChannelObserver(httpChannel));
+                responseObserver = prepareResponseObserver(new Http1SseServerChannelObserver(httpChannel));
                 responseObserver.addHeadersCustomizer((hs, t) ->
-                        hs.set(HttpHeaderNames.CONTENT_TYPE.getName(), MediaType.TEXT_EVENT_STREAM.getName()));
+                        hs.set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.TEXT_EVENT_STREAM.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, responseObserver);
             default:
                 throw new UnsupportedOperationException("HTTP1.x only support unary and server-stream");
@@ -104,7 +104,7 @@ public class DefaultHttp11ServerTransportListener
     protected void initializeAltSvc(URL url) {
         String protocolId = Http3Exchanger.isEnabled(url) ? "h3" : "h2";
         String value = protocolId + "=\":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort()) + '"';
-        responseObserver.addHeadersCustomizer((hs, t) -> hs.set(HttpHeaderNames.ALT_SVC.getName(), value));
+        responseObserver.addHeadersCustomizer((hs, t) -> hs.set(HttpHeaderNames.ALT_SVC.getKey(), value));
     }
 
     private static final class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {

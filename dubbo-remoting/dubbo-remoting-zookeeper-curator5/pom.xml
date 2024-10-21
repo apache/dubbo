@@ -30,7 +30,7 @@
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
     <zookeeper_version>3.7.2</zookeeper_version>
-    <curator5_version>5.1.0</curator5_version>
+    <curator5_version>5.7.1</curator5_version>
   </properties>
   <dependencies>
     <dependency>

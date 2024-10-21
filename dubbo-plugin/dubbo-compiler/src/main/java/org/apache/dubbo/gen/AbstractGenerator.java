@@ -210,14 +210,14 @@ public abstract class AbstractGenerator {
         return allServiceFiles;
     }
 
-    protected boolean enableMultipleTemplateFiles() {
+    protected boolean useMultipleTemplate(boolean multipleFiles) {
         return false;
     }
 
     private List<PluginProtos.CodeGeneratorResponse.File> buildFile(ServiceContext context) {
         List<PluginProtos.CodeGeneratorResponse.File> files = new ArrayList<>();
 
-        if (context.multipleFiles && enableMultipleTemplateFiles()) {
+        if (useMultipleTemplate(context.multipleFiles)) {
             String content = applyTemplate(getTemplateFileName(), context);
             String dir = absoluteDir(context);
 

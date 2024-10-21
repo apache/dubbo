@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.model.StubServiceDescriptor;
+import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.stub.StubInvocationUtil;
 import org.apache.dubbo.rpc.stub.StubInvoker;
 import org.apache.dubbo.rpc.stub.StubMethodHandler;
@@ -96,11 +97,16 @@ public final class DubboMetadataServiceV2Triple {
         serviceDescriptor.addMethod(getMetadataInfoProxyAsyncMethod);
     }
 
-    public static class MetadataServiceV2Stub implements MetadataServiceV2 {
+    public static class MetadataServiceV2Stub implements MetadataServiceV2, Destroyable {
         private final Invoker<MetadataServiceV2> invoker;
 
         public MetadataServiceV2Stub(Invoker<MetadataServiceV2> invoker) {
             this.invoker = invoker;
+        }
+
+        @Override
+        public void $destroy() {
+            invoker.destroy();
         }
 
         @Override

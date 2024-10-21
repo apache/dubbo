@@ -16,11 +16,15 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import java.nio.charset.StandardCharsets;
+
 public final class HttpConstants {
 
     public static final String TRAILERS = "trailers";
 
     public static final String CHUNKED = "chunked";
+
+    public static final String NO_CACHE = "no-cache";
 
     public static final String X_FORWARDED_PROTO = "x-forwarded-proto";
     public static final String X_FORWARDED_HOST = "x-forwarded-host";
@@ -28,6 +32,9 @@ public final class HttpConstants {
 
     public static final String HTTPS = "https";
     public static final String HTTP = "http";
+
+    public static final byte[] SERVER_SENT_EVENT_DATA_PREFIX_BYTES = "data:".getBytes(StandardCharsets.US_ASCII);
+    public static final byte[] SERVER_SENT_EVENT_LF_BYTES = "\n\n".getBytes(StandardCharsets.US_ASCII);
 
     private HttpConstants() {}
 }

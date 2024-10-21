@@ -17,17 +17,24 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class CodecUtils {
@@ -37,13 +44,18 @@ public final class CodecUtils {
     private final List<HttpMessageEncoderFactory> encoderFactories;
     private final Map<String, Optional<HttpMessageEncoderFactory>> encoderCache = new ConcurrentHashMap<>();
     private final Map<String, Optional<HttpMessageDecoderFactory>> decoderCache = new ConcurrentHashMap<>();
+    private Set<String> disallowedContentTypes = Collections.emptySet();
 
     public CodecUtils(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         decoderFactories = frameworkModel.getActivateExtensions(HttpMessageDecoderFactory.class);
         encoderFactories = frameworkModel.getActivateExtensions(HttpMessageEncoderFactory.class);
-        decoderFactories.forEach(f -> decoderCache.putIfAbsent(f.mediaType().getName(), Optional.of(f)));
-        encoderFactories.forEach(f -> encoderCache.putIfAbsent(f.mediaType().getName(), Optional.of(f)));
+
+        Configuration configuration = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
+        String contentTypes = configuration.getString(Constants.H2_SETTINGS_DISALLOWED_CONTENT_TYPES, null);
+        if (contentTypes != null) {
+            disallowedContentTypes = new HashSet<>(StringUtils.tokenizeToList(contentTypes));
+        }
     }
 
     public HttpMessageDecoder determineHttpMessageDecoder(URL url, String mediaType) {
@@ -69,9 +81,10 @@ public final class CodecUtils {
     public Optional<HttpMessageDecoderFactory> determineHttpMessageDecoderFactory(String mediaType) {
         Assert.notNull(mediaType, "mediaType must not be null");
         return decoderCache.computeIfAbsent(mediaType, k -> {
-            for (HttpMessageDecoderFactory decoderFactory : decoderFactories) {
-                if (decoderFactory.supports(k)) {
-                    return Optional.of(decoderFactory);
+            for (HttpMessageDecoderFactory factory : decoderFactories) {
+                if (factory.supports(k)
+                        && !disallowedContentTypes.contains(factory.mediaType().getName())) {
+                    return Optional.of(factory);
                 }
             }
             return Optional.empty();
@@ -81,9 +94,10 @@ public final class CodecUtils {
     public Optional<HttpMessageEncoderFactory> determineHttpMessageEncoderFactory(String mediaType) {
         Assert.notNull(mediaType, "mediaType must not be null");
         return encoderCache.computeIfAbsent(mediaType, k -> {
-            for (HttpMessageEncoderFactory encoderFactory : encoderFactories) {
-                if (encoderFactory.supports(k)) {
-                    return Optional.of(encoderFactory);
+            for (HttpMessageEncoderFactory factory : encoderFactories) {
+                if (factory.supports(k)
+                        && !disallowedContentTypes.contains(factory.mediaType().getName())) {
+                    return Optional.of(factory);
                 }
             }
             return Optional.empty();
