@@ -1,0 +1,478 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-dubbo-fastjson2-32-benchmark-job
+spec:
+  schedule: "20 * * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          terminationGracePeriodSeconds: 300
+          containers:
+            - name: dubbo-benchmark
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+              image: registry.cn-shenzhen.aliyuncs.com/beinglang/dev-base:v1.0
+              command: [ "/bin/bash", "/home/dev/script/start.sh" ]
+              env:
+                - name: BENCHMARK_NAME
+                  value: "dubbo-fastjson2-3.2"
+                - name: BRANCH
+                  value: "3.2"
+                - name: SERVER_MODULE_NAME
+                  value: "dubbo-fastjson2-server"
+                - name: CLIENT_MODULE_NAME
+                  value: "dubbo-fastjson2-client"
+                - name: SERVER_PROFILING_NAME
+                  value: "dubbo-fastjson2-server-3.2"
+                - name: CLIENT_PROFILING_NAME
+                  value: "dubbo-fastjson2-client-3.2"
+                - name: SHELL_HOME
+                  value: /home/dev/script
+                - name: MYSQL_SECRET
+                  value: /home/dev/.mysql/config
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /home/dev/script
+                - name: empty-dir
+                  mountPath: /home/dev/.m2/repository
+                - name: git-ssh
+                  mountPath: /home/dev/.ssh
+                - name: mysql-secret
+                  mountPath: /home/dev/.mysql
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: "3072Mi"
+                limits:
+                  cpu: "4"
+                  memory: "3072Mi"
+          volumes:
+            - name: script-volume
+              configMap:
+                name: benchmark-shell-configmap
+            - name: git-ssh
+              secret:
+                secretName: git-ssh
+            - name: empty-dir
+              emptyDir: { }
+            - name: mysql-secret
+              secret:
+                secretName: mysql-secret
+          restartPolicy: Never
+
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-dubbo-hessianlite-32-benchmark-job
+spec:
+  schedule: "20 * * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          terminationGracePeriodSeconds: 300
+          containers:
+            - name: dubbo-benchmark
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+              image: registry.cn-shenzhen.aliyuncs.com/beinglang/dev-base:v1.0
+              command: [ "/bin/bash", "/home/dev/script/start.sh" ]
+              env:
+                - name: BENCHMARK_NAME
+                  value: "dubbo-hessianlite-3.2"
+                - name: BRANCH
+                  value: "3.2"
+                - name: SERVER_MODULE_NAME
+                  value: "dubbo-hessianlite-server"
+                - name: CLIENT_MODULE_NAME
+                  value: "dubbo-hessianlite-client"
+                - name: SERVER_PROFILING_NAME
+                  value: "dubbo-hessianlite-server-3.2"
+                - name: CLIENT_PROFILING_NAME
+                  value: "dubbo-hessianlite-client-3.2"
+                - name: SHELL_HOME
+                  value: /home/dev/script
+                - name: MYSQL_SECRET
+                  value: /home/dev/.mysql/config
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /home/dev/script
+                - name: empty-dir
+                  mountPath: /home/dev/.m2/repository
+                - name: git-ssh
+                  mountPath: /home/dev/.ssh
+                - name: mysql-secret
+                  mountPath: /home/dev/.mysql
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: "3072Mi"
+                limits:
+                  cpu: "4"
+                  memory: "3072Mi"
+          volumes:
+            - name: script-volume
+              configMap:
+                name: benchmark-shell-configmap
+            - name: git-ssh
+              secret:
+                secretName: git-ssh
+            - name: empty-dir
+              emptyDir: { }
+            - name: mysql-secret
+              secret:
+                secretName: mysql-secret
+          restartPolicy: Never
+
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-grpc-benchmark-job
+spec:
+  schedule: "20 * * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          terminationGracePeriodSeconds: 300
+          containers:
+            - name: dubbo-benchmark
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+              image: registry.cn-shenzhen.aliyuncs.com/beinglang/dev-base:v1.0
+              command: [ "/bin/bash", "/home/dev/script/start.sh" ]
+              env:
+                - name: BENCHMARK_NAME
+                  value: "grpc"
+                - name: BRANCH
+                  value: "3.2"
+                - name: SERVER_MODULE_NAME
+                  value: "native-grpc-server"
+                - name: CLIENT_MODULE_NAME
+                  value: "native-grpc-client"
+                - name: SERVER_PROFILING_NAME
+                  value: "grpc-server"
+                - name: CLIENT_PROFILING_NAME
+                  value: "grpc-client"
+                - name: SHELL_HOME
+                  value: /home/dev/script
+                - name: MYSQL_SECRET
+                  value: /home/dev/.mysql/config
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /home/dev/script
+                - name: empty-dir
+                  mountPath: /home/dev/.m2/repository
+                - name: git-ssh
+                  mountPath: /home/dev/.ssh
+                - name: mysql-secret
+                  mountPath: /home/dev/.mysql
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: "3072Mi"
+                limits:
+                  cpu: "4"
+                  memory: "3072Mi"
+          volumes:
+            - name: script-volume
+              configMap:
+                name: benchmark-shell-configmap
+            - name: git-ssh
+              secret:
+                secretName: git-ssh
+            - name: empty-dir
+              emptyDir: { }
+            - name: mysql-secret
+              secret:
+                secretName: mysql-secret
+          restartPolicy: Never
+
+---
+
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-spring-cloud-benchmark-job
+spec:
+  schedule: "40 * * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          terminationGracePeriodSeconds: 300
+          containers:
+            - name: dubbo-benchmark
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+              image: registry.cn-shenzhen.aliyuncs.com/beinglang/dev-base:v1.0
+              command: [ "/bin/bash", "/home/dev/script/start.sh" ]
+              env:
+                - name: BENCHMARK_NAME
+                  value: "spring-cloud"
+                - name: BRANCH
+                  value: "3.2"
+                - name: SERVER_MODULE_NAME
+                  value: "springcloud-server"
+                - name: CLIENT_MODULE_NAME
+                  value: "springcloud-client"
+                - name: SERVER_PROFILING_NAME
+                  value: "spring-cloud-server"
+                - name: CLIENT_PROFILING_NAME
+                  value: "spring-cloud-client"
+                - name: SHELL_HOME
+                  value: /home/dev/script
+                - name: MYSQL_SECRET
+                  value: /home/dev/.mysql/config
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /home/dev/script
+                - name: empty-dir
+                  mountPath: /home/dev/.m2/repository
+                - name: git-ssh
+                  mountPath: /home/dev/.ssh
+                - name: mysql-secret
+                  mountPath: /home/dev/.mysql
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: "3072Mi"
+                limits:
+                  cpu: "4"
+                  memory: "3072Mi"
+          volumes:
+            - name: script-volume
+              configMap:
+                name: benchmark-shell-configmap
+            - name: git-ssh
+              secret:
+                secretName: git-ssh
+            - name: empty-dir
+              emptyDir: { }
+            - name: mysql-secret
+              secret:
+                secretName: mysql-secret
+          restartPolicy: Never
+
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-triple-32-benchmark-job
+spec:
+  schedule: "40 * * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          terminationGracePeriodSeconds: 300
+          containers:
+            - name: dubbo-benchmark
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+              image: registry.cn-shenzhen.aliyuncs.com/beinglang/dev-base:v1.0
+              command: [ "/bin/bash", "/home/dev/script/start.sh" ]
+              env:
+                - name: BENCHMARK_NAME
+                  value: "triple-3.2"
+                - name: BRANCH
+                  value: "3.2"
+                - name: SERVER_MODULE_NAME
+                  value: "dubbo-triple-server"
+                - name: CLIENT_MODULE_NAME
+                  value: "dubbo-triple-client"
+                - name: SERVER_PROFILING_NAME
+                  value: "dubbo-triple-server-3.2"
+                - name: CLIENT_PROFILING_NAME
+                  value: "dubbo-triple-client-3.2"
+                - name: SHELL_HOME
+                  value: /home/dev/script
+                - name: MYSQL_SECRET
+                  value: /home/dev/.mysql/config
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /home/dev/script
+                - name: empty-dir
+                  mountPath: /home/dev/.m2/repository
+                - name: git-ssh
+                  mountPath: /home/dev/.ssh
+                - name: mysql-secret
+                  mountPath: /home/dev/.mysql
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: "3072Mi"
+                limits:
+                  cpu: "4"
+                  memory: "3072Mi"
+          volumes:
+            - name: script-volume
+              configMap:
+                name: benchmark-shell-configmap
+            - name: git-ssh
+              secret:
+                secretName: git-ssh
+            - name: empty-dir
+              emptyDir: { }
+            - name: mysql-secret
+              secret:
+                secretName: mysql-secret
+          restartPolicy: Never
+
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-dubbo-kryo-32-benchmark-job
+spec:
+  schedule: "40 * * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          terminationGracePeriodSeconds: 300
+          containers:
+            - name: dubbo-benchmark
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+              image: registry.cn-shenzhen.aliyuncs.com/beinglang/dev-base:v1.0
+              command: [ "/bin/bash", "/home/dev/script/start.sh" ]
+              env:
+                - name: BENCHMARK_NAME
+                  value: "dubbo-kryo-3.2"
+                - name: BRANCH
+                  value: "3.2"
+                - name: SERVER_MODULE_NAME
+                  value: "dubbo-kryo-server"
+                - name: CLIENT_MODULE_NAME
+                  value: "dubbo-kryo-client"
+                - name: SERVER_PROFILING_NAME
+                  value: "dubbo-kryo-server-3.2"
+                - name: CLIENT_PROFILING_NAME
+                  value: "dubbo-kryo-client-3.2"
+                - name: SHELL_HOME
+                  value: /home/dev/script
+                - name: MYSQL_SECRET
+                  value: /home/dev/.mysql/config
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /home/dev/script
+                - name: empty-dir
+                  mountPath: /home/dev/.m2/repository
+                - name: git-ssh
+                  mountPath: /home/dev/.ssh
+                - name: mysql-secret
+                  mountPath: /home/dev/.mysql
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: "3072Mi"
+                limits:
+                  cpu: "4"
+                  memory: "3072Mi"
+          volumes:
+            - name: script-volume
+              configMap:
+                name: benchmark-shell-configmap
+            - name: git-ssh
+              secret:
+                secretName: git-ssh
+            - name: empty-dir
+              emptyDir: { }
+            - name: mysql-secret
+              secret:
+                secretName: mysql-secret
+          restartPolicy: Never
+
+---
+
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-dubbo-pb-32-benchmark-job
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          terminationGracePeriodSeconds: 300
+          containers:
+            - name: dubbo-benchmark
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+              image: registry.cn-shenzhen.aliyuncs.com/beinglang/dev-base:v1.0
+              command: [ "/bin/bash", "/home/dev/script/start.sh" ]
+              env:
+                - name: BENCHMARK_NAME
+                  value: "dubbo-pb-3.2"
+                - name: BRANCH
+                  value: "3.2"
+                - name: SERVER_MODULE_NAME
+                  value: "dubbo-pb-server"
+                - name: CLIENT_MODULE_NAME
+                  value: "dubbo-pb-client"
+                - name: SERVER_PROFILING_NAME
+                  value: "dubbo-pb-server-3.2"
+                - name: CLIENT_PROFILING_NAME
+                  value: "dubbo-pb-client-3.2"
+                - name: SHELL_HOME
+                  value: /home/dev/script
+                - name: MYSQL_SECRET
+                  value: /home/dev/.mysql/config
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /home/dev/script
+                - name: empty-dir
+                  mountPath: /home/dev/.m2/repository
+                - name: git-ssh
+                  mountPath: /home/dev/.ssh
+                - name: mysql-secret
+                  mountPath: /home/dev/.mysql
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: "3072Mi"
+                limits:
+                  cpu: "4"
+                  memory: "3072Mi"
+          volumes:
+            - name: script-volume
+              configMap:
+                name: benchmark-shell-configmap
+            - name: git-ssh
+              secret:
+                secretName: git-ssh
+            - name: empty-dir
+              emptyDir: { }
+            - name: mysql-secret
+              secret:
+                secretName: mysql-secret
+          restartPolicy: Never
+
+---
