@@ -93,10 +93,10 @@ public final class HttpUtils {
     }
 
     public static List<String> parseAccept(String header) {
-        List<Item<String>> mediaTypes = new ArrayList<>();
         if (header == null) {
             return Collections.emptyList();
         }
+        List<Item<String>> mediaTypes = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             int index = item.indexOf(';');
             mediaTypes.add(new Item<>(StringUtils.substring(item, 0, index), parseQuality(item, index)));

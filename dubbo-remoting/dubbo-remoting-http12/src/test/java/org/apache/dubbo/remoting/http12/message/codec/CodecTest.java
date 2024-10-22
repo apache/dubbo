@@ -75,7 +75,7 @@ public class CodecTest {
         Assertions.assertEquals("Hello, world", res);
 
         in = new ByteArrayInputStream(utf8Bytes);
-        codec = new PlainTextCodec();
+        codec = PlainTextCodec.INSTANCE;
         res = (String) codec.decode(in, String.class, Charsets.UTF_8);
         Assertions.assertEquals("你好，世界", res);
 

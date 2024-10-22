@@ -27,11 +27,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @Activate
 public final class HtmlCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    private static final HtmlCodec INSTANCE = new HtmlCodec();
-
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return INSTANCE;
+        return frameworkModel == FrameworkModel.defaultModel() ? HtmlCodec.INSTANCE : new HtmlCodec(frameworkModel);
     }
 
     @Override
