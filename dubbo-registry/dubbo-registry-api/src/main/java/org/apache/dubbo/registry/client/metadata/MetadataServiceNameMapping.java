@@ -130,7 +130,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                                 + waitTime + ". " + "Service Interface: "
                                 + serviceInterface + ". " + "Origin Content: "
                                 + oldConfigContent + ". " + "Ticket: "
-                                + configItem.getTicket() + ". " + "Excepted context: "
+                                + configItem.getTicket() + ". " + "Expected Content: "
                                 + newConfigContent);
                         Thread.sleep(waitTime);
                     }
