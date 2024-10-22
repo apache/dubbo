@@ -522,6 +522,7 @@ public interface AnnotationUtils {
 
     /**
      * Filter default value of Annotation type
+     *
      * @param annotationType annotation type from {@link Annotation#annotationType()}
      * @param attributes
      * @return
@@ -544,6 +545,7 @@ public interface AnnotationUtils {
 
     /**
      * Filter default value of Annotation type
+     *
      * @param annotation
      * @param attributes
      * @return
@@ -554,6 +556,7 @@ public interface AnnotationUtils {
 
     /**
      * Get attributes of annotation
+     *
      * @param annotation
      * @return
      */

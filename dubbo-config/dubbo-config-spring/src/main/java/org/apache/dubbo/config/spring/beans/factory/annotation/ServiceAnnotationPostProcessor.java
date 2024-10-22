@@ -20,7 +20,9 @@ import org.apache.dubbo.common.compact.Dubbo2CompactUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AnnotationUtils;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -36,19 +38,6 @@ import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.ObjectUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
-
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
@@ -82,7 +71,19 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.util.CollectionUtils;
+
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
@@ -112,6 +113,18 @@ public class ServiceAnnotationPostProcessor
                 InitializingBean {
 
     public static final String BEAN_NAME = "dubboServiceAnnotationPostProcessor";
+
+    private final static String[] IGNORE_ATTRIBUTE_NAMES = ObjectUtils.of(
+            "provider",
+            "monitor",
+            "application",
+            "module",
+            "registry",
+            "protocol",
+            "methods",
+            "interfaceName",
+            "parameters",
+            "executor");
 
     private static final List<Class<? extends Annotation>> serviceAnnotationTypes = loadServiceAnnotationTypes();
 
@@ -248,7 +261,7 @@ public class ServiceAnnotationPostProcessor
             Set<BeanDefinitionHolder> beanDefinitionHolders =
                     findServiceBeanDefinitionHolders(scanner, packageToScan, registry, beanNameGenerator);
 
-            if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
+            if (CollectionUtils.isNotEmpty(beanDefinitionHolders)) {
                 if (logger.isInfoEnabled()) {
                     List<String> serviceClasses = new ArrayList<>(beanDefinitionHolders.size());
                     for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
@@ -460,20 +473,8 @@ public class ServiceAnnotationPostProcessor
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
-        String[] ignoreAttributeNames = ObjectUtils.of(
-                "provider",
-                "monitor",
-                "application",
-                "module",
-                "registry",
-                "protocol",
-                "methods",
-                "interfaceName",
-                "parameters",
-                "executor");
-
         propertyValues.addPropertyValues(
-                new AnnotationPropertyValuesAdapter(serviceAnnotationAttributes, environment, ignoreAttributeNames));
+                new AnnotationPropertyValuesAdapter(serviceAnnotationAttributes, environment, IGNORE_ATTRIBUTE_NAMES));
 
         // set config id, for ConfigManager cache key
         // builder.addPropertyValue("id", beanName);
@@ -504,14 +505,14 @@ public class ServiceAnnotationPostProcessor
 
         // Convert registry[] to registryIds
         String[] registryConfigIds = (String[]) serviceAnnotationAttributes.get("registry");
-        if (registryConfigIds != null && registryConfigIds.length > 0) {
+        if (ArrayUtils.isNotEmpty(registryConfigIds)) {
             resolveStringArray(registryConfigIds);
             builder.addPropertyValue("registryIds", StringUtils.join(registryConfigIds, ','));
         }
 
         // Convert protocol[] to protocolIds
         String[] protocolConfigIds = (String[]) serviceAnnotationAttributes.get("protocol");
-        if (protocolConfigIds != null && protocolConfigIds.length > 0) {
+        if (ArrayUtils.isNotEmpty(protocolConfigIds)) {
             resolveStringArray(protocolConfigIds);
             builder.addPropertyValue("protocolIds", StringUtils.join(protocolConfigIds, ','));
         }

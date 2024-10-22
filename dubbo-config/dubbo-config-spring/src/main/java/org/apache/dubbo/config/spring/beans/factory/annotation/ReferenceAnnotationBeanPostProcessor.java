@@ -205,9 +205,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         if (beanDefinition instanceof AnnotatedBeanDefinition) {
             AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
             String beanClassName = SpringCompatUtils.getFactoryMethodReturnType(annotatedBeanDefinition);
-            if (beanClassName != null && ReferenceBean.class.getName().equals(beanClassName)) {
-                return true;
-            }
+            return ReferenceBean.class.getName().equals(beanClassName);
         }
         return false;
     }
@@ -295,11 +293,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                                 + beanMethodSignature);
             }
 
-            Class interfaceClass = beanClass;
-
             // set attribute instead of property values
             beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
-            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
+            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, beanClass);
             beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
         } else {
             // raw reference bean

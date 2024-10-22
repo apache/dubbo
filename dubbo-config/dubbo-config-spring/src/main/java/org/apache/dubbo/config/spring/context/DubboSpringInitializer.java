@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -134,7 +135,7 @@ public class DubboSpringInitializer {
 
         // set module attributes
         Map<String, Object> moduleAttributes = context.getModuleAttributes();
-        if (moduleAttributes.size() > 0) {
+        if (CollectionUtils.isNotEmptyMap(moduleAttributes)) {
             moduleModel.getAttributes().putAll(moduleAttributes);
         }
 
@@ -198,7 +199,6 @@ public class DubboSpringInitializer {
     }
 
     private static void customize(DubboSpringInitContext context) {
-
         // find initialization customizers
         Set<DubboSpringInitCustomizer> customizers = FrameworkModel.defaultModel()
                 .getExtensionLoader(DubboSpringInitCustomizer.class)

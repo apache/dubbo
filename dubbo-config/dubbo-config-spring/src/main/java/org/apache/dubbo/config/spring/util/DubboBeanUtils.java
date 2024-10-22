@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
@@ -183,7 +184,7 @@ public interface DubboBeanUtils {
 
     static boolean checkBeanExists(ConfigurableListableBeanFactory beanFactory, Class<?> targetClass) {
         String[] beanNames = beanFactory.getBeanNamesForType(targetClass, true, false);
-        return (beanNames != null && beanNames.length > 0);
+        return ArrayUtils.isNotEmpty(beanNames);
     }
 
     static ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor(
