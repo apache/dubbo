@@ -34,6 +34,6 @@ public class EndStreamQueueCommand extends StreamQueueCommand {
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2DataFrame(true), promise);
+        ctx.writeAndFlush(new DefaultHttp2DataFrame(true), promise);
     }
 }

@@ -59,6 +59,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.ReferenceCountUtil;
@@ -99,15 +100,11 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     public TripleClientStream(
-            FrameworkModel frameworkModel,
-            Executor executor,
-            Channel parent,
-            ClientStream.Listener listener,
-            TripleWriteQueue writeQueue) {
+            FrameworkModel frameworkModel, Executor executor, Channel parent, ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
-        this.writeQueue = writeQueue;
+        this.writeQueue = new TripleWriteQueue();
         this.streamChannelFuture = initHttp2StreamChannel(parent);
     }
 
@@ -138,7 +135,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(streamChannelFuture, headers);
         return writeQueue.enqueueFuture(headerCmd, parent.eventLoop()).addListener(future -> {
-            if (!future.isSuccess()) {
+            if (!future.isSuccess() && !(future.cause() instanceof Http2NoMoreStreamIdsException)) {
                 transportException(future.cause());
             }
         });

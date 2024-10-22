@@ -55,6 +55,6 @@ public class HeaderQueueCommand extends StreamQueueCommand {
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2HeadersFrame(headers, endStream), promise);
+        ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream), promise);
     }
 }
