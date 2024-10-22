@@ -220,6 +220,18 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return producesCondition;
     }
 
+    public ConsumesCondition getConsumesCondition() {
+        return consumesCondition;
+    }
+
+    public HeadersCondition getHeadersCondition() {
+        return headersCondition;
+    }
+
+    public ParamsCondition getParamsCondition() {
+        return paramsCondition;
+    }
+
     public CorsMeta getCors() {
         return cors;
     }

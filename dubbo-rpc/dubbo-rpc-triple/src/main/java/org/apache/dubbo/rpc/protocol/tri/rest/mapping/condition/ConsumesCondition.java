@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,6 +75,17 @@ public final class ConsumesCondition implements Condition<ConsumesCondition, Htt
 
     private ConsumesCondition(List<MediaTypeExpression> expressions) {
         this.expressions = expressions;
+    }
+
+    public List<MediaType> getMediaTypes() {
+        List<MediaTypeExpression> expressions = this.expressions;
+        int size = expressions.size();
+        List<MediaType> mediaTypes = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            MediaTypeExpression expr = expressions.get(i);
+            mediaTypes.add(new MediaType(expr.getType(), expr.getSubType()));
+        }
+        return mediaTypes;
     }
 
     @Override
