@@ -110,7 +110,7 @@ public class DubboConfigurationProperties {
 
     private Map<String, MetadataReportConfig> metadataReports = new LinkedHashMap<>();
 
-    private Map<String, MetricsConfig> metricses = new LinkedHashMap<>();
+    private Map<String, MetricsConfig> metricsMap = new LinkedHashMap<>();
 
     private Map<String, TracingConfig> tracings = new LinkedHashMap<>();
 
@@ -282,12 +282,12 @@ public class DubboConfigurationProperties {
         this.metadataReports = metadataReports;
     }
 
-    public Map<String, MetricsConfig> getMetricses() {
-        return metricses;
+    public Map<String, MetricsConfig> getMetricsMap() {
+        return metricsMap;
     }
 
-    public void setMetricses(Map<String, MetricsConfig> metricses) {
-        this.metricses = metricses;
+    public void setMetricsMap(Map<String, MetricsConfig> metricsMap) {
+        this.metricsMap = metricsMap;
     }
 
     public Map<String, TracingConfig> getTracings() {
