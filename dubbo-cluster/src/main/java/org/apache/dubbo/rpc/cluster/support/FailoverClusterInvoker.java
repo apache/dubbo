@@ -34,8 +34,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRYABLE_FUNCTION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_MULTIPLE_RETRIES;
 
 /**
@@ -50,8 +52,13 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(FailoverClusterInvoker.class);
 
+    private final RetryableFunction retryableFunction;
+
     public FailoverClusterInvoker(Directory<T> directory) {
         super(directory);
+        this.retryableFunction = getUrl().getOrDefaultApplicationModel()
+                .getExtensionLoader(RetryableFunction.class)
+                .getOrDefaultExtension(getUrl().getParameter(RETRYABLE_FUNCTION_KEY, DEFAULT_KEY));
     }
 
     @Override
@@ -77,7 +84,6 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);
             invoked.add(invoker);
             RpcContext.getServiceContext().setInvokers((List) invoked);
-            boolean success = false;
             try {
                 Result result = invokeWithContext(invoker, invocation);
                 if (le != null && logger.isWarnEnabled()) {
@@ -98,18 +104,16 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                                     + le.getMessage(),
                             le);
                 }
-                success = true;
                 return result;
-            } catch (RpcException e) {
-                if (e.isBiz()) { // biz exception.
-                    throw e;
+            } catch (Throwable t) {
+                providers.add(invoker.getUrl().getAddress());
+                if (t instanceof RpcException) {
+                    le = (RpcException) t;
+                } else {
+                    le = new RpcException(t.getMessage(), t);
                 }
-                le = e;
-            } catch (Throwable e) {
-                le = new RpcException(e.getMessage(), e);
-            } finally {
-                if (!success) {
-                    providers.add(invoker.getUrl().getAddress());
+                if (!retryableFunction.retryable(le)) {
+                    throw le;
                 }
             }
         }
