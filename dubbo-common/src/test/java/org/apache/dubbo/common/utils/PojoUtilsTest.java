@@ -1066,6 +1066,20 @@ class PojoUtilsTest {
         }
     }
 
+    @Test
+    void testPojoWithPrimitivesStringClass() {
+        String expect = "abc123";
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("value", expect);
+        jsonObject.put("class", "java.lang.String");
+        Object[] objects = new Object[] {jsonObject};
+        Class<?>[] types = new Class<?>[] {String.class};
+        Type[] gtType = new Type[] {String.class};
+        Object[] realize = PojoUtils.realize(objects, types, gtType);
+        assertEquals(1, realize.length);
+        assertEquals(expect, realize[0]);
+    }
+
     public enum Day {
         SUNDAY,
         MONDAY,

@@ -612,7 +612,11 @@ public class PojoUtils {
                             } else if (field != null) {
                                 value = realize1(value, field.getType(), field.getGenericType(), mapGeneric, history);
                                 try {
-                                    field.set(dest, value);
+                                    if (value.getClass() == String.class && dest.getClass() == String.class) {
+                                        return value;
+                                    } else {
+                                        field.set(dest, value);
+                                    }
                                 } catch (IllegalAccessException e) {
                                     throw new RuntimeException(
                                             "Failed to set field " + name + " of pojo "
@@ -774,7 +778,8 @@ public class PojoUtils {
         for (Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
             try {
                 result = acls.getDeclaredField(fieldName);
-                if (!Modifier.isPublic(result.getModifiers())) {
+                // the field is not public and it not jdk class, we will setAccessible to true
+                if (!Modifier.isPublic(result.getModifiers()) && acls.getClassLoader() != null) {
                     result.setAccessible(true);
                 }
             } catch (NoSuchFieldException e) {
