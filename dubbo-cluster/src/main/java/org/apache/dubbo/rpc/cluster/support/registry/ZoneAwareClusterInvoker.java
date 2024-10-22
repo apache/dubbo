@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support.registry;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
@@ -59,6 +61,12 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 directory.getConsumerUrl().getOrDefaultApplicationModel().getExtensionLoader(ZoneDetector.class);
         if (loader.hasExtension("default")) {
             zoneDetector = loader.getExtension("default");
+        }
+        if (zoneDetector == null) {
+            Set<ZoneDetector> zoneDetectors = loader.getSupportedExtensionInstances();
+            if (CollectionUtils.isNotEmpty(zoneDetectors)) {
+                zoneDetector = zoneDetectors.iterator().next();
+            }
         }
     }
 
