@@ -133,11 +133,18 @@ public class PojoUtils {
     }
 
     public static Object generalize(Object pojo) {
-        return generalize(pojo, new IdentityHashMap<>());
+        return generalize(pojo, null);
+    }
+
+    public static Object generalize(Object pojo, Boolean genericWithClz) {
+        if (null == genericWithClz) {
+            genericWithClz = GENERIC_WITH_CLZ;
+        }
+        return generalize(pojo, new IdentityHashMap<Object, Object>(), genericWithClz);
     }
 
     @SuppressWarnings("unchecked")
-    private static Object generalize(Object pojo, Map<Object, Object> history) {
+    private static Object generalize(Object pojo, Map<Object, Object> history, boolean genericWithClz) {
         if (pojo == null) {
             return null;
         }
@@ -179,7 +186,7 @@ public class PojoUtils {
             history.put(pojo, dest);
             for (int i = 0; i < len; i++) {
                 Object obj = Array.get(pojo, i);
-                dest[i] = generalize(obj, history);
+                dest[i] = generalize(obj, history, genericWithClz);
             }
             return dest;
         }
@@ -189,7 +196,7 @@ public class PojoUtils {
             Collection<Object> dest = (pojo instanceof List<?>) ? new ArrayList<>(len) : new HashSet<>(len);
             history.put(pojo, dest);
             for (Object obj : src) {
-                dest.add(generalize(obj, history));
+                dest.add(generalize(obj, history, genericWithClz));
             }
             return dest;
         }
@@ -198,13 +205,15 @@ public class PojoUtils {
             Map<Object, Object> dest = createMap(src);
             history.put(pojo, dest);
             for (Map.Entry<Object, Object> obj : src.entrySet()) {
-                dest.put(generalize(obj.getKey(), history), generalize(obj.getValue(), history));
+                dest.put(
+                        generalize(obj.getKey(), history, genericWithClz),
+                        generalize(obj.getValue(), history, genericWithClz));
             }
             return dest;
         }
         Map<String, Object> map = new HashMap<>();
         history.put(pojo, map);
-        if (GENERIC_WITH_CLZ) {
+        if (genericWithClz) {
             map.put("class", pojo.getClass().getName());
         }
         for (Method method : pojo.getClass().getMethods()) {
@@ -213,7 +222,7 @@ public class PojoUtils {
                 try {
                     map.put(
                             ReflectUtils.getPropertyNameFromBeanReadMethod(method),
-                            generalize(method.invoke(pojo), history));
+                            generalize(method.invoke(pojo), history, genericWithClz));
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
@@ -232,7 +241,7 @@ public class PojoUtils {
                         }
                     }
                     if (fieldValue != null) {
-                        map.put(field.getName(), generalize(fieldValue, history));
+                        map.put(field.getName(), generalize(fieldValue, history, genericWithClz));
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
