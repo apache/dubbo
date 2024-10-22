@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -272,5 +273,19 @@ public class ServiceInstanceMetadataUtils {
                 params.put(parameterName, parameterValue);
             }
         }
+    }
+
+    public static Map<String, String> getMetadataParams(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
+        return isBlank(param) ? emptyMap() : (Map) JsonUtils.getJson().toJavaObject(param, Map.class);
+    }
+
+    public static String getMetadataParamsPropertyValue(ServiceInstance serviceInstance, String propertyName) {
+        Map<String, String> metadata = getMetadataParams(serviceInstance);
+        if (metadata.isEmpty()) {
+            return null;
+        }
+        return metadata.get(propertyName);
     }
 }
