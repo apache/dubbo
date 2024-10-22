@@ -53,6 +53,7 @@ public class FileCacheStore {
     private final File cacheFile;
     private final File lockFile;
     private final FileLock directoryLock;
+    private static final int MAX_RETRIES = 3;
 
     private FileCacheStore(String cacheFilePath, File cacheFile, File lockFile, FileLock directoryLock) {
         this.cacheFilePath = cacheFilePath;
@@ -150,10 +151,21 @@ public class FileCacheStore {
 
         Path pathOfFile = f.toPath();
 
-        try {
-            Files.delete(pathOfFile);
-        } catch (IOException ioException) {
-            logger.debug("Failed to delete file " + f.getAbsolutePath(), ioException);
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            try {
+                Files.delete(pathOfFile);
+                if (!Files.exists(pathOfFile)) {
+                    logger.debug("Successfully deleted file " + f.getAbsolutePath());
+                    return;
+                }
+            } catch (IOException ioException) {
+                logger.debug("Failed to delete file " + f.getAbsolutePath() + " on attempt " + (i + 1), ioException);
+            }
+            try {
+                Thread.sleep(1000); // Pause before retrying
+            } catch (InterruptedException e) {
+                logger.warn("Thread interrupted while waiting to retry file deletion", e);
+            }
         }
     }
 
