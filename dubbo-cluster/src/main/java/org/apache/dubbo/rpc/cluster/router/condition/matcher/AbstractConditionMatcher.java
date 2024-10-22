@@ -69,44 +69,31 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
     public boolean isMatch(Map<String, String> sample, URL param, Invocation invocation, boolean isWhenCondition) {
         String value = getValue(sample, param, invocation);
         if (value == null) {
-            // if key does not present in whichever of url, invocation or attachment based on the matcher type, then
-            // return false.
+            // If key does not exist in any url, invocation, or attachment based on the matcher type, return false.
             return false;
         }
 
-        if (!matches.isEmpty() && mismatches.isEmpty()) {
-            for (String match : matches) {
-                if (doPatternMatch(match, value, param, invocation, isWhenCondition)) {
-                    return true;
-                }
+        /**
+         * check mismatch conditions first, then check match conditions.
+         * Therefore, if the same condition exists in both mismatch conditions and match conditions,
+         * only the one in mismatches works, and false will be returned if this condition matches.
+         */
+        for (String mismatch : mismatches) {
+            if (doPatternMatch(mismatch, value, param, invocation, isWhenCondition)) {
+                return false;
             }
-            return false;
         }
-
-        if (!mismatches.isEmpty() && matches.isEmpty()) {
-            for (String mismatch : mismatches) {
-                if (doPatternMatch(mismatch, value, param, invocation, isWhenCondition)) {
-                    return false;
-                }
+        for (String match : matches) {
+            if (doPatternMatch(match, value, param, invocation, isWhenCondition)) {
+                return true;
             }
-            return true;
         }
-
-        if (!matches.isEmpty() && !mismatches.isEmpty()) {
-            // when both mismatches and matches contain the same value, then using mismatches first
-            for (String mismatch : mismatches) {
-                if (doPatternMatch(mismatch, value, param, invocation, isWhenCondition)) {
-                    return false;
-                }
-            }
-            for (String match : matches) {
-                if (doPatternMatch(match, value, param, invocation, isWhenCondition)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return false;
+        /**
+         * If there are only mismatch conditions, then it is used to exclude cases,
+         * return true if it does not meet any mismatch condition.
+         * Otherwise, return false because no match conditions are met.
+         */
+        return !mismatches.isEmpty() && matches.isEmpty();
     }
 
     @Override
