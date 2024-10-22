@@ -705,10 +705,17 @@ public class NacosRegistry extends FailbackRegistry {
 
     private URL buildURL(URL consumerURL, Instance instance) {
         Map<String, String> metadata = instance.getMetadata();
+        setWeight(metadata, instance.getWeight());
         String protocol = metadata.get(PROTOCOL_KEY);
         String path = metadata.get(PATH_KEY);
         URL url = new ServiceConfigURL(protocol, instance.getIp(), instance.getPort(), path, instance.getMetadata());
         return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, null);
+    }
+
+
+    private void setWeight(Map<String, String> metadata, double nacosWeight) {
+        long weight = Math.round(org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT * nacosWeight);
+        metadata.put(org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY, String.valueOf(weight));
     }
 
     private Instance createInstance(URL url) {
