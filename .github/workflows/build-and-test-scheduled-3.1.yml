@@ -85,7 +85,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
     env:
-      ZOOKEEPER_VERSION: 3.7.3
+      ZOOKEEPER_VERSION: 3.7.2
     steps:
       - uses: actions/cache@v3
         name: "Cache zookeeper binary archive"
