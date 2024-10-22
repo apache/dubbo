@@ -22,11 +22,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.rpc.RpcException.AUTHORIZATION_EXCEPTION;
 
@@ -49,9 +47,7 @@ public class ProviderAuthHeaderFilter implements HeaderFilter {
             try {
                 authenticator.authenticate(invocation, url);
             } catch (Exception e) {
-                throw new RpcException(
-                        AUTHORIZATION_EXCEPTION,
-                        "No Auth.");
+                throw new RpcException(AUTHORIZATION_EXCEPTION, "No Auth.");
             }
             invocation.getAttributes().put(Constants.AUTH_SUCCESS, Boolean.TRUE);
         }
