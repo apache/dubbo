@@ -24,10 +24,10 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
@@ -44,7 +44,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
@@ -81,7 +80,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     private final AtomicBoolean executorSubmit = new AtomicBoolean(false);
     private final ExecutorService ruleManageExecutor =
-            Executors.newFixedThreadPool(1, new NamedThreadFactory("Dubbo-Migration-Listener"));
+            ExecutorsUtil.newSingleThreadExecutorService("Dubbo-Migration-Listener");
 
     protected ScheduledFuture<?> localRuleMigrationFuture;
     protected Future<?> ruleMigrationFuture;
@@ -208,8 +207,14 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
                     ExecutorService executorService = null;
                     try {
-                        executorService = Executors.newFixedThreadPool(
-                                Math.min(handlers.size(), 100), new NamedThreadFactory("Dubbo-Invoker-Migrate"));
+                        int size = Math.min(handlers.size(), 100);
+                        executorService = ExecutorsUtil.newExecutorService(
+                                size,
+                                size,
+                                0L,
+                                TimeUnit.MILLISECONDS,
+                                new LinkedBlockingQueue<>(),
+                                "Dubbo-Invoker-Migrate");
                         List<Future<?>> migrationFutures = new ArrayList<>(handlers.size());
                         for (MigrationRuleHandler<?> handler : handlers.values()) {
                             Future<?> future = executorService.submit(() -> handler.doMigrate(this.rule));

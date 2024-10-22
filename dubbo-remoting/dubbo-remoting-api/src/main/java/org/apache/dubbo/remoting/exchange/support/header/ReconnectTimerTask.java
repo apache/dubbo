@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
 
@@ -35,10 +35,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
     private final int idleTimeout;
 
     public ReconnectTimerTask(
-            ChannelProvider channelProvider,
-            HashedWheelTimer hashedWheelTimer,
-            Long heartbeatTimeoutTick,
-            int idleTimeout) {
+            ChannelProvider channelProvider, Timer hashedWheelTimer, Long heartbeatTimeoutTick, int idleTimeout) {
         super(channelProvider, hashedWheelTimer, heartbeatTimeoutTick);
         this.idleTimeout = idleTimeout;
     }

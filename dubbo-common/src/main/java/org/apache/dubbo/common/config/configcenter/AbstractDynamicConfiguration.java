@@ -19,10 +19,11 @@ package org.apache.dubbo.common.config.configcenter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -82,7 +83,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     /**
      * The thread pool for workers who execute the tasks
      */
-    private final ThreadPoolExecutor workersThreadPool;
+    private final ExecutorService workersThreadPool;
 
     private final String group;
 
@@ -221,7 +222,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         return value;
     }
 
-    protected ThreadPoolExecutor getWorkersThreadPool() {
+    protected ExecutorService getWorkersThreadPool() {
         return workersThreadPool;
     }
 
@@ -235,15 +236,15 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         }
     }
 
-    protected ThreadPoolExecutor initWorkersThreadPool(
+    protected ExecutorService initWorkersThreadPool(
             String threadPoolPrefixName, int threadPoolSize, long keepAliveTime) {
-        return new ThreadPoolExecutor(
+        return ExecutorsUtil.newExecutorService(
                 threadPoolSize,
                 threadPoolSize,
                 keepAliveTime,
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(),
-                new NamedThreadFactory(threadPoolPrefixName, true));
+                threadPoolPrefixName);
     }
 
     protected static String getThreadPoolPrefixName(URL url) {

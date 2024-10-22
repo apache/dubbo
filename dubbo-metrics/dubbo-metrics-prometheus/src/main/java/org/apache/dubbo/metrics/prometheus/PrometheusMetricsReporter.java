@@ -19,13 +19,12 @@ package org.apache.dubbo.metrics.prometheus;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -78,8 +77,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
             String username = url.getParameter(PROMETHEUS_PUSHGATEWAY_USERNAME_KEY);
             String password = url.getParameter(PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY);
 
-            NamedThreadFactory threadFactory = new NamedThreadFactory("prometheus-push-job", true);
-            pushJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
+            pushJobExecutor = ExecutorsUtil.newScheduledExecutorService(1, "prometheus-push-job");
             PushGateway pushGateway = new PushGateway(baseUrl);
             if (!StringUtils.isBlank(username)) {
                 pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));

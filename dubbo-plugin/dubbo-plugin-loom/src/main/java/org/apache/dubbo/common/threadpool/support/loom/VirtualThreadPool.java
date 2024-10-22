@@ -18,6 +18,7 @@ package org.apache.dubbo.common.threadpool.support.loom;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.DubboUncaughtExceptionHandler;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -35,7 +36,9 @@ public class VirtualThreadPool implements ThreadPool {
     public Executor getExecutor(URL url) {
         String name =
                 url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
-        return Executors.newThreadPerTaskExecutor(
-                Thread.ofVirtual().name(name, 1).factory());
+        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual()
+                .name(name, 1)
+                .uncaughtExceptionHandler(DubboUncaughtExceptionHandler.getInstance())
+                .factory());
     }
 }

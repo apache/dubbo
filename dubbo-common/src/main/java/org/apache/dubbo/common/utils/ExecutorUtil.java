@@ -19,12 +19,12 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
@@ -32,13 +32,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
 
 public class ExecutorUtil {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExecutorUtil.class);
-    private static final ThreadPoolExecutor SHUTDOWN_EXECUTOR = new ThreadPoolExecutor(
-            0,
-            1,
-            0L,
-            TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(100),
-            new NamedThreadFactory("Close-ExecutorService-Timer", true));
+    private static final ExecutorService SHUTDOWN_EXECUTOR = ExecutorsUtil.newExecutorService(
+            0, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(100), "Close-ExecutorService-Timer");
 
     public static boolean isTerminated(Executor executor) {
         if (!(executor instanceof ExecutorService)) {

@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.constants.LoadbalanceRules;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Constants;
@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +55,7 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
     /**
      * uses a single worker thread operating off an bounded queue
      */
-    private volatile ThreadPoolExecutor executor = null;
+    private volatile ExecutorService executor = null;
 
     private final AdaptiveMetrics adaptiveMetrics;
 
@@ -62,17 +63,17 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
         adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
     }
 
-    private ThreadPoolExecutor getExecutor() {
+    private ExecutorService getExecutor() {
         if (null == executor) {
             synchronized (this) {
                 if (null == executor) {
-                    executor = new ThreadPoolExecutor(
+                    executor = ExecutorsUtil.newExecutorService(
                             1,
                             1,
                             0L,
                             TimeUnit.MILLISECONDS,
                             new LinkedBlockingQueue<>(1024),
-                            new NamedInternalThreadFactory("Dubbo-framework-loadbalance-adaptive", true),
+                            "Dubbo-framework-loadbalance-adaptive",
                             new ThreadPoolExecutor.DiscardOldestPolicy());
                     GlobalResourcesRepository.getInstance().registerDisposable(() -> this.executor.shutdown());
                 }

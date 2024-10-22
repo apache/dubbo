@@ -17,9 +17,7 @@
 package org.apache.dubbo.common.threadpool;
 
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,7 +48,7 @@ public class MemoryLimitCalculator {
             refresh();
             if (refreshStarted.compareAndSet(false, true)) {
                 ScheduledExecutorService scheduledExecutorService =
-                        Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Memory-Calculator"));
+                        ExecutorsUtil.newScheduledExecutorService(1, "Dubbo-Memory-Calculator");
                 // check every 50 ms to improve performance
                 scheduledExecutorService.scheduleWithFixedDelay(
                         MemoryLimitCalculator::refresh, 50, 50, TimeUnit.MILLISECONDS);

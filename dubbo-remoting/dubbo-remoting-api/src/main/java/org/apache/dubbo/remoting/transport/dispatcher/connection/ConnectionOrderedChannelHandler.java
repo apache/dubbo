@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.transport.dispatcher.connection;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.ExecutionException;
@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -43,20 +44,21 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_QUEUE_WARNING_
 
 public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
-    protected final ThreadPoolExecutor connectionExecutor;
+    protected final ExecutorService connectionExecutor;
     private final int queueWarningLimit;
 
     public ConnectionOrderedChannelHandler(ChannelHandler handler, URL url) {
         super(handler, url);
         String threadName = url.getParameter(THREAD_NAME_KEY, DEFAULT_THREAD_NAME);
-        connectionExecutor = new ThreadPoolExecutor(
+        connectionExecutor = ExecutorsUtil.newExecutorService(
                 1,
                 1,
                 0L,
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(url.getPositiveParameter(CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),
-                new NamedThreadFactory(threadName, true),
-                new AbortPolicyWithReport(threadName, url)); // FIXME There's no place to release connectionExecutor!
+                threadName,
+                new AbortPolicyWithReport(threadName, url));
+        // FIXME There's no place to release connectionExecutor!
         queueWarningLimit = url.getParameter(CONNECT_QUEUE_WARNING_SIZE, DEFAULT_CONNECT_QUEUE_WARNING_SIZE);
     }
 
@@ -107,14 +109,16 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
     }
 
     private void checkQueueLength() {
-        if (connectionExecutor.getQueue().size() > queueWarningLimit) {
-            logger.warn(
-                    TRANSPORT_CONNECTION_LIMIT_EXCEED,
-                    "",
-                    "",
-                    "connectionordered channel handler queue size: "
-                            + connectionExecutor.getQueue().size() + " exceed the warning limit number :"
-                            + queueWarningLimit);
+        if (connectionExecutor instanceof ThreadPoolExecutor) {
+            BlockingQueue<Runnable> queue = ((ThreadPoolExecutor) connectionExecutor).getQueue();
+            if (queue.size() > queueWarningLimit) {
+                logger.warn(
+                        TRANSPORT_CONNECTION_LIMIT_EXCEED,
+                        "",
+                        "",
+                        "connectionordered channel handler queue size: " + queue.size()
+                                + " exceed the warning limit number :" + queueWarningLimit);
+            }
         }
     }
 }
