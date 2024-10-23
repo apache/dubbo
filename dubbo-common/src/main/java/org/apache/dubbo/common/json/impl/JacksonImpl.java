@@ -19,6 +19,7 @@ package org.apache.dubbo.common.json.impl;
 import org.apache.dubbo.common.extension.Activate;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper.Builder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -34,6 +36,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public class JacksonImpl extends AbstractJsonUtilImpl {
 
     private volatile JsonMapper mapper;
+    private final List<Module> customModules = new ArrayList<>();
 
     @Override
     public String getName() {
@@ -113,10 +116,24 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
     }
 
     protected Builder createBuilder() {
-        return JsonMapper.builder()
+        Builder builder = JsonMapper.builder()
                 .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .serializationInclusion(Include.NON_NULL)
                 .addModule(new JavaTimeModule());
+
+        for (Module module : customModules) {
+            builder.addModule(module);
+        }
+
+        return builder;
+    }
+
+    public void addModule(Module module) {
+        synchronized (this) {
+            customModules.add(module);
+            // Invalidate the mapper to rebuild it
+            this.mapper = null;
+        }
     }
 }
