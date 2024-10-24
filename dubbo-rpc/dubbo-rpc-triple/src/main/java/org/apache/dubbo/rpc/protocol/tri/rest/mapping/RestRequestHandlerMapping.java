@@ -36,8 +36,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestHttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
-import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.MethodsCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
@@ -51,19 +49,15 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RestRequestHandlerMapping.class);
 
-    private final FrameworkModel frameworkModel;
     private final RequestMappingRegistry requestMappingRegistry;
     private final ArgumentResolver argumentResolver;
-    private final TypeConverter typeConverter;
     private final ContentNegotiator contentNegotiator;
     private final CodecUtils codecUtils;
 
     public RestRequestHandlerMapping(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         requestMappingRegistry = beanFactory.getOrRegisterBean(DefaultRequestMappingRegistry.class);
         argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
-        typeConverter = beanFactory.getOrRegisterBean(GeneralTypeConverter.class);
         contentNegotiator = beanFactory.getOrRegisterBean(ContentNegotiator.class);
         codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
     }
@@ -89,7 +83,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
         }
 
         String requestMediaType = request.mediaType();
-        String responseMediaType = contentNegotiator.negotiate(request);
+        String responseMediaType = contentNegotiator.negotiate(request, meta);
         if (responseMediaType != null) {
             response.setContentType(responseMediaType);
         } else {
@@ -104,7 +98,6 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
                 response,
                 meta.getParameters(),
                 argumentResolver,
-                typeConverter,
                 codecUtils.determineHttpMessageEncoder(url, responseMediaType));
 
         if (HttpMethods.supportBody(method) && !RequestUtils.isFormOrMultiPart(request)) {

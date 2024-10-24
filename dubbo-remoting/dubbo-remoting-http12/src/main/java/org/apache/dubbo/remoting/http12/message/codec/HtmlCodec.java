@@ -17,27 +17,43 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.io.StreamUtils;
-import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.remoting.http12.HttpJsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-public class HtmlCodec implements HttpMessageCodec {
+public final class HtmlCodec implements HttpMessageCodec {
+
+    public static final HtmlCodec INSTANCE = new HtmlCodec();
+
+    private final HttpJsonUtils httpJsonUtils;
+
+    private HtmlCodec() {
+        this(FrameworkModel.defaultModel());
+    }
+
+    public HtmlCodec(FrameworkModel frameworkModel) {
+        httpJsonUtils = frameworkModel.getBeanFactory().getOrRegisterBean(HttpJsonUtils.class);
+    }
 
     @Override
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
+        if (data == null) {
+            return;
+        }
         try {
             if (data instanceof CharSequence) {
                 os.write((data.toString()).getBytes(charset));
                 return;
             }
-            os.write(JsonUtils.toJson(data).getBytes(charset));
+            os.write(httpJsonUtils.toJson(data).getBytes(charset));
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
