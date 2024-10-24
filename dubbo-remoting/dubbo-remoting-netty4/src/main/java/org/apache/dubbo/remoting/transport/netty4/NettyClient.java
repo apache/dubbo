@@ -65,6 +65,10 @@ public class NettyClient extends AbstractClient {
 
     private static final String SOCKS_PROXY_PORT = "socksProxyPort";
 
+    private static final String SOCKS_PROXY_USER_NAME = "java.net.socks.username";
+
+    private static final String SOCKS_PROXY_PASSWORD = "java.net.socks.password";
+
     private static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyClient.class);
@@ -117,6 +121,8 @@ public class NettyClient extends AbstractClient {
                 .group(EVENT_LOOP_GROUP.get())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.TCP_FASTOPEN_CONNECT, true)
+                .option(ChannelOption.TCP_FASTOPEN, 3)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 // .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
                 .channel(socketChannelClass());
@@ -143,10 +149,20 @@ public class NettyClient extends AbstractClient {
                 String socksProxyHost =
                         ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
                 if (socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
+
                     int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(
                             getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
-                    Socks5ProxyHandler socks5ProxyHandler =
-                            new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
+
+                    String socksProxyUserName = ConfigurationUtils.getProperty(
+                            getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_USER_NAME);
+
+                    String socksProxyPassWord = ConfigurationUtils.getProperty(
+                            getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PASSWORD);
+
+                    Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(
+                            new InetSocketAddress(socksProxyHost, socksProxyPort),
+                            socksProxyUserName,
+                            socksProxyPassWord);
                     ch.pipeline().addFirst(socks5ProxyHandler);
                 }
             }
