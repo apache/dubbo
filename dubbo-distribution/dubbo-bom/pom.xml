@@ -477,6 +477,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-spring-boot-actuator-autoconfigure</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -493,7 +498,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-actuator-compatible</artifactId>
+        <artifactId>dubbo-spring-boot-actuator-autoconfigure</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -503,23 +508,22 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-spring-boot-actuator-autoconfigure-compatible</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-spring-boot-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-interceptor</artifactId>
+        <artifactId>dubbo-spring-boot</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-spring-boot-starters</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-observability-spring-boot-starters</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
       </dependency>

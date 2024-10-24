@@ -1,0 +1,44 @@
+{
+  "properties": [
+    {
+      "name": "dubbo.enabled",
+      "description": "Whether enable autoconfiguration of dubbo, default value is <code>true</code>.",
+      "type": "java.util.Set<java.lang.String>"
+    },
+    {
+      "name": "dubbo.labels",
+      "description": "The labels for these service providers, enabling categorization and grouping, thereby enhancing their management and monitoring, the multiple-value is delimited by ';'.",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "dubbo.env.keys",
+      "description": "The keys for specify environment-specific keys, allowing for differentiation and utilization of various runtime environments (e.g., development, testing, production), the multiple-value is delimited by comma.",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "dubbo.config.override",
+      "description": " Whether to allow configuration override in Dubbo, default value is <code>true</code>.",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "dubbo.config.multiple",
+      "description": "Whether to enable multiple configurations in Dubbo, allowing multiple configurations to be loaded and used, default value is <code>true</code>.",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "dubbo.config.mode",
+      "description": "Config processing mode. See <code>org.apache.dubbo.config.context.ConfigMode</code>.",
+      "type": "org.apache.dubbo.config.context.ConfigMode"
+    },
+    {
+      "name": "dubbo.config-center.include-spring-env",
+      "description": "Whether to include Spring Environment.",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "dubbo.scan.base-packages",
+      "description": "The basePackages to scan, the multiple-value is delimited by comma @see EnableDubbo#scanBasePackages().",
+      "type": "java.util.Set<java.lang.String>"
+    }
+  ]
+}

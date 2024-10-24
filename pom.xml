@@ -89,9 +89,15 @@
     <module>dubbo-dependencies</module>
     <module>dubbo-metadata</module>
     <module>dubbo-metrics</module>
-    <module>dubbo-spring-boot</module>
     <module>dubbo-test</module>
     <module>dubbo-maven-plugin</module>
+    <module>dubbo-spring-boot-project/dubbo-spring-boot-actuator</module>
+    <module>dubbo-spring-boot-project/dubbo-spring-boot-autoconfigure</module>
+    <module>dubbo-spring-boot-project/dubbo-spring-boot-compatible</module>
+    <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+    <module>dubbo-spring-boot-project/dubbo-spring-boot-starters</module>
+    <module>dubbo-spring-boot-project/dubbo-spring-boot</module>
+    <module>dubbo-spring-boot-project/dubbo-spring-boot-actuator-autoconfigure</module>
   </modules>
 
   <scm>
@@ -491,6 +497,15 @@
         <doclint>none</doclint>
       </properties>
     </profile>
+    <profile>
+      <id>jdk-version-ge-17</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+      </modules>
+    </profile>
     <!-- jacoco: mvn validate -Pjacoco  -->
     <profile>
       <id>jacoco</id>
@@ -636,6 +651,9 @@
     </profile>
     <profile>
       <id>release</id>
+      <modules>
+        <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+      </modules>
       <properties>
         <log4j2_version>2.17.2</log4j2_version>
         <jacoco.skip>false</jacoco.skip>
