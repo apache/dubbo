@@ -223,8 +223,10 @@ public abstract class AbstractGenerator {
         } else {
             methodContext.httpMethod = null;
             methodContext.path = "";
-            methodContext.body = "*";
+            methodContext.body = "";
         }
+
+        methodContext.hasBody = !Strings.isNullOrEmpty(methodContext.body);
 
         Location methodLocation = locations.stream()
                 .filter(location -> location.getPathCount() == METHOD_NUMBER_OF_PATHS
@@ -430,6 +432,7 @@ public abstract class AbstractGenerator {
         public String path;
         public String body; // requestBody
         public boolean hasMappings;
+        public boolean hasBody;
 
         // This method mimics the upper-casing method ogf gRPC to ensure compatibility
         // See https://github.com/grpc/grpc-java/blob/v1.8.0/compiler/src/java_plugin/cpp/java_generator.cpp#L58
