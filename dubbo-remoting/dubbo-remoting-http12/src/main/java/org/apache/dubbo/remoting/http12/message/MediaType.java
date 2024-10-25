@@ -20,6 +20,8 @@ public final class MediaType {
 
     public static final String WILDCARD = "*";
 
+    public static final String TEXT = "text";
+
     public static final MediaType ALL = new MediaType(WILDCARD, WILDCARD);
 
     public static final MediaType APPLICATION_JSON = new MediaType("application", "json");
@@ -40,21 +42,21 @@ public final class MediaType {
 
     public static final MediaType MULTIPART_FORM_DATA = new MediaType("multipart", "form-data");
 
-    public static final MediaType TEXT_JSON = new MediaType("text", "json");
+    public static final MediaType TEXT_JSON = new MediaType(TEXT, "json");
 
-    public static final MediaType TEXT_XML = new MediaType("text", "xml");
+    public static final MediaType TEXT_XML = new MediaType(TEXT, "xml");
 
-    public static final MediaType TEXT_YAML = new MediaType("text", "yaml");
+    public static final MediaType TEXT_YAML = new MediaType(TEXT, "yaml");
 
-    public static final MediaType TEXT_CSS = new MediaType("text", "css");
+    public static final MediaType TEXT_CSS = new MediaType(TEXT, "css");
 
-    public static final MediaType TEXT_JAVASCRIPT = new MediaType("text", "javascript");
+    public static final MediaType TEXT_JAVASCRIPT = new MediaType(TEXT, "javascript");
 
-    public static final MediaType TEXT_HTML = new MediaType("text", "html");
+    public static final MediaType TEXT_HTML = new MediaType(TEXT, "html");
 
-    public static final MediaType TEXT_PLAIN = new MediaType("text", "plain");
+    public static final MediaType TEXT_PLAIN = new MediaType(TEXT, "plain");
 
-    public static final MediaType TEXT_EVENT_STREAM = new MediaType("text", "event-stream");
+    public static final MediaType TEXT_EVENT_STREAM = new MediaType(TEXT, "event-stream");
 
     private final String name;
 
@@ -81,6 +83,6 @@ public final class MediaType {
     }
 
     public boolean isPureText() {
-        return this == TEXT_HTML || this == TEXT_PLAIN;
+        return TEXT.equals(type);
     }
 }
