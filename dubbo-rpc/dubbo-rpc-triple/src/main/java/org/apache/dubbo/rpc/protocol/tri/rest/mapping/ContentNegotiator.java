@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.CodecUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,7 @@ public class ContentNegotiator {
         codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
     }
 
-    public String negotiate(HttpRequest request) {
+    public String negotiate(HttpRequest request, HandlerMeta meta) {
         String mediaType;
 
         // 1. find mediaType by producible
@@ -60,11 +61,19 @@ public class ContentNegotiator {
 
         // 2. find mediaType by accept header
         List<String> accepts = HttpUtils.parseAccept(request.accept());
+        String preferMediaType = null;
+        boolean hasAll = false;
         if (accepts != null) {
             for (int i = 0, size = accepts.size(); i < size; i++) {
-                mediaType = getSuitableMediaType(accepts.get(i));
-                if (mediaType != null) {
-                    return mediaType;
+                String accept = accepts.get(i);
+                if (!hasAll && MediaType.ALL.getName().equals(accept)) {
+                    hasAll = true;
+                }
+                if (preferMediaType == null) {
+                    mediaType = getSuitableMediaType(accept);
+                    if (mediaType != null) {
+                        preferMediaType = mediaType;
+                    }
                 }
             }
         }
@@ -78,15 +87,29 @@ public class ContentNegotiator {
             }
         }
 
-        // 5. find mediaType by extension
+        // 4. find mediaType by extension
         String path = request.rawPath();
         int index = path.lastIndexOf('.');
         if (index != -1) {
-            String extension = path.substring(index + 1);
-            return getMediaTypeByExtension(extension);
+            mediaType = getMediaTypeByExtension(path.substring(index + 1));
+            if (mediaType != null) {
+                return mediaType;
+            }
         }
 
-        return null;
+        if (preferMediaType == null) {
+            return null;
+        }
+
+        // Keep consistent with Spring MVC behavior
+        if (hasAll && preferMediaType.startsWith("text/")) {
+            Class<?> responseType = meta.getMethodMetadata().getActualResponseType();
+            if (responseType != null && !CharSequence.class.isAssignableFrom(responseType)) {
+                return MediaType.APPLICATION_JSON.getName();
+            }
+        }
+
+        return preferMediaType;
     }
 
     public boolean supportExtension(String extension) {
