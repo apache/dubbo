@@ -284,7 +284,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
       TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
     strategy:
       fail-fast: false
@@ -350,7 +350,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
     steps:
       - uses: actions/checkout@v3
         with:
@@ -387,7 +387,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
       TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
     strategy:
       fail-fast: false
@@ -453,7 +453,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
     steps:
       - uses: actions/checkout@v3
         with:
