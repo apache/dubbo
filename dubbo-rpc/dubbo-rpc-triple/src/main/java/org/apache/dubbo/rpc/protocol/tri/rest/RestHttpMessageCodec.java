@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.io.ByteArrayInputStream;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessageEncoder {
 
@@ -43,6 +45,7 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
     private final HttpResponse response;
     private final ParameterMeta[] parameters;
     private final ArgumentResolver argumentResolver;
+    private final TypeConverter typeConverter;
     private final HttpMessageEncoder messageEncoder;
     private final Charset charset;
 
@@ -51,11 +54,13 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
             HttpResponse response,
             ParameterMeta[] parameters,
             ArgumentResolver argumentResolver,
+            TypeConverter typeConverter,
             HttpMessageEncoder messageEncoder) {
         this.request = request;
         this.response = response;
         this.parameters = parameters;
         this.argumentResolver = argumentResolver;
+        this.typeConverter = typeConverter;
         this.messageEncoder = messageEncoder;
         charset = request.charsetOrDefault();
     }
@@ -106,6 +111,10 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
     public void encode(OutputStream os, Object data) throws EncodeException {
         if (data != null) {
             Class<?> type = data.getClass();
+            if (type == Optional.class) {
+                encode(os, ((Optional<?>) data).orElse(null));
+                return;
+            }
             try {
                 if (type == byte[].class) {
                     os.write((byte[]) data);
@@ -120,6 +129,9 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
                         StreamUtils.copy(is, os);
                     }
                     return;
+                }
+                if (messageEncoder.mediaType().isPureText() && type != String.class) {
+                    data = typeConverter.convert(data, String.class);
                 }
             } catch (HttpStatusException e) {
                 throw e;

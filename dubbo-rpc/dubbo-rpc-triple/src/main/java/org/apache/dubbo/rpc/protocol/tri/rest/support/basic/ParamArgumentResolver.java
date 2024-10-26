@@ -151,7 +151,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
             case Param:
                 return RequestUtils.getParametersMap(request);
             case Header:
-                return request.headers();
+                return request.headers().asMap();
             case Cookie:
                 Collection<HttpCookie> cookies = request.cookies();
                 if (cookies.isEmpty()) {
