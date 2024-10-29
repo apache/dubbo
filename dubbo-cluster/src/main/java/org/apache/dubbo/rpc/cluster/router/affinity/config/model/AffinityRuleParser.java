@@ -28,18 +28,15 @@ import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V31;
 
 /**
- * %YAML1.2
- *
- * scope: application
+ * # dubbo/config/group/{$name}.affinity-router
+ * configVersion: v3.1
+ * scope: service # Or application
+ * key: service.apache.com
+ * enabled: true
  * runtime: true
- * force: false
- * conditions:
- *   - >
- *     method!=sayHello =>
- *   - >
- *     ip=127.0.0.1
- *     =>
- *     1.1.1.1
+ * affinityAware:
+ *   key: region
+ *   ratio: 20
  */
 public class AffinityRuleParser {
 
