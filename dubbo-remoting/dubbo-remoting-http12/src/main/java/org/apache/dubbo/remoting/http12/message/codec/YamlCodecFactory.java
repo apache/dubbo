@@ -27,11 +27,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @Activate(onClass = "org.yaml.snakeyaml.Yaml")
 public final class YamlCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    private final YamlCodec instance = new YamlCodec();
-
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return instance;
+        return frameworkModel == FrameworkModel.defaultModel() ? YamlCodec.INSTANCE : new YamlCodec(frameworkModel);
     }
 
     @Override

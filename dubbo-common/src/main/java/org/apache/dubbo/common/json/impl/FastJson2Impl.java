@@ -16,42 +16,56 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import org.apache.dubbo.common.extension.Activate;
+
 import java.lang.reflect.Type;
 import java.util.List;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONValidator;
-import com.alibaba.fastjson2.JSONWriter;
+import com.alibaba.fastjson2.JSONWriter.Feature;
+import com.alibaba.fastjson2.util.TypeUtils;
 
+@Activate(order = 100, onClass = "com.alibaba.fastjson2.JSON")
 public class FastJson2Impl extends AbstractJsonUtilImpl {
 
     @Override
+    public String getName() {
+        return "fastjson2";
+    }
+
+    @Override
     public boolean isJson(String json) {
-        JSONValidator validator = JSONValidator.from(json);
-        return validator.validate();
+        return JSONValidator.from(json).validate();
     }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {
-        return com.alibaba.fastjson2.JSON.parseObject(json, type);
+        return JSON.parseObject(json, type);
     }
 
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
-        return com.alibaba.fastjson2.JSON.parseArray(json, clazz);
+        return JSON.parseArray(json, clazz);
     }
 
     @Override
     public String toJson(Object obj) {
-        return com.alibaba.fastjson2.JSON.toJSONString(obj, JSONWriter.Feature.WriteEnumsUsingName);
+        return JSON.toJSONString(obj, Feature.WriteEnumsUsingName);
+    }
+
+    @Override
+    public String toPrettyJson(Object obj) {
+        return JSON.toJSONString(obj, Feature.WriteEnumsUsingName, Feature.PrettyFormat);
     }
 
     @Override
     public Object convertObject(Object obj, Type type) {
-        return com.alibaba.fastjson2.util.TypeUtils.cast(obj, type);
+        return TypeUtils.cast(obj, type);
     }
 
     @Override
     public Object convertObject(Object obj, Class<?> clazz) {
-        return com.alibaba.fastjson2.util.TypeUtils.cast(obj, clazz);
+        return TypeUtils.cast(obj, clazz);
     }
 }

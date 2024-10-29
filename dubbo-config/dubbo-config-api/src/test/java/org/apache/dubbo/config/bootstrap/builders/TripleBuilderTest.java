@@ -94,6 +94,13 @@ class TripleBuilderTest {
     }
 
     @Test
+    void connectionInitialWindowSize() {
+        TripleBuilder builder = TripleBuilder.newBuilder();
+        builder.connectionInitialWindowSize(8192);
+        Assertions.assertEquals(8192, builder.build().getConnectionInitialWindowSize());
+    }
+
+    @Test
     void maxFrameSize() {
         TripleBuilder builder = TripleBuilder.newBuilder();
         builder.maxFrameSize(4096);
@@ -120,6 +127,7 @@ class TripleBuilderTest {
                 .enablePush(true)
                 .maxConcurrentStreams(Integer.MAX_VALUE)
                 .initialWindowSize(4096)
+                .connectionInitialWindowSize(8192)
                 .maxFrameSize(1024)
                 .maxHeaderListSize(500);
 

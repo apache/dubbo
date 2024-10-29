@@ -47,23 +47,31 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.io.RawInputStreamFacade;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
+import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
+import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
 import static org.codehaus.plexus.util.FileUtils.getFiles;
 
 @Mojo(
@@ -89,6 +97,8 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
     private String protocVersion;
     @Parameter(required = false, defaultValue = "${project.build.directory}/protoc-plugins")
     private File protocPluginDirectory;
+    @Parameter(required = true, defaultValue = "${project.build.directory}/protoc-dependencies")
+    private File temporaryProtoFileDirectory;
     @Parameter(required = true, property = "dubboGenerateType", defaultValue = "tri")
     private String dubboGenerateType;
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -150,8 +160,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
         getLog().info("using protocExecutable: " + protocExecutable);
         DubboProtocPlugin dubboProtocPlugin = buildDubboProtocPlugin(dubboVersion, dubboGenerateType, protocPluginDirectory);
         getLog().info("build dubbo protoc plugin:" + dubboProtocPlugin + " success");
-        List<String> commandArgs = defaultProtocCommandBuilder.buildProtocCommandArgs(new ProtocMetaData(
-            protocExecutable, protoSourceDir, findAllProtoFiles(protoSourceDir), outputDir, dubboProtocPlugin
+        List<String> commandArgs = defaultProtocCommandBuilder.buildProtocCommandArgs(new ProtocMetaData(protocExecutable, makeAllProtoPaths(), findAllProtoFiles(protoSourceDir), outputDir, dubboProtocPlugin
         ));
         if (!outputDir.exists()) {
             FileUtils.mkdir(outputDir.getAbsolutePath());
@@ -443,6 +452,78 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
         return targetFile;
     }
 
+    protected Set<File> makeAllProtoPaths() {
+        File temp = temporaryProtoFileDirectory;
+        if (temp.exists()) {
+            try {
+                cleanDirectory(temp);
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to clean up temporary proto file directory", e);
+            }
+        }
+        Set<File> protoDirectories = new LinkedHashSet<>();
+        if (protoSourceDir.exists()) {
+            protoDirectories.add(protoSourceDir);
+        }
+        //noinspection deprecation
+        for (Artifact artifact : project.getCompileArtifacts()) {
+            File file = artifact.getFile();
+            if (file.isFile() && file.canRead() && !file.getName().endsWith(".xml")) {
+                try (JarFile jar = new JarFile(file)) {
+                    Enumeration<JarEntry> jarEntries = jar.entries();
+                    while (jarEntries.hasMoreElements()) {
+                        JarEntry jarEntry = jarEntries.nextElement();
+                        String jarEntryName = jarEntry.getName();
+                        if (jarEntryName.endsWith(".proto")) {
+                            File targetDirectory;
+                            try {
+                                targetDirectory = new File(temp, hash(jar.getName()));
+                                String canonicalTargetDirectoryPath = targetDirectory.getCanonicalPath();
+                                File target = new File(targetDirectory, jarEntryName);
+                                String canonicalTargetPath = target.getCanonicalPath();
+                                if (!canonicalTargetPath.startsWith(canonicalTargetDirectoryPath + File.separator)) {
+                                    throw new RuntimeException(
+                                            "ZIP SLIP: Entry " + jarEntry.getName() + " in " + jar.getName()
+                                                    + " is outside of the target dir");
+                                }
+                                FileUtils.mkdir(target.getParentFile().getAbsolutePath());
+                                copyStreamToFile(new RawInputStreamFacade(jar.getInputStream(jarEntry)), target);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Unable to unpack proto files", e);
+                            }
+                            protoDirectories.add(targetDirectory);
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException("Not a readable JAR artifact: " + file.getAbsolutePath(), e);
+                }
+            } else if (file.isDirectory()) {
+                List<File> protoFiles;
+                try {
+                    protoFiles = getFiles(file, "**/*.proto", null);
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to scan for proto files in: " + file.getAbsolutePath(), e);
+                }
+                if (!protoFiles.isEmpty()) {
+                    protoDirectories.add(file);
+                }
+            }
+        }
+        return protoDirectories;
+    }
+
+    private static String hash(String input) {
+        try {
+            byte[] bytes = MessageDigest.getInstance("MD5").digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(32);
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to create MD5 digest", e);
+        }
+    }
 
     public String getError() {
         return fixUnicodeOutput(error.getOutput());

@@ -215,4 +215,24 @@ public interface TypeUtils {
     static Set<String> getClassNames(Iterable<? extends Type> types) {
         return stream(types.spliterator(), false).map(TypeUtils::getClassName).collect(toSet());
     }
+
+    static Class<?> getSuperGenericType(Class<?> clazz, int index) {
+        Class<?> result = getArgumentClass(clazz.getGenericSuperclass(), index);
+        return result == null ? getArgumentClass(ArrayUtils.first(clazz.getGenericInterfaces()), index) : result;
+    }
+
+    static Class<?> getArgumentClass(Type type, int index) {
+        if (type instanceof ParameterizedType) {
+            Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
+            if (index < typeArgs.length) {
+                Type typeArg = typeArgs[index];
+                if (typeArg instanceof Class) {
+                    return (Class<?>) typeArg;
+                } else if (typeArg instanceof ParameterizedType) {
+                    return (Class<?>) ((ParameterizedType) typeArg).getRawType();
+                }
+            }
+        }
+        return null;
+    }
 }

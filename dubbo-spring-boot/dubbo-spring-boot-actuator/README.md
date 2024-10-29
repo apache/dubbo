@@ -153,7 +153,40 @@ Actuator endpoint `dubbo` supports Actuator Endpoints :
 | `dubboservices` | `false`     | `/actuator/dubbo/services`            | `GET`       | Exposes all Dubbo's `ServiceBean`   | `application/json` |
 | `dubboreferences` | `false` | `/actuator/dubbo/references` | `GET`       | Exposes all Dubbo's `ReferenceBean` | `application/json` |
 | `dubboconfigs` | `true` | `/actuator/dubbo/configs`    | `GET`       | Exposes all Dubbo's `*Config`       | `application/json` |
-| `dubboshutdown` | `false` | `/actuator/dubbo/shutdown`   | `POST`      | Shutdown Dubbo services             | `application/json` |
+| `dubboshutdown` | `false` | `/actuator/dubbo/shutdown`   | `GET`   | Shutdown Dubbo services             | `application/json` |
+| `help` | `false` | `/actuator/dubbo/help` | `GET` | List all commands |  |
+| `ready` | `true` | `/actuator/dubbo/ready` | `GET` | Check whether the current process/service is ready for external service | `application/json` |
+| `live` | `true` | `/actuator/dubbo/live` | `GET` | Check whether the current process/service is alive | `application/json` |
+| `ls` | `false` | `/actuator/dubbo/ls` | `GET` | List consumers and providers | `application/json` |
+| `startup` | `true` | `/actuator/dubbo/startup` | `GET` | Check if the current framework has been started | `application/json` |
+| `ps` | `false` | `/actuator/dubbo/ps` | `GET` | View information about the current process, including `listenable` ports | `application/json` |
+| `version` | `false` | `/actuator/dubbo/version` | `GET` | Display the version number of the currently running `Dubbo` | `application/json` |
+| `getaddress` | `false` | `/actuator/dubbo/getaddress?args=xxx.*` | `GET` | View the list of valid `IP` addresses for a service | `application/json` |
+| `getconfig` | `false` | `/actuator/dubbo/getconfig` | `GET` | View the valid `configuration` of the current application | `application/json` |
+| `metrics` | `false` | `/actuator/dubbo/metrics` | `GET` | View `metrics`(Need to enable metrics statistics) | `application/json` |
+| `metrics_default` | `false` | `/actuator/dubbo/metrics_default` | `GET` | View the default `metrics`(Need to enable metrics statistics) | `application/json` |
+| `publishmetadata` | `false` | `/actuator/dubbo/publishmetadata` or `/actuator/dubbo/publishmetadata?args=10` | `GET` | Publishes or updates the current application `Metadata` (Delay can be set) | `application/json` |
+| `online` | `false` | `/actuator/dubbo/online` or `/actuator/dubbo/online?args=xxx.*` | `GET` | Register one or more services to the registry (including application and interface addresses) | `application/json` |
+| `onlineapp` | `false` | `/actuator/dubbo/onlineApp` or `/actuator/dubbo/onlineApp?args=xxx.xxx.*` | `GET` | Register one or more services to the registry (only application addresses) | `application/json` |
+| `onlineinterface` | `false` | `/actuator/dubbo/onlineInterface` or `/actuator/dubbo/onlineInterface?args=xxx.*` | `GET` | Register one or more services to the registry (only interface addresses) | `application/json` |
+| `offline` | `false` | `/actuator/dubbo/offline` or `/actuator/dubbo/offline?args=xxx.*` | `GET` | Unregister one or more services from the registry (including application and interface addresses) | `application/json` |
+| `offlineapp` | `false` | `/actuator/dubbo/offlineApp` or `/actuator/dubbo/offlineApp?args=xxx.*` | `GET` | Unregister one or more services from the registry (only application addresses) | `application/json` |
+| `offlineinterface` | `false` | `/actuator/dubbo/offlineInterface` or `/actuator/dubbo/offlineInterface?args=xxx.*` | `GET` | Unregister one or more services from the registry (only interface addresses) | `application/json` |
+| `loggerinfo` | `false` | `/actuator/dubbo/loggerInfo` | `GET` | Query log configuration | `application/json` |
+| `switchlogger` | `false` | `/actuator/dubbo/switchLogger?args={loggerAdapterName}` | `GET` | Modify the log output framework，`loggerAdapterName`: `slf4j`, `jcl`, `log4j`, `jdk`, `log4j2` | `application/json` |
+| `switchloglevel` | `false` | `/actuator/dubbo/switchLogLevel?args={level}` | `GET` | Modify log level，level: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `OFF` | `application/json` |
+| `disabledetailprofiler` | `false` | `/actuator/dubbo/disableDetailProfiler` | `GET` | Turn off `detail profiler` mode, it will not affect `simple profiler` | `application/json` |
+| `enabledetailprofiler` | `false` | `/actuator/dubbo/enableDetailProfiler` | `GET` | Enable the `detail profiler` mode, which is disabled by default, you need to enable the `simple profiler` mode to actually enable it | `application/json` |
+| `disablesimpleprofiler` | `false` | `/actuator/dubbo/disableSimpleProfiler` | `GET` | Turn off the `simple profiler` mode, and the `detail profiler` will not be enabled after it is turned off | `application/json` |
+| `enablesimpleprofiler` | `false` | `/actuator/dubbo/enableSimpleProfiler` | `GET` | Enable `simple profiler` mode, enabled by default | `application/json` |
+| `setprofilerwarnpercent` | `false` | `/actuator/dubbo/setProfilerWarnPercent?args={percent}` | `GET` | Control `serialization` alarm frequency (only for classes in the warning list) | `application/json` |
+| `serializecheckstatus` | `false` | `/actuator/dubbo/dubboserializecheckstatus` | `GET` | View the current configuration information | `application/json` |
+| `serializewarnedclasses` | `false` | `/actuator/dubbo/dubboserializewarnedclasses` | `GET` | View the real-time alarm list | `application/json` |
+| `disableroutersnapshot` | `false` | `/actuator/dubbo/disableRouterSnapshot` or `/actuator/dubbo/disableRouterSnapshot?args=xxx.*` | `GET` | Disable routing result collection mode | `application/json` |
+| `enableroutersnapshot` | `false` | `/actuator/dubbo/enableRouterSnapshot` or `/actuator/dubbo/enableRouterSnapshot?args=xxx.*` | `GET` | Enable routing result collection mode | `application/json` |
+| `getrecentroutersnapshot` | `false` | `/actuator/dubbo/getRecentRouterSnapshot` | `GET` | Obtain the historical routing status (up to 32 results stored) | `application/json` |
+| `getenabledroutersnapshot` | `false` | `/actuator/dubbo/getEnabledRouterSnapshot` | `GET` | Get the services that are currently collecting | `application/json` |
+| `gracefulshutdown` | `false` | `/actuator/dubbo/gracefulShutdown` | `GET` | Unregister all services registered by the current IP instance from the registry | `application/json` |
 
 
 
@@ -429,6 +462,57 @@ The key is the simple name of Dubbo `*Config`  Class , the value is`*Config` Bea
 
 
 
+`/actuator/dubbo/ls `List consumers and providers :
+
+```
+As Provider side:
++-----------------------------------------------------------------------------------+-----------------------------+
+|                       Provider Service Name                                       |             PUB             |
++-----------------------------------------------------------------------------------+-----------------------------+
+|   DubboInternal - dubbo-springboot-demo-provider/org.apache.dubbo.metadata.MetadataService: 1.0.0   |           |
++-----------------------------------------------------------------------------------+-----------------------------+
+|DubboInternal - dubbo-springboot-demo-provider/org.apache.dubbo.metrics.service.MetricsService: 1.0.0|           |
++-----------------------------------------------------------------------------------+-----------------------------+
+|           org.apache.dubbo.springboot.demo.DemoService                            |zookeeper-A(Y)/zookeeper-I(Y)|
++-----------------------------------------------------------------------------------+-----------------------------+
+As Consumer side:
++---------------------+---+
+|Consumer Service Name|NUM|
++---------------------+---+
+
+```
+
+- Services prefixed with `DubboInternal` are built-in services of Dubbo, and are not registered with the registry by default.
+
+- The first part of `zookeeper-A(Y)` in the service publishing status is the corresponding registry name, and the second part is the registration mode (`A` stands for application-level address registration, `I` stands for interface-level address registration), The third part represents whether the corresponding mode has been registered
+
+- The first part of `zookeeper-AF(I-2,A-2)` in the service subscription status is the corresponding registration center name, and the second part is the subscription mode (`AF` stands for dual subscription mode, `FA` stands for only Application-level subscription, `FI` stands for interface-level subscription only), the first half of the third part represents the source of the address mode (`A` stands for application-level address, `I` stands for interface-level address), and the second half represents the corresponding number of addresses
+
+
+
+
+`/actuator/dubbo/switchLogLevel?args={level}` allows switching between permitted log levels, and the parameter cannot be empty, `/actuator/dubbo/switchLogLevel?args=WARN`.
+
+The log configuration modified by `switchLogger`/`switchLogLevel` is not stored persistently and will become invalid after the application is restarted.
+
+
+
+`/actuator/dubbo/disableSimpleProfiler` turn off the `simple profiler` mode, and the `detail profiler` will not be enabled after it is turned off.
+
+The performance sampling function can detect the time consumption of various parts of the Dubbo processing link,where `simple profiler` mode is enabled by default.
+
+
+
+`/actuator/dubbo/enableDetailProfiler` enable the `detail profiler` mode, which is disabled by default, you need to enable the `simple profiler` mode to actually enable it.
+
+Compared with the `simple profiler` mode, the `detail profiler` collects more time-consuming processing of each filter, specific time-consuming protocols, etc. In the `simple profiler` mode, if you find that there is a long time-consuming situation inside the Dubbo framework, you can enable the `detail profiler` mode to better troubleshoot the problem.
+
+
+
+`/actuator/dubbo/gracefulShutdown` unregister all services registered by the current IP instance from the registry. The difference from 'offline' is that this command will also notify all consumers via TCP connection to stop calling this instance. To restore, please execute 'online' to bring all services back online.
+
+
+
 ## Externalized Configuration
 
 
@@ -495,5 +579,38 @@ management.endpoint.dubboconfigs.enabled = true
 management.endpoint.dubboservices.enabled = true
 management.endpoint.dubboreferences.enabled = true
 management.endpoint.dubboproperties.enabled = true
+management.endpoint.dubbo.help.enabled = true
+management.endpoint.dubbo.ready.enabled = true
+management.endpoint.dubbo.ls.enabled = true
+management.endpoint.dubbo.live.enabled = true
+management.endpoint.dubbo.startup.enabled = true
+management.endpoint.dubbo.ps.enabled = true
+management.endpoint.dubbo.version.enabled = true
+management.endpoint.dubbo.getaddress.enabled = true
+management.endpoint.dubbo.getconfig.enabled = true
+management.endpoint.dubbo.metrics.enabled = true
+management.endpoint.dubbo.metrics_default.enabled = true
+management.endpoint.dubbo.publishmetadata.enabled = true
+management.endpoint.dubbo.online.enabled = true
+management.endpoint.dubbo.onlineapp.enabled = true
+management.endpoint.dubbo.onlineinterface.enabled = true
+management.endpoint.dubbo.offline.enabled = true
+management.endpoint.dubbo.offlineapp.enabled = true
+management.endpoint.dubbo.offlineinterface.enabled = true
+management.endpoint.dubbo.loggerinfo.enabled = true
+management.endpoint.dubbo.switchlogger.enabled = true
+management.endpoint.dubbo.switchloglevel.enabled = true
+management.endpoint.dubbo.disabledetailprofiler.enabled = true
+management.endpoint.dubbo.disablesimpleprofiler.enabled = true
+management.endpoint.dubbo.enabledetailprofiler.enabled = true
+management.endpoint.dubbo.enablesimpleprofiler.enabled = true
+management.endpoint.dubbo.setprofilerwarnpercent.enabled = true
+management.endpoint.dubbo.serializecheckstatus.enabled = true
+management.endpoint.dubbo.serializewarnedclasses.enabled = true
+management.endpoint.dubbo.disableroutersnapshot.enabled = true
+management.endpoint.dubbo.enableroutersnapshot.enabled = true
+management.endpoint.dubbo.getrecentroutersnapshot.enabled = true
+management.endpoint.dubbo.getenabledroutersnapshot.enabled = true
+management.endpoint.dubbo.gracefulshutdown.enabled = true
 ```
 

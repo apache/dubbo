@@ -27,24 +27,27 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate(group = CommonConstants.PROVIDER, value = Constants.SERVICE_AUTH, order = -10000)
+@Activate(group = CommonConstants.PROVIDER, value = Constants.AUTH_KEY, order = -10000)
 public class ProviderAuthFilter implements Filter {
-    private final ApplicationModel applicationModel;
+    private final FrameworkModel frameworkModel;
 
-    public ProviderAuthFilter(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+    public ProviderAuthFilter(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
-        boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
+        boolean shouldAuth = url.getParameter(Constants.AUTH_KEY, false);
         if (shouldAuth) {
-            Authenticator authenticator = applicationModel
+            if (Boolean.TRUE.equals(invocation.getAttributes().get(Constants.AUTH_SUCCESS))) {
+                return invoker.invoke(invocation);
+            }
+            Authenticator authenticator = frameworkModel
                     .getExtensionLoader(Authenticator.class)
-                    .getExtension(url.getParameter(Constants.AUTHENTICATOR, Constants.DEFAULT_AUTHENTICATOR));
+                    .getExtension(url.getParameter(Constants.AUTHENTICATOR_KEY, Constants.DEFAULT_AUTHENTICATOR));
             try {
                 authenticator.authenticate(invocation, url);
             } catch (Exception e) {

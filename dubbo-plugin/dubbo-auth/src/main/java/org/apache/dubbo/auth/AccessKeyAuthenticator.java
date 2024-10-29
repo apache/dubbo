@@ -26,14 +26,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 public class AccessKeyAuthenticator implements Authenticator {
-    private final ApplicationModel applicationModel;
+    private final FrameworkModel frameworkModel;
 
-    public AccessKeyAuthenticator(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+    public AccessKeyAuthenticator(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class AccessKeyAuthenticator implements Authenticator {
         try {
             accessKeyPair = getAccessKeyPair(invocation, url);
         } catch (Exception e) {
-            throw new RpcAuthenticationException("Failed to authenticate , can't load the accessKeyPair", e);
+            throw new RpcAuthenticationException("Failed to authenticate , can't load the accessKeyPair");
         }
 
         String computeSignature = getSignature(url, invocation, accessKeyPair.getSecretKey(), requestTimestamp);
@@ -73,7 +73,7 @@ public class AccessKeyAuthenticator implements Authenticator {
     }
 
     AccessKeyPair getAccessKeyPair(Invocation invocation, URL url) {
-        AccessKeyStorage accessKeyStorage = applicationModel
+        AccessKeyStorage accessKeyStorage = frameworkModel
                 .getExtensionLoader(AccessKeyStorage.class)
                 .getExtension(url.getParameter(Constants.ACCESS_KEY_STORAGE_KEY, Constants.DEFAULT_ACCESS_KEY_STORAGE));
 
@@ -85,7 +85,7 @@ public class AccessKeyAuthenticator implements Authenticator {
                 throw new AccessKeyNotFoundException("AccessKeyId or secretAccessKey not found");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Can't load the AccessKeyPair from accessKeyStorage", e);
+            throw new RuntimeException("Can't load the AccessKeyPair from accessKeyStorage");
         }
         return accessKeyPair;
     }
@@ -97,10 +97,6 @@ public class AccessKeyAuthenticator implements Authenticator {
                 RpcUtils.getMethodName(invocation),
                 secretKey,
                 time);
-        boolean parameterEncrypt = url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false);
-        if (parameterEncrypt) {
-            return SignatureUtils.sign(invocation.getArguments(), requestString, secretKey);
-        }
         return SignatureUtils.sign(requestString, secretKey);
     }
 }

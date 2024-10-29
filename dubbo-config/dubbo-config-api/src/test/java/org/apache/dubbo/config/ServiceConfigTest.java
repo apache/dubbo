@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
@@ -86,6 +87,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
 
 class ServiceConfigTest {
+
     private Protocol protocolDelegate = Mockito.mock(Protocol.class);
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
@@ -261,7 +263,9 @@ class ServiceConfigTest {
     @Test
     void testInterface1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
+            ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.TRIPLE);
             ServiceConfig<DemoService> service = new ServiceConfig<>();
+            service.setProtocol(protocolConfig);
             service.setInterface(DemoServiceImpl.class);
         });
     }
@@ -271,6 +275,16 @@ class ServiceConfigTest {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         assertThat(service.getInterface(), equalTo(DemoService.class.getName()));
+    }
+
+    @Test
+    void testNoInterfaceSupport() throws Exception {
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.TRIPLE);
+        protocolConfig.setNoInterfaceSupport(true);
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
+        service.setProtocol(protocolConfig);
+        service.setInterface(DemoServiceImpl.class);
+        assertThat(service.getInterface(), equalTo(DemoServiceImpl.class.getName()));
     }
 
     @Test

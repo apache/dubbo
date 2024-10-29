@@ -642,10 +642,13 @@ class FileTest {
 
         List<File> unexpectedSpis = new LinkedList<>();
         readSPIUnexpectedResource(baseFile, unexpectedSpis);
-        unexpectedSpis.removeIf(file -> file.getAbsolutePath()
-                .contains("dubbo-common" + File.separator + "src" + File.separator + "main" + File.separator
-                        + "resources" + File.separator + "META-INF" + File.separator + "services" + File.separator
-                        + "org.apache.dubbo.common.extension.LoadingStrategy"));
+        String commonSpiPath = "dubbo-common" + File.separator + "src" + File.separator + "main" + File.separator
+                + "resources" + File.separator + "META-INF" + File.separator + "services" + File.separator;
+        unexpectedSpis.removeIf(file -> {
+            String path = file.getAbsolutePath();
+            return path.contains(commonSpiPath + "org.apache.dubbo.common.extension.LoadingStrategy")
+                    || path.contains(commonSpiPath + "org.apache.dubbo.common.json.JsonUtil");
+        });
         Assertions.assertTrue(
                 unexpectedSpis.isEmpty(),
                 "Dubbo native provided spi profiles must filed in `META-INF" + File.separator + "dubbo" + File.separator

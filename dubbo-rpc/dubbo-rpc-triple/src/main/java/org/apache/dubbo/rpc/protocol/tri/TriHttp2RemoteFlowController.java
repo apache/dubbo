@@ -18,6 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.config.nested.TripleConfig;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2ConnectionAdapter;
@@ -31,9 +34,6 @@ import io.netty.handler.codec.http2.WeightedFairQueueByteDistributor;
 import io.netty.util.internal.UnstableApi;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_WEIGHT;
 import static io.netty.handler.codec.http2.Http2CodecUtil.MIN_WEIGHT;
@@ -82,7 +82,7 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
             TripleConfig config) {
         this.connection = checkNotNull(connection, "connection");
         this.streamByteDistributor = checkNotNull(streamByteDistributor, "streamWriteDistributor");
-        this.initialWindowSize = config.getInitialWindowSizeOrDefault();
+        this.initialWindowSize = config.getConnectionInitialWindowSizeOrDefault();
 
         // Add a flow state for the connection.
         stateKey = connection.newKey();

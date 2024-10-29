@@ -261,7 +261,17 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends ReferenceAnnota
                 Class<?> c = referenceElement.getInjectedType();
                 AotUtils.registerSerializationForService(c, hints);
                 hints.reflection().registerType(TypeReference.of(c), MemberCategory.INVOKE_PUBLIC_METHODS);
+                // need to enumerate all interfaces by the proxy
+                hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class);
                 hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class, GenericService.class);
+                hints.proxies()
+                        .registerJdkProxy(
+                                c,
+                                EchoService.class,
+                                Destroyable.class,
+                                SpringProxy.class,
+                                Advised.class,
+                                DecoratingProxy.class);
                 hints.proxies()
                         .registerJdkProxy(
                                 c,

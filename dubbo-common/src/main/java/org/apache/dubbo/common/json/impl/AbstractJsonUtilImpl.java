@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractJsonUtilImpl implements JsonUtil {
+
     @Override
     public boolean isSupport() {
         try {

@@ -558,7 +558,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     config.refresh();
                 } catch (Exception e) {
                     throw new IllegalStateException(
-                            "create default config instance failed, type:" + cls.getSimpleName());
+                            "create default config instance failed, type:" + cls.getSimpleName(), e);
                 }
 
                 this.addConfig(config);

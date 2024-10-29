@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -45,6 +46,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -205,7 +207,8 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         KeyString path = new KeyString(stringPath, restConfig.getCaseSensitiveMatchOrDefault());
 
         List<Candidate> candidates = new ArrayList<>();
-        tryMatch(request, path, candidates);
+        List<RequestMapping> partialMatches = new LinkedList<>();
+        tryMatch(request, path, candidates, partialMatches);
 
         if (candidates.isEmpty()) {
             int end = path.length();
@@ -213,7 +216,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             if (restConfig.getTrailingSlashMatchOrDefault()) {
                 if (path.charAt(end - 1) == '/') {
                     end--;
-                    tryMatch(request, path.subSequence(0, end), candidates);
+                    tryMatch(request, path.subSequence(0, end), candidates, partialMatches);
                 }
             }
 
@@ -225,7 +228,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     }
                     if (ch == '.' && restConfig.getSuffixPatternMatchOrDefault()) {
                         if (contentNegotiator.supportExtension(path.toString(i + 1, end))) {
-                            tryMatch(request, path.subSequence(0, i), candidates);
+                            tryMatch(request, path.subSequence(0, i), candidates, partialMatches);
                             if (!candidates.isEmpty()) {
                                 break;
                             }
@@ -234,7 +237,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     }
                     if (ch == '~') {
                         request.setAttribute(RestConstants.SIG_ATTRIBUTE, path.toString(i + 1, end));
-                        tryMatch(request, path.subSequence(0, i), candidates);
+                        tryMatch(request, path.subSequence(0, i), candidates, partialMatches);
                         if (!candidates.isEmpty()) {
                             break;
                         }
@@ -245,6 +248,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
         int size = candidates.size();
         if (size == 0) {
+            handleNoMatch(request, partialMatches);
             return null;
         }
         if (size > 1) {
@@ -289,7 +293,8 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         return handler;
     }
 
-    private void tryMatch(HttpRequest request, KeyString path, List<Candidate> candidates) {
+    private void tryMatch(
+            HttpRequest request, KeyString path, List<Candidate> candidates, List<RequestMapping> partialMatches) {
         List<Match<Registration>> matches = new ArrayList<>();
 
         lock.readLock().lock();
@@ -314,6 +319,47 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 candidate.variableMap = match.getVariableMap();
                 candidates.add(candidate);
             }
+        }
+        if (candidates.isEmpty()) {
+            for (int i = 0; i < size; i++) {
+                partialMatches.add(matches.get(i).getValue().mapping);
+            }
+        }
+    }
+
+    private void handleNoMatch(HttpRequest request, List<RequestMapping> partialMatches) {
+        if (partialMatches.isEmpty()) {
+            return;
+        }
+        boolean methodsMismatch = true;
+        boolean consumesMismatch = true;
+        boolean producesMismatch = true;
+        boolean paramsMismatch = true;
+        for (RequestMapping mapping : partialMatches) {
+            if (methodsMismatch) {
+                methodsMismatch = !mapping.matchMethod(request.method());
+            }
+            if (consumesMismatch) {
+                consumesMismatch = !mapping.matchConsumes(request);
+            }
+            if (producesMismatch) {
+                producesMismatch = !mapping.matchProduces(request);
+            }
+            if (paramsMismatch) {
+                paramsMismatch = !mapping.matchParams(request);
+            }
+        }
+        if (methodsMismatch) {
+            throw new HttpStatusException(405, "Request method '" + request.method() + "' not supported");
+        }
+        if (consumesMismatch) {
+            throw new HttpStatusException(415, "Content type '" + request.contentType() + "' not supported");
+        }
+        if (producesMismatch) {
+            throw new HttpStatusException(406, "Could not find acceptable representation");
+        }
+        if (paramsMismatch) {
+            throw new HttpStatusException(400, "Unsatisfied query parameter conditions");
         }
     }
 

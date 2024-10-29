@@ -18,12 +18,13 @@ package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
-import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.remoting.http12.HttpJsonUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,6 +42,18 @@ import org.yaml.snakeyaml.representer.Representer;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class YamlCodec implements HttpMessageCodec {
+
+    public static final YamlCodec INSTANCE = new YamlCodec();
+
+    private final HttpJsonUtils httpJsonUtils;
+
+    private YamlCodec() {
+        this(FrameworkModel.defaultModel());
+    }
+
+    public YamlCodec(FrameworkModel frameworkModel) {
+        httpJsonUtils = frameworkModel.getBeanFactory().getOrRegisterBean(HttpJsonUtils.class);
+    }
 
     @Override
     public Object decode(InputStream is, Class<?> targetType, Charset charset) throws DecodeException {
@@ -60,7 +73,7 @@ public class YamlCodec implements HttpMessageCodec {
         }
 
         try (InputStreamReader reader = new InputStreamReader(is, charset)) {
-            return JsonUtils.convertObject(createYaml().load(reader), targetType);
+            return httpJsonUtils.convertObject(createYaml().load(reader), targetType);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {

@@ -68,6 +68,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -508,7 +509,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     /**
      * Get the protocol to consume by matching the consumer acceptable protocols and the available provider protocols.
      * <p>
-     * Only one protocol will be used if consumer set to accept multiple protocols, for example, dubbo.consumer.protocol='tri,rest'.
+     * Only the first protocol that can match with the provider protocols will be used if consumer set to accept multiple protocols.
+     * For example, if dubbo.consumer.protocol='tri,rest' is set and provider provides tri protocol, then consumer will use tri protocol to communicate with provider.
      *
      * @param queryProtocols consumer side protocols.
      * @param url            provider url that have extra protocols specified.
@@ -516,23 +518,31 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      */
     private String getEffectiveProtocol(String queryProtocols, URL url) {
         String protocol = url.getProtocol();
+        String prioritizedProtocol = url.getParameter(PREFERRED_PROTOCOL, protocol);
+
+        String effectiveProtocol = prioritizedProtocol;
+
         if (StringUtils.isNotEmpty(queryProtocols)) {
             String[] acceptProtocols = queryProtocols.split(COMMA_SEPARATOR);
             String acceptedProtocol = acceptProtocols[0];
-            if (!acceptedProtocol.equals(url.getProtocol())) {
-                String extProtocols = url.getParameter(EXT_PROTOCOL);
-                if (StringUtils.isNotEmpty(extProtocols)) {
-                    String[] extProtocolsArr = extProtocols.split(COMMA_SEPARATOR);
-                    for (String p : extProtocolsArr) {
-                        if (p.equalsIgnoreCase(acceptedProtocol)) {
-                            protocol = acceptedProtocol;
-                            break;
+            if (!acceptedProtocol.equals(prioritizedProtocol)) {
+                if (!acceptedProtocol.equals(protocol)) {
+                    String extProtocols = url.getParameter(EXT_PROTOCOL);
+                    if (StringUtils.isNotEmpty(extProtocols)) {
+                        String[] extProtocolsArr = extProtocols.split(COMMA_SEPARATOR);
+                        for (String p : extProtocolsArr) {
+                            if (p.equalsIgnoreCase(acceptedProtocol)) {
+                                effectiveProtocol = acceptedProtocol;
+                                break;
+                            }
                         }
                     }
+                } else {
+                    effectiveProtocol = protocol;
                 }
             }
         }
-        return protocol;
+        return effectiveProtocol;
     }
 
     private boolean checkProtocolValid(String queryProtocols, URL providerUrl) {

@@ -26,29 +26,29 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**
  * The ConsumerSignFilter
  *
  * @see org.apache.dubbo.rpc.Filter
  */
-@Activate(group = CommonConstants.CONSUMER, value = Constants.SERVICE_AUTH, order = -10000)
+@Activate(group = CommonConstants.CONSUMER, value = Constants.AUTH_KEY, order = -10000)
 public class ConsumerSignFilter implements Filter {
-    private final ApplicationModel applicationModel;
+    private final FrameworkModel frameworkModel;
 
-    public ConsumerSignFilter(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+    public ConsumerSignFilter(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
-        boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
+        boolean shouldAuth = url.getParameter(Constants.AUTH_KEY, false);
         if (shouldAuth) {
-            Authenticator authenticator = applicationModel
+            Authenticator authenticator = frameworkModel
                     .getExtensionLoader(Authenticator.class)
-                    .getExtension(url.getParameter(Constants.AUTHENTICATOR, Constants.DEFAULT_AUTHENTICATOR));
+                    .getExtension(url.getParameter(Constants.AUTHENTICATOR_KEY, Constants.DEFAULT_AUTHENTICATOR));
             authenticator.sign(invocation, url);
         }
         return invoker.invoke(invocation);

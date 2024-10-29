@@ -114,7 +114,7 @@ public class LockUtilsTest {
         thread.interrupt();
         await().until(() -> thread.getState() == State.TERMINATED);
 
-        Assertions.assertFalse(locked.get());
+        Assertions.assertTrue(locked.get());
 
         reentrantLock.unlock();
     }
@@ -139,6 +139,26 @@ public class LockUtilsTest {
 
         await().until(() -> thread.getState() == State.TERMINATED);
         Assertions.assertTrue(lockTime.get() - startTime > 1000);
+        Assertions.assertTrue(lockTime.get() - startTime < 10000);
+    }
+
+    @RepeatedTest(5)
+    void testInterrupted() throws InterruptedException {
+        ReentrantLock reentrantLock = new ReentrantLock();
+        reentrantLock.lock();
+
+        AtomicLong lockTime = new AtomicLong(0);
+        long startTime = System.currentTimeMillis();
+        Thread thread = new Thread(() -> {
+            Thread.currentThread().interrupt();
+            LockUtils.safeLock(reentrantLock, 10000, () -> {
+                lockTime.set(System.currentTimeMillis());
+            });
+        });
+        thread.start();
+
+        await().until(() -> thread.getState() == State.TERMINATED);
+        Assertions.assertTrue(lockTime.get() >= startTime);
         Assertions.assertTrue(lockTime.get() - startTime < 10000);
     }
 }

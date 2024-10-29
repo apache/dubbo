@@ -456,6 +456,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                                 oldListener.removeListener(url.getServiceKey(), listener);
                                 if (!oldListener.hasListeners()) {
                                     oldListener.destroy();
+                                    serviceListeners.remove(appKey);
                                     removeAppSubscriptionLock(appKey);
                                 }
                             } finally {

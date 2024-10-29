@@ -67,67 +67,6 @@ public enum TripleHeaderEnum {
             RestConstants.HEADER_SERVICE_GROUP
         };
         Collections.addAll(excludeAttachmentsSet, internalHttpHeaders);
-
-        String[] excludeStandardHttpHeaders;
-        if (TripleProtocol.PASS_THROUGH_STANDARD_HTTP_HEADERS) {
-            excludeStandardHttpHeaders = new String[] {
-                "accept",
-                "accept-charset",
-                "accept-encoding",
-                "accept-language",
-                "cache-control",
-                "connection",
-                "content-length",
-                "content-md5",
-                "content-type",
-                "host"
-            };
-        } else {
-            excludeStandardHttpHeaders = new String[] {
-                "accept",
-                "accept-charset",
-                "accept-datetime",
-                "accept-encoding",
-                "accept-language",
-                "access-control-request-headers",
-                "access-control-request-method",
-                "authorization",
-                "cache-control",
-                "connection",
-                "content-length",
-                "content-md5",
-                "content-type",
-                "cookie",
-                "date",
-                "dnt",
-                "expect",
-                "forwarded",
-                "from",
-                "host",
-                "http2-settings",
-                "if-match",
-                "if-modified-since",
-                "if-none-match",
-                "if-range",
-                "if-unmodified-since",
-                "max-forwards",
-                "origin",
-                "pragma",
-                "proxy-authorization",
-                "range",
-                "referer",
-                "sec-fetch-dest",
-                "sec-fetch-mode",
-                "sec-fetch-site",
-                "sec-fetch-user",
-                "te",
-                "trailer",
-                "upgrade",
-                "upgrade-insecure-requests"
-            };
-        }
-
-        Collections.addAll(excludeAttachmentsSet, excludeStandardHttpHeaders);
     }
 
     private final String name;

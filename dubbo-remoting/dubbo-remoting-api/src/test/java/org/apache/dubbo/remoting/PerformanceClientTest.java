@@ -237,12 +237,12 @@ class PerformanceClientTest {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
-            System.out.println("connected event,chanel;" + channel);
+            System.out.println("connected event,channel;" + channel);
         }
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
-            System.out.println("disconnected event,chanel;" + channel);
+            System.out.println("disconnected event,channel;" + channel);
         }
     }
 }

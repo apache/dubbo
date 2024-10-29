@@ -27,11 +27,11 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @Activate(order = 10000)
 public final class PlainTextCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    private final PlainTextCodec instance = new PlainTextCodec();
-
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return instance;
+        return frameworkModel == FrameworkModel.defaultModel()
+                ? PlainTextCodec.INSTANCE
+                : new PlainTextCodec(frameworkModel);
     }
 
     @Override

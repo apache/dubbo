@@ -94,6 +94,13 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-qos</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
+
     <!-- Test Dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

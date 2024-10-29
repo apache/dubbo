@@ -21,11 +21,16 @@ import org.apache.dubbo.rpc.protocol.tri.servlet.TripleFilter;
 
 import javax.servlet.Filter;
 
+import org.apache.coyote.ProtocolHandler;
+import org.apache.coyote.UpgradeProtocol;
+import org.apache.coyote.http2.Http2Protocol;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
+import org.springframework.boot.web.embedded.tomcat.ConfigurableTomcatWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -40,7 +45,7 @@ public class DubboTripleAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enabled")
+    @ConditionalOnProperty(prefix = PREFIX, name = "enabled", havingValue = "true")
     public static class TripleServletConfiguration {
 
         @Bean
@@ -54,6 +59,24 @@ public class DubboTripleAutoConfiguration {
             registrationBean.addUrlPatterns(urlPatterns);
             registrationBean.setOrder(order);
             return registrationBean;
+        }
+
+        @Bean
+        @ConditionalOnClass(Http2Protocol.class)
+        @ConditionalOnProperty(prefix = PREFIX, name = "max-concurrent-streams")
+        public WebServerFactoryCustomizer<ConfigurableTomcatWebServerFactory> tripleTomcatHttp2Customizer(
+                @Value("${" + PREFIX + ".max-concurrent-streams}") int maxConcurrentStreams) {
+            return factory -> factory.addConnectorCustomizers(connector -> {
+                ProtocolHandler handler = connector.getProtocolHandler();
+                for (UpgradeProtocol upgradeProtocol : handler.findUpgradeProtocols()) {
+                    if (upgradeProtocol instanceof Http2Protocol) {
+                        Http2Protocol protocol = (Http2Protocol) upgradeProtocol;
+                        int value = maxConcurrentStreams <= 0 ? Integer.MAX_VALUE : maxConcurrentStreams;
+                        protocol.setMaxConcurrentStreams(value);
+                        protocol.setMaxConcurrentStreamExecution(value);
+                    }
+                }
+            });
         }
     }
 }
