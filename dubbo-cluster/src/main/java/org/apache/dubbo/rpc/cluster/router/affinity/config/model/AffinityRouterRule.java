@@ -31,6 +31,7 @@ public class AffinityRouterRule extends AbstractRouterRule {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AffinityRouterRule.class);
     private String affinityKey;
     private Double ratio;
+
     @SuppressWarnings("unchecked")
     public static AffinityRouterRule parseFromMap(Map<String, Object> map) {
         AffinityRouterRule affinityRouterRule = new AffinityRouterRule();
