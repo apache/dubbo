@@ -29,7 +29,50 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
-@Activate(onClass = "javax.ws.rs.Path")
+@Activate(
+        onClass = {
+            "javax.ws.rs.Consumes",
+            "javax.ws.rs.container.ContainerRequestContext",
+            "javax.ws.rs.container.ContainerRequestFilter",
+            "javax.ws.rs.container.ContainerResponseContext",
+            "javax.ws.rs.container.ContainerResponseFilter",
+            "javax.ws.rs.core.AbstractMultivaluedMap",
+            "javax.ws.rs.core.Cookie",
+            "javax.ws.rs.core.EntityTag",
+            "javax.ws.rs.core.Form",
+            "javax.ws.rs.core.HttpHeaders",
+            "javax.ws.rs.core.Link",
+            "javax.ws.rs.core.MediaType",
+            "javax.ws.rs.core.MultivaluedHashMap",
+            "javax.ws.rs.core.MultivaluedMap",
+            "javax.ws.rs.core.NewCookie",
+            "javax.ws.rs.core.Request",
+            "javax.ws.rs.core.Response",
+            "javax.ws.rs.core.Response.Status",
+            "javax.ws.rs.core.Response.StatusType",
+            "javax.ws.rs.core.SecurityContext",
+            "javax.ws.rs.core.UriInfo",
+            "javax.ws.rs.DELETE",
+            "javax.ws.rs.ext.ExceptionMapper",
+            "javax.ws.rs.ext.InterceptorContext",
+            "javax.ws.rs.ext.ParamConverter",
+            "javax.ws.rs.ext.ParamConverterProvider",
+            "javax.ws.rs.ext.ReaderInterceptor",
+            "javax.ws.rs.ext.ReaderInterceptorContext",
+            "javax.ws.rs.ext.WriterInterceptor",
+            "javax.ws.rs.ext.WriterInterceptorContext",
+            "javax.ws.rs.FormParam",
+            "javax.ws.rs.GET",
+            "javax.ws.rs.HEAD",
+            "javax.ws.rs.HeaderParam",
+            "javax.ws.rs.OPTIONS",
+            "javax.ws.rs.Path",
+            "javax.ws.rs.POST",
+            "javax.ws.rs.Produces",
+            "javax.ws.rs.PUT",
+            "javax.ws.rs.QueryParam",
+            "javax.ws.rs.WebApplicationException"
+        })
 public class JaxrsRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;

@@ -32,7 +32,19 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import org.springframework.http.HttpStatus;
 
-@Activate(onClass = "org.springframework.web.bind.annotation.RequestMapping")
+@Activate(
+        onClass = {
+            "org.springframework.web.bind.annotation.RequestMapping",
+            "org.springframework.web.bind.annotation.ExceptionHandler",
+            "org.springframework.web.bind.annotation.ResponseStatus",
+            "org.springframework.web.bind.annotation.ValueConstants",
+            "org.springframework.web.bind.WebDataBinder",
+            "org.springframework.web.context.request.NativeWebRequest",
+            "org.springframework.web.context.request.ServletWebRequest",
+            "org.springframework.web.context.request.WebRequest",
+            "org.springframework.web.servlet.HandlerInterceptor",
+            "org.springframework.web.servlet.ModelAndView"
+        })
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;
