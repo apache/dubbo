@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 
-@Activate(group = CommonConstants.PROVIDER, order = 29000)
+@Activate(group = CommonConstants.PROVIDER, order = 10)
 public class HttpContextCallbackFilter implements Filter, BaseFilter.Listener {
 
     @Override

@@ -90,9 +90,9 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.39</spring_version>
-    <spring_security_version>5.8.14</spring_security_version>
+    <spring_security_version>5.8.15</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.15.5</byte-buddy_version>
+    <byte-buddy_version>1.15.7</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.114.Final</netty4_version>
     <netty_http3_version>0.0.28.Final</netty_http3_version>
@@ -154,8 +154,8 @@
     <groovy_version>4.0.23</groovy_version>
 
     <!-- Test libs -->
-    <junit_jupiter_version>5.11.2</junit_jupiter_version>
-    <junit_platform_version>1.11.2</junit_platform_version>
+    <junit_jupiter_version>5.11.3</junit_jupiter_version>
+    <junit_platform_version>1.11.3</junit_platform_version>
     <junit_version>4.13.2</junit_version>
     <awaitility_version>4.2.2</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
@@ -166,7 +166,7 @@
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
-    <test_container_version>1.20.2</test_container_version>
+    <test_container_version>1.20.3</test_container_version>
     <hessian_lite_version>4.0.3</hessian_lite_version>
     <swagger_version>1.6.14</swagger_version>
 
