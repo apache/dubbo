@@ -67,6 +67,10 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
     @Override
     protected Deserializer getDefaultDeserializer(Class cl) {
+        if (InputStream.class.equals(cl)) {
+            return InputStreamDeserializer.DESER;
+        }
+
         try {
             // pre-check if class is allow
             defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
@@ -76,9 +80,7 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
         checkSerializable(cl);
 
-        if (InputStream.class.equals(cl)) {
-            return InputStreamDeserializer.DESER;
-        } else if (RecordUtil.isRecord(cl)) {
+        if (RecordUtil.isRecord(cl)) {
             return new RecordDeserializer(cl, getFieldDeserializerFactory());
         } else {
             if (isEnableUnsafeSerializer()) {
