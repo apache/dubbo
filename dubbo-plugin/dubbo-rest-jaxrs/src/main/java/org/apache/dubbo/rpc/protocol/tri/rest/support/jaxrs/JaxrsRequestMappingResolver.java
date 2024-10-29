@@ -48,8 +48,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
             "javax.ws.rs.core.NewCookie",
             "javax.ws.rs.core.Request",
             "javax.ws.rs.core.Response",
-            "javax.ws.rs.core.Response.Status",
-            "javax.ws.rs.core.Response.StatusType",
             "javax.ws.rs.core.SecurityContext",
             "javax.ws.rs.core.UriInfo",
             "javax.ws.rs.DELETE",
