@@ -43,6 +43,6 @@ public final class RequestHeaderArgumentResolver extends AbstractSpringArgumentR
 
     @Override
     protected Object resolveMapValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        return request.headers();
+        return request.headers().asMap();
     }
 }
