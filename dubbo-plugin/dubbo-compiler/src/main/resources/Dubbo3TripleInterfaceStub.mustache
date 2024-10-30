@@ -22,7 +22,7 @@
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
-import org.apache.dubbo.rpc.stub.annotations.Body;
+import org.apache.dubbo.rpc.stub.annotations.Grequest;
 
 import com.google.protobuf.Message;
 
@@ -49,9 +49,9 @@ String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
     {{#hasMappings}}
         @Mapping(method = HttpMethods.{{httpMethod}}, path = "{{path}}")
     {{/hasMappings}}
-    public {{outputType}} {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request);
+    public {{outputType}} {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request);
 
-    CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@Body {{/hasBody}}{{inputType}} request);
+    CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request);
 
 {{/unaryMethods}}
 
@@ -63,7 +63,7 @@ String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
     {{#hasMappings}}
         @Mapping(method = HttpMethods.{{httpMethod}}, uri = "{{uri}}")
     {{/hasMappings}}
-    void {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver);
+    void {{methodName}}({{#hasBody}}@Grequest{{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver);
 {{/serverStreamingMethods}}
 
 {{#biStreamingWithoutClientStreamMethods}}

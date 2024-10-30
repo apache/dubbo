@@ -23,7 +23,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
-import org.apache.dubbo.rpc.stub.annotations.Body;
+import org.apache.dubbo.rpc.stub.annotations.Grequest;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.RpcException;
@@ -154,18 +154,18 @@ invoker.destroy();
         @Mapping(method = HttpMethods.{{httpMethod}}, path = "{{path}}")
     {{/hasMappings}}
     @Override
-    public {{outputType}} {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request) {
+    public {{outputType}} {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request) {
     return StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request);
     }
 
-    public CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@Body {{/hasBody}}{{inputType}} request) {
+    public CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request) {
     return StubInvocationUtil.unaryCall(invoker, {{methodName}}AsyncMethod, request);
     }
 
     {{#javaDoc}}
         {{{javaDoc}}}
     {{/javaDoc}}
-    public void {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
+    public void {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
     StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request, responseObserver);
     }
 {{/unaryMethods}}
@@ -178,7 +178,7 @@ invoker.destroy();
         @Mapping(method = HttpMethods.{{httpMethod}}, path = "{{path}}")
     {{/hasMappings}}
     @Override
-    public void {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
+    public void {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
     StubInvocationUtil.serverStreamCall(invoker, {{methodName}}Method, request, responseObserver);
     }
 {{/serverStreamingMethods}}
@@ -223,7 +223,7 @@ private <T, R> BiConsumer<T, StreamObserver<R>> syncToAsync(java.util.function.F
 
             {{#unaryMethods}}
                 @Override
-                public CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@Body {{/hasBody}}{{inputType}} request) {
+                public CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request) {
                 return CompletableFuture.completedFuture({{methodName}}(request));
                 }
             {{/unaryMethods}}
@@ -233,7 +233,7 @@ private <T, R> BiConsumer<T, StreamObserver<R>> syncToAsync(java.util.function.F
             * It will not be called if you are NOT using Dubbo3 generated triple stub and <b>DO NOT</b> implement this method.
             */
             {{#unaryMethods}}
-                public void {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
+                public void {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
                 {{methodName}}Async(request).whenComplete((r, t) -> {
                 if (t != null) {
                 responseObserver.onError(t);
@@ -290,7 +290,7 @@ private <T, R> BiConsumer<T, StreamObserver<R>> syncToAsync(java.util.function.F
                     @Mapping(method = HttpMethods.{{httpMethod}}, path = "{{path}}")
                 {{/hasMappings}}
                 @Override
-                public {{outputType}} {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request) {
+                public {{outputType}} {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request) {
                 throw unimplementedMethodException({{methodName}}Method);
                 }
             {{/unaryMethods}}
@@ -303,7 +303,7 @@ private <T, R> BiConsumer<T, StreamObserver<R>> syncToAsync(java.util.function.F
                     @Mapping(method = HttpMethods.{{httpMethod}}, path = "{{path}}")
                 {{/hasMappings}}
                 @Override
-                public void {{methodName}}({{#hasBody}}@Body {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
+                public void {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver) {
                 throw unimplementedMethodException({{methodName}}Method);
                 }
             {{/serverStreamingMethods}}
