@@ -184,15 +184,13 @@ public final class RadixTree<T> {
         int end = -2;
         if (!current.children.isEmpty()) {
             end = path.indexOf('/', start);
-            Node<T> node = current.children.get(path.subSequence(start, end));
-            if (node != null) {
+            Node<T> child = current.children.get(path.subSequence(start, end));
+            if (child != null) {
                 if (end == -1) {
-                    if (node.isLeaf()) {
-                        addMatch(node, variableMap, matches);
-                    }
-                    return;
+                    addMatch(child, variableMap, matches);
+                } else {
+                    matchRecursive(child, path, end + 1, variableMap, matches);
                 }
-                matchRecursive(node, path, end + 1, variableMap, matches);
             }
         }
 
@@ -212,9 +210,7 @@ public final class RadixTree<T> {
                     addMatch(child, workVariableMap, matches);
                 } else {
                     if (end == -1) {
-                        if (child.isLeaf()) {
-                            addMatch(child, workVariableMap, matches);
-                        }
+                        addMatch(child, workVariableMap, matches);
                     } else {
                         matchRecursive(child, path, end + 1, workVariableMap, matches);
                     }
@@ -228,6 +224,9 @@ public final class RadixTree<T> {
 
     private static <T> void addMatch(Node<T> node, Map<String, String> variableMap, List<Match<T>> matches) {
         List<Pair<PathExpression, T>> values = node.values;
+        if (values.isEmpty()) {
+            return;
+        }
         variableMap = variableMap.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(variableMap);
         for (int i = 0, size = values.size(); i < size; i++) {
             Pair<PathExpression, T> pair = values.get(i);

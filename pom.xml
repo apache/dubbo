@@ -134,7 +134,7 @@
     <maven_source_version>3.3.1</maven_source_version>
     <maven_javadoc_version>3.10.1</maven_javadoc_version>
     <maven_jetty_version>9.4.56.v20240826</maven_jetty_version>
-    <maven_checkstyle_version>3.5.0</maven_checkstyle_version>
+    <maven_checkstyle_version>3.6.0</maven_checkstyle_version>
     <maven_jacoco_version>0.8.12</maven_jacoco_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
     <maven_enforce_version>3.5.0</maven_enforce_version>
@@ -252,7 +252,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.8.0</version>
+          <version>3.8.1</version>
         </plugin>
         <plugin>
           <!-- Do NOT upgrade -->
