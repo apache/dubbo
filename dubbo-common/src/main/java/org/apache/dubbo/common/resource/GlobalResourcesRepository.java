@@ -19,13 +19,13 @@ package org.apache.dubbo.common.resource;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
@@ -95,8 +95,13 @@ public class GlobalResourcesRepository {
                     if (logger.isInfoEnabled()) {
                         logger.info("Creating global shared handler ...");
                     }
-                    executorService =
-                            Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-global-shared-handler", true));
+                    executorService = ExecutorsUtil.newExecutorService(
+                            0,
+                            Integer.MAX_VALUE,
+                            60L,
+                            TimeUnit.SECONDS,
+                            new SynchronousQueue<>(),
+                            "Dubbo-global-shared-handler");
                 }
             }
         }

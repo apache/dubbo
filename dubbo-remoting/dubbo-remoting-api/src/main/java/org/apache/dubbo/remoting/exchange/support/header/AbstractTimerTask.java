@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
+import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.remoting.Channel;
 
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractTimerTask implements TimerTask {
 
     private final ChannelProvider channelProvider;
-    private final HashedWheelTimer hashedWheelTimer;
+    private final Timer hashedWheelTimer;
 
     private final Long tick;
 
@@ -38,7 +38,7 @@ public abstract class AbstractTimerTask implements TimerTask {
 
     private volatile Timeout timeout;
 
-    AbstractTimerTask(ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long tick) {
+    AbstractTimerTask(ChannelProvider channelProvider, Timer hashedWheelTimer, Long tick) {
         if (channelProvider == null || hashedWheelTimer == null || tick == null) {
             throw new IllegalArgumentException();
         }

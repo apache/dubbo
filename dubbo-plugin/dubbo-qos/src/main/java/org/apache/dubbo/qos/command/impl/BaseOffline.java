@@ -18,8 +18,8 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.registry.Registry;
@@ -35,7 +35,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class BaseOffline implements BaseCommand {
     private static final Logger logger = LoggerFactory.getLogger(BaseOffline.class);
@@ -68,9 +69,9 @@ public class BaseOffline implements BaseCommand {
 
     public boolean offline(String servicePattern) {
         boolean hasService = false;
-
-        ExecutorService executorService = Executors.newFixedThreadPool(
-                Math.min(Runtime.getRuntime().availableProcessors(), 4), new NamedThreadFactory("Dubbo-Offline"));
+        int size = Math.min(Runtime.getRuntime().availableProcessors(), 4);
+        ExecutorService executorService = ExecutorsUtil.newExecutorService(
+                size, size, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), "Dubbo-Offline");
         try {
             List<CompletableFuture<Void>> futures = new LinkedList<>();
             Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();

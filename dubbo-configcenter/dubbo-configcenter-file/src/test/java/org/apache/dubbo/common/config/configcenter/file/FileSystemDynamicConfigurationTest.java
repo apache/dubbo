@@ -86,8 +86,8 @@ class FileSystemDynamicConfigurationTest {
         assertEquals("UTF-8", configuration.getEncoding());
         assertEquals(
                 ThreadPoolExecutor.class, configuration.getWorkersThreadPool().getClass());
-        assertEquals(1, (configuration.getWorkersThreadPool()).getCorePoolSize());
-        assertEquals(1, (configuration.getWorkersThreadPool()).getMaximumPoolSize());
+        assertEquals(1, ((ThreadPoolExecutor) configuration.getWorkersThreadPool()).getCorePoolSize());
+        assertEquals(1, ((ThreadPoolExecutor) configuration.getWorkersThreadPool()).getMaximumPoolSize());
 
         if (configuration.isBasedPoolingWatchService()) {
             assertEquals(2, configuration.getDelay());

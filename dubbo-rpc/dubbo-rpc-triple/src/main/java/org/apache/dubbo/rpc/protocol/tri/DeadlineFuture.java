@@ -19,11 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
@@ -47,8 +46,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final Timeout timeoutTask;
     private ExecutorService executor;
     private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-            () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS),
-            DeadlineFuture::destroy);
+            () -> ExecutorsUtil.newTimer("dubbo-future-timeout", 30, TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
 
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;

@@ -19,10 +19,10 @@ package org.apache.dubbo.metadata.report.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -52,7 +52,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -94,7 +93,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     // the list of notified service providers
     final Properties properties = new Properties();
     private final ExecutorService reportCacheExecutor =
-            Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
+            ExecutorsUtil.newSingleThreadExecutorService("DubboSaveMetadataReport");
     final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
@@ -146,8 +145,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
         if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
-            reportTimerScheduler = Executors.newSingleThreadScheduledExecutor(
-                    new NamedThreadFactory("DubboMetadataReportTimer", true));
+            reportTimerScheduler = ExecutorsUtil.newScheduledExecutorService(1, "DubboMetadataReportTimer");
             reportTimerScheduler.scheduleAtFixedRate(
                     this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
         }
@@ -494,7 +492,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
         final ScheduledExecutorService retryExecutor =
-                Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportRetryTimer", true));
+                ExecutorsUtil.newScheduledExecutorService(0, "DubboMetadataReportRetryTimer");
         volatile ScheduledFuture retryScheduledFuture;
         final AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period

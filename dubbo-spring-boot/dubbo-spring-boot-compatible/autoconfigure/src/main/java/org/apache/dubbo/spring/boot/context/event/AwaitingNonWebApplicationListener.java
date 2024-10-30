@@ -17,6 +17,7 @@
 package org.apache.dubbo.spring.boot.context.event;
 
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -39,7 +40,6 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import org.springframework.util.ClassUtils;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.springframework.util.ObjectUtils.containsElement;
 
 /**
@@ -72,7 +72,8 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
 
     private final Condition condition = lock.newCondition();
 
-    private final ExecutorService executorService = newSingleThreadExecutor();
+    private final ExecutorService executorService =
+            ExecutorsUtil.newSingleThreadExecutorService("Dubbo-NonWeb-Application-Listener");
 
     private static <T> T[] of(T... values) {
         return values;

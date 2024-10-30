@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -45,7 +46,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -465,7 +465,7 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void scheduleServiceNamesLookup(final URL url, final NacosAggregateListener listener) {
         if (scheduledExecutorService == null) {
-            scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+            scheduledExecutorService = ExecutorsUtil.newScheduledExecutorService(1, "NacosServiceNamesLookup");
             scheduledExecutorService.scheduleAtFixedRate(
                     () -> {
                         Set<String> serviceNames = getAllServiceNames();

@@ -18,9 +18,9 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
+import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
@@ -51,13 +51,9 @@ public class HeaderExchangeClient implements ExchangeClient {
     private final Client client;
     private final ExchangeChannel channel;
 
-    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(
-            () -> new HashedWheelTimer(
-                    new NamedThreadFactory("dubbo-client-heartbeat-reconnect", true),
-                    1,
-                    TimeUnit.SECONDS,
-                    TICKS_PER_WHEEL),
-            HashedWheelTimer::stop);
+    public static GlobalResourceInitializer<Timer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(
+            () -> ExecutorsUtil.newTimer("dubbo-client-heartbeat-reconnect", 1, TimeUnit.SECONDS, TICKS_PER_WHEEL),
+            Timer::stop);
 
     private ReconnectTimerTask reconnectTimerTask;
     private HeartbeatTimerTask heartBeatTimerTask;

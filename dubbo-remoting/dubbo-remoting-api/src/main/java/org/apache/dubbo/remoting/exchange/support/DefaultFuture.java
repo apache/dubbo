@@ -20,12 +20,11 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.serialize.SerializationException;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
@@ -62,8 +61,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
     private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-            () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS),
-            DefaultFuture::destroy);
+            () -> ExecutorsUtil.newTimer("dubbo-future-timeout", 30, TimeUnit.MILLISECONDS), DefaultFuture::destroy);
 
     // invoke id.
     private final Long id;

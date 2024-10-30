@@ -21,7 +21,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.metrics.collector.HistogramMetricsCollector;
@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -146,8 +145,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         if (enableCollectorSync) {
             int collectSyncPeriod = url.getParameter(COLLECTOR_SYNC_PERIOD_KEY, DEFAULT_SCHEDULE_PERIOD);
 
-            NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
-            collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
+            collectorSyncJobExecutor = ExecutorsUtil.newScheduledExecutorService(1, "metrics-collector-sync-job");
             collectorSyncJobExecutor.scheduleWithFixedDelay(
                     this::resetIfSamplesChanged, DEFAULT_SCHEDULE_INITIAL_DELAY, collectSyncPeriod, TimeUnit.SECONDS);
         }

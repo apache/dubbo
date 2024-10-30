@@ -20,12 +20,10 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -63,61 +61,69 @@ public class FrameworkExecutorRepository implements Disposable {
     private final ExecutorService internalServiceExecutor;
 
     public FrameworkExecutorRepository() {
-        sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-framework-shared-handler", true));
-        sharedScheduledExecutor =
-                Executors.newScheduledThreadPool(8, new NamedThreadFactory("Dubbo-framework-shared-scheduler", true));
+        sharedExecutor = ExecutorsUtil.newExecutorService(
+                0,
+                Integer.MAX_VALUE,
+                60L,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                "Dubbo-framework-shared-handler");
+        sharedScheduledExecutor = ExecutorsUtil.newScheduledExecutorService(8, "Dubbo-framework-shared-scheduler");
 
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         for (int i = 0; i < availableProcessors; i++) {
-            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
-                    new NamedThreadFactory("Dubbo-framework-scheduler-" + i, true));
+            ScheduledExecutorService scheduler =
+                    ExecutorsUtil.newScheduledExecutorService(1, "Dubbo-framework-scheduler-" + i);
             scheduledExecutors.addItem(scheduler);
 
-            executorServiceRing.addItem(new ThreadPoolExecutor(
+            executorServiceRing.addItem(ExecutorsUtil.newExecutorService(
                     1,
                     1,
                     0L,
                     TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<>(1024),
-                    new NamedInternalThreadFactory("Dubbo-framework-state-router-loop-" + i, true),
+                    "Dubbo-framework-state-router-loop-" + i,
                     new ThreadPoolExecutor.AbortPolicy()));
         }
 
-        connectivityScheduledExecutor = Executors.newScheduledThreadPool(
-                availableProcessors, new NamedThreadFactory("Dubbo-framework-connectivity-scheduler", true));
-        cacheRefreshingScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
-                new NamedThreadFactory("Dubbo-framework-cache-refreshing-scheduler", true));
-        mappingRefreshingExecutor = Executors.newFixedThreadPool(
-                availableProcessors, new NamedThreadFactory("Dubbo-framework-mapping-refreshing-scheduler", true));
-        poolRouterExecutor = new ThreadPoolExecutor(
+        connectivityScheduledExecutor = ExecutorsUtil.newScheduledExecutorService(
+                availableProcessors, "Dubbo-framework-connectivity-scheduler");
+        cacheRefreshingScheduledExecutor =
+                ExecutorsUtil.newScheduledExecutorService(1, "Dubbo-framework-cache-refreshing-scheduler");
+        mappingRefreshingExecutor = ExecutorsUtil.newExecutorService(
+                availableProcessors,
+                availableProcessors,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                "Dubbo-framework-mapping-refreshing-scheduler");
+        poolRouterExecutor = ExecutorsUtil.newExecutorService(
                 1,
                 10,
                 0L,
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(1024),
-                new NamedInternalThreadFactory("Dubbo-framework-state-router-pool-router", true),
+                "Dubbo-framework-state-router-pool-router",
                 new ThreadPoolExecutor.AbortPolicy());
 
         for (int i = 0; i < availableProcessors; i++) {
             ScheduledExecutorService serviceDiscoveryAddressNotificationExecutor =
-                    Executors.newSingleThreadScheduledExecutor(
-                            new NamedThreadFactory("Dubbo-framework-SD-address-refresh-" + i));
-            ScheduledExecutorService registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(
-                    new NamedThreadFactory("Dubbo-framework-registry-notification-" + i));
+                    ExecutorsUtil.newScheduledExecutorService(1, "Dubbo-framework-SD-address-refresh-" + i);
+            ScheduledExecutorService registryNotificationExecutor =
+                    ExecutorsUtil.newScheduledExecutorService(1, "Dubbo-framework-registry-notification-" + i);
 
             serviceDiscoveryAddressNotificationExecutorRing.addItem(serviceDiscoveryAddressNotificationExecutor);
             registryNotificationExecutorRing.addItem(registryNotificationExecutor);
         }
 
-        metadataRetryExecutor =
-                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-metadata-retry"));
-        internalServiceExecutor = new ThreadPoolExecutor(
+        metadataRetryExecutor = ExecutorsUtil.newScheduledExecutorService(1, "Dubbo-framework-metadata-retry");
+        internalServiceExecutor = ExecutorsUtil.newExecutorService(
                 0,
                 100,
                 60L,
                 TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                new NamedInternalThreadFactory("Dubbo-internal-service", true),
+                "Dubbo-internal-service",
                 new ThreadPoolExecutor.AbortPolicy());
     }
 

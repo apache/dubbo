@@ -20,9 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -31,7 +31,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.data.Stat;
@@ -58,13 +57,13 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         this.applicationModel = applicationModel;
 
         final String threadName = this.getClass().getSimpleName();
-        this.executor = new ThreadPoolExecutor(
+        this.executor = ExecutorsUtil.newExecutorService(
                 DEFAULT_ZK_EXECUTOR_THREADS_NUM,
                 DEFAULT_ZK_EXECUTOR_THREADS_NUM,
                 THREAD_KEEP_ALIVE_TIME,
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(DEFAULT_QUEUE),
-                new NamedThreadFactory(threadName, true),
+                threadName,
                 new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperClientManager.connect(url);

@@ -21,10 +21,10 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.threadpool.ExecutorsUtil;
+import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
@@ -62,10 +62,8 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(
-            () -> new HashedWheelTimer(
-                    new NamedThreadFactory("dubbo-server-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL),
-            HashedWheelTimer::stop);
+    public static GlobalResourceInitializer<Timer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(
+            () -> ExecutorsUtil.newTimer("dubbo-server-idleCheck", 1, TimeUnit.SECONDS, TICKS_PER_WHEEL), Timer::stop);
 
     private CloseTimerTask closeTimer;
 
