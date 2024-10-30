@@ -94,7 +94,6 @@
     <module>dubbo-spring-boot-project/dubbo-spring-boot-actuator</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-autoconfigure</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-compatible</module>
-    <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-starters</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-actuator-autoconfigure</module>
