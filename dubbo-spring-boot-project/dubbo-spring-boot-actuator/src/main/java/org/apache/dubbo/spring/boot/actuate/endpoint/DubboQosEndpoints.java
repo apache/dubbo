@@ -18,7 +18,6 @@ package org.apache.dubbo.spring.boot.actuate.endpoint;
 
 import org.apache.dubbo.qos.command.ActuatorExecutor;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.spring.boot.actuate.endpoint.configuration.DubboActuatorProperties;
 import org.apache.dubbo.spring.boot.actuate.endpoint.metadata.DubboMetadata;
 
 import java.util.Map;

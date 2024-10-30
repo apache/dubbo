@@ -36,7 +36,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-spring-boot-actuator</artifactId>
+      <artifactId>dubbo-spring-boot-actuator-autoconfigure</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

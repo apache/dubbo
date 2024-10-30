@@ -30,12 +30,6 @@
 
   <dependencies>
 
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-spring-boot-actuator-autoconfigure</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <!-- Spring Boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -50,15 +44,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-autoconfigure</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- Dubbo autoconfigure -->
-    <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
+      <artifactId>dubbo-spring-boot</artifactId>
       <version>${project.version}</version>
     </dependency>
 

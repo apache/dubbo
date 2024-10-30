@@ -25,7 +25,7 @@
   </parent>
 
   <artifactId>dubbo-spring-boot-actuator-autoconfigure-compatible</artifactId>
-  <description>Apache Dubbo Spring Boot Compatible for Spring Boot 1.x Actuator</description>
+  <description>Apache Dubbo Spring Boot Actuator Autoconfigure Compatible for Spring Boot 1.x Actuator</description>
 
   <dependencies>
 
@@ -45,6 +45,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
       <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-spring-boot-actuator</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>

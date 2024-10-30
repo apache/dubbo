@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.actuate.endpoint.configuration;
+package org.apache.dubbo.spring.boot.actuate.endpoint;
 
 import java.util.Map;
 

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
-import org.apache.dubbo.spring.boot.actuate.endpoint.configuration.DubboActuatorProperties;
+import org.apache.dubbo.spring.boot.actuate.endpoint.DubboActuatorProperties;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
