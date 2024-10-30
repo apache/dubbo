@@ -16,14 +16,17 @@
  */
 package org.apache.dubbo.demo;
 
-public class GreeterWrapperServiceImpl implements GreeterWrapperService {
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
-    @Override
-    public String sayHello(String request) {
-        StringBuilder responseBuilder = new StringBuilder(request);
-        for (int i = 0; i < 20; i++) {
-            responseBuilder.append(responseBuilder);
-        }
-        return responseBuilder.toString();
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@EnableDubbo
+public class BasicApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(BasicApplication.class, args);
+        System.out.println("dubbo service started");
     }
 }
