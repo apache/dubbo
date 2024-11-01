@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.AnnotationUtils;
+import org.apache.dubbo.common.utils.DefaultParameterNameReader;
+import org.apache.dubbo.common.utils.ParameterNameReader;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
@@ -28,17 +30,18 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.Map;
 
 public abstract class AbstractRestToolKit implements RestToolKit {
 
     protected final FrameworkModel frameworkModel;
     protected final TypeConverter typeConverter;
+    protected final ParameterNameReader parameterNameReader;
 
     public AbstractRestToolKit(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
+        parameterNameReader = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultParameterNameReader.class);
     }
 
     @Override
@@ -66,17 +69,7 @@ public abstract class AbstractRestToolKit implements RestToolKit {
 
     @Override
     public String[] getParameterNames(Method method) {
-        Parameter[] parameters = method.getParameters();
-        int len = parameters.length;
-        String[] names = new String[len];
-        for (int i = 0; i < len; i++) {
-            Parameter param = parameters[i];
-            if (!param.isNamePresent()) {
-                return null;
-            }
-            names[i] = param.getName();
-        }
-        return names;
+        return parameterNameReader.readParameterNames(method);
     }
 
     @Override
