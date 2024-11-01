@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.lang.Prioritized;
 
-import java.util.concurrent.CompletableFuture;
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface OpenAPIExtension extends Prioritized {
 
-@OpenAPI(hidden = true)
-public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
-
-    String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-    String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-
-    MetadataInfoV2 getMetadataInfo(MetadataRequest request);
-
-    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
+    default String[] getGroups() {
+        return null;
+    }
 }

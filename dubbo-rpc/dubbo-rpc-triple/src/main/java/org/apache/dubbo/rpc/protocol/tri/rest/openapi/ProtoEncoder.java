@@ -14,19 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
-import java.util.concurrent.CompletableFuture;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 
-@OpenAPI(hidden = true)
-public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
+final class ProtoEncoder implements HttpMessageEncoder {
 
-    String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-    String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
+    static final ProtoEncoder INSTANCE = new ProtoEncoder();
 
-    MetadataInfoV2 getMetadataInfo(MetadataRequest request);
+    @Override
+    public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
+        OpenAPI openAPI = (OpenAPI) data;
+    }
 
-    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
+    @Override
+    public MediaType mediaType() {
+        return MediaType.TEXT_PLAIN;
+    }
 }

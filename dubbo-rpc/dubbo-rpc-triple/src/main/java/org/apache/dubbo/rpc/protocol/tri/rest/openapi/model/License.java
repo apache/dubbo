@@ -14,19 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 
-@OpenAPI(hidden = true)
-public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
+public final class License extends Node<License> {
 
-    String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-    String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
+    private String name;
+    private String url;
 
-    MetadataInfoV2 getMetadataInfo(MetadataRequest request);
+    public String getName() {
+        return name;
+    }
 
-    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
+    public License setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public License setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
+    @Override
+    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+        write(node, "name", name);
+        write(node, "url", url);
+        writeExtensions(node);
+        return node;
+    }
 }

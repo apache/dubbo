@@ -30,6 +30,8 @@ public final class MediaType {
 
     public static final MediaType APPLICATION_YAML = new MediaType("application", "yaml");
 
+    public static final MediaType TEXT_PROTO = new MediaType("text", "proto");
+
     public static final MediaType APPLICATION_JAVASCRIPT = new MediaType("application", "javascript");
 
     public static final MediaType APPLICATION_OCTET_STREAM = new MediaType("application", "octet-stream");

@@ -208,12 +208,28 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return name;
     }
 
+    public String getSig() {
+        return sig;
+    }
+
     public PathCondition getPathCondition() {
         return pathCondition;
     }
 
     public MethodsCondition getMethodsCondition() {
         return methodsCondition;
+    }
+
+    public ParamsCondition getParamsCondition() {
+        return paramsCondition;
+    }
+
+    public HeadersCondition getHeadersCondition() {
+        return headersCondition;
+    }
+
+    public ConsumesCondition getConsumesCondition() {
+        return consumesCondition;
     }
 
     public ProducesCondition getProducesCondition() {

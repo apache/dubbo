@@ -121,6 +121,9 @@ public final class PathUtils {
 
         boolean slash1 = last1 == '/';
         boolean slash2 = path2.charAt(0) == '/';
+        if (slash2 && path2.length() > 1 && path2.charAt(1) == '/') {
+            return path2.substring(1);
+        }
         if (slash1) {
             return slash2 ? path1 + path2.substring(1) : path1 + path2;
         }

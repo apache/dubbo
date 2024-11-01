@@ -1,0 +1,216 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
+
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+public final class OpenAPI extends Node<OpenAPI> {
+
+    private String openapi;
+    private Info info;
+    private List<Server> servers;
+    private Map<String, PathItem> paths;
+    private Components components;
+    private List<SecurityRequirement> security;
+    private List<Tag> tags;
+    private ExternalDocs externalDocs;
+
+    private String[] groups;
+    private transient int priority;
+
+    public String getOpenapi() {
+        return openapi;
+    }
+
+    public OpenAPI setOpenapi(String openapi) {
+        this.openapi = openapi;
+        return this;
+    }
+
+    public Info getInfo() {
+        return info;
+    }
+
+    public OpenAPI setInfo(Info info) {
+        this.info = info;
+        return this;
+    }
+
+    public List<Server> getServers() {
+        return servers;
+    }
+
+    public OpenAPI setServers(List<Server> servers) {
+        this.servers = servers;
+        return this;
+    }
+
+    public OpenAPI addServer(Server server) {
+        if (servers == null) {
+            servers = new ArrayList<>();
+        }
+        servers.add(server);
+        return this;
+    }
+
+    public OpenAPI removeServer(Server server) {
+        if (servers != null) {
+            servers.remove(server);
+        }
+        return this;
+    }
+
+    public Map<String, PathItem> getPaths() {
+        return paths;
+    }
+
+    public PathItem getOrAddPath(String path) {
+        if (paths == null) {
+            paths = new LinkedHashMap<>();
+        }
+        return paths.computeIfAbsent(path, k -> new PathItem());
+    }
+
+    public OpenAPI setPaths(Map<String, PathItem> paths) {
+        this.paths = paths;
+        return this;
+    }
+
+    public OpenAPI addPath(String path, PathItem pathItem) {
+        if (paths == null) {
+            paths = new LinkedHashMap<>();
+        }
+        paths.put(path, pathItem);
+        return this;
+    }
+
+    public OpenAPI removePath(String path) {
+        if (paths != null) {
+            paths.remove(path);
+        }
+        return this;
+    }
+
+    public Components getComponents() {
+        return components;
+    }
+
+    public OpenAPI setComponents(Components components) {
+        this.components = components;
+        return this;
+    }
+
+    public List<SecurityRequirement> getSecurity() {
+        return security;
+    }
+
+    public OpenAPI setSecurity(List<SecurityRequirement> security) {
+        this.security = security;
+        return this;
+    }
+
+    public OpenAPI addSecurity(SecurityRequirement securityRequirement) {
+        if (security == null) {
+            security = new ArrayList<>();
+        }
+        security.add(securityRequirement);
+        return this;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public OpenAPI setTags(List<Tag> tags) {
+        this.tags = tags;
+        return this;
+    }
+
+    public OpenAPI addTag(Tag tag) {
+        if (tags == null) {
+            tags = new ArrayList<>();
+        }
+        tags.add(tag);
+        return this;
+    }
+
+    public OpenAPI removeTag(Tag tag) {
+        if (tags != null) {
+            tags.remove(tag);
+        }
+        return this;
+    }
+
+    public ExternalDocs getExternalDocs() {
+        return externalDocs;
+    }
+
+    public OpenAPI setExternalDocs(ExternalDocs externalDocs) {
+        this.externalDocs = externalDocs;
+        return this;
+    }
+
+    public String[] getGroups() {
+        return groups;
+    }
+
+    public OpenAPI setGroups(String[] groups) {
+        this.groups = groups;
+        return this;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public OpenAPI setPriority(int priority) {
+        this.priority = priority;
+        return this;
+    }
+
+    @Override
+    public OpenAPI clone() {
+        OpenAPI clone = super.clone();
+        clone.info = clone(info);
+        clone.servers = clone(servers);
+        clone.paths = clone(paths);
+        clone.components = clone(components);
+        clone.security = clone(security);
+        clone.tags = clone(tags);
+        clone.externalDocs = clone(externalDocs);
+        return clone;
+    }
+
+    @Override
+    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+        node.put("openapi", openapi);
+        write(node, "info", info, context);
+        write(node, "servers", servers, context);
+        write(node, "paths", paths, context);
+        write(node, "components", components, context);
+        write(node, "security", security, context);
+        write(node, "tags", tags, context);
+        write(node, "externalDocs", externalDocs, context);
+        writeExtensions(node);
+        return node;
+    }
+}

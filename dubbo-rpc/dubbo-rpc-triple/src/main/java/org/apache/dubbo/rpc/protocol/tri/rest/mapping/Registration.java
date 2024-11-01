@@ -16,26 +16,44 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
-import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
-import java.util.Collection;
+public final class Registration {
 
-/**
- * RequestMappingRegistry used for registering and unregistering rest request mappings.
- */
-public interface RequestMappingRegistry {
+    private final RequestMapping mapping;
+    private final HandlerMeta meta;
 
-    void register(Invoker<?> invoker);
+    public Registration(RequestMapping mapping, HandlerMeta meta) {
+        this.mapping = mapping;
+        this.meta = meta;
+    }
 
-    void unregister(Invoker<?> invoker);
+    public RequestMapping getMapping() {
+        return mapping;
+    }
 
-    HandlerMeta lookup(HttpRequest request);
+    public HandlerMeta getMeta() {
+        return meta;
+    }
 
-    boolean exists(String path, String method);
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != Registration.class) {
+            return false;
+        }
+        return mapping.equals(((Registration) obj).mapping);
+    }
 
-    Collection<Registration> getRegistrations();
+    @Override
+    public int hashCode() {
+        return mapping.hashCode();
+    }
 
-    void destroy();
+    @Override
+    public String toString() {
+        return "Registration{mapping=" + mapping + ", method=" + meta.getMethod() + '}';
+    }
 }

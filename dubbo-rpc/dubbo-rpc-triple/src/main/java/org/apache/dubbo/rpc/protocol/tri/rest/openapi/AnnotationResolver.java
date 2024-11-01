@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 
-import java.util.concurrent.CompletableFuture;
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface AnnotationResolver {
 
-@OpenAPI(hidden = true)
-public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
+    OpenAPI resolve(ServiceMeta serviceMeta);
 
-    String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-    String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-
-    MetadataInfoV2 getMetadataInfo(MetadataRequest request);
-
-    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
+    Operation resolve(MethodMeta methodMeta, Operation operation, ResolveContext context);
 }

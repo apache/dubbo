@@ -171,7 +171,7 @@ public class ContentNegotiator {
             extensionMapping.put("xhtml", MediaType.TEXT_HTML);
             extensionMapping.put("html", MediaType.TEXT_HTML);
             extensionMapping.put("htm", MediaType.TEXT_HTML);
-            for (String ext : new String[] {"txt", "md", "csv", "log", "properties"}) {
+            for (String ext : new String[] {"txt", "md", "csv", "log", "properties", "proto"}) {
                 extensionMapping.put(ext, MediaType.TEXT_PLAIN);
             }
 

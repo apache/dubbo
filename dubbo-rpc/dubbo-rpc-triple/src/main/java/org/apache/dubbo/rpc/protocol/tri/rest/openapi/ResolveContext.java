@@ -14,19 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.config.nested.OpenAPIConfig;
 
-import java.util.concurrent.CompletableFuture;
+public final class ResolveContext {
 
-@OpenAPI(hidden = true)
-public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
+    private final SchemaFactory schemaFactory;
+    private OpenAPIConfig config;
 
-    String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-    String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
+    public ResolveContext(SchemaFactory schemaFactory) {
+        this.schemaFactory = schemaFactory;
+    }
 
-    MetadataInfoV2 getMetadataInfo(MetadataRequest request);
+    public SchemaFactory getSchemaFactory() {
+        return schemaFactory;
+    }
 
-    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
+    public OpenAPIConfig getConfig() {
+        return config;
+    }
+
+    public ResolveContext setConfig(OpenAPIConfig config) {
+        this.config = config;
+        return this;
+    }
 }

@@ -26,7 +26,11 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIRequest;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIService;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,7 +59,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
-    private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap =
+    private final OpenAPIService openAPIService;
+    private final ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap =
             new ConcurrentHashMap<>();
     private URL url;
     // works only for DNS service discovery
@@ -66,6 +71,10 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         registryManager = RegistryManager.getInstance(applicationModel);
+        openAPIService = applicationModel.getFrameworkModel().getBeanFactory().getBean(OpenAPIService.class);
+        if (openAPIService != null) {
+            openAPIService.export();
+        }
     }
 
     /**
@@ -212,6 +221,14 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
         instanceMetadataChangedListenerMap.put(consumerId, listener);
         return instanceMetadata;
+    }
+
+    @Override
+    public String getOpenAPI(OpenAPIRequest request) {
+        if (openAPIService == null) {
+            throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "OpenAPI is not available");
+        }
+        return openAPIService.getDocument(request);
     }
 
     private SortedSet<String> getServiceURLs(

@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
@@ -133,6 +134,29 @@ public final class RadixTree<T> {
                     cit.remove();
                 }
             }
+        }
+    }
+
+    public void walk(BiConsumer<PathExpression, T> consumer) {
+        for (List<Match<T>> matches : directPathMap.values()) {
+            for (Match<T> match : matches) {
+                consumer.accept(match.getExpression(), match.getValue());
+            }
+        }
+        walkRecursive(root, consumer);
+    }
+
+    private void walkRecursive(Node<T> root, BiConsumer<PathExpression, T> consumer) {
+        for (Pair<PathExpression, T> pair : root.values) {
+            consumer.accept(pair.getLeft(), pair.getRight());
+        }
+
+        for (Node<T> node : root.children.values()) {
+            walkRecursive(node, consumer);
+        }
+
+        for (Node<T> node : root.fuzzyChildren.values()) {
+            walkRecursive(node, consumer);
         }
     }
 

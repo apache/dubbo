@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 
-import java.util.concurrent.CompletableFuture;
+public final class Helper {
 
-@OpenAPI(hidden = true)
-public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
+    private Helper() {}
 
-    String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
-    String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
+    public static String resolvePath(PathExpression expr) {
+        return expr.getPath();
+    }
 
-    MetadataInfoV2 getMetadataInfo(MetadataRequest request);
+    public static String pathToRef(String path) {
+        return path;
+    }
 
-    CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
+    public static String refToPath(String ref) {
+        return ref;
+    }
 }
