@@ -94,6 +94,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
@@ -621,6 +622,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                             .getBean(ClusterUtils.class)
                             .mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
+                    peerUrl = peerUrl.addParameter(Constants.TARGET_PROTOCOL, peerUrl.getProtocol())
+                            .addParameter(Constants.TARGET_PORT, peerUrl.getPort())
+                            .addParameter(Constants.DNS_NAME, peerUrl.getHost())
+                            .setProtocol("registry")
+                            .addParameter(REGISTRY_KEY, "dns")
+                            .setPath("DEFAULT_DNS_HOST");
                     urls.add(peerUrl);
                 }
             }

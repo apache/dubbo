@@ -160,4 +160,10 @@ public interface Constants {
     String DEFAULT_NATIVE_PROXY = "jdk";
 
     String DEFAULT_APP_NAME = "DEFAULT_DUBBO_APP";
+
+    String DNS_NAME = "dnsName";
+
+    String TARGET_PORT = "targetPort";
+
+    String TARGET_PROTOCOL = "targetProtocol";
 }
