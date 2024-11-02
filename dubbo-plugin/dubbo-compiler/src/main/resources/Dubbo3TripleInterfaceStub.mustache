@@ -16,74 +16,65 @@
 */
 
 {{#packageName}}
-    package {{packageName}};
+package {{packageName}};
 {{/packageName}}
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.http12.HttpMethods;
-import org.apache.dubbo.remoting.http12.rest.Mapping;
-import org.apache.dubbo.rpc.stub.annotations.Grequest;
-
 import com.google.protobuf.Message;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.concurrent.CompletableFuture;
+import org.apache.dubbo.rpc.stub.annotations.GRequest;
+import org.apache.dubbo.remoting.http12.HttpMethods;
+import org.apache.dubbo.remoting.http12.rest.Mapping;
 
 public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
 
-String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+    String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
 {{#commonPackageName}}
     String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
 {{/commonPackageName}}
 {{^commonPackageName}}
     String SERVICE_NAME = "{{serviceName}}";
 {{/commonPackageName}}
-
 {{#unaryMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
+    {{outputType}} {{methodName}}({{#hasBody}}@GRequest {{/hasBody}}{{inputType}} request);
 
-    {{#hasMappings}}
-        @Mapping(method = HttpMethods.{{httpMethod}}, path = "{{path}}")
-    {{/hasMappings}}
-    public {{outputType}} {{methodName}}({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request);
+    CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@GRequest {{/hasBody}}{{inputType}} request);
 
-    CompletableFuture<{{outputType}}> {{methodName}}Async({{#hasBody}}@Grequest {{/hasBody}}{{inputType}} request);
+
 
 {{/unaryMethods}}
 
 {{#serverStreamingMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
-
     {{#hasMappings}}
-        @Mapping(method = HttpMethods.{{httpMethod}}, uri = "{{uri}}")
+    @Mapping(method = HttpMethods.{{httpMethod}}, uri = "{{uri}}")
     {{/hasMappings}}
-    void {{methodName}}({{#hasBody}}@Grequest{{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver);
+    void {{methodName}}({{#hasBody}}@GRequest{{/hasBody}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver);
 {{/serverStreamingMethods}}
 
 {{#biStreamingWithoutClientStreamMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
-
-    {{#hasMappings}}
-        @Mapping(method = HttpMethods.{{httpMethod}}, uri = "{{uri}}")
-    {{/hasMappings}}
     StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver);
 {{/biStreamingWithoutClientStreamMethods}}
 
+
 {{#clientStreamingMethods}}
     {{#javaDoc}}
-        {{{javaDoc}}}
+    {{{javaDoc}}}
     {{/javaDoc}}
-
     {{#hasMappings}}
-        @Mapping(method = HttpMethods.{{httpMethod}}, uri = "{{uri}}")
+    @Mapping(method = HttpMethods.{{httpMethod}}, uri = "{{uri}}")
     {{/hasMappings}}
     StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver);
 {{/clientStreamingMethods}}

@@ -17,7 +17,6 @@
 package org.apache.dubbo.gen;
 
 import org.apache.dubbo.gen.utils.ProtoTypeMap;
-import org.apache.dubbo.remoting.http12.HttpMethods;
 
 import javax.annotation.Nonnull;
 
@@ -196,13 +195,13 @@ public abstract class AbstractGenerator {
         if (httpRule != null) {
             methodContext.hasMappings = true;
             if (!httpRule.getGet().isEmpty()) {
-                methodContext.httpMethod = HttpMethods.GET;
+                methodContext.httpMethod = "GET";
             } else if (!httpRule.getPost().isEmpty()) {
-                methodContext.httpMethod = HttpMethods.POST;
+                methodContext.httpMethod = "POST";
             } else if (!httpRule.getPut().isEmpty()) {
-                methodContext.httpMethod = HttpMethods.PUT;
+                methodContext.httpMethod = "PUT";
             } else if (!httpRule.getDelete().isEmpty()) {
-                methodContext.httpMethod = HttpMethods.DELETE;
+                methodContext.httpMethod = "DELETE";
             } else {
                 methodContext.httpMethod = null;
             }
@@ -428,9 +427,9 @@ public abstract class AbstractGenerator {
         public String grpcCallsMethodName;
         public int methodNumber;
         public String javaDoc;
-        public HttpMethods httpMethod;
+        public String httpMethod;
         public String path;
-        public String body; // requestBody
+        public String body; // Specify the message field that the HTTP request body mapping to
         public boolean hasMappings;
         public boolean hasBody;
 
