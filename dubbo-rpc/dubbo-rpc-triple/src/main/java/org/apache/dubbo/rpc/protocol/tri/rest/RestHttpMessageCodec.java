@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessageEncoder {
 
@@ -110,6 +111,10 @@ public final class RestHttpMessageCodec implements HttpMessageDecoder, HttpMessa
     public void encode(OutputStream os, Object data) throws EncodeException {
         if (data != null) {
             Class<?> type = data.getClass();
+            if (type == Optional.class) {
+                encode(os, ((Optional<?>) data).orElse(null));
+                return;
+            }
             try {
                 if (type == byte[].class) {
                     os.write((byte[]) data);

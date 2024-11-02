@@ -266,8 +266,8 @@ public class DefaultHttpResponse implements HttpResponse {
         if (body != null) {
             return false;
         }
-        if (outputStream != null && outputStream instanceof ByteArrayOutputStream) {
-            return ((ByteArrayOutputStream) outputStream).size() == 0;
+        if (outputStream != null) {
+            return outputStream instanceof ByteArrayOutputStream && ((ByteArrayOutputStream) outputStream).size() == 0;
         }
         return true;
     }

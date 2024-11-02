@@ -78,7 +78,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>org.apache.dubbo.gen.grpc.DubboGrpcGenerator</mainClass>
+              <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
             </manifest>
           </archive>
         </configuration>

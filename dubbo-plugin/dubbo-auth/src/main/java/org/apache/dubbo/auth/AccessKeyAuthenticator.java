@@ -62,7 +62,7 @@ public class AccessKeyAuthenticator implements Authenticator {
         try {
             accessKeyPair = getAccessKeyPair(invocation, url);
         } catch (Exception e) {
-            throw new RpcAuthenticationException("Failed to authenticate , can't load the accessKeyPair", e);
+            throw new RpcAuthenticationException("Failed to authenticate , can't load the accessKeyPair");
         }
 
         String computeSignature = getSignature(url, invocation, accessKeyPair.getSecretKey(), requestTimestamp);
@@ -85,7 +85,7 @@ public class AccessKeyAuthenticator implements Authenticator {
                 throw new AccessKeyNotFoundException("AccessKeyId or secretAccessKey not found");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Can't load the AccessKeyPair from accessKeyStorage", e);
+            throw new RuntimeException("Can't load the AccessKeyPair from accessKeyStorage");
         }
         return accessKeyPair;
     }

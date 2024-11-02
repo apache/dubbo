@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
-@Activate(onClass = "javax.ws.rs.Path")
+@Activate(onClass = {"javax.ws.rs.Path", "javax.ws.rs.container.ContainerRequestContext"})
 public class JaxrsRequestMappingResolver implements RequestMappingResolver {
 
     private final FrameworkModel frameworkModel;

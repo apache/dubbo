@@ -123,7 +123,7 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
             }
             Map<String, List<String>> hrs = this.headers;
             if (hrs == null) {
-                hrs = new LinkedHashMap<>(headers.size());
+                this.headers = hrs = new LinkedHashMap<>(headers.size());
             }
             for (Entry<CharSequence, String> entry : headers) {
                 CharSequence key = entry.getKey();

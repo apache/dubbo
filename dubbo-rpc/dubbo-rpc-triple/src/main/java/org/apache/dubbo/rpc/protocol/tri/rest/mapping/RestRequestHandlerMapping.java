@@ -51,7 +51,6 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RestRequestHandlerMapping.class);
 
-    private final FrameworkModel frameworkModel;
     private final RequestMappingRegistry requestMappingRegistry;
     private final ArgumentResolver argumentResolver;
     private final TypeConverter typeConverter;
@@ -59,7 +58,6 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
     private final CodecUtils codecUtils;
 
     public RestRequestHandlerMapping(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         requestMappingRegistry = beanFactory.getOrRegisterBean(DefaultRequestMappingRegistry.class);
         argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
@@ -89,7 +87,7 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
         }
 
         String requestMediaType = request.mediaType();
-        String responseMediaType = contentNegotiator.negotiate(request);
+        String responseMediaType = contentNegotiator.negotiate(request, meta);
         if (responseMediaType != null) {
             response.setContentType(responseMediaType);
         } else {

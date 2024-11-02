@@ -58,4 +58,17 @@ class RadixTreeTest extends Specification {
             '/a/b/c'   | 1
             '/a/b/c/d' | 0
     }
+
+    def "test sub path match"() {
+        given:
+            def tree = new RadixTree<String>();
+            tree.addPath("/update/{ruleId}", "a")
+            tree.addPath("/update/{ruleId}/state", "b")
+        expect:
+            tree.match(path).get(0).value == result
+        where:
+            path                    | result
+            '/update/1222222'       | 'a'
+            '/update/1222222/state' | 'b'
+    }
 }

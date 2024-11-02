@@ -291,4 +291,17 @@ class RestProtocolTest extends BaseServiceTest {
             'POST' | '/mismatchTest?name=earth' | 'text/plain'       | 'text/plain'       | '{"message":"Unsatisfied query parameter conditions","status":"400"}'
     }
 
+    def "consistent with SpringMVC"() {
+        given:
+            def request = new TestRequest(
+                path: path,
+                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
+            )
+        expect:
+            runner.run(request).contentType == contentType
+        where:
+            path | contentType
+            '/beanArgTest' | 'application/json'
+    }
+
 }
