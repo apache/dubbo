@@ -525,7 +525,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                                 return true;
                             } else { // if consumer side protocol is not specified, remove all extra protocols
                                 if (needPreferred) {
-                                    return StringUtils.isNotEmpty(serviceInfo.getParameter(PREFERRED_PROTOCOL));
+                                    return serviceInfo.getProtocol().equals(serviceInfo.getParameter(PREFERRED_PROTOCOL));
                                 } else {
                                     return StringUtils.isEmpty(serviceInfo.getParameter(IS_EXTRA));
                                 }
