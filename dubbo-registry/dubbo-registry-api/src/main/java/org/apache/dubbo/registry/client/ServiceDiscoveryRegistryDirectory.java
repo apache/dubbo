@@ -526,7 +526,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                                     .getProtocol())) { // if consumer side protocol is specified, use all
                         // the protocols we got in hand now directly
                         return true;
-                    } else { // if consumer side protocol is not specified, choose the preferred or default main protocol
+                    } else {
+                        // if consumer side protocol is not specified, choose the preferred or default main protocol
                         if (needPreferred) {
                             return serviceInfo.getProtocol().equals(serviceInfo.getParameter(PREFERRED_PROTOCOL));
                         } else {
