@@ -94,7 +94,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
@@ -495,7 +494,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (StringUtils.isNotEmpty(url)) {
             // user specified URL, could be peer-to-peer address, or register center's address.
-            parseUrl(referenceParameters);
+            //            parseUrl(referenceParameters);
+            URL u = URL.valueOf(url);
+            referenceParameters.put(Constants.TARGET_PROTOCOL, u.getProtocol());
+            referenceParameters.put(Constants.DNS_NAME, u.getHost());
+            referenceParameters.put(Constants.TARGET_PORT, String.valueOf(u.getPort()));
+            RegistryConfig registryConfig = new RegistryConfig();
+            registryConfig.setProtocol("dns");
+            registryConfig.setAddress("DEFAULT_DNS_HOST");
+            this.setRegistry(registryConfig);
+            aggregateUrlFromRegistry(referenceParameters);
         } else {
             // if protocols not in jvm checkRegistry
             aggregateUrlFromRegistry(referenceParameters);
@@ -622,12 +630,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                             .getBean(ClusterUtils.class)
                             .mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
-                    peerUrl = peerUrl.addParameter(Constants.TARGET_PROTOCOL, peerUrl.getProtocol())
-                            .addParameter(Constants.TARGET_PORT, peerUrl.getPort())
-                            .addParameter(Constants.DNS_NAME, peerUrl.getHost())
-                            .setProtocol("registry")
-                            .addParameter(REGISTRY_KEY, "dns")
-                            .setPath("DEFAULT_DNS_HOST");
                     urls.add(peerUrl);
                 }
             }
