@@ -289,11 +289,6 @@
       <!-- plugin -->
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-plugin</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-auth</artifactId>
         <version>${project.version}</version>
       </dependency>

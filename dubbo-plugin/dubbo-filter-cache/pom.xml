@@ -19,8 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-plugin</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>dubbo-filter-cache</artifactId>
   <packaging>jar</packaging>
@@ -44,6 +45,17 @@
       <groupId>com.hazelcast</groupId>
       <artifactId>hazelcast</artifactId>
       <version>${hazelcast_version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-test-check</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

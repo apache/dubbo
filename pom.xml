@@ -80,11 +80,9 @@
     <module>dubbo-cluster</module>
     <module>dubbo-registry</module>
     <module>dubbo-config</module>
-    <module>dubbo-plugin</module>
     <module>dubbo-serialization</module>
     <module>dubbo-compatible</module>
     <module>dubbo-dependencies-bom</module>
-    <module>dubbo-distribution</module>
     <module>dubbo-configcenter</module>
     <module>dubbo-dependencies</module>
     <module>dubbo-metadata</module>
@@ -97,6 +95,27 @@
     <module>dubbo-spring-boot-project/dubbo-spring-boot-starters</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-actuator-autoconfigure</module>
+    <module>dubbo-plugin/dubbo-qos</module>
+    <module>dubbo-plugin/dubbo-auth</module>
+    <module>dubbo-plugin/dubbo-reactive</module>
+    <module>dubbo-plugin/dubbo-security</module>
+    <module>dubbo-plugin/dubbo-spring-security</module>
+    <module>dubbo-plugin/dubbo-qos-api</module>
+    <module>dubbo-plugin/dubbo-native</module>
+    <module>dubbo-plugin/dubbo-compiler</module>
+    <module>dubbo-plugin/dubbo-filter-cache</module>
+    <module>dubbo-plugin/dubbo-filter-validation</module>
+    <module>dubbo-plugin/dubbo-rest-jaxrs</module>
+    <module>dubbo-plugin/dubbo-rest-spring</module>
+    <module>dubbo-plugin/dubbo-triple-servlet</module>
+    <module>dubbo-demo/dubbo-demo-interface</module>
+    <module>dubbo-demo/dubbo-demo-xml</module>
+    <module>dubbo-demo/dubbo-demo-annotation</module>
+    <module>dubbo-demo/dubbo-demo-api</module>
+    <module>dubbo-demo/dubbo-demo-generic-call</module>
+    <module>dubbo-demo/dubbo-demo-triple</module>
+    <module>dubbo-demo/dubbo-demo-native</module>
+    <module>dubbo-demo/dubbo-demo-spring-boot</module>
   </modules>
 
   <scm>
@@ -652,6 +671,12 @@
       <id>release</id>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-plugin-loom</module>
+        <module>dubbo-distribution/dubbo-all</module>
+        <module>dubbo-distribution/dubbo-all-shaded</module>
+        <module>dubbo-distribution/dubbo-apache-release</module>
+        <module>dubbo-distribution/dubbo-bom</module>
+        <module>dubbo-distribution/dubbo-core-spi</module>
       </modules>
       <properties>
         <log4j2_version>2.17.2</log4j2_version>
@@ -972,14 +997,28 @@
       </properties>
     </profile>
     <profile>
-      <id>demo</id>
+      <id>loom</id>
       <activation>
-        <property>
-          <name>!demo.skip</name>
-        </property>
+        <jdk>[21,)</jdk>
       </activation>
       <modules>
-        <module>dubbo-demo</module>
+        <module>dubbo-plugin/dubbo-plugin-loom</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>dubbo-core-spi</id>
+      <modules>
+        <module>dubbo-distribution/dubbo-core-spi</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>dubbo-all</id>
+      <activation>
+        <jdk>[1.7,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-distribution/dubbo-all</module>
+        <module>dubbo-distribution/dubbo-bom</module>
       </modules>
     </profile>
   </profiles>
