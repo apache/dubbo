@@ -65,6 +65,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_DOMAIN;
@@ -76,6 +77,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLUSTER_
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_MESH_PORT;
 import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -101,6 +103,7 @@ import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -492,22 +495,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         meshModeHandleUrl(referenceParameters);
 
-        if (StringUtils.isNotEmpty(url)) {
-            // user specified URL, could be peer-to-peer address, or register center's address.
-            //            parseUrl(referenceParameters);
-            URL u = URL.valueOf(url);
-            referenceParameters.put(Constants.TARGET_PROTOCOL, u.getProtocol());
-            referenceParameters.put(Constants.DNS_NAME, u.getHost());
-            referenceParameters.put(Constants.TARGET_PORT, String.valueOf(u.getPort()));
-            RegistryConfig registryConfig = new RegistryConfig();
-            registryConfig.setProtocol("dns");
-            registryConfig.setAddress("DEFAULT_DNS_HOST");
-            this.setRegistry(registryConfig);
-            aggregateUrlFromRegistry(referenceParameters);
-        } else {
-            // if protocols not in jvm checkRegistry
-            aggregateUrlFromRegistry(referenceParameters);
-        }
+        aggregateUrlFromRegistry(referenceParameters);
         createInvoker();
 
         if (logger.isInfoEnabled()) {
@@ -641,6 +629,33 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private void aggregateUrlFromRegistry(Map<String, String> referenceParameters) {
         checkRegistry();
+        if (StringUtils.isNoneEmpty(url)) {
+            // user specified URL, could be peer-to-peer address, or register center's address.
+            //            parseUrl(referenceParameters);
+            URL u = URL.valueOf(url);
+            referenceParameters.put(Constants.TARGET_PROTOCOL, u.getProtocol());
+            referenceParameters.put(Constants.DNS_NAME, u.getHost());
+            referenceParameters.put(Constants.TARGET_PORT, String.valueOf(u.getPort()));
+            u.getParameters().forEach(referenceParameters::putIfAbsent);
+            referenceParameters.putIfAbsent(CLUSTER_STICKY_KEY, Boolean.TRUE.toString());
+            // TODO Triple should support lazy connect
+            referenceParameters.putIfAbsent(LAZY_CONNECT_KEY, Boolean.TRUE.toString());
+
+            if (!getRegistries().isEmpty()) {
+                // If the URL has been set, only support DNS registry
+                setRegistries(getRegistries().stream()
+                        .filter(registryConfig -> Constants.DNS_REGISTRY.equals(registryConfig.getProtocol()))
+                        .collect(Collectors.toList()));
+            }
+            if (getRegistries().isEmpty()) {
+                // If none of the registries are configured, use the default DNS registry
+                RegistryConfig registryConfig = new RegistryConfig();
+                registryConfig.setProtocol(Constants.DNS_REGISTRY);
+                registryConfig.setAddress(Constants.DNS_DEFAULT_NAMESERVER);
+                registryConfig.refresh();
+                setRegistry(registryConfig);
+            }
+        }
         List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
         if (CollectionUtils.isNotEmpty(us)) {
             for (URL u : us) {

@@ -17,6 +17,9 @@
 package org.apache.dubbo.registry.dns;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -33,6 +36,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DnsRegistry extends CacheableFailbackRegistry {
+    private final Logger logger = LoggerFactory.getLogger(DnsRegistry.class);
 
     private final DNSResolver dnsResolver;
 
@@ -40,7 +44,7 @@ public class DnsRegistry extends CacheableFailbackRegistry {
 
     public DnsRegistry(URL url) {
         super(url);
-        if ("DEFAULT_DNS_HOST".equals(url.getHost())) {
+        if (Constants.DNS_DEFAULT_NAMESERVER.equals(url.getHost())) {
             this.dnsResolver = new DNSResolver();
         } else {
             this.dnsResolver = new DNSResolver(url.getHost(), url.getPort());
@@ -69,18 +73,23 @@ public class DnsRegistry extends CacheableFailbackRegistry {
             throw new IllegalArgumentException("The value of 'dnsName' in the URL cannot be null.");
         }
         int targetPost = url.getParameter(Constants.TARGET_PORT, 50051);
-        String targetProtocol = url.getParameter(Constants.TARGET_PROTOCOL, "tri");
+        String targetProtocol = url.getParameter(Constants.TARGET_PROTOCOL, CommonConstants.TRIPLE);
 
         DnsResultListener dnsResultListener =
                 subscribeListeners.computeIfAbsent(new SubscribeKey(url, listener), key -> inetAddresses -> {
+                    logger.info("Resolved DNS name: " + dnsName + " to " + inetAddresses
+                            + ". Start to notify ServiceKey: " + url.getServiceKey());
                     List<URL> targetUrls = new ArrayList<>();
                     for (InetAddress inetAddress : inetAddresses) {
                         targetUrls.add(buildURL(url, targetProtocol, inetAddress.getHostAddress(), targetPost));
                     }
                     listener.notify(targetUrls);
+                    logger.info("Notified ServiceKey: " + url.getServiceKey() + " with " + targetUrls.size()
+                            + " target URLs.");
                 });
 
         dnsResolver.subscribe(dnsName, dnsResultListener);
+        logger.info("Subscribed DNS name: " + dnsName + " with ServiceKey: " + url.getServiceKey());
     }
 
     private URL buildURL(URL consumerURL, String protocol, String host, int port) {
@@ -90,15 +99,18 @@ public class DnsRegistry extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
+        String dnsName = url.getParameter(Constants.DNS_NAME);
         DnsResultListener dnsResultListener = subscribeListeners.remove(new SubscribeKey(url, listener));
         if (dnsResultListener != null) {
-            dnsResolver.unsubscribe(url.getParameter(Constants.DNS_NAME), dnsResultListener);
+            dnsResolver.unsubscribe(dnsName, dnsResultListener);
+            logger.info("Unsubscribed DNS name: " + dnsName + " with ServiceKey: " + url.getServiceKey());
         }
     }
 
     @Override
     public void destroy() {
         dnsResolver.stop();
+        logger.info("DNS resolver stopped.");
     }
 
     @Override

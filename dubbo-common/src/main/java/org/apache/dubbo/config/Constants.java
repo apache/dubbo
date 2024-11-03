@@ -166,4 +166,8 @@ public interface Constants {
     String TARGET_PORT = "targetPort";
 
     String TARGET_PROTOCOL = "targetProtocol";
+
+    String DNS_REGISTRY = "dns";
+
+    String DNS_DEFAULT_NAMESERVER = "DEFAULT_DNS_HOST";
 }
