@@ -35,6 +35,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 public class DnsRegistry extends CacheableFailbackRegistry {
     private final Logger logger = LoggerFactory.getLogger(DnsRegistry.class);
 
@@ -93,7 +96,9 @@ public class DnsRegistry extends CacheableFailbackRegistry {
     }
 
     private URL buildURL(URL consumerURL, String protocol, String host, int port) {
-        URL url = new ServiceConfigURL(protocol, host, port, consumerURL.getPath());
+        URL url = new ServiceConfigURL(protocol, host, port, consumerURL.getPath())
+                .addParameter(GROUP_KEY, consumerURL.getParameter(GROUP_KEY))
+                .addParameter(VERSION_KEY, consumerURL.getParameter(VERSION_KEY));
         return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, null);
     }
 
