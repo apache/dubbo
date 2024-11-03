@@ -25,12 +25,18 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DnsRegistry extends CacheableFailbackRegistry {
 
     private final DNSResolver dnsResolver;
+
+    private final Map<SubscribeKey, DnsResultListener> subscribeListeners = new ConcurrentHashMap<>();
 
     public DnsRegistry(URL url) {
         super(url);
@@ -59,16 +65,22 @@ public class DnsRegistry extends CacheableFailbackRegistry {
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
         String dnsName = url.getParameter(Constants.DNS_NAME);
+        if (dnsName == null) {
+            throw new IllegalArgumentException("The value of 'dnsName' in the URL cannot be null.");
+        }
         int targetPost = url.getParameter(Constants.TARGET_PORT, 50051);
         String targetProtocol = url.getParameter(Constants.TARGET_PROTOCOL, "tri");
 
-        dnsResolver.subscribe(dnsName, inetAddresses -> {
-            List<URL> targetUrls = new ArrayList<>();
-            for (java.net.InetAddress inetAddress : inetAddresses) {
-                targetUrls.add(buildURL(url, targetProtocol, inetAddress.getHostAddress(), targetPost));
-            }
-            listener.notify(targetUrls);
-        });
+        DnsResultListener dnsResultListener =
+                subscribeListeners.computeIfAbsent(new SubscribeKey(url, listener), key -> inetAddresses -> {
+                    List<URL> targetUrls = new ArrayList<>();
+                    for (InetAddress inetAddress : inetAddresses) {
+                        targetUrls.add(buildURL(url, targetProtocol, inetAddress.getHostAddress(), targetPost));
+                    }
+                    listener.notify(targetUrls);
+                });
+
+        dnsResolver.subscribe(dnsName, dnsResultListener);
     }
 
     private URL buildURL(URL consumerURL, String protocol, String host, int port) {
@@ -77,7 +89,12 @@ public class DnsRegistry extends CacheableFailbackRegistry {
     }
 
     @Override
-    public void doUnsubscribe(URL url, NotifyListener listener) {}
+    public void doUnsubscribe(URL url, NotifyListener listener) {
+        DnsResultListener dnsResultListener = subscribeListeners.remove(new SubscribeKey(url, listener));
+        if (dnsResultListener != null) {
+            dnsResolver.unsubscribe(url.getParameter(Constants.DNS_NAME), dnsResultListener);
+        }
+    }
 
     @Override
     public void destroy() {
@@ -87,5 +104,28 @@ public class DnsRegistry extends CacheableFailbackRegistry {
     @Override
     public boolean isAvailable() {
         return true;
+    }
+
+    private static class SubscribeKey {
+        private final URL url;
+        private final NotifyListener listener;
+
+        public SubscribeKey(URL url, NotifyListener listener) {
+            this.url = url;
+            this.listener = listener;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SubscribeKey that = (SubscribeKey) o;
+            return Objects.equals(url, that.url) && Objects.equals(listener, that.listener);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url, listener);
+        }
     }
 }

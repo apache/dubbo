@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.registry.dns.DnsResultListener;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -34,7 +35,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -49,7 +49,7 @@ public class DNSResolver {
 
     private final DnsNameResolver dnsResolver;
     private final Map<String, List<InetAddress>> cache = new ConcurrentHashMap<>();
-    private final Map<String, List<Consumer<List<InetAddress>>>> listeners = new ConcurrentHashMap<>();
+    private final Map<String, List<DnsResultListener>> listeners = new ConcurrentHashMap<>();
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final Lock readLock = rwLock.readLock();
     private final Lock writeLock = rwLock.writeLock();
@@ -66,7 +66,7 @@ public class DNSResolver {
         this.dnsResolver = new DnsNameResolverBuilder(group.next())
                 .nameServerProvider(new SingletonDnsServerAddressStreamProvider(
                         new InetSocketAddress(dnsServerHost, dnsServerPort)))
-                .channelType(NioDatagramChannel.class)
+                .datagramChannelType(NioDatagramChannel.class)
                 .queryTimeoutMillis(5000)
                 .build();
         startRefreshTask();
@@ -80,18 +80,18 @@ public class DNSResolver {
         bootstrap.group(group).channel(NioDatagramChannel.class);
 
         this.dnsResolver = new DnsNameResolverBuilder(group.next())
-                .channelType(NioDatagramChannel.class)
+                .datagramChannelType(NioDatagramChannel.class)
                 .queryTimeoutMillis(5000)
                 .build();
         startRefreshTask();
     }
 
-    public void subscribe(String hostname, Consumer<List<InetAddress>> notifyListener) {
+    public void subscribe(String hostname, DnsResultListener notifyListener) {
         readLock.lock();
         try {
             List<InetAddress> cachedAddresses = cache.get(hostname);
             if (cachedAddresses != null) {
-                notifyListener.accept(Collections.unmodifiableList(cachedAddresses));
+                notifyListener.onEvent(Collections.unmodifiableList(cachedAddresses));
                 listeners.computeIfAbsent(hostname, k -> new ArrayList<>()).add(notifyListener);
                 return;
             }
@@ -105,7 +105,7 @@ public class DNSResolver {
             // Double-check to see if another thread has already updated the cache
             List<InetAddress> cachedAddresses = cache.get(hostname);
             if (cachedAddresses != null) {
-                notifyListener.accept(Collections.unmodifiableList(cachedAddresses));
+                notifyListener.onEvent(Collections.unmodifiableList(cachedAddresses));
                 listeners.computeIfAbsent(hostname, k -> new ArrayList<>()).add(notifyListener);
                 return;
             }
@@ -117,7 +117,7 @@ public class DNSResolver {
                 throw new RuntimeException("No DNS records found for " + hostname);
             }
             cache.put(hostname, inetAddresses);
-            notifyListener.accept(Collections.unmodifiableList(inetAddresses));
+            notifyListener.onEvent(Collections.unmodifiableList(inetAddresses));
             listeners.computeIfAbsent(hostname, k -> new ArrayList<>()).add(notifyListener);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -126,10 +126,10 @@ public class DNSResolver {
         }
     }
 
-    public void unsubscribe(String hostname, Consumer<List<InetAddress>> notifyListener) {
+    public void unsubscribe(String hostname, DnsResultListener notifyListener) {
         writeLock.lock();
         try {
-            List<Consumer<List<InetAddress>>> listenerList = listeners.get(hostname);
+            List<DnsResultListener> listenerList = listeners.get(hostname);
             if (listenerList != null) {
                 listenerList.remove(notifyListener);
                 if (listenerList.isEmpty()) {
@@ -160,7 +160,7 @@ public class DNSResolver {
                             readLock.unlock();
                             writeLock.lock();
                             try {
-                                List<Consumer<List<InetAddress>>> listenerList = listeners.get(hostname);
+                                List<DnsResultListener> listenerList = listeners.get(hostname);
                                 if (listenerList == null || listenerList.isEmpty()) {
                                     // If there are no listeners, remove the hostname from the cache
                                     cache.remove(hostname);
@@ -178,8 +178,8 @@ public class DNSResolver {
                                 if (CollectionUtils.equals(inetAddresses, originAddress)) {
                                     continue;
                                 }
-                                for (Consumer<List<InetAddress>> listener : listenerList) {
-                                    listener.accept(Collections.unmodifiableList(inetAddresses));
+                                for (DnsResultListener listener : listenerList) {
+                                    listener.onEvent(Collections.unmodifiableList(inetAddresses));
                                 }
                             } catch (Exception e) {
                                 logger.warn(
