@@ -35,6 +35,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.google.api.AnnotationsProto;
 import com.google.api.HttpRule;
+import com.google.api.HttpRule.PatternCase;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -70,11 +71,11 @@ public abstract class AbstractGenerator {
     }
 
     private String getServiceJavaDocPrefix() {
-        return "    ";
+        return "";
     }
 
     private String getMethodJavaDocPrefix() {
-        return "        ";
+        return "    ";
     }
 
     public List<PluginProtos.CodeGeneratorResponse.File> generateFiles(PluginProtos.CodeGeneratorRequest request) {
@@ -193,39 +194,36 @@ public abstract class AbstractGenerator {
         // compile google.api.http option
         HttpRule httpRule = parseHttpRule(methodProto);
         if (httpRule != null) {
-            methodContext.hasMappings = true;
-            if (!httpRule.getGet().isEmpty()) {
-                methodContext.httpMethod = "GET";
-            } else if (!httpRule.getPost().isEmpty()) {
-                methodContext.httpMethod = "POST";
-            } else if (!httpRule.getPut().isEmpty()) {
-                methodContext.httpMethod = "PUT";
-            } else if (!httpRule.getDelete().isEmpty()) {
-                methodContext.httpMethod = "DELETE";
-            } else {
-                methodContext.httpMethod = null;
+            PatternCase patternCase = httpRule.getPatternCase();
+            String path;
+            switch (patternCase) {
+                case GET:
+                    path = httpRule.getGet();
+                    break;
+                case PUT:
+                    path = httpRule.getPut();
+                    break;
+                case POST:
+                    path = httpRule.getPost();
+                    break;
+                case DELETE:
+                    path = httpRule.getDelete();
+                    break;
+                case PATCH:
+                    path = httpRule.getPatch();
+                    break;
+                default:
+                    path = "";
+                    break;
             }
-
-            if (!httpRule.getGet().isEmpty()) {
-                methodContext.path = httpRule.getGet();
-            } else if (!httpRule.getPost().isEmpty()) {
-                methodContext.path = httpRule.getPost();
-            } else if (!httpRule.getPut().isEmpty()) {
-                methodContext.path = httpRule.getPut();
-            } else if (!httpRule.getDelete().isEmpty()) {
-                methodContext.path = httpRule.getDelete();
-            } else {
-                methodContext.path = "";
+            if (!path.isEmpty()) {
+                methodContext.httpMethod = patternCase.name();
+                methodContext.path = path;
+                methodContext.body = httpRule.getBody();
+                methodContext.hasMapping = true;
+                methodContext.needRequestAnnotation = !methodContext.body.isEmpty() || path.contains("{");
             }
-
-            methodContext.body = httpRule.getBody();
-        } else {
-            methodContext.httpMethod = null;
-            methodContext.path = "";
-            methodContext.body = "";
         }
-
-        methodContext.hasBody = !Strings.isNullOrEmpty(methodContext.body);
 
         Location methodLocation = locations.stream()
                 .filter(location -> location.getPathCount() == METHOD_NUMBER_OF_PATHS
@@ -427,11 +425,26 @@ public abstract class AbstractGenerator {
         public String grpcCallsMethodName;
         public int methodNumber;
         public String javaDoc;
+        /**
+         * The HTTP request method
+         */
         public String httpMethod;
+        /**
+         * The HTTP request path
+         */
         public String path;
-        public String body; // Specify the message field that the HTTP request body mapping to
-        public boolean hasMappings;
-        public boolean hasBody;
+        /**
+         * The message field that the HTTP request body mapping to
+         */
+        public String body;
+        /**
+         * Whether the method has HTTP mapping
+         */
+        public boolean hasMapping;
+        /**
+         * Whether the request body parameter need @GRequest annotation
+         */
+        public boolean needRequestAnnotation;
 
         // This method mimics the upper-casing method ogf gRPC to ensure compatibility
         // See https://github.com/grpc/grpc-java/blob/v1.8.0/compiler/src/java_plugin/cpp/java_generator.cpp#L58
