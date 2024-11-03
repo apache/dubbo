@@ -72,6 +72,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INSTANCE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.IS_EXTRA;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
@@ -447,23 +448,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             // filter all the service available (version wildcard, group wildcard, protocol wildcard)
-            int port = instanceAddressURL.getPort();
-            List<ProtocolServiceKey> matchedProtocolServiceKeys =
-                    instanceAddressURL.getMetadataInfo().getMatchedServiceInfos(consumerProtocolServiceKey).stream()
-                            .filter(serviceInfo -> serviceInfo.getPort() <= 0 || serviceInfo.getPort() == port)
-                            // special filter for extra protocols.
-                            .filter(serviceInfo -> {
-                                if (StringUtils.isNotEmpty(
-                                        consumerProtocolServiceKey
-                                                .getProtocol())) { // if consumer side protocol is specified, use all
-                                    // the protocols we got in hand now directly
-                                    return true;
-                                } else { // if consumer side protocol is not specified, remove all extra protocols
-                                    return StringUtils.isEmpty(serviceInfo.getParameter(IS_EXTRA));
-                                }
-                            })
-                            .map(MetadataInfo.ServiceInfo::getProtocolServiceKey)
-                            .collect(Collectors.toList());
+            List<ProtocolServiceKey> matchedProtocolServiceKeys = getMatchedProtocolServiceKeys(instanceAddressURL, true);
+            if (CollectionUtils.isEmpty(matchedProtocolServiceKeys)) {
+                matchedProtocolServiceKeys = getMatchedProtocolServiceKeys(instanceAddressURL, false);
+            }
 
             // see org.apache.dubbo.common.ProtocolServiceKey.isSameWith
             // check if needed to override the consumer url
@@ -522,6 +510,29 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
         return newUrlInvokerMap;
+    }
+
+    private List<ProtocolServiceKey> getMatchedProtocolServiceKeys(InstanceAddressURL instanceAddressURL, boolean needPreferred) {
+        int port = instanceAddressURL.getPort();
+        return instanceAddressURL.getMetadataInfo().getMatchedServiceInfos(consumerProtocolServiceKey).stream()
+                        .filter(serviceInfo -> serviceInfo.getPort() <= 0 || serviceInfo.getPort() == port)
+                        // special filter for extra protocols.
+                        .filter(serviceInfo -> {
+                            if (StringUtils.isNotEmpty(
+                                    consumerProtocolServiceKey
+                                            .getProtocol())) { // if consumer side protocol is specified, use all
+                                // the protocols we got in hand now directly
+                                return true;
+                            } else { // if consumer side protocol is not specified, remove all extra protocols
+                                if (needPreferred) {
+                                    return StringUtils.isNotEmpty(serviceInfo.getParameter(PREFERRED_PROTOCOL));
+                                } else {
+                                    return StringUtils.isEmpty(serviceInfo.getParameter(IS_EXTRA));
+                                }
+                            }
+                        })
+                        .map(MetadataInfo.ServiceInfo::getProtocolServiceKey)
+                        .collect(Collectors.toList());
     }
 
     private boolean urlChanged(Invoker<T> invoker, InstanceAddressURL newURL, ProtocolServiceKey protocolServiceKey) {
