@@ -22,7 +22,9 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.GreeterWrapperService;
+import org.apache.dubbo.demo.hello.GreeterWrapperService;
+import org.apache.dubbo.demo.hello.HelloReply;
+import org.apache.dubbo.demo.hello.HelloRequest;
 import org.apache.dubbo.rpc.Constants;
 
 import java.io.IOException;
@@ -50,9 +52,10 @@ public class ApiWrapperConsumer {
         final GreeterWrapperService greeterWrapperService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
         long st = System.currentTimeMillis();
-        String reply = greeterWrapperService.sayHello("haha");
+        HelloReply reply = greeterWrapperService.sayHello(
+                HelloRequest.newBuilder().setName("haha").build());
         // 4MB response
-        System.out.println("Reply length:" + reply.length() + " cost:" + (System.currentTimeMillis() - st));
+        System.out.println("Reply Message:" + reply.getMessage() + " cost:" + (System.currentTimeMillis() - st));
         System.in.read();
     }
 }

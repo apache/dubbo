@@ -16,14 +16,33 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.demo.hello.GreeterWrapperService;
+import org.apache.dubbo.demo.hello.HelloReply;
+import org.apache.dubbo.demo.hello.HelloRequest;
+
+import java.util.concurrent.CompletableFuture;
+
 public class GreeterWrapperServiceImpl implements GreeterWrapperService {
 
     @Override
-    public String sayHello(String request) {
-        StringBuilder responseBuilder = new StringBuilder(request);
+    public HelloReply sayHello(HelloRequest request) {
+        StringBuilder responseBuilder = new StringBuilder(request.getName());
         for (int i = 0; i < 20; i++) {
             responseBuilder.append(responseBuilder);
         }
-        return responseBuilder.toString();
+        return HelloReply.newBuilder().setMessage(responseBuilder.toString()).build();
+    }
+
+    @Override
+    public CompletableFuture<HelloReply> sayHelloAsync(HelloRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            StringBuilder responseBuilder = new StringBuilder(request.getName());
+            for (int i = 0; i < 20; i++) {
+                responseBuilder.append(responseBuilder);
+            }
+            return HelloReply.newBuilder()
+                    .setMessage(responseBuilder.toString())
+                    .build();
+        });
     }
 }

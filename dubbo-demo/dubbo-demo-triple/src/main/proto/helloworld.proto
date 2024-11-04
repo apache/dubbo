@@ -20,10 +20,30 @@ package helloworld;
 
 // The request message containing the user's name.
 message HelloRequest {
-  string name = 1;
+    string name = 1;
 }
 
-// The response message containing the greetings
+// The response message containing the greetings.
 message HelloReply {
-  string message = 1;
+    string message = 1;
+}
+
+// Service definition.
+service GreeterService {
+    // Sends a greeting.
+    rpc sayHello(HelloRequest) returns (HelloReply);
+
+    /**
+     * Sends a greeting with server streaming.
+     */
+    rpc sayHelloServerStream(HelloRequest) returns (stream HelloReply);
+
+    /**
+     * Sends greetings with bi-directional streaming.
+     */
+    rpc sayHelloBiStream(stream HelloRequest) returns (stream HelloReply);
+}
+service GreeterWrapperService{
+    // Sends a greeting.
+    rpc sayHello(HelloRequest) returns (HelloReply);
 }
