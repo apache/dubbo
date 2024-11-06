@@ -85,8 +85,6 @@
     <module>dubbo-compatible</module>
     <module>dubbo-dependencies-bom</module>
     <module>dubbo-distribution</module>
-    <module>dubbo-configcenter</module>
-    <module>dubbo-dependencies</module>
     <module>dubbo-metadata</module>
     <module>dubbo-metrics</module>
     <module>dubbo-test</module>

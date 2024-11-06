@@ -35,10 +35,8 @@ dubbo-configcenter-apollo
 dubbo-configcenter-nacos
 dubbo-configcenter-zookeeper
 dubbo-core-spi
-dubbo-dependencies
 dubbo-dependencies-all
 dubbo-dependencies-bom
-dubbo-dependencies-zookeeper-curator5
 dubbo-distribution
 dubbo-filter-cache
 dubbo-filter-validation
@@ -105,7 +103,6 @@ dubbo-spring-boot-starter
 dubbo-spring-boot-starters
 dubbo-spring-boot-interceptor
 dubbo-nacos-spring-boot-starter
-dubbo-zookeeper-spring-boot-starter
 dubbo-zookeeper-curator5-spring-boot-starter
 dubbo-sentinel-spring-boot-starter
 dubbo-seata-spring-boot-starter

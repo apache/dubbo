@@ -112,26 +112,6 @@
         <artifactId>dubbo-configcenter-nacos</artifactId>
         <version>${project.version}</version>
       </dependency>
-
-      <!-- dependencies -->
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-dependencies</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-dependencies-zookeeper</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-dependencies-zookeeper-curator5</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-
       <!-- dependencies-bom -->
       <dependency>
         <groupId>org.apache.dubbo</groupId>
@@ -550,11 +530,6 @@
       <dependency>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-nacos-spring-boot-starter</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-zookeeper-spring-boot-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
