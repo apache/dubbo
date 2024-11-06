@@ -28,16 +28,12 @@
   <packaging>jar</packaging>
   <description>Apache Dubbo Spring Boot 3 Auto-Configure</description>
 
-  <properties>
-    <spring-boot.version>3.2.1</spring-boot.version>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring-boot.version}</version>
+        <version>${spring-boot-3.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

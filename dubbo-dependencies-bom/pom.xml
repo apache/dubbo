@@ -90,6 +90,7 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.39</spring_version>
+    <spring_boot_version>2.7.18</spring_boot_version>
     <spring_security_version>5.8.15</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
     <byte-buddy_version>1.15.7</byte-buddy_version>
@@ -187,7 +188,6 @@
     <open_feign_version>3.1.9</open_feign_version>
     <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
-    <spring-boot.version>2.7.18</spring-boot.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
     <byte-buddy.version>1.15.1</byte-buddy.version>
     <prometheus-client.version>0.16.0</prometheus-client.version>
@@ -259,7 +259,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring-boot.version}</version>
+        <version>${spring_boot_version}</version>
         <type>pom</type>
         <scope>import</scope>
         <exclusions>
@@ -272,7 +272,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-logging</artifactId>
-        <version>${spring-boot.version}</version>
+        <version>${spring_boot_version}</version>
         <exclusions>
           <exclusion>
             <groupId>ch.qos.logback</groupId>
