@@ -29,13 +29,8 @@
   <description>The demo module of dubbo project</description>
 
   <modules>
-    <module>dubbo-demo-interface</module>
-    <module>dubbo-demo-xml</module>
-    <module>dubbo-demo-annotation</module>
     <module>dubbo-demo-api</module>
-    <module>dubbo-demo-generic-call</module>
-    <module>dubbo-demo-triple</module>
-    <module>dubbo-demo-native</module>
+    <module>dubbo-demo-spring-boot-idl</module>
     <module>dubbo-demo-spring-boot</module>
   </modules>
 
