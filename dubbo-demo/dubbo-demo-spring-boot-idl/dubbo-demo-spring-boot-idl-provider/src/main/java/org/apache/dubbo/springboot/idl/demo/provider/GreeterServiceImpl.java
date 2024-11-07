@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.springboot.idl.demo.provider;
 
+import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.demo.hello.GreeterService;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@DubboService
 public class GreeterServiceImpl implements GreeterService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GreeterServiceImpl.class);
