@@ -27,10 +27,10 @@ public class OpenAPIRequest implements Serializable {
     private String group;
     private String[] tags;
     private String service;
-
     private String version;
+
     private String format;
-    private boolean pretty;
+    private Boolean pretty;
 
     public String getGroup() {
         return group;
@@ -72,12 +72,13 @@ public class OpenAPIRequest implements Serializable {
         this.format = format;
     }
 
-    public boolean isPretty() {
+    public Boolean getPretty() {
         return pretty;
     }
 
-    public void setPretty(boolean pretty) {
+    public OpenAPIRequest setPretty(Boolean pretty) {
         this.pretty = pretty;
+        return this;
     }
 
     @Override

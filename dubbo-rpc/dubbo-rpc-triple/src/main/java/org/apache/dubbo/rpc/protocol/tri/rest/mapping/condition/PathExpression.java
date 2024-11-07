@@ -127,7 +127,7 @@ public final class PathExpression implements Comparable<PathExpression> {
         if (isDirect()) {
             return path;
         }
-        StringBuilder sb = new StringBuilder(32);
+        StringBuilder sb = new StringBuilder(path.length());
         for (PathSegment segment : segments) {
             sb.append('/');
             String value = segment.getValue();

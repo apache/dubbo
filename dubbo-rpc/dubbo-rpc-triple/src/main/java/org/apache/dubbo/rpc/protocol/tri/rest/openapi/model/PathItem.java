@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
 import org.apache.dubbo.remoting.http12.HttpMethods;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -64,8 +64,8 @@ public final class PathItem extends Node<PathItem> {
         return operations;
     }
 
-    public Operation getOrAddOperation(HttpMethods method) {
-        return operations.computeIfAbsent(method, k -> new Operation());
+    public Operation getOperation(HttpMethods method) {
+        return operations == null ? null : operations.get(method);
     }
 
     public PathItem setOperations(Map<HttpMethods, Operation> operations) {
@@ -146,7 +146,7 @@ public final class PathItem extends Node<PathItem> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "$ref", ref);
         write(node, "summary", summary);
         write(node, "description", description);

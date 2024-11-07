@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.remoting.http12.HttpRequest;
@@ -46,8 +45,7 @@ final class BeanArgumentBinder {
     private final ArgumentResolver argumentResolver;
 
     BeanArgumentBinder(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
     }
 
     public Object bind(ParameterMeta paramMeta, HttpRequest request, HttpResponse response) {

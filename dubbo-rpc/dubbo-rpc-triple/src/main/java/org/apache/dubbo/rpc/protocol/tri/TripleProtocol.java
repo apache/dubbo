@@ -70,7 +70,7 @@ public class TripleProtocol extends AbstractProtocol {
         this.frameworkModel = frameworkModel;
         triBuiltinService = new TriBuiltinService(frameworkModel);
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
-        mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
+        mappingRegistry = frameworkModel.getOrRegisterBean(DefaultRequestMappingRegistry.class);
         acceptEncodings = String.join(",", frameworkModel.getSupportedExtensions(DeCompressor.class));
 
         // init env settings

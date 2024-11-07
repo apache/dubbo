@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.Map;
 
@@ -146,7 +146,7 @@ public final class SecurityScheme extends Node<SecurityScheme> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "type", type);
         write(node, "description", description);
         write(node, "name", name);

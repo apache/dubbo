@@ -16,4 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-public interface FilterContext {}
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+
+public interface NamingStrategy extends OpenAPIExtension {
+
+    default String generateOperationId(MethodMeta methodMeta, OpenAPI openAPI) {
+        return null;
+    }
+
+    default String generateSchemaName(Class<?> type, OpenAPI openAPI) {
+        return null;
+    }
+}

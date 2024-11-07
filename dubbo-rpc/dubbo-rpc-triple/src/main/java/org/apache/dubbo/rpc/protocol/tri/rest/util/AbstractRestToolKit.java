@@ -40,8 +40,8 @@ public abstract class AbstractRestToolKit implements RestToolKit {
 
     public AbstractRestToolKit(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
-        parameterNameReader = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultParameterNameReader.class);
+        typeConverter = frameworkModel.getOrRegisterBean(GeneralTypeConverter.class);
+        parameterNameReader = frameworkModel.getOrRegisterBean(DefaultParameterNameReader.class);
     }
 
     @Override

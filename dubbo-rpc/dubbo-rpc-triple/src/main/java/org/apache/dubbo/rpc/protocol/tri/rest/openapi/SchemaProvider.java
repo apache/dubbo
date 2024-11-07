@@ -16,24 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.config.nested.OpenAPIConfig;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 
-public interface ResolveContext {
+public interface SchemaProvider<T> extends OpenAPIExtension {
 
-    String getGroup();
-
-    OpenAPI getOpenAPI();
-
-    OpenAPIConfig getConfig();
-
-    SchemaFactory getSchemaFactory();
-
-    ExtensionFactory getExtensionFactory();
-
-    <T> T getAttribute(String name);
-
-    <T> T removeAttribute(String name);
-
-    void setAttribute(String name, Object value);
+    Schema getSchema(Class<T> clazz);
 }

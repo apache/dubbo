@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,9 +40,9 @@ public final class Operation extends Node<Operation> {
     private List<SecurityRequirement> security;
     private List<Server> servers;
 
-    private String[] groups;
-    private transient int priority;
-    private transient MethodMeta meta;
+    private String group;
+    private HttpMethods httpMethod;
+    private transient MethodMeta method;
 
     public List<String> getTags() {
         return tags;
@@ -106,6 +108,19 @@ public final class Operation extends Node<Operation> {
         return parameters;
     }
 
+    public Parameter getParameter(String name, In in) {
+        if (parameters == null || name == null || in == null) {
+            return null;
+        }
+        for (int i = 0, size = parameters.size(); i < size; i++) {
+            Parameter parameter = parameters.get(i);
+            if (name.equals(parameter.getName()) && in == parameter.getIn()) {
+                return parameter;
+            }
+        }
+        return null;
+    }
+
     public Operation setParameters(List<Parameter> parameters) {
         this.parameters = parameters;
         return this;
@@ -137,6 +152,17 @@ public final class Operation extends Node<Operation> {
 
     public Map<String, ApiResponse> getResponses() {
         return responses;
+    }
+
+    public ApiResponse getResponse(String httpStatusCode) {
+        return responses == null ? null : responses.get(httpStatusCode);
+    }
+
+    public ApiResponse getOrAddResponse(String httpStatusCode) {
+        if (responses == null) {
+            responses = new LinkedHashMap<>();
+        }
+        return responses.computeIfAbsent(httpStatusCode, k -> new ApiResponse());
     }
 
     public Operation setResponses(Map<String, ApiResponse> responses) {
@@ -216,30 +242,30 @@ public final class Operation extends Node<Operation> {
         return this;
     }
 
-    public String[] getGroups() {
-        return groups;
+    public String getGroup() {
+        return group;
     }
 
-    public Operation setGroups(String[] groups) {
-        this.groups = groups;
+    public Operation setGroup(String group) {
+        this.group = group;
         return this;
     }
 
-    public int getPriority() {
-        return priority;
+    public HttpMethods getHttpMethod() {
+        return httpMethod;
     }
 
-    public Operation setPriority(int priority) {
-        this.priority = priority;
+    public Operation setHttpMethod(HttpMethods httpMethod) {
+        this.httpMethod = httpMethod;
         return this;
     }
 
-    public MethodMeta getMeta() {
-        return meta;
+    public MethodMeta getMethod() {
+        return method;
     }
 
-    public Operation setMeta(MethodMeta meta) {
-        this.meta = meta;
+    public Operation setMethod(MethodMeta method) {
+        this.method = method;
         return this;
     }
 
@@ -259,7 +285,7 @@ public final class Operation extends Node<Operation> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "tags", tags);
         write(node, "summary", summary);
         write(node, "description", description);

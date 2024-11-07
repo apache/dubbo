@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.config.nested.OpenAPIConfig;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public final class OpenAPI extends Node<OpenAPI> {
 
@@ -34,8 +37,12 @@ public final class OpenAPI extends Node<OpenAPI> {
     private List<Tag> tags;
     private ExternalDocs externalDocs;
 
-    private String[] groups;
-    private transient int priority;
+    private String group;
+    private int priority;
+
+    private transient OpenAPIConfig globalConfig;
+    private transient OpenAPIConfig config;
+    private transient ServiceMeta service;
 
     public String getOpenapi() {
         return openapi;
@@ -81,6 +88,10 @@ public final class OpenAPI extends Node<OpenAPI> {
 
     public Map<String, PathItem> getPaths() {
         return paths;
+    }
+
+    public PathItem getPath(String path) {
+        return paths == null ? null : paths.get(path);
     }
 
     public PathItem getOrAddPath(String path) {
@@ -169,12 +180,12 @@ public final class OpenAPI extends Node<OpenAPI> {
         return this;
     }
 
-    public String[] getGroups() {
-        return groups;
+    public String getGroup() {
+        return group;
     }
 
-    public OpenAPI setGroups(String[] groups) {
-        this.groups = groups;
+    public OpenAPI setGroup(String group) {
+        this.group = group;
         return this;
     }
 
@@ -184,6 +195,43 @@ public final class OpenAPI extends Node<OpenAPI> {
 
     public OpenAPI setPriority(int priority) {
         this.priority = priority;
+        return this;
+    }
+
+    public OpenAPIConfig getGlobalConfig() {
+        return globalConfig;
+    }
+
+    public OpenAPI setGlobalConfig(OpenAPIConfig globalConfig) {
+        this.globalConfig = globalConfig;
+        return this;
+    }
+
+    public OpenAPIConfig getConfig() {
+        return config;
+    }
+
+    public OpenAPI setConfig(OpenAPIConfig config) {
+        this.config = config;
+        return this;
+    }
+
+    public <T> T getConfigValue(Function<OpenAPIConfig, T> fn) {
+        if (config != null) {
+            T value = fn.apply(config);
+            if (value != null) {
+                return value;
+            }
+        }
+        return globalConfig == null ? null : fn.apply(globalConfig);
+    }
+
+    public ServiceMeta getService() {
+        return service;
+    }
+
+    public OpenAPI setService(ServiceMeta service) {
+        this.service = service;
         return this;
     }
 
@@ -201,7 +249,7 @@ public final class OpenAPI extends Node<OpenAPI> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         node.put("openapi", openapi);
         write(node, "info", info, context);
         write(node, "servers", servers, context);

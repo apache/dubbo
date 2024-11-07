@@ -17,10 +17,11 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class Parameter extends Node<Parameter> {
 
@@ -63,8 +64,8 @@ public final class Parameter extends Node<Parameter> {
         }
     }
 
-    private String name;
-    private In in;
+    private final String name;
+    private final In in;
     private String description;
     private Boolean required;
     private Boolean deprecated;
@@ -79,22 +80,17 @@ public final class Parameter extends Node<Parameter> {
 
     private transient ParameterMeta meta;
 
+    public Parameter(String name, In in) {
+        this.name = Objects.requireNonNull(name);
+        this.in = Objects.requireNonNull(in);
+    }
+
     public String getName() {
         return name;
     }
 
-    public Parameter setName(String name) {
-        this.name = name;
-        return this;
-    }
-
     public In getIn() {
         return in;
-    }
-
-    public Parameter setIn(In in) {
-        this.in = in;
-        return this;
     }
 
     public String getDescription() {
@@ -236,6 +232,23 @@ public final class Parameter extends Node<Parameter> {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != Parameter.class) {
+            return false;
+        }
+        Parameter other = (Parameter) obj;
+        return name.equals(other.name) && in == other.in;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * name.hashCode() + in.hashCode();
+    }
+
+    @Override
     public Parameter clone() {
         Parameter clone = super.clone();
         clone.schema = clone(schema);
@@ -245,7 +258,7 @@ public final class Parameter extends Node<Parameter> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "name", name);
         write(node, "in", in);
         write(node, "description", description);

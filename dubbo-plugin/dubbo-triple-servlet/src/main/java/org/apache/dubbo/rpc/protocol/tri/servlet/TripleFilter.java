@@ -72,7 +72,7 @@ public class TripleFilter implements Filter {
     public void init(FilterConfig config) {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
-        mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
+        mappingRegistry = frameworkModel.getOrRegisterBean(DefaultRequestMappingRegistry.class);
     }
 
     @Override

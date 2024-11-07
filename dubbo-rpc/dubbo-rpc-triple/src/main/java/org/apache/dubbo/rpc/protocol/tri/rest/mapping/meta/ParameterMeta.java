@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -119,6 +120,10 @@ public abstract class ParameterMeta extends AnnotationSupport {
 
     public String getDescription() {
         return name;
+    }
+
+    public ParamType getParamType() {
+        return ParamType.Param;
     }
 
     public abstract Class<?> getType();

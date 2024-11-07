@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -69,7 +69,7 @@ public final class Discriminator extends Node<Discriminator> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "propertyName", propertyName);
         write(node, "mapping", mapping);
         writeExtensions(node);

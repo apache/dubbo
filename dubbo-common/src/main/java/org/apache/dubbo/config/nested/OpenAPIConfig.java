@@ -100,17 +100,22 @@ public class OpenAPIConfig implements Serializable {
     /**
      * The default media types that are consumed.
      */
-    private String[] defaultConsumesMediaType;
+    private String[] defaultConsumesMediaTypes;
 
     /**
      * The default media types that are produced.
      */
-    private String[] defaultProducesMediaType;
+    private String[] defaultProducesMediaTypes;
+
+    /**
+     * The default HTTP methods are used.
+     */
+    private String[] defaultHttpMethods;
 
     /**
      * The default HTTP status codes are returned.
      */
-    private String[] defaultHttpStatusCode;
+    private String[] defaultHttpStatusCodes;
 
     /**
      * The custom settings.
@@ -229,28 +234,36 @@ public class OpenAPIConfig implements Serializable {
         this.schemaNameStrategy = schemaNameStrategy;
     }
 
-    public String[] getDefaultConsumesMediaType() {
-        return defaultConsumesMediaType;
+    public String[] getDefaultConsumesMediaTypes() {
+        return defaultConsumesMediaTypes;
     }
 
-    public void setDefaultConsumesMediaType(String[] defaultConsumesMediaType) {
-        this.defaultConsumesMediaType = defaultConsumesMediaType;
+    public void setDefaultConsumesMediaTypes(String[] defaultConsumesMediaTypes) {
+        this.defaultConsumesMediaTypes = defaultConsumesMediaTypes;
     }
 
-    public String[] getDefaultProducesMediaType() {
-        return defaultProducesMediaType;
+    public String[] getDefaultProducesMediaTypes() {
+        return defaultProducesMediaTypes;
     }
 
-    public void setDefaultProducesMediaType(String[] defaultProducesMediaType) {
-        this.defaultProducesMediaType = defaultProducesMediaType;
+    public void setDefaultProducesMediaTypes(String[] defaultProducesMediaTypes) {
+        this.defaultProducesMediaTypes = defaultProducesMediaTypes;
     }
 
-    public String[] getDefaultHttpStatusCode() {
-        return defaultHttpStatusCode;
+    public String[] getDefaultHttpMethods() {
+        return defaultHttpMethods;
     }
 
-    public void setDefaultHttpStatusCode(String[] defaultHttpStatusCode) {
-        this.defaultHttpStatusCode = defaultHttpStatusCode;
+    public void setDefaultHttpMethods(String[] defaultHttpMethods) {
+        this.defaultHttpMethods = defaultHttpMethods;
+    }
+
+    public String[] getDefaultHttpStatusCodes() {
+        return defaultHttpStatusCodes;
+    }
+
+    public void setDefaultHttpStatusCodes(String[] defaultHttpStatusCodes) {
+        this.defaultHttpStatusCodes = defaultHttpStatusCodes;
     }
 
     public Map<String, String> getSettings() {

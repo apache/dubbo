@@ -16,21 +16,98 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.apache.dubbo.remoting.http12.HttpMethods.DELETE;
+import static org.apache.dubbo.remoting.http12.HttpMethods.GET;
+import static org.apache.dubbo.remoting.http12.HttpMethods.PATCH;
+import static org.apache.dubbo.remoting.http12.HttpMethods.POST;
+import static org.apache.dubbo.remoting.http12.HttpMethods.PUT;
 
 public final class Helper {
 
+    private static final String[][] VERBS_TABLE = {
+        {GET.name(), "get", "load", "fetch", "read", "retrieve", "list", "find", "query", "search", "is"},
+        {PUT.name(), "put", "replace"},
+        {PATCH.name(), "patch", "update", "modify", "edit", "change", "set"},
+        {DELETE.name(), "delete", "remove", "erase", "destroy", "drop"}
+    };
+
     private Helper() {}
 
-    public static String resolvePath(PathExpression expr) {
-        return expr.getPath();
+    public static String toPathValue(PathExpression expr) {
+        if (expr.isDirect()) {
+            return expr.getPath();
+        }
+        StringBuilder sb = new StringBuilder(expr.getPath().length());
+        int varIndex = 1;
+        for (PathSegment segment : expr.getSegments()) {
+            sb.append('/');
+            switch (segment.getType()) {
+                case LITERAL:
+                    sb.append(segment.getValue());
+                    break;
+                case WILDCARD_TAIL:
+                    List<String> variables = segment.getVariables();
+                    if (variables == null) {
+                        sb.append("{path}");
+                    } else {
+                        sb.append('{').append(variables.get(0)).append('}');
+                    }
+                    break;
+                case VARIABLE:
+                    sb.append('{');
+                    String value = segment.getValue();
+                    if (value.isEmpty()) {
+                        sb.append("var").append(varIndex++);
+                    } else {
+                        sb.append(value);
+                    }
+                    sb.append('}');
+                    break;
+                case PATTERN:
+                case PATTERN_MULTI:
+                    sb.append('{').append("var").append(varIndex++).append('}');
+                    break;
+                default:
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
-    public static String pathToRef(String path) {
-        return path;
+    public static Collection<String> guessHttpMethod(MethodMeta method) {
+        String name = method.getMethod().getName();
+        for (String[] verbs : VERBS_TABLE) {
+            for (int i = 1, len = verbs.length; i < len; i++) {
+                if (name.startsWith(verbs[i])) {
+                    return Collections.singletonList(verbs[0]);
+                }
+            }
+        }
+        return Collections.singletonList(POST.name());
     }
 
-    public static String refToPath(String ref) {
-        return ref;
+    public static In toIn(ParamType paramType) {
+        switch (paramType) {
+            case PathVariable:
+                return In.PATH;
+            case Param:
+                return In.QUERY;
+            case Header:
+                return In.HEADER;
+            case Cookie:
+                return In.COOKIE;
+            default:
+                return null;
+        }
     }
 }

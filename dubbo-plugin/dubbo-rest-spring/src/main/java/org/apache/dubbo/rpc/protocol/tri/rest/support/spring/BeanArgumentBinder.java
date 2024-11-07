@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
@@ -50,8 +49,7 @@ final class BeanArgumentBinder {
     private final ConversionService conversionService;
 
     BeanArgumentBinder(FrameworkModel frameworkModel, ConversionService conversionService) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
         this.conversionService = conversionService;
     }
 

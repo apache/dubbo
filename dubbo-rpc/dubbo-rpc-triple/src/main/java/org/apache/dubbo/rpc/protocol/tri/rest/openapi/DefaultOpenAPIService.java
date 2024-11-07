@@ -16,229 +16,139 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.common.resource.Disposable;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.remoting.http12.HttpMethods;
-import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
-import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
-import org.apache.dubbo.remoting.http12.message.codec.YamlCodec;
+import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.utils.LRUCache;
+import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.Registration;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.*;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
-import java.io.ByteArrayOutputStream;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class DefaultOpenAPIService implements OpenAPIService, Disposable {
+public class DefaultOpenAPIService implements OpenAPIService {
 
-    private final List<AnnotationResolver> annotationResolvers;
-    private final List<OpenAPIExtension> extensions;
-    private final SchemaFactory schemaFactory = new SchemaFactory();
-    private final Map<Class<?>, List<OpenAPIExtension>> extensionsCache = CollectionUtils.newConcurrentHashMap();
+    private static final FluentLogger LOG = FluentLogger.of(DefaultOpenAPIService.class);
 
-    private Map<Class<?>, OpenAPI> openAPIMap;
+    private final ExtensionFactory extensionFactory;
+    private final DefinitionResolver definitionResolver;
+    private final DefinitionMerger definitionMerger;
+    private final DefinitionFilter definitionFilter;
+    private final DefinitionEncoder definitionEncoder;
     private RequestMappingRegistry requestMappingRegistry;
 
+    private final LRUCache<String, SoftReference<String>> cache;
+    private volatile List<OpenAPI> openAPIs;
+
     public DefaultOpenAPIService(FrameworkModel frameworkModel) {
-        annotationResolvers = frameworkModel.getActivateExtensions(AnnotationResolver.class);
-        extensions = frameworkModel.getActivateExtensions(OpenAPIExtension.class);
+        extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
+        definitionResolver = new DefinitionResolver(frameworkModel);
+        definitionMerger = new DefinitionMerger(frameworkModel);
+        definitionFilter = new DefinitionFilter(frameworkModel);
+        definitionEncoder = new DefinitionEncoder(frameworkModel);
+        cache = new LRUCache<>(64);
     }
 
     public void setRequestMappingRegistry(RequestMappingRegistry requestMappingRegistry) {
         this.requestMappingRegistry = requestMappingRegistry;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private <S extends OpenAPIExtension> List<S> getExtensions(Class<S> clazz) {
-        return (List) extensionsCache.computeIfAbsent(clazz, k -> {
-            List<OpenAPIExtension> list = new ArrayList<>();
-            for (OpenAPIExtension extension : extensions) {
-                if (clazz.isInstance(extension)) {
-                    list.add(extension);
-                }
-            }
-            return list;
-        });
-    }
-
     @Override
     public OpenAPI getOpenAPI(OpenAPIRequest request) {
-        Collection<Registration> registrations = requestMappingRegistry.getRegistrations();
-        Map<Class<?>, ServiceMeta> serviceMetaMap = new HashMap<>();
-        for (Registration registration : registrations) {
-            ServiceMeta serviceMeta = registration.getMeta().getService();
-            serviceMetaMap.putIfAbsent(serviceMeta.getType(), serviceMeta);
-        }
-
-        Map<Class<?>, OpenAPI> openAPIMap = new IdentityHashMap<>();
-        out:
-        for (Entry<Class<?>, ServiceMeta> entry : serviceMetaMap.entrySet()) {
-            for (int i = 0, size = annotationResolvers.size(); i < size; i++) {
-                OpenAPI openAPI = annotationResolvers.get(i).resolve(entry.getValue());
-                if (openAPI == null) {
-                    continue;
+        if (openAPIs == null) {
+            synchronized (this) {
+                if (openAPIs == null) {
+                    openAPIs = resolveOpenAPIs();
                 }
-                openAPIMap.put(entry.getKey(), openAPI);
-                continue out;
             }
         }
+        return definitionFilter.filter(definitionMerger.merge(openAPIs, request), request);
+    }
 
-        Map<Method, List<Registration>> registrationsGroupMap = new IdentityHashMap<>(registrations.size());
-        for (Registration registration : registrations) {
-            registrationsGroupMap
-                    .computeIfAbsent(registration.getMeta().getMethod().getMethod(), k -> new ArrayList<>(1))
+    private List<OpenAPI> resolveOpenAPIs() {
+        Map<Key, Map<Method, List<Registration>>> byClassMap = new HashMap<>();
+        for (Registration registration : requestMappingRegistry.getRegistrations()) {
+            HandlerMeta meta = registration.getMeta();
+            byClassMap
+                    .computeIfAbsent(new Key(meta.getService()), k -> new IdentityHashMap<>())
+                    .computeIfAbsent(meta.getMethod().getMethod(), k -> new ArrayList<>(1))
                     .add(registration);
         }
-
-        ResolveContext context = new ResolveContext(schemaFactory);
-        out:
-        for (List<Registration> registrationsGroup : registrationsGroupMap.values()) {
-            String mainPath = null;
-            for (int i = 0, size = registrationsGroup.size(); i < size; i++) {
-                Registration registration = registrationsGroup.get(i);
-                HandlerMeta meta = registration.getMeta();
-                OpenAPI openAPI = openAPIMap.get(meta.getService().getType());
-                if (openAPI == null) {
-                    continue out;
-                }
-                RequestMapping mapping = registration.getMapping();
-                List<PathExpression> expressions = mapping.getPathCondition().getExpressions();
-                for (int j = 0, len = expressions.size(); j < len; j++) {
-                    PathExpression expression = expressions.get(j);
-                    String path = Helper.resolvePath(expression);
-                    PathItem pathItem = openAPI.getOrAddPath(path);
-                    if (pathItem.getRef() != null) {
-                        path = pathItem.getRef();
-                        pathItem = openAPI.getOrAddPath(path);
-                    }
-                    if (mainPath == null) {
-                        mainPath = path;
-                        Set<String> methods = mapping.getMethodsCondition().getMethods();
-                        for (String method : methods) {
-                            HttpMethods httpMethod = HttpMethods.of(method);
-                            Operation operation = pathItem.getOrAddOperation(httpMethod);
-                            operation.setMeta(meta.getMethod());
-                            resolveOperation(openAPI, httpMethod, operation, expression, mapping, meta, context);
-                        }
-                    } else {
-                        pathItem.setRef(Helper.pathToRef(mainPath));
-                    }
-                }
+        List<OpenAPI> openAPIs = new ArrayList<>(byClassMap.size());
+        for (Map.Entry<Key, Map<Method, List<Registration>>> entry : byClassMap.entrySet()) {
+            OpenAPI openAPI = definitionResolver.resolve(
+                    entry.getKey().serviceMeta, entry.getValue().values());
+            if (openAPI != null) {
+                openAPIs.add(openAPI);
             }
         }
-        return null;
-    }
-
-    private void resolveOperation(
-            OpenAPI openAPI,
-            HttpMethods method,
-            Operation operation,
-            PathExpression expression,
-            RequestMapping mapping,
-            HandlerMeta meta,
-            ResolveContext context) {
-        operation.setOperationId(meta.getMethodDescriptor().getMethodName());
-        for (ParameterMeta paramMeta : meta.getMethod().getParameters()) {
-            Parameter parameter = resolveParameter(paramMeta);
-            if (parameter != null) {
-                operation.addParameter(parameter);
-            }
-        }
-        resolveRequestBody(operation, mapping, meta);
-        for (String httpStatus : new String[] {"200", "500"}) {
-            resolveResponse(operation, httpStatus, mapping, meta);
-        }
-    }
-
-    private Parameter resolveParameter(ParameterMeta paramMeta) {
-        if (paramMeta == null) {
-            return null;
-        }
-        Parameter parameter = new Parameter();
-        parameter.setMeta(paramMeta);
-        return parameter;
-    }
-
-    private void resolveRequestBody(Operation operation, RequestMapping mapping, HandlerMeta meta) {
-        RequestBody body = new RequestBody();
-        List<org.apache.dubbo.remoting.http12.message.MediaType> mediaTypes =
-                mapping.getConsumesCondition().getMediaTypes();
-        for (org.apache.dubbo.remoting.http12.message.MediaType mediaType : mediaTypes) {
-            MediaType mediaTypeModel = new MediaType();
-            mediaTypeModel.setSchema(resolveSchema(meta.getMethod().getMethod().getParameterTypes()[0]));
-            body.addContent(mediaType.getName(), mediaTypeModel);
-        }
-        operation.setRequestBody(body);
-    }
-
-    private void resolveResponse(Operation operation, String httpStatus, RequestMapping mapping, HandlerMeta meta) {
-        ApiResponse response = new ApiResponse();
-        List<org.apache.dubbo.remoting.http12.message.MediaType> mediaTypes =
-                mapping.getProducesCondition().getMediaTypes();
-        for (org.apache.dubbo.remoting.http12.message.MediaType mediaType : mediaTypes) {
-            MediaType mediaTypeModel = new MediaType();
-            mediaTypeModel.setSchema(resolveSchema(meta.getMethod().getReturnType()));
-            response.addContent(mediaType.getName(), mediaTypeModel);
-        }
-        operation.addResponse(httpStatus, response);
-    }
-
-    private Schema resolveSchema(Class<?> returnType) {
-        return null;
+        openAPIs.sort(Comparator.comparingInt(OpenAPI::getPriority));
+        return openAPIs;
     }
 
     @Override
     public String getDocument(OpenAPIRequest request) {
-        Map<String, Object> document = new LinkedHashMap<>();
-        OpenAPI openAPI = getOpenAPI(request);
-        openAPI.writeTo(document, new WriteContext() {});
-
-        HttpMessageEncoder encoder = getEncoder(request);
-        ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
-        encoder.encode(os, document, StandardCharsets.UTF_8);
-        return new String(os.toByteArray(), StandardCharsets.UTF_8);
-    }
-
-    private static HttpMessageEncoder getEncoder(OpenAPIRequest request) {
-        String format = request.getFormat();
-        format = format == null ? "json" : format.toLowerCase();
-        HttpMessageEncoder encoder;
-        switch (format) {
-            case "json":
-                encoder = JsonCodec.INSTANCE;
-                break;
-            case "yml":
-            case "yaml":
-                encoder = YamlCodec.INSTANCE;
-                break;
-            case "proto":
-                encoder = ProtoEncoder.INSTANCE;
-                break;
-            default:
-                throw new UnsupportedMediaTypeException("application/" + format);
+        String cacheKey = request.toString();
+        SoftReference<String> ref = cache.get(cacheKey);
+        if (ref != null) {
+            String value = ref.get();
+            if (value != null) {
+                return value;
+            }
         }
-        return encoder;
+        String value = definitionEncoder.encode(getOpenAPI(request), request);
+        cache.put(cacheKey, new SoftReference<>(value));
+        return value;
     }
 
     @Override
     public void refresh() {
-        this.openAPIMap = null;
+        LOG.debug("Refreshing OpenAPI documents");
+        openAPIs = null;
+        cache.clear();
     }
 
     @Override
-    public void export() {}
+    public void export() {
+        for (DocumentPublisher publisher : extensionFactory.getExtensions(DocumentPublisher.class)) {
+            try {
+                publisher.publish(request -> {
+                    OpenAPI openAPI = getOpenAPI(request);
+                    String document = definitionEncoder.encode(openAPI, request);
+                    return Pair.of(openAPI, document);
+                });
+            } catch (Throwable t) {
+                LOG.internalWarn("Failed to publish OpenAPI document by {}", publisher, t);
+            }
+        }
+    }
 
-    @Override
-    public void destroy() {
+    private static final class Key {
+
+        private final ServiceMeta serviceMeta;
+
+        public Key(ServiceMeta serviceMeta) {
+            this.serviceMeta = serviceMeta;
+        }
+
+        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass", "EqualsDoesntCheckParameterClass"})
+        @Override
+        public boolean equals(Object obj) {
+            return serviceMeta.getType() == ((Key) obj).serviceMeta.getType();
+        }
+
+        @Override
+        public int hashCode() {
+            return serviceMeta.getType().hashCode();
+        }
     }
 }

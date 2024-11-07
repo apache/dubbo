@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ public final class ApiResponse extends Node<ApiResponse> {
     private String ref;
     private String description;
     private Map<String, Header> headers;
-    private Map<String, MediaType> content;
+    private Map<String, MediaType> contents;
 
     public String getRef() {
         return ref;
@@ -50,6 +50,10 @@ public final class ApiResponse extends Node<ApiResponse> {
         return headers;
     }
 
+    public Header getHeader(String name) {
+        return headers == null ? null : headers.get(name);
+    }
+
     public ApiResponse setHeaders(Map<String, Header> headers) {
         this.headers = headers;
         return this;
@@ -70,26 +74,37 @@ public final class ApiResponse extends Node<ApiResponse> {
         return this;
     }
 
-    public Map<String, MediaType> getContent() {
-        return content;
+    public Map<String, MediaType> getContents() {
+        return contents;
     }
 
-    public ApiResponse setContent(Map<String, MediaType> content) {
-        this.content = content;
+    public MediaType getContent(String name) {
+        return contents == null ? null : contents.get(name);
+    }
+
+    public MediaType getOrAddContent(String name) {
+        if (contents == null) {
+            contents = new LinkedHashMap<>();
+        }
+        return contents.computeIfAbsent(name, k -> new MediaType());
+    }
+
+    public ApiResponse setContents(Map<String, MediaType> contents) {
+        this.contents = contents;
         return this;
     }
 
     public ApiResponse addContent(String name, MediaType mediaType) {
-        if (content == null) {
-            content = new LinkedHashMap<>();
+        if (contents == null) {
+            contents = new LinkedHashMap<>();
         }
-        content.put(name, mediaType);
+        contents.put(name, mediaType);
         return this;
     }
 
     public ApiResponse removeContent(String name) {
-        if (content != null) {
-            content.remove(name);
+        if (contents != null) {
+            contents.remove(name);
         }
         return this;
     }
@@ -97,14 +112,14 @@ public final class ApiResponse extends Node<ApiResponse> {
     @Override
     public ApiResponse clone() {
         ApiResponse clone = super.clone();
-        clone.content = clone(content);
+        clone.contents = clone(contents);
         return clone;
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "description", description);
-        write(node, "content", content, context);
+        write(node, "content", contents, context);
         writeExtensions(node);
         return node;
     }

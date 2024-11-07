@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.rest;
 
-import org.apache.dubbo.remoting.http12.HttpMethods;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -32,7 +30,7 @@ public @interface Operation {
     /**
      * The HTTP method for this operation.
      */
-    HttpMethods[] method() default {};
+    String method() default "";
 
     /**
      * The operation tags.
@@ -68,4 +66,9 @@ public @interface Operation {
      * Indicates whether the operation is hidden in OpenAPI.
      */
     boolean hidden() default false;
+
+    /**
+     * The extensions of the OpenAPI.
+     */
+    String[] extensions() default {};
 }

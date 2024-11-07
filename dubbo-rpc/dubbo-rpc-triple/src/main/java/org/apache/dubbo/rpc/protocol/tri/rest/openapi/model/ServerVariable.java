@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +80,7 @@ public final class ServerVariable extends Node<ServerVariable> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "enum", enumeration);
         write(node, "default", defaultValue);
         write(node, "description", description);

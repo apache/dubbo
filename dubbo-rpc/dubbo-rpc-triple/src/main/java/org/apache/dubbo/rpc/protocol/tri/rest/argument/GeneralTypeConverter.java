@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -114,10 +113,9 @@ public class GeneralTypeConverter implements TypeConverter {
     private final HttpJsonUtils httpJsonUtils;
 
     public GeneralTypeConverter(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        converter = beanFactory.getOrRegisterBean(CompositeArgumentConverter.class);
-        codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
-        httpJsonUtils = beanFactory.getOrRegisterBean(HttpJsonUtils.class);
+        converter = frameworkModel.getOrRegisterBean(CompositeArgumentConverter.class);
+        codecUtils = frameworkModel.getOrRegisterBean(CodecUtils.class);
+        httpJsonUtils = frameworkModel.getOrRegisterBean(HttpJsonUtils.class);
     }
 
     @Override

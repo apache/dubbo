@@ -16,25 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.remoting.http12.exception.EncodeException;
-import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
-import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
-import java.io.OutputStream;
-import java.nio.charset.Charset;
+final class ProtoEncoder {
 
-final class ProtoEncoder implements HttpMessageEncoder {
-
-    static final ProtoEncoder INSTANCE = new ProtoEncoder();
-
-    @Override
-    public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
-        OpenAPI openAPI = (OpenAPI) data;
-    }
-
-    @Override
-    public MediaType mediaType() {
-        return MediaType.TEXT_PLAIN;
+    public String encode(OpenAPI openAPI) {
+        return "";
     }
 }

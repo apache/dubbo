@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -144,6 +144,10 @@ public final class Header extends Node<Header> {
         return content;
     }
 
+    public MediaType getContent(String name) {
+        return content == null ? null : content.get(name);
+    }
+
     public Header setContent(Map<String, MediaType> content) {
         this.content = content;
         return this;
@@ -174,7 +178,7 @@ public final class Header extends Node<Header> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "description", description);
         write(node, "required", required);
         write(node, "deprecated", deprecated);

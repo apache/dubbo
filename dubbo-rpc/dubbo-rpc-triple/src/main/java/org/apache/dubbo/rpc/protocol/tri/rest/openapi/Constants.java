@@ -16,24 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.config.nested.OpenAPIConfig;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+public final class Constants {
 
-public interface ResolveContext {
+    public static final String VERSION_30 = "3.0.1";
+    public static final String VERSION_31 = "3.1.0";
 
-    String getGroup();
+    public static final String DEFAULT_GROUP = "default";
+    public static final String GLOBAL_GROUP = "";
 
-    OpenAPI getOpenAPI();
+    public static final String CONFIG_PREFIX = "dubbo.protocol.triple.rest.openapi";
 
-    OpenAPIConfig getConfig();
-
-    SchemaFactory getSchemaFactory();
-
-    ExtensionFactory getExtensionFactory();
-
-    <T> T getAttribute(String name);
-
-    <T> T removeAttribute(String name);
-
-    void setAttribute(String name, Object value);
+    private Constants() {}
 }

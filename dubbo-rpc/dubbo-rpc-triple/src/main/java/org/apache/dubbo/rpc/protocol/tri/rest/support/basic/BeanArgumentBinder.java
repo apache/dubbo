@@ -51,7 +51,7 @@ final class BeanArgumentBinder {
     private final CompositeArgumentResolver argumentResolver;
 
     public BeanArgumentBinder(FrameworkModel frameworkModel) {
-        argumentResolver = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeArgumentResolver.class);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
     }
 
     public Object bind(ParameterMeta paramMeta, HttpRequest request, HttpResponse response) {

@@ -16,4 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-public interface WriteContext {}
+import org.apache.dubbo.common.utils.Pair;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+
+import java.util.function.Function;
+
+public interface DocumentPublisher extends OpenAPIExtension {
+
+    void publish(Function<OpenAPIRequest, Pair<OpenAPI, String>> fn);
+}

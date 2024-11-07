@@ -26,7 +26,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface AnnotationResolver {
 
+    boolean hidden(ServiceMeta serviceMeta);
+
     OpenAPI resolve(ServiceMeta serviceMeta);
 
-    Operation resolve(MethodMeta methodMeta, Operation operation, ResolveContext context);
+    boolean hidden(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context);
+
+    Operation resolve(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context);
 }

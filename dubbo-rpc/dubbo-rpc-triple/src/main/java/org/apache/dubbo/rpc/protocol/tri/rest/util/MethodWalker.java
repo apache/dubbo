@@ -82,7 +82,7 @@ public final class MethodWalker {
         }
 
         @Override
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass", "EqualsDoesntCheckParameterClass"})
         public boolean equals(Object obj) {
             Key key = (Key) obj;
             return name.equals(key.name) && Arrays.equals(parameterTypes, key.parameterTypes);

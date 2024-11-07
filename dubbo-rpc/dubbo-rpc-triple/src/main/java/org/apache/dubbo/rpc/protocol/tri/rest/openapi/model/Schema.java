@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -519,7 +519,7 @@ public final class Schema extends Node<Schema> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> schema, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> schema, Context context) {
         write(schema, "$ref", ref);
         write(schema, "format", format);
         write(schema, "name", name);

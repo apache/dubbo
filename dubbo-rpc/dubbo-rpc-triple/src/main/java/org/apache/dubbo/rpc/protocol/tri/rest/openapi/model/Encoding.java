@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -58,6 +58,10 @@ public final class Encoding extends Node<Encoding> {
 
     public Map<String, Parameter> getHeaders() {
         return headers;
+    }
+
+    public Parameter getHeader(String name) {
+        return headers == null ? null : headers.get(name);
     }
 
     public Encoding setHeaders(Map<String, Parameter> headers) {
@@ -115,7 +119,7 @@ public final class Encoding extends Node<Encoding> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> encoding, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> encoding, Context context) {
         write(encoding, "contentType", contentType);
         write(encoding, "headers", headers, context);
         write(encoding, "style", style);

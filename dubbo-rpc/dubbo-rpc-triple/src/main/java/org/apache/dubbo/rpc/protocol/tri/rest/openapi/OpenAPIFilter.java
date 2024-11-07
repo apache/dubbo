@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ApiResponse;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Header;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Node;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter;
@@ -24,56 +27,50 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityScheme;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Server;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
 public interface OpenAPIFilter extends OpenAPIExtension {
 
-    default OpenAPI filterOpenAPI(OpenAPI openAPI, FilterContext context) {
+    default OpenAPI filterOpenAPI(OpenAPI openAPI, Context context) {
         return openAPI;
     }
 
-    default PathItem filterPathItem(PathItem pathItem, FilterContext context) {
+    default PathItem filterPathItem(String key, PathItem pathItem, Context context) {
         return pathItem;
     }
 
-    default Operation filterOperation(Operation operation, FilterContext context) {
+    default Operation filterOperation(HttpMethods key, Operation operation, PathItem pathItem, Context context) {
         return operation;
     }
 
-    default Parameter filterParameter(Parameter parameter, FilterContext context) {
+    default Parameter filterParameter(Parameter parameter, Operation operation, Context context) {
         return parameter;
     }
 
-    default RequestBody filterRequestBody(RequestBody requestBody, FilterContext context) {
-        return requestBody;
+    default RequestBody filterRequestBody(RequestBody body, Operation operation, Context context) {
+        return body;
     }
 
-    default ApiResponse filterResponse(ApiResponse apiResponse, FilterContext context) {
-        return apiResponse;
+    default ApiResponse filterResponse(ApiResponse response, Operation operation, Context context) {
+        return response;
     }
 
-    default Schema filterSchema(Schema schema, FilterContext context) {
+    default Header filterHeader(Header header, ApiResponse response, Operation operation, Context context) {
+        return header;
+    }
+
+    default Schema filterSchema(Schema schema, Node<?> node, Context context) {
         return schema;
     }
 
-    default Schema filterSchemaProperty(Schema schema, FilterContext context) {
+    default Schema filterSchemaProperty(String name, Schema schema, Schema owner, Context context) {
         return schema;
     }
 
-    default Server filterServer(Server server, FilterContext context) {
-        return server;
-    }
-
-    default SecurityScheme filterSecurityScheme(SecurityScheme securityScheme, FilterContext context) {
+    default SecurityScheme filterSecurityScheme(SecurityScheme securityScheme, Context context) {
         return securityScheme;
     }
 
-    default Tag filterTag(Tag tag, FilterContext context) {
-        return tag;
-    }
-
-    default OpenAPI filterOpenAPICompletion(OpenAPI openAPI, FilterContext context) {
+    default OpenAPI filterOpenAPICompletion(OpenAPI openAPI, Context context) {
         return openAPI;
     }
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.Map;
 public final class RequestBody extends Node<RequestBody> {
 
     private String description;
-    private Map<String, MediaType> content;
+    private Map<String, MediaType> contents;
     private boolean required;
 
     public String getDescription() {
@@ -36,26 +36,37 @@ public final class RequestBody extends Node<RequestBody> {
         return this;
     }
 
-    public Map<String, MediaType> getContent() {
-        return content;
+    public Map<String, MediaType> getContents() {
+        return contents;
     }
 
-    public RequestBody setContent(Map<String, MediaType> content) {
-        this.content = content;
+    public MediaType getContent(String mediaType) {
+        return contents == null ? null : contents.get(mediaType);
+    }
+
+    public MediaType getOrAddContent(String mediaType) {
+        if (contents == null) {
+            contents = new LinkedHashMap<>();
+        }
+        return contents.computeIfAbsent(mediaType, k -> new MediaType());
+    }
+
+    public RequestBody setContents(Map<String, MediaType> contents) {
+        this.contents = contents;
         return this;
     }
 
     public RequestBody addContent(String name, MediaType mediaType) {
-        if (content == null) {
-            content = new LinkedHashMap<>();
+        if (contents == null) {
+            contents = new LinkedHashMap<>();
         }
-        content.put(name, mediaType);
+        contents.put(name, mediaType);
         return this;
     }
 
     public RequestBody removeContent(String name) {
-        if (content != null) {
-            content.remove(name);
+        if (contents != null) {
+            contents.remove(name);
         }
         return this;
     }
@@ -72,15 +83,15 @@ public final class RequestBody extends Node<RequestBody> {
     @Override
     public RequestBody clone() {
         RequestBody clone = super.clone();
-        clone.content = clone(content);
+        clone.contents = clone(contents);
         return clone;
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> node, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "description", description);
         write(node, "required", required);
-        write(node, "content", content, context);
+        write(node, "content", contents, context);
         return node;
     }
 }

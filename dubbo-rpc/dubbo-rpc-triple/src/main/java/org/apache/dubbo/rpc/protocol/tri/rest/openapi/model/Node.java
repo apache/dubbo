@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
 import org.apache.dubbo.common.utils.ToStringUtils;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -112,15 +112,14 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         node.put(name, value);
     }
 
-    protected static void write(Map<String, Object> node, String name, Node<?> value, WriteContext context) {
+    protected static void write(Map<String, Object> node, String name, Node<?> value, Context context) {
         if (value == null) {
             return;
         }
         node.put(name, value.writeTo(new LinkedHashMap<>(), context));
     }
 
-    protected static void write(
-            Map<String, Object> node, String name, List<? extends Node<?>> value, WriteContext context) {
+    protected static void write(Map<String, Object> node, String name, List<? extends Node<?>> value, Context context) {
         if (value == null) {
             return;
         }
@@ -135,7 +134,7 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
     }
 
     protected static void write(
-            Map<String, Object> node, String name, Map<?, ? extends Node<?>> value, WriteContext context) {
+            Map<String, Object> node, String name, Map<?, ? extends Node<?>> value, Context context) {
         if (value == null) {
             return;
         }
@@ -160,5 +159,5 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         node.putAll(extensions);
     }
 
-    public abstract Map<String, Object> writeTo(Map<String, Object> node, WriteContext context);
+    public abstract Map<String, Object> writeTo(Map<String, Object> node, Context context);
 }

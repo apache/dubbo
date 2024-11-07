@@ -73,7 +73,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
-        requestRouter = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestRouter.class);
+        requestRouter = frameworkModel.getOrRegisterBean(DefaultRequestRouter.class);
         exceptionCustomizerWrapper = new ExceptionCustomizerWrapper(frameworkModel);
         headerFilters = frameworkModel
                 .getExtensionLoader(HeaderFilter.class)

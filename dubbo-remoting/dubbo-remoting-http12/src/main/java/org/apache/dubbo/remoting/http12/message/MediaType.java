@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import java.util.Objects;
+
 public final class MediaType {
 
     public static final String WILDCARD = "*";
@@ -29,8 +31,6 @@ public final class MediaType {
     public static final MediaType APPLICATION_XML = new MediaType("application", "xml");
 
     public static final MediaType APPLICATION_YAML = new MediaType("application", "yaml");
-
-    public static final MediaType TEXT_PROTO = new MediaType("text", "proto");
 
     public static final MediaType APPLICATION_JAVASCRIPT = new MediaType("application", "javascript");
 
@@ -86,5 +86,23 @@ public final class MediaType {
 
     public boolean isPureText() {
         return TEXT.equals(type);
+    }
+
+    public static MediaType of(String name) {
+        Objects.requireNonNull(name);
+        if (APPLICATION_JSON.name.equals(name)) {
+            return APPLICATION_JSON;
+        }
+        if (APPLICATION_YAML.name.equals(name)) {
+            return APPLICATION_YAML;
+        }
+        if (APPLICATION_FROM_URLENCODED.name.equals(name)) {
+            return APPLICATION_FROM_URLENCODED;
+        }
+        int index = name.indexOf('/');
+        if (index > 0) {
+            return new MediaType(name.substring(0, index), name.substring(index + 1));
+        }
+        throw new IllegalArgumentException("Invalid media type: '" + name + "'");
     }
 }

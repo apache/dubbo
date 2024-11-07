@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
@@ -31,8 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.config.nested.RestConfig.DEFAULT_FORMAT_PARAMETER_NAME;
-
 public class ContentNegotiator {
 
     private final FrameworkModel frameworkModel;
@@ -42,7 +40,7 @@ public class ContentNegotiator {
 
     public ContentNegotiator(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
+        codecUtils = frameworkModel.getOrRegisterBean(CodecUtils.class);
     }
 
     public String negotiate(HttpRequest request, HandlerMeta meta) {
@@ -141,11 +139,11 @@ public class ContentNegotiator {
     }
 
     public String getParameterName() {
-        String parameterName = this.parameterName;
         if (parameterName == null) {
-            Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-            parameterName = conf.getString(RestConstants.FORMAT_PARAMETER_NAME_KEY, DEFAULT_FORMAT_PARAMETER_NAME);
-            this.parameterName = parameterName;
+            parameterName = ConfigManager.getProtocolOrDefault(CommonConstants.TRIPLE)
+                    .getTripleOrDefault()
+                    .getRestOrDefault()
+                    .getFormatParameterNameOrDefault();
         }
         return parameterName;
     }

@@ -53,7 +53,7 @@ public @interface OpenAPI {
     /**
      * The openAPI groups.
      */
-    String[] groups() default {};
+    String group() default "";
 
     /**
      * The title of the application.
@@ -79,4 +79,9 @@ public @interface OpenAPI {
      * Ordering info.
      */
     int order() default 0;
+
+    /**
+     * The extensions of the OpenAPI.
+     */
+    String[] extensions() default {};
 }

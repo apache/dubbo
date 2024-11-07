@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.WriteContext;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.Map;
 
@@ -64,7 +64,7 @@ public final class Example extends Node<Example> {
     }
 
     @Override
-    public Map<String, Object> writeTo(Map<String, Object> exampleNode, WriteContext context) {
+    public Map<String, Object> writeTo(Map<String, Object> exampleNode, Context context) {
         write(exampleNode, "summary", summary);
         write(exampleNode, "description", description);
         write(exampleNode, "value", value);

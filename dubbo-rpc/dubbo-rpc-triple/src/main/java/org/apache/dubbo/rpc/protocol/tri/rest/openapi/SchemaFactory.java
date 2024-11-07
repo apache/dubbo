@@ -16,11 +16,18 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 
-public class SchemaFactory {
+import java.lang.reflect.Type;
 
-    public static Schema getSchema(Class<?> clazz) {
+public final class SchemaFactory {
+
+    public Schema getSchema(Type type) {
+        return new Schema();
+    }
+
+    public Schema getSchema(ParameterMeta[] parameters) {
         return new Schema();
     }
 }

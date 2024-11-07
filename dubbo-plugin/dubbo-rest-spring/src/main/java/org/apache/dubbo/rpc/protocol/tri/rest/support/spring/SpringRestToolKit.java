@@ -83,8 +83,8 @@ final class SpringRestToolKit implements RestToolKit {
         } else {
             conversionService = DefaultConversionService.getSharedInstance();
         }
-        typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
-        parameterNameReader = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultParameterNameReader.class);
+        typeConverter = frameworkModel.getOrRegisterBean(GeneralTypeConverter.class);
+        parameterNameReader = frameworkModel.getOrRegisterBean(DefaultParameterNameReader.class);
         argumentBinder = new BeanArgumentBinder(frameworkModel, conversionService);
     }
 

@@ -76,11 +76,13 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     private void init(Invoker<?> invoker) {
-        contentNegotiator = frameworkModel.getBeanFactory().getOrRegisterBean(ContentNegotiator.class);
-        openAPIService = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultOpenAPIService.class);
+        contentNegotiator = frameworkModel.getOrRegisterBean(ContentNegotiator.class);
+        openAPIService = frameworkModel.getOrRegisterBean(DefaultOpenAPIService.class);
         openAPIService.setRequestMappingRegistry(this);
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
-        restConfig = ConfigManager.getProtocolOrDefault(invoker.getUrl()).getTripleOrDefault().getRestOrDefault();
+        restConfig = ConfigManager.getProtocolOrDefault(invoker.getUrl())
+                .getTripleOrDefault()
+                .getRestOrDefault();
         tree = new RadixTree<>(restConfig.getCaseSensitiveMatchOrDefault());
     }
 
@@ -128,7 +130,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         return;
                     }
                     RequestMapping methodMapping = resolver.resolve(methodMeta);
-                    if (methodMapping == null) {
+                    if (methodMapping == null || methodMapping.getPathCondition() == null) {
                         return;
                     }
                     if (md == null) {
