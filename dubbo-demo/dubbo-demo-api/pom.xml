@@ -30,6 +30,7 @@
   <modules>
     <module>dubbo-demo-api-provider</module>
     <module>dubbo-demo-api-consumer</module>
+    <module>dubbo-demo-api-interface</module>
   </modules>
 
   <properties>
