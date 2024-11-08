@@ -121,6 +121,19 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <version>0.10.3</version>
+        <configuration>
+          <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+          <metadataRepository>
+            <enabled>true</enabled>
+          </metadataRepository>
+          <requiredVersion>22.3</requiredVersion>
+          <mainClass>org.apache.dubbo.demo.graalvm.provider.Application</mainClass>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

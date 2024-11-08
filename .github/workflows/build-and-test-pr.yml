@@ -613,12 +613,12 @@ jobs:
           ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
       - name: "Compile and run Dubbo demo for native (Linux)"
         run: |
-          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-interface
+          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-spring-boot/dubbo-demo-spring-boot-interface
           MVNW="${{ github.workspace }}/dubbo/mvnw ${{ env.MAVEN_ARGS }} -T 2C -Dmaven.test.skip=true"
           $MVNW clean install
-          cd ../dubbo-demo-native-provider
+          cd ../dubbo-demo-spring-boot-provider
           $MVNW clean package -P native  native:compile
-          nohup ./target/dubbo-demo-native-provider &
-          cd ../dubbo-demo-native-consumer
+          nohup ./target/dubbo-demo-spring-boot-provider &
+          cd ../dubbo-demo-spring-boot-consumer
           $MVNW clean package -P native native:compile
-          ./target/dubbo-demo-native-consumer
+          ./target/dubbo-demo-spring-boot-consumer
