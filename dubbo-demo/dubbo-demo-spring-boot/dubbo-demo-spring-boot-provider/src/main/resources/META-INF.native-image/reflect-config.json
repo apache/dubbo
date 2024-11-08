@@ -1,10 +1,10 @@
 [
   {
-    "name": "org.apache.dubbo.graalvm.demo.DemoService",
+    "name": "org.apache.dubbo.springboot.demo.DemoService",
     "allPublicMethods": true
   },
   {
-    "name": "org.apache.dubbo.demo.graalvm.provider.DemoServiceImpl",
+    "name": "org.apache.dubbo.springboot.demo.provider.DemoServiceImpl",
     "allDeclaredMethods": true
   },
   {
