@@ -17,6 +17,7 @@
 package org.apache.dubbo.demo;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.demo.hello.GreeterService;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
@@ -36,9 +37,11 @@ public class GreeterServiceImpl implements GreeterService {
     }
 
     @Override
-    public CompletableFuture<String> sayHelloAsync(String name) {
-        LOGGER.info("Received sayHelloAsync request: {}", name);
-        return CompletableFuture.supplyAsync(() -> "Hello " + name);
+    public CompletableFuture<HelloReply> sayHelloAsync(HelloRequest request) {
+        LOGGER.info("Received sayHelloAsync request: {}", request.getName());
+        HelloReply.newBuilder().setMessage("Hello " + request.getName());
+        return CompletableFuture.supplyAsync(() ->
+                HelloReply.newBuilder().setMessage("Hello " + request.getName()).build());
     }
 
     @Override

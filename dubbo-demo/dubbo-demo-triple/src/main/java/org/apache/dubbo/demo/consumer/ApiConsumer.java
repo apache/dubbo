@@ -23,7 +23,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.GreeterService;
+import org.apache.dubbo.demo.hello.GreeterService;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 import org.apache.dubbo.rpc.Constants;
@@ -60,7 +60,8 @@ public class ApiConsumer {
             System.out.println("sayHello reply: " + reply.getMessage());
 
             System.out.println("Call sayHelloAsync");
-            CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
+            CompletableFuture<HelloReply> sayHelloAsync = greeterService.sayHelloAsync(
+                    HelloRequest.newBuilder().setName("triple").build());
             sayHelloAsync.thenAccept(value -> System.out.println("sayHelloAsync reply: " + value));
 
             StreamObserver<HelloReply> responseObserver = new StreamObserver<HelloReply>() {

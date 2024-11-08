@@ -92,7 +92,7 @@
     <spring_version>5.3.39</spring_version>
     <spring_security_version>5.8.15</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.15.7</byte-buddy_version>
+    <byte-buddy_version>1.15.10</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.114.Final</netty4_version>
     <netty_http3_version>0.0.28.Final</netty_http3_version>
@@ -175,7 +175,7 @@
     <sofa_registry_version>5.4.3</sofa_registry_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.11.0</gson_version>
-    <jackson_version>2.18.0</jackson_version>
+    <jackson_version>2.18.1</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.6.0</maven_flatten_version>
