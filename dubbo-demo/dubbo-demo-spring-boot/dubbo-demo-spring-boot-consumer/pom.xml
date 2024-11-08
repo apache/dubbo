@@ -101,39 +101,75 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j2</artifactId>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-native</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-config-spring6</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.graalvm.buildtools</groupId>
-        <artifactId>native-maven-plugin</artifactId>
-        <version>0.10.3</version>
-        <configuration>
-          <classesDirectory>${project.build.outputDirectory}</classesDirectory>
-          <metadataRepository>
-            <enabled>true</enabled>
-          </metadataRepository>
-          <requiredVersion>22.3</requiredVersion>
-          <mainClass>org.apache.dubbo.springboot.demo.consumer.ConsumerApplication</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <profiles>
+    <profile>
+      <id>native</id>
+      <properties>
+        <profileActive>native</profileActive>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <configuration>
+              <mainClass>org.apache.dubbo.springboot.demo.consumer.ConsumerApplication</mainClass>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>dubbo-process-aot</goal>
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.13.0</version>
+            <configuration>
+              <source>1.8</source>
+              <target>1.8</target>
+              <fork>true</fork>
+              <verbose>true</verbose>
+              <encoding>UTF-8</encoding>
+              <compilerArguments>
+                <sourcepath>${project.basedir}${file.separator}src${file.separator}main${file.separator}java</sourcepath>
+              </compilerArguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>0.10.3</version>
+            <configuration>
+              <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+              <metadataRepository>
+                <enabled>true</enabled>
+              </metadataRepository>
+              <requiredVersion>22.3</requiredVersion>
+              <mainClass>org.apache.dubbo.springboot.demo.consumer.ConsumerApplication</mainClass>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
