@@ -131,7 +131,7 @@
             <enabled>true</enabled>
           </metadataRepository>
           <requiredVersion>22.3</requiredVersion>
-          <mainClass>org.apache.dubbo.demo.graalvm.provider.Application</mainClass>
+          <mainClass>org.apache.dubbo.springboot.demo.provider.ProviderApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>
