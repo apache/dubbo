@@ -157,10 +157,17 @@ public final class OpenAPI extends Node<OpenAPI> {
     }
 
     public OpenAPI addTag(Tag tag) {
-        if (tags == null) {
-            tags = new ArrayList<>();
+        List<Tag> thisTags = tags;
+        if (thisTags == null) {
+            tags = thisTags = new ArrayList<>();
+        } else {
+            for (int i = 0, size = thisTags.size(); i < size; i++) {
+                if (thisTags.get(i).getName().equals(tag.getName())) {
+                    return this;
+                }
+            }
         }
-        tags.add(tag);
+        thisTags.add(tag);
         return this;
     }
 

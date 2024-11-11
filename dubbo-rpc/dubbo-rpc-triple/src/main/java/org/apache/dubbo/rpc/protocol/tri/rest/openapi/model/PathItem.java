@@ -122,10 +122,18 @@ public final class PathItem extends Node<PathItem> {
     }
 
     public PathItem addParameter(Parameter parameter) {
-        if (parameters == null) {
-            parameters = new ArrayList<>();
+        List<Parameter> thisParameters = parameters;
+        if (thisParameters == null) {
+            parameters = thisParameters = new ArrayList<>();
+        } else {
+            for (int i = 0, size = thisParameters.size(); i < size; i++) {
+                Parameter tParameter = thisParameters.get(i);
+                if (tParameter.getName().equals(parameter.getName())) {
+                    return this;
+                }
+            }
         }
-        parameters.add(parameter);
+        thisParameters.add(parameter);
         return this;
     }
 

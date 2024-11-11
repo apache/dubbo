@@ -23,12 +23,14 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class Operation extends Node<Operation> {
 
-    private List<String> tags;
+    private Set<String> tags;
     private String summary;
     private String description;
     private ExternalDocs externalDocs;
@@ -44,18 +46,18 @@ public final class Operation extends Node<Operation> {
     private HttpMethods httpMethod;
     private transient MethodMeta method;
 
-    public List<String> getTags() {
+    public Set<String> getTags() {
         return tags;
     }
 
-    public Operation setTags(List<String> tags) {
+    public Operation setTags(Set<String> tags) {
         this.tags = tags;
         return this;
     }
 
     public Operation addTag(String tag) {
         if (tags == null) {
-            tags = new ArrayList<>();
+            tags = new LinkedHashSet<>();
         }
         tags.add(tag);
         return this;

@@ -97,7 +97,7 @@ public final class ConfigFactory {
     }
 
     private static void applyConfigValue(Map<String, OpenAPIConfig> map, String group, String key, String value) {
-        if (value == null) {
+        if (value == null || value.isEmpty()) {
             return;
         }
 

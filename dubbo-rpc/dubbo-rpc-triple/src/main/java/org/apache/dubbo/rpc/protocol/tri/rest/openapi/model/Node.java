@@ -42,6 +42,23 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         return (T) this;
     }
 
+    @SuppressWarnings("unchecked")
+    public T addExtensions(Map<String, Object> extensions) {
+        if (extensions == null || extensions.isEmpty()) {
+            return (T) this;
+        }
+
+        Map<String, Object> thisExtensions = this.extensions;
+        if (thisExtensions == null) {
+            this.extensions = new LinkedHashMap<>(extensions);
+        } else {
+            for (Map.Entry<String, Object> entry : extensions.entrySet()) {
+                thisExtensions.putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
+        return (T) this;
+    }
+
     public void removeExtension(String name) {
         if (extensions != null) {
             extensions.remove(name);
@@ -71,11 +88,11 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         return ToStringUtils.printToString(this);
     }
 
-    protected static <T extends Node<T>> T clone(T node) {
+    public static <T extends Node<T>> T clone(T node) {
         return node == null ? null : node.clone();
     }
 
-    protected static <T extends Node<T>> List<T> clone(List<T> list) {
+    public static <T extends Node<T>> List<T> clone(List<T> list) {
         if (list == null) {
             return null;
         }
@@ -90,7 +107,7 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         return clone;
     }
 
-    protected static <K, V extends Node<V>> Map<K, V> clone(Map<K, V> map) {
+    public static <K, V extends Node<V>> Map<K, V> clone(Map<K, V> map) {
         if (map == null) {
             return null;
         }
@@ -106,7 +123,7 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
     }
 
     protected static void write(Map<String, Object> node, String name, Object value) {
-        if (value == null) {
+        if (value == null || "".equals(value)) {
             return;
         }
         node.put(name, value);
@@ -116,7 +133,11 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         if (value == null) {
             return;
         }
-        node.put(name, value.writeTo(new LinkedHashMap<>(), context));
+        Map<String, Object> valueMap = value.writeTo(new LinkedHashMap<>(), context);
+        if (valueMap == null || valueMap.isEmpty()) {
+            return;
+        }
+        node.put(name, valueMap);
     }
 
     protected static void write(Map<String, Object> node, String name, List<? extends Node<?>> value, Context context) {
@@ -127,7 +148,11 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         if (size > 0) {
             List<Map<String, Object>> list = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
-                list.add(value.get(i).writeTo(new LinkedHashMap<>(), context));
+                Map<String, Object> valueMap = value.get(i).writeTo(new LinkedHashMap<>(), context);
+                if (valueMap == null || valueMap.isEmpty()) {
+                    continue;
+                }
+                list.add(valueMap);
             }
             node.put(name, list);
         }
@@ -142,7 +167,11 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         if (size > 0) {
             Map<Object, Map<String, Object>> map = newMap(size);
             for (Map.Entry<?, ? extends Node<?>> entry : value.entrySet()) {
-                map.put(entry.getKey(), entry.getValue().writeTo(new LinkedHashMap<>(), context));
+                Map<String, Object> valueMap = entry.getValue().writeTo(new LinkedHashMap<>(), context);
+                if (valueMap == null || valueMap.isEmpty()) {
+                    continue;
+                }
+                map.put(entry.getKey(), valueMap);
             }
             node.put(name, map);
         }

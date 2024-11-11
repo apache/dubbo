@@ -63,6 +63,11 @@ public class OpenAPIConfig implements Serializable {
     private String infoContactName;
 
     /**
+     * The url of the contact.
+     */
+    private String infoContactUrl;
+
+    /**
      * The email address of the contact.
      */
     private String infoContactEmail;
@@ -184,6 +189,14 @@ public class OpenAPIConfig implements Serializable {
 
     public void setInfoContactName(String infoContactName) {
         this.infoContactName = infoContactName;
+    }
+
+    public String getInfoContactUrl() {
+        return infoContactUrl;
+    }
+
+    public void setInfoContactUrl(String infoContactUrl) {
+        this.infoContactUrl = infoContactUrl;
     }
 
     public String getInfoContactEmail() {

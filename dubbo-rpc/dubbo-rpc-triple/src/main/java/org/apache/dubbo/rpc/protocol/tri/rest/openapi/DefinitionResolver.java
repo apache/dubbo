@@ -158,14 +158,14 @@ final class DefinitionResolver {
 
         for (String hm : httpMethods) {
             HttpMethods httpMethod = HttpMethods.of(hm.toUpperCase());
-            Operation existsOperation = pathItem.getOperation(httpMethod);
-            if (existsOperation == null) {
+            Operation existingOperation = pathItem.getOperation(httpMethod);
+            if (existingOperation == null) {
                 if (operation == null) {
                     operation = new Operation();
                 }
                 pathItem.addOperation(httpMethod, operation);
             } else {
-                if (existsOperation.getMethod() != null) {
+                if (existingOperation.getMethod() != null) {
                     LOG.internalWarn("Operation already exists, path='{}', httpMethod='{}', method={}", path, hm, meta);
                 }
                 continue;
