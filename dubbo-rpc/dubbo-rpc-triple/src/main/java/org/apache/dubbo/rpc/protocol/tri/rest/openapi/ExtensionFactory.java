@@ -26,23 +26,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 public final class ExtensionFactory {
 
     private final ExtensionLoader<OpenAPIExtension> extensionLoader;
     private final List<OpenAPIExtension> extensions;
-    private final Map<Object, Object> cache = CollectionUtils.newConcurrentHashMap();
+    private final Map<Object, Object> cache;
 
     public ExtensionFactory(FrameworkModel frameworkModel) {
         extensionLoader = frameworkModel.getExtensionLoader(OpenAPIExtension.class);
         extensions = extensionLoader.getActivateExtensions();
+        cache = CollectionUtils.newConcurrentHashMap();
     }
 
     public <T extends OpenAPIExtension> T[] getExtensions(Class<T> type) {
         return (T[]) cache.computeIfAbsent(type, k -> {
             List<OpenAPIExtension> list = new ArrayList<>();
             for (OpenAPIExtension extension : extensions) {
+                if (extension instanceof Supplier) {
+                    extension = ((Supplier<T>) extension).get();
+                }
                 if (type.isInstance(extension)) {
                     list.add(extension);
                 }
@@ -55,6 +60,9 @@ public final class ExtensionFactory {
         return (T[]) cache.computeIfAbsent(Pair.of(type, group), k -> {
             List<OpenAPIExtension> list = new ArrayList<>();
             for (OpenAPIExtension extension : extensions) {
+                if (extension instanceof Supplier) {
+                    extension = ((Supplier<T>) extension).get();
+                }
                 if (type.isInstance(extension) && accept(extension, group)) {
                     list.add(extension);
                 }
@@ -65,6 +73,9 @@ public final class ExtensionFactory {
 
     public <T extends OpenAPIExtension> T getExtension(Class<T> type, String name) {
         OpenAPIExtension extension = extensionLoader.getExtension(name, true);
+        if (extension instanceof Supplier) {
+            extension = ((Supplier<T>) extension).get();
+        }
         return type.isInstance(extension) ? (T) extension : null;
     }
 

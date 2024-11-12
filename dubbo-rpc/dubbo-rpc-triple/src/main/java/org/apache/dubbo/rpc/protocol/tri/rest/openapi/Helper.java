@@ -16,15 +16,18 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.remoting.http12.HttpMethods.DELETE;
 import static org.apache.dubbo.remoting.http12.HttpMethods.GET;
@@ -109,5 +112,62 @@ public final class Helper {
             default:
                 return null;
         }
+    }
+
+    public static String formatVersion(String version) {
+        if (version == null) {
+            return null;
+        }
+        if (version.startsWith("3.1")) {
+            return Constants.VERSION_31;
+        }
+        return Constants.VERSION_30;
+    }
+
+    public static String trim(String str) {
+        if (str == null || str.isEmpty()) {
+            return null;
+        }
+        str = str.trim();
+        return str.isEmpty() ? null : str;
+    }
+
+    public static String[] trim(String[] array) {
+        if (array == null) {
+            return null;
+        }
+        int len = array.length;
+        if (len == 0) {
+            return null;
+        }
+        int p = 0;
+        for (int i = 0; i < len; i++) {
+            String value = trim(array[i]);
+            if (value != null) {
+                array[p++] = value;
+            }
+        }
+        int newLen = p + 1;
+        return newLen == len ? array : Arrays.copyOf(array, newLen);
+    }
+
+    public static Map<String, String> toProperties(String[] array) {
+        if (array == null) {
+            return Collections.emptyMap();
+        }
+        int len = array.length;
+        if (len == 0) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> properties = CollectionUtils.newLinkedHashMap(len);
+        for (String item : array) {
+            int index = item.indexOf('=');
+            if (index > 0) {
+                properties.put(trim(item.substring(0, index)), trim(item.substring(index + 1)));
+            } else {
+                properties.put(trim(item), null);
+            }
+        }
+        return properties;
     }
 }

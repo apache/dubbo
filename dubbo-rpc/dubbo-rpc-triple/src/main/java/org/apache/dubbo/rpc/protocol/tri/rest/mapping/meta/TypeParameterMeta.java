@@ -14,20 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
+package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 
-public final class SchemaFactory {
+public final class TypeParameterMeta extends ParameterMeta {
 
-    public Schema getSchema(Type type) {
-        return new Schema();
+    private final Type type;
+
+    public TypeParameterMeta(RestToolKit toolKit, Type type) {
+        super(toolKit, null);
+        this.type = type;
     }
 
-    public Schema getSchema(ParameterMeta[] parameters) {
-        return new Schema();
+    public TypeParameterMeta(Type type) {
+        super(null, null);
+        this.type = type;
+    }
+
+    @Override
+    public Class<?> getType() {
+        return TypeUtils.getActualType(type);
+    }
+
+    @Override
+    public Type getGenericType() {
+        return type;
+    }
+
+    @Override
+    protected AnnotatedElement getAnnotatedElement() {
+        return getActualType();
     }
 }

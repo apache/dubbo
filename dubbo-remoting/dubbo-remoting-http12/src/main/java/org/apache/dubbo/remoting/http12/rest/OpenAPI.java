@@ -40,6 +40,13 @@ import java.lang.annotation.Target;
 public @interface OpenAPI {
 
     /**
+     * The version of OpenAPI being used.
+     * e.g. 3.0.1, 3.1.0
+     * <p>The default value is '3.0.1'.
+     */
+    String version() default "";
+
+    /**
      * The openAPI tags.
      * <h5>Supported Syntax</h5>
      * <ul>
@@ -58,17 +65,27 @@ public @interface OpenAPI {
     /**
      * The title of the application.
      **/
-    String title() default "";
+    String infoTitle() default "";
 
     /**
      * A short description of the application.
      **/
-    String description() default "";
+    String infoDescription() default "";
 
     /**
      * The version of the API definition.
      **/
-    String version() default "";
+    String infoVersion() default "";
+
+    /**
+     * A description of the external documentation.
+     */
+    String docDescription() default "";
+
+    /**
+     * The URL of the external documentation.
+     */
+    String docUrl() default "";
 
     /**
      * Indicates whether the mapping is hidden in OpenAPI.

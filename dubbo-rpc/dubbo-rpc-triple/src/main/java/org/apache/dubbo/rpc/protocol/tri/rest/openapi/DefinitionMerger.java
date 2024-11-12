@@ -21,38 +21,42 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ApiResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Components;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Contact;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ExternalDocs;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Header;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Info;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.License;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.MediaType;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Node;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityRequirement;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityScheme;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Server;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
-import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.formatVersion;
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.trim;
+
 final class DefinitionMerger {
 
     private static final FluentLogger LOG = FluentLogger.of(DefinitionMerger.class);
 
-    private final ExtensionFactory extensionFactory;
     private final ConfigFactory configFactory;
 
     DefinitionMerger(FrameworkModel frameworkModel) {
-        extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
     }
 
@@ -60,6 +64,7 @@ final class DefinitionMerger {
         OpenAPI result = new OpenAPI();
 
         if (openAPIs.isEmpty()) {
+            applyConfig(result, configFactory.getGlobalConfig());
             return result;
         }
 
@@ -67,8 +72,6 @@ final class DefinitionMerger {
         if (group == null) {
             group = Constants.DEFAULT_GROUP;
         }
-        String[] tags = trim(request.getTags());
-        String service = trim(request.getService());
         String version = trim(request.getVersion());
         if (version != null) {
             result.setOpenapi(formatVersion(version));
@@ -76,28 +79,30 @@ final class DefinitionMerger {
 
         applyConfig(result, configFactory.getConfig(group));
 
-        for (OpenAPI openAPI : openAPIs) {
+        String[] tags = trim(request.getTags());
+        String service = trim(request.getService());
+        for (OpenAPI api : openAPIs) {
             if (service != null) {
-                String serviceName = openAPI.getService().getServiceDescriptor().getInterfaceName();
-                if (serviceName != null && !serviceName.regionMatches(true, 0, service, 0, service.length())) {
+                String apiService = api.getService().getServiceInterface();
+                if (apiService != null && !apiService.regionMatches(true, 0, service, 0, service.length())) {
                     continue;
                 }
             }
 
-            if (group.equals(openAPI.getGroup())) {
-                mergeBasic(result, openAPI);
+            if (group.equals(api.getGroup())) {
+                mergeBasic(result, api);
             }
 
-            mergePaths(result, openAPI, group, tags);
+            mergePaths(result, api, group, tags);
 
-            mergeSecuritySchemes(result, openAPI);
+            mergeSecuritySchemes(result, api);
 
-            mergeTags(result, openAPI);
+            mergeTags(result, api);
         }
 
         applyConfig(result, configFactory.getGlobalConfig());
 
-        addRefSchemas(result);
+        addSchemas(result);
 
         cleanup(result);
 
@@ -170,9 +175,9 @@ final class DefinitionMerger {
             String securityScheme = config.getSecurityScheme();
             if (securityScheme != null) {
                 try {
-                    Type type =
-                            Components.class.getDeclaredField("securitySchemes").getGenericType();
-                    components.setSecuritySchemes(JsonUtils.toJavaObject(securityScheme, type));
+                    components.setSecuritySchemes(JsonUtils.toJavaObject(
+                            securityScheme,
+                            Components.class.getDeclaredField("securitySchemes").getGenericType()));
                 } catch (NoSuchFieldException ignored) {
                 }
             }
@@ -219,58 +224,60 @@ final class DefinitionMerger {
 
     private void mergeInfo(OpenAPI api, OpenAPI from) {
         Info fromInfo = from.getInfo();
-        if (fromInfo != null) {
-            Info info = api.getInfo();
-            if (info.getTitle() == null) {
-                info.setTitle(fromInfo.getTitle());
-            }
-            if (info.getSummary() == null) {
-                info.setDescription(fromInfo.getSummary());
-            }
-            if (info.getDescription() == null) {
-                info.setDescription(fromInfo.getDescription());
-            }
-            if (info.getTermsOfService() == null) {
-                info.setTermsOfService(fromInfo.getTermsOfService());
-            }
+        if (fromInfo == null) {
+            return;
+        }
 
-            Contact fromContact = fromInfo.getContact();
-            if (fromContact != null) {
-                Contact contact = info.getContact();
-                if (contact.getName() == null) {
-                    contact.setName(fromContact.getName());
-                }
-                if (contact.getUrl() == null) {
-                    contact.setUrl(fromContact.getUrl());
-                }
-                if (contact.getEmail() == null) {
-                    contact.setEmail(fromContact.getEmail());
-                }
+        Info info = api.getInfo();
+        if (info.getTitle() == null) {
+            info.setTitle(fromInfo.getTitle());
+        }
+        if (info.getSummary() == null) {
+            info.setDescription(fromInfo.getSummary());
+        }
+        if (info.getDescription() == null) {
+            info.setDescription(fromInfo.getDescription());
+        }
+        if (info.getTermsOfService() == null) {
+            info.setTermsOfService(fromInfo.getTermsOfService());
+        }
 
-                if (info.getVersion() == null) {
-                    info.setVersion(fromInfo.getVersion());
-                }
-                contact.addExtensions(fromContact.getExtensions());
+        Contact fromContact = fromInfo.getContact();
+        if (fromContact != null) {
+            Contact contact = info.getContact();
+            if (contact.getName() == null) {
+                contact.setName(fromContact.getName());
             }
-
-            License fromLicense = fromInfo.getLicense();
-            if (fromLicense != null) {
-                License license = info.getLicense();
-                if (license.getName() == null) {
-                    license.setName(fromLicense.getName());
-                }
-                if (license.getUrl() == null) {
-                    license.setUrl(fromLicense.getUrl());
-                }
-                license.addExtensions(fromLicense.getExtensions());
+            if (contact.getUrl() == null) {
+                contact.setUrl(fromContact.getUrl());
+            }
+            if (contact.getEmail() == null) {
+                contact.setEmail(fromContact.getEmail());
             }
 
             if (info.getVersion() == null) {
                 info.setVersion(fromInfo.getVersion());
             }
-
-            info.addExtensions(fromInfo.getExtensions());
+            contact.addExtensions(fromContact.getExtensions());
         }
+
+        License fromLicense = fromInfo.getLicense();
+        if (fromLicense != null) {
+            License license = info.getLicense();
+            if (license.getName() == null) {
+                license.setName(fromLicense.getName());
+            }
+            if (license.getUrl() == null) {
+                license.setUrl(fromLicense.getUrl());
+            }
+            license.addExtensions(fromLicense.getExtensions());
+        }
+
+        if (info.getVersion() == null) {
+            info.setVersion(fromInfo.getVersion());
+        }
+
+        info.addExtensions(fromInfo.getExtensions());
     }
 
     private void mergePaths(OpenAPI api, OpenAPI from, String group, String[] tags) {
@@ -318,6 +325,7 @@ final class DefinitionMerger {
                 for (Entry<HttpMethods, Operation> entry : fromOperations.entrySet()) {
                     HttpMethods httpMethod = entry.getKey();
                     Operation fromOperation = entry.getValue();
+
                     if (!group.equals(fromOperation.getGroup())) {
                         continue;
                     }
@@ -403,55 +411,103 @@ final class DefinitionMerger {
 
     private void mergeTags(OpenAPI api, OpenAPI from) {
         List<Tag> fromTags = from.getTags();
-        if (fromTags != null) {
-            if (api.getTags() == null) {
-                api.setTags(Node.clone(fromTags));
-            } else {
-                for (Tag tag : fromTags) {
-                    api.addTag(tag.clone());
+        if (fromTags == null) {
+            return;
+        }
+
+        if (api.getTags() == null) {
+            api.setTags(Node.clone(fromTags));
+        } else {
+            for (Tag tag : fromTags) {
+                api.addTag(tag.clone());
+            }
+        }
+    }
+
+    private void addSchemas(OpenAPI api) {
+        Components components = api.getComponents();
+        if (components == null) {
+            api.setComponents(components = new Components());
+        }
+        Map<String, Schema> schemas = components.getSchemas();
+        if (schemas == null) {
+            components.setSchemas(schemas = new TreeMap<>());
+        }
+
+        for (PathItem pathItem : api.getPaths().values()) {
+            for (Operation operation : pathItem.getOperations().values()) {
+                List<Parameter> parameters = operation.getParameters();
+                if (parameters != null) {
+                    for (Parameter parameter : parameters) {
+                        addSchema(parameter.getSchema(), schemas);
+                        Map<String, MediaType> contents = parameter.getContents();
+                        if (contents == null) {
+                            continue;
+                        }
+                        for (MediaType mediaType : contents.values()) {
+                            addSchema(mediaType.getSchema(), schemas);
+                        }
+                    }
+                }
+                RequestBody requestBody = operation.getRequestBody();
+                if (requestBody != null) {
+                    Map<String, MediaType> contents = requestBody.getContents();
+                    if (contents == null) {
+                        continue;
+                    }
+                    for (MediaType mediaType : contents.values()) {
+                        addSchema(mediaType.getSchema(), schemas);
+                    }
+                }
+                Map<String, ApiResponse> responses = operation.getResponses();
+                if (responses != null) {
+                    for (ApiResponse response : responses.values()) {
+                        Map<String, Header> headers = response.getHeaders();
+                        if (headers != null) {
+                            for (Header header : headers.values()) {
+                                addSchema(header.getSchema(), schemas);
+                            }
+                        }
+                        
+                        Map<String, MediaType> contents = response.getContents();
+                        if (contents == null) {
+                            continue;
+                        }
+                        for (MediaType mediaType : contents.values()) {
+                            addSchema(mediaType.getSchema(), schemas);
+                        }
+                    }
                 }
             }
         }
     }
 
-    private void addRefSchemas(OpenAPI api) {}
+    private void addSchema(Schema schema, Map<String, Schema> schemas) {
+        if (schema == null) {
+            return;
+        }
+        Schema targetSchema = schema.getTargetSchema();
+        if (targetSchema == null) {
+            return;
+        }
 
-    private void cleanup(OpenAPI api) {}
+        String name = targetSchema.getJavaType().getName();
+        schema.setRef(name);
+        if (schemas.putIfAbsent(name, targetSchema) != null) {
+            return;
+        }
 
-    private static String formatVersion(String version) {
-        if (version == null) {
-            return null;
-        }
-        if (version.startsWith("3.1")) {
-            return Constants.VERSION_31;
-        }
-        return Constants.VERSION_30;
-    }
+        addSchema(targetSchema.getItems(), schemas);
 
-    private static String trim(String str) {
-        if (str == null || str.isEmpty()) {
-            return null;
-        }
-        str = str.trim();
-        return str.isEmpty() ? null : str;
-    }
-
-    private static String[] trim(String[] array) {
-        if (array == null) {
-            return null;
-        }
-        int len = array.length;
-        if (len == 0) {
-            return null;
-        }
-        int p = 0;
-        for (int i = 0; i < len; i++) {
-            String value = trim(array[i]);
-            if (value != null) {
-                array[p++] = value;
+        Map<String, Schema> properties = targetSchema.getProperties();
+        if (properties != null) {
+            for (Schema property : properties.values()) {
+                addSchema(property, schemas);
             }
         }
-        int newLen = p + 1;
-        return newLen == len ? array : Arrays.copyOf(array, newLen);
+
+        addSchema(targetSchema.getAdditionalPropertiesSchema(), schemas);
     }
+
+    private void cleanup(OpenAPI api) {}
 }

@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityScheme;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 import java.util.Iterator;
 import java.util.List;
@@ -156,7 +157,7 @@ final class DefinitionFilter {
                 it.set(parameter);
             }
 
-            filterContext(parameter.getContent(), filters, context);
+            filterContext(parameter.getContents(), filters, context);
         }
     }
 

@@ -14,13 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIExtension;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 
-final class ResolveContextImpl extends AbstractContext implements ResolveContext {
+import java.lang.reflect.Type;
 
-    ResolveContextImpl(OpenAPI openAPI, SchemaFactory schemaFactory, ExtensionFactory extensionFactory) {
-        super(openAPI, schemaFactory, extensionFactory);
+public interface SchemaResolver extends OpenAPIExtension {
+
+    Schema resolve(ParameterMeta parameter, Context context, Chain chain);
+
+    interface Chain {
+
+        Schema resolve(ParameterMeta parameter, Context context);
+    }
+
+    interface Context {
+
+        void defineSchema(String name, Class<?> type, Schema schema);
+
+        void defineSchema(Class<?> type, Schema schema);
+
+        Schema getSchema(ParameterMeta parameter);
+
+        Schema getSchema(Type type);
     }
 }

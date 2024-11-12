@@ -275,7 +275,7 @@ public final class Operation extends Node<Operation> {
     public Operation clone() {
         Operation clone = super.clone();
         if (tags != null) {
-            clone.tags = new ArrayList<>(tags);
+            clone.tags = new LinkedHashSet<>(tags);
         }
         clone.externalDocs = clone(externalDocs);
         clone.parameters = clone(parameters);

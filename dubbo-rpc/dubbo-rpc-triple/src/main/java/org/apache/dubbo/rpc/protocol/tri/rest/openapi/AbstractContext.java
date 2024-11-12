@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 import java.util.HashMap;
 import java.util.Map;

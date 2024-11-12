@@ -484,6 +484,9 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIExtension</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">

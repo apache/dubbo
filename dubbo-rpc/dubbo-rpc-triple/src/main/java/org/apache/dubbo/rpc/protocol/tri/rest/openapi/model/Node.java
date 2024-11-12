@@ -43,7 +43,7 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
     }
 
     @SuppressWarnings("unchecked")
-    public T addExtensions(Map<String, Object> extensions) {
+    public T addExtensions(Map<String, ?> extensions) {
         if (extensions == null || extensions.isEmpty()) {
             return (T) this;
         }
@@ -52,7 +52,7 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         if (thisExtensions == null) {
             this.extensions = new LinkedHashMap<>(extensions);
         } else {
-            for (Map.Entry<String, Object> entry : extensions.entrySet()) {
+            for (Map.Entry<String, ?> entry : extensions.entrySet()) {
                 thisExtensions.putIfAbsent(entry.getKey(), entry.getValue());
             }
         }
@@ -65,7 +65,7 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         }
     }
 
-    public void setExtensions(Map<String, Object> extensions) {
+    public void setExtensions(Map<String, ?> extensions) {
         this.extensions = new LinkedHashMap<>(extensions);
     }
 

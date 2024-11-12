@@ -30,9 +30,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.ConstructorMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.FieldMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.NestableParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.SetMethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
@@ -124,12 +123,8 @@ final class BeanArgumentBinder {
                 current.setValue(argumentResolver.getArgumentConverter().convert(value, current.paramMeta));
             }
 
-            for (FieldMeta fieldMeta : beanMeta.getFields()) {
-                resolveParam(fieldMeta, bean, request, response);
-            }
-
-            for (SetMethodMeta methodMeta : beanMeta.getMethods()) {
-                resolveParam(methodMeta, bean, request, response);
+            for (PropertyMeta propertyMeta : beanMeta.getProperties()) {
+                resolveParam(propertyMeta, bean, request, response);
             }
 
             return bean;
@@ -208,14 +203,9 @@ final class BeanArgumentBinder {
                 return null;
             }
 
-            NestableParameterMeta methodMeta = beanMeta.getMethod(name);
-            if (methodMeta != null) {
-                return createChild(name, methodMeta, v -> methodMeta.setValue(value, v));
-            }
-
-            NestableParameterMeta fieldMeta = beanMeta.getField(name);
-            if (fieldMeta != null) {
-                return createChild(name, fieldMeta, v -> fieldMeta.setValue(value, v));
+            PropertyMeta propertyMeta = beanMeta.getProperty(name);
+            if (propertyMeta != null) {
+                return createChild(name, propertyMeta, v -> propertyMeta.setValue(value, v));
             }
 
             return null;

@@ -20,6 +20,7 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 final class ContextImpl extends AbstractContext implements Context {
 

@@ -71,7 +71,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         registryManager = RegistryManager.getInstance(applicationModel);
-        openAPIService = applicationModel.getFrameworkModel().getBeanFactory().getBean(OpenAPIService.class);
+        openAPIService = applicationModel.getBean(OpenAPIService.class);
         if (openAPIService != null) {
             openAPIService.export();
         }

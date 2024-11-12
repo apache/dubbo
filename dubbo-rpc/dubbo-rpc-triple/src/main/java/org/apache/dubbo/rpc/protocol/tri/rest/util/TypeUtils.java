@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
@@ -61,11 +62,13 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
 public final class TypeUtils {
 
     private static final Set<Class<?>> SIMPLE_TYPES = new ConcurrentHashSet<>();
+    private static final List<String> SYSTEM_PREFIXES = new CopyOnWriteArrayList<>();
 
     static {
         Collections.addAll(
@@ -80,6 +83,8 @@ public final class TypeUtils {
                 Currency.class,
                 Pattern.class,
                 Class.class);
+
+        Collections.addAll(SYSTEM_PREFIXES, "java.", "javax.", "sun.", "com.sun.", "com.google.protobuf.");
     }
 
     private TypeUtils() {}
@@ -110,6 +115,18 @@ public final class TypeUtils {
             return true;
         }
         return false;
+    }
+
+    public static void addSimpleTypes(Class<?>... types) {
+        SIMPLE_TYPES.addAll(Arrays.asList(types));
+    }
+
+    public static List<String> getSystemPrefixes() {
+        return SYSTEM_PREFIXES;
+    }
+
+    public static void addSystemPrefixes(String... prefixes) {
+        SYSTEM_PREFIXES.addAll(Arrays.asList(prefixes));
     }
 
     public static Class<?> getMapValueType(Class<?> targetClass) {

@@ -20,6 +20,7 @@ import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 public interface Context {
 

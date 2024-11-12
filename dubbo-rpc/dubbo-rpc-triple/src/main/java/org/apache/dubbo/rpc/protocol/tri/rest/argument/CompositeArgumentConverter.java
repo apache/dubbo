@@ -22,10 +22,9 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.TypeParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -113,30 +112,5 @@ public final class CompositeArgumentConverter implements ArgumentConverter {
             LOGGER.info("Found suitable ArgumentConverter for [{}], converters: {}", sourceType, result);
             return result;
         });
-    }
-
-    private static final class TypeParameterMeta extends ParameterMeta {
-
-        private final Class<?> type;
-
-        TypeParameterMeta(Class<?> type) {
-            super(null, null);
-            this.type = type;
-        }
-
-        @Override
-        public Class<?> getType() {
-            return type;
-        }
-
-        @Override
-        public Type getGenericType() {
-            return type;
-        }
-
-        @Override
-        protected AnnotatedElement getAnnotatedElement() {
-            return Object.class;
-        }
     }
 }

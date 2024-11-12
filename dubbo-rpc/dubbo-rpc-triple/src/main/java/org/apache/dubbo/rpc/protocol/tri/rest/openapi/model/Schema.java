@@ -85,6 +85,9 @@ public final class Schema extends Node<Schema> {
     private Boolean writeOnly;
     private Boolean deprecated;
 
+    private transient Schema targetSchema;
+    private transient Class<?> javaType;
+
     public String getRef() {
         return ref;
     }
@@ -326,12 +329,19 @@ public final class Schema extends Node<Schema> {
         return properties;
     }
 
+    public Schema getProperty(String name) {
+        return properties == null ? null : properties.get(name);
+    }
+
     public Schema setProperties(Map<String, Schema> properties) {
         this.properties = properties;
         return this;
     }
 
     public Schema addProperty(String name, Schema schema) {
+        if (schema == null) {
+            return this;
+        }
         if (properties == null) {
             properties = new LinkedHashMap<>();
         }
@@ -496,6 +506,24 @@ public final class Schema extends Node<Schema> {
         return this;
     }
 
+    public Schema getTargetSchema() {
+        return targetSchema;
+    }
+
+    public Schema setTargetSchema(Schema targetSchema) {
+        this.targetSchema = targetSchema;
+        return this;
+    }
+
+    public Class<?> getJavaType() {
+        return javaType;
+    }
+
+    public Schema setJavaType(Class<?> javaType) {
+        this.javaType = javaType;
+        return this;
+    }
+
     @Override
     public Schema clone() {
         Schema clone = super.clone();
@@ -520,7 +548,10 @@ public final class Schema extends Node<Schema> {
 
     @Override
     public Map<String, Object> writeTo(Map<String, Object> schema, Context context) {
-        write(schema, "$ref", ref);
+        if (ref != null) {
+            schema.put("$ref", ref);
+            return schema;
+        }
         write(schema, "format", format);
         write(schema, "name", name);
         write(schema, "title", title);
@@ -541,7 +572,9 @@ public final class Schema extends Node<Schema> {
         write(schema, "minProperties", minProperties);
         write(schema, "required", required);
         write(schema, "enum", enumeration);
-        write(schema, "type", type);
+        if (type != null) {
+            write(schema, "type", type.toString());
+        }
         write(schema, "items", items, context);
         write(schema, "properties", properties, context);
         if (additionalPropertiesBoolean == null) {

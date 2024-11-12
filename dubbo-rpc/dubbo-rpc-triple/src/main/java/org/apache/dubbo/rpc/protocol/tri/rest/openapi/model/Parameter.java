@@ -76,7 +76,7 @@ public final class Parameter extends Node<Parameter> {
     private Schema schema;
     private Object example;
     private Map<String, Example> examples;
-    private Map<String, MediaType> content;
+    private Map<String, MediaType> contents;
 
     private transient ParameterMeta meta;
 
@@ -198,26 +198,26 @@ public final class Parameter extends Node<Parameter> {
         return this;
     }
 
-    public Map<String, MediaType> getContent() {
-        return content;
+    public Map<String, MediaType> getContents() {
+        return contents;
     }
 
-    public Parameter setContent(Map<String, MediaType> content) {
-        this.content = content;
+    public Parameter setContents(Map<String, MediaType> contents) {
+        this.contents = contents;
         return this;
     }
 
     public Parameter addContent(String name, MediaType mediaType) {
-        if (content == null) {
-            content = new LinkedHashMap<>();
+        if (contents == null) {
+            contents = new LinkedHashMap<>();
         }
-        content.put(name, mediaType);
+        contents.put(name, mediaType);
         return this;
     }
 
     public Parameter removeContent(String name) {
-        if (content != null) {
-            content.remove(name);
+        if (contents != null) {
+            contents.remove(name);
         }
         return this;
     }
@@ -253,7 +253,7 @@ public final class Parameter extends Node<Parameter> {
         Parameter clone = super.clone();
         clone.schema = clone(schema);
         clone.examples = clone(examples);
-        clone.content = clone(content);
+        clone.contents = clone(contents);
         return clone;
     }
 
@@ -271,7 +271,7 @@ public final class Parameter extends Node<Parameter> {
         write(node, "schema", schema, context);
         write(node, "example", example);
         write(node, "examples", examples, context);
-        write(node, "content", content, context);
+        write(node, "content", contents, context);
         writeExtensions(node);
         return node;
     }

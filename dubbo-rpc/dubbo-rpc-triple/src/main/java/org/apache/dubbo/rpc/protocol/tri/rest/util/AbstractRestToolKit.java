@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.DefaultParameterNameReader;
 import org.apache.dubbo.common.utils.ParameterNameReader;
@@ -46,11 +45,11 @@ public abstract class AbstractRestToolKit implements RestToolKit {
 
     @Override
     public String resolvePlaceholders(String text) {
-        return RestUtils.hasPlaceholder(text) ? getEnvironment().resolvePlaceholders(text) : text;
-    }
-
-    private Environment getEnvironment() {
-        return frameworkModel.defaultApplication().modelEnvironment();
+        return RestUtils.replacePlaceholder(text, k -> frameworkModel
+                .defaultApplication()
+                .modelEnvironment()
+                .getConfiguration()
+                .getString(k));
     }
 
     @Override

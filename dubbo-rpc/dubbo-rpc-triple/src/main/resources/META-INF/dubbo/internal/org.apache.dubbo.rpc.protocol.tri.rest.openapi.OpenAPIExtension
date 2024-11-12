@@ -1,0 +1,1 @@
+resolver-basic=org.apache.dubbo.rpc.protocol.tri.rest.support.basic.BasicOpenAPIDefinitionResolver

@@ -33,41 +33,48 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 public final class BeanMeta {
 
-    private final Map<String, FieldMeta> fields = new LinkedHashMap<>();
-    private final Map<String, SetMethodMeta> methods = new LinkedHashMap<>();
+    private final Class<?> type;
     private final ConstructorMeta constructor;
+    private final Map<String, PropertyMeta> properties = new LinkedHashMap<>();
+
+    public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type, boolean skipConstructor) {
+        this.type = type;
+        constructor = skipConstructor ? null : resolveConstructor(toolKit, null, type);
+        resolveProperties(toolKit, prefix, type);
+    }
+
+    public BeanMeta(RestToolKit toolKit, Class<?> type, boolean skipConstructor) {
+        this(toolKit, null, type, skipConstructor);
+    }
 
     public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type) {
-        constructor = resolveConstructor(toolKit, prefix, type);
-        resolveFieldAndMethod(toolKit, prefix, type);
+        this(toolKit, prefix, type, false);
     }
 
     public BeanMeta(RestToolKit toolKit, Class<?> type) {
-        this(toolKit, null, type);
+        this(toolKit, null, type, false);
     }
 
-    public Collection<FieldMeta> getFields() {
-        return fields.values();
-    }
-
-    public FieldMeta getField(String name) {
-        return fields.get(name);
-    }
-
-    public Collection<SetMethodMeta> getMethods() {
-        return methods.values();
-    }
-
-    public SetMethodMeta getMethod(String name) {
-        return methods.get(name);
+    public Class<?> getType() {
+        return type;
     }
 
     public ConstructorMeta getConstructor() {
         return constructor;
+    }
+
+    public Collection<PropertyMeta> getProperties() {
+        return properties.values();
+    }
+
+    public PropertyMeta getProperty(String name) {
+        return properties.get(name);
     }
 
     public Object newInstance() {
@@ -91,46 +98,66 @@ public final class BeanMeta {
         return new ConstructorMeta(toolKit, prefix, ct);
     }
 
-    private void resolveFieldAndMethod(RestToolKit toolKit, String prefix, Class<?> type) {
-        if (type == Object.class) {
+    private void resolveProperties(RestToolKit toolKit, String prefix, Class<?> type) {
+        if (type == null || type == Object.class) {
             return;
         }
+
+        Set<String> allNames = new LinkedHashSet<>();
+        Map<String, Field> fieldMap = new LinkedHashMap<>();
         for (Field field : type.getDeclaredFields()) {
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
-                continue;
-            }
-            if (field.getAnnotations().length == 0) {
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())) {
                 continue;
             }
             if (!field.isAccessible()) {
                 field.setAccessible(true);
             }
-            FieldMeta fieldMeta = new FieldMeta(toolKit, prefix, field);
-            fields.put(fieldMeta.getName(), fieldMeta);
+            fieldMap.put(field.getName(), field);
+            allNames.add(field.getName());
         }
+        Map<String, Method> getMethodMap = new LinkedHashMap<>();
+        Map<String, Method> setMethodMap = new LinkedHashMap<>();
         for (Method method : type.getDeclaredMethods()) {
-            if (method.getParameterCount() != 1) {
-                continue;
-            }
             int modifiers = method.getModifiers();
             if ((modifiers & (Modifier.PUBLIC | Modifier.ABSTRACT | Modifier.STATIC)) == Modifier.PUBLIC) {
-                Parameter parameter = method.getParameters()[0];
                 String name = method.getName();
-                if (name.length() > 3 && name.startsWith("set")) {
-                    String getMethodName = "get" + name.substring(3);
-                    Method getMethod = null;
-                    try {
-                        getMethod = type.getDeclaredMethod(getMethodName);
-                    } catch (NoSuchMethodException ignored) {
+                int count = method.getParameterCount();
+                if (count == 0) {
+                    Class<?> returnType = method.getReturnType();
+                    if (returnType == Void.TYPE) {
+                        continue;
                     }
-                    name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
-                    SetMethodMeta methodMeta = new SetMethodMeta(toolKit, method, getMethod, parameter, prefix, name);
-                    methods.put(methodMeta.getName(), methodMeta);
+                    if (name.startsWith("get")) {
+                        name = toName(name, 3);
+                        getMethodMap.put(name, method);
+                        allNames.add(name);
+                    } else if (name.startsWith("is") && returnType == Boolean.TYPE) {
+                        name = toName(name, 2);
+                        getMethodMap.put(name, method);
+                        allNames.add(name);
+                    }
+                } else if (count == 1) {
+                    if (name.startsWith("set")) {
+                        name = toName(name, 3);
+                        setMethodMap.put(name, method);
+                        allNames.add(name);
+                    }
                 }
             }
         }
-        resolveFieldAndMethod(toolKit, prefix, type.getSuperclass());
+        for (String name : allNames) {
+            Field field = fieldMap.get(name);
+            Method getMethod = getMethodMap.get(name);
+            Method setMethod = setMethodMap.get(name);
+            PropertyMeta meta = new PropertyMeta(toolKit, field, getMethod, setMethod, prefix, name);
+            properties.put(meta.getName(), meta);
+        }
+
+        resolveProperties(toolKit, prefix, type.getSuperclass());
+    }
+
+    private static String toName(String name, int index) {
+        return Character.toLowerCase(name.charAt(index)) + name.substring(index + 1);
     }
 
     public static final class ConstructorMeta {
@@ -222,11 +249,11 @@ public final class BeanMeta {
             return name;
         }
 
-        public void setValue(Object bean, Object value) {}
-
         public Object getValue(Object bean) {
             return null;
         }
+
+        public void setValue(Object bean, Object value) {}
 
         public final NestableParameterMeta getNestedMeta() {
             return nestedMeta;
@@ -251,104 +278,95 @@ public final class BeanMeta {
         }
     }
 
-    public static final class FieldMeta extends NestableParameterMeta {
+    public static final class PropertyMeta extends NestableParameterMeta {
 
         private final Field field;
-
-        FieldMeta(RestToolKit toolKit, String prefix, Field field) {
-            super(toolKit, prefix, field.getName());
-            this.field = field;
-            initNestedMeta();
-        }
-
-        @Override
-        public Class<?> getType() {
-            return field.getType();
-        }
-
-        @Override
-        public Type getGenericType() {
-            return field.getGenericType();
-        }
-
-        @Override
-        protected AnnotatedElement getAnnotatedElement() {
-            return field;
-        }
-
-        public void setValue(Object bean, Object value) {
-            try {
-                field.set(bean, value);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
-            }
-        }
-
-        public Object getValue(Object bean) {
-            try {
-                return field.get(bean);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
-            }
-        }
-
-        @Override
-        public String getDescription() {
-            return "FieldParameter{" + field + '}';
-        }
-    }
-
-    public static final class SetMethodMeta extends NestableParameterMeta {
-
-        private final Method method;
         private final Method getMethod;
+        private final Method setMethod;
         private final Parameter parameter;
 
-        SetMethodMeta(RestToolKit toolKit, Method m, Method gm, Parameter p, String prefix, String name) {
+        PropertyMeta(RestToolKit toolKit, Field f, Method gm, Method sm, String prefix, String name) {
             super(toolKit, prefix, name);
-            method = m;
+            field = f;
             getMethod = gm;
-            parameter = p;
+            setMethod = sm;
+            parameter = setMethod == null ? null : setMethod.getParameters()[0];
             initNestedMeta();
         }
 
         @Override
         public Class<?> getType() {
-            return parameter.getType();
+            if (field != null) {
+                return field.getType();
+            }
+            if (parameter != null) {
+                return parameter.getType();
+            }
+            return getMethod.getReturnType();
         }
 
         @Override
         public Type getGenericType() {
-            return parameter.getParameterizedType();
+            if (field != null) {
+                return field.getGenericType();
+            }
+            if (parameter != null) {
+                return parameter.getParameterizedType();
+            }
+            return getMethod.getGenericReturnType();
         }
 
         @Override
         protected AnnotatedElement getAnnotatedElement() {
-            return parameter;
-        }
-
-        public void setValue(Object bean, Object value) {
-            try {
-                method.invoke(bean, value);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
+            if (field != null) {
+                return field;
             }
+            if (parameter != null) {
+                return parameter;
+            }
+            return getMethod;
         }
 
         public Object getValue(Object bean) {
-            if (getMethod == null) {
-                return null;
+            if (getMethod != null) {
+                try {
+                    return getMethod.invoke(bean);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
+            } else if (field != null) {
+                try {
+                    return field.get(bean);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
             }
-            try {
-                return getMethod.invoke(bean);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
+            return null;
+        }
+
+        public void setValue(Object bean, Object value) {
+            if (setMethod != null) {
+                try {
+                    setMethod.invoke(bean, value);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
+            } else if (field != null) {
+                try {
+                    field.set(bean, value);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
             }
         }
 
         @Override
         public String getDescription() {
-            return "SetMethodParameter{" + method + '}';
+            return "PropertyMeta{" + (field == null ? (parameter == null ? getMethod : parameter) : field) + '}';
+        }
+
+        public boolean canSetValue() {
+            return setMethod != null || field != null;
         }
     }
 
@@ -376,7 +394,7 @@ public final class BeanMeta {
 
         @Override
         protected AnnotatedElement getAnnotatedElement() {
-            return null;
+            return type;
         }
 
         @Override

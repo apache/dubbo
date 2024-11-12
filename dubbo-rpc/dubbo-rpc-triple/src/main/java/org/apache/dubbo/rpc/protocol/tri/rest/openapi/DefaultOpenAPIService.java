@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -34,11 +35,15 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class DefaultOpenAPIService implements OpenAPIService {
 
     private static final FluentLogger LOG = FluentLogger.of(DefaultOpenAPIService.class);
 
+    private final LRUCache<String, SoftReference<String>> cache = new LRUCache<>(64);
+    private final FrameworkModel frameworkModel;
     private final ExtensionFactory extensionFactory;
     private final DefinitionResolver definitionResolver;
     private final DefinitionMerger definitionMerger;
@@ -46,16 +51,17 @@ public class DefaultOpenAPIService implements OpenAPIService {
     private final DefinitionEncoder definitionEncoder;
     private RequestMappingRegistry requestMappingRegistry;
 
-    private final LRUCache<String, SoftReference<String>> cache;
     private volatile List<OpenAPI> openAPIs;
+    private boolean exported;
+    private ScheduledFuture<?> exportFuture;
 
     public DefaultOpenAPIService(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
         extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         definitionResolver = new DefinitionResolver(frameworkModel);
         definitionMerger = new DefinitionMerger(frameworkModel);
         definitionFilter = new DefinitionFilter(frameworkModel);
         definitionEncoder = new DefinitionEncoder(frameworkModel);
-        cache = new LRUCache<>(64);
     }
 
     public void setRequestMappingRegistry(RequestMappingRegistry requestMappingRegistry) {
@@ -83,6 +89,7 @@ public class DefaultOpenAPIService implements OpenAPIService {
                     .computeIfAbsent(meta.getMethod().getMethod(), k -> new ArrayList<>(1))
                     .add(registration);
         }
+
         List<OpenAPI> openAPIs = new ArrayList<>(byClassMap.size());
         for (Map.Entry<Key, Map<Method, List<Registration>>> entry : byClassMap.entrySet()) {
             OpenAPI openAPI = definitionResolver.resolve(
@@ -92,6 +99,7 @@ public class DefaultOpenAPIService implements OpenAPIService {
             }
         }
         openAPIs.sort(Comparator.comparingInt(OpenAPI::getPriority));
+
         return openAPIs;
     }
 
@@ -115,10 +123,32 @@ public class DefaultOpenAPIService implements OpenAPIService {
         LOG.debug("Refreshing OpenAPI documents");
         openAPIs = null;
         cache.clear();
+        if (exported) {
+            export();
+        }
+        OpenAPIRequest request = new OpenAPIRequest();
+        request.setPretty(true);
+        String openAPI = getDocument(request);
+        LOG.info("Refreshed OpenAPI documents: {}", openAPI);
     }
 
     @Override
     public void export() {
+        if (extensionFactory.getExtensions(DocumentPublisher.class).length == 0) {
+            return;
+        }
+
+        if (exportFuture != null) {
+            exportFuture.cancel(false);
+        }
+        exportFuture = frameworkModel
+                .getBean(FrameworkExecutorRepository.class)
+                .getMetadataRetryExecutor()
+                .schedule(this::doExport, 30, TimeUnit.SECONDS);
+        exported = true;
+    }
+
+    private void doExport() {
         for (DocumentPublisher publisher : extensionFactory.getExtensions(DocumentPublisher.class)) {
             try {
                 publisher.publish(request -> {
@@ -130,6 +160,7 @@ public class DefaultOpenAPIService implements OpenAPIService {
                 LOG.internalWarn("Failed to publish OpenAPI document by {}", publisher, t);
             }
         }
+        exportFuture = null;
     }
 
     private static final class Key {

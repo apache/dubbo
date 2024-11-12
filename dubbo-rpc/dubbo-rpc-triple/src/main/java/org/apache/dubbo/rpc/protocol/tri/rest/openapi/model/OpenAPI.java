@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
 import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Constants;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.ArrayList;
@@ -257,7 +258,7 @@ public final class OpenAPI extends Node<OpenAPI> {
 
     @Override
     public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
-        node.put("openapi", openapi);
+        node.put("openapi", openapi == null ? Constants.VERSION_30 : openapi);
         write(node, "info", info, context);
         write(node, "servers", servers, context);
         write(node, "paths", paths, context);

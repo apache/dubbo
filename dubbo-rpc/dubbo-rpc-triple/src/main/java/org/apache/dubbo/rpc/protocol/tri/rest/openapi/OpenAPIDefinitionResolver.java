@@ -16,9 +16,22 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 
-public interface SchemaProvider<T> extends OpenAPIExtension {
+public interface OpenAPIDefinitionResolver extends OpenAPIExtension {
 
-    Schema getSchema(Class<T> clazz);
+    default boolean hidden(ServiceMeta serviceMeta) {
+        return false;
+    }
+
+    OpenAPI resolve(ServiceMeta serviceMeta);
+
+    default boolean hidden(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
+        return false;
+    }
+
+    Operation resolve(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context);
 }

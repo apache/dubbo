@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,23 +51,22 @@ final class DefinitionResolver {
 
     private static final FluentLogger LOG = FluentLogger.of(DefaultOpenAPIService.class);
 
-    private final List<AnnotationResolver> annotationResolvers;
     private final ExtensionFactory extensionFactory;
     private final ConfigFactory configFactory;
     private final SchemaFactory schemaFactory;
+    private final OpenAPIDefinitionResolver[] resolvers;
 
     DefinitionResolver(FrameworkModel frameworkModel) {
-        annotationResolvers = frameworkModel.getActivateExtensions(AnnotationResolver.class);
         extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
         schemaFactory = frameworkModel.getOrRegisterBean(SchemaFactory.class);
+        resolvers = extensionFactory.getExtensions(OpenAPIDefinitionResolver.class);
     }
 
     public OpenAPI resolve(ServiceMeta serviceMeta, Collection<List<Registration>> registrationsByMethod) {
         OpenAPI openAPI = null;
-        List<AnnotationResolver> resolvers = annotationResolvers;
-        for (int i = 0, size = resolvers.size(); i < size; i++) {
-            AnnotationResolver resolver = resolvers.get(i);
+
+        for (OpenAPIDefinitionResolver resolver : resolvers) {
             if (resolver.hidden(serviceMeta)) {
                 return null;
             }
@@ -75,6 +75,7 @@ final class DefinitionResolver {
                 break;
             }
         }
+
         if (openAPI == null) {
             openAPI = new OpenAPI();
         }
@@ -126,9 +127,8 @@ final class DefinitionResolver {
             ResolveContext context) {
         Operation operation = null;
         Collection<String> httpMethods = null;
-        List<AnnotationResolver> resolvers = annotationResolvers;
-        for (int i = 0, size = resolvers.size(); i < size; i++) {
-            AnnotationResolver resolver = resolvers.get(i);
+
+        for (OpenAPIDefinitionResolver resolver : resolvers) {
             if (resolver.hidden(meta, openAPI, context)) {
                 return false;
             }
@@ -173,6 +173,7 @@ final class DefinitionResolver {
             operation.setMethod(meta);
             resolveOperation(httpMethod, operation, openAPI, meta, mapping);
         }
+
         return true;
     }
 
@@ -236,7 +237,7 @@ final class DefinitionResolver {
         if (name == null) {
             return null;
         }
-        NamingStrategy strategy = extensionFactory.getExtension(NamingStrategy.class, "naming-strategy-" + name);
+        NamingStrategy strategy = extensionFactory.getExtension(NamingStrategy.class, NamingStrategy.PREFIX + name);
         if (strategy == null) {
             return null;
         }
@@ -245,7 +246,7 @@ final class DefinitionResolver {
 
     private void resolveParameter(Parameter parameter, ParameterMeta meta) {
         if (parameter.getSchema() == null) {
-            parameter.setSchema(schemaFactory.getSchema(meta.getActualGenericType()));
+            parameter.setSchema(schemaFactory.getSchema(meta));
         }
     }
 
@@ -298,9 +299,16 @@ final class DefinitionResolver {
                 if (httpStatus >= 400) {
                     content.setSchema(schemaFactory.getSchema(ErrorResponse.class));
                 } else {
-                    content.setSchema(schemaFactory.getSchema(meta.getParameters()));
+                    content.setSchema(schemaFactory.getSchema(meta.getReturnParameter()));
                 }
             }
+        }
+    }
+
+    static final class ResolveContextImpl extends AbstractContext implements ResolveContext {
+
+        ResolveContextImpl(OpenAPI openAPI, SchemaFactory schemaFactory, ExtensionFactory extensionFactory) {
+            super(openAPI, schemaFactory, extensionFactory);
         }
     }
 }

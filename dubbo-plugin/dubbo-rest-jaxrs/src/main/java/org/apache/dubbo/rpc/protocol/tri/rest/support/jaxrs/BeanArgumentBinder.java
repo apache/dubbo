@@ -28,8 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.ConstructorMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.FieldMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.SetMethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
@@ -92,17 +91,10 @@ final class BeanArgumentBinder {
                     bean = constructor.newInstance(args);
                 }
 
-                Set<String> resolved = new HashSet<>();
-                for (FieldMeta fieldMeta : beanMeta.getFields()) {
-                    resolved.add(fieldMeta.getName());
-                    fieldMeta.setValue(bean, resolveArgument(fieldMeta, request, response));
-                }
-
-                for (SetMethodMeta methodMeta : beanMeta.getMethods()) {
-                    if (resolved.contains(methodMeta.getName())) {
-                        continue;
+                for (PropertyMeta propertyMeta : beanMeta.getProperties()) {
+                    if (propertyMeta.canSetValue()) {
+                        propertyMeta.setValue(bean, resolveArgument(propertyMeta, request, response));
                     }
-                    methodMeta.setValue(bean, resolveArgument(methodMeta, request, response));
                 }
 
                 return bean;

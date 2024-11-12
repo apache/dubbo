@@ -18,10 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.lang.Prioritized;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface OpenAPIExtension extends Prioritized {
+public interface OpenAPIExtension {
 
     default String[] getGroups() {
         return null;

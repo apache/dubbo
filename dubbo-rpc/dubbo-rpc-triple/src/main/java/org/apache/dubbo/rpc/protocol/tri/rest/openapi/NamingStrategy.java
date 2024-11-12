@@ -21,6 +21,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
 public interface NamingStrategy extends OpenAPIExtension {
 
+    String PREFIX = "naming-strategy-";
+
     default String generateOperationId(MethodMeta methodMeta, OpenAPI openAPI) {
         return null;
     }

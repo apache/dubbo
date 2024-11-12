@@ -21,6 +21,8 @@ import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.codec.YamlCodec;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.proto.ProtoEncoder;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +42,9 @@ final class DefinitionEncoder {
     }
 
     public String encode(OpenAPI openAPI, OpenAPIRequest request) {
+        if (openAPI == null) {
+            openAPI = new OpenAPI();
+        }
         Map<String, Object> root = new LinkedHashMap<>();
         ContextImpl context = new ContextImpl(openAPI, schemaFactory, extensionFactory, request);
         openAPI.writeTo(root, context);

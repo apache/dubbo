@@ -14,23 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi.proto;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface AnnotationResolver {
+public final class ProtoEncoder {
 
-    boolean hidden(ServiceMeta serviceMeta);
-
-    OpenAPI resolve(ServiceMeta serviceMeta);
-
-    boolean hidden(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context);
-
-    Operation resolve(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context);
+    public String encode(OpenAPI openAPI) {
+        return "";
+    }
 }
