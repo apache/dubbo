@@ -33,7 +33,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     /**
      * extension name -> activate WireProtocol
      */
-    private final Map<String, WireProtocol> protocols;
+    private volatile Map<String, WireProtocol> protocols;
 
     /*
     protocol name --> URL object
@@ -50,21 +50,29 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        ExtensionLoader<WireProtocol> extensionLoader =
-                url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
-        this.protocols = extensionLoader.getActivateExtension(url, new String[0]).stream()
-                .collect(Collectors.toConcurrentMap(extensionLoader::getExtensionName, Function.identity()));
     }
 
     public Map<String, WireProtocol> getProtocols() {
         return protocols;
     }
 
+    @Override
+    protected final void doOpen() {
+        ExtensionLoader<WireProtocol> extensionLoader =
+                getUrl().getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
+        this.protocols = extensionLoader.getActivateExtension(getUrl(), new String[0]).stream()
+                .collect(Collectors.toConcurrentMap(extensionLoader::getExtensionName, Function.identity()));
+
+        doOpen0();
+    }
+
+    protected abstract void doOpen0();
+
     /*
-    This method registers URL object and corresponding channel handler to pu server.
-    In PuServerExchanger.bind, this method is called with ConcurrentHashMap.computeIfPresent to register messages to
-    this supportedUrls and supportedHandlers
-     */
+        This method registers URL object and corresponding channel handler to pu server.
+        In PuServerExchanger.bind, this method is called with ConcurrentHashMap.computeIfPresent to register messages to
+        this supportedUrls and supportedHandlers
+         */
     public void addSupportedProtocol(URL url, ChannelHandler handler) {
         this.supportedUrls.put(url.getProtocol(), url);
         this.supportedHandlers.put(url.getProtocol(), handler);
