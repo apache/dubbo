@@ -33,13 +33,11 @@ import java.util.Map;
 
 public class ContentNegotiator {
 
-    private final FrameworkModel frameworkModel;
     private final CodecUtils codecUtils;
     private Map<String, MediaType> extensionMapping;
     private String parameterName;
 
     public ContentNegotiator(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
         codecUtils = frameworkModel.getOrRegisterBean(CodecUtils.class);
     }
 
@@ -169,7 +167,8 @@ public class ContentNegotiator {
             extensionMapping.put("xhtml", MediaType.TEXT_HTML);
             extensionMapping.put("html", MediaType.TEXT_HTML);
             extensionMapping.put("htm", MediaType.TEXT_HTML);
-            for (String ext : new String[] {"txt", "md", "csv", "log", "properties", "proto"}) {
+            extensionMapping.put("proto", new MediaType(MediaType.TEXT, "proto"));
+            for (String ext : new String[] {"txt", "md", "csv", "log", "properties"}) {
                 extensionMapping.put(ext, MediaType.TEXT_PLAIN);
             }
 

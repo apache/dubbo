@@ -14,22 +14,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
+package org.apache.dubbo.remoting.http12.rest;
 
 import org.apache.dubbo.common.utils.ToStringUtils;
 
 import java.io.Serializable;
 
+/**
+ * OpenAPI request model.
+ */
 public class OpenAPIRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The openAPI group.
+     */
     private String group;
-    private String[] tags;
-    private String service;
+
+    /**
+     * The openAPI tags. Each tag is an or condition.
+     */
+    private String[] tag;
+
+    /**
+     * The openAPI services. Each service is an or condition.
+     */
+    private String[] service;
+
+    /**
+     * The openAPI version.
+     * e.g. 3.0.1, 3.1.0
+     * <p>The default value is '3.0.1' if not set.
+     */
     private String version;
 
+    /**
+     * The format of the response.
+     * <p>The default value is '3.0.1' if not set.
+     */
     private String format;
+
+    /**
+     * Whether to pretty print for json.
+     */
     private Boolean pretty;
 
     public String getGroup() {
@@ -40,19 +68,19 @@ public class OpenAPIRequest implements Serializable {
         this.group = group;
     }
 
-    public String[] getTags() {
-        return tags;
+    public String[] getTag() {
+        return tag;
     }
 
-    public void setTags(String[] tags) {
-        this.tags = tags;
+    public void setTag(String[] tag) {
+        this.tag = tag;
     }
 
-    public String getService() {
+    public String[] getService() {
         return service;
     }
 
-    public void setService(String service) {
+    public void setService(String[] service) {
         this.service = service;
     }
 

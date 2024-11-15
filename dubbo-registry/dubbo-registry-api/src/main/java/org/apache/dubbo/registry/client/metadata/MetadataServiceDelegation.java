@@ -28,8 +28,8 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIRequest;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIService;
 
 import java.util.ArrayList;
@@ -59,7 +59,6 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
-    private final OpenAPIService openAPIService;
     private final ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap =
             new ConcurrentHashMap<>();
     private URL url;
@@ -71,10 +70,6 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         registryManager = RegistryManager.getInstance(applicationModel);
-        openAPIService = applicationModel.getBean(OpenAPIService.class);
-        if (openAPIService != null) {
-            openAPIService.export();
-        }
     }
 
     /**
@@ -225,6 +220,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     @Override
     public String getOpenAPI(OpenAPIRequest request) {
+        OpenAPIService openAPIService = applicationModel.getBean(OpenAPIService.class);
         if (openAPIService == null) {
             throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "OpenAPI is not available");
         }

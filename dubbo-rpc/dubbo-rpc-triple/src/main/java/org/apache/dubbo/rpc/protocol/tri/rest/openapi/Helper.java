@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment;
@@ -38,7 +39,32 @@ import static org.apache.dubbo.remoting.http12.HttpMethods.PUT;
 public final class Helper {
 
     private static final String[][] VERBS_TABLE = {
-        {GET.name(), "get", "load", "fetch", "read", "retrieve", "list", "find", "query", "search", "is"},
+        {
+            GET.name(),
+            "get",
+            "load",
+            "fetch",
+            "read",
+            "retrieve",
+            "obtain",
+            "list",
+            "find",
+            "query",
+            "search",
+            "is",
+            "are",
+            "was",
+            "has",
+            "check",
+            "verify",
+            "test",
+            "can",
+            "should",
+            "need",
+            "allow",
+            "support",
+            "accept"
+        },
         {PUT.name(), "put", "replace"},
         {PATCH.name(), "patch", "update", "modify", "edit", "change", "set"},
         {DELETE.name(), "delete", "remove", "erase", "destroy", "drop"}
@@ -122,6 +148,39 @@ public final class Helper {
             return Constants.VERSION_31;
         }
         return Constants.VERSION_30;
+    }
+
+    public static OpenAPIRequest formatRequest(OpenAPIRequest request) {
+        if (request == null) {
+            return new OpenAPIRequest();
+        }
+        request.setGroup(trim(request.getGroup()));
+
+        String[] tag = trim(request.getTag());
+        if (tag != null) {
+            Arrays.sort(tag);
+        }
+        request.setTag(tag);
+
+        String[] service = trim(request.getService());
+        if (service != null) {
+            Arrays.sort(service);
+        }
+        request.setService(service);
+
+        request.setVersion(trim(request.getVersion()));
+        request.setFormat(trim(request.getFormat()));
+        return request;
+    }
+
+    public static String parseFormat(String contentType) {
+        if (contentType != null) {
+            int index = contentType.indexOf('/');
+            if (index > 0 && contentType.indexOf("htm", index) == -1) {
+                return contentType.substring(index + 1);
+            }
+        }
+        return "json";
     }
 
     public static String trim(String str) {

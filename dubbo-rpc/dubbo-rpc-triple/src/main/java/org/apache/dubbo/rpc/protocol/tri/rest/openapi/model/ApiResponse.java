@@ -94,11 +94,11 @@ public final class ApiResponse extends Node<ApiResponse> {
         return this;
     }
 
-    public ApiResponse addContent(String name, MediaType mediaType) {
+    public ApiResponse addContent(String name, MediaType content) {
         if (contents == null) {
             contents = new LinkedHashMap<>();
         }
-        contents.put(name, mediaType);
+        contents.put(name, content);
         return this;
     }
 

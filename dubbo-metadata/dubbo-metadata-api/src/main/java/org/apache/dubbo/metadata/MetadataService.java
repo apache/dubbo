@@ -19,7 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.remoting.http12.rest.OpenAPI;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIRequest;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +32,7 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_OPENAPI_PREFIX;
 
 /**
  * This service is used to expose the metadata information inside a Dubbo process.
@@ -39,7 +40,7 @@ import static org.apache.dubbo.common.URL.buildKey;
  * 1. The Consumer queries the metadata information of the Provider to list the interfaces and each interface's configuration
  * 2. The Console (dubbo-admin) queries for the metadata of a specific process, or aggregate data of all processes.
  */
-@OpenAPI(hidden = true)
+@OpenAPI(hidden = false)
 public interface MetadataService {
 
     /**
@@ -234,6 +235,6 @@ public interface MetadataService {
     /**
      * 1. Get the openAPI definition
      */
-    @Mapping({"getOpenAPI", "//_meta/openapi"})
+    @Mapping({"getOpenAPI", "//${" + H2_SETTINGS_OPENAPI_PREFIX + ".path:dubbo/openapi}/{*path}"})
     String getOpenAPI(OpenAPIRequest request);
 }

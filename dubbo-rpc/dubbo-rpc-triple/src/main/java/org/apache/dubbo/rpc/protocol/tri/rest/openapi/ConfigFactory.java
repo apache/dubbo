@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_OPENAPI_PREFIX;
+
 public final class ConfigFactory {
 
     private static Map<String, Method> CONFIG_METHODS;
@@ -38,6 +40,15 @@ public final class ConfigFactory {
 
     public ConfigFactory(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
+    }
+
+    public static boolean isOpenAPIEnabled(FrameworkModel frameworkModel) {
+        Environment environment = getEnvironment(frameworkModel);
+        return environment.getConfiguration().getBoolean(H2_SETTINGS_OPENAPI_PREFIX + ".enabled", true);
+    }
+
+    private static Environment getEnvironment(FrameworkModel frameworkModel) {
+        return frameworkModel.defaultApplication().modelEnvironment();
     }
 
     public OpenAPIConfig getConfig(String group) {
@@ -62,20 +73,20 @@ public final class ConfigFactory {
     private Map<String, OpenAPIConfig> readConfigMap() {
         Map<String, OpenAPIConfig> map = new HashMap<>();
 
-        Environment environment = frameworkModel.defaultApplication().modelEnvironment();
+        Environment environment = getEnvironment(frameworkModel);
         Configuration configuration = environment.getConfiguration();
         List<Map<String, String>> configMaps = environment.getConfigurationMaps();
 
         Set<String> allKeys = new HashSet<>();
         for (Map<String, String> configMap : configMaps) {
             for (String key : configMap.keySet()) {
-                if (key.startsWith(Constants.CONFIG_PREFIX)) {
+                if (key.startsWith(H2_SETTINGS_OPENAPI_PREFIX)) {
                     allKeys.add(key);
                 }
             }
         }
 
-        int len = Constants.CONFIG_PREFIX.length();
+        int len = H2_SETTINGS_OPENAPI_PREFIX.length();
         for (String fullKey : allKeys) {
             if (fullKey.length() > len) {
                 char c = fullKey.charAt(len);

@@ -48,6 +48,11 @@ public @interface Mapping {
     String[] value() default {};
 
     /**
+     * A title to explain the purpose of the mapping.
+     **/
+    String title() default "";
+
+    /**
      * Specifies the path patterns to be mapped.
      * If not specified, the method or class name is used as the default.
      */

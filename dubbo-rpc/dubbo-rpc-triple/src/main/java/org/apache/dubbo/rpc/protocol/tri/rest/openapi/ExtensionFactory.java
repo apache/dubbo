@@ -57,6 +57,9 @@ public final class ExtensionFactory {
     }
 
     public <T extends OpenAPIExtension> T[] getExtensions(Class<T> type, String group) {
+        if (group == null) {
+            return getExtensions(type);
+        }
         return (T[]) cache.computeIfAbsent(Pair.of(type, group), k -> {
             List<OpenAPIExtension> list = new ArrayList<>();
             for (OpenAPIExtension extension : extensions) {

@@ -31,7 +31,7 @@ public class OpenAPIConfig implements Serializable {
 
     /**
      * The HTTP path where OpenAPI will be registered.
-     * <p>The default value is 'api-docs'.
+     * <p>The default value is '/dubbo/openapi'.
      */
     private String path;
 

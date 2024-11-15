@@ -16,24 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.config.nested.OpenAPIConfig;
+import org.apache.dubbo.common.utils.Pair;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
-public interface ResolveContext {
+import java.util.function.Function;
 
-    String getGroup();
+public interface OpenAPIDocumentPublisher extends OpenAPIExtension {
 
-    OpenAPI getOpenAPI();
-
-    OpenAPIConfig getConfig();
-
-    SchemaFactory getSchemaFactory();
-
-    ExtensionFactory getExtensionFactory();
-
-    <T> T getAttribute(String name);
-
-    <T> T removeAttribute(String name);
-
-    void setAttribute(String name, Object value);
+    void publish(Function<OpenAPIRequest, Pair<OpenAPI, String>> fn);
 }

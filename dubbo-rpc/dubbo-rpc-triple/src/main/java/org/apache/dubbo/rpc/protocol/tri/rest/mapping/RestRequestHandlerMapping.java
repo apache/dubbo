@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -57,11 +58,12 @@ public final class RestRequestHandlerMapping implements RequestHandlerMapping {
     private final CodecUtils codecUtils;
 
     public RestRequestHandlerMapping(FrameworkModel frameworkModel) {
-        requestMappingRegistry = frameworkModel.getOrRegisterBean(DefaultRequestMappingRegistry.class);
-        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
-        typeConverter = frameworkModel.getOrRegisterBean(GeneralTypeConverter.class);
-        contentNegotiator = frameworkModel.getOrRegisterBean(ContentNegotiator.class);
-        codecUtils = frameworkModel.getOrRegisterBean(CodecUtils.class);
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        requestMappingRegistry = beanFactory.getOrRegisterBean(DefaultRequestMappingRegistry.class);
+        argumentResolver = beanFactory.getOrRegisterBean(CompositeArgumentResolver.class);
+        typeConverter = beanFactory.getOrRegisterBean(GeneralTypeConverter.class);
+        contentNegotiator = beanFactory.getOrRegisterBean(ContentNegotiator.class);
+        codecUtils = beanFactory.getOrRegisterBean(CodecUtils.class);
     }
 
     @Override

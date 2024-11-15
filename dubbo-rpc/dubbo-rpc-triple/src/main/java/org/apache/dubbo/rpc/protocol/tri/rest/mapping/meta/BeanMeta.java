@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.remoting.http12.rest.Param;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -36,8 +37,15 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Message;
 
 public final class BeanMeta {
+
+    private static final boolean HAS_PB = ClassUtils.hasProtobuf();
 
     private final Class<?> type;
     private final ConstructorMeta constructor;
@@ -99,22 +107,39 @@ public final class BeanMeta {
     }
 
     private void resolveProperties(RestToolKit toolKit, String prefix, Class<?> type) {
-        if (type == null || type == Object.class) {
+        if (type == null || type == Object.class || TypeUtils.isSystemType(type)) {
             return;
+        }
+
+        Set<String> pbFields = null;
+        if (HAS_PB && Message.class.isAssignableFrom(type)) {
+            try {
+                Descriptor descriptor =
+                        (Descriptor) type.getMethod("getDescriptor").invoke(null);
+                pbFields = descriptor.getFields().stream()
+                        .map(FieldDescriptor::getName)
+                        .collect(Collectors.toSet());
+            } catch (Exception ignored) {
+            }
         }
 
         Set<String> allNames = new LinkedHashSet<>();
         Map<String, Field> fieldMap = new LinkedHashMap<>();
-        for (Field field : type.getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())) {
-                continue;
+        if (pbFields == null) {
+            for (Field field : type.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())
+                        || Modifier.isTransient(field.getModifiers())
+                        || field.isSynthetic()) {
+                    continue;
+                }
+                if (!field.isAccessible()) {
+                    field.setAccessible(true);
+                }
+                fieldMap.put(field.getName(), field);
+                allNames.add(field.getName());
             }
-            if (!field.isAccessible()) {
-                field.setAccessible(true);
-            }
-            fieldMap.put(field.getName(), field);
-            allNames.add(field.getName());
         }
+
         Map<String, Method> getMethodMap = new LinkedHashMap<>();
         Map<String, Method> setMethodMap = new LinkedHashMap<>();
         for (Method method : type.getDeclaredMethods()) {
@@ -127,17 +152,21 @@ public final class BeanMeta {
                     if (returnType == Void.TYPE) {
                         continue;
                     }
-                    if (name.startsWith("get")) {
+                    if (name.length() > 3 && name.startsWith("get")) {
                         name = toName(name, 3);
-                        getMethodMap.put(name, method);
-                        allNames.add(name);
-                    } else if (name.startsWith("is") && returnType == Boolean.TYPE) {
-                        name = toName(name, 2);
-                        getMethodMap.put(name, method);
-                        allNames.add(name);
+                        if (pbFields == null || pbFields.contains(name)) {
+                            getMethodMap.put(name, method);
+                            allNames.add(name);
+                        }
+                    } else if (name.length() > 2 && name.startsWith("is") && returnType == Boolean.TYPE) {
+                        if (pbFields == null || pbFields.contains(name)) {
+                            name = toName(name, 2);
+                            getMethodMap.put(name, method);
+                            allNames.add(name);
+                        }
                     }
                 } else if (count == 1) {
-                    if (name.startsWith("set")) {
+                    if (name.length() > 3 && name.startsWith("set")) {
                         name = toName(name, 3);
                         setMethodMap.put(name, method);
                         allNames.add(name);
@@ -149,7 +178,10 @@ public final class BeanMeta {
             Field field = fieldMap.get(name);
             Method getMethod = getMethodMap.get(name);
             Method setMethod = setMethodMap.get(name);
-            PropertyMeta meta = new PropertyMeta(toolKit, field, getMethod, setMethod, prefix, name);
+            int visibility = pbFields == null
+                    ? (setMethod == null ? 0 : 1) << 2 | (getMethod == null ? 0 : 1) << 1 | (field == null ? 0 : 1)
+                    : 0b011;
+            PropertyMeta meta = new PropertyMeta(toolKit, field, getMethod, setMethod, prefix, name, visibility);
             properties.put(meta.getName(), meta);
         }
 
@@ -284,14 +316,20 @@ public final class BeanMeta {
         private final Method getMethod;
         private final Method setMethod;
         private final Parameter parameter;
+        private final int visibility;
 
-        PropertyMeta(RestToolKit toolKit, Field f, Method gm, Method sm, String prefix, String name) {
+        PropertyMeta(RestToolKit toolKit, Field f, Method gm, Method sm, String prefix, String name, int visibility) {
             super(toolKit, prefix, name);
+            this.visibility = visibility;
             field = f;
             getMethod = gm;
             setMethod = sm;
             parameter = setMethod == null ? null : setMethod.getParameters()[0];
             initNestedMeta();
+        }
+
+        public int getVisibility() {
+            return visibility;
         }
 
         @Override

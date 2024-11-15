@@ -46,6 +46,11 @@ public @interface Param {
     String value() default "";
 
     /**
+     * A title to explain the purpose of the param.
+     **/
+    String title() default "";
+
+    /**
      * The type of the parameter, such as query, header, or path variable.
      * Defaults to {@link ParamType#Param}.
      */

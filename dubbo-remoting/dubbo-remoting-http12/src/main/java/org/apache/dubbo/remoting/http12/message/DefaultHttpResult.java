@@ -172,6 +172,10 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
             return this;
         }
 
+        public Builder<T> contentType(String value) {
+            return headerIf(HttpHeaderNames.CONTENT_TYPE.getName(), value);
+        }
+
         public Builder<T> from(HttpResult<T> result) {
             status = result.getStatus();
             headers = result.getHeaders() == null ? null : new LinkedHashMap<>(result.getHeaders());

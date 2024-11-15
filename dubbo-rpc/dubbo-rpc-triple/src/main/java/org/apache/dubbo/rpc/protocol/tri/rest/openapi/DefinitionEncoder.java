@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.YamlCodec;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.proto.ProtoEncoder;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -50,9 +50,9 @@ final class DefinitionEncoder {
         openAPI.writeTo(root, context);
 
         String format = request.getFormat();
-        format = format == null ? "json" : format.toLowerCase();
+        format = format == null ? MediaType.JSON : format.toLowerCase();
         switch (format) {
-            case "json":
+            case MediaType.JSON:
                 if (Boolean.TRUE.equals(request.getPretty())) {
                     return JsonUtils.toPrettyJson(root);
                 }
@@ -68,7 +68,7 @@ final class DefinitionEncoder {
                 }
                 return protoEncoder.encode(openAPI);
             default:
-                throw new UnsupportedMediaTypeException("application/" + format);
+                throw new UnsupportedMediaTypeException("text/" + format);
         }
     }
 }

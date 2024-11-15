@@ -47,7 +47,7 @@ public final class Header extends Node<Header> {
     private Schema schema;
     private Object example;
     private Map<String, Example> examples;
-    private Map<String, MediaType> content;
+    private Map<String, MediaType> contents;
 
     public String getDescription() {
         return description;
@@ -140,30 +140,30 @@ public final class Header extends Node<Header> {
         return this;
     }
 
-    public Map<String, MediaType> getContent() {
-        return content;
+    public Map<String, MediaType> getContents() {
+        return contents;
     }
 
     public MediaType getContent(String name) {
-        return content == null ? null : content.get(name);
+        return contents == null ? null : contents.get(name);
     }
 
-    public Header setContent(Map<String, MediaType> content) {
-        this.content = content;
+    public Header setContents(Map<String, MediaType> contents) {
+        this.contents = contents;
         return this;
     }
 
-    public Header addContent(String name, MediaType mediaType) {
-        if (content == null) {
-            content = new LinkedHashMap<>();
+    public Header addContent(String name, MediaType content) {
+        if (contents == null) {
+            contents = new LinkedHashMap<>();
         }
-        content.put(name, mediaType);
+        contents.put(name, content);
         return this;
     }
 
     public Header removeContent(String name) {
-        if (content != null) {
-            content.remove(name);
+        if (contents != null) {
+            contents.remove(name);
         }
         return this;
     }
@@ -173,7 +173,7 @@ public final class Header extends Node<Header> {
         Header clone = super.clone();
         clone.schema = clone(schema);
         clone.examples = clone(examples);
-        clone.content = clone(content);
+        clone.contents = clone(contents);
         return clone;
     }
 
@@ -188,7 +188,7 @@ public final class Header extends Node<Header> {
         write(node, "schema", schema, context);
         write(node, "example", example);
         write(node, "examples", examples, context);
-        write(node, "content", content, context);
+        write(node, "content", contents, context);
         writeExtensions(node);
         return node;
     }

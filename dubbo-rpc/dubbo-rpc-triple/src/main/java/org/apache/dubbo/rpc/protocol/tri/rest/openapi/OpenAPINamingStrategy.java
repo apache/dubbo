@@ -16,24 +16,18 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.config.nested.OpenAPIConfig;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
-public interface ResolveContext {
+public interface OpenAPINamingStrategy extends OpenAPIExtension {
 
-    String getGroup();
+    String PREFIX = "naming-strategy-";
 
-    OpenAPI getOpenAPI();
+    default String generateOperationId(MethodMeta methodMeta, OpenAPI openAPI) {
+        return null;
+    }
 
-    OpenAPIConfig getConfig();
-
-    SchemaFactory getSchemaFactory();
-
-    ExtensionFactory getExtensionFactory();
-
-    <T> T getAttribute(String name);
-
-    <T> T removeAttribute(String name);
-
-    void setAttribute(String name, Object value);
+    default String generateSchemaName(Class<?> type, OpenAPI openAPI) {
+        return null;
+    }
 }

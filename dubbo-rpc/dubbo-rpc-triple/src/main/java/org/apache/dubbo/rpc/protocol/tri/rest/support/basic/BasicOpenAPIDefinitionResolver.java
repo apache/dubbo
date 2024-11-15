@@ -20,14 +20,17 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIDefinitionResolver;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.ResolveContext;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ExternalDocs;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Info;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
 import java.util.Arrays;
@@ -37,17 +40,17 @@ import java.util.Map;
 import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.trim;
 
 @Activate(order = 100)
-public final class BasicOpenAPIDefinitionResolver implements OpenAPIDefinitionResolver {
+public final class BasicOpenAPIDefinitionResolver implements OpenAPIDefinitionResolver, OpenAPISchemaResolver {
 
     @Override
     public boolean hidden(ServiceMeta serviceMeta) {
-        AnnotationMeta<?> openAPI = serviceMeta.getAnnotation(Annotations.OpenAPI);
+        AnnotationMeta<?> openAPI = serviceMeta.findAnnotation(Annotations.OpenAPI);
         return openAPI != null && openAPI.getBoolean("hidden");
     }
 
     @Override
     public OpenAPI resolve(ServiceMeta serviceMeta) {
-        AnnotationMeta<?> openAPI = serviceMeta.getAnnotation(Annotations.OpenAPI);
+        AnnotationMeta<?> openAPI = serviceMeta.findAnnotation(Annotations.OpenAPI);
         if (openAPI == null) {
             return null;
         }
@@ -60,9 +63,9 @@ public final class BasicOpenAPIDefinitionResolver implements OpenAPIDefinitionRe
         }
         model.setGroup(trim(openAPI.getString("group")));
 
-        String title = trim(openAPI.getString("title"));
-        String description = trim(openAPI.getString("description"));
-        String version = trim(openAPI.getString("version"));
+        String title = trim(openAPI.getString("infoTitle"));
+        String description = trim(openAPI.getString("infoDescription"));
+        String version = trim(openAPI.getString("infoVersion"));
         if (title != null || description != null || version != null) {
             model.setInfo(new Info().setTitle(title).setDescription(description).setVersion(version));
         }
@@ -81,13 +84,13 @@ public final class BasicOpenAPIDefinitionResolver implements OpenAPIDefinitionRe
 
     @Override
     public boolean hidden(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
-        AnnotationMeta<?> operation = methodMeta.getAnnotation(Annotations.Operation);
+        AnnotationMeta<?> operation = methodMeta.findAnnotation(Annotations.Operation);
         return operation != null && operation.getBoolean("hidden");
     }
 
     @Override
     public Operation resolve(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
-        AnnotationMeta<?> operation = methodMeta.getAnnotation(Annotations.Operation);
+        AnnotationMeta<?> operation = methodMeta.findAnnotation(Annotations.Operation);
         if (operation == null) {
             return null;
         }
@@ -98,7 +101,7 @@ public final class BasicOpenAPIDefinitionResolver implements OpenAPIDefinitionRe
             model.setHttpMethod(HttpMethods.of(method.toUpperCase()));
         }
 
-        String[] tags = Helper.trim(operation.getStringArray("tags"));
+        String[] tags = trim(operation.getStringArray("tags"));
         if (tags != null) {
             model.setTags(new LinkedHashSet<>(Arrays.asList(tags)));
         }
@@ -110,5 +113,10 @@ public final class BasicOpenAPIDefinitionResolver implements OpenAPIDefinitionRe
         model.setDeprecated(operation.getBoolean("deprecated"));
         model.setExtensions(Helper.toProperties(operation.getStringArray("extensions")));
         return model;
+    }
+
+    @Override
+    public Schema resolve(ParameterMeta parameter, Context context, Chain chain) {
+        return chain.resolve(parameter, context);
     }
 }

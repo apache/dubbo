@@ -14,31 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIExtension;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 
-import java.lang.reflect.Type;
+public interface OpenAPISchemaPredicate extends OpenAPIExtension {
 
-public interface SchemaResolver extends OpenAPIExtension {
+    boolean testClass(Class<?> clazz, ParameterMeta parameter);
 
-    Schema resolve(ParameterMeta parameter, Context context, Chain chain);
-
-    interface Chain {
-
-        Schema resolve(ParameterMeta parameter, Context context);
-    }
-
-    interface Context {
-
-        void defineSchema(String name, Class<?> type, Schema schema);
-
-        void defineSchema(Class<?> type, Schema schema);
-
-        Schema getSchema(ParameterMeta parameter);
-
-        Schema getSchema(Type type);
-    }
+    boolean testProperty(ParameterMeta parameter, BeanMeta bean, PropertyMeta property);
 }

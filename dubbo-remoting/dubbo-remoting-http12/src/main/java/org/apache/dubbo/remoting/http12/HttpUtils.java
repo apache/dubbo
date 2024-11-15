@@ -124,10 +124,10 @@ public final class HttpUtils {
     }
 
     public static List<Locale> parseAcceptLanguage(String header) {
-        List<Item<Locale>> locales = new ArrayList<>();
         if (header == null) {
             return new ArrayList<>();
         }
+        List<Item<Locale>> locales = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
             locales.add(new Item<>(parseLocale(pair[0]), pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F));
@@ -136,10 +136,10 @@ public final class HttpUtils {
     }
 
     public static List<Locale> parseContentLanguage(String header) {
-        List<Locale> locales = new ArrayList<>();
         if (header == null) {
             return new ArrayList<>();
         }
+        List<Locale> locales = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             locales.add(parseLocale(item));
         }
@@ -268,6 +268,9 @@ public final class HttpUtils {
 
         public static <T> List<T> sortAndGet(List<Item<T>> items) {
             int size = items.size();
+            if (size == 0) {
+                return Collections.emptyList();
+            }
             if (size == 1) {
                 return Collections.singletonList(items.get(0).value);
             }

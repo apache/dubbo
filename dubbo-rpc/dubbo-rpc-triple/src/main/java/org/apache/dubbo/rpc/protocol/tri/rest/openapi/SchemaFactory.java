@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.TypeParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.ExtensionFactory;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.Chain;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.Context;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaResolver.Chain;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaResolver.Context;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.lang.reflect.GenericArrayType;
@@ -32,22 +32,24 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.PrimitiveSchema.ARRAY;
-import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.PrimitiveSchema.OBJECT;
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.PrimitiveSchema.ARRAY;
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.PrimitiveSchema.OBJECT;
 
 public final class SchemaFactory {
 
-    private final SchemaResolver[] resolvers;
+    private final OpenAPISchemaResolver[] resolvers;
+    private final OpenAPISchemaPredicate[] predicates;
     private final Map<Class<?>, Optional<Schema>> schemaMap = CollectionUtils.newConcurrentHashMap();
     private final Map<Class<?>, String> nameMap = CollectionUtils.newConcurrentHashMap();
 
     public SchemaFactory(FrameworkModel frameworkModel) {
-        resolvers = frameworkModel.getOrRegisterBean(ExtensionFactory.class).getExtensions(SchemaResolver.class);
+        ExtensionFactory extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
+        resolvers = extensionFactory.getExtensions(OpenAPISchemaResolver.class);
+        predicates = extensionFactory.getExtensions(OpenAPISchemaPredicate.class);
     }
 
     public Map<Class<?>, Optional<Schema>> getSchemaMap() {
@@ -151,13 +153,17 @@ public final class SchemaFactory {
             return existingSchema.map(s -> new Schema().setTargetSchema(s)).orElseGet(OBJECT::newSchema);
         }
 
-        String name = clazz.getName();
-        List<String> systemPrefixes = TypeUtils.getSystemPrefixes();
-        for (int i = 0, size = systemPrefixes.size(); i < size; i++) {
-            if (name.startsWith(systemPrefixes.get(i))) {
-                schemaMap.put(clazz, Optional.empty());
-                return OBJECT.newSchema();
+        if (TypeUtils.isSystemType(clazz)) {
+            schemaMap.put(clazz, Optional.empty());
+            return OBJECT.newSchema();
+        }
+
+        for (OpenAPISchemaPredicate predicate : predicates) {
+            if (predicate.testClass(clazz, parameter)) {
+                continue;
             }
+            schemaMap.put(clazz, Optional.empty());
+            return OBJECT.newSchema();
         }
 
         if (clazz.isEnum()) {
@@ -172,8 +178,19 @@ public final class SchemaFactory {
         Schema beanSchema = OBJECT.newSchema().setJavaType(clazz);
         schemaMap.put(clazz, Optional.of(beanSchema));
         BeanMeta beanMeta = new BeanMeta(parameter.getToolKit(), clazz, true);
-        for (ParameterMeta param : beanMeta.getProperties()) {
-            beanSchema.addProperty(param.getName(), getSchema(param));
+        out:
+        for (PropertyMeta property : beanMeta.getProperties()) {
+            for (OpenAPISchemaPredicate predicate : predicates) {
+                if (predicate.testProperty(parameter, beanMeta, property)) {
+                    continue;
+                }
+                continue out;
+            }
+
+            int visibility = property.getVisibility();
+            if (visibility > 1 && (visibility & 1) == 1) {
+                beanSchema.addProperty(property.getName(), getSchema(property));
+            }
         }
         return new Schema().setTargetSchema(beanSchema);
     }
@@ -182,19 +199,14 @@ public final class SchemaFactory {
         return resolveSchema(nestedType, new TypeParameterMeta(parameter.getToolKit(), nestedType));
     }
 
-    private Schema cacheSchema(Class<?> clazz, Schema schema) {
-        schemaMap.put(clazz, Optional.ofNullable(schema));
-        return schema;
-    }
-
     static final class ChainImpl implements Chain {
 
-        private final SchemaResolver[] resolvers;
+        private final OpenAPISchemaResolver[] resolvers;
         private final Function<ParameterMeta, Schema> fallback;
 
         private int cursor;
 
-        ChainImpl(SchemaResolver[] resolvers, Function<ParameterMeta, Schema> fallback) {
+        ChainImpl(OpenAPISchemaResolver[] resolvers, Function<ParameterMeta, Schema> fallback) {
             this.resolvers = resolvers;
             this.fallback = fallback;
         }

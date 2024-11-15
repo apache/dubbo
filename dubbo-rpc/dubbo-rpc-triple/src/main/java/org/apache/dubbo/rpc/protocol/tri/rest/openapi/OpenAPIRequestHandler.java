@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.common.utils.Pair;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.HttpResult;
 
-import java.util.function.Function;
+public interface OpenAPIRequestHandler extends OpenAPIExtension {
 
-public interface DocumentPublisher extends OpenAPIExtension {
+    default String[] getPaths() {
+        return null;
+    }
 
-    void publish(Function<OpenAPIRequest, Pair<OpenAPI, String>> fn);
+    HttpResult<?> handle(String path, HttpRequest request, HttpResponse response);
 }

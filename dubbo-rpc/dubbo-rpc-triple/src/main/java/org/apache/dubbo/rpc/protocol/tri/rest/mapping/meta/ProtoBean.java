@@ -14,30 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
 
-public class MetadataServiceV2Detector implements BuiltinServiceDetector {
+import java.util.Set;
+import java.util.stream.Collectors;
 
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(MetadataServiceV2Detector.class);
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Message;
 
-    public static final String NAME = "metadataV2";
+final class ProtoBean {
 
-    @Override
-    public Class<?> getService() {
-        if (ClassUtils.hasProtobuf()) {
-            return MetadataServiceV2.class;
+    public static final boolean HAS_PB = ClassUtils.hasProtobuf();
+
+    public static Set<String> getFields(Class<?> clazz) {
+        if (HAS_PB && Message.class.isAssignableFrom(clazz)) {
+            try {
+                Descriptor descriptor =
+                        (Descriptor) clazz.getMethod("getDescriptor").invoke(null);
+                return descriptor.getFields().stream()
+                        .map(FieldDescriptor::getName)
+                        .collect(Collectors.toSet());
+            } catch (Exception ignored) {
+            }
         }
-        logger.info("To use MetadataServiceV2, Protobuf dependencies are required. Fallback to MetadataService(V1).");
         return null;
-    }
-
-    public static boolean support() {
-        return ClassUtils.hasProtobuf();
     }
 }

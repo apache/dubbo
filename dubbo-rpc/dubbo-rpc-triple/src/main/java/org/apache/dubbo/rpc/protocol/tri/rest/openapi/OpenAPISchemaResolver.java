@@ -16,18 +16,28 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 
-public interface NamingStrategy extends OpenAPIExtension {
+import java.lang.reflect.Type;
 
-    String PREFIX = "naming-strategy-";
+public interface OpenAPISchemaResolver extends OpenAPIExtension {
 
-    default String generateOperationId(MethodMeta methodMeta, OpenAPI openAPI) {
-        return null;
+    Schema resolve(ParameterMeta parameter, Context context, Chain chain);
+
+    interface Chain {
+
+        Schema resolve(ParameterMeta parameter, Context context);
     }
 
-    default String generateSchemaName(Class<?> type, OpenAPI openAPI) {
-        return null;
+    interface Context {
+
+        void defineSchema(String name, Class<?> type, Schema schema);
+
+        void defineSchema(Class<?> type, Schema schema);
+
+        Schema getSchema(ParameterMeta parameter);
+
+        Schema getSchema(Type type);
     }
 }

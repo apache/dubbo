@@ -28,6 +28,16 @@ import java.lang.annotation.Target;
 public @interface Operation {
 
     /**
+     * Alias for {@link #summary()}.
+     */
+    String value() default "";
+
+    /**
+     * The operation group.
+     */
+    String group() default "";
+
+    /**
      * The HTTP method for this operation.
      */
     String method() default "";
@@ -38,14 +48,9 @@ public @interface Operation {
     String[] tags() default {};
 
     /**
-     * The operation group.
-     */
-    String group() default "";
-
-    /**
      * The ID of this operation.
      **/
-    String operationId() default "";
+    String id() default "";
 
     /**
      * A brief description of this operation. Should be 120 characters or fewer.

@@ -16,18 +16,19 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 final class ContextImpl extends AbstractContext implements Context {
 
     private final OpenAPIRequest request;
 
-    private HttpRequest httpRequest;
-    private HttpResponse httpResponse;
+    private Holder<HttpRequest> httpRequest;
+    private Holder<HttpResponse> httpResponse;
 
     ContextImpl(OpenAPI openAPI, SchemaFactory schemaFactory, ExtensionFactory extFactory, OpenAPIRequest request) {
         super(openAPI, schemaFactory, extFactory);
@@ -41,17 +42,23 @@ final class ContextImpl extends AbstractContext implements Context {
 
     @Override
     public HttpRequest getHttpRequest() {
-        if (httpRequest == null) {
-            httpRequest = RpcContext.getServiceContext().getRequest(HttpRequest.class);
+        Holder<HttpRequest> holder = httpRequest;
+        if (holder == null) {
+            holder = new Holder<>();
+            holder.set(RpcContext.getServiceContext().getRequest(HttpRequest.class));
+            httpRequest = holder;
         }
-        return httpRequest;
+        return holder.get();
     }
 
     @Override
     public HttpResponse getHttpResponse() {
-        if (httpResponse == null) {
-            httpResponse = RpcContext.getServiceContext().getResponse(HttpResponse.class);
+        Holder<HttpResponse> holder = httpResponse;
+        if (holder == null) {
+            holder = new Holder<>();
+            holder.set(RpcContext.getServiceContext().getResponse(HttpResponse.class));
+            httpResponse = holder;
         }
-        return httpResponse;
+        return holder.get();
     }
 }

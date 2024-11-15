@@ -155,14 +155,17 @@ public final class PathItem extends Node<PathItem> {
 
     @Override
     public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
-        write(node, "$ref", ref);
-        write(node, "summary", summary);
-        write(node, "description", description);
-        for (Map.Entry<HttpMethods, Operation> entry : operations.entrySet()) {
-            write(node, entry.getKey().name().toLowerCase(), entry.getValue(), context);
+        if (ref != null) {
+            write(node, "$ref", ref);
+        } else if (operations != null) {
+            write(node, "summary", summary);
+            write(node, "description", description);
+            for (Map.Entry<HttpMethods, Operation> entry : operations.entrySet()) {
+                write(node, entry.getKey().name().toLowerCase(), entry.getValue(), context);
+            }
+            write(node, "servers", servers, context);
+            write(node, "parameters", parameters, context);
         }
-        write(node, "servers", servers, context);
-        write(node, "parameters", parameters, context);
         writeExtensions(node);
         return node;
     }

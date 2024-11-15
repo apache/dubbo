@@ -207,11 +207,11 @@ public final class Parameter extends Node<Parameter> {
         return this;
     }
 
-    public Parameter addContent(String name, MediaType mediaType) {
+    public Parameter addContent(String name, MediaType content) {
         if (contents == null) {
             contents = new LinkedHashMap<>();
         }
-        contents.put(name, mediaType);
+        contents.put(name, content);
         return this;
     }
 
@@ -260,7 +260,7 @@ public final class Parameter extends Node<Parameter> {
     @Override
     public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         write(node, "name", name);
-        write(node, "in", in);
+        write(node, "in", in.toString());
         write(node, "description", description);
         write(node, "required", required);
         write(node, "deprecated", deprecated);

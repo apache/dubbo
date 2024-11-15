@@ -24,7 +24,5 @@ public final class Constants {
     public static final String DEFAULT_GROUP = "default";
     public static final String GLOBAL_GROUP = "";
 
-    public static final String CONFIG_PREFIX = "dubbo.protocol.triple.rest.openapi";
-
     private Constants() {}
 }

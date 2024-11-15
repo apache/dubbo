@@ -43,14 +43,24 @@ public final class RadixTree<T> {
 
     private final Map<KeyString, List<Match<T>>> directPathMap = new HashMap<>();
     private final Node<T> root = new Node<>();
+    private final char separator;
     private final boolean caseSensitive;
 
-    public RadixTree(boolean caseSensitive) {
+    public RadixTree(boolean caseSensitive, char separator) {
         this.caseSensitive = caseSensitive;
+        this.separator = separator;
+    }
+
+    public RadixTree(boolean caseSensitive) {
+        this(caseSensitive, '/');
+    }
+
+    public RadixTree(char separator) {
+        this(true, separator);
     }
 
     public RadixTree() {
-        caseSensitive = true;
+        this(true, '/');
     }
 
     public T addPath(PathExpression path, T value) {
@@ -87,6 +97,12 @@ public final class RadixTree<T> {
 
     public T addPath(String path, T value) {
         return addPath(PathExpression.parse(PathUtils.normalize(path)), value);
+    }
+
+    public void addPath(T value, String... paths) {
+        for (String path : paths) {
+            addPath(path, value);
+        }
     }
 
     private Node<T> getChild(Node<T> current, PathSegment segment) {
@@ -203,11 +219,43 @@ public final class RadixTree<T> {
         return match(new KeyString(path, caseSensitive));
     }
 
+    public List<Match<T>> matchRelaxed(String path) {
+        KeyString keyPath = new KeyString(path, caseSensitive);
+        List<Match<T>> matches = new ArrayList<>();
+        match(keyPath, matches);
+        if (!matches.isEmpty()) {
+            return matches;
+        }
+
+        int end = path.length();
+        if (end > 1 && path.charAt(end - 1) == '/') {
+            match(keyPath.subSequence(0, --end), matches);
+            if (!matches.isEmpty()) {
+                return matches;
+            }
+        }
+
+        for (int i = end - 1; i >= 0; i--) {
+            char ch = path.charAt(i);
+            if (ch == '/') {
+                break;
+            }
+            if (ch == '.') {
+                match(keyPath.subSequence(0, i), matches);
+                if (!matches.isEmpty()) {
+                    return matches;
+                }
+            }
+        }
+
+        return matches;
+    }
+
     private void matchRecursive(
             Node<T> current, KeyString path, int start, Map<String, String> variableMap, List<Match<T>> matches) {
         int end = -2;
         if (!current.children.isEmpty()) {
-            end = path.indexOf('/', start);
+            end = path.indexOf(separator, start);
             Node<T> child = current.children.get(path.subSequence(start, end));
             if (child != null) {
                 if (end == -1) {
@@ -222,7 +270,7 @@ public final class RadixTree<T> {
             return;
         }
         if (end == -2) {
-            end = path.indexOf('/', start);
+            end = path.indexOf(separator, start);
         }
         Map<String, String> workVariableMap = new LinkedHashMap<>();
         for (Map.Entry<PathSegment, Node<T>> entry : current.fuzzyChildren.entrySet()) {

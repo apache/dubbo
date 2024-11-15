@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema.Type;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Primitive Schema
@@ -56,7 +54,6 @@ public enum PrimitiveSchema {
     ARRAY(Object[].class, Type.ARRAY);
 
     private static final Map<Object, PrimitiveSchema> TYPE_MAPPING = new ConcurrentHashMap<>();
-    private static final List<String> SYSTEM_PREFIXES = new CopyOnWriteArrayList<>();
 
     static {
         for (PrimitiveSchema schema : values()) {

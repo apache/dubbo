@@ -20,16 +20,30 @@ import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.Pair;
+import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.Registration;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -38,9 +52,10 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class DefaultOpenAPIService implements OpenAPIService {
+public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIService {
 
     private static final FluentLogger LOG = FluentLogger.of(DefaultOpenAPIService.class);
+    private static final String API_DOCS = "/api-docs";
 
     private final LRUCache<String, SoftReference<String>> cache = new LRUCache<>(64);
     private final FrameworkModel frameworkModel;
@@ -49,6 +64,7 @@ public class DefaultOpenAPIService implements OpenAPIService {
     private final DefinitionMerger definitionMerger;
     private final DefinitionFilter definitionFilter;
     private final DefinitionEncoder definitionEncoder;
+    private final RadixTree<OpenAPIRequestHandler> tree;
     private RequestMappingRegistry requestMappingRegistry;
 
     private volatile List<OpenAPI> openAPIs;
@@ -62,10 +78,32 @@ public class DefaultOpenAPIService implements OpenAPIService {
         definitionMerger = new DefinitionMerger(frameworkModel);
         definitionFilter = new DefinitionFilter(frameworkModel);
         definitionEncoder = new DefinitionEncoder(frameworkModel);
+        tree = initRequestHandlers();
     }
 
     public void setRequestMappingRegistry(RequestMappingRegistry requestMappingRegistry) {
         this.requestMappingRegistry = requestMappingRegistry;
+    }
+
+    private RadixTree<OpenAPIRequestHandler> initRequestHandlers() {
+        RadixTree<OpenAPIRequestHandler> tree = new RadixTree<>(false);
+        for (OpenAPIRequestHandler handler : extensionFactory.getExtensions(OpenAPIRequestHandler.class)) {
+            for (String path : handler.getPaths()) {
+                tree.addPath(path, handler);
+            }
+        }
+        tree.addPath(this, API_DOCS, API_DOCS + "/{group}");
+        return tree;
+    }
+
+    @Override
+    public HttpResult<?> handle(String path, HttpRequest httpRequest, HttpResponse httpResponse) {
+        OpenAPIRequest request = httpRequest.attribute(OpenAPIRequest.class.getName());
+        request.setGroup(RequestUtils.getPathVariable(httpRequest, "group"));
+        return HttpResult.builder()
+                .contentType(MediaType.APPLICATION + '/' + request.getFormat())
+                .body(handleDocument(request).getBytes(StandardCharsets.UTF_8))
+                .build();
     }
 
     @Override
@@ -105,6 +143,31 @@ public class DefaultOpenAPIService implements OpenAPIService {
 
     @Override
     public String getDocument(OpenAPIRequest request) {
+        request = Helper.formatRequest(request);
+        HttpRequest httpRequest = RpcContext.getServiceContext().getRequest(HttpRequest.class);
+        if (!RequestUtils.isRestRequest(httpRequest)) {
+            return handleDocument(request);
+        }
+
+        String path = RequestUtils.getPathVariable(httpRequest, "path");
+        path = path == null ? API_DOCS : '/' + path;
+        List<Match<OpenAPIRequestHandler>> matches = tree.matchRelaxed(path);
+        if (matches.isEmpty()) {
+            throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
+        }
+
+        Collections.sort(matches);
+        Match<OpenAPIRequestHandler> match = matches.get(0);
+        HttpResponse httpResponse = RpcContext.getServiceContext().getResponse(HttpResponse.class);
+        if (request.getFormat() == null) {
+            request.setFormat(Helper.parseFormat(httpResponse.contentType()));
+        }
+        httpRequest.setAttribute(OpenAPIRequest.class.getName(), request);
+        httpRequest.setAttribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE, match.getVariableMap());
+        throw match.getValue().handle(path, httpRequest, httpResponse).toPayload();
+    }
+
+    private String handleDocument(OpenAPIRequest request) {
         String cacheKey = request.toString();
         SoftReference<String> ref = cache.get(cacheKey);
         if (ref != null) {
@@ -126,15 +189,11 @@ public class DefaultOpenAPIService implements OpenAPIService {
         if (exported) {
             export();
         }
-        OpenAPIRequest request = new OpenAPIRequest();
-        request.setPretty(true);
-        String openAPI = getDocument(request);
-        LOG.info("Refreshed OpenAPI documents: {}", openAPI);
     }
 
     @Override
     public void export() {
-        if (extensionFactory.getExtensions(DocumentPublisher.class).length == 0) {
+        if (extensionFactory.getExtensions(OpenAPIDocumentPublisher.class).length == 0) {
             return;
         }
 
@@ -149,7 +208,7 @@ public class DefaultOpenAPIService implements OpenAPIService {
     }
 
     private void doExport() {
-        for (DocumentPublisher publisher : extensionFactory.getExtensions(DocumentPublisher.class)) {
+        for (OpenAPIDocumentPublisher publisher : extensionFactory.getExtensions(OpenAPIDocumentPublisher.class)) {
             try {
                 publisher.publish(request -> {
                     OpenAPI openAPI = getOpenAPI(request);

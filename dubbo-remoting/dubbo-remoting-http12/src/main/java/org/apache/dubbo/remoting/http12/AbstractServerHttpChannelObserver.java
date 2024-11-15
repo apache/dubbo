@@ -168,7 +168,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (data instanceof HttpResult) {
             HttpResult<?> result = (HttpResult<?>) data;
             if (result.getHeaders() != null) {
-                headers.add(result.getHeaders());
+                headers.set(result.getHeaders());
             }
         }
         customizeHeaders(headers, throwable, message);

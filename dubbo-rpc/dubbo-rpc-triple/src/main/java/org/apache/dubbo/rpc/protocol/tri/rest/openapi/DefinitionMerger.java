@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.remoting.http12.HttpMethods;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ApiResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Components;
@@ -61,11 +62,11 @@ final class DefinitionMerger {
     }
 
     public OpenAPI merge(List<OpenAPI> openAPIs, OpenAPIRequest request) {
-        OpenAPI result = new OpenAPI();
+        OpenAPI model = new OpenAPI().setInfo(new Info());
 
         if (openAPIs.isEmpty()) {
-            applyConfig(result, configFactory.getGlobalConfig());
-            return result;
+            applyConfig(model, configFactory.getGlobalConfig());
+            return model;
         }
 
         String group = trim(request.getGroup());
@@ -74,39 +75,48 @@ final class DefinitionMerger {
         }
         String version = trim(request.getVersion());
         if (version != null) {
-            result.setOpenapi(formatVersion(version));
+            model.setOpenapi(formatVersion(version));
         }
 
-        applyConfig(result, configFactory.getConfig(group));
+        applyConfig(model, configFactory.getConfig(group));
 
-        String[] tags = trim(request.getTags());
-        String service = trim(request.getService());
+        String[] tags = request.getTag();
+        String[] services = request.getService();
         for (OpenAPI api : openAPIs) {
-            if (service != null) {
-                String apiService = api.getService().getServiceInterface();
-                if (apiService != null && !apiService.regionMatches(true, 0, service, 0, service.length())) {
-                    continue;
-                }
+            if (isServiceNotMatch(api.getService().getServiceInterface(), services)) {
+                continue;
             }
 
             if (group.equals(api.getGroup())) {
-                mergeBasic(result, api);
+                mergeBasic(model, api);
             }
 
-            mergePaths(result, api, group, tags);
+            mergePaths(model, api, group, tags);
 
-            mergeSecuritySchemes(result, api);
+            mergeSecuritySchemes(model, api);
 
-            mergeTags(result, api);
+            mergeTags(model, api);
         }
 
-        applyConfig(result, configFactory.getGlobalConfig());
+        applyConfig(model, configFactory.getGlobalConfig());
 
-        addSchemas(result);
+        addSchemas(model);
 
-        cleanup(result);
+        completeModel(model);
 
-        return result;
+        return model;
+    }
+
+    private static boolean isServiceNotMatch(String apiService, String[] services) {
+        if (apiService == null || services == null) {
+            return false;
+        }
+        for (String service : services) {
+            if (apiService.regionMatches(true, 0, service, 0, service.length())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void applyConfig(OpenAPI api, OpenAPIConfig config) {
@@ -119,9 +129,6 @@ final class DefinitionMerger {
         }
 
         Info info = api.getInfo();
-        if (info == null) {
-            api.setInfo(info = new Info());
-        }
         if (info.getTitle() == null) {
             info.setTitle(config.getInfoTitle());
         }
@@ -330,22 +337,8 @@ final class DefinitionMerger {
                         continue;
                     }
 
-                    if (tags != null) {
-                        Set<String> operationTags = fromOperation.getTags();
-                        if (operationTags == null) {
-                            continue;
-                        }
-                        boolean exclude = false;
-                        for (String tag : tags) {
-                            if (operationTags.contains(tag)) {
-                                continue;
-                            }
-                            exclude = true;
-                            break;
-                        }
-                        if (exclude) {
-                            continue;
-                        }
+                    if (isTagNotMatch(tags, fromOperation.getTags())) {
+                        continue;
                     }
 
                     Operation operation = operations.get(httpMethod);
@@ -381,6 +374,18 @@ final class DefinitionMerger {
         }
 
         pathItem.addExtensions(from.getExtensions());
+    }
+
+    private static boolean isTagNotMatch(String[] tags, Set<String> operationTags) {
+        if (tags == null || operationTags == null) {
+            return false;
+        }
+        for (String tag : tags) {
+            if (operationTags.contains(tag)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void mergeSecuritySchemes(OpenAPI api, OpenAPI from) {
@@ -435,7 +440,11 @@ final class DefinitionMerger {
         }
 
         for (PathItem pathItem : api.getPaths().values()) {
-            for (Operation operation : pathItem.getOperations().values()) {
+            Map<HttpMethods, Operation> operations = pathItem.getOperations();
+            if (operations == null) {
+                continue;
+            }
+            for (Operation operation : operations.values()) {
                 List<Parameter> parameters = operation.getParameters();
                 if (parameters != null) {
                     for (Parameter parameter : parameters) {
@@ -444,8 +453,8 @@ final class DefinitionMerger {
                         if (contents == null) {
                             continue;
                         }
-                        for (MediaType mediaType : contents.values()) {
-                            addSchema(mediaType.getSchema(), schemas);
+                        for (MediaType content : contents.values()) {
+                            addSchema(content.getSchema(), schemas);
                         }
                     }
                 }
@@ -455,8 +464,8 @@ final class DefinitionMerger {
                     if (contents == null) {
                         continue;
                     }
-                    for (MediaType mediaType : contents.values()) {
-                        addSchema(mediaType.getSchema(), schemas);
+                    for (MediaType content : contents.values()) {
+                        addSchema(content.getSchema(), schemas);
                     }
                 }
                 Map<String, ApiResponse> responses = operation.getResponses();
@@ -468,13 +477,13 @@ final class DefinitionMerger {
                                 addSchema(header.getSchema(), schemas);
                             }
                         }
-                        
+
                         Map<String, MediaType> contents = response.getContents();
                         if (contents == null) {
                             continue;
                         }
-                        for (MediaType mediaType : contents.values()) {
-                            addSchema(mediaType.getSchema(), schemas);
+                        for (MediaType content : contents.values()) {
+                            addSchema(content.getSchema(), schemas);
                         }
                     }
                 }
@@ -486,28 +495,37 @@ final class DefinitionMerger {
         if (schema == null) {
             return;
         }
-        Schema targetSchema = schema.getTargetSchema();
-        if (targetSchema == null) {
-            return;
-        }
 
-        String name = targetSchema.getJavaType().getName();
-        schema.setRef(name);
-        if (schemas.putIfAbsent(name, targetSchema) != null) {
-            return;
-        }
+        addSchema(schema.getItems(), schemas);
 
-        addSchema(targetSchema.getItems(), schemas);
-
-        Map<String, Schema> properties = targetSchema.getProperties();
+        Map<String, Schema> properties = schema.getProperties();
         if (properties != null) {
             for (Schema property : properties.values()) {
                 addSchema(property, schemas);
             }
         }
 
-        addSchema(targetSchema.getAdditionalPropertiesSchema(), schemas);
+        addSchema(schema.getAdditionalPropertiesSchema(), schemas);
+
+        Schema targetSchema = schema.getTargetSchema();
+        if (targetSchema == null) {
+            return;
+        }
+
+        String name = targetSchema.getJavaType().getSimpleName();
+        schema.setRef("#/components/schemas/" + name);
+        if (schemas.putIfAbsent(name, targetSchema) == null) {
+            addSchema(targetSchema, schemas);
+        }
     }
 
-    private void cleanup(OpenAPI api) {}
+    private void completeModel(OpenAPI api) {
+        Info info = api.getInfo();
+        if (info.getTitle() == null) {
+            info.setTitle("Dubbo OpenAPI");
+        }
+        if (info.getVersion() == null) {
+            info.setVersion("v1");
+        }
+    }
 }

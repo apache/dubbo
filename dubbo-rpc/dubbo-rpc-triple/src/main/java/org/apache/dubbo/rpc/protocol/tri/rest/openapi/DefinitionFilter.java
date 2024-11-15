@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.remoting.http12.HttpMethods;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ApiResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Components;
@@ -30,7 +31,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityScheme;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 import java.util.Iterator;
 import java.util.List;
@@ -235,13 +235,13 @@ final class DefinitionFilter {
 
             filterSchema(header::getSchema, header::setSchema, header, filters, context);
 
-            Map<String, MediaType> contents = header.getContent();
+            Map<String, MediaType> contents = header.getContents();
             if (contents == null) {
                 continue;
             }
 
-            for (MediaType mediaType : contents.values()) {
-                filterSchema(mediaType::getSchema, mediaType::setSchema, mediaType, filters, context);
+            for (MediaType content : contents.values()) {
+                filterSchema(content::getSchema, content::setSchema, content, filters, context);
             }
         }
     }
@@ -251,8 +251,8 @@ final class DefinitionFilter {
             return true;
         }
 
-        for (MediaType mediaType : contents.values()) {
-            filterSchema(mediaType::getSchema, mediaType::setSchema, mediaType, filters, context);
+        for (MediaType content : contents.values()) {
+            filterSchema(content::getSchema, content::setSchema, content, filters, context);
         }
         return false;
     }
@@ -283,7 +283,7 @@ final class DefinitionFilter {
     }
 
     private void filterSchema(
-            Supplier<Schema> getter, Consumer<Schema> setter, Node<?> node, OpenAPIFilter[] filters, Context context) {
+            Supplier<Schema> getter, Consumer<Schema> setter, Node<?> owner, OpenAPIFilter[] filters, Context context) {
         Schema schema = getter.get();
         if (schema == null) {
             return;
@@ -291,7 +291,7 @@ final class DefinitionFilter {
 
         Schema initialSchema = schema;
         for (OpenAPIFilter filter : filters) {
-            schema = filter.filterSchema(schema, node, context);
+            schema = filter.filterSchema(schema, owner, context);
             if (schema == null) {
                 setter.accept(null);
                 return;

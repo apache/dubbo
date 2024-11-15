@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.schema.SchemaFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -96,7 +95,7 @@ final class DefinitionResolver {
                     continue;
                 }
                 for (PathExpression expression : pathCondition.getExpressions()) {
-                    String path = Helper.toPathValue(expression);
+                    String path = expression.toString();
                     PathItem pathItem = openAPI.getOrAddPath(path);
                     String ref = pathItem.getRef();
                     if (ref != null) {
@@ -237,7 +236,8 @@ final class DefinitionResolver {
         if (name == null) {
             return null;
         }
-        NamingStrategy strategy = extensionFactory.getExtension(NamingStrategy.class, NamingStrategy.PREFIX + name);
+        OpenAPINamingStrategy strategy =
+                extensionFactory.getExtension(OpenAPINamingStrategy.class, OpenAPINamingStrategy.PREFIX + name);
         if (strategy == null) {
             return null;
         }
@@ -275,8 +275,10 @@ final class DefinitionResolver {
     private void resolveResponse(
             String httpStatusCode, ApiResponse response, OpenAPI openAPI, MethodMeta meta, RequestMapping mapping) {
         int httpStatus = Integer.parseInt(httpStatusCode);
-        if (httpStatus > 201 && httpStatus < 400) {
+        if (response.getDescription() == null) {
             response.setDescription(HttpUtils.getStatusMessage(httpStatus));
+        }
+        if (httpStatus > 201 && httpStatus < 400) {
             return;
         }
 

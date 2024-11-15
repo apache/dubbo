@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesConditio
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.ConfigFactory;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.DefaultOpenAPIService;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.KeyString;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.MethodWalker;
@@ -77,8 +78,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     private void init(Invoker<?> invoker) {
         contentNegotiator = frameworkModel.getOrRegisterBean(ContentNegotiator.class);
-        openAPIService = frameworkModel.getOrRegisterBean(DefaultOpenAPIService.class);
-        openAPIService.setRequestMappingRegistry(this);
+        if (ConfigFactory.isOpenAPIEnabled(frameworkModel)) {
+            openAPIService = frameworkModel.getOrRegisterBean(DefaultOpenAPIService.class);
+            openAPIService.setRequestMappingRegistry(this);
+        }
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
         restConfig = ConfigManager.getProtocolOrDefault(invoker.getUrl())
                 .getTripleOrDefault()
@@ -225,10 +228,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (candidates.isEmpty()) {
             int end = path.length();
 
-            if (restConfig.getTrailingSlashMatchOrDefault()) {
+            if (end > 1 && restConfig.getTrailingSlashMatchOrDefault()) {
                 if (path.charAt(end - 1) == '/') {
-                    end--;
-                    tryMatch(request, path.subSequence(0, end), candidates, partialMatches);
+                    tryMatch(request, path.subSequence(0, --end), candidates, partialMatches);
                 }
             }
 
@@ -446,7 +448,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     private void onMappingChanged() {
-        openAPIService.refresh();
+        if (openAPIService != null) {
+            openAPIService.refresh();
+        }
     }
 
     private static final class Candidate {

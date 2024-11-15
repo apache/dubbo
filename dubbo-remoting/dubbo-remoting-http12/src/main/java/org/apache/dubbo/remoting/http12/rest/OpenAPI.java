@@ -40,6 +40,16 @@ import java.lang.annotation.Target;
 public @interface OpenAPI {
 
     /**
+     * Alias for {@link #infoTitle()}.
+     */
+    String value() default "";
+
+    /**
+     * The openAPI groups.
+     */
+    String group() default "";
+
+    /**
      * The version of OpenAPI being used.
      * e.g. 3.0.1, 3.1.0
      * <p>The default value is '3.0.1'.
@@ -56,11 +66,6 @@ public @interface OpenAPI {
      * e.g. user=User API
      */
     String[] tags() default {};
-
-    /**
-     * The openAPI groups.
-     */
-    String group() default "";
 
     /**
      * The title of the application.

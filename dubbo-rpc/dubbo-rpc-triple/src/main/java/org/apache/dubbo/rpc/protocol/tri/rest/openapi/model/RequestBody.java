@@ -40,15 +40,15 @@ public final class RequestBody extends Node<RequestBody> {
         return contents;
     }
 
-    public MediaType getContent(String mediaType) {
-        return contents == null ? null : contents.get(mediaType);
+    public MediaType getContent(String content) {
+        return contents == null ? null : contents.get(content);
     }
 
-    public MediaType getOrAddContent(String mediaType) {
+    public MediaType getOrAddContent(String content) {
         if (contents == null) {
             contents = new LinkedHashMap<>();
         }
-        return contents.computeIfAbsent(mediaType, k -> new MediaType());
+        return contents.computeIfAbsent(content, k -> new MediaType());
     }
 
     public RequestBody setContents(Map<String, MediaType> contents) {
@@ -56,11 +56,11 @@ public final class RequestBody extends Node<RequestBody> {
         return this;
     }
 
-    public RequestBody addContent(String name, MediaType mediaType) {
+    public RequestBody addContent(String name, MediaType content) {
         if (contents == null) {
             contents = new LinkedHashMap<>();
         }
-        contents.put(name, mediaType);
+        contents.put(name, content);
         return this;
     }
 

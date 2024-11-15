@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -60,6 +61,7 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -127,6 +129,21 @@ public final class TypeUtils {
 
     public static void addSystemPrefixes(String... prefixes) {
         SYSTEM_PREFIXES.addAll(Arrays.asList(prefixes));
+    }
+
+    public static boolean isSystemType(Class<?> type) {
+        String name = type.getName();
+        List<String> systemPrefixes = TypeUtils.getSystemPrefixes();
+        for (int i = 0, size = systemPrefixes.size(); i < size; i++) {
+            if (name.startsWith(systemPrefixes.get(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isWrapperType(Class<?> type) {
+        return type == Optional.class || type == CompletableFuture.class || type == StreamObserver.class;
     }
 
     public static Class<?> getMapValueType(Class<?> targetClass) {

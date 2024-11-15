@@ -26,10 +26,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import javax.annotation.Nullable;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Optional;
 
 public abstract class ParameterMeta extends AnnotationSupport {
 
@@ -84,7 +82,7 @@ public abstract class ParameterMeta extends AnnotationSupport {
         Class<?> type = actualType;
         if (type == null) {
             type = getType();
-            if (type == Optional.class) {
+            if (TypeUtils.isWrapperType(type)) {
                 type = TypeUtils.getNestedActualType(getGenericType(), 0);
                 if (type == null) {
                     type = Object.class;
@@ -99,8 +97,8 @@ public abstract class ParameterMeta extends AnnotationSupport {
         Type type = actualGenericType;
         if (type == null) {
             type = getGenericType();
-            if (type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == Optional.class) {
-                type = TypeUtils.getNestedGenericType(getGenericType(), 0);
+            if (TypeUtils.isWrapperType(TypeUtils.getActualType(type))) {
+                type = TypeUtils.getNestedGenericType(type, 0);
                 if (type == null) {
                     type = Object.class;
                 }
