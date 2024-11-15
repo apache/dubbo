@@ -59,6 +59,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.UPGRADE_HEADER_KEY;
+
 public class TripleFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleFilter.class);
@@ -86,7 +88,7 @@ public class TripleFilter implements Filter {
                 return;
             }
         } else {
-            if (mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
+            if (!isUpgradeRequest(request) && mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
                 handleHttp1(request, response);
                 return;
             }
@@ -186,6 +188,10 @@ public class TripleFilter implements Filter {
         } catch (Throwable ignored) {
         }
         return 0;
+    }
+
+    private boolean isUpgradeRequest(HttpServletRequest request) {
+        return request.getHeader(UPGRADE_HEADER_KEY) != null;
     }
 
     private static final class TripleAsyncListener implements AsyncListener {

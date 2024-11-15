@@ -22,8 +22,8 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.GreeterWrapperService;
 import org.apache.dubbo.demo.GreeterWrapperServiceImpl;
+import org.apache.dubbo.demo.hello.GreeterWrapperService;
 import org.apache.dubbo.rpc.Constants;
 
 import java.io.IOException;

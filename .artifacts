@@ -35,10 +35,8 @@ dubbo-configcenter-apollo
 dubbo-configcenter-nacos
 dubbo-configcenter-zookeeper
 dubbo-core-spi
-dubbo-dependencies
 dubbo-dependencies-all
 dubbo-dependencies-bom
-dubbo-dependencies-zookeeper-curator5
 dubbo-distribution
 dubbo-filter-cache
 dubbo-filter-validation
@@ -75,6 +73,7 @@ dubbo-remoting
 dubbo-remoting-api
 dubbo-remoting-http12
 dubbo-remoting-http3
+dubbo-remoting-websocket
 dubbo-remoting-netty
 dubbo-remoting-netty4
 dubbo-remoting-zookeeper-curator5
@@ -105,7 +104,6 @@ dubbo-spring-boot-starter
 dubbo-spring-boot-starters
 dubbo-spring-boot-interceptor
 dubbo-nacos-spring-boot-starter
-dubbo-zookeeper-spring-boot-starter
 dubbo-zookeeper-curator5-spring-boot-starter
 dubbo-sentinel-spring-boot-starter
 dubbo-seata-spring-boot-starter
@@ -116,3 +114,4 @@ dubbo-plugin-loom
 dubbo-rest-jaxrs
 dubbo-rest-spring
 dubbo-triple-servlet
+dubbo-triple-websocket

@@ -22,14 +22,13 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.GreeterService;
 import org.apache.dubbo.demo.GreeterServiceImpl;
+import org.apache.dubbo.demo.hello.GreeterService;
 import org.apache.dubbo.rpc.Constants;
 
 import java.util.Collections;
 
 public class ApiProvider {
-
     public static void main(String[] args) {
         ServiceConfig<GreeterService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(GreeterService.class);
