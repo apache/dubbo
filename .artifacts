@@ -37,7 +37,6 @@ dubbo-configcenter-zookeeper
 dubbo-core-spi
 dubbo-dependencies-all
 dubbo-dependencies-bom
-dubbo-distribution
 dubbo-filter-cache
 dubbo-filter-validation
 dubbo-kubernetes
