@@ -102,9 +102,9 @@
       <id>rpc-rest-test</id>
       <dependencies>
         <dependency>
-          <groupId>org.apache.dubbo</groupId>
+          <groupId>org.apache.dubbo.extensions</groupId>
           <artifactId>dubbo-rpc-rest</artifactId>
-          <version>3.3.2-SNAPSHOT</version>
+          <version>3.3.0</version>
           <scope>test</scope>
         </dependency>
       </dependencies>
