@@ -16,12 +16,9 @@
  */
 package org.apache.dubbo.demo.consumer;
 
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.hello.GreeterService;
 import org.apache.dubbo.demo.hello.HelloReply;
@@ -36,9 +33,7 @@ public class ApiConsumer {
     public static void main(String[] args) throws InterruptedException {
         ReferenceConfig<GreeterService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(GreeterService.class);
-        referenceConfig.setCheck(false);
-        referenceConfig.setProtocol(CommonConstants.TRIPLE);
-        referenceConfig.setLazy(true);
+        referenceConfig.setUrl("tri://localhost:50051");
         referenceConfig.setTimeout(100000);
         if (args.length > 0 && Constants.HTTP3_KEY.equals(args[0])) {
             referenceConfig.setParameters(Collections.singletonMap(Constants.HTTP3_KEY, "true"));
@@ -47,8 +42,6 @@ public class ApiConsumer {
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap
                 .application(new ApplicationConfig("dubbo-demo-triple-api-consumer"))
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
                 .reference(referenceConfig)
                 .start();
 

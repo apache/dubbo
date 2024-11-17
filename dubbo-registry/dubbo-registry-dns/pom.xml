@@ -19,32 +19,28 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-parent</artifactId>
+    <artifactId>dubbo-registry</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-registry</artifactId>
-  <packaging>pom</packaging>
+
+  <artifactId>dubbo-registry-dns</artifactId>
+  <packaging>jar</packaging>
   <name>${project.artifactId}</name>
-  <description>The registry module of dubbo project</description>
-  <modules>
-    <module>dubbo-registry-api</module>
-    <module>dubbo-registry-multicast</module>
-    <module>dubbo-registry-zookeeper</module>
-    <module>dubbo-registry-nacos</module>
-    <module>dubbo-registry-multiple</module>
-    <module>dubbo-registry-dns</module>
-  </modules>
+  <description>The DNS registry module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-test-check</artifactId>
+      <artifactId>dubbo-registry-api</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
     </dependency>
   </dependencies>
+
 </project>
