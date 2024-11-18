@@ -96,7 +96,14 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             doOnNext(data);
         } catch (Throwable t) {
             LOGGER.warn(INTERNAL_ERROR, "", "", "Error while doOnNext", t);
-            onError(t);
+            Throwable throwable = t;
+            try {
+                doOnError(throwable);
+            } catch (Throwable t1) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error while doOnError, original error: " + throwable, t1);
+                throwable = t1;
+            }
+            onCompleted(throwable);
         }
     }
 
@@ -105,7 +112,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (closed) {
             return;
         }
-
         try {
             throwable = customizeError(throwable);
             if (throwable == null) {
@@ -122,7 +128,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             LOGGER.warn(INTERNAL_ERROR, "", "", "Error while doOnError, original error: " + throwable, t);
             throwable = t;
         }
-
         onCompleted(throwable);
     }
 
