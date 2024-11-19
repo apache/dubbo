@@ -21,8 +21,13 @@ public final class Constants {
     public static final String VERSION_30 = "3.0.1";
     public static final String VERSION_31 = "3.1.0";
 
+    public static final String ALL_GROUP = "all";
     public static final String DEFAULT_GROUP = "default";
     public static final String GLOBAL_GROUP = "";
+
+    public static final String X_JAVA_TYPE = "x-java-type";
+    public static final String X_JAVA_METHOD = "x-java-method";
+    public static final String X_JAVA_PARAM = "x-java-param";
 
     private Constants() {}
 }

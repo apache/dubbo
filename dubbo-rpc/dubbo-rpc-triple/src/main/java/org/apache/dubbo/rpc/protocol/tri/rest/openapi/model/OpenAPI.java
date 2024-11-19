@@ -43,7 +43,7 @@ public final class OpenAPI extends Node<OpenAPI> {
 
     private transient OpenAPIConfig globalConfig;
     private transient OpenAPIConfig config;
-    private transient ServiceMeta service;
+    private transient ServiceMeta meta;
 
     public String getOpenapi() {
         return openapi;
@@ -234,12 +234,16 @@ public final class OpenAPI extends Node<OpenAPI> {
         return globalConfig == null ? null : fn.apply(globalConfig);
     }
 
-    public ServiceMeta getService() {
-        return service;
+    public String getConfigSetting(String key) {
+        return getConfigValue(config -> config == null ? null : config.getSetting(key));
     }
 
-    public OpenAPI setService(ServiceMeta service) {
-        this.service = service;
+    public ServiceMeta getMeta() {
+        return meta;
+    }
+
+    public OpenAPI setMeta(ServiceMeta meta) {
+        this.meta = meta;
         return this;
     }
 

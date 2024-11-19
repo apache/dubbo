@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 public interface OpenAPISchemaPredicate extends OpenAPIExtension {
 
-    boolean testClass(Class<?> clazz, ParameterMeta parameter);
+    Boolean acceptClass(Class<?> clazz, ParameterMeta parameter);
 
-    boolean testProperty(ParameterMeta parameter, BeanMeta bean, PropertyMeta property);
+    Boolean acceptProperty(ParameterMeta parameter, BeanMeta bean, PropertyMeta property);
 }

@@ -18,8 +18,11 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.basic;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.Param;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.AbstractRestToolKit;
 
@@ -40,5 +43,11 @@ final class BasicRestToolKit extends AbstractRestToolKit {
     @Override
     public Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
         return binder.bind(parameter, request, response);
+    }
+
+    @Override
+    public ParamType getParamType(ParameterMeta parameter) {
+        AnnotationMeta<Param> mapping = parameter.findAnnotation(Param.class);
+        return mapping == null ? null : mapping.getAnnotation().type();
     }
 }

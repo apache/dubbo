@@ -51,22 +51,22 @@ public final class BeanMeta {
     private final ConstructorMeta constructor;
     private final Map<String, PropertyMeta> properties = new LinkedHashMap<>();
 
-    public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type, boolean skipConstructor) {
+    public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
         this.type = type;
-        constructor = skipConstructor ? null : resolveConstructor(toolKit, null, type);
-        resolveProperties(toolKit, prefix, type);
+        constructor = resolveConstructor(toolKit, null, type);
+        resolveProperties(toolKit, prefix, type, flatten);
     }
 
-    public BeanMeta(RestToolKit toolKit, Class<?> type, boolean skipConstructor) {
-        this(toolKit, null, type, skipConstructor);
+    public BeanMeta(RestToolKit toolKit, Class<?> type, boolean flatten) {
+        this(toolKit, null, type, flatten);
     }
 
     public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type) {
-        this(toolKit, prefix, type, false);
+        this(toolKit, prefix, type, true);
     }
 
     public BeanMeta(RestToolKit toolKit, Class<?> type) {
-        this(toolKit, null, type, false);
+        this(toolKit, null, type, true);
     }
 
     public Class<?> getType() {
@@ -74,6 +74,13 @@ public final class BeanMeta {
     }
 
     public ConstructorMeta getConstructor() {
+        return constructor;
+    }
+
+    public ConstructorMeta getConstructorRequired() {
+        if (constructor == null) {
+            throw new IllegalArgumentException("No available default constructor found in " + type);
+        }
         return constructor;
     }
 
@@ -86,7 +93,7 @@ public final class BeanMeta {
     }
 
     public Object newInstance() {
-        return constructor.newInstance();
+        return getConstructorRequired().newInstance();
     }
 
     public static ConstructorMeta resolveConstructor(RestToolKit toolKit, String prefix, Class<?> type) {
@@ -101,12 +108,12 @@ public final class BeanMeta {
             }
         }
         if (ct == null) {
-            throw new IllegalArgumentException("No available default constructor found in " + type);
+            return null;
         }
         return new ConstructorMeta(toolKit, prefix, ct);
     }
 
-    private void resolveProperties(RestToolKit toolKit, String prefix, Class<?> type) {
+    private void resolveProperties(RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
         if (type == null || type == Object.class || TypeUtils.isSystemType(type)) {
             return;
         }
@@ -185,7 +192,9 @@ public final class BeanMeta {
             properties.put(meta.getName(), meta);
         }
 
-        resolveProperties(toolKit, prefix, type.getSuperclass());
+        if (flatten) {
+            resolveProperties(toolKit, prefix, type.getSuperclass(), flatten);
+        }
     }
 
     private static String toName(String name, int index) {

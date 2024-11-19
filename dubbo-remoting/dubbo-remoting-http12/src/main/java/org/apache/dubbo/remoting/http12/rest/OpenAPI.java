@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for defining OpenAPI on Dubbo service interface.
- * Provide metadata such as tags, groups, title, description, version, hidden, and order.
  *
  * <p>Example usage:</p>
  * <pre>
@@ -40,21 +39,9 @@ import java.lang.annotation.Target;
 public @interface OpenAPI {
 
     /**
-     * Alias for {@link #infoTitle()}.
-     */
-    String value() default "";
-
-    /**
      * The openAPI groups.
      */
     String group() default "";
-
-    /**
-     * The version of OpenAPI being used.
-     * e.g. 3.0.1, 3.1.0
-     * <p>The default value is '3.0.1'.
-     */
-    String version() default "";
 
     /**
      * The openAPI tags.

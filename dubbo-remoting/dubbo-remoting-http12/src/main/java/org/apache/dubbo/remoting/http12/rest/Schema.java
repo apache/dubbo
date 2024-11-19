@@ -18,12 +18,27 @@ package org.apache.dubbo.remoting.http12.rest;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
+/**
+ * Annotation for defining a schema in the OpenAPI specification for Dubbo services.
+ *
+ * <p>Example usage:</p>
+ * <pre>
+ * &#64;Schema(title = "User Schema", required = true)
+ * public class User {
+ *     &#64;Schema(title = "User name", example = "Tom")
+ *     private String name;
+ *     ...
+ * }
+ * </pre>
+ */
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 @Documented
 public @interface Schema {
 
@@ -36,6 +51,11 @@ public @interface Schema {
      * The schema group.
      */
     String group() default "";
+
+    /**
+     * The schema version.
+     */
+    String version() default "";
 
     /**
      * The type of the schema.
@@ -111,6 +131,13 @@ public @interface Schema {
      * Whether this schema is written only
      */
     boolean writeOnly() default false;
+
+    /**
+     * Whether to flatten the inherited fields from the parent class into the schema.
+     * If set to {@code true}, the fields from the parent class will be included directly in the schema,
+     * instead of being treated as a separate schema.
+     */
+    boolean flatten() default false;
 
     /**
      * Whether this schema is nullable

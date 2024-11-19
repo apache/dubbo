@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -156,7 +157,7 @@ public final class PathItem extends Node<PathItem> {
     @Override
     public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
         if (ref != null) {
-            write(node, "$ref", ref);
+            write(node, "$ref", Helper.pathToRef(ref));
         } else if (operations != null) {
             write(node, "summary", summary);
             write(node, "description", description);

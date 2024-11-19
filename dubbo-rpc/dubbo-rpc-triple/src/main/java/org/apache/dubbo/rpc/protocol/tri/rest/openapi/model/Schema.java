@@ -27,10 +27,10 @@ import java.util.Map;
 public final class Schema extends Node<Schema> {
 
     public enum Type {
+        STRING("string"),
         INTEGER("integer"),
         NUMBER("number"),
         BOOLEAN("boolean"),
-        STRING("string"),
         OBJECT("object"),
         ARRAY("array");
 
@@ -43,6 +43,15 @@ public final class Schema extends Node<Schema> {
         @Override
         public String toString() {
             return value;
+        }
+
+        public Type of(String value) {
+            for (Type type : values()) {
+                if (type.value.equals(value)) {
+                    return type;
+                }
+            }
+            return STRING;
         }
     }
 
@@ -65,7 +74,7 @@ public final class Schema extends Node<Schema> {
     private Boolean uniqueItems;
     private Integer maxProperties;
     private Integer minProperties;
-    private List<String> required;
+    private Boolean required;
     private List<Object> enumeration;
     private Type type;
     private Schema items;
@@ -85,6 +94,8 @@ public final class Schema extends Node<Schema> {
     private Boolean writeOnly;
     private Boolean deprecated;
 
+    private String group;
+    private String version;
     private transient Schema targetSchema;
     private transient Class<?> javaType;
 
@@ -259,27 +270,12 @@ public final class Schema extends Node<Schema> {
         return this;
     }
 
-    public List<String> getRequired() {
+    public Boolean getRequired() {
         return required;
     }
 
-    public Schema setRequired(List<String> required) {
+    public Schema setRequired(Boolean required) {
         this.required = required;
-        return this;
-    }
-
-    public Schema addRequired(String required) {
-        if (this.required == null) {
-            this.required = new ArrayList<>();
-        }
-        this.required.add(required);
-        return this;
-    }
-
-    public Schema removeRequired(String required) {
-        if (this.required != null) {
-            this.required.remove(required);
-        }
         return this;
     }
 
@@ -506,6 +502,24 @@ public final class Schema extends Node<Schema> {
         return this;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
+    public Schema setGroup(String group) {
+        this.group = group;
+        return this;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public Schema setVersion(String version) {
+        this.version = version;
+        return this;
+    }
+
     public Schema getTargetSchema() {
         return targetSchema;
     }
@@ -527,9 +541,6 @@ public final class Schema extends Node<Schema> {
     @Override
     public Schema clone() {
         Schema clone = super.clone();
-        if (required != null) {
-            clone.required = new ArrayList<>(required);
-        }
         if (enumeration != null) {
             clone.enumeration = new ArrayList<>(enumeration);
         }

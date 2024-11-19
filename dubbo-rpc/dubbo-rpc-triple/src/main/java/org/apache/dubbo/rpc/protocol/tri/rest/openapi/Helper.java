@@ -19,15 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.remoting.http12.rest.ParamType;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathSegment;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.http12.HttpMethods.DELETE;
@@ -72,47 +69,6 @@ public final class Helper {
 
     private Helper() {}
 
-    public static String toPathValue(PathExpression expr) {
-        if (expr.isDirect()) {
-            return expr.getPath();
-        }
-        StringBuilder sb = new StringBuilder(expr.getPath().length());
-        int varIndex = 1;
-        for (PathSegment segment : expr.getSegments()) {
-            sb.append('/');
-            switch (segment.getType()) {
-                case LITERAL:
-                    sb.append(segment.getValue());
-                    break;
-                case WILDCARD_TAIL:
-                    List<String> variables = segment.getVariables();
-                    if (variables == null) {
-                        sb.append("{path}");
-                    } else {
-                        sb.append('{').append(variables.get(0)).append('}');
-                    }
-                    break;
-                case VARIABLE:
-                    sb.append('{');
-                    String value = segment.getValue();
-                    if (value.isEmpty()) {
-                        sb.append("var").append(varIndex++);
-                    } else {
-                        sb.append(value);
-                    }
-                    sb.append('}');
-                    break;
-                case PATTERN:
-                case PATTERN_MULTI:
-                    sb.append('{').append("var").append(varIndex++).append('}');
-                    break;
-                default:
-                    break;
-            }
-        }
-        return sb.toString();
-    }
-
     public static Collection<String> guessHttpMethod(MethodMeta method) {
         String name = method.getMethod().getName();
         for (String[] verbs : VERBS_TABLE) {
@@ -140,7 +96,7 @@ public final class Helper {
         }
     }
 
-    public static String formatVersion(String version) {
+    public static String formatSpecVersion(String version) {
         if (version == null) {
             return null;
         }
@@ -155,6 +111,7 @@ public final class Helper {
             return new OpenAPIRequest();
         }
         request.setGroup(trim(request.getGroup()));
+        request.setVersion(trim(request.getVersion()));
 
         String[] tag = trim(request.getTag());
         if (tag != null) {
@@ -228,5 +185,55 @@ public final class Helper {
             }
         }
         return properties;
+    }
+
+    public static String pathToRef(String path) {
+        StringBuilder sb = new StringBuilder(path.length() + 16);
+        sb.append("#/paths/");
+        for (int i = 0, len = path.length(); i < len; i++) {
+            char c = path.charAt(i);
+            if (c == '/') {
+                sb.append('~').append('1');
+            } else if (c == '~') {
+                sb.append('~').append('0');
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    public static boolean isVersionGreaterOrEqual(String version1, String version2) {
+        int i = 0, j = 0, len1 = version1.length(), len2 = version2.length();
+        while (i < len1 || j < len2) {
+            int num1 = 0;
+            while (i < len1) {
+                char c = version1.charAt(i);
+                if (Character.isDigit(c)) {
+                    num1 = num1 * 10 + (c - '0');
+                } else if (c == '.' || c == '-' || c == '_') {
+                    i++;
+                    break;
+                }
+                i++;
+            }
+
+            int num2 = 0;
+            while (j < len2) {
+                char c = version2.charAt(j);
+                if (Character.isDigit(c)) {
+                    num2 = num2 * 10 + (c - '0');
+                } else if (c == '.' || c == '-' || c == '_') {
+                    j++;
+                    break;
+                }
+                j++;
+            }
+
+            if (num1 < num2) {
+                return false;
+            }
+        }
+        return true;
     }
 }

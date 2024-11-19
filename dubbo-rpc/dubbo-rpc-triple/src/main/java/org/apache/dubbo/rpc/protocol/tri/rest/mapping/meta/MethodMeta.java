@@ -123,8 +123,16 @@ public final class MethodMeta extends AnnotationSupport {
         return method.getReturnType();
     }
 
+    public Class<?> getActualReturnType() {
+        return getReturnParameter().getActualType();
+    }
+
     public Type getGenericReturnType() {
         return method.getGenericReturnType();
+    }
+
+    public Type getActualGenericReturnType() {
+        return getReturnParameter().getActualGenericType();
     }
 
     @Override

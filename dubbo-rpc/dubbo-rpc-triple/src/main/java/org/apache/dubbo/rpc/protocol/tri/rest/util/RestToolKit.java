@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import javax.annotation.Nullable;
@@ -36,6 +37,8 @@ public interface RestToolKit {
     Object convert(Object value, ParameterMeta parameter);
 
     Object bind(ParameterMeta parameter, HttpRequest request, HttpResponse response);
+
+    ParamType getParamType(ParameterMeta parameter);
 
     @Nullable
     String[] getParameterNames(Method method);

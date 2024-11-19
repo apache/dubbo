@@ -83,7 +83,7 @@ final class DefinitionResolver {
         }
         openAPI.setGlobalConfig(configFactory.getGlobalConfig());
         openAPI.setConfig(configFactory.getConfig(openAPI.getGroup()));
-        openAPI.setService(serviceMeta);
+        openAPI.setMeta(serviceMeta);
 
         ResolveContext context = new ResolveContextImpl(openAPI, schemaFactory, extensionFactory);
         for (List<Registration> registrations : registrationsByMethod) {
@@ -102,7 +102,7 @@ final class DefinitionResolver {
                         path = ref;
                         pathItem = openAPI.getOrAddPath(path);
                     }
-                    if (mainPath != null) {
+                    if (mainPath != null && expression.isDirect()) {
                         pathItem.setRef(mainPath);
                         continue;
                     }
@@ -164,20 +164,25 @@ final class DefinitionResolver {
                 }
                 pathItem.addOperation(httpMethod, operation);
             } else {
-                if (existingOperation.getMethod() != null) {
+                if (existingOperation.getMeta() != null) {
                     LOG.internalWarn("Operation already exists, path='{}', httpMethod='{}', method={}", path, hm, meta);
                 }
                 continue;
             }
-            operation.setMethod(meta);
-            resolveOperation(httpMethod, operation, openAPI, meta, mapping);
+            operation.setMeta(meta);
+            resolveOperation(path, httpMethod, operation, openAPI, meta, mapping);
         }
 
         return true;
     }
 
     private void resolveOperation(
-            HttpMethods httpMethod, Operation operation, OpenAPI openAPI, MethodMeta meta, RequestMapping mapping) {
+            String path,
+            HttpMethods httpMethod,
+            Operation operation,
+            OpenAPI openAPI,
+            MethodMeta meta,
+            RequestMapping mapping) {
         if (operation.getOperationId() == null) {
             String operationId = generateOperationId(meta, openAPI);
             operation.setOperationId(operationId == null ? meta.getMethod().getName() : operationId);
@@ -187,6 +192,25 @@ final class DefinitionResolver {
         }
         if (operation.getGroup() == null) {
             operation.setGroup(openAPI.getGroup());
+        }
+
+        for (int i = 0, len = path.length(), start = 0; i < len; i++) {
+            char c = path.charAt(i);
+            if (c == '{') {
+                start = i + 1;
+            } else if (start > 0 && c == '}') {
+                String name = path.substring(start, i);
+                Parameter parameter = operation.getParameter(name, In.PATH);
+                if (parameter == null) {
+                    parameter = new Parameter(name, In.PATH);
+                    operation.addParameter(parameter);
+                }
+                parameter.setRequired(true);
+                if (parameter.getSchema() == null) {
+                    parameter.setSchema(PrimitiveSchema.STRING.newSchema());
+                }
+                start = 0;
+            }
         }
 
         if (CollectionUtils.isEmpty(operation.getParameters())) {
@@ -204,6 +228,7 @@ final class DefinitionResolver {
                     parameter = new Parameter(name, in);
                     operation.addParameter(parameter);
                 }
+                parameter.setMeta(paramMeta);
                 resolveParameter(parameter, paramMeta);
             }
         }

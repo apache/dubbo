@@ -159,11 +159,16 @@ public final class SchemaFactory {
         }
 
         for (OpenAPISchemaPredicate predicate : predicates) {
-            if (predicate.testClass(clazz, parameter)) {
+            Boolean accepted = predicate.acceptClass(clazz, parameter);
+            if (accepted == null) {
                 continue;
             }
-            schemaMap.put(clazz, Optional.empty());
-            return OBJECT.newSchema();
+            if (accepted) {
+                break;
+            } else {
+                schemaMap.put(clazz, Optional.empty());
+                return OBJECT.newSchema();
+            }
         }
 
         if (clazz.isEnum()) {
@@ -180,17 +185,27 @@ public final class SchemaFactory {
         BeanMeta beanMeta = new BeanMeta(parameter.getToolKit(), clazz, true);
         out:
         for (PropertyMeta property : beanMeta.getProperties()) {
+            boolean fallback = true;
             for (OpenAPISchemaPredicate predicate : predicates) {
-                if (predicate.testProperty(parameter, beanMeta, property)) {
+                Boolean accepted = predicate.acceptProperty(parameter, beanMeta, property);
+                if (accepted == null) {
                     continue;
                 }
-                continue out;
+                if (accepted) {
+                    fallback = false;
+                    break;
+                } else {
+                    continue out;
+                }
             }
 
-            int visibility = property.getVisibility();
-            if (visibility > 1 && (visibility & 1) == 1) {
-                beanSchema.addProperty(property.getName(), getSchema(property));
+            if (fallback) {
+                int visibility = property.getVisibility();
+                if ((visibility & 0b001) == 0 || (visibility & 0b110) == 0) {
+                    continue;
+                }
             }
+            beanSchema.addProperty(property.getName(), getSchema(property));
         }
         return new Schema().setTargetSchema(beanSchema);
     }

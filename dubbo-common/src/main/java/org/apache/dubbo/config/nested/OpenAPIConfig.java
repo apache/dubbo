@@ -36,13 +36,6 @@ public class OpenAPIConfig implements Serializable {
     private String path;
 
     /**
-     * The version of OpenAPI being used.
-     * e.g. 3.0.1, 3.1.0
-     * <p>The default value is '3.0.1'.
-     */
-    private String version;
-
-    /**
      * The title of the OpenAPI information.
      */
     private String infoTitle;
@@ -123,17 +116,15 @@ public class OpenAPIConfig implements Serializable {
     private String[] defaultHttpStatusCodes;
 
     /**
+     * Whether to flatten the inherited fields from the parent class into the schema.
+     * <p>The default value is {@code false}.
+     */
+    private Boolean schemaFlatten;
+
+    /**
      * The custom settings.
      */
     private Map<String, String> settings;
-
-    public String getExternalDocsUrl() {
-        return externalDocsUrl;
-    }
-
-    public void setExternalDocsUrl(String externalDocsUrl) {
-        this.externalDocsUrl = externalDocsUrl;
-    }
 
     public Boolean getEnabled() {
         return enabled;
@@ -149,14 +140,6 @@ public class OpenAPIConfig implements Serializable {
 
     public void setPath(String path) {
         this.path = path;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public String getInfoTitle() {
@@ -213,6 +196,14 @@ public class OpenAPIConfig implements Serializable {
 
     public void setExternalDocsDescription(String externalDocsDescription) {
         this.externalDocsDescription = externalDocsDescription;
+    }
+
+    public String getExternalDocsUrl() {
+        return externalDocsUrl;
+    }
+
+    public void setExternalDocsUrl(String externalDocsUrl) {
+        this.externalDocsUrl = externalDocsUrl;
     }
 
     public String[] getServers() {
@@ -277,6 +268,14 @@ public class OpenAPIConfig implements Serializable {
 
     public void setDefaultHttpStatusCodes(String[] defaultHttpStatusCodes) {
         this.defaultHttpStatusCodes = defaultHttpStatusCodes;
+    }
+
+    public Boolean getSchemaFlatten() {
+        return schemaFlatten;
+    }
+
+    public void setSchemaFlatten(Boolean schemaFlatten) {
+        this.schemaFlatten = schemaFlatten;
     }
 
     public Map<String, String> getSettings() {

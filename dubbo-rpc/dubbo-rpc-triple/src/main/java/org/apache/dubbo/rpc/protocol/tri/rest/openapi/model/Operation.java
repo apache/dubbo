@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Constants;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 
@@ -43,8 +44,9 @@ public final class Operation extends Node<Operation> {
     private List<Server> servers;
 
     private String group;
+    private String version;
     private HttpMethods httpMethod;
-    private transient MethodMeta method;
+    private transient MethodMeta meta;
 
     public Set<String> getTags() {
         return tags;
@@ -253,6 +255,15 @@ public final class Operation extends Node<Operation> {
         return this;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public Operation setVersion(String version) {
+        this.version = version;
+        return this;
+    }
+
     public HttpMethods getHttpMethod() {
         return httpMethod;
     }
@@ -262,12 +273,12 @@ public final class Operation extends Node<Operation> {
         return this;
     }
 
-    public MethodMeta getMethod() {
-        return method;
+    public MethodMeta getMeta() {
+        return meta;
     }
 
-    public Operation setMethod(MethodMeta method) {
-        this.method = method;
+    public Operation setMeta(MethodMeta meta) {
+        this.meta = meta;
         return this;
     }
 
@@ -300,6 +311,8 @@ public final class Operation extends Node<Operation> {
         write(node, "security", security, context);
         write(node, "servers", servers, context);
         writeExtensions(node);
+        write(node, Constants.X_JAVA_TYPE, meta.getServiceMeta().getServiceInterface());
+        write(node, Constants.X_JAVA_METHOD, meta.getMethod().getName());
         return node;
     }
 }

@@ -144,6 +144,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
     @Override
     public String getDocument(OpenAPIRequest request) {
         request = Helper.formatRequest(request);
+
         HttpRequest httpRequest = RpcContext.getServiceContext().getRequest(HttpRequest.class);
         if (!RequestUtils.isRestRequest(httpRequest)) {
             return handleDocument(request);

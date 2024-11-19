@@ -22,6 +22,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation for defining an operation in the OpenAPI specification for Dubbo services.
+ *
+ * <p>Example usage:</p>
+ * <pre>
+ * &#64;Operation(method = "GET", summary = "Retrieve user", tags = {"user", "retrieve"})
+ * public User getUser(String id) {
+ *     ...
+ * }
+ * </pre>
+ */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -36,6 +47,11 @@ public @interface Operation {
      * The operation group.
      */
     String group() default "";
+
+    /**
+     * The operation version.
+     */
+    String version() default "";
 
     /**
      * The HTTP method for this operation.

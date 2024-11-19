@@ -60,7 +60,7 @@ final class BeanArgumentBinder {
                 return null;
             }
 
-            ConstructorMeta constructor = beanMeta.getConstructor();
+            ConstructorMeta constructor = beanMeta.getConstructorRequired();
             ParameterMeta[] parameters = constructor.getParameters();
             Object bean;
             int len = parameters.length;

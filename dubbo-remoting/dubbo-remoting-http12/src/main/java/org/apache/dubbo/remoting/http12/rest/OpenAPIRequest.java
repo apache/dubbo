@@ -33,6 +33,12 @@ public class OpenAPIRequest implements Serializable {
     private String group;
 
     /**
+     * The openAPI version, using a major.minor.patch versioning scheme
+     * e.g. 1.0.1
+     */
+    private String version;
+
+    /**
      * The openAPI tags. Each tag is an or condition.
      */
     private String[] tag;
@@ -43,20 +49,21 @@ public class OpenAPIRequest implements Serializable {
     private String[] service;
 
     /**
-     * The openAPI version.
+     * The openAPI specification version, using a major.minor.patch versioning scheme
      * e.g. 3.0.1, 3.1.0
-     * <p>The default value is '3.0.1' if not set.
+     * <p>The default value is '3.0.1'.
      */
-    private String version;
+    private String openapi;
 
     /**
      * The format of the response.
-     * <p>The default value is '3.0.1' if not set.
+     * <p>The default value is 'json'.
      */
     private String format;
 
     /**
      * Whether to pretty print for json.
+     * <p>The default value is {@code false}.
      */
     private Boolean pretty;
 
@@ -66,6 +73,14 @@ public class OpenAPIRequest implements Serializable {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String[] getTag() {
@@ -84,12 +99,12 @@ public class OpenAPIRequest implements Serializable {
         this.service = service;
     }
 
-    public String getVersion() {
-        return version;
+    public String getOpenapi() {
+        return openapi;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public void setOpenapi(String openapi) {
+        this.openapi = openapi;
     }
 
     public String getFormat() {
@@ -104,9 +119,8 @@ public class OpenAPIRequest implements Serializable {
         return pretty;
     }
 
-    public OpenAPIRequest setPretty(Boolean pretty) {
+    public void setPretty(Boolean pretty) {
         this.pretty = pretty;
-        return this;
     }
 
     @Override

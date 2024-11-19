@@ -77,7 +77,7 @@ final class BeanArgumentBinder {
                         Pair.of(paramMeta.getActualType(), prefix),
                         k -> new BeanMeta(paramMeta.getToolKit(), k.getValue(), k.getKey()));
 
-                ConstructorMeta constructor = beanMeta.getConstructor();
+                ConstructorMeta constructor = beanMeta.getConstructorRequired();
                 ParameterMeta[] parameters = constructor.getParameters();
                 Object bean;
                 int len = parameters.length;

@@ -48,9 +48,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.formatVersion;
-import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.trim;
-
 final class DefinitionMerger {
 
     private static final FluentLogger LOG = FluentLogger.of(DefinitionMerger.class);
@@ -62,28 +59,31 @@ final class DefinitionMerger {
     }
 
     public OpenAPI merge(List<OpenAPI> openAPIs, OpenAPIRequest request) {
-        OpenAPI model = new OpenAPI().setInfo(new Info());
+        Info info = new Info();
+        OpenAPI model = new OpenAPI().setInfo(info);
 
         if (openAPIs.isEmpty()) {
             applyConfig(model, configFactory.getGlobalConfig());
             return model;
         }
 
-        String group = trim(request.getGroup());
+        String group = request.getGroup();
+        String version = request.getVersion();
+        String[] tags = request.getTag();
+        String[] services = request.getService();
+
         if (group == null) {
             group = Constants.DEFAULT_GROUP;
         }
-        String version = trim(request.getVersion());
         if (version != null) {
-            model.setOpenapi(formatVersion(version));
+            info.setVersion(version);
         }
+        model.setOpenapi(Helper.formatSpecVersion(request.getOpenapi()));
 
         applyConfig(model, configFactory.getConfig(group));
 
-        String[] tags = request.getTag();
-        String[] services = request.getService();
         for (OpenAPI api : openAPIs) {
-            if (isServiceNotMatch(api.getService().getServiceInterface(), services)) {
+            if (isServiceNotMatch(api.getMeta().getServiceInterface(), services)) {
                 continue;
             }
 
@@ -91,7 +91,7 @@ final class DefinitionMerger {
                 mergeBasic(model, api);
             }
 
-            mergePaths(model, api, group, tags);
+            mergePaths(model, api, group, version, tags);
 
             mergeSecuritySchemes(model, api);
 
@@ -100,32 +100,16 @@ final class DefinitionMerger {
 
         applyConfig(model, configFactory.getGlobalConfig());
 
-        addSchemas(model);
+        addSchemas(model, version, group);
 
         completeModel(model);
 
         return model;
     }
 
-    private static boolean isServiceNotMatch(String apiService, String[] services) {
-        if (apiService == null || services == null) {
-            return false;
-        }
-        for (String service : services) {
-            if (apiService.regionMatches(true, 0, service, 0, service.length())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void applyConfig(OpenAPI api, OpenAPIConfig config) {
         if (config == null) {
             return;
-        }
-
-        if (api.getOpenapi() == null) {
-            api.setOpenapi(formatVersion(config.getVersion()));
         }
 
         Info info = api.getInfo();
@@ -134,6 +118,9 @@ final class DefinitionMerger {
         }
         if (info.getDescription() == null) {
             info.setDescription(config.getInfoDescription());
+        }
+        if (info.getVersion() == null) {
+            info.setVersion(config.getInfoVersion());
         }
 
         Contact contact = info.getContact();
@@ -192,10 +179,6 @@ final class DefinitionMerger {
     }
 
     private void mergeBasic(OpenAPI api, OpenAPI from) {
-        if (api.getOpenapi() == null) {
-            api.setOpenapi(formatVersion(from.getOpenapi()));
-        }
-
         mergeInfo(api, from);
 
         List<Server> fromServers = from.getServers();
@@ -287,7 +270,7 @@ final class DefinitionMerger {
         info.addExtensions(fromInfo.getExtensions());
     }
 
-    private void mergePaths(OpenAPI api, OpenAPI from, String group, String[] tags) {
+    private void mergePaths(OpenAPI api, OpenAPI from, String group, String version, String[] tags) {
         Map<String, PathItem> fromPaths = from.getPaths();
         if (fromPaths == null) {
             return;
@@ -311,11 +294,14 @@ final class DefinitionMerger {
             if (pathItem == null) {
                 paths.put(path, pathItem = new PathItem());
             }
-            mergePathItem(path, pathItem, fromPathItem, group, tags);
+            mergePath(path, pathItem, fromPathItem, group, version, tags);
         }
     }
 
-    private void mergePathItem(String path, PathItem pathItem, PathItem from, String group, String[] tags) {
+    private void mergePath(String path, PathItem pathItem, PathItem from, String group, String version, String[] tags) {
+        if (pathItem.getRef() == null) {
+            pathItem.setRef(from.getRef());
+        }
         if (pathItem.getSummary() == null) {
             pathItem.setSummary(from.getSummary());
         }
@@ -333,23 +319,20 @@ final class DefinitionMerger {
                     HttpMethods httpMethod = entry.getKey();
                     Operation fromOperation = entry.getValue();
 
-                    if (!group.equals(fromOperation.getGroup())) {
-                        continue;
-                    }
-
-                    if (isTagNotMatch(tags, fromOperation.getTags())) {
+                    if (isGroupNotMatch(group, fromOperation.getGroup())
+                            || isVersionNotMatch(version, fromOperation.getVersion())
+                            || isTagNotMatch(tags, fromOperation.getTags())) {
                         continue;
                     }
 
                     Operation operation = operations.get(httpMethod);
                     if (operation == null) {
                         operations.put(httpMethod, fromOperation.clone());
-                    } else if (operation.getMethod() != null) {
+                    } else if (operation.getMeta() != null) {
                         LOG.internalWarn(
                                 "Operation already exists, path='{}', httpMethod='{}', method={}",
                                 path,
-                                httpMethod,
-                                fromOperation.getMethod());
+                                httpMethod, fromOperation.getMeta());
                     }
                 }
             }
@@ -374,6 +357,26 @@ final class DefinitionMerger {
         }
 
         pathItem.addExtensions(from.getExtensions());
+    }
+
+    private static boolean isServiceNotMatch(String apiService, String[] services) {
+        if (apiService == null || services == null) {
+            return false;
+        }
+        for (String service : services) {
+            if (apiService.regionMatches(true, 0, service, 0, service.length())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isGroupNotMatch(String group, String fromGroup) {
+        return !group.equals(Constants.ALL_GROUP) && !group.equals(fromGroup);
+    }
+
+    private static boolean isVersionNotMatch(String version, String fromVersion) {
+        return version != null && fromVersion != null && !Helper.isVersionGreaterOrEqual(fromVersion, version);
     }
 
     private static boolean isTagNotMatch(String[] tags, Set<String> operationTags) {
@@ -429,7 +432,7 @@ final class DefinitionMerger {
         }
     }
 
-    private void addSchemas(OpenAPI api) {
+    private void addSchemas(OpenAPI api, String version, String group) {
         Components components = api.getComponents();
         if (components == null) {
             api.setComponents(components = new Components());
@@ -448,13 +451,13 @@ final class DefinitionMerger {
                 List<Parameter> parameters = operation.getParameters();
                 if (parameters != null) {
                     for (Parameter parameter : parameters) {
-                        addSchema(parameter.getSchema(), schemas);
+                        addSchema(parameter.getSchema(), schemas, group, version);
                         Map<String, MediaType> contents = parameter.getContents();
                         if (contents == null) {
                             continue;
                         }
                         for (MediaType content : contents.values()) {
-                            addSchema(content.getSchema(), schemas);
+                            addSchema(content.getSchema(), schemas, group, version);
                         }
                     }
                 }
@@ -465,7 +468,7 @@ final class DefinitionMerger {
                         continue;
                     }
                     for (MediaType content : contents.values()) {
-                        addSchema(content.getSchema(), schemas);
+                        addSchema(content.getSchema(), schemas, group, version);
                     }
                 }
                 Map<String, ApiResponse> responses = operation.getResponses();
@@ -474,7 +477,7 @@ final class DefinitionMerger {
                         Map<String, Header> headers = response.getHeaders();
                         if (headers != null) {
                             for (Header header : headers.values()) {
-                                addSchema(header.getSchema(), schemas);
+                                addSchema(header.getSchema(), schemas, group, version);
                             }
                         }
 
@@ -483,7 +486,7 @@ final class DefinitionMerger {
                             continue;
                         }
                         for (MediaType content : contents.values()) {
-                            addSchema(content.getSchema(), schemas);
+                            addSchema(content.getSchema(), schemas, group, version);
                         }
                     }
                 }
@@ -491,21 +494,24 @@ final class DefinitionMerger {
         }
     }
 
-    private void addSchema(Schema schema, Map<String, Schema> schemas) {
+    private void addSchema(Schema schema, Map<String, Schema> schemas, String group, String version) {
         if (schema == null) {
             return;
         }
 
-        addSchema(schema.getItems(), schemas);
+        addSchema(schema.getItems(), schemas, group, version);
 
         Map<String, Schema> properties = schema.getProperties();
         if (properties != null) {
             for (Schema property : properties.values()) {
-                addSchema(property, schemas);
+                if (isGroupNotMatch(group, property.getGroup()) || isVersionNotMatch(version, property.getVersion())) {
+                    continue;
+                }
+                addSchema(property, schemas, group, version);
             }
         }
 
-        addSchema(schema.getAdditionalPropertiesSchema(), schemas);
+        addSchema(schema.getAdditionalPropertiesSchema(), schemas, group, version);
 
         Schema targetSchema = schema.getTargetSchema();
         if (targetSchema == null) {
@@ -515,7 +521,7 @@ final class DefinitionMerger {
         String name = targetSchema.getJavaType().getSimpleName();
         schema.setRef("#/components/schemas/" + name);
         if (schemas.putIfAbsent(name, targetSchema) == null) {
-            addSchema(targetSchema, schemas);
+            addSchema(targetSchema, schemas, group, version);
         }
     }
 

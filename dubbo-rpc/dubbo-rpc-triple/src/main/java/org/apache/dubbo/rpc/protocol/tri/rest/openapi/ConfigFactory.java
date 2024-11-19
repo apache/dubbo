@@ -104,6 +104,7 @@ public final class ConfigFactory {
                 applyConfigValue(map, group, key, configuration.getString(fullKey));
             }
         }
+        map.computeIfAbsent(Constants.GLOBAL_GROUP, k -> new OpenAPIConfig());
         return map;
     }
 

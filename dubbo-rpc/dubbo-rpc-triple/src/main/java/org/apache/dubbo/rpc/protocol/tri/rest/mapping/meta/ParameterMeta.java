@@ -112,16 +112,16 @@ public abstract class ParameterMeta extends AnnotationSupport {
         return getToolKit().bind(this, request, response);
     }
 
+    public final ParamType getParamType() {
+        return getToolKit().getParamType(this);
+    }
+
     public int getIndex() {
         return -1;
     }
 
     public String getDescription() {
         return name;
-    }
-
-    public ParamType getParamType() {
-        return ParamType.Param;
     }
 
     public abstract Class<?> getType();
