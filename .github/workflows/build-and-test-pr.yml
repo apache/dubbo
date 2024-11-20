@@ -627,7 +627,7 @@ jobs:
           MVNW="${{ github.workspace }}/dubbo-samples/mvnw ${{ env.MAVEN_ARGS }} -Dmaven.test.skip=true"
           cd ${{ github.workspace }}/dubbo-samples/2-advanced/dubbo-samples-native-image/dubbo-samples-native-image-provider
           $MVNW clean package -P native native:compile
-          nohup ./target/dubbo-samples-native-image-registry-provider &
+          nohup ./target/dubbo-samples-native-image-provider &
           sleep 10
           curl \
             --header "Content-Type: application/json" \
