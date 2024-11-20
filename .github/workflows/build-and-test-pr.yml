@@ -625,10 +625,12 @@ jobs:
       - name: "Compile and run Dubbo native image demo"
         run: |
           MVNW="${{ github.workspace }}/dubbo-samples/mvnw ${{ env.MAVEN_ARGS }} -Dmaven.test.skip=true"
-          cd ${{ github.workspace }}/dubbo-samples/2-advanced/dubbo-samples-native-image-registry/dubbo-samples-native-image-registry-provider
+          cd ${{ github.workspace }}/dubbo-samples/2-advanced/dubbo-samples-native-image/dubbo-samples-native-image-provider
           $MVNW clean package -P native native:compile
           nohup ./target/dubbo-samples-native-image-registry-provider &
-          cd ../dubbo-samples-native-image-registry-consumer
-          $MVNW clean package -P native native:compile
-          ls -l ./target/
-          ./target/dubbo-samples-native-image-registry-consumer
+          sleep 10
+          curl \
+            --header "Content-Type: application/json" \
+            --data '{"name":"Dubbo"}' \
+            http://localhost:50052/org.apache.dubbo.nativeimage.DemoService/sayHello/
+
