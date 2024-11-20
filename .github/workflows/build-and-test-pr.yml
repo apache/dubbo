@@ -636,4 +636,4 @@ jobs:
           # Compile and run Consumer
           cd ../dubbo-samples-native-image-registry-consumer
           $MVNW clean package -P native native:compile
-          ./target/dubbo-samples-native-image-registry-consum
+          ./target/dubbo-samples-native-image-registry-consumer
