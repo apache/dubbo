@@ -90,6 +90,7 @@
     <!-- Common libs -->
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.39</spring_version>
+    <spring_boot_version>2.7.18</spring_boot_version>
     <spring_security_version>5.8.15</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
     <byte-buddy_version>1.15.10</byte-buddy_version>
@@ -108,6 +109,7 @@
     <protobuf-java_version>3.25.5</protobuf-java_version>
     <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
     <servlet_version>3.1.0</servlet_version>
+    <jakarta_websocket_version>2.2.0</jakarta_websocket_version>
     <jakarta_servlet_version>6.1.0</jakarta_servlet_version>
     <jetty_version>9.4.56.v20240826</jetty_version>
     <validation_new_version>3.1.0</validation_new_version>
@@ -121,7 +123,7 @@
     <commons_lang3_version>3.17.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.13.6</micrometer.version>
-    <opentelemetry.version>1.43.0</opentelemetry.version>
+    <opentelemetry.version>1.44.1</opentelemetry.version>
     <zipkin-reporter.version>3.4.2</zipkin-reporter.version>
     <micrometer-tracing.version>1.3.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
@@ -151,7 +153,7 @@
     <log4j2_version>2.24.1</log4j2_version>
     <commons_io_version>2.17.0</commons_io_version>
     <commons-codec_version>1.17.1</commons-codec_version>
-    <groovy_version>4.0.23</groovy_version>
+    <groovy_version>4.0.24</groovy_version>
 
     <!-- Test libs -->
     <junit_jupiter_version>5.11.3</junit_jupiter_version>
@@ -187,7 +189,6 @@
     <open_feign_version>3.1.9</open_feign_version>
     <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
-    <spring-boot.version>2.7.18</spring-boot.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
     <byte-buddy.version>1.15.1</byte-buddy.version>
     <prometheus-client.version>0.16.0</prometheus-client.version>
@@ -259,7 +260,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring-boot.version}</version>
+        <version>${spring_boot_version}</version>
         <type>pom</type>
         <scope>import</scope>
         <exclusions>
@@ -272,7 +273,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-logging</artifactId>
-        <version>${spring-boot.version}</version>
+        <version>${spring_boot_version}</version>
         <exclusions>
           <exclusion>
             <groupId>ch.qos.logback</groupId>
@@ -460,6 +461,18 @@
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>${jakarta_servlet_version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.websocket</groupId>
+        <artifactId>jakarta.websocket-api</artifactId>
+        <version>${jakarta_websocket_version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.websocket</groupId>
+        <artifactId>jakarta.websocket-client-api</artifactId>
+        <version>${jakarta_websocket_version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>

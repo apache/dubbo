@@ -524,9 +524,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: dubbo/
       - name: "Upload coverage to Codecov"
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          version: v0.6.0
           verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
 
   error-code-inspecting:
     needs: check-format

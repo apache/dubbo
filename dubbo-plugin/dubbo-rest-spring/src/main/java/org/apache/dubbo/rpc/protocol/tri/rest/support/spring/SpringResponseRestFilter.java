@@ -87,7 +87,7 @@ public class SpringResponseRestFilter implements RestFilter, Listener {
             ResponseEntity<?> entity = (ResponseEntity<?>) value;
             result.setValue(HttpResult.builder()
                     .body(entity.getBody())
-                    .status(entity.getStatusCode().value())
+                    .status(Helper.getStatusCode(entity))
                     .headers(entity.getHeaders())
                     .build());
             return;

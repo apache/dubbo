@@ -18,6 +18,7 @@ package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.rpc.protocol.tri.ServletExchanger;
 import org.apache.dubbo.rpc.protocol.tri.servlet.jakarta.TripleFilter;
+import org.apache.dubbo.rpc.protocol.tri.websocket.jakarta.TripleWebSocketFilter;
 
 import jakarta.servlet.Filter;
 import org.apache.coyote.ProtocolHandler;
@@ -39,18 +40,20 @@ import org.springframework.context.annotation.Configuration;
 @Conditional(SpringBoot3Condition.class)
 public class DubboTriple3AutoConfiguration {
 
-    public static final String PREFIX = "dubbo.protocol.triple.servlet";
+    public static final String SERVLET_PREFIX = "dubbo.protocol.triple.servlet";
+
+    public static final String WEBSOCKET_PREFIX = "dubbo.protocol.triple.websocket";
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Filter.class)
     @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnProperty(prefix = PREFIX, name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = SERVLET_PREFIX, name = "enabled", havingValue = "true")
     public static class TripleServletConfiguration {
 
         @Bean
         public FilterRegistrationBean<TripleFilter> tripleProtocolFilter(
-                @Value("${" + PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
-                @Value("${" + PREFIX + ".filter-order:-1000000}") int order,
+                @Value("${" + SERVLET_PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
+                @Value("${" + SERVLET_PREFIX + ".filter-order:-1000000}") int order,
                 @Value("${server.port:8080}") int serverPort) {
             ServletExchanger.bindServerPort(serverPort);
             FilterRegistrationBean<TripleFilter> registrationBean = new FilterRegistrationBean<>();
@@ -62,9 +65,9 @@ public class DubboTriple3AutoConfiguration {
 
         @Bean
         @ConditionalOnClass(Http2Protocol.class)
-        @ConditionalOnProperty(prefix = PREFIX, name = "max-concurrent-streams")
+        @ConditionalOnProperty(prefix = SERVLET_PREFIX, name = "max-concurrent-streams")
         public WebServerFactoryCustomizer<ConfigurableTomcatWebServerFactory> tripleTomcatHttp2Customizer(
-                @Value("${" + PREFIX + ".max-concurrent-streams}") int maxConcurrentStreams) {
+                @Value("${" + SERVLET_PREFIX + ".max-concurrent-streams}") int maxConcurrentStreams) {
             return factory -> factory.addConnectorCustomizers(connector -> {
                 ProtocolHandler handler = connector.getProtocolHandler();
                 for (UpgradeProtocol upgradeProtocol : handler.findUpgradeProtocols()) {
@@ -76,6 +79,26 @@ public class DubboTriple3AutoConfiguration {
                     }
                 }
             });
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(Filter.class)
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnProperty(prefix = WEBSOCKET_PREFIX, name = "enabled", havingValue = "true")
+    public static class TripleWebSocketConfiguration {
+
+        @Bean
+        public FilterRegistrationBean<TripleWebSocketFilter> tripleWebSocketFilter(
+                @Value("${" + WEBSOCKET_PREFIX + ".filter-url-patterns:/*}") String[] urlPatterns,
+                @Value("${" + WEBSOCKET_PREFIX + ".filter-order:-1000000}") int order,
+                @Value("${server.port:8080}") int serverPort) {
+            ServletExchanger.bindServerPort(serverPort);
+            FilterRegistrationBean<TripleWebSocketFilter> registrationBean = new FilterRegistrationBean<>();
+            registrationBean.setFilter(new TripleWebSocketFilter());
+            registrationBean.addUrlPatterns(urlPatterns);
+            registrationBean.setOrder(order);
+            return registrationBean;
         }
     }
 }

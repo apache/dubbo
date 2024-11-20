@@ -218,7 +218,7 @@ public class ServiceInstanceMetadataUtils {
                                 applicationModel, Collections.singletonList(getServiceDiscoveryName(serviceDiscovery))),
                         () -> {
                             // register service instance
-                            serviceDiscoveries.forEach(ServiceDiscovery::register);
+                            serviceDiscovery.register();
                             return null;
                         });
             }

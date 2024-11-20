@@ -19,12 +19,29 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
+import org.springframework.core.SpringVersion;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ValueConstants;
 
 final class Helper {
 
+    public static boolean IS_SPRING_6;
+
+    private static Method getStatusCode;
+    private static Method value;
+
     private Helper() {}
+
+    static {
+        try {
+            String version = SpringVersion.getVersion();
+            IS_SPRING_6 = StringUtils.hasLength(version) && version.charAt(0) >= '6';
+        } catch (Throwable ignored) {
+        }
+    }
 
     public static boolean isRequired(AnnotationMeta<Annotation> annotation) {
         return annotation.getBoolean("required");
@@ -40,5 +57,20 @@ final class Helper {
 
     public static String defaultValue(String value) {
         return ValueConstants.DEFAULT_NONE.equals(value) ? null : value;
+    }
+
+    public static int getStatusCode(ResponseEntity<?> entity) {
+        if (IS_SPRING_6) {
+            try {
+                if (getStatusCode == null) {
+                    getStatusCode = ResponseEntity.class.getMethod("getStatusCode");
+                    value = getStatusCode.getReturnType().getMethod("value");
+                }
+                return (Integer) value.invoke(getStatusCode.invoke(entity));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return entity.getStatusCode().value();
     }
 }
