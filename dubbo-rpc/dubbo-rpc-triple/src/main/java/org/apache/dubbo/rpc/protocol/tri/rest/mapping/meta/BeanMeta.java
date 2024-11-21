@@ -43,7 +43,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
-public final class BeanMeta {
+public final class BeanMeta extends ParameterMeta {
 
     private static final boolean HAS_PB = ClassUtils.hasProtobuf();
 
@@ -52,6 +52,7 @@ public final class BeanMeta {
     private final Map<String, PropertyMeta> properties = new LinkedHashMap<>();
 
     public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
+        super(toolKit, prefix, null);
         this.type = type;
         constructor = resolveConstructor(toolKit, null, type);
         resolveProperties(toolKit, prefix, type, flatten);
@@ -69,7 +70,18 @@ public final class BeanMeta {
         this(toolKit, null, type, true);
     }
 
+    @Override
     public Class<?> getType() {
+        return type;
+    }
+
+    @Override
+    public Type getGenericType() {
+        return type;
+    }
+
+    @Override
+    protected AnnotatedElement getAnnotatedElement() {
         return type;
     }
 
@@ -193,7 +205,7 @@ public final class BeanMeta {
         }
 
         if (flatten) {
-            resolveProperties(toolKit, prefix, type.getSuperclass(), flatten);
+            resolveProperties(toolKit, prefix, type.getSuperclass(), true);
         }
     }
 
@@ -218,9 +230,11 @@ public final class BeanMeta {
         private ConstructorParameterMeta[] initParameters(RestToolKit toolKit, String prefix, Constructor<?> ct) {
             Parameter[] cps = ct.getParameters();
             int len = cps.length;
+            String[] parameterNames = toolKit == null ? null : toolKit.getParameterNames(ct);
             ConstructorParameterMeta[] parameters = new ConstructorParameterMeta[len];
             for (int i = 0; i < len; i++) {
-                parameters[i] = new ConstructorParameterMeta(toolKit, cps[i], prefix);
+                String parameterName = parameterNames == null ? null : parameterNames[i];
+                parameters[i] = new ConstructorParameterMeta(toolKit, cps[i], prefix, parameterName);
             }
             return parameters;
         }
@@ -238,8 +252,8 @@ public final class BeanMeta {
 
         private final Parameter parameter;
 
-        ConstructorParameterMeta(RestToolKit toolKit, Parameter parameter, String prefix) {
-            super(toolKit, prefix, parameter.isNamePresent() ? parameter.getName() : null);
+        ConstructorParameterMeta(RestToolKit toolKit, Parameter parameter, String prefix, String name) {
+            super(toolKit, prefix, name == null && parameter.isNamePresent() ? parameter.getName() : name);
             this.parameter = parameter;
         }
 
@@ -339,6 +353,22 @@ public final class BeanMeta {
 
         public int getVisibility() {
             return visibility;
+        }
+
+        public Field getField() {
+            return field;
+        }
+
+        public Method getGetMethod() {
+            return getMethod;
+        }
+
+        public Method getSetMethod() {
+            return setMethod;
+        }
+
+        public Parameter getParameter() {
+            return parameter;
         }
 
         @Override

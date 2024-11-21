@@ -74,6 +74,11 @@ public class GreeterServiceImpl implements GreeterService {
         };
     }
 
+    @Override
+    public Animal createAnimal(Cat cat, Dog dog) {
+        return cat;
+    }
+
     private static HelloReply toReply(String message) {
         HelloReply reply = new HelloReply();
         reply.setMessage(message);

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.ParameterNameReader;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
@@ -36,8 +37,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 
+import javax.annotation.Nullable;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
@@ -150,8 +154,19 @@ final class SpringRestToolKit implements RestToolKit {
     }
 
     @Override
+    public ParamType getParamType(ParameterMeta parameter) {
+        return null;
+    }
+
+    @Override
     public String[] getParameterNames(Method method) {
         return parameterNameReader.readParameterNames(method);
+    }
+
+    @Nullable
+    @Override
+    public String[] getParameterNames(Constructor<?> ctor) {
+        return parameterNameReader.readParameterNames(ctor);
     }
 
     @Override

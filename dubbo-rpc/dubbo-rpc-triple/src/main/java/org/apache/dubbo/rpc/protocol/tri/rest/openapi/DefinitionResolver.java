@@ -190,9 +190,6 @@ final class DefinitionResolver {
         if (operation.getDeprecated() == null && meta.isHierarchyAnnotated(Deprecated.class)) {
             operation.setDeprecated(true);
         }
-        if (operation.getGroup() == null) {
-            operation.setGroup(openAPI.getGroup());
-        }
 
         for (int i = 0, len = path.length(), start = 0; i < len; i++) {
             char c = path.charAt(i);
@@ -304,6 +301,9 @@ final class DefinitionResolver {
             response.setDescription(HttpUtils.getStatusMessage(httpStatus));
         }
         if (httpStatus > 201 && httpStatus < 400) {
+            return;
+        }
+        if (meta.getActualReturnType() == void.class) {
             return;
         }
 

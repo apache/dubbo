@@ -56,7 +56,7 @@ public final class ConfigFactory {
     }
 
     public OpenAPIConfig getGlobalConfig() {
-        return getConfig(Constants.GLOBAL_GROUP);
+        return getConfigMap().get(Constants.GLOBAL_GROUP);
     }
 
     private Map<String, OpenAPIConfig> getConfigMap() {
@@ -93,7 +93,7 @@ public final class ConfigFactory {
                 String group, key;
                 if (c == '.') {
                     group = StringUtils.EMPTY_STRING;
-                    key = fullKey.substring(len + 2);
+                    key = fullKey.substring(len + 1);
                 } else if (c == 's') {
                     int end = fullKey.indexOf('.', len + 1);
                     group = fullKey.substring(len + 1, end);

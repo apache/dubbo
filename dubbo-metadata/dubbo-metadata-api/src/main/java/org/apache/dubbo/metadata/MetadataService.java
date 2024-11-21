@@ -40,7 +40,7 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_OPENAPI_PREFIX;
  * 1. The Consumer queries the metadata information of the Provider to list the interfaces and each interface's configuration
  * 2. The Console (dubbo-admin) queries for the metadata of a specific process, or aggregate data of all processes.
  */
-@OpenAPI(hidden = false)
+@OpenAPI(hidden = "false")
 public interface MetadataService {
 
     /**
@@ -235,6 +235,6 @@ public interface MetadataService {
     /**
      * 1. Get the openAPI definition
      */
-    @Mapping({"getOpenAPI", "//${" + H2_SETTINGS_OPENAPI_PREFIX + ".path:dubbo/openapi}/{*path}"})
+    @Mapping(path = {"getOpenAPI", "//${" + H2_SETTINGS_OPENAPI_PREFIX + ".path:dubbo/openapi}/{*path}"})
     String getOpenAPI(OpenAPIRequest request);
 }

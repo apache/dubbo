@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Constants;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.math.BigDecimal;
@@ -606,6 +607,9 @@ public final class Schema extends Node<Schema> {
         write(schema, "writeOnly", writeOnly);
         write(schema, "deprecated", deprecated);
         writeExtensions(schema);
+        if (javaType != null) {
+            schema.put(Constants.X_JAVA_TYPE, javaType.getName());
+        }
         return schema;
     }
 }

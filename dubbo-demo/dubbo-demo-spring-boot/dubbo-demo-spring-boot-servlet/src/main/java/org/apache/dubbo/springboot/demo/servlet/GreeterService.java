@@ -41,4 +41,6 @@ public interface GreeterService {
      * Sends greetings with bi streaming
      */
     StreamObserver<HelloRequest> sayHelloBiStream(StreamObserver<HelloReply> responseObserver);
+
+    Animal createAnimal(Cat cat, Dog dog);
 }

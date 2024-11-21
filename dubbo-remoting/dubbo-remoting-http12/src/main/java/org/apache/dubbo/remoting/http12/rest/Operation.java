@@ -86,7 +86,7 @@ public @interface Operation {
     /**
      * Indicates whether the operation is hidden in OpenAPI.
      */
-    boolean hidden() default false;
+    String hidden() default "";
 
     /**
      * The extensions of the OpenAPI.

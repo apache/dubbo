@@ -30,6 +30,12 @@ public class OpenAPIConfig implements Serializable {
     private Boolean enabled;
 
     /**
+     * Whether to cache the OpenAPI document.
+     * <p>The default value is 'true'.
+     */
+    private Boolean cache;
+
+    /**
      * The HTTP path where OpenAPI will be registered.
      * <p>The default value is '/dubbo/openapi'.
      */
@@ -132,6 +138,14 @@ public class OpenAPIConfig implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Boolean getCache() {
+        return cache;
+    }
+
+    public void setCache(Boolean cache) {
+        this.cache = cache;
     }
 
     public String getPath() {

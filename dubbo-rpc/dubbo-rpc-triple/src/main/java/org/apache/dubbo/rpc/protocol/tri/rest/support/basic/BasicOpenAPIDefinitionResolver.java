@@ -175,8 +175,8 @@ public final class BasicOpenAPIDefinitionResolver
     }
 
     @Override
-    public Boolean acceptProperty(ParameterMeta parameter, BeanMeta bean, PropertyMeta property) {
-        AnnotationMeta<?> schema = parameter.getAnnotation(Annotations.Schema);
+    public Boolean acceptProperty(BeanMeta bean, PropertyMeta property) {
+        AnnotationMeta<?> schema = property.getAnnotation(Annotations.Schema);
         return schema == null ? null : schema.getBoolean(HIDDEN);
     }
 }

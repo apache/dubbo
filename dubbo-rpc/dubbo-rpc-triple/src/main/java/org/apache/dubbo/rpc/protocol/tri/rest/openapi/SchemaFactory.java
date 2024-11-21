@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -25,6 +26,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.TypeParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.Chain;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.Context;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
+import org.apache.dubbo.rpc.protocol.tri.rest.support.basic.Annotations;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.lang.reflect.GenericArrayType;
@@ -41,12 +44,14 @@ import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.PrimitiveSchema.OBJ
 
 public final class SchemaFactory {
 
+    private final ConfigFactory configFactory;
     private final OpenAPISchemaResolver[] resolvers;
     private final OpenAPISchemaPredicate[] predicates;
     private final Map<Class<?>, Optional<Schema>> schemaMap = CollectionUtils.newConcurrentHashMap();
     private final Map<Class<?>, String> nameMap = CollectionUtils.newConcurrentHashMap();
 
     public SchemaFactory(FrameworkModel frameworkModel) {
+        configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
         ExtensionFactory extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         resolvers = extensionFactory.getExtensions(OpenAPISchemaResolver.class);
         predicates = extensionFactory.getExtensions(OpenAPISchemaPredicate.class);
@@ -118,8 +123,12 @@ public final class SchemaFactory {
                 }
 
                 if (Map.class.isAssignableFrom(clazz)) {
-                    Schema nestedSchema = resolveNestedSchema(argTypes[1], parameter);
-                    return OBJECT.newSchema().setAdditionalPropertiesSchema(nestedSchema);
+                    Schema schema = OBJECT.newSchema();
+                    Type keyType = argTypes[0];
+                    if (String.class != keyType) {
+                        schema.addExtension(Constants.X_JAVA_TYPE, TypeUtils.toTypeString(keyType));
+                    }
+                    return schema.setAdditionalPropertiesSchema(resolveNestedSchema(argTypes[1], parameter));
                 }
 
                 return resolveClassSchema(clazz, parameter);
@@ -158,8 +167,9 @@ public final class SchemaFactory {
             return OBJECT.newSchema();
         }
 
+        TypeParameterMeta typeParameter = new TypeParameterMeta(clazz);
         for (OpenAPISchemaPredicate predicate : predicates) {
-            Boolean accepted = predicate.acceptClass(clazz, parameter);
+            Boolean accepted = predicate.acceptClass(clazz, typeParameter);
             if (accepted == null) {
                 continue;
             }
@@ -180,14 +190,24 @@ public final class SchemaFactory {
             return schema.clone();
         }
 
+        Boolean flatten = configFactory.getGlobalConfig().getSchemaFlatten();
+        if (flatten == null) {
+            AnnotationMeta<?> anno = typeParameter.getAnnotation(Annotations.Schema);
+            flatten = anno != null && anno.getBoolean("flatten");
+        }
+
+        return new Schema().setTargetSchema(resolveBeanSchema(parameter.getToolKit(), clazz, flatten));
+    }
+
+    private Schema resolveBeanSchema(RestToolKit toolKit, Class<?> clazz, boolean flatten) {
         Schema beanSchema = OBJECT.newSchema().setJavaType(clazz);
         schemaMap.put(clazz, Optional.of(beanSchema));
-        BeanMeta beanMeta = new BeanMeta(parameter.getToolKit(), clazz, true);
+        BeanMeta beanMeta = new BeanMeta(toolKit, clazz, flatten);
         out:
         for (PropertyMeta property : beanMeta.getProperties()) {
             boolean fallback = true;
             for (OpenAPISchemaPredicate predicate : predicates) {
-                Boolean accepted = predicate.acceptProperty(parameter, beanMeta, property);
+                Boolean accepted = predicate.acceptProperty(beanMeta, property);
                 if (accepted == null) {
                     continue;
                 }
@@ -207,7 +227,16 @@ public final class SchemaFactory {
             }
             beanSchema.addProperty(property.getName(), getSchema(property));
         }
-        return new Schema().setTargetSchema(beanSchema);
+
+        if (flatten) {
+            return beanSchema;
+        }
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass == null || superClass == Object.class || TypeUtils.isSystemType(superClass)) {
+            return beanSchema;
+        }
+
+        return beanSchema.addAllOf(getSchema(superClass));
     }
 
     private Schema resolveNestedSchema(Type nestedType, ParameterMeta parameter) {

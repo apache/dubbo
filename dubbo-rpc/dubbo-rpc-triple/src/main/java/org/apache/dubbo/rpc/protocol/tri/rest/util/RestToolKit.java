@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -42,6 +43,9 @@ public interface RestToolKit {
 
     @Nullable
     String[] getParameterNames(Method method);
+
+    @Nullable
+    String[] getParameterNames(Constructor<?> ctor);
 
     Map<String, Object> getAttributes(AnnotatedElement element, Annotation annotation);
 }

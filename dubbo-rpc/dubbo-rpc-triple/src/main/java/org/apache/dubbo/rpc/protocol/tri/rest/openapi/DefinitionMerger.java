@@ -332,7 +332,8 @@ final class DefinitionMerger {
                         LOG.internalWarn(
                                 "Operation already exists, path='{}', httpMethod='{}', method={}",
                                 path,
-                                httpMethod, fromOperation.getMeta());
+                                httpMethod,
+                                fromOperation.getMeta());
                     }
                 }
             }
@@ -372,11 +373,13 @@ final class DefinitionMerger {
     }
 
     private static boolean isGroupNotMatch(String group, String fromGroup) {
-        return !group.equals(Constants.ALL_GROUP) && !group.equals(fromGroup);
+        return !(fromGroup == null && Constants.DEFAULT_GROUP.equals(group)
+                || Constants.ALL_GROUP.equals(group)
+                || group.equals(fromGroup));
     }
 
     private static boolean isVersionNotMatch(String version, String fromVersion) {
-        return version != null && fromVersion != null && !Helper.isVersionGreaterOrEqual(fromVersion, version);
+        return !(version == null || fromVersion == null || Helper.isVersionGreaterOrEqual(fromVersion, version));
     }
 
     private static boolean isTagNotMatch(String[] tags, Set<String> operationTags) {
@@ -512,6 +515,29 @@ final class DefinitionMerger {
         }
 
         addSchema(schema.getAdditionalPropertiesSchema(), schemas, group, version);
+
+        List<Schema> allOf = schema.getAllOf();
+        if (allOf != null) {
+            for (Schema item : allOf) {
+                addSchema(item, schemas, group, version);
+            }
+        }
+
+        List<Schema> oneOf = schema.getOneOf();
+        if (oneOf != null) {
+            for (Schema item : oneOf) {
+                addSchema(item, schemas, group, version);
+            }
+        }
+
+        List<Schema> anyOf = schema.getAnyOf();
+        if (anyOf != null) {
+            for (Schema item : anyOf) {
+                addSchema(item, schemas, group, version);
+            }
+        }
+
+        addSchema(schema.getNot(), schemas, group, version);
 
         Schema targetSchema = schema.getTargetSchema();
         if (targetSchema == null) {

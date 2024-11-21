@@ -59,6 +59,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
 
     private final LRUCache<String, SoftReference<String>> cache = new LRUCache<>(64);
     private final FrameworkModel frameworkModel;
+    private final ConfigFactory configFactory;
     private final ExtensionFactory extensionFactory;
     private final DefinitionResolver definitionResolver;
     private final DefinitionMerger definitionMerger;
@@ -73,6 +74,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
 
     public DefaultOpenAPIService(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
+        configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
         extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         definitionResolver = new DefinitionResolver(frameworkModel);
         definitionMerger = new DefinitionMerger(frameworkModel);
@@ -169,6 +171,10 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
     }
 
     private String handleDocument(OpenAPIRequest request) {
+        if (Boolean.FALSE.equals(configFactory.getGlobalConfig().getCache())) {
+            return definitionEncoder.encode(getOpenAPI(request), request);
+        }
+
         String cacheKey = request.toString();
         SoftReference<String> ref = cache.get(cacheKey);
         if (ref != null) {

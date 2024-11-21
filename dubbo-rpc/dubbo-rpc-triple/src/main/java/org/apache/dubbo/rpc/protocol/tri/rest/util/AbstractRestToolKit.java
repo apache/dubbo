@@ -26,8 +26,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
+import javax.annotation.Nullable;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -69,6 +72,12 @@ public abstract class AbstractRestToolKit implements RestToolKit {
     @Override
     public String[] getParameterNames(Method method) {
         return parameterNameReader.readParameterNames(method);
+    }
+
+    @Nullable
+    @Override
+    public String[] getParameterNames(Constructor<?> ctor) {
+        return parameterNameReader.readParameterNames(ctor);
     }
 
     @Override

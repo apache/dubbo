@@ -24,5 +24,5 @@ public interface OpenAPISchemaPredicate extends OpenAPIExtension {
 
     Boolean acceptClass(Class<?> clazz, ParameterMeta parameter);
 
-    Boolean acceptProperty(ParameterMeta parameter, BeanMeta bean, PropertyMeta property);
+    Boolean acceptProperty(BeanMeta bean, PropertyMeta property);
 }

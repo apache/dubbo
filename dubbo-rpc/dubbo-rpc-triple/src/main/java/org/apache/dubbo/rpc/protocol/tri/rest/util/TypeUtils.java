@@ -396,4 +396,62 @@ public final class TypeUtils {
         }
         return sb.toString();
     }
+
+    public static String toTypeString(Type type) {
+        if (type instanceof Class) {
+            return ((Class<?>) type).getName();
+        }
+        StringBuilder result = new StringBuilder(32);
+        buildGenericTypeString(type, result);
+        return result.toString();
+    }
+
+    private static void buildGenericTypeString(Type type, StringBuilder sb) {
+        if (type instanceof Class<?>) {
+            sb.append(((Class<?>) type).getName());
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pzType = (ParameterizedType) type;
+            Type[] typeArgs = pzType.getActualTypeArguments();
+            buildGenericTypeString(pzType.getRawType(), sb);
+            sb.append('<');
+            for (int i = 0, len = typeArgs.length; i < len; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                buildGenericTypeString(typeArgs[i], sb);
+            }
+            sb.append('>');
+        } else if (type instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) type;
+            Type[] upperBounds = wildcardType.getUpperBounds();
+            Type[] lowerBounds = wildcardType.getLowerBounds();
+            if (lowerBounds.length > 0) {
+                sb.append("? super ");
+                buildGenericTypeString(lowerBounds[0], sb);
+            } else if (upperBounds.length > 0 && upperBounds[0] != Object.class) {
+                sb.append("? extends ");
+                buildGenericTypeString(upperBounds[0], sb);
+            } else {
+                sb.append('?');
+            }
+        } else if (type instanceof GenericArrayType) {
+            GenericArrayType genericArrayType = (GenericArrayType) type;
+            buildGenericTypeString(genericArrayType.getGenericComponentType(), sb);
+            sb.append("[]");
+        } else if (type instanceof TypeVariable) {
+            TypeVariable<?> typeVariable = (TypeVariable<?>) type;
+            sb.append(typeVariable.getName());
+            Type[] bounds = typeVariable.getBounds();
+            int len = bounds.length;
+            if (len > 0 && !(len == 1 && bounds[0] == Object.class)) {
+                sb.append(" extends ");
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {sb.append(" & ");}
+                    buildGenericTypeString(bounds[i], sb);
+                }
+            }
+        } else {
+            sb.append(type.toString());
+        }
+    }
 }

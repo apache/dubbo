@@ -1362,4 +1362,54 @@ public final class StringUtils {
         }
         return tokens;
     }
+
+    public static Boolean toBoolean(String value) {
+        if (isEmpty(value)) {
+            return null;
+        }
+        switch (value.length()) {
+            case 1:
+                char c = value.charAt(0);
+                if (c == '0' || c == 'n' || c == 'N') {
+                    return Boolean.FALSE;
+                }
+                if (c == '1' || c == 'y' || c == 'Y') {
+                    return Boolean.TRUE;
+                }
+                break;
+            case 2:
+                if ("on".equalsIgnoreCase(value)) {
+                    return Boolean.TRUE;
+                }
+                if ("no".equalsIgnoreCase(value)) {
+                    return Boolean.FALSE;
+                }
+                break;
+            case 3:
+                if ("yes".equalsIgnoreCase(value)) {
+                    return Boolean.TRUE;
+                }
+                if ("off".equalsIgnoreCase(value)) {
+                    return Boolean.TRUE;
+                }
+                break;
+            case 4:
+                if ("true".equalsIgnoreCase(value)) {
+                    return Boolean.TRUE;
+                }
+                break;
+            case 5:
+                if ("false".equalsIgnoreCase(value)) {
+                    return Boolean.FALSE;
+                }
+                break;
+            default:
+        }
+        return null;
+    }
+
+    public static boolean toBoolean(String value, boolean defaultValue) {
+        Boolean result = toBoolean(value);
+        return result == null ? defaultValue : result;
+    }
 }

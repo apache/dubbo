@@ -82,7 +82,7 @@ public @interface OpenAPI {
     /**
      * Indicates whether the mapping is hidden in OpenAPI.
      */
-    boolean hidden() default false;
+    String hidden() default "";
 
     /**
      * Ordering info.
