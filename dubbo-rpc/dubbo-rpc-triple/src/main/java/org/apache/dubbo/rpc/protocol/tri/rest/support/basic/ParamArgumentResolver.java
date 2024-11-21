@@ -25,7 +25,6 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.rest.Param;
-import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
@@ -54,8 +53,9 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
         if (Param.DEFAULT_NONE.equals(defaultValue)) {
             defaultValue = null;
         }
-        ParamType paramType = ann.getEnum("type");
-        return new ParamNamedValueMeta(ann.getValue(), ann.getBoolean("required"), defaultValue, paramType);
+        NamedValueMeta meta = new NamedValueMeta(ann.getValue(), ann.getBoolean("required"), defaultValue);
+        meta.setParamType(ann.getEnum("type"));
+        return meta;
     }
 
     @Override
@@ -65,13 +65,15 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
 
     @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        switch (((ParamNamedValueMeta) meta).paramType) {
+        switch (meta.paramType()) {
             case PathVariable:
                 return resolvePathVariable(meta, request);
             case MatrixVariable:
                 return CollectionUtils.first(resolveMatrixVariable(meta, request));
             case Param:
                 return request.parameter(meta.name());
+            case Form:
+                return request.formParameter(meta.name());
             case Header:
                 return request.header(meta.name());
             case Cookie:
@@ -96,7 +98,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
 
     @Override
     protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        switch (((ParamNamedValueMeta) meta).paramType) {
+        switch (meta.paramType()) {
             case PathVariable:
                 String value = resolvePathVariable(meta, request);
                 return value == null ? Collections.emptyList() : Collections.singletonList(value);
@@ -104,6 +106,8 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
                 return resolveMatrixVariable(meta, request);
             case Param:
                 return request.parameterValues(meta.name());
+            case Form:
+                return request.formParameterValues(meta.name());
             case Header:
                 return request.headerValues(meta.name());
             case Cookie:
@@ -142,7 +146,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
 
     @Override
     protected Object resolveMapValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        switch (((ParamNamedValueMeta) meta).paramType) {
+        switch (meta.paramType()) {
             case PathVariable:
                 String value = resolvePathVariable(meta, request);
                 return value == null ? Collections.emptyMap() : Collections.singletonMap(meta.name(), value);
@@ -150,6 +154,8 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
                 return CollectionUtils.first(resolveMatrixVariable(meta, request));
             case Param:
                 return RequestUtils.getParametersMap(request);
+            case Form:
+                return RequestUtils.getFormParametersMap(request);
             case Header:
                 return request.headers().asMap();
             case Cookie:
@@ -203,15 +209,5 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
     private static List<String> resolveMatrixVariable(NamedValueMeta meta, HttpRequest request) {
         Map<String, String> variableMap = request.attribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
         return RequestUtils.parseMatrixVariableValues(variableMap, meta.name());
-    }
-
-    private static final class ParamNamedValueMeta extends NamedValueMeta {
-
-        private final ParamType paramType;
-
-        ParamNamedValueMeta(String name, boolean required, String defaultValue, ParamType paramType) {
-            super(name, required, defaultValue);
-            this.paramType = paramType;
-        }
     }
 }

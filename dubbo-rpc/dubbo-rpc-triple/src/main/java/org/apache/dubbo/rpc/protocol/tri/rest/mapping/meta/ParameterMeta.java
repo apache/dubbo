@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -36,6 +35,8 @@ public abstract class ParameterMeta extends AnnotationSupport {
     private Boolean simple;
     private Class<?> actualType;
     private Type actualGenericType;
+    private BeanMeta beanMeta;
+    private NamedValueMeta namedValueMeta;
 
     protected ParameterMeta(RestToolKit toolKit, String prefix, String name) {
         super(toolKit);
@@ -108,12 +109,28 @@ public abstract class ParameterMeta extends AnnotationSupport {
         return type;
     }
 
+    public final BeanMeta getBeanMeta() {
+        BeanMeta beanMeta = this.beanMeta;
+        if (beanMeta == null) {
+            this.beanMeta = beanMeta = new BeanMeta(getToolKit(), getActualType());
+        }
+        return beanMeta;
+    }
+
     public final Object bind(HttpRequest request, HttpResponse response) {
         return getToolKit().bind(this, request, response);
     }
 
-    public final ParamType getParamType() {
-        return getToolKit().getParamType(this);
+    public final NamedValueMeta getNamedValueMeta() {
+        NamedValueMeta namedValueMeta = this.namedValueMeta;
+        if (namedValueMeta == null) {
+            namedValueMeta = getToolKit().getNamedValueMeta(this);
+            if (namedValueMeta == null) {
+                namedValueMeta = NamedValueMeta.EMPTY;
+            }
+            this.namedValueMeta = namedValueMeta;
+        }
+        return namedValueMeta;
     }
 
     public int getIndex() {

@@ -20,7 +20,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
@@ -43,8 +42,8 @@ final class BeanArgumentBinder {
     private final Map<Pair<Class<?>, String>, BeanMeta> cache = CollectionUtils.newConcurrentHashMap();
     private final ArgumentResolver argumentResolver;
 
-    BeanArgumentBinder(FrameworkModel frameworkModel) {
-        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
+    BeanArgumentBinder(CompositeArgumentResolver argumentResolver) {
+        this.argumentResolver = argumentResolver;
     }
 
     public Object bind(ParameterMeta paramMeta, HttpRequest request, HttpResponse response) {
@@ -77,7 +76,7 @@ final class BeanArgumentBinder {
                         Pair.of(paramMeta.getActualType(), prefix),
                         k -> new BeanMeta(paramMeta.getToolKit(), k.getValue(), k.getKey()));
 
-                ConstructorMeta constructor = beanMeta.getConstructorRequired();
+                ConstructorMeta constructor = beanMeta.getConstructor();
                 ParameterMeta[] parameters = constructor.getParameters();
                 Object bean;
                 int len = parameters.length;

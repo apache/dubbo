@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 
 import java.lang.annotation.Annotation;
@@ -29,6 +30,11 @@ public final class RequestHeaderArgumentResolver extends AbstractSpringArgumentR
     @Override
     public Class<Annotation> accept() {
         return Annotations.RequestHeader.type();
+    }
+
+    @Override
+    protected ParamType getParamType(NamedValueMeta meta) {
+        return ParamType.Header;
     }
 
     @Override

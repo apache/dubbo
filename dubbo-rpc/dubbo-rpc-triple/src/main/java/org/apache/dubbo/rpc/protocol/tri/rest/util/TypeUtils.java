@@ -446,7 +446,9 @@ public final class TypeUtils {
             if (len > 0 && !(len == 1 && bounds[0] == Object.class)) {
                 sb.append(" extends ");
                 for (int i = 0; i < len; i++) {
-                    if (i > 0) {sb.append(" & ");}
+                    if (i > 0) {
+                        sb.append(" & ");
+                    }
                     buildGenericTypeString(bounds[i], sb);
                 }
             }

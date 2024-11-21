@@ -53,12 +53,14 @@ public class OpenAPIRequest implements Serializable {
      * e.g. 3.0.1, 3.1.0
      * <p>The default value is '3.0.1'.
      */
+    @Schema(enumeration = {"3.0.1", "3.1.0"})
     private String openapi;
 
     /**
      * The format of the response.
      * <p>The default value is 'json'.
      */
+    @Schema(enumeration = {"json", "yaml", "proto"})
     private String format;
 
     /**

@@ -22,8 +22,10 @@ import org.apache.dubbo.common.utils.ParameterNameReader;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import javax.annotation.Nullable;
@@ -39,11 +41,13 @@ public abstract class AbstractRestToolKit implements RestToolKit {
     protected final FrameworkModel frameworkModel;
     protected final TypeConverter typeConverter;
     protected final ParameterNameReader parameterNameReader;
+    protected final CompositeArgumentResolver argumentResolver;
 
     public AbstractRestToolKit(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         typeConverter = frameworkModel.getOrRegisterBean(GeneralTypeConverter.class);
         parameterNameReader = frameworkModel.getOrRegisterBean(DefaultParameterNameReader.class);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
     }
 
     @Override
@@ -67,6 +71,11 @@ public abstract class AbstractRestToolKit implements RestToolKit {
                     parameter.getGenericType());
         }
         return target;
+    }
+
+    @Override
+    public NamedValueMeta getNamedValueMeta(ParameterMeta parameter) {
+        return argumentResolver.getNamedValueMeta(parameter);
     }
 
     @Override

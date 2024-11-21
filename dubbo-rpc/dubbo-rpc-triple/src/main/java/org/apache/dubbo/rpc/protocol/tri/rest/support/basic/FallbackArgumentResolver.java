@@ -54,8 +54,8 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
             MethodMeta methodMeta = ((MethodParameterMeta) param).getMethodMeta();
             ParameterMeta[] paramMetas = methodMeta.getParameters();
             for (ParameterMeta paramMeta : paramMetas) {
-                AnnotationMeta<Param> anno = paramMeta.findAnnotation(Param.class);
-                if (anno != null && anno.getAnnotation().type() == ParamType.Body) {
+                AnnotationMeta<Param> ann = paramMeta.findAnnotation(Param.class);
+                if (ann != null && ann.getAnnotation().type() == ParamType.Body) {
                     noBodyParam = false;
                     break;
                 }
@@ -100,7 +100,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 if (body instanceof List) {
                     List<?> list = (List<?>) body;
                     if (list.size() == fm.paramCount) {
-                        return list.get(meta.parameterMeta().getIndex());
+                        return list.get(meta.parameter().getIndex());
                     }
                 } else if (body instanceof Map) {
                     Object value = ((Map<?, ?>) body).get(meta.name());
@@ -116,10 +116,10 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 return RequestUtils.getParametersMap(request);
             }
             String value = request.parameter(meta.name());
-            if (meta.parameterMeta().isSimple() || RestUtils.isMaybeJSONObject(value)) {
+            if (meta.parameter().isSimple() || RestUtils.isMaybeJSONObject(value)) {
                 return value;
             }
-            return meta.parameterMeta().bind(request, response);
+            return meta.parameter().bind(request, response);
         }
 
         return request.parameterValues(meta.name());

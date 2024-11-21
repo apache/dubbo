@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 
@@ -25,13 +26,23 @@ import java.util.Arrays;
 
 public class NamedValueMeta {
 
+    public static final NamedValueMeta EMPTY = new NamedValueMeta(false, null);
+
     private String name;
     private final boolean required;
     private final String defaultValue;
+    private ParamType paramType;
     private Class<?> type;
     private Type genericType;
     private Class<?>[] nestedTypes;
-    private ParameterMeta parameterMeta;
+    private ParameterMeta parameter;
+
+    public NamedValueMeta(String name, boolean required, ParamType paramType) {
+        this.name = name;
+        this.required = required;
+        this.defaultValue = null;
+        this.paramType = paramType;
+    }
 
     public NamedValueMeta(String name, boolean required, String defaultValue) {
         this.name = name;
@@ -68,6 +79,14 @@ public class NamedValueMeta {
         return defaultValue;
     }
 
+    public ParamType paramType() {
+        return paramType;
+    }
+
+    public void setParamType(ParamType paramType) {
+        this.paramType = paramType;
+    }
+
     public Class<?> type() {
         return type;
     }
@@ -100,12 +119,12 @@ public class NamedValueMeta {
         this.nestedTypes = nestedTypes;
     }
 
-    public ParameterMeta parameterMeta() {
-        return parameterMeta;
+    public ParameterMeta parameter() {
+        return parameter;
     }
 
-    public void setParameterMeta(ParameterMeta parameterMeta) {
-        this.parameterMeta = parameterMeta;
+    public void setParameterMeta(ParameterMeta parameter) {
+        this.parameter = parameter;
     }
 
     @Override

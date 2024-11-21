@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpRequest.FileUpload;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -36,6 +37,11 @@ public class RequestPartArgumentResolver extends AbstractSpringArgumentResolver 
     @Override
     public Class<Annotation> accept() {
         return Annotations.RequestPart.type();
+    }
+
+    @Override
+    protected ParamType getParamType(NamedValueMeta meta) {
+        return ParamType.Part;
     }
 
     @Override

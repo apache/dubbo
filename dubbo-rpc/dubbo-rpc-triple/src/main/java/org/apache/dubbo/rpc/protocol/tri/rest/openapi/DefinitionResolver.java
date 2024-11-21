@@ -24,12 +24,16 @@ import org.apache.dubbo.remoting.http12.ErrorResponse;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.MediaType;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.Registration;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ApiResponse;
@@ -39,7 +43,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -184,8 +190,7 @@ final class DefinitionResolver {
             MethodMeta meta,
             RequestMapping mapping) {
         if (operation.getOperationId() == null) {
-            String operationId = generateOperationId(meta, openAPI);
-            operation.setOperationId(operationId == null ? meta.getMethod().getName() : operationId);
+            operation.setOperationId(meta.getMethod().getName());
         }
         if (operation.getDeprecated() == null && meta.isHierarchyAnnotated(Deprecated.class)) {
             operation.setDeprecated(true);
@@ -210,24 +215,8 @@ final class DefinitionResolver {
             }
         }
 
-        if (CollectionUtils.isEmpty(operation.getParameters())) {
-            for (ParameterMeta paramMeta : meta.getParameters()) {
-                String name = paramMeta.getName();
-                if (name == null) {
-                    continue;
-                }
-                In in = Helper.toIn(paramMeta.getParamType());
-                if (in == null) {
-                    continue;
-                }
-                Parameter parameter = operation.getParameter(name, in);
-                if (parameter == null) {
-                    parameter = new Parameter(name, in);
-                    operation.addParameter(parameter);
-                }
-                parameter.setMeta(paramMeta);
-                resolveParameter(parameter, paramMeta);
-            }
+        for (ParameterMeta paramMeta : meta.getParameters()) {
+            resolveParameter(operation, paramMeta, true);
         }
 
         if (httpMethod.supportBody()) {
@@ -253,22 +242,57 @@ final class DefinitionResolver {
         }
     }
 
-    private String generateOperationId(MethodMeta meta, OpenAPI openAPI) {
-        String name = openAPI.getConfigValue(OpenAPIConfig::getOperationIdStrategy);
+    private void resolveParameter(Operation operation, ParameterMeta paramMeta, boolean traverse) {
+        String name = paramMeta.getName();
         if (name == null) {
-            return null;
+            return;
         }
-        OpenAPINamingStrategy strategy =
-                extensionFactory.getExtension(OpenAPINamingStrategy.class, OpenAPINamingStrategy.PREFIX + name);
-        if (strategy == null) {
-            return null;
-        }
-        return strategy.generateOperationId(meta, openAPI);
-    }
 
-    private void resolveParameter(Parameter parameter, ParameterMeta meta) {
-        if (parameter.getSchema() == null) {
-            parameter.setSchema(schemaFactory.getSchema(meta));
+        NamedValueMeta valueMeta = paramMeta.getNamedValueMeta();
+        In in = Helper.toIn(valueMeta.paramType());
+        if (in == null) {
+            return;
+        }
+
+        boolean simple = paramMeta.isSimple();
+        if (in != In.QUERY && !simple) {
+            return;
+        }
+        if (simple) {
+            Parameter parameter = operation.getParameter(name, in);
+            if (parameter == null) {
+                parameter = new Parameter(name, in);
+                operation.addParameter(parameter);
+            }
+            if (parameter.getRequired() == null) {
+                parameter.setRequired(valueMeta.required());
+            }
+            Schema schema = parameter.getSchema();
+            if (schema == null) {
+                parameter.setSchema(schema = schemaFactory.getSchema(paramMeta));
+            }
+            if (schema.getDefaultValue() == null) {
+                schema.setDefaultValue(valueMeta.defaultValue());
+            }
+            parameter.setMeta(paramMeta);
+            return;
+        }
+        if (!traverse) {
+            return;
+        }
+
+        BeanMeta beanMeta = paramMeta.getBeanMeta();
+        try {
+            for (ParameterMeta ctorParam : beanMeta.getConstructor().getParameters()) {
+                resolveParameter(operation, ctorParam, false);
+            }
+        } catch (Throwable ignored) {
+        }
+        for (PropertyMeta property : beanMeta.getProperties()) {
+            if ((property.getVisibility() & 0b001) == 0) {
+                continue;
+            }
+            resolveParameter(operation, property, false);
         }
     }
 
@@ -285,11 +309,34 @@ final class DefinitionResolver {
                 mediaTypes = Arrays.stream(defaultMediaTypes).map(MediaType::of).collect(Collectors.toList());
             }
         }
+        out:
         for (MediaType mediaType : mediaTypes) {
             org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.MediaType content =
                     body.getOrAddContent(mediaType.getName());
             if (content.getSchema() == null) {
-                content.setSchema(schemaFactory.getSchema(meta.getParameters()));
+                for (ParameterMeta paramMeta : meta.getParameters()) {
+                    ParamType paramType = paramMeta.getNamedValueMeta().paramType();
+                    if (paramType == ParamType.Body) {
+                        content.setSchema(schemaFactory.getSchema(paramMeta));
+                        continue out;
+                    }
+                }
+
+                List<ParameterMeta> paramMetas = new ArrayList<>();
+                for (ParameterMeta paramMeta : meta.getParameters()) {
+                    if (paramMeta.getNamedValueMeta().paramType() == null) {
+                        paramMetas.add(paramMeta);
+                    }
+                }
+                int size = paramMetas.size();
+                if (size == 0) {
+                    continue;
+                }
+                if (size == 1) {
+                    content.setSchema(schemaFactory.getSchema(paramMetas.get(0)));
+                } else {
+                    content.setSchema(schemaFactory.getSchema(paramMetas));
+                }
             }
         }
     }

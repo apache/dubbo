@@ -35,6 +35,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -95,7 +96,7 @@ public final class SchemaFactory {
                 });
     }
 
-    public Schema getSchema(ParameterMeta[] parameters) {
+    public Schema getSchema(List<ParameterMeta> parameters) {
         Schema schema = OBJECT.newSchema();
         for (ParameterMeta parameter : parameters) {
             String name = parameter.getName();
@@ -192,8 +193,8 @@ public final class SchemaFactory {
 
         Boolean flatten = configFactory.getGlobalConfig().getSchemaFlatten();
         if (flatten == null) {
-            AnnotationMeta<?> anno = typeParameter.getAnnotation(Annotations.Schema);
-            flatten = anno != null && anno.getBoolean("flatten");
+            AnnotationMeta<?> ann = typeParameter.getAnnotation(Annotations.Schema);
+            flatten = ann != null && ann.getBoolean("flatten");
         }
 
         return new Schema().setTargetSchema(resolveBeanSchema(parameter.getToolKit(), clazz, flatten));

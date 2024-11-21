@@ -24,15 +24,16 @@ import org.apache.dubbo.common.utils.ParameterNameReader;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
@@ -68,6 +69,7 @@ final class SpringRestToolKit implements RestToolKit {
     private final TypeConverter typeConverter;
     private final BeanArgumentBinder argumentBinder;
     private final ParameterNameReader parameterNameReader;
+    private final CompositeArgumentResolver argumentResolver;
 
     public SpringRestToolKit(FrameworkModel frameworkModel) {
         ApplicationModel applicationModel = frameworkModel.defaultApplication();
@@ -89,7 +91,8 @@ final class SpringRestToolKit implements RestToolKit {
         }
         typeConverter = frameworkModel.getOrRegisterBean(GeneralTypeConverter.class);
         parameterNameReader = frameworkModel.getOrRegisterBean(DefaultParameterNameReader.class);
-        argumentBinder = new BeanArgumentBinder(frameworkModel, conversionService);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
+        argumentBinder = new BeanArgumentBinder(argumentResolver, conversionService);
     }
 
     @Override
@@ -154,8 +157,8 @@ final class SpringRestToolKit implements RestToolKit {
     }
 
     @Override
-    public ParamType getParamType(ParameterMeta parameter) {
-        return null;
+    public NamedValueMeta getNamedValueMeta(ParameterMeta parameter) {
+        return argumentResolver.getNamedValueMeta(parameter);
     }
 
     @Override

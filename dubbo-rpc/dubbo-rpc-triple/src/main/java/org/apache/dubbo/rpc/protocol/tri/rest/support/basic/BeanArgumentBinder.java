@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.rest.Param;
 import org.apache.dubbo.remoting.http12.rest.ParamType;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
@@ -49,8 +48,8 @@ final class BeanArgumentBinder {
 
     private final CompositeArgumentResolver argumentResolver;
 
-    public BeanArgumentBinder(FrameworkModel frameworkModel) {
-        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
+    public BeanArgumentBinder(CompositeArgumentResolver argumentResolver) {
+        this.argumentResolver = argumentResolver;
     }
 
     public Object bind(ParameterMeta paramMeta, HttpRequest request, HttpResponse response) {
@@ -60,7 +59,7 @@ final class BeanArgumentBinder {
                 return null;
             }
 
-            ConstructorMeta constructor = beanMeta.getConstructorRequired();
+            ConstructorMeta constructor = beanMeta.getConstructor();
             ParameterMeta[] parameters = constructor.getParameters();
             Object bean;
             int len = parameters.length;
@@ -146,7 +145,7 @@ final class BeanArgumentBinder {
         if (paramMeta.isSimple() || Modifier.isAbstract(type.getModifiers())) {
             return null;
         }
-        return CACHE.computeIfAbsent(type, k -> new BeanMeta(paramMeta.getToolKit(), k));
+        return CACHE.computeIfAbsent(type, k -> paramMeta.getBeanMeta());
     }
 
     /**

@@ -166,7 +166,7 @@ public final class Helper {
                 array[p++] = value;
             }
         }
-        int newLen = p + 1;
+        int newLen = p;
         return newLen == len ? array : Arrays.copyOf(array, newLen);
     }
 

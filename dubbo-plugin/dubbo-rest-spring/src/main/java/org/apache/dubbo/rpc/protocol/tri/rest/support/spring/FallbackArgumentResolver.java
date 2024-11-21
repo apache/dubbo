@@ -41,7 +41,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        ParameterMeta parameter = meta.parameterMeta();
+        ParameterMeta parameter = meta.parameter();
         if (parameter.isSimple()) {
             return request.parameter(meta.name());
         }

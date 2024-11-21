@@ -33,9 +33,12 @@ public abstract class AbstractAnnotationBaseArgumentResolver extends NamedValueA
             AnnotationMeta<Annotation> annotation,
             HttpRequest request,
             HttpResponse response) {
-        NamedValueMeta namedValue =
-                cache.computeIfAbsent(parameter, k -> updateNamedValueMeta(k, createNamedValueMeta(k, annotation)));
-        return resolve(namedValue, request, response);
+        return resolve(getNamedValueMeta(parameter, annotation), request, response);
+    }
+
+    @Override
+    public final NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation) {
+        return cache.computeIfAbsent(parameter, k -> updateNamedValueMeta(k, createNamedValueMeta(k, annotation)));
     }
 
     protected abstract NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann);

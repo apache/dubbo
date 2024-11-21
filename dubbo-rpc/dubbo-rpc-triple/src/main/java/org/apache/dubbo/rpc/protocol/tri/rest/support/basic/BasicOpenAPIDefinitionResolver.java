@@ -132,7 +132,7 @@ public final class BasicOpenAPIDefinitionResolver
         }
 
         Class<?> impl = schema.getClass("implementation");
-        Schema model = impl == null ? chain.resolve(parameter, context) : context.getSchema(impl);
+        Schema model = impl == Void.class ? chain.resolve(parameter, context) : context.getSchema(impl);
 
         setValue(schema, "group", model::setGroup);
         setValue(schema, "version", model::setVersion);
@@ -151,12 +151,12 @@ public final class BasicOpenAPIDefinitionResolver
         if (enumItems != null) {
             model.setEnumeration(Arrays.asList(enumItems));
         }
-        model.setRequired(schema.getBoolean("required"));
+        setBoolValue(schema, "required", model::setRequired);
         setValue(schema, "defaultValue", model::setDefaultValue);
-        model.setReadOnly(schema.getBoolean("readOnly"));
-        model.setWriteOnly(schema.getBoolean("writeOnly"));
-        model.setNullable(schema.getBoolean("nullable"));
-        model.setDeprecated(schema.getBoolean("deprecated"));
+        setBoolValue(schema, "readOnly", model::setReadOnly);
+        setBoolValue(schema, "writeOnly", model::setWriteOnly);
+        setBoolValue(schema, "nullable", model::setNullable);
+        setBoolValue(schema, "deprecated", model::setDeprecated);
         model.setExtensions(Helper.toProperties(schema.getStringArray("extensions")));
         return model;
     }
@@ -165,6 +165,13 @@ public final class BasicOpenAPIDefinitionResolver
         String value = trim(schema.getString(key));
         if (value != null) {
             setter.accept(value);
+        }
+    }
+
+    private static void setBoolValue(AnnotationMeta<?> schema, String key, Consumer<Boolean> setter) {
+        Boolean value = schema.getBoolean(key);
+        if (Boolean.TRUE.equals(value)) {
+            setter.accept(true);
         }
     }
 

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.rest.Param;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -33,6 +34,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -48,14 +50,14 @@ public final class BeanMeta extends ParameterMeta {
     private static final boolean HAS_PB = ClassUtils.hasProtobuf();
 
     private final Class<?> type;
-    private final ConstructorMeta constructor;
-    private final Map<String, PropertyMeta> properties = new LinkedHashMap<>();
+    private final boolean flatten;
+    private ConstructorMeta constructor;
+    private Map<String, PropertyMeta> propertyMap;
 
     public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
         super(toolKit, prefix, null);
         this.type = type;
-        constructor = resolveConstructor(toolKit, null, type);
-        resolveProperties(toolKit, prefix, type, flatten);
+        this.flatten = flatten;
     }
 
     public BeanMeta(RestToolKit toolKit, Class<?> type, boolean flatten) {
@@ -86,26 +88,29 @@ public final class BeanMeta extends ParameterMeta {
     }
 
     public ConstructorMeta getConstructor() {
-        return constructor;
-    }
-
-    public ConstructorMeta getConstructorRequired() {
         if (constructor == null) {
-            throw new IllegalArgumentException("No available default constructor found in " + type);
+            constructor = resolveConstructor(getToolKit(), getPrefix(), type);
         }
         return constructor;
     }
 
     public Collection<PropertyMeta> getProperties() {
-        return properties.values();
+        return getPropertiesMap().values();
     }
 
     public PropertyMeta getProperty(String name) {
-        return properties.get(name);
+        return getPropertiesMap().get(name);
+    }
+
+    private Map<String, PropertyMeta> getPropertiesMap() {
+        if (propertyMap == null) {
+            propertyMap = resolvePropertyMap(getToolKit(), getPrefix(), type, flatten);
+        }
+        return propertyMap;
     }
 
     public Object newInstance() {
-        return getConstructorRequired().newInstance();
+        return getConstructor().newInstance();
     }
 
     public static ConstructorMeta resolveConstructor(RestToolKit toolKit, String prefix, Class<?> type) {
@@ -120,14 +125,15 @@ public final class BeanMeta extends ParameterMeta {
             }
         }
         if (ct == null) {
-            return null;
+            throw new IllegalArgumentException("No available default constructor found in " + type);
         }
         return new ConstructorMeta(toolKit, prefix, ct);
     }
 
-    private void resolveProperties(RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
+    public static Map<String, PropertyMeta> resolvePropertyMap(
+            RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
         if (type == null || type == Object.class || TypeUtils.isSystemType(type)) {
-            return;
+            return Collections.emptyMap();
         }
 
         Set<String> pbFields = null;
@@ -193,6 +199,8 @@ public final class BeanMeta extends ParameterMeta {
                 }
             }
         }
+
+        Map<String, PropertyMeta> properties = CollectionUtils.newLinkedHashMap(allNames.size());
         for (String name : allNames) {
             Field field = fieldMap.get(name);
             Method getMethod = getMethodMap.get(name);
@@ -205,8 +213,10 @@ public final class BeanMeta extends ParameterMeta {
         }
 
         if (flatten) {
-            resolveProperties(toolKit, prefix, type.getSuperclass(), true);
+            resolvePropertyMap(toolKit, prefix, type.getSuperclass(), flatten);
         }
+
+        return properties;
     }
 
     private static String toName(String name, int index) {

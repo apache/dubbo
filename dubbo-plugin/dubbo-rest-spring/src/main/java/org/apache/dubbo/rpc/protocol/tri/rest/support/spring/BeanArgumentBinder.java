@@ -20,7 +20,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentResolver;
@@ -48,8 +47,8 @@ final class BeanArgumentBinder {
     private final ArgumentResolver argumentResolver;
     private final ConversionService conversionService;
 
-    BeanArgumentBinder(FrameworkModel frameworkModel, ConversionService conversionService) {
-        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
+    BeanArgumentBinder(CompositeArgumentResolver argumentResolver, ConversionService conversionService) {
+        this.argumentResolver = argumentResolver;
         this.conversionService = conversionService;
     }
 
@@ -75,7 +74,14 @@ final class BeanArgumentBinder {
         if (Modifier.isAbstract(type.getModifiers())) {
             throw new IllegalStateException(Messages.ARGUMENT_COULD_NOT_RESOLVED.format(paramMeta.getDescription()));
         }
-        ConstructorMeta ct = CACHE.computeIfAbsent(type, k -> resolveConstructor(paramMeta.getToolKit(), null, type));
+        ConstructorMeta ct = CACHE.computeIfAbsent(type, k -> {
+            ConstructorMeta meta = resolveConstructor(paramMeta.getToolKit(), null, type);
+            if (meta == null) {
+                throw new IllegalStateException(
+                        Messages.ARGUMENT_COULD_NOT_RESOLVED.format(paramMeta.getDescription()));
+            }
+            return meta;
+        });
         ParameterMeta[] parameters = ct.getParameters();
         int len = parameters.length;
         if (len == 0) {
