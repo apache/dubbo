@@ -158,7 +158,6 @@
     <!-- Test libs -->
     <junit_jupiter_version>5.11.3</junit_jupiter_version>
     <junit_platform_version>1.11.3</junit_platform_version>
-    <junit_version>4.13.2</junit_version>
     <awaitility_version>4.2.2</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
@@ -773,18 +772,6 @@
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-params</artifactId>
         <version>${junit_jupiter_version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.vintage</groupId>
-        <artifactId>junit-vintage-engine</artifactId>
-        <version>${junit_jupiter_version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit_version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>

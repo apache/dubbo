@@ -18,34 +18,34 @@ package org.apache.dubbo.spring.boot.context.event;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * {@link AwaitingNonWebApplicationListener} Test
  */
-@Ignore
-public class AwaitingNonWebApplicationListenerTest {
+@Disabled
+class AwaitingNonWebApplicationListenerTest {
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         DubboBootstrap.reset();
     }
 
-    @After
-    public void after() {
+    @AfterEach
+    void after() {
         DubboBootstrap.reset();
     }
 
     //    @Test
-    //    public void init() {
+    //    void init() {
     //        AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
     //        awaited.set(false);
     //    }
     //
     //    @Test
-    //    public void testSingleContextNonWebApplication() {
+    //    void testSingleContextNonWebApplication() {
     //        new SpringApplicationBuilder(Object.class)
     //                .web(false)
     //                .run()
@@ -53,19 +53,19 @@ public class AwaitingNonWebApplicationListenerTest {
     //
     //        ShutdownHookCallbacks.INSTANCE.addCallback(() -> {
     //            AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
-    //            Assert.assertTrue(awaited.get());
+    //            assertTrue(awaited.get());
     //            System.out.println("Callback...");
     //        });
     //    }
     //
     //    @Test
-    //    public void testMultipleContextNonWebApplication() {
+    //    void testMultipleContextNonWebApplication() {
     //        new SpringApplicationBuilder(Object.class)
     //                .parent(Object.class)
     //                .web(false)
     //                .run().close();
     //        AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
-    //        Assert.assertFalse(awaited.get());
+    //        assertFalse(awaited.get());
     //    }
 
 }

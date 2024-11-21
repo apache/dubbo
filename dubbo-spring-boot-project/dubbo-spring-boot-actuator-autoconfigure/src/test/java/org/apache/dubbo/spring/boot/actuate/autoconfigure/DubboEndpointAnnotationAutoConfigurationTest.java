@@ -33,7 +33,6 @@ import java.util.function.Supplier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -46,6 +45,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link DubboEndpointAnnotationAutoConfiguration} Test
@@ -112,12 +116,12 @@ class DubboEndpointAnnotationAutoConfigurationTest {
     private String actuatorBaseURL;
 
     @BeforeEach
-    public void init() {
+    void init() {
         DubboBootstrap.reset();
     }
 
     @AfterEach
-    public void destroy() {
+    void destroy() {
         DubboBootstrap.reset();
     }
 
@@ -128,10 +132,10 @@ class DubboEndpointAnnotationAutoConfigurationTest {
 
         Map<String, Object> shutdownCounts = (Map<String, Object>) value.get("shutdown.count");
 
-        Assert.assertEquals(0, shutdownCounts.get("registries"));
-        Assert.assertEquals(1, shutdownCounts.get("protocols"));
-        Assert.assertEquals(1, shutdownCounts.get("services"));
-        Assert.assertEquals(0, shutdownCounts.get("references"));
+        assertEquals(0, shutdownCounts.get("registries"));
+        assertEquals(1, shutdownCounts.get("protocols"));
+        assertEquals(1, shutdownCounts.get("services"));
+        assertEquals(0, shutdownCounts.get("references"));
     }
 
     @Test
@@ -140,35 +144,35 @@ class DubboEndpointAnnotationAutoConfigurationTest {
         Map<String, Map<String, Map<String, Object>>> configsMap = dubboConfigsMetadataEndpoint.configs();
 
         Map<String, Map<String, Object>> beansMetadata = configsMap.get("ApplicationConfig");
-        Assert.assertEquals(
+        assertEquals(
                 "dubbo-demo-application", beansMetadata.get("my-application").get("name"));
 
         beansMetadata = configsMap.get("ConsumerConfig");
-        Assert.assertTrue(beansMetadata.isEmpty());
+        assertTrue(beansMetadata.isEmpty());
 
         beansMetadata = configsMap.get("MethodConfig");
-        Assert.assertTrue(beansMetadata.isEmpty());
+        assertTrue(beansMetadata.isEmpty());
 
         beansMetadata = configsMap.get("ModuleConfig");
-        Assert.assertEquals("dubbo-demo-module", beansMetadata.get("my-module").get("name"));
+        assertEquals("dubbo-demo-module", beansMetadata.get("my-module").get("name"));
 
         beansMetadata = configsMap.get("MonitorConfig");
-        Assert.assertTrue(beansMetadata.isEmpty());
+        assertTrue(beansMetadata.isEmpty());
 
         beansMetadata = configsMap.get("ProtocolConfig");
-        Assert.assertEquals("dubbo", beansMetadata.get("my-protocol").get("name"));
+        assertEquals("dubbo", beansMetadata.get("my-protocol").get("name"));
 
         beansMetadata = configsMap.get("ProviderConfig");
-        Assert.assertEquals("127.0.0.1", beansMetadata.get("my-provider").get("host"));
+        assertEquals("127.0.0.1", beansMetadata.get("my-provider").get("host"));
 
         beansMetadata = configsMap.get("ReferenceConfig");
-        Assert.assertTrue(beansMetadata.isEmpty());
+        assertTrue(beansMetadata.isEmpty());
 
         beansMetadata = configsMap.get("RegistryConfig");
-        Assert.assertEquals("N/A", beansMetadata.get("my-registry").get("address"));
+        assertEquals("N/A", beansMetadata.get("my-registry").get("address"));
 
         beansMetadata = configsMap.get("ServiceConfig");
-        Assert.assertFalse(beansMetadata.isEmpty());
+        assertFalse(beansMetadata.isEmpty());
     }
 
     @Test
@@ -176,12 +180,12 @@ class DubboEndpointAnnotationAutoConfigurationTest {
 
         Map<String, Map<String, Object>> services = dubboServicesMetadataEndpoint.services();
 
-        Assert.assertEquals(1, services.size());
+        assertEquals(1, services.size());
 
         Map<String, Object> demoServiceMeta = services.get(
                 "ServiceBean:org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAnnotationAutoConfigurationTest$DemoService:1.0.0:");
 
-        Assert.assertEquals("1.0.0", demoServiceMeta.get("version"));
+        assertEquals("1.0.0", demoServiceMeta.get("version"));
     }
 
     @Test
@@ -189,13 +193,13 @@ class DubboEndpointAnnotationAutoConfigurationTest {
 
         Map<String, Map<String, Object>> references = dubboReferencesMetadataEndpoint.references();
 
-        Assert.assertTrue(!references.isEmpty());
+        assertFalse(references.isEmpty());
         String injectedField =
                 "private " + DemoService.class.getName() + " " + ConsumerConfiguration.class.getName() + ".demoService";
         Map<String, Object> referenceMap = references.get(injectedField);
-        Assert.assertNotNull(referenceMap);
-        Assert.assertEquals(DemoService.class, referenceMap.get("interfaceClass"));
-        Assert.assertEquals(
+        assertNotNull(referenceMap);
+        assertEquals(DemoService.class, referenceMap.get("interfaceClass"));
+        assertEquals(
                 BaseServiceMetadata.buildServiceKey(
                         DemoService.class.getName(),
                         ConsumerConfiguration.DEMO_GROUP,
@@ -208,19 +212,18 @@ class DubboEndpointAnnotationAutoConfigurationTest {
 
         SortedMap<String, Object> properties = dubboPropertiesEndpoint.properties();
 
-        Assert.assertEquals("my-application", properties.get("dubbo.application.id"));
-        Assert.assertEquals("dubbo-demo-application", properties.get("dubbo.application.name"));
-        Assert.assertEquals("my-module", properties.get("dubbo.module.id"));
-        Assert.assertEquals("dubbo-demo-module", properties.get("dubbo.module.name"));
-        Assert.assertEquals("my-registry", properties.get("dubbo.registry.id"));
-        Assert.assertEquals("N/A", properties.get("dubbo.registry.address"));
-        Assert.assertEquals("my-protocol", properties.get("dubbo.protocol.id"));
-        Assert.assertEquals("dubbo", properties.get("dubbo.protocol.name"));
-        Assert.assertEquals("20880", properties.get("dubbo.protocol.port"));
-        Assert.assertEquals("my-provider", properties.get("dubbo.provider.id"));
-        Assert.assertEquals("127.0.0.1", properties.get("dubbo.provider.host"));
-        Assert.assertEquals(
-                "org.apache.dubbo.spring.boot.actuate.autoconfigure", properties.get("dubbo.scan.basePackages"));
+        assertEquals("my-application", properties.get("dubbo.application.id"));
+        assertEquals("dubbo-demo-application", properties.get("dubbo.application.name"));
+        assertEquals("my-module", properties.get("dubbo.module.id"));
+        assertEquals("dubbo-demo-module", properties.get("dubbo.module.name"));
+        assertEquals("my-registry", properties.get("dubbo.registry.id"));
+        assertEquals("N/A", properties.get("dubbo.registry.address"));
+        assertEquals("my-protocol", properties.get("dubbo.protocol.id"));
+        assertEquals("dubbo", properties.get("dubbo.protocol.name"));
+        assertEquals("20880", properties.get("dubbo.protocol.port"));
+        assertEquals("my-provider", properties.get("dubbo.provider.id"));
+        assertEquals("127.0.0.1", properties.get("dubbo.provider.host"));
+        assertEquals("org.apache.dubbo.spring.boot.actuate.autoconfigure", properties.get("dubbo.scan.basePackages"));
     }
 
     @Test
@@ -235,7 +238,7 @@ class DubboEndpointAnnotationAutoConfigurationTest {
     private void testHttpEndpoint(String actuatorURI, Supplier<Map> resultsSupplier) throws JsonProcessingException {
         String actuatorURL = actuatorBaseURL + actuatorURI;
         String response = restTemplate.getForObject(actuatorURL, String.class);
-        Assert.assertEquals(objectMapper.writeValueAsString(resultsSupplier.get()), response);
+        assertEquals(objectMapper.writeValueAsString(resultsSupplier.get()), response);
     }
 
     interface DemoService {

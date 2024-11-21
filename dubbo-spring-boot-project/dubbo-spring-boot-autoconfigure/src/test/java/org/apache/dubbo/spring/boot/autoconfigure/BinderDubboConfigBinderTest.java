@@ -23,23 +23,23 @@ import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link BinderDubboConfigBinder} Test
  *
  * @since 2.7.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "classpath:/dubbo.properties")
 @ContextConfiguration(classes = BinderDubboConfigBinder.class)
 class BinderDubboConfigBinderTest {
@@ -56,17 +56,17 @@ class BinderDubboConfigBinderTest {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         Map<String, Object> properties = getSubProperties(environment.getPropertySources(), "dubbo.application");
         dubboConfigBinder.bind(properties, true, true, applicationConfig);
-        Assert.assertEquals("hello", applicationConfig.getName());
-        Assert.assertEquals("world", applicationConfig.getOwner());
+        assertEquals("hello", applicationConfig.getName());
+        assertEquals("world", applicationConfig.getOwner());
 
         RegistryConfig registryConfig = new RegistryConfig();
         properties = getSubProperties(environment.getPropertySources(), "dubbo.registry");
         dubboConfigBinder.bind(properties, true, true, registryConfig);
-        Assert.assertEquals("10.20.153.17", registryConfig.getAddress());
+        assertEquals("10.20.153.17", registryConfig.getAddress());
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         properties = getSubProperties(environment.getPropertySources(), "dubbo.protocol");
         dubboConfigBinder.bind(properties, true, true, protocolConfig);
-        Assert.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
+        assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
     }
 }

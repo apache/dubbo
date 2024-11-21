@@ -26,24 +26,25 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link DubboAutoConfiguration} Test On single Dubbo Configuration
  *
  * @since 2.7.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(
         properties = {
             "dubbo.application.name = dubbo-demo-single-application",
@@ -58,7 +59,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = {DubboAutoConfigurationOnSingleConfigTest.class})
 @EnableAutoConfiguration
 @ComponentScan
-public class DubboAutoConfigurationOnSingleConfigTest {
+class DubboAutoConfigurationOnSingleConfigTest {
 
     @Autowired
     private ApplicationConfig applicationConfig;
@@ -81,32 +82,32 @@ public class DubboAutoConfigurationOnSingleConfigTest {
     @Autowired
     private ProtocolConfig protocolConfig;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         DubboBootstrap.reset();
     }
 
-    @After
-    public void destroy() {
+    @AfterEach
+    void destroy() {
         DubboBootstrap.reset();
     }
 
     @Test
-    public void testSingleConfig() {
+    void testSingleConfig() {
         // application
-        Assert.assertEquals("dubbo-demo-single-application", applicationConfig.getName());
+        assertEquals("dubbo-demo-single-application", applicationConfig.getName());
         // module
-        Assert.assertEquals("dubbo-demo-module", moduleConfig.getName());
+        assertEquals("dubbo-demo-module", moduleConfig.getName());
         // registry
-        Assert.assertEquals("test://192.168.99.100:32770", registryConfig.getAddress());
+        assertEquals("test://192.168.99.100:32770", registryConfig.getAddress());
         // monitor
-        Assert.assertEquals("test://127.0.0.1:32770", monitorConfig.getAddress());
+        assertEquals("test://127.0.0.1:32770", monitorConfig.getAddress());
         // protocol
-        Assert.assertEquals("dubbo", protocolConfig.getName());
-        Assert.assertEquals(Integer.valueOf(20880), protocolConfig.getPort());
+        assertEquals("dubbo", protocolConfig.getName());
+        assertEquals(Integer.valueOf(20880), protocolConfig.getPort());
         // consumer
-        Assert.assertEquals("netty", consumerConfig.getClient());
+        assertEquals("netty", consumerConfig.getClient());
         // provider
-        Assert.assertEquals("127.0.0.1", providerConfig.getHost());
+        assertEquals("127.0.0.1", providerConfig.getHost());
     }
 }

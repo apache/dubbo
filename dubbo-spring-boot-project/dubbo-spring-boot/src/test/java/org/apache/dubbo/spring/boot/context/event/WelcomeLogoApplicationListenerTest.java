@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.spring.boot.context.event;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * {@link WelcomeLogoApplicationListener} Test
@@ -29,16 +30,16 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see WelcomeLogoApplicationListener
  * @since 2.7.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {WelcomeLogoApplicationListener.class})
-public class WelcomeLogoApplicationListenerTest {
+class WelcomeLogoApplicationListenerTest {
 
     @Autowired
     private WelcomeLogoApplicationListener welcomeLogoApplicationListener;
 
     @Test
-    public void testOnApplicationEvent() {
+    void testOnApplicationEvent() {
 
-        Assert.assertNotNull(welcomeLogoApplicationListener.buildBannerText());
+        assertNotNull(welcomeLogoApplicationListener.buildBannerText());
     }
 }

@@ -119,12 +119,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!--JUnit Jupiter Engine to depend on the JUnit4 engine and JUnit 4 API  -->
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>

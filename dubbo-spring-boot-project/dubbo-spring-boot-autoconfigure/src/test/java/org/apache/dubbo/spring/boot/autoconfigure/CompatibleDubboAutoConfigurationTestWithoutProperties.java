@@ -21,28 +21,30 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotati
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * {@link DubboAutoConfiguration} Test
  *
  * @see DubboAutoConfiguration
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(
         classes = CompatibleDubboAutoConfigurationTestWithoutProperties.class,
         properties = {"dubbo.application.name=demo"})
 @EnableAutoConfiguration
-public class CompatibleDubboAutoConfigurationTestWithoutProperties {
+class CompatibleDubboAutoConfigurationTestWithoutProperties {
 
     @Autowired(required = false)
     private ServiceAnnotationPostProcessor serviceAnnotationPostProcessor;
@@ -50,22 +52,22 @@ public class CompatibleDubboAutoConfigurationTestWithoutProperties {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         DubboBootstrap.reset();
     }
 
-    @After
-    public void destroy() {
+    @AfterEach
+    void destroy() {
         DubboBootstrap.reset();
     }
 
     @Test
-    public void testBeans() {
-        Assert.assertNull(serviceAnnotationPostProcessor);
+    void testBeans() {
+        assertNull(serviceAnnotationPostProcessor);
 
         ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =
                 DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
-        Assert.assertNotNull(referenceAnnotationBeanPostProcessor);
+        assertNotNull(referenceAnnotationBeanPostProcessor);
     }
 }
