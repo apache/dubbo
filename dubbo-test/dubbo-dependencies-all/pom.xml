@@ -384,11 +384,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-spring-boot-actuator-autoconfigure</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-spring-boot-autoconfigure-compatible</artifactId>
       <version>${project.version}</version>
     </dependency>

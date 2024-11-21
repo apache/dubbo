@@ -94,7 +94,7 @@ public final class HttpUtils {
 
     public static List<String> parseAccept(String header) {
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         List<Item<String>> mediaTypes = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
@@ -126,7 +126,7 @@ public final class HttpUtils {
     public static List<Locale> parseAcceptLanguage(String header) {
         List<Item<Locale>> locales = new ArrayList<>();
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
@@ -138,7 +138,7 @@ public final class HttpUtils {
     public static List<Locale> parseContentLanguage(String header) {
         List<Locale> locales = new ArrayList<>();
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         for (String item : StringUtils.tokenize(header, ',')) {
             locales.add(parseLocale(item));

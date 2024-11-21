@@ -460,8 +460,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: "./dubbo"
-
-      - name: "Setup GraalVM environment"
+      - name: "Set up GraalVM environment"
         uses: graalvm/setup-graalvm@v1
         with:
           version: '22.3.0'
@@ -469,32 +468,44 @@ jobs:
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
-
-      - name: "Setup Zookeeper environment"
+      - name: "Set up Zookeeper environment"
         run: |
           wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
           tar -zxvf apache-zookeeper-3.8.4-bin.tar.gz
           mv apache-zookeeper-3.8.4-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.4-bin/conf/zoo.cfg
           apache-zookeeper-3.8.4-bin/bin/zkServer.sh start
-
       - name: "Check environment"
         run: |
           java --version
           native-image --version
-
+      - name: "Set current date as env variable"
+        run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - name: "Restore local Maven repository cache"
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
       - name: "Compile Dubbo (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo
           ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
-
-      - name: "Compile and run Dubbo demo for native (Linux)"
+      - name: "Checkout dubbo-samples repository"
+        uses: actions/checkout@v4
+        with:
+          repository: 'apache/dubbo-samples'
+          ref: master
+          path: "./dubbo-samples"
+      - name: "Compile and run Dubbo native image demo"
         run: |
-          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-interface
-          MVNW="${{ github.workspace }}/dubbo/mvnw ${{ env.MAVEN_ARGS }} -T 2C -Dmaven.test.skip=true"
-          $MVNW clean install
-          cd ../dubbo-demo-native-provider
-          $MVNW clean package -P native  native:compile
-          nohup ./target/dubbo-demo-native-provider &
-          cd ../dubbo-demo-native-consumer
+          MVNW="${{ github.workspace }}/dubbo-samples/mvnw ${{ env.MAVEN_ARGS }} -Dmaven.test.skip=true"
+          cd ${{ github.workspace }}/dubbo-samples/2-advanced/dubbo-samples-native-image/dubbo-samples-native-image-provider
           $MVNW clean package -P native native:compile
-          ./target/dubbo-demo-native-consumer
+          nohup ./target/dubbo-samples-native-image-provider &
+          sleep 10
+          curl \
+            --header "Content-Type: application/json" \
+            --data '{"name":"Dubbo"}' \
+            http://localhost:50052/org.apache.dubbo.nativeimage.DemoService/sayHello/

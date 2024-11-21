@@ -27,8 +27,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +40,9 @@ class DubboAppenderTest {
         when(event.getLevel()).thenReturn(Level.INFO);
         when(event.getThreadName()).thenReturn("thread-name");
         when(event.getMessage()).thenReturn(new SimpleMessage("message"));
+
+        DubboAppender.clear();
+        DubboAppender.doStop();
     }
 
     @AfterEach
@@ -52,7 +53,7 @@ class DubboAppenderTest {
 
     @Test
     void testAvailable() {
-        assumeFalse(DubboAppender.available);
+        assertThat(DubboAppender.available, is(false));
         DubboAppender.doStart();
         assertThat(DubboAppender.available, is(true));
         DubboAppender.doStop();
@@ -62,8 +63,9 @@ class DubboAppenderTest {
     @Test
     void testAppend() {
         DubboAppender appender = new DubboAppender();
+        assertThat(DubboAppender.logList, hasSize(0));
         appender.append(event);
-        assumeTrue(DubboAppender.logList.isEmpty());
+        assertThat(DubboAppender.logList, hasSize(0));
         DubboAppender.doStart();
         appender.append(event);
         assertThat(DubboAppender.logList, hasSize(1));
@@ -75,7 +77,7 @@ class DubboAppenderTest {
         DubboAppender.doStart();
         DubboAppender appender = new DubboAppender();
         appender.append(event);
-        assumeTrue(1 == DubboAppender.logList.size());
+        assertThat(DubboAppender.logList, hasSize(1));
         DubboAppender.clear();
         assertThat(DubboAppender.logList, hasSize(0));
     }

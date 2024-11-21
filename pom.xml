@@ -79,6 +79,7 @@
     <module>dubbo-rpc</module>
     <module>dubbo-cluster</module>
     <module>dubbo-registry</module>
+    <module>dubbo-configcenter</module>
     <module>dubbo-config</module>
     <module>dubbo-serialization</module>
     <module>dubbo-compatible</module>
@@ -106,14 +107,10 @@
     <module>dubbo-plugin/dubbo-rest-jaxrs</module>
     <module>dubbo-plugin/dubbo-rest-spring</module>
     <module>dubbo-plugin/dubbo-triple-servlet</module>
-    <module>dubbo-demo/dubbo-demo-interface</module>
-    <module>dubbo-demo/dubbo-demo-xml</module>
-    <module>dubbo-demo/dubbo-demo-annotation</module>
+    <module>dubbo-plugin/dubbo-triple-websocket</module>
     <module>dubbo-demo/dubbo-demo-api</module>
-    <module>dubbo-demo/dubbo-demo-generic-call</module>
-    <module>dubbo-demo/dubbo-demo-triple</module>
-    <module>dubbo-demo/dubbo-demo-native</module>
     <module>dubbo-demo/dubbo-demo-spring-boot</module>
+    <module>dubbo-demo/dubbo-demo-spring-boot-idl</module>
   </modules>
 
   <scm>
@@ -175,7 +172,7 @@
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.3.2-SNAPSHOT</revision>
+    <revision>3.3.3-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
