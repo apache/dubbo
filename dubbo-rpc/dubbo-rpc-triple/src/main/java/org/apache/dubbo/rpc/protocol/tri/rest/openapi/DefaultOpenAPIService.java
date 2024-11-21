@@ -101,7 +101,14 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
     @Override
     public HttpResult<?> handle(String path, HttpRequest httpRequest, HttpResponse httpResponse) {
         OpenAPIRequest request = httpRequest.attribute(OpenAPIRequest.class.getName());
-        request.setGroup(RequestUtils.getPathVariable(httpRequest, "group"));
+        String group = RequestUtils.getPathVariable(httpRequest, "group");
+        if (group != null) {
+            int index = group.lastIndexOf('.');
+            if (index > 0) {
+                group = group.substring(0, index);
+            }
+            request.setGroup(group);
+        }
         return HttpResult.builder()
                 .contentType(MediaType.APPLICATION + '/' + request.getFormat())
                 .body(handleDocument(request).getBytes(StandardCharsets.UTF_8))

@@ -20,6 +20,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public final class Components extends Node<Components> {
 
@@ -37,7 +38,7 @@ public final class Components extends Node<Components> {
 
     public Components addSchema(String name, Schema schema) {
         if (schemas == null) {
-            schemas = new LinkedHashMap<>();
+            schemas = new TreeMap<>();
         }
         schemas.put(name, schema);
         return this;

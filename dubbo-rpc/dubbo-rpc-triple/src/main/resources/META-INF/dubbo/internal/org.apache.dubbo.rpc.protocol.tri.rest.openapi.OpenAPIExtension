@@ -1,1 +1,2 @@
 resolver-basic=org.apache.dubbo.rpc.protocol.tri.rest.support.basic.BasicOpenAPIDefinitionResolver
+naming-strategy-default=org.apache.dubbo.rpc.protocol.tri.rest.openapi.DefaultOpenAPINamingStrategy

@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.springboot.demo.servlet;
+package org.apache.dubbo.springboot.demo.servlet.sub;
+
+import org.apache.dubbo.springboot.demo.servlet.Animal;
 
 public class Dog extends Animal {
 

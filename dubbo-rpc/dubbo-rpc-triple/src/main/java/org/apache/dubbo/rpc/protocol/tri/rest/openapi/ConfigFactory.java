@@ -146,7 +146,7 @@ public final class ConfigFactory {
             if (valueType == String.class) {
                 method.invoke(config, value);
             } else if (valueType == Boolean.class) {
-                method.invoke(config, Boolean.valueOf(value.toLowerCase()));
+                method.invoke(config, StringUtils.toBoolean(value, false));
             } else if (valueType.isArray()) {
                 method.invoke(config, new Object[] {StringUtils.tokenize(value)});
             }

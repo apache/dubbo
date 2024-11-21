@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -207,7 +208,13 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
         if (LOGGER.isDebugEnabled()) {
             try {
-                LOGGER.debug("Http response body sent: '{}' by [{}]", JsonUtils.toJson(data), httpChannel);
+                String text;
+                if (data instanceof byte[]) {
+                    text = new String((byte[]) data, StandardCharsets.UTF_8);
+                } else {
+                    text = JsonUtils.toJson(data);
+                }
+                LOGGER.debug("Http response body sent: '{}' by [{}]", text, httpChannel);
             } catch (Throwable ignored) {
             }
         }

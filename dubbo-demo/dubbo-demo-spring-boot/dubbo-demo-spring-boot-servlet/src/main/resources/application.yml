@@ -29,7 +29,7 @@ dubbo:
       rest:
         openapi:
           cache: false
-          schema-flatten: true
+          schema-flatten: false
       servlet:
         enabled: true
   registry:

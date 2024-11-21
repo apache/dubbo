@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.remoting.http12.HttpMethods;
@@ -42,28 +43,50 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityScheme;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Server;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 final class DefinitionMerger {
 
     private static final FluentLogger LOG = FluentLogger.of(DefinitionMerger.class);
+    private static final String NAMING_STRATEGY_PREFIX = "naming-strategy-";
+    private static final String NAMING_STRATEGY_DEFAULT = "default";
 
+    private final ExtensionFactory extensionFactory;
     private final ConfigFactory configFactory;
+    private OpenAPINamingStrategy openAPINamingStrategy;
 
     DefinitionMerger(FrameworkModel frameworkModel) {
+        extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
+    }
+
+    private OpenAPINamingStrategy getNamingStrategy() {
+        if (openAPINamingStrategy == null) {
+            String strategy = configFactory.getGlobalConfig().getNameStrategy();
+            String name = NAMING_STRATEGY_PREFIX + (strategy == null ? NAMING_STRATEGY_DEFAULT : strategy);
+            openAPINamingStrategy = extensionFactory.getExtension(OpenAPINamingStrategy.class, name);
+            Objects.requireNonNull(openAPINamingStrategy, "Can't find OpenAPINamingStrategy with name: " + name);
+        }
+        return openAPINamingStrategy;
     }
 
     public OpenAPI merge(List<OpenAPI> openAPIs, OpenAPIRequest request) {
         Info info = new Info();
         OpenAPI model = new OpenAPI().setInfo(info);
 
+        OpenAPIConfig globalConfig = configFactory.getGlobalConfig();
+        model.setGlobalConfig(globalConfig);
         if (openAPIs.isEmpty()) {
-            applyConfig(model, configFactory.getGlobalConfig());
+            applyConfig(model, globalConfig);
             return model;
         }
 
@@ -80,7 +103,9 @@ final class DefinitionMerger {
         }
         model.setOpenapi(Helper.formatSpecVersion(request.getOpenapi()));
 
-        applyConfig(model, configFactory.getConfig(group));
+        OpenAPIConfig config = configFactory.getConfig(group);
+        model.setConfig(config);
+        applyConfig(model, config);
 
         for (OpenAPI api : openAPIs) {
             if (isServiceNotMatch(api.getMeta().getServiceInterface(), services)) {
@@ -98,9 +123,11 @@ final class DefinitionMerger {
             mergeTags(model, api);
         }
 
-        applyConfig(model, configFactory.getGlobalConfig());
+        applyConfig(model, globalConfig);
 
         addSchemas(model, version, group);
+
+        completeOperations(model);
 
         completeModel(model);
 
@@ -436,15 +463,7 @@ final class DefinitionMerger {
     }
 
     private void addSchemas(OpenAPI api, String version, String group) {
-        Components components = api.getComponents();
-        if (components == null) {
-            api.setComponents(components = new Components());
-        }
-        Map<String, Schema> schemas = components.getSchemas();
-        if (schemas == null) {
-            components.setSchemas(schemas = new TreeMap<>());
-        }
-
+        Map<Schema, Schema> schemas = new IdentityHashMap<>();
         for (PathItem pathItem : api.getPaths().values()) {
             Map<HttpMethods, Operation> operations = pathItem.getOperations();
             if (operations == null) {
@@ -495,9 +514,47 @@ final class DefinitionMerger {
                 }
             }
         }
+
+        Components components = api.getComponents();
+        if (components == null) {
+            api.setComponents(components = new Components());
+        }
+
+        Set<String> names = CollectionUtils.newHashSet(schemas.size());
+        for (Schema schema : schemas.keySet()) {
+            String name = schema.getName();
+            if (name != null) {
+                names.add(name);
+            }
+        }
+
+        OpenAPINamingStrategy strategy = getNamingStrategy();
+        for (Schema schema : schemas.values()) {
+            String name = schema.getName();
+            if (name == null) {
+                Class<?> clazz = schema.getJavaType();
+                name = strategy.generateSchemaName(clazz, api);
+                for (int i = 1; i < 100; i++) {
+                    if (names.contains(name)) {
+                        name = strategy.resolveSchemaNameConflict(i, name, clazz, api);
+                    } else {
+                        names.add(name);
+                        break;
+                    }
+                }
+                schema.setName(name);
+            }
+
+            for (Schema sourceSchema : schema.getSourceSchemas()) {
+                sourceSchema.setTargetSchema(schema);
+                sourceSchema.setRef("#/components/schemas/" + name);
+            }
+            schema.setSourceSchemas(null);
+            components.addSchema(name, schema);
+        }
     }
 
-    private void addSchema(Schema schema, Map<String, Schema> schemas, String group, String version) {
+    private void addSchema(Schema schema, Map<Schema, Schema> schemas, String group, String version) {
         if (schema == null) {
             return;
         }
@@ -506,8 +563,12 @@ final class DefinitionMerger {
 
         Map<String, Schema> properties = schema.getProperties();
         if (properties != null) {
-            for (Schema property : properties.values()) {
+            Iterator<Entry<String, Schema>> it = properties.entrySet().iterator();
+            while (it.hasNext()) {
+                Entry<String, Schema> entry = it.next();
+                Schema property = entry.getValue();
                 if (isGroupNotMatch(group, property.getGroup()) || isVersionNotMatch(version, property.getVersion())) {
+                    it.remove();
                     continue;
                 }
                 addSchema(property, schemas, group, version);
@@ -544,10 +605,61 @@ final class DefinitionMerger {
             return;
         }
 
-        String name = targetSchema.getJavaType().getSimpleName();
-        schema.setRef("#/components/schemas/" + name);
-        if (schemas.putIfAbsent(name, targetSchema) == null) {
-            addSchema(targetSchema, schemas, group, version);
+        targetSchema.addSourceSchema(schema);
+
+        schemas.computeIfAbsent(targetSchema, s -> {
+            Schema newSchema = s.clone();
+            addSchema(newSchema, schemas, group, version);
+            return newSchema;
+        });
+    }
+
+    private void completeOperations(OpenAPI api) {
+        Map<String, PathItem> paths = api.getPaths();
+        if (paths == null) {
+            return;
+        }
+
+        Set<String> operationIds = new HashSet<>(32);
+        walkOperations(api, operation -> {
+            String operationId = operation.getOperationId();
+            if (operationId != null) {
+                operationIds.add(operationId);
+            }
+        });
+
+        OpenAPINamingStrategy strategy = getNamingStrategy();
+        walkOperations(api, operation -> {
+            String id = operation.getOperationId();
+            if (id != null) {
+                return;
+            }
+            id = strategy.generateOperationId(operation.getMeta(), api);
+            for (int i = 1; i < 100; i++) {
+                if (operationIds.contains(id)) {
+                    id = strategy.resolveOperationIdConflict(i, id, operation.getMeta(), api);
+                } else {
+                    operationIds.add(id);
+                    break;
+                }
+            }
+            operation.setOperationId(id);
+        });
+    }
+
+    private static void walkOperations(OpenAPI api, Consumer<Operation> consumer) {
+        Map<String, PathItem> paths = api.getPaths();
+        if (paths == null) {
+            return;
+        }
+
+        for (PathItem pathItem : paths.values()) {
+            Map<HttpMethods, Operation> operations = pathItem.getOperations();
+            if (operations != null) {
+                for (Operation operation : operations.values()) {
+                    consumer.accept(operation);
+                }
+            }
         }
     }
 

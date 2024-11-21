@@ -82,9 +82,6 @@ public final class Helper {
     }
 
     public static In toIn(ParamType paramType) {
-        if (paramType == null) {
-            return In.QUERY;
-        }
         switch (paramType) {
             case PathVariable:
                 return In.PATH;

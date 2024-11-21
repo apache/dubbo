@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -97,8 +98,9 @@ public final class Schema extends Node<Schema> {
 
     private String group;
     private String version;
+    private Class<?> javaType;
     private transient Schema targetSchema;
-    private transient Class<?> javaType;
+    private transient List<Schema> sourceSchemas;
 
     public String getRef() {
         return ref;
@@ -521,6 +523,15 @@ public final class Schema extends Node<Schema> {
         return this;
     }
 
+    public Class<?> getJavaType() {
+        return javaType;
+    }
+
+    public Schema setJavaType(Class<?> javaType) {
+        this.javaType = javaType;
+        return this;
+    }
+
     public Schema getTargetSchema() {
         return targetSchema;
     }
@@ -530,13 +541,20 @@ public final class Schema extends Node<Schema> {
         return this;
     }
 
-    public Class<?> getJavaType() {
-        return javaType;
+    public List<Schema> getSourceSchemas() {
+        return sourceSchemas;
     }
 
-    public Schema setJavaType(Class<?> javaType) {
-        this.javaType = javaType;
+    public Schema setSourceSchemas(List<Schema> sourceSchemas) {
+        this.sourceSchemas = sourceSchemas;
         return this;
+    }
+
+    public void addSourceSchema(Schema sourceSchema) {
+        if (sourceSchemas == null) {
+            sourceSchemas = new LinkedList<>();
+        }
+        sourceSchemas.add(sourceSchema);
     }
 
     @Override
@@ -565,7 +583,6 @@ public final class Schema extends Node<Schema> {
             return schema;
         }
         write(schema, "format", format);
-        write(schema, "name", name);
         write(schema, "title", title);
         write(schema, "description", description);
         write(schema, "default", defaultValue);
@@ -585,7 +602,16 @@ public final class Schema extends Node<Schema> {
         write(schema, "required", required);
         write(schema, "enum", enumeration);
         if (type != null) {
-            write(schema, "type", type.toString());
+            if (context.isOpenAPI31()) {
+                if (nullable == null || !nullable) {
+                    write(schema, "type", type.toString());
+                } else {
+                    write(schema, "type", new String[] {type.toString(), "null"});
+                }
+            } else {
+                write(schema, "type", type.toString());
+                write(schema, "nullable", nullable);
+            }
         }
         write(schema, "items", items, context);
         write(schema, "properties", properties, context);
@@ -603,7 +629,6 @@ public final class Schema extends Node<Schema> {
         write(schema, "anyOf", anyOf, context);
         write(schema, "not", not, context);
         write(schema, "discriminator", discriminator, context);
-        write(schema, "nullable", nullable);
         write(schema, "writeOnly", writeOnly);
         write(schema, "deprecated", deprecated);
         writeExtensions(schema);

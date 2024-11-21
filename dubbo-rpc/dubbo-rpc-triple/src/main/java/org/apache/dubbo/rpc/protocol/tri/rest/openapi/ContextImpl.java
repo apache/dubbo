@@ -27,12 +27,22 @@ final class ContextImpl extends AbstractContext implements Context {
 
     private final OpenAPIRequest request;
 
+    private Boolean openAPI31;
     private Holder<HttpRequest> httpRequest;
     private Holder<HttpResponse> httpResponse;
 
     ContextImpl(OpenAPI openAPI, SchemaFactory schemaFactory, ExtensionFactory extFactory, OpenAPIRequest request) {
         super(openAPI, schemaFactory, extFactory);
         this.request = request;
+    }
+
+    @Override
+    public boolean isOpenAPI31() {
+        if (openAPI31 == null) {
+            String v = request.getOpenapi();
+            openAPI31 = v != null && v.startsWith("3.1.");
+        }
+        return openAPI31;
     }
 
     @Override

@@ -32,8 +32,6 @@ public interface OpenAPISchemaResolver extends OpenAPIExtension {
 
     interface Context {
 
-        void defineSchema(String name, Class<?> type, Schema schema);
-
         void defineSchema(Class<?> type, Schema schema);
 
         Schema getSchema(ParameterMeta parameter);

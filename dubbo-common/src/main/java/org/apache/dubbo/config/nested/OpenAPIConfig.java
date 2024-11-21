@@ -92,14 +92,9 @@ public class OpenAPIConfig implements Serializable {
     private String securityScheme;
 
     /**
-     * The strategy used to generate operation id.
+     * The strategy used to generate operation id and schema name.
      */
-    private String operationIdStrategy;
-
-    /**
-     * The strategy used to generate schema name.
-     */
-    private String schemaNameStrategy;
+    private String nameStrategy;
 
     /**
      * The default media types that are consumed.
@@ -236,20 +231,12 @@ public class OpenAPIConfig implements Serializable {
         this.securityScheme = securityScheme;
     }
 
-    public String getOperationIdStrategy() {
-        return operationIdStrategy;
+    public String getNameStrategy() {
+        return nameStrategy;
     }
 
-    public void setOperationIdStrategy(String operationIdStrategy) {
-        this.operationIdStrategy = operationIdStrategy;
-    }
-
-    public String getSchemaNameStrategy() {
-        return schemaNameStrategy;
-    }
-
-    public void setSchemaNameStrategy(String schemaNameStrategy) {
-        this.schemaNameStrategy = schemaNameStrategy;
+    public void setNameStrategy(String nameStrategy) {
+        this.nameStrategy = nameStrategy;
     }
 
     public String[] getDefaultConsumesMediaTypes() {

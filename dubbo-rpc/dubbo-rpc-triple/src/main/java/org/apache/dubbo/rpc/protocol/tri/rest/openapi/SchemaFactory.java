@@ -49,7 +49,6 @@ public final class SchemaFactory {
     private final OpenAPISchemaResolver[] resolvers;
     private final OpenAPISchemaPredicate[] predicates;
     private final Map<Class<?>, Optional<Schema>> schemaMap = CollectionUtils.newConcurrentHashMap();
-    private final Map<Class<?>, String> nameMap = CollectionUtils.newConcurrentHashMap();
 
     public SchemaFactory(FrameworkModel frameworkModel) {
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
@@ -62,10 +61,6 @@ public final class SchemaFactory {
         return schemaMap;
     }
 
-    public Map<Class<?>, String> getNameMap() {
-        return nameMap;
-    }
-
     public Schema getSchema(Type type) {
         return getSchema(new TypeParameterMeta(type));
     }
@@ -73,12 +68,6 @@ public final class SchemaFactory {
     public Schema getSchema(ParameterMeta parameter) {
         return new ChainImpl(resolvers, p -> resolveSchema(p.getActualGenericType(), p))
                 .resolve(parameter, new Context() {
-                    @Override
-                    public void defineSchema(String name, Class<?> type, Schema schema) {
-                        schemaMap.putIfAbsent(type, Optional.of(schema));
-                        nameMap.put(type, name);
-                    }
-
                     @Override
                     public void defineSchema(Class<?> type, Schema schema) {
                         schemaMap.putIfAbsent(type, Optional.of(schema));

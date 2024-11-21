@@ -21,13 +21,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
 public interface OpenAPINamingStrategy extends OpenAPIExtension {
 
-    String PREFIX = "naming-strategy-";
+    String generateOperationId(MethodMeta methodMeta, OpenAPI openAPI);
 
-    default String generateOperationId(MethodMeta methodMeta, OpenAPI openAPI) {
-        return null;
-    }
+    String resolveOperationIdConflict(int attempt, String operationId, MethodMeta methodMeta, OpenAPI openAPI);
 
-    default String generateSchemaName(Class<?> type, OpenAPI openAPI) {
-        return null;
-    }
+    String generateSchemaName(Class<?> clazz, OpenAPI openAPI);
+
+    String resolveSchemaNameConflict(int attempt, String schemaName, Class<?> clazz, OpenAPI openAPI);
 }

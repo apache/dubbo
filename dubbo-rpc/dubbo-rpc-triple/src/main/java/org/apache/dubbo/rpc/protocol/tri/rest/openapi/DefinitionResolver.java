@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.Registration;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathCondition;
@@ -44,6 +45,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,6 +92,12 @@ final class DefinitionResolver {
         openAPI.setGlobalConfig(configFactory.getGlobalConfig());
         openAPI.setConfig(configFactory.getConfig(openAPI.getGroup()));
         openAPI.setMeta(serviceMeta);
+
+        String service = serviceMeta.getServiceInterface();
+        int index = service.lastIndexOf('.');
+        openAPI.addTag(new Tag()
+                .setName(index > 0 ? service.substring(index + 1) : service)
+                .setDescription(service));
 
         ResolveContext context = new ResolveContextImpl(openAPI, schemaFactory, extensionFactory);
         for (List<Registration> registrations : registrationsByMethod) {
@@ -189,9 +197,6 @@ final class DefinitionResolver {
             OpenAPI openAPI,
             MethodMeta meta,
             RequestMapping mapping) {
-        if (operation.getOperationId() == null) {
-            operation.setOperationId(meta.getMethod().getName());
-        }
         if (operation.getDeprecated() == null && meta.isHierarchyAnnotated(Deprecated.class)) {
             operation.setDeprecated(true);
         }
@@ -215,8 +220,21 @@ final class DefinitionResolver {
             }
         }
 
+        ServiceMeta serviceMeta = meta.getServiceMeta();
+        if (serviceMeta.getServiceVersion() != null) {
+            operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_GROUP.getName(), In.HEADER)
+                    .setSchema(PrimitiveSchema.STRING.newSchema()));
+        }
+        if (serviceMeta.getServiceGroup() != null) {
+            operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_VERSION.getName(), In.HEADER)
+                    .setSchema(PrimitiveSchema.STRING.newSchema()));
+        }
+        String service = serviceMeta.getServiceInterface();
+        int index = service.lastIndexOf('.');
+        operation.addTag(index > 0 ? service.substring(index + 1) : service);
+
         for (ParameterMeta paramMeta : meta.getParameters()) {
-            resolveParameter(operation, paramMeta, true);
+            resolveParameter(httpMethod, operation, paramMeta, true);
         }
 
         if (httpMethod.supportBody()) {
@@ -242,14 +260,22 @@ final class DefinitionResolver {
         }
     }
 
-    private void resolveParameter(Operation operation, ParameterMeta paramMeta, boolean traverse) {
+    private void resolveParameter(
+            HttpMethods httpMethod, Operation operation, ParameterMeta paramMeta, boolean traverse) {
         String name = paramMeta.getName();
         if (name == null) {
             return;
         }
 
         NamedValueMeta valueMeta = paramMeta.getNamedValueMeta();
-        In in = Helper.toIn(valueMeta.paramType());
+        ParamType paramType = valueMeta.paramType();
+        if (paramType == null) {
+            if (httpMethod.supportBody()) {
+                return;
+            }
+            paramType = ParamType.Param;
+        }
+        In in = Helper.toIn(paramType);
         if (in == null) {
             return;
         }
@@ -284,7 +310,7 @@ final class DefinitionResolver {
         BeanMeta beanMeta = paramMeta.getBeanMeta();
         try {
             for (ParameterMeta ctorParam : beanMeta.getConstructor().getParameters()) {
-                resolveParameter(operation, ctorParam, false);
+                resolveParameter(httpMethod, operation, ctorParam, false);
             }
         } catch (Throwable ignored) {
         }
@@ -292,7 +318,7 @@ final class DefinitionResolver {
             if ((property.getVisibility() & 0b001) == 0) {
                 continue;
             }
-            resolveParameter(operation, property, false);
+            resolveParameter(httpMethod, operation, property, false);
         }
     }
 

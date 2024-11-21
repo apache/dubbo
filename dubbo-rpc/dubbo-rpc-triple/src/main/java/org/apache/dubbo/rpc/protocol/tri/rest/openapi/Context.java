@@ -36,6 +36,8 @@ public interface Context {
 
     OpenAPIConfig getConfig();
 
+    boolean isOpenAPI31();
+
     SchemaFactory getSchemaFactory();
 
     ExtensionFactory getExtensionFactory();
