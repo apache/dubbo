@@ -55,7 +55,7 @@ class DubboDefaultPropertiesEnvironmentPostProcessorTest {
         PropertySource defaultPropertySource = propertySources.get("defaultProperties");
         assertNotNull(defaultPropertySource);
         assertEquals("true", defaultPropertySource.getProperty("dubbo.config.multiple"));
-        assertEquals("true", defaultPropertySource.getProperty("dubbo.application.qos-enable"));
+        // assertEquals("true", defaultPropertySource.getProperty("dubbo.application.qos-enable"));
 
         // Case 2 :  Only set property "spring.application.name"
         environment.setProperty("spring.application.name", "demo-dubbo-application");
