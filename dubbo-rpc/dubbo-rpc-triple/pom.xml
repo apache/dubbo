@@ -148,7 +148,7 @@
       <plugin>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-maven-plugin</artifactId>
-        <version>${project.version}</version>
+        <version>3.3.2</version>
         <executions>
           <execution>
             <goals>

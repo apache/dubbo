@@ -20,7 +20,7 @@ import org.apache.dubbo.remoting.http12.rest.OpenAPI;
 
 import java.util.concurrent.CompletableFuture;
 
-@OpenAPI(hidden = "true")
+@OpenAPI(group = "metadata")
 public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
 
     String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";

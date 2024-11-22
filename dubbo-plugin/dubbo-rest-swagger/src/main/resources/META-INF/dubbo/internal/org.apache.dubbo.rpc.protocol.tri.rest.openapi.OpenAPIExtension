@@ -1,0 +1,2 @@
+resolver-swagger=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.SwaggerOpenAPIDefinitionResolver
+handler-swagger-ui=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.SwaggerUIRequestHandler

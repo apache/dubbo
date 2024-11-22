@@ -94,10 +94,8 @@ final class DefinitionResolver {
         openAPI.setMeta(serviceMeta);
 
         String service = serviceMeta.getServiceInterface();
-        int index = service.lastIndexOf('.');
-        openAPI.addTag(new Tag()
-                .setName(index > 0 ? service.substring(index + 1) : service)
-                .setDescription(service));
+        openAPI.addTag(
+                new Tag().setName(StringUtils.substringAfterLast(service, '.')).setDescription(service));
 
         ResolveContext context = new ResolveContextImpl(openAPI, schemaFactory, extensionFactory);
         for (List<Registration> registrations : registrationsByMethod) {
@@ -197,9 +195,22 @@ final class DefinitionResolver {
             OpenAPI openAPI,
             MethodMeta meta,
             RequestMapping mapping) {
+        if (operation.getGroup() == null) {
+            operation.setGroup(openAPI.getGroup());
+        }
         if (operation.getDeprecated() == null && meta.isHierarchyAnnotated(Deprecated.class)) {
             operation.setDeprecated(true);
         }
+        ServiceMeta serviceMeta = meta.getServiceMeta();
+        if (serviceMeta.getServiceVersion() != null) {
+            operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_GROUP.getName(), In.HEADER)
+                    .setSchema(PrimitiveSchema.STRING.newSchema()));
+        }
+        if (serviceMeta.getServiceGroup() != null) {
+            operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_VERSION.getName(), In.HEADER)
+                    .setSchema(PrimitiveSchema.STRING.newSchema()));
+        }
+        operation.addTag(StringUtils.substringAfterLast(serviceMeta.getServiceInterface(), '.'));
 
         for (int i = 0, len = path.length(), start = 0; i < len; i++) {
             char c = path.charAt(i);
@@ -219,19 +230,6 @@ final class DefinitionResolver {
                 start = 0;
             }
         }
-
-        ServiceMeta serviceMeta = meta.getServiceMeta();
-        if (serviceMeta.getServiceVersion() != null) {
-            operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_GROUP.getName(), In.HEADER)
-                    .setSchema(PrimitiveSchema.STRING.newSchema()));
-        }
-        if (serviceMeta.getServiceGroup() != null) {
-            operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_VERSION.getName(), In.HEADER)
-                    .setSchema(PrimitiveSchema.STRING.newSchema()));
-        }
-        String service = serviceMeta.getServiceInterface();
-        int index = service.lastIndexOf('.');
-        operation.addTag(index > 0 ? service.substring(index + 1) : service);
 
         for (ParameterMeta paramMeta : meta.getParameters()) {
             resolveParameter(httpMethod, operation, paramMeta, true);

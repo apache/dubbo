@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi.model;
 
 import org.apache.dubbo.config.nested.OpenAPIConfig;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Constants;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class OpenAPI extends Node<OpenAPI> {
@@ -236,6 +238,22 @@ public final class OpenAPI extends Node<OpenAPI> {
 
     public String getConfigSetting(String key) {
         return getConfigValue(config -> config == null ? null : config.getSetting(key));
+    }
+
+    public void walkOperations(Consumer<Operation> consumer) {
+        Map<String, PathItem> paths = this.paths;
+        if (paths == null) {
+            return;
+        }
+
+        for (PathItem pathItem : paths.values()) {
+            Map<HttpMethods, Operation> operations = pathItem.getOperations();
+            if (operations != null) {
+                for (Operation operation : operations.values()) {
+                    consumer.accept(operation);
+                }
+            }
+        }
     }
 
     public ServiceMeta getMeta() {

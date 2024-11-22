@@ -26,7 +26,7 @@ import java.util.Arrays;
 
 public class NamedValueMeta {
 
-    public static final NamedValueMeta EMPTY = new NamedValueMeta(false, null);
+    public static final NamedValueMeta EMPTY = new NamedValueMeta(false);
 
     private String name;
     private final boolean required;
@@ -50,10 +50,22 @@ public class NamedValueMeta {
         this.defaultValue = defaultValue;
     }
 
+    public NamedValueMeta(String name, boolean required) {
+        this.name = name;
+        this.required = required;
+        this.defaultValue = null;
+    }
+
     public NamedValueMeta(boolean required, String defaultValue) {
         name = null;
         this.required = required;
         this.defaultValue = defaultValue;
+    }
+
+    public NamedValueMeta(boolean required) {
+        name = null;
+        this.required = required;
+        this.defaultValue = null;
     }
 
     public String name() {

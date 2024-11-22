@@ -136,7 +136,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         private final int paramCount;
 
         FallbackNamedValueMeta(boolean required, boolean noBodyParam, int paramCount) {
-            super(required, null);
+            super(required);
             this.noBodyParam = noBodyParam;
             this.paramCount = paramCount;
         }

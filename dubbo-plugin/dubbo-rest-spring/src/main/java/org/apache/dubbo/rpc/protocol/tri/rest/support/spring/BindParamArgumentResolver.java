@@ -43,7 +43,7 @@ public final class BindParamArgumentResolver extends AbstractAnnotationBaseArgum
 
     @Override
     protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        return new NamedValueMeta(ann.getValue(), param.isAnnotated(Annotations.Nonnull), null);
+        return new NamedValueMeta(ann.getValue(), param.isAnnotated(Annotations.Nonnull));
     }
 
     @Override

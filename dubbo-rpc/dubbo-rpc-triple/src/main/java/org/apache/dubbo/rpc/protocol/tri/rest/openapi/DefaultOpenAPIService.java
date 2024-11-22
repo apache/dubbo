@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.Pair;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
@@ -37,18 +38,22 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -103,11 +108,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
         OpenAPIRequest request = httpRequest.attribute(OpenAPIRequest.class.getName());
         String group = RequestUtils.getPathVariable(httpRequest, "group");
         if (group != null) {
-            int index = group.lastIndexOf('.');
-            if (index > 0) {
-                group = group.substring(0, index);
-            }
-            request.setGroup(group);
+            request.setGroup(StringUtils.substringBeforeLast(group, '.'));
         }
         return HttpResult.builder()
                 .contentType(MediaType.APPLICATION + '/' + request.getFormat())
@@ -116,7 +117,27 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
     }
 
     @Override
+    public Collection<String> getOpenAPIGroups() {
+        Set<String> groups = new LinkedHashSet<>();
+        groups.add(Constants.DEFAULT_GROUP);
+        for (OpenAPI openAPI : getOpenAPIs()) {
+            groups.add(openAPI.getGroup());
+            openAPI.walkOperations(operation -> {
+                String group = operation.getGroup();
+                if (StringUtils.isNotEmpty(group)) {
+                    groups.add(group);
+                }
+            });
+        }
+        return groups;
+    }
+
+    @Override
     public OpenAPI getOpenAPI(OpenAPIRequest request) {
+        return definitionFilter.filter(definitionMerger.merge(getOpenAPIs(), request), request);
+    }
+
+    private List<OpenAPI> getOpenAPIs() {
         if (openAPIs == null) {
             synchronized (this) {
                 if (openAPIs == null) {
@@ -124,7 +145,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
                 }
             }
         }
-        return definitionFilter.filter(definitionMerger.merge(openAPIs, request), request);
+        return openAPIs;
     }
 
     private List<OpenAPI> resolveOpenAPIs() {
@@ -160,7 +181,12 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
         }
 
         String path = RequestUtils.getPathVariable(httpRequest, "path");
-        path = path == null ? API_DOCS : '/' + path;
+        if (StringUtils.isEmpty(path)) {
+            throw HttpResult.found(PathUtils.join(httpRequest.uri(), "swagger-ui/index.html"))
+                    .toPayload();
+        }
+
+        path = '/' + path;
         List<Match<OpenAPIRequestHandler>> matches = tree.matchRelaxed(path);
         if (matches.isEmpty()) {
             throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());

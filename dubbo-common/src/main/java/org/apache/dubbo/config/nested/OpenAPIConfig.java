@@ -290,4 +290,8 @@ public class OpenAPIConfig implements Serializable {
     public String getSetting(String key) {
         return settings == null ? null : settings.get(key);
     }
+
+    public String getSetting(String key, String defaultValue) {
+        return settings == null ? defaultValue : settings.getOrDefault(key, defaultValue);
+    }
 }

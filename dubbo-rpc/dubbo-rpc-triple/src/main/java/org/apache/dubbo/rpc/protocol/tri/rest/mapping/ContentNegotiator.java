@@ -171,7 +171,18 @@ public class ContentNegotiator {
             for (String ext : new String[] {"txt", "md", "csv", "log", "properties"}) {
                 extensionMapping.put(ext, MediaType.TEXT_PLAIN);
             }
-
+            for (String ext : new String[] {"jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "tiff", "ico", "heif"}) {
+                extensionMapping.put(ext, new MediaType("image", ext));
+            }
+            for (String ext : new String[] {"zip", "gz", "7z", "tar", "rar"}) {
+                extensionMapping.put(ext, MediaType.APPLICATION_OCTET_STREAM);
+            }
+            for (String ext : new String[] {"xls", "xlsx", "doc", "docx", "ppt", "pptx", "pdf"}) {
+                extensionMapping.put(ext, MediaType.APPLICATION_OCTET_STREAM);
+            }
+            for (String ext : new String[] {"mp3", "m4a", "mp4", "avi", "flv"}) {
+                extensionMapping.put(ext, MediaType.APPLICATION_OCTET_STREAM);
+            }
             this.extensionMapping = extensionMapping;
         }
         MediaType mediaType = extensionMapping.get(extension);

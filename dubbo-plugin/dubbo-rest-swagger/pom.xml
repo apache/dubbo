@@ -19,12 +19,18 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-plugin</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>dubbo-rest-swagger</artifactId>
+
+  <properties>
+    <swagger-annotations.version>2.2.25</swagger-annotations.version>
+    <swagger-ui.version>5.18.2</swagger-ui.version>
+    <webjars-locator.version>1.0.0</webjars-locator.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -34,16 +40,19 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.6.0</version>
-      <scope>provided</scope>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>${swagger-annotations.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-openapi-deployment</artifactId>
-      <version>3.16.0</version>
-      <scope>provided</scope>
+      <groupId>org.webjars</groupId>
+      <artifactId>swagger-ui</artifactId>
+      <version>${swagger-ui.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>webjars-locator-lite</artifactId>
+      <version>${webjars-locator.version}</version>
     </dependency>
 
     <dependency>

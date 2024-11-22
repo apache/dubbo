@@ -297,6 +297,14 @@ public final class RadixTree<T> {
     private static <T> void addMatch(Node<T> node, Map<String, String> variableMap, List<Match<T>> matches) {
         List<Pair<PathExpression, T>> values = node.values;
         if (values.isEmpty()) {
+            if (node.fuzzyChildren.isEmpty()) {
+                return;
+            }
+            for (Entry<PathSegment, Node<T>> entry : node.fuzzyChildren.entrySet()) {
+                if (entry.getKey().getType() == Type.WILDCARD_TAIL) {
+                    addMatch(entry.getValue(), variableMap, matches);
+                }
+            }
             return;
         }
         variableMap = variableMap.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(variableMap);

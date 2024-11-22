@@ -19,7 +19,11 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
+import java.util.Collection;
+
 public interface OpenAPIService {
+
+    Collection<String> getOpenAPIGroups();
 
     OpenAPI getOpenAPI(OpenAPIRequest request);
 

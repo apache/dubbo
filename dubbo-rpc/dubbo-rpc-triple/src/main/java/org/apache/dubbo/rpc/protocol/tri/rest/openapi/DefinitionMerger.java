@@ -52,7 +52,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Consumer;
 
 final class DefinitionMerger {
 
@@ -338,30 +337,24 @@ final class DefinitionMerger {
 
         Map<HttpMethods, Operation> fromOperations = from.getOperations();
         if (fromOperations != null) {
-            Map<HttpMethods, Operation> operations = pathItem.getOperations();
-            if (operations == null) {
-                pathItem.setOperations(Node.clone(fromOperations));
-            } else {
-                for (Entry<HttpMethods, Operation> entry : fromOperations.entrySet()) {
-                    HttpMethods httpMethod = entry.getKey();
-                    Operation fromOperation = entry.getValue();
+            for (Entry<HttpMethods, Operation> entry : fromOperations.entrySet()) {
+                HttpMethods httpMethod = entry.getKey();
+                Operation fromOperation = entry.getValue();
+                if (isGroupNotMatch(group, fromOperation.getGroup())
+                        || isVersionNotMatch(version, fromOperation.getVersion())
+                        || isTagNotMatch(tags, fromOperation.getTags())) {
+                    continue;
+                }
 
-                    if (isGroupNotMatch(group, fromOperation.getGroup())
-                            || isVersionNotMatch(version, fromOperation.getVersion())
-                            || isTagNotMatch(tags, fromOperation.getTags())) {
-                        continue;
-                    }
-
-                    Operation operation = operations.get(httpMethod);
-                    if (operation == null) {
-                        operations.put(httpMethod, fromOperation.clone());
-                    } else if (operation.getMeta() != null) {
-                        LOG.internalWarn(
-                                "Operation already exists, path='{}', httpMethod='{}', method={}",
-                                path,
-                                httpMethod,
-                                fromOperation.getMeta());
-                    }
+                Operation operation = pathItem.getOperation(httpMethod);
+                if (operation == null) {
+                    pathItem.addOperation(httpMethod, fromOperation.clone());
+                } else if (operation.getMeta() != null) {
+                    LOG.internalWarn(
+                            "Operation already exists, path='{}', httpMethod='{}', method={}",
+                            path,
+                            httpMethod,
+                            fromOperation.getMeta());
                 }
             }
         }
@@ -621,7 +614,7 @@ final class DefinitionMerger {
         }
 
         Set<String> operationIds = new HashSet<>(32);
-        walkOperations(api, operation -> {
+        api.walkOperations(operation -> {
             String operationId = operation.getOperationId();
             if (operationId != null) {
                 operationIds.add(operationId);
@@ -629,7 +622,7 @@ final class DefinitionMerger {
         });
 
         OpenAPINamingStrategy strategy = getNamingStrategy();
-        walkOperations(api, operation -> {
+        api.walkOperations(operation -> {
             String id = operation.getOperationId();
             if (id != null) {
                 return;
@@ -645,22 +638,6 @@ final class DefinitionMerger {
             }
             operation.setOperationId(id);
         });
-    }
-
-    private static void walkOperations(OpenAPI api, Consumer<Operation> consumer) {
-        Map<String, PathItem> paths = api.getPaths();
-        if (paths == null) {
-            return;
-        }
-
-        for (PathItem pathItem : paths.values()) {
-            Map<HttpMethods, Operation> operations = pathItem.getOperations();
-            if (operations != null) {
-                for (Operation operation : operations.values()) {
-                    consumer.accept(operation);
-                }
-            }
-        }
     }
 
     private void completeModel(OpenAPI api) {
