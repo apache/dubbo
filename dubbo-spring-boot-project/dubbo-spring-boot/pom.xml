@@ -40,6 +40,12 @@
       <version>${project.version}</version>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-rpc-triple</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
     <!--  spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

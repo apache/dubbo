@@ -207,18 +207,22 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
 
     @Override
     public void export() {
-        if (extensionFactory.getExtensions(OpenAPIDocumentPublisher.class).length == 0) {
+        if (!extensionFactory.hasExtensions(OpenAPIDocumentPublisher.class)) {
             return;
         }
 
-        if (exportFuture != null) {
-            exportFuture.cancel(false);
+        try {
+            if (exportFuture != null) {
+                exportFuture.cancel(false);
+            }
+            exportFuture = frameworkModel
+                    .getBean(FrameworkExecutorRepository.class)
+                    .getMetadataRetryExecutor()
+                    .schedule(this::doExport, 30, TimeUnit.SECONDS);
+            exported = true;
+        } catch (Throwable t) {
+            LOG.internalWarn("Failed to export OpenAPI documents", t);
         }
-        exportFuture = frameworkModel
-                .getBean(FrameworkExecutorRepository.class)
-                .getMetadataRetryExecutor()
-                .schedule(this::doExport, 30, TimeUnit.SECONDS);
-        exported = true;
     }
 
     private void doExport() {

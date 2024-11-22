@@ -41,6 +41,10 @@ public final class ExtensionFactory {
         cache = CollectionUtils.newConcurrentHashMap();
     }
 
+    public <T extends OpenAPIExtension> boolean hasExtensions(Class<T> type) {
+        return getExtensions(type).length > 0;
+    }
+
     public <T extends OpenAPIExtension> T[] getExtensions(Class<T> type) {
         return (T[]) cache.computeIfAbsent(type, k -> {
             List<OpenAPIExtension> list = new ArrayList<>();
