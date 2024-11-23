@@ -51,7 +51,7 @@ public class DubboListenerAutoConfiguration {
 
     @ConditionalOnMissingBean
     @Bean
-    @ConditionalOnProperty(prefix = Constants.H2_SETTINGS_OPENAPI_PREFIX, name = "enabled", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = Constants.H2_SETTINGS_OPENAPI_PREFIX, name = "enabled", havingValue = "true")
     public DubboOpenAPIExportListener dubboOpenAPIExportListener() {
         return new DubboOpenAPIExportListener();
     }

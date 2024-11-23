@@ -29,6 +29,7 @@
   <properties>
     <swagger-annotations.version>2.2.25</swagger-annotations.version>
     <swagger-ui.version>5.18.2</swagger-ui.version>
+    <redoc.version>2.2.0</redoc.version>
     <webjars-locator.version>1.0.0</webjars-locator.version>
   </properties>
 
@@ -48,6 +49,11 @@
       <groupId>org.webjars</groupId>
       <artifactId>swagger-ui</artifactId>
       <version>${swagger-ui.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>redoc</artifactId>
+      <version>2.1.5</version>
     </dependency>
     <dependency>
       <groupId>org.webjars</groupId>

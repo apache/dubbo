@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.remoting.http12.rest.Mapping;
 
 import java.util.concurrent.CompletableFuture;
 
-@OpenAPI(group = "metadata")
+@Mapping(enabled = false)
 public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
 
     String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";

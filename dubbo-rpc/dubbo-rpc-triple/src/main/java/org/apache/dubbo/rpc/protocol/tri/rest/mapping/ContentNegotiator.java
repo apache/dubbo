@@ -171,7 +171,7 @@ public class ContentNegotiator {
             for (String ext : new String[] {"txt", "md", "csv", "log", "properties"}) {
                 extensionMapping.put(ext, MediaType.TEXT_PLAIN);
             }
-            for (String ext : new String[] {"jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "tiff", "ico", "heif"}) {
+            for (String ext : new String[] {"jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "tiff", "ico"}) {
                 extensionMapping.put(ext, new MediaType("image", ext));
             }
             for (String ext : new String[] {"zip", "gz", "7z", "tar", "rar"}) {

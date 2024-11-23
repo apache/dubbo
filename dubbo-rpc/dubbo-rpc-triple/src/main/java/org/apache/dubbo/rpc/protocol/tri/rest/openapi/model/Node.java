@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Node<T extends Node<T>> implements Cloneable {
 
@@ -128,7 +129,7 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
         if (value == null || "".equals(value)) {
             return;
         }
-        node.put(name, value);
+        node.put(name, value instanceof Set ? ((Set<?>) value).toArray() : value);
     }
 
     protected static void write(Map<String, Object> node, String name, Node<?> value, Context context) {

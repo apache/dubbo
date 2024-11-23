@@ -44,7 +44,7 @@ public final class ConfigFactory {
 
     public static boolean isOpenAPIEnabled(FrameworkModel frameworkModel) {
         Environment environment = getEnvironment(frameworkModel);
-        return environment.getConfiguration().getBoolean(H2_SETTINGS_OPENAPI_PREFIX + ".enabled", true);
+        return environment.getConfiguration().getBoolean(H2_SETTINGS_OPENAPI_PREFIX + ".enabled", false);
     }
 
     private static Environment getEnvironment(FrameworkModel frameworkModel) {

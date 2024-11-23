@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.rest.Param;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -34,7 +33,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -103,8 +101,11 @@ public final class BeanMeta extends ParameterMeta {
     }
 
     private Map<String, PropertyMeta> getPropertiesMap() {
+        Map<String, PropertyMeta> propertyMap = this.propertyMap;
         if (propertyMap == null) {
-            propertyMap = resolvePropertyMap(getToolKit(), getPrefix(), type, flatten);
+            propertyMap = new LinkedHashMap<>();
+            resolvePropertyMap(getToolKit(), getPrefix(), type, flatten, propertyMap);
+            this.propertyMap = propertyMap;
         }
         return propertyMap;
     }
@@ -130,10 +131,10 @@ public final class BeanMeta extends ParameterMeta {
         return new ConstructorMeta(toolKit, prefix, ct);
     }
 
-    public static Map<String, PropertyMeta> resolvePropertyMap(
-            RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
+    public static void resolvePropertyMap(
+            RestToolKit toolKit, String prefix, Class<?> type, boolean flatten, Map<String, PropertyMeta> propertyMap) {
         if (type == null || type == Object.class || TypeUtils.isSystemType(type)) {
-            return Collections.emptyMap();
+            return;
         }
 
         Set<String> pbFields = null;
@@ -200,7 +201,6 @@ public final class BeanMeta extends ParameterMeta {
             }
         }
 
-        Map<String, PropertyMeta> properties = CollectionUtils.newLinkedHashMap(allNames.size());
         for (String name : allNames) {
             Field field = fieldMap.get(name);
             Method getMethod = getMethodMap.get(name);
@@ -209,14 +209,12 @@ public final class BeanMeta extends ParameterMeta {
                     ? (setMethod == null ? 0 : 1) << 2 | (getMethod == null ? 0 : 1) << 1 | (field == null ? 0 : 1)
                     : 0b011;
             PropertyMeta meta = new PropertyMeta(toolKit, field, getMethod, setMethod, prefix, name, visibility);
-            properties.put(meta.getName(), meta);
+            propertyMap.put(meta.getName(), meta);
         }
 
         if (flatten) {
-            resolvePropertyMap(toolKit, prefix, type.getSuperclass(), flatten);
+            resolvePropertyMap(toolKit, prefix, type.getSuperclass(), true, propertyMap);
         }
-
-        return properties;
     }
 
     private static String toName(String name, int index) {

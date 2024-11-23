@@ -36,8 +36,6 @@ import java.util.Map;
 @Activate(onClass = "javax.ws.rs.PathParam")
 public class PathParamArgumentResolver implements AnnotationBaseArgumentResolver<Annotation> {
 
-    private NamedValueMeta namedValueMeta;
-
     @Override
     public Class<Annotation> accept() {
         return Annotations.PathParam.type();

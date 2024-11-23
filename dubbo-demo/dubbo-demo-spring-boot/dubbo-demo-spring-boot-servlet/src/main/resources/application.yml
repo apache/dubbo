@@ -28,6 +28,7 @@ dubbo:
     triple:
       rest:
         openapi:
+          enabled: true
           cache: false
           schema-flatten: false
       servlet:

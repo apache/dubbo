@@ -135,7 +135,7 @@ public class NamedValueMeta {
         return parameter;
     }
 
-    public void setParameterMeta(ParameterMeta parameter) {
+    public void setParameter(ParameterMeta parameter) {
         this.parameter = parameter;
     }
 

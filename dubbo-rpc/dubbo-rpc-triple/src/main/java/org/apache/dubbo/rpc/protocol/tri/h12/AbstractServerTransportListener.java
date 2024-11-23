@@ -62,7 +62,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private final HttpChannel httpChannel;
     private final RequestRouter requestRouter;
     private final ExceptionCustomizerWrapper exceptionCustomizerWrapper;
-    private final List<HeaderFilter> headerFilters;
 
     private Executor executor;
     private HEADER httpMetadata;
@@ -75,9 +74,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.httpChannel = httpChannel;
         requestRouter = frameworkModel.getOrRegisterBean(DefaultRequestRouter.class);
         exceptionCustomizerWrapper = new ExceptionCustomizerWrapper(frameworkModel);
-        headerFilters = frameworkModel
-                .getExtensionLoader(HeaderFilter.class)
-                .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
     }
 
     @Override

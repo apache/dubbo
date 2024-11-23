@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -97,6 +98,7 @@ final class DefinitionMerger {
         if (group == null) {
             group = Constants.DEFAULT_GROUP;
         }
+        model.setGroup(group);
         if (version != null) {
             info.setVersion(version);
         }
@@ -613,11 +615,16 @@ final class DefinitionMerger {
             return;
         }
 
-        Set<String> operationIds = new HashSet<>(32);
+        Set<String> allOperationIds = new HashSet<>(32);
+        Set<String> allTags = new HashSet<>(32);
         api.walkOperations(operation -> {
             String operationId = operation.getOperationId();
             if (operationId != null) {
-                operationIds.add(operationId);
+                allOperationIds.add(operationId);
+            }
+            Set<String> tags = operation.getTags();
+            if (tags != null) {
+                allTags.addAll(tags);
             }
         });
 
@@ -629,15 +636,26 @@ final class DefinitionMerger {
             }
             id = strategy.generateOperationId(operation.getMeta(), api);
             for (int i = 1; i < 100; i++) {
-                if (operationIds.contains(id)) {
+                if (allOperationIds.contains(id)) {
                     id = strategy.resolveOperationIdConflict(i, id, operation.getMeta(), api);
                 } else {
-                    operationIds.add(id);
+                    allOperationIds.add(id);
                     break;
                 }
             }
             operation.setOperationId(id);
         });
+
+        List<Tag> tags = api.getTags();
+        if (tags != null) {
+            ListIterator<Tag> it = tags.listIterator();
+            while (it.hasNext()) {
+                if (allTags.contains(it.next().getName())) {
+                    continue;
+                }
+                it.remove();
+            }
+        }
     }
 
     private void completeModel(OpenAPI api) {
@@ -647,6 +665,10 @@ final class DefinitionMerger {
         }
         if (info.getVersion() == null) {
             info.setVersion("v1");
+        }
+        ExternalDocs docs = api.getExternalDocs();
+        if (docs.getUrl() == null && docs.getDescription() == null) {
+            docs.setUrl("../redoc/index.html?group=" + api.getGroup()).setDescription("ReDoc");
         }
     }
 }

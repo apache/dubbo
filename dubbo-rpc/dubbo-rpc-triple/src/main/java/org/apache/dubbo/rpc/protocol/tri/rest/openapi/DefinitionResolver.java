@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 
 final class DefinitionResolver {
 
-    private static final FluentLogger LOG = FluentLogger.of(DefaultOpenAPIService.class);
+    private static final FluentLogger LOG = FluentLogger.of(DefinitionResolver.class);
 
     private final ExtensionFactory extensionFactory;
     private final ConfigFactory configFactory;

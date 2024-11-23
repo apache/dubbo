@@ -182,7 +182,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
 
         String path = RequestUtils.getPathVariable(httpRequest, "path");
         if (StringUtils.isEmpty(path)) {
-            throw HttpResult.found(PathUtils.join(httpRequest.uri(), "swagger-ui/index.html"))
+            throw HttpResult.found(PathUtils.join(httpRequest.path(), "swagger-ui/index.html"))
                     .toPayload();
         }
 

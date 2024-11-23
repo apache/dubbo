@@ -72,7 +72,7 @@ public abstract class NamedValueArgumentResolverSupport {
         } else {
             meta.setNestedTypes(TypeUtils.getNestedActualTypes(meta.genericType()));
         }
-        meta.setParameterMeta(parameter);
+        meta.setParameter(parameter);
         return meta;
     }
 

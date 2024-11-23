@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.swagger;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.StreamUtils;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
@@ -28,34 +27,28 @@ import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.ConfigFactory;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Constants;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIRequestHandler;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIService;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Activate
-public class SwaggerUIRequestHandler implements OpenAPIRequestHandler {
+public class RedocRequestHandler implements OpenAPIRequestHandler {
 
-    private static final String DEFAULT_CDN = "https://unpkg.com/swagger-ui-dist@5.18.2";
-    private static final String INDEX_PATH = "/META-INF/resources/swagger-ui/index.html";
+    private static final String DEFAULT_CDN = "https://cdn.redoc.ly/redoc/latest/bundles";
+    private static final String INDEX_PATH = "/META-INF/resources/redoc/index.html";
 
-    private final FrameworkModel frameworkModel;
     private final ConfigFactory configFactory;
 
     private OpenAPIConfig config;
 
-    public SwaggerUIRequestHandler(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    public RedocRequestHandler(FrameworkModel frameworkModel) {
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
     }
 
@@ -68,60 +61,38 @@ public class SwaggerUIRequestHandler implements OpenAPIRequestHandler {
 
     @Override
     public String[] getPaths() {
-        return new String[] {"/swagger-ui/{*path}"};
+        return new String[] {"/redoc/{*path}"};
     }
 
     @Override
     public HttpResult<?> handle(String path, HttpRequest request, HttpResponse response) {
         String resPath = RequestUtils.getPathVariable(request, "path");
         if (StringUtils.isEmpty(resPath)) {
-            throw HttpResult.found(PathUtils.join(request.uri(), "index.html")).toPayload();
+            throw HttpResult.found(PathUtils.join(request.path(), "index.html")).toPayload();
         }
         String requestPath = StringUtils.substringBeforeLast(resPath, '.');
-        switch (requestPath) {
-            case "index":
-                return handleIndex();
-            case "swagger-config":
-                return handleSwaggerConfig();
-            default:
-                if (requestPath.startsWith("assets/")) {
-                    return handleSwaggerUIAssets(resPath.substring(7));
-                }
+        if (requestPath.equals("index")) {
+            return handleIndex(request.parameter("group", Constants.DEFAULT_GROUP));
+        } else if (requestPath.startsWith("assets/")) {
+            return handleSwaggerUIAssets(resPath.substring(7));
         }
         throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
     }
 
-    private HttpResult<?> handleIndex() {
+    private HttpResult<?> handleIndex(String group) {
         Map<String, String> variables = new HashMap<>(4);
 
         OpenAPIConfig config = getConfig();
-        String cdn = config.getSetting("swagger-ui.cdn");
+        String cdn = config.getSetting("redoc.cdn");
         if (cdn == null) {
-            if (WebjarHelper.ENABLED && WebjarHelper.getInstance().hasWebjar("swagger-ui")) {
+            if (WebjarHelper.ENABLED && WebjarHelper.getInstance().hasWebjar("redoc")) {
                 cdn = "./assets";
             } else {
                 cdn = DEFAULT_CDN;
             }
         }
-        variables.put("swagger-ui.cdn", cdn);
-
-        Map<String, String> settings = config.getSettings();
-        if (settings != null) {
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, String> entry : settings.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith("swagger-ui.settings.")) {
-                    sb.append(",\n            \"")
-                            .append(key.substring(20))
-                            .append("\": ")
-                            .append(entry.getValue());
-                }
-            }
-            if (sb.length() > 0) {
-                variables.put("swagger-ui.settings", sb.toString());
-            }
-        }
-
+        variables.put("redoc.cdn", cdn);
+        variables.put("group", group);
         try {
             String content = StreamUtils.toString(getClass().getResourceAsStream(INDEX_PATH));
             return HttpResult.of(Helper.render(content, variables::get).getBytes(UTF_8));
@@ -130,25 +101,10 @@ public class SwaggerUIRequestHandler implements OpenAPIRequestHandler {
         }
     }
 
-    private HttpResult<?> handleSwaggerConfig() {
-        Collection<String> groups = frameworkModel.getBean(OpenAPIService.class).getOpenAPIGroups();
-        List<Map<String, String>> urls = new ArrayList<>();
-        for (String group : groups) {
-            Map<String, String> url = new LinkedHashMap<>(4);
-            url.put("name", group);
-            url.put("url", "../api-docs/" + group);
-            urls.add(url);
-        }
-
-        Map<String, Object> configMap = new LinkedHashMap<>();
-        configMap.put("urls", urls);
-        return HttpResult.of(JsonUtils.toJson(configMap).getBytes(UTF_8));
-    }
-
     private HttpResult<?> handleSwaggerUIAssets(String path) {
         if (WebjarHelper.ENABLED) {
             try {
-                byte[] bytes = WebjarHelper.getInstance().getWebjarResource("swagger-ui", path);
+                byte[] bytes = WebjarHelper.getInstance().getWebjarResource("redoc", path);
                 if (bytes != null) {
                     return HttpResult.builder()
                             .header("Cache-Control", "public, max-age=604800")
