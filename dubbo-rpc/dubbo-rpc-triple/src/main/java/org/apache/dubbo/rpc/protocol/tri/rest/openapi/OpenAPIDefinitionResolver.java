@@ -23,15 +23,34 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 
 public interface OpenAPIDefinitionResolver extends OpenAPIExtension {
 
-    default boolean hidden(ServiceMeta serviceMeta) {
-        return false;
+    OpenAPI resolve(OpenAPI openAPI, ServiceMeta serviceMeta, OpenAPIChain chain);
+
+    Operation resolve(Operation operation, MethodMeta methodMeta, OperationContext context, OperationChain chain);
+
+    interface OpenAPIChain {
+
+        OpenAPI resolve(OpenAPI openAPI, ServiceMeta serviceMeta);
     }
 
-    OpenAPI resolve(ServiceMeta serviceMeta);
+    interface OperationChain {
 
-    default boolean hidden(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
-        return false;
+        Operation resolve(Operation operation, MethodMeta methodMeta, OperationContext context);
     }
 
-    Operation resolve(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context);
+    interface OperationContext {
+
+        String getGroup();
+
+        OpenAPI getOpenAPI();
+
+        SchemaResolver getSchemaResolver();
+
+        ExtensionFactory getExtensionFactory();
+
+        <T> T getAttribute(String name);
+
+        <T> T removeAttribute(String name);
+
+        void setAttribute(String name, Object value);
+    }
 }

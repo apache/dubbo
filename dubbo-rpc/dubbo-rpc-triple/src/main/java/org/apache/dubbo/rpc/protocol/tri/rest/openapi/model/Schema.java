@@ -580,7 +580,6 @@ public final class Schema extends Node<Schema> {
     public Map<String, Object> writeTo(Map<String, Object> schema, Context context) {
         if (ref != null) {
             schema.put("$ref", ref);
-            return schema;
         }
         write(schema, "format", format);
         write(schema, "title", title);

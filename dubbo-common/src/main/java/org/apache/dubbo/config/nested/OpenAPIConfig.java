@@ -122,6 +122,8 @@ public class OpenAPIConfig implements Serializable {
      */
     private Boolean schemaFlatten;
 
+    private String[] schemaClassFilter;
+
     /**
      * The custom settings.
      */

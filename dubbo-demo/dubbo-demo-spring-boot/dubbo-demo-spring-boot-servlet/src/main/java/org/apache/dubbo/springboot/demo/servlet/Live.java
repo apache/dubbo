@@ -16,9 +16,16 @@
  */
 package org.apache.dubbo.springboot.demo.servlet;
 
+/**
+ * The live
+ */
 public class Live {
 
+    /**
+     * The alive
+     */
     private boolean alive;
+
     private byte[] raw;
 
     public boolean isAlive() {

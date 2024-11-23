@@ -37,6 +37,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIDefinitionResolver.OpenAPIChain;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIDefinitionResolver.OperationChain;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIDefinitionResolver.OperationContext;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ApiResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
@@ -52,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 final class DefinitionResolver {
@@ -60,44 +64,36 @@ final class DefinitionResolver {
 
     private final ExtensionFactory extensionFactory;
     private final ConfigFactory configFactory;
-    private final SchemaFactory schemaFactory;
+    private final SchemaResolver schemaResolver;
     private final OpenAPIDefinitionResolver[] resolvers;
 
     DefinitionResolver(FrameworkModel frameworkModel) {
         extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
-        schemaFactory = frameworkModel.getOrRegisterBean(SchemaFactory.class);
+        schemaResolver = frameworkModel.getOrRegisterBean(SchemaResolver.class);
         resolvers = extensionFactory.getExtensions(OpenAPIDefinitionResolver.class);
     }
 
     public OpenAPI resolve(ServiceMeta serviceMeta, Collection<List<Registration>> registrationsByMethod) {
-        OpenAPI openAPI = null;
-
-        for (OpenAPIDefinitionResolver resolver : resolvers) {
-            if (resolver.hidden(serviceMeta)) {
-                return null;
-            }
-            openAPI = resolver.resolve(serviceMeta);
-            if (openAPI != null) {
-                break;
-            }
+        OpenAPI definition = new OpenAPIChainImpl(resolvers, openAPI -> {
+                    if (StringUtils.isEmpty(openAPI.getGroup())) {
+                        openAPI.setGroup(Constants.DEFAULT_GROUP);
+                    }
+                    openAPI.setConfig(configFactory.getConfig(openAPI.getGroup()));
+                    String service = serviceMeta.getServiceInterface();
+                    int index = service.lastIndexOf('.');
+                    String tagName = index == -1 ? service : service.substring(index + 1);
+                    openAPI.addTag(new Tag().setName(tagName).setDescription(service));
+                    return openAPI;
+                })
+                .resolve(
+                        new OpenAPI().setMeta(serviceMeta).setGlobalConfig(configFactory.getGlobalConfig()),
+                        serviceMeta);
+        if (definition == null) {
+            return null;
         }
 
-        if (openAPI == null) {
-            openAPI = new OpenAPI();
-        }
-        if (StringUtils.isEmpty(openAPI.getGroup())) {
-            openAPI.setGroup(Constants.DEFAULT_GROUP);
-        }
-        openAPI.setGlobalConfig(configFactory.getGlobalConfig());
-        openAPI.setConfig(configFactory.getConfig(openAPI.getGroup()));
-        openAPI.setMeta(serviceMeta);
-
-        String service = serviceMeta.getServiceInterface();
-        openAPI.addTag(
-                new Tag().setName(StringUtils.substringAfterLast(service, '.')).setDescription(service));
-
-        ResolveContext context = new ResolveContextImpl(openAPI, schemaFactory, extensionFactory);
+        OperationContext context = new OperationContextImpl(definition, schemaResolver, extensionFactory);
         for (List<Registration> registrations : registrationsByMethod) {
             String mainPath = null;
             for (Registration registration : registrations) {
@@ -108,51 +104,64 @@ final class DefinitionResolver {
                 }
                 for (PathExpression expression : pathCondition.getExpressions()) {
                     String path = expression.toString();
-                    PathItem pathItem = openAPI.getOrAddPath(path);
+                    PathItem pathItem = definition.getOrAddPath(path);
                     String ref = pathItem.getRef();
                     if (ref != null) {
                         path = ref;
-                        pathItem = openAPI.getOrAddPath(path);
+                        pathItem = definition.getOrAddPath(path);
                     }
                     if (mainPath != null && expression.isDirect()) {
                         pathItem.setRef(mainPath);
                         continue;
                     }
                     MethodMeta methodMeta = registration.getMeta().getMethod();
-                    if (resolvePath(path, pathItem, openAPI, methodMeta, mapping, context)) {
+                    if (resolvePath(path, pathItem, definition, methodMeta, mapping, context)) {
                         mainPath = path;
                     }
                 }
             }
         }
 
-        return openAPI;
+        return definition;
     }
 
     private boolean resolvePath(
             String path,
             PathItem pathItem,
             OpenAPI openAPI,
-            MethodMeta meta,
+            MethodMeta methodMeta,
             RequestMapping mapping,
-            ResolveContext context) {
-        Operation operation = null;
+            OperationContext context) {
+        return new OperationChainImpl(resolvers, operation -> {
+                            for (String method : determineHttpMethods(openAPI, methodMeta, mapping, operation)) {
+                                HttpMethods httpMethod = HttpMethods.of(method.toUpperCase());
+                                Operation existingOperation = pathItem.getOperation(httpMethod);
+                                if (existingOperation == null) {
+                                    pathItem.addOperation(httpMethod, operation);
+                                } else {
+                                    if (existingOperation.getMeta() != null) {
+                                        LOG.internalWarn(
+                                                "Operation already exists, path='{}', httpMethod='{}', method={}",
+                                                path,
+                                                method,
+                                                methodMeta);
+                                    }
+                                    continue;
+                                }
+                                resolveOperation(path, httpMethod, operation, openAPI, methodMeta, mapping);
+                            }
+                            return operation;
+                        })
+                        .resolve(new Operation().setMeta(methodMeta), methodMeta, context)
+                != null;
+    }
+
+    private Collection<String> determineHttpMethods(
+            OpenAPI openAPI, MethodMeta meta, RequestMapping mapping, Operation operation) {
         Collection<String> httpMethods = null;
-
-        for (OpenAPIDefinitionResolver resolver : resolvers) {
-            if (resolver.hidden(meta, openAPI, context)) {
-                return false;
-            }
-            operation = resolver.resolve(meta, openAPI, context);
-            if (operation == null) {
-                continue;
-            }
-            if (operation.getHttpMethod() != null) {
-                httpMethods =
-                        Collections.singletonList(operation.getHttpMethod().name());
-            }
+        if (operation.getHttpMethod() != null) {
+            httpMethods = Collections.singletonList(operation.getHttpMethod().name());
         }
-
         if (httpMethods == null) {
             if (mapping.getMethodsCondition() != null) {
                 httpMethods = mapping.getMethodsCondition().getMethods();
@@ -166,26 +175,7 @@ final class DefinitionResolver {
                 }
             }
         }
-
-        for (String hm : httpMethods) {
-            HttpMethods httpMethod = HttpMethods.of(hm.toUpperCase());
-            Operation existingOperation = pathItem.getOperation(httpMethod);
-            if (existingOperation == null) {
-                if (operation == null) {
-                    operation = new Operation();
-                }
-                pathItem.addOperation(httpMethod, operation);
-            } else {
-                if (existingOperation.getMeta() != null) {
-                    LOG.internalWarn("Operation already exists, path='{}', httpMethod='{}', method={}", path, hm, meta);
-                }
-                continue;
-            }
-            operation.setMeta(meta);
-            resolveOperation(path, httpMethod, operation, openAPI, meta, mapping);
-        }
-
-        return true;
+        return httpMethods;
     }
 
     private void resolveOperation(
@@ -198,9 +188,13 @@ final class DefinitionResolver {
         if (operation.getGroup() == null) {
             operation.setGroup(openAPI.getGroup());
         }
+        for (Tag tag : openAPI.getTags()) {
+            operation.addTag(tag.getName());
+        }
         if (operation.getDeprecated() == null && meta.isHierarchyAnnotated(Deprecated.class)) {
             operation.setDeprecated(true);
         }
+
         ServiceMeta serviceMeta = meta.getServiceMeta();
         if (serviceMeta.getServiceVersion() != null) {
             operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_GROUP.getName(), In.HEADER)
@@ -210,24 +204,19 @@ final class DefinitionResolver {
             operation.addParameter(new Parameter(TripleHeaderEnum.SERVICE_VERSION.getName(), In.HEADER)
                     .setSchema(PrimitiveSchema.STRING.newSchema()));
         }
-        operation.addTag(StringUtils.substringAfterLast(serviceMeta.getServiceInterface(), '.'));
 
-        for (int i = 0, len = path.length(), start = 0; i < len; i++) {
-            char c = path.charAt(i);
-            if (c == '{') {
-                start = i + 1;
-            } else if (start > 0 && c == '}') {
-                String name = path.substring(start, i);
-                Parameter parameter = operation.getParameter(name, In.PATH);
+        List<String> variables = Helper.extractVariables(path);
+        if (variables != null) {
+            for (String variable : variables) {
+                Parameter parameter = operation.getParameter(variable, In.PATH);
                 if (parameter == null) {
-                    parameter = new Parameter(name, In.PATH);
+                    parameter = new Parameter(variable, In.PATH);
                     operation.addParameter(parameter);
                 }
                 parameter.setRequired(true);
                 if (parameter.getSchema() == null) {
                     parameter.setSchema(PrimitiveSchema.STRING.newSchema());
                 }
-                start = 0;
             }
         }
 
@@ -258,14 +247,13 @@ final class DefinitionResolver {
         }
     }
 
-    private void resolveParameter(
-            HttpMethods httpMethod, Operation operation, ParameterMeta paramMeta, boolean traverse) {
-        String name = paramMeta.getName();
+    private void resolveParameter(HttpMethods httpMethod, Operation operation, ParameterMeta meta, boolean traverse) {
+        String name = meta.getName();
         if (name == null) {
             return;
         }
 
-        NamedValueMeta valueMeta = paramMeta.getNamedValueMeta();
+        NamedValueMeta valueMeta = meta.getNamedValueMeta();
         ParamType paramType = valueMeta.paramType();
         if (paramType == null) {
             if (httpMethod.supportBody()) {
@@ -278,7 +266,7 @@ final class DefinitionResolver {
             return;
         }
 
-        boolean simple = paramMeta.isSimple();
+        boolean simple = meta.isSimple();
         if (in != In.QUERY && !simple) {
             return;
         }
@@ -293,19 +281,19 @@ final class DefinitionResolver {
             }
             Schema schema = parameter.getSchema();
             if (schema == null) {
-                parameter.setSchema(schema = schemaFactory.getSchema(paramMeta));
+                parameter.setSchema(schema = schemaResolver.resolve(meta));
             }
             if (schema.getDefaultValue() == null) {
                 schema.setDefaultValue(valueMeta.defaultValue());
             }
-            parameter.setMeta(paramMeta);
+            parameter.setMeta(meta);
             return;
         }
         if (!traverse) {
             return;
         }
 
-        BeanMeta beanMeta = paramMeta.getBeanMeta();
+        BeanMeta beanMeta = meta.getBeanMeta();
         try {
             for (ParameterMeta ctorParam : beanMeta.getConstructor().getParameters()) {
                 resolveParameter(httpMethod, operation, ctorParam, false);
@@ -341,7 +329,7 @@ final class DefinitionResolver {
                 for (ParameterMeta paramMeta : meta.getParameters()) {
                     ParamType paramType = paramMeta.getNamedValueMeta().paramType();
                     if (paramType == ParamType.Body) {
-                        content.setSchema(schemaFactory.getSchema(paramMeta));
+                        content.setSchema(schemaResolver.resolve(paramMeta));
                         continue out;
                     }
                 }
@@ -357,9 +345,9 @@ final class DefinitionResolver {
                     continue;
                 }
                 if (size == 1) {
-                    content.setSchema(schemaFactory.getSchema(paramMetas.get(0)));
+                    content.setSchema(schemaResolver.resolve(paramMetas.get(0)));
                 } else {
-                    content.setSchema(schemaFactory.getSchema(paramMetas));
+                    content.setSchema(schemaResolver.resolve(paramMetas));
                 }
             }
         }
@@ -395,18 +383,58 @@ final class DefinitionResolver {
                     response.getOrAddContent(mediaType.getName());
             if (content.getSchema() == null) {
                 if (httpStatus >= 400) {
-                    content.setSchema(schemaFactory.getSchema(ErrorResponse.class));
+                    content.setSchema(schemaResolver.resolve(ErrorResponse.class));
                 } else {
-                    content.setSchema(schemaFactory.getSchema(meta.getReturnParameter()));
+                    content.setSchema(schemaResolver.resolve(meta.getReturnParameter()));
                 }
             }
         }
     }
 
-    static final class ResolveContextImpl extends AbstractContext implements ResolveContext {
+    private static final class OperationContextImpl extends AbstractContext implements OperationContext {
 
-        ResolveContextImpl(OpenAPI openAPI, SchemaFactory schemaFactory, ExtensionFactory extensionFactory) {
-            super(openAPI, schemaFactory, extensionFactory);
+        OperationContextImpl(OpenAPI openAPI, SchemaResolver schemaResolver, ExtensionFactory extensionFactory) {
+            super(openAPI, schemaResolver, extensionFactory);
+        }
+    }
+
+    private static final class OpenAPIChainImpl implements OpenAPIChain {
+
+        private final OpenAPIDefinitionResolver[] resolvers;
+        private final Function<OpenAPI, OpenAPI> fallback;
+        private int cursor;
+
+        OpenAPIChainImpl(OpenAPIDefinitionResolver[] resolvers, Function<OpenAPI, OpenAPI> fallback) {
+            this.resolvers = resolvers;
+            this.fallback = fallback;
+        }
+
+        @Override
+        public OpenAPI resolve(OpenAPI openAPI, ServiceMeta serviceMeta) {
+            if (cursor < resolvers.length) {
+                return resolvers[cursor++].resolve(openAPI, serviceMeta, this);
+            }
+            return fallback.apply(openAPI);
+        }
+    }
+
+    private static final class OperationChainImpl implements OperationChain {
+
+        private final OpenAPIDefinitionResolver[] resolvers;
+        private final Function<Operation, Operation> fallback;
+        private int cursor;
+
+        OperationChainImpl(OpenAPIDefinitionResolver[] resolvers, Function<Operation, Operation> fallback) {
+            this.resolvers = resolvers;
+            this.fallback = fallback;
+        }
+
+        @Override
+        public Operation resolve(Operation operation, MethodMeta methodMeta, OperationContext chain) {
+            if (cursor < resolvers.length) {
+                return resolvers[cursor++].resolve(operation, methodMeta, chain, this);
+            }
+            return fallback.apply(operation);
         }
     }
 }

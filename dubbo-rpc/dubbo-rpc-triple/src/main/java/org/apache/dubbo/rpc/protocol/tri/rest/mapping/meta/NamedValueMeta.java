@@ -26,7 +26,7 @@ import java.util.Arrays;
 
 public class NamedValueMeta {
 
-    public static final NamedValueMeta EMPTY = new NamedValueMeta(false);
+    public static final NamedValueMeta EMPTY = new NamedValueMeta();
 
     private String name;
     private final boolean required;
@@ -37,13 +37,6 @@ public class NamedValueMeta {
     private Class<?>[] nestedTypes;
     private ParameterMeta parameter;
 
-    public NamedValueMeta(String name, boolean required, ParamType paramType) {
-        this.name = name;
-        this.required = required;
-        this.defaultValue = null;
-        this.paramType = paramType;
-    }
-
     public NamedValueMeta(String name, boolean required, String defaultValue) {
         this.name = name;
         this.required = required;
@@ -53,19 +46,12 @@ public class NamedValueMeta {
     public NamedValueMeta(String name, boolean required) {
         this.name = name;
         this.required = required;
-        this.defaultValue = null;
+        defaultValue = null;
     }
 
-    public NamedValueMeta(boolean required, String defaultValue) {
-        name = null;
-        this.required = required;
-        this.defaultValue = defaultValue;
-    }
-
-    public NamedValueMeta(boolean required) {
-        name = null;
-        this.required = required;
-        this.defaultValue = null;
+    public NamedValueMeta() {
+        required = false;
+        defaultValue = null;
     }
 
     public String name() {
@@ -75,8 +61,9 @@ public class NamedValueMeta {
         return name;
     }
 
-    public void setName(String name) {
+    public NamedValueMeta setName(String name) {
         this.name = name;
+        return this;
     }
 
     public boolean isNameEmpty() {
@@ -95,24 +82,36 @@ public class NamedValueMeta {
         return paramType;
     }
 
-    public void setParamType(ParamType paramType) {
+    public NamedValueMeta setParamType(ParamType paramType) {
         this.paramType = paramType;
+        return this;
     }
 
     public Class<?> type() {
         return type;
     }
 
-    public void setType(Class<?> type) {
+    public NamedValueMeta setType(Class<?> type) {
         this.type = type;
+        return this;
     }
 
     public Type genericType() {
         return genericType;
     }
 
-    public void setGenericType(Type genericType) {
+    public NamedValueMeta setGenericType(Type genericType) {
         this.genericType = genericType;
+        return this;
+    }
+
+    public Class<?>[] nestedTypes() {
+        return nestedTypes;
+    }
+
+    public NamedValueMeta setNestedTypes(Class<?>[] nestedTypes) {
+        this.nestedTypes = nestedTypes;
+        return this;
     }
 
     public Class<?> nestedType() {
@@ -123,20 +122,13 @@ public class NamedValueMeta {
         return nestedTypes == null || nestedTypes.length <= index ? null : nestedTypes[index];
     }
 
-    public Class<?>[] nestedTypes() {
-        return nestedTypes;
-    }
-
-    public void setNestedTypes(Class<?>[] nestedTypes) {
-        this.nestedTypes = nestedTypes;
-    }
-
     public ParameterMeta parameter() {
         return parameter;
     }
 
-    public void setParameter(ParameterMeta parameter) {
+    public NamedValueMeta setParameter(ParameterMeta parameter) {
         this.parameter = parameter;
+        return this;
     }
 
     @Override
@@ -148,6 +140,9 @@ public class NamedValueMeta {
         }
         if (defaultValue != null) {
             sb.append(", defaultValue='").append(defaultValue).append('\'');
+        }
+        if (paramType != null) {
+            sb.append(", paramType=").append(paramType);
         }
         if (type != null) {
             sb.append(", type=").append(type);

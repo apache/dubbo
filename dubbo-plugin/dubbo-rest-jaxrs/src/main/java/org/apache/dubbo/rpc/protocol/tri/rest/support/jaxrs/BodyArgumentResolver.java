@@ -41,7 +41,7 @@ public class BodyArgumentResolver implements AnnotationBaseArgumentResolver<Anno
 
     @Override
     public NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation) {
-        return new NamedValueMeta(null, false, ParamType.Body);
+        return new NamedValueMeta().setParamType(ParamType.Body);
     }
 
     @Override

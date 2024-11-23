@@ -23,9 +23,11 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.http12.HttpMethods.DELETE;
@@ -95,6 +97,23 @@ public final class Helper {
             }
         }
         return Collections.singletonList(POST.name());
+    }
+
+    public static List<String> extractVariables(String path) {
+        List<String> variables = null;
+        for (int i = 0, len = path.length(), start = 0; i < len; i++) {
+            char c = path.charAt(i);
+            if (c == '{') {
+                start = i + 1;
+            } else if (start > 0 && c == '}') {
+                if (variables == null) {
+                    variables = new ArrayList<>();
+                }
+                variables.add(path.substring(start, i));
+                start = 0;
+            }
+        }
+        return variables;
     }
 
     public static In toIn(ParamType paramType) {

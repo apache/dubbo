@@ -54,8 +54,8 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
             MethodMeta methodMeta = ((MethodParameterMeta) param).getMethodMeta();
             ParameterMeta[] paramMetas = methodMeta.getParameters();
             for (ParameterMeta paramMeta : paramMetas) {
-                AnnotationMeta<Param> ann = paramMeta.findAnnotation(Param.class);
-                if (ann != null && ann.getAnnotation().type() == ParamType.Body) {
+                AnnotationMeta<Param> anno = paramMeta.findAnnotation(Param.class);
+                if (anno != null && anno.getAnnotation().type() == ParamType.Body) {
                     noBodyParam = false;
                     break;
                 }
@@ -136,7 +136,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         private final int paramCount;
 
         FallbackNamedValueMeta(boolean required, boolean noBodyParam, int paramCount) {
-            super(required);
+            super(null, required);
             this.noBodyParam = noBodyParam;
             this.paramCount = paramCount;
         }

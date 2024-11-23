@@ -32,13 +32,13 @@ import java.util.Map;
 final class DefinitionEncoder {
 
     private final ExtensionFactory extensionFactory;
-    private final SchemaFactory schemaFactory;
+    private final SchemaResolver schemaResolver;
 
     private ProtoEncoder protoEncoder;
 
     DefinitionEncoder(FrameworkModel frameworkModel) {
         extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
-        schemaFactory = frameworkModel.getOrRegisterBean(SchemaFactory.class);
+        schemaResolver = frameworkModel.getOrRegisterBean(SchemaResolver.class);
     }
 
     public String encode(OpenAPI openAPI, OpenAPIRequest request) {
@@ -46,7 +46,7 @@ final class DefinitionEncoder {
             openAPI = new OpenAPI();
         }
         Map<String, Object> root = new LinkedHashMap<>();
-        ContextImpl context = new ContextImpl(openAPI, schemaFactory, extensionFactory, request);
+        ContextImpl context = new ContextImpl(openAPI, schemaResolver, extensionFactory, request);
         openAPI.writeTo(root, context);
 
         String format = request.getFormat();

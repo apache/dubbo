@@ -31,8 +31,8 @@ final class ContextImpl extends AbstractContext implements Context {
     private Holder<HttpRequest> httpRequest;
     private Holder<HttpResponse> httpResponse;
 
-    ContextImpl(OpenAPI openAPI, SchemaFactory schemaFactory, ExtensionFactory extFactory, OpenAPIRequest request) {
-        super(openAPI, schemaFactory, extFactory);
+    ContextImpl(OpenAPI openAPI, SchemaResolver schemaResolver, ExtensionFactory extFactory, OpenAPIRequest request) {
+        super(openAPI, schemaResolver, extFactory);
         this.request = request;
     }
 

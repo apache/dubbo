@@ -207,7 +207,7 @@ public abstract class AnnotationSupport {
         return toolKit;
     }
 
-    protected List<? extends AnnotatedElement> getAnnotatedElements() {
+    public List<? extends AnnotatedElement> getAnnotatedElements() {
         return Collections.singletonList(getAnnotatedElement());
     }
 

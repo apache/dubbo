@@ -18,6 +18,9 @@ package org.apache.dubbo.springboot.demo.servlet;
 
 public class Cat extends Animal {
 
+    /**
+     * The length of the cat
+     */
     private int length;
 
     public int getLength() {

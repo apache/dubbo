@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
@@ -23,7 +24,7 @@ import org.apache.dubbo.remoting.http12.HttpResult;
 public interface OpenAPIRequestHandler extends OpenAPIExtension {
 
     default String[] getPaths() {
-        return null;
+        return StringUtils.EMPTY_STRING_ARRAY;
     }
 
     HttpResult<?> handle(String path, HttpRequest request, HttpResponse response);

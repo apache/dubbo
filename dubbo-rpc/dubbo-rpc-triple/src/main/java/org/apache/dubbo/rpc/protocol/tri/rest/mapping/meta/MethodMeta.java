@@ -136,7 +136,7 @@ public final class MethodMeta extends AnnotationSupport {
     }
 
     @Override
-    protected List<? extends AnnotatedElement> getAnnotatedElements() {
+    public List<? extends AnnotatedElement> getAnnotatedElements() {
         return hierarchy;
     }
 
@@ -210,12 +210,12 @@ public final class MethodMeta extends AnnotationSupport {
         }
 
         @Override
-        protected List<? extends AnnotatedElement> getAnnotatedElements() {
+        public List<? extends AnnotatedElement> getAnnotatedElements() {
             return elements;
         }
     }
 
-    private static final class ReturnParameterMeta extends ParameterMeta {
+    public static final class ReturnParameterMeta extends ParameterMeta {
 
         private final List<Method> hierarchy;
         private final Method method;
@@ -224,6 +224,10 @@ public final class MethodMeta extends AnnotationSupport {
             super(toolKit, null);
             this.hierarchy = hierarchy;
             this.method = method;
+        }
+
+        public Method getMethod() {
+            return method;
         }
 
         @Override
@@ -237,7 +241,7 @@ public final class MethodMeta extends AnnotationSupport {
         }
 
         @Override
-        protected List<? extends AnnotatedElement> getAnnotatedElements() {
+        public List<? extends AnnotatedElement> getAnnotatedElements() {
             return hierarchy;
         }
 

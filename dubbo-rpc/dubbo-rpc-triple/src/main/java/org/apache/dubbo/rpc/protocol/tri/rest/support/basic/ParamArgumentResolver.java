@@ -48,14 +48,13 @@ import java.util.Map;
 public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolver {
 
     @Override
-    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        String defaultValue = ann.getString("defaultValue");
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> anno) {
+        String defaultValue = anno.getString("defaultValue");
         if (Param.DEFAULT_NONE.equals(defaultValue)) {
             defaultValue = null;
         }
-        NamedValueMeta meta = new NamedValueMeta(ann.getValue(), ann.getBoolean("required"), defaultValue);
-        meta.setParamType(ann.getEnum("type"));
-        return meta;
+        return new NamedValueMeta(anno.getValue(), anno.getBoolean("required"), defaultValue)
+                .setParamType(anno.getEnum("type"));
     }
 
     @Override

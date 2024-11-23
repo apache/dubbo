@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 
 import java.util.HashMap;
@@ -25,14 +24,14 @@ import java.util.Map;
 public abstract class AbstractContext {
 
     private final OpenAPI openAPI;
-    private final SchemaFactory schemaFactory;
+    private final SchemaResolver schemaResolver;
     private final ExtensionFactory extensionFactory;
 
     private Map<String, Object> attributes;
 
-    AbstractContext(OpenAPI openAPI, SchemaFactory schemaFactory, ExtensionFactory extensionFactory) {
+    AbstractContext(OpenAPI openAPI, SchemaResolver schemaResolver, ExtensionFactory extensionFactory) {
         this.openAPI = openAPI;
-        this.schemaFactory = schemaFactory;
+        this.schemaResolver = schemaResolver;
         this.extensionFactory = extensionFactory;
     }
 
@@ -44,12 +43,8 @@ public abstract class AbstractContext {
         return openAPI;
     }
 
-    public final OpenAPIConfig getConfig() {
-        return openAPI.getConfig();
-    }
-
-    public final SchemaFactory getSchemaFactory() {
-        return schemaFactory;
+    public final SchemaResolver getSchemaResolver() {
+        return schemaResolver;
     }
 
     public final ExtensionFactory getExtensionFactory() {

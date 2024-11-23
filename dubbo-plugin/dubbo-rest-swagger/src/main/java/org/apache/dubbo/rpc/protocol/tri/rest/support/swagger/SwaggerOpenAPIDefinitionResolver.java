@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIDefinitionResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaPredicate;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.ResolveContext;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Contact;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ExternalDocs;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Info;
@@ -52,23 +51,23 @@ public final class SwaggerOpenAPIDefinitionResolver
         implements OpenAPIDefinitionResolver, OpenAPISchemaResolver, OpenAPISchemaPredicate {
 
     @Override
-    public boolean hidden(ServiceMeta serviceMeta) {
-        return serviceMeta.isHierarchyAnnotated(Hidden.class);
-    }
-
-    @Override
-    public OpenAPI resolve(ServiceMeta serviceMeta) {
-        AnnotationMeta<OpenAPIDefinition> meta = serviceMeta.findAnnotation(OpenAPIDefinition.class);
-        if (meta == null) {
+    public OpenAPI resolve(OpenAPI openAPI, ServiceMeta serviceMeta, OpenAPIChain chain) {
+        AnnotationMeta<OpenAPIDefinition> annoMeta = serviceMeta.findAnnotation(OpenAPIDefinition.class);
+        if (annoMeta == null) {
+            return chain.resolve(openAPI, serviceMeta);
+        }
+        if (serviceMeta.isHierarchyAnnotated(Hidden.class)) {
             return null;
         }
 
-        OpenAPI model = new OpenAPI();
-        OpenAPIDefinition definition = meta.getAnnotation();
+        OpenAPIDefinition anno = annoMeta.getAnnotation();
 
-        Info info = new Info();
-        model.setInfo(info);
-        io.swagger.v3.oas.annotations.info.Info infoAnn = definition.info();
+        Info info = openAPI.getInfo();
+        if (info == null) {
+            openAPI.setInfo(info = new Info());
+        }
+
+        io.swagger.v3.oas.annotations.info.Info infoAnn = anno.info();
         info.setTitle(trim(infoAnn.title()))
                 .setDescription(trim(infoAnn.description()))
                 .setVersion(trim(infoAnn.version()))
@@ -89,18 +88,18 @@ public final class SwaggerOpenAPIDefinitionResolver
                 .setUrl(trim(licenseAnn.url()))
                 .setExtensions(toProperties(licenseAnn.extensions()));
 
-        for (io.swagger.v3.oas.annotations.tags.Tag tagAnn : definition.tags()) {
-            model.addTag(new Tag()
+        for (io.swagger.v3.oas.annotations.tags.Tag tagAnn : anno.tags()) {
+            openAPI.addTag(new Tag()
                     .setName(trim(tagAnn.name()))
                     .setDescription(trim(tagAnn.description()))
                     .setExternalDocs(toExternalDocs(tagAnn.externalDocs()))
                     .setExtensions(toProperties(tagAnn.extensions())));
         }
 
-        model.setExternalDocs(toExternalDocs(definition.externalDocs()));
+        openAPI.setExternalDocs(toExternalDocs(anno.externalDocs()));
 
-        model.setExtensions(toProperties(definition.extensions()));
-        return model;
+        openAPI.setExtensions(toProperties(anno.extensions()));
+        return openAPI;
     }
 
     private static Map<String, String> toProperties(io.swagger.v3.oas.annotations.extensions.Extension[] extensions) {
@@ -117,60 +116,63 @@ public final class SwaggerOpenAPIDefinitionResolver
         return properties;
     }
 
-    private static ExternalDocs toExternalDocs(ExternalDocumentation ann) {
+    private static ExternalDocs toExternalDocs(ExternalDocumentation anno) {
         return new ExternalDocs()
-                .setDescription(trim(ann.description()))
-                .setUrl(trim(ann.url()))
-                .setExtensions(toProperties(ann.extensions()));
+                .setDescription(trim(anno.description()))
+                .setUrl(trim(anno.url()))
+                .setExtensions(toProperties(anno.extensions()));
     }
 
     @Override
-    public boolean hidden(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
-        return methodMeta.isHierarchyAnnotated(Hidden.class);
-    }
-
-    @Override
-    public Operation resolve(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
-        AnnotationMeta<io.swagger.v3.oas.annotations.Operation> meta =
+    public Operation resolve(Operation operation, MethodMeta methodMeta, OperationContext ctx, OperationChain chain) {
+        AnnotationMeta<io.swagger.v3.oas.annotations.Operation> annoMeta =
                 methodMeta.findAnnotation(io.swagger.v3.oas.annotations.Operation.class);
-        if (meta == null) {
+        if (annoMeta == null) {
+            return chain.resolve(operation, methodMeta, ctx);
+        }
+        io.swagger.v3.oas.annotations.Operation anno = annoMeta.getAnnotation();
+        if (anno.hidden() || methodMeta.isHierarchyAnnotated(Hidden.class)) {
             return null;
         }
 
-        io.swagger.v3.oas.annotations.Operation operation = meta.getAnnotation();
-        Operation model = new Operation();
-
-        String method = trim(operation.method());
+        String method = trim(anno.method());
         if (method != null) {
-            model.setHttpMethod(HttpMethods.of(method.toUpperCase()));
+            operation.setHttpMethod(HttpMethods.of(method.toUpperCase()));
         }
-        for (String tag : operation.tags()) {
-            model.addTag(tag);
+        for (String tag : anno.tags()) {
+            operation.addTag(tag);
         }
-        return model.setSummary(trim(operation.summary()))
-                .setDescription(trim(operation.description()))
-                .setExternalDocs(toExternalDocs(operation.externalDocs()))
-                .setOperationId(trim(operation.operationId()))
-                .setDeprecated(operation.deprecated() ? Boolean.TRUE : null)
-                .setExtensions(toProperties(operation.extensions()));
+        return operation
+                .setSummary(trim(anno.summary()))
+                .setDescription(trim(anno.description()))
+                .setExternalDocs(toExternalDocs(anno.externalDocs()))
+                .setOperationId(trim(anno.operationId()))
+                .setDeprecated(anno.deprecated() ? Boolean.TRUE : null)
+                .setExtensions(toProperties(anno.extensions()));
     }
 
     @Override
-    public Schema resolve(ParameterMeta parameter, Context context, Chain chain) {
+    public Schema resolve(ParameterMeta parameter, SchemaContext context, SchemaChain chain) {
+        AnnotationMeta<io.swagger.v3.oas.annotations.media.Schema> meta =
+                parameter.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
+        if (meta == null) {
+            return chain.resolve(parameter, context);
+        }
+        io.swagger.v3.oas.annotations.media.Schema schema = meta.getAnnotation();
+        if (schema.hidden() || parameter.isHierarchyAnnotated(Hidden.class)) {
+            return null;
+        }
         return chain.resolve(parameter, context);
     }
 
     @Override
-    public Boolean acceptClass(Class<?> clazz, ParameterMeta parameter) {
-        AnnotationMeta<io.swagger.v3.oas.annotations.media.Schema> schema =
-                parameter.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
-        return schema == null ? null : !schema.getAnnotation().hidden();
-    }
-
-    @Override
     public Boolean acceptProperty(BeanMeta bean, PropertyMeta property) {
-        AnnotationMeta<io.swagger.v3.oas.annotations.media.Schema> schema =
-                property.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
-        return schema == null ? null : !schema.getAnnotation().hidden();
+        AnnotationMeta<io.swagger.v3.oas.annotations.media.Schema> meta =
+                bean.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
+        if (meta == null) {
+            return null;
+        }
+        io.swagger.v3.oas.annotations.media.Schema schema = meta.getAnnotation();
+        return schema.hidden() || bean.isHierarchyAnnotated(Hidden.class) ? false : null;
     }
 }

@@ -43,7 +43,7 @@ public class PathVariableArgumentResolver implements AnnotationBaseArgumentResol
 
     @Override
     public NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation) {
-        return new NamedValueMeta(annotation.getValue(), true, ParamType.PathVariable);
+        return new NamedValueMeta(annotation.getValue(), true).setParamType(ParamType.PathVariable);
     }
 
     @Override

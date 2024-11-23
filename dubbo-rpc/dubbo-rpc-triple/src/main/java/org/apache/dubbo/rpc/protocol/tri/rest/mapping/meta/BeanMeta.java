@@ -190,6 +190,10 @@ public final class BeanMeta extends ParameterMeta {
                             getMethodMap.put(name, method);
                             allNames.add(name);
                         }
+                    } else if (fieldMap.containsKey(name)) {
+                        // For record class
+                        getMethodMap.put(name, method);
+                        allNames.add(name);
                     }
                 } else if (count == 1) {
                     if (name.length() > 3 && name.startsWith("set")) {

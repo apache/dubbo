@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIDefinitionResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaPredicate;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.ResolveContext;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ExternalDocs;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Info;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
@@ -51,114 +50,130 @@ public final class BasicOpenAPIDefinitionResolver
     private static final String HIDDEN = "hidden";
 
     @Override
-    public boolean hidden(ServiceMeta serviceMeta) {
-        AnnotationMeta<?> openAPI = serviceMeta.findAnnotation(Annotations.OpenAPI);
-        return openAPI != null && openAPI.getBoolean(HIDDEN);
-    }
-
-    @Override
-    public OpenAPI resolve(ServiceMeta serviceMeta) {
-        AnnotationMeta<?> openAPI = serviceMeta.findAnnotation(Annotations.OpenAPI);
-        if (openAPI == null) {
+    public OpenAPI resolve(OpenAPI openAPI, ServiceMeta serviceMeta, OpenAPIChain chain) {
+        AnnotationMeta<?> annoMeta = serviceMeta.findAnnotation(Annotations.OpenAPI);
+        if (annoMeta == null) {
+            return chain.resolve(openAPI, serviceMeta);
+        }
+        if (annoMeta.getBoolean(HIDDEN)) {
             return null;
         }
 
-        OpenAPI model = new OpenAPI();
-        Map<String, String> tags = Helper.toProperties(openAPI.getStringArray("tags"));
+        Info info = openAPI.getInfo();
+        if (info == null) {
+            openAPI.setInfo(info = new Info());
+        }
+
+        Map<String, String> tags = Helper.toProperties(annoMeta.getStringArray("tags"));
         for (Map.Entry<String, String> entry : tags.entrySet()) {
-            model.addTag(new Tag().setName(entry.getKey()).setDescription(entry.getValue()));
-        }
-        model.setGroup(trim(openAPI.getString("group")));
-
-        String title = trim(openAPI.getString("infoTitle"));
-        String description = trim(openAPI.getString("infoDescription"));
-        String version = trim(openAPI.getString("infoVersion"));
-        if (title != null || description != null || version != null) {
-            model.setInfo(new Info().setTitle(title).setDescription(description).setVersion(version));
+            openAPI.addTag(new Tag().setName(entry.getKey()).setDescription(entry.getValue()));
         }
 
-        String docDescription = trim(openAPI.getString("docDescription"));
-        String docUrl = trim(openAPI.getString("docUrl"));
+        String group = trim(annoMeta.getString("group"));
+        if (group != null) {
+            openAPI.setGroup(group);
+        }
+
+        String title = trim(annoMeta.getString("infoTitle"));
+        if (title != null) {
+            info.setTitle(title);
+        }
+        String description = trim(annoMeta.getString("infoDescription"));
+        if (description != null) {
+            info.setDescription(description);
+        }
+        String version = trim(annoMeta.getString("infoVersion"));
+        if (version != null) {
+            info.setVersion(version);
+        }
+
+        String docDescription = trim(annoMeta.getString("docDescription"));
+        String docUrl = trim(annoMeta.getString("docUrl"));
         if (docDescription != null || docUrl != null) {
-            model.setExternalDocs(
+            openAPI.setExternalDocs(
                     new ExternalDocs().setDescription(docDescription).setUrl(docUrl));
         }
 
-        model.setPriority(openAPI.getNumber("order"));
-        model.setExtensions(Helper.toProperties(openAPI.getStringArray("extensions")));
-        return model;
+        openAPI.setPriority(annoMeta.getNumber("order"));
+        openAPI.setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
+        return chain.resolve(openAPI, serviceMeta);
     }
 
     @Override
-    public boolean hidden(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
-        AnnotationMeta<?> operation = methodMeta.findAnnotation(Annotations.Operation);
-        return operation != null && operation.getBoolean(HIDDEN);
-    }
-
-    @Override
-    public Operation resolve(MethodMeta methodMeta, OpenAPI openAPI, ResolveContext context) {
-        AnnotationMeta<?> operation = methodMeta.findAnnotation(Annotations.Operation);
-        if (operation == null) {
+    public Operation resolve(Operation operation, MethodMeta methodMeta, OperationContext ctx, OperationChain chain) {
+        AnnotationMeta<?> annoMeta = methodMeta.findAnnotation(Annotations.Operation);
+        if (annoMeta == null) {
+            return chain.resolve(operation, methodMeta, ctx);
+        }
+        if (annoMeta.getBoolean(HIDDEN)) {
             return null;
         }
 
-        Operation model = new Operation();
-        String method = trim(operation.getString("method"));
+        String method = trim(annoMeta.getString("method"));
         if (method != null) {
-            model.setHttpMethod(HttpMethods.of(method.toUpperCase()));
+            operation.setHttpMethod(HttpMethods.of(method.toUpperCase()));
         }
 
-        String[] tags = trim(operation.getStringArray("tags"));
+        String[] tags = trim(annoMeta.getStringArray("tags"));
         if (tags != null) {
-            model.setTags(new LinkedHashSet<>(Arrays.asList(tags)));
+            operation.setTags(new LinkedHashSet<>(Arrays.asList(tags)));
         }
 
-        model.setGroup(trim(operation.getString("group")));
-        model.setVersion(trim(operation.getString("version")));
-        model.setOperationId(trim(operation.getString("id")));
-        String summary = trim(operation.getValue());
-        model.setSummary(summary == null ? trim(operation.getString("summary")) : summary);
-        model.setDescription(trim(operation.getString("description")));
-        model.setDeprecated(operation.getBoolean("deprecated"));
-        model.setExtensions(Helper.toProperties(operation.getStringArray("extensions")));
-        return model;
+        operation.setGroup(trim(annoMeta.getString("group")));
+        operation.setVersion(trim(annoMeta.getString("version")));
+        operation.setOperationId(trim(annoMeta.getString("id")));
+        String summary = trim(annoMeta.getValue());
+        operation.setSummary(summary == null ? trim(annoMeta.getString("summary")) : summary);
+        operation.setDescription(trim(annoMeta.getString("description")));
+        operation.setDeprecated(annoMeta.getBoolean("deprecated"));
+        operation.setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
+        return operation;
     }
 
     @Override
-    public Schema resolve(ParameterMeta parameter, Context context, Chain chain) {
-        AnnotationMeta<?> schema = parameter.getAnnotation(Annotations.Schema);
-        if (schema == null) {
+    public Schema resolve(ParameterMeta parameter, SchemaContext context, SchemaChain chain) {
+        AnnotationMeta<?> annoMeta = parameter.getAnnotation(Annotations.Schema);
+        if (annoMeta == null) {
             return chain.resolve(parameter, context);
         }
-
-        Class<?> impl = schema.getClass("implementation");
-        Schema model = impl == Void.class ? chain.resolve(parameter, context) : context.getSchema(impl);
-
-        setValue(schema, "group", model::setGroup);
-        setValue(schema, "version", model::setVersion);
-        setValue(schema, "type", v -> model.setType(Type.valueOf(v)));
-        setValue(schema, "format", model::setFormat);
-        setValue(schema, "name", model::setName);
-        String title = trim(schema.getValue());
-        model.setTitle(title == null ? trim(schema.getString("title")) : title);
-        setValue(schema, "title", model::setTitle);
-        setValue(schema, "description", model::setDescription);
-        setValue(schema, "max", v -> model.setMaxLength(Integer.parseInt(v)));
-        setValue(schema, "min", v -> model.setMinLength(Integer.parseInt(v)));
-        setValue(schema, "pattern", model::setPattern);
-        setValue(schema, "example", model::setExample);
-        String[] enumItems = trim(schema.getStringArray("enumeration"));
-        if (enumItems != null) {
-            model.setEnumeration(Arrays.asList(enumItems));
+        if (annoMeta.getBoolean(HIDDEN)) {
+            return null;
         }
-        setBoolValue(schema, "required", model::setRequired);
-        setValue(schema, "defaultValue", model::setDefaultValue);
-        setBoolValue(schema, "readOnly", model::setReadOnly);
-        setBoolValue(schema, "writeOnly", model::setWriteOnly);
-        setBoolValue(schema, "nullable", model::setNullable);
-        setBoolValue(schema, "deprecated", model::setDeprecated);
-        model.setExtensions(Helper.toProperties(schema.getStringArray("extensions")));
-        return model;
+
+        Class<?> impl = annoMeta.getClass("implementation");
+        Schema schema = impl == Void.class ? chain.resolve(parameter, context) : context.resolve(impl);
+
+        setValue(annoMeta, "group", schema::setGroup);
+        setValue(annoMeta, "version", schema::setVersion);
+        setValue(annoMeta, "type", v -> schema.setType(Type.valueOf(v)));
+        setValue(annoMeta, "format", schema::setFormat);
+        setValue(annoMeta, "name", schema::setName);
+        String title = trim(annoMeta.getValue());
+        schema.setTitle(title == null ? trim(annoMeta.getString("title")) : title);
+        setValue(annoMeta, "title", schema::setTitle);
+        setValue(annoMeta, "description", schema::setDescription);
+        setValue(annoMeta, "max", v -> schema.setMaxLength(Integer.parseInt(v)));
+        setValue(annoMeta, "min", v -> schema.setMinLength(Integer.parseInt(v)));
+        setValue(annoMeta, "pattern", schema::setPattern);
+        setValue(annoMeta, "example", schema::setExample);
+        String[] enumItems = trim(annoMeta.getStringArray("enumeration"));
+        if (enumItems != null) {
+            schema.setEnumeration(Arrays.asList(enumItems));
+        }
+        setBoolValue(annoMeta, "required", schema::setRequired);
+        setValue(annoMeta, "defaultValue", schema::setDefaultValue);
+        setBoolValue(annoMeta, "readOnly", schema::setReadOnly);
+        setBoolValue(annoMeta, "writeOnly", schema::setWriteOnly);
+        setBoolValue(annoMeta, "nullable", schema::setNullable);
+        setBoolValue(annoMeta, "deprecated", schema::setDeprecated);
+        schema.setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
+        return schema;
+    }
+
+    @Override
+    public Boolean acceptProperty(BeanMeta bean, PropertyMeta property) {
+        AnnotationMeta<?> annoMeta = property.getAnnotation(Annotations.Schema);
+        return annoMeta == null ? null : annoMeta.getBoolean(HIDDEN);
     }
 
     private static void setValue(AnnotationMeta<?> schema, String key, Consumer<String> setter) {
@@ -173,17 +188,5 @@ public final class BasicOpenAPIDefinitionResolver
         if (Boolean.TRUE.equals(value)) {
             setter.accept(true);
         }
-    }
-
-    @Override
-    public Boolean acceptClass(Class<?> clazz, ParameterMeta parameter) {
-        AnnotationMeta<?> schema = parameter.getAnnotation(Annotations.Schema);
-        return schema == null ? null : schema.getBoolean(HIDDEN);
-    }
-
-    @Override
-    public Boolean acceptProperty(BeanMeta bean, PropertyMeta property) {
-        AnnotationMeta<?> schema = property.getAnnotation(Annotations.Schema);
-        return schema == null ? null : schema.getBoolean(HIDDEN);
     }
 }

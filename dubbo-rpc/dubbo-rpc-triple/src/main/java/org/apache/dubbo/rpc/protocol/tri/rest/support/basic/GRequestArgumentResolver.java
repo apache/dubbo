@@ -48,7 +48,7 @@ public class GRequestArgumentResolver implements AnnotationBaseArgumentResolver<
 
     @Override
     public NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation) {
-        return new NamedValueMeta(null, false, ParamType.Body);
+        return new NamedValueMeta().setParamType(ParamType.Body);
     }
 
     @Override

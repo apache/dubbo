@@ -23,8 +23,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.TypeParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.Chain;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.Context;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.SchemaChain;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver.SchemaContext;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.support.basic.Annotations;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -43,63 +43,51 @@ import java.util.function.Function;
 import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.PrimitiveSchema.ARRAY;
 import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.PrimitiveSchema.OBJECT;
 
-public final class SchemaFactory {
+public final class SchemaResolver {
 
     private final ConfigFactory configFactory;
     private final OpenAPISchemaResolver[] resolvers;
     private final OpenAPISchemaPredicate[] predicates;
     private final Map<Class<?>, Optional<Schema>> schemaMap = CollectionUtils.newConcurrentHashMap();
 
-    public SchemaFactory(FrameworkModel frameworkModel) {
+    public SchemaResolver(FrameworkModel frameworkModel) {
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
         ExtensionFactory extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
         resolvers = extensionFactory.getExtensions(OpenAPISchemaResolver.class);
         predicates = extensionFactory.getExtensions(OpenAPISchemaPredicate.class);
     }
 
-    public Map<Class<?>, Optional<Schema>> getSchemaMap() {
-        return schemaMap;
+    public Schema resolve(Type type) {
+        return resolve(new TypeParameterMeta(type));
     }
 
-    public Schema getSchema(Type type) {
-        return getSchema(new TypeParameterMeta(type));
+    public Schema resolve(ParameterMeta parameter) {
+        return new SchemaChainImpl(resolvers, this::fallbackResolve).resolve(parameter, new SchemaContextImpl());
     }
 
-    public Schema getSchema(ParameterMeta parameter) {
-        return new ChainImpl(resolvers, p -> resolveSchema(p.getActualGenericType(), p))
-                .resolve(parameter, new Context() {
-                    @Override
-                    public void defineSchema(Class<?> type, Schema schema) {
-                        schemaMap.putIfAbsent(type, Optional.of(schema));
-                    }
-
-                    @Override
-                    public Schema getSchema(ParameterMeta parameter) {
-                        return SchemaFactory.this.getSchema(parameter);
-                    }
-
-                    @Override
-                    public Schema getSchema(Type type) {
-                        return SchemaFactory.this.getSchema(type);
-                    }
-                });
-    }
-
-    public Schema getSchema(List<ParameterMeta> parameters) {
+    public Schema resolve(List<ParameterMeta> parameters) {
         Schema schema = OBJECT.newSchema();
         for (ParameterMeta parameter : parameters) {
             String name = parameter.getName();
             if (name == null) {
                 return ARRAY.newSchema();
             }
-            schema.addProperty(name, getSchema(parameter));
+            schema.addProperty(name, resolve(parameter));
         }
         return schema;
     }
 
-    private Schema resolveSchema(Type type, ParameterMeta parameter) {
+    private Schema fallbackResolve(ParameterMeta parameter) {
+        return doResolveType(parameter.getActualGenericType(), parameter);
+    }
+
+    private Schema doResolveNestedType(Type nestedType, ParameterMeta parameter) {
+        return doResolveType(nestedType, new TypeParameterMeta(parameter.getToolKit(), nestedType));
+    }
+
+    private Schema doResolveType(Type type, ParameterMeta parameter) {
         if (type instanceof Class) {
-            return resolveClassSchema((Class<?>) type, parameter);
+            return doResolveClass((Class<?>) type, parameter);
         }
         if (type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) type;
@@ -109,7 +97,7 @@ public final class SchemaFactory {
                 Type[] argTypes = pType.getActualTypeArguments();
                 if (Iterable.class.isAssignableFrom(clazz)) {
                     Type itemType = TypeUtils.getActualGenericType(argTypes[0]);
-                    return ARRAY.newSchema().setItems(resolveNestedSchema(itemType, parameter));
+                    return ARRAY.newSchema().setItems(doResolveNestedType(itemType, parameter));
                 }
 
                 if (Map.class.isAssignableFrom(clazz)) {
@@ -118,33 +106,33 @@ public final class SchemaFactory {
                     if (String.class != keyType) {
                         schema.addExtension(Constants.X_JAVA_TYPE, TypeUtils.toTypeString(keyType));
                     }
-                    return schema.setAdditionalPropertiesSchema(resolveNestedSchema(argTypes[1], parameter));
+                    return schema.setAdditionalPropertiesSchema(doResolveNestedType(argTypes[1], parameter));
                 }
 
-                return resolveClassSchema(clazz, parameter);
+                return doResolveClass(clazz, parameter);
             }
         }
         if (type instanceof TypeVariable) {
-            return resolveNestedSchema(((TypeVariable<?>) type).getBounds()[0], parameter);
+            return doResolveNestedType(((TypeVariable<?>) type).getBounds()[0], parameter);
         }
         if (type instanceof WildcardType) {
-            return resolveNestedSchema(((WildcardType) type).getUpperBounds()[0], parameter);
+            return doResolveNestedType(((WildcardType) type).getUpperBounds()[0], parameter);
         }
         if (type instanceof GenericArrayType) {
             Type nestedType = ((GenericArrayType) type).getGenericComponentType();
-            return ARRAY.newSchema().setItems(resolveNestedSchema(nestedType, parameter));
+            return ARRAY.newSchema().setItems(doResolveNestedType(nestedType, parameter));
         }
         return OBJECT.newSchema();
     }
 
-    private Schema resolveClassSchema(Class<?> clazz, ParameterMeta parameter) {
+    private Schema doResolveClass(Class<?> clazz, ParameterMeta parameter) {
         Schema schema = PrimitiveSchema.newSchemaOf(clazz);
         if (schema != null) {
             return schema;
         }
 
         if (clazz.isArray()) {
-            return ARRAY.newSchema().setItems(resolveNestedSchema(clazz.getComponentType(), parameter));
+            return ARRAY.newSchema().setItems(doResolveNestedType(clazz.getComponentType(), parameter));
         }
 
         Optional<Schema> existingSchema = schemaMap.get(clazz);
@@ -182,14 +170,14 @@ public final class SchemaFactory {
 
         Boolean flatten = configFactory.getGlobalConfig().getSchemaFlatten();
         if (flatten == null) {
-            AnnotationMeta<?> ann = typeParameter.getAnnotation(Annotations.Schema);
-            flatten = ann != null && ann.getBoolean("flatten");
+            AnnotationMeta<?> anno = typeParameter.getAnnotation(Annotations.Schema);
+            flatten = anno != null && anno.getBoolean("flatten");
         }
 
-        return new Schema().setTargetSchema(resolveBeanSchema(parameter.getToolKit(), clazz, flatten));
+        return new Schema().setTargetSchema(doResolveBeanClass(parameter.getToolKit(), clazz, flatten));
     }
 
-    private Schema resolveBeanSchema(RestToolKit toolKit, Class<?> clazz, boolean flatten) {
+    private Schema doResolveBeanClass(RestToolKit toolKit, Class<?> clazz, boolean flatten) {
         Schema beanSchema = OBJECT.newSchema().setJavaType(clazz);
         schemaMap.put(clazz, Optional.of(beanSchema));
         BeanMeta beanMeta = new BeanMeta(toolKit, clazz, flatten);
@@ -215,7 +203,7 @@ public final class SchemaFactory {
                     continue;
                 }
             }
-            beanSchema.addProperty(property.getName(), getSchema(property));
+            beanSchema.addProperty(property.getName(), resolve(property));
         }
 
         if (flatten) {
@@ -226,31 +214,44 @@ public final class SchemaFactory {
             return beanSchema;
         }
 
-        return beanSchema.addAllOf(getSchema(superClass));
+        return beanSchema.addAllOf(resolve(superClass));
     }
 
-    private Schema resolveNestedSchema(Type nestedType, ParameterMeta parameter) {
-        return resolveSchema(nestedType, new TypeParameterMeta(parameter.getToolKit(), nestedType));
-    }
-
-    static final class ChainImpl implements Chain {
+    private static final class SchemaChainImpl implements SchemaChain {
 
         private final OpenAPISchemaResolver[] resolvers;
         private final Function<ParameterMeta, Schema> fallback;
-
         private int cursor;
 
-        ChainImpl(OpenAPISchemaResolver[] resolvers, Function<ParameterMeta, Schema> fallback) {
+        SchemaChainImpl(OpenAPISchemaResolver[] resolvers, Function<ParameterMeta, Schema> fallback) {
             this.resolvers = resolvers;
             this.fallback = fallback;
         }
 
         @Override
-        public Schema resolve(ParameterMeta parameter, Context context) {
+        public Schema resolve(ParameterMeta parameter, SchemaContext context) {
             if (cursor < resolvers.length) {
                 return resolvers[cursor++].resolve(parameter, context, this);
             }
             return fallback.apply(parameter);
+        }
+    }
+
+    private final class SchemaContextImpl implements SchemaContext {
+
+        @Override
+        public void defineSchema(Class<?> type, Schema schema) {
+            schemaMap.putIfAbsent(type, Optional.of(schema));
+        }
+
+        @Override
+        public Schema resolve(ParameterMeta parameter) {
+            return SchemaResolver.this.resolve(parameter);
+        }
+
+        @Override
+        public Schema resolve(Type type) {
+            return SchemaResolver.this.resolve(type);
         }
     }
 }

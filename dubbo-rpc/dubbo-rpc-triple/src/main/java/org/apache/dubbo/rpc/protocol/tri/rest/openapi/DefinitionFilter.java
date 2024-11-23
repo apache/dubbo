@@ -43,11 +43,11 @@ import java.util.function.Supplier;
 final class DefinitionFilter {
 
     private final ExtensionFactory extensionFactory;
-    private final SchemaFactory schemaFactory;
+    private final SchemaResolver schemaResolver;
 
     public DefinitionFilter(FrameworkModel frameworkModel) {
         extensionFactory = frameworkModel.getOrRegisterBean(ExtensionFactory.class);
-        schemaFactory = frameworkModel.getOrRegisterBean(SchemaFactory.class);
+        schemaResolver = frameworkModel.getOrRegisterBean(SchemaResolver.class);
     }
 
     public OpenAPI filter(OpenAPI openAPI, OpenAPIRequest request) {
@@ -56,7 +56,7 @@ final class DefinitionFilter {
             return openAPI;
         }
 
-        Context context = new ContextImpl(openAPI, schemaFactory, extensionFactory, request);
+        Context context = new ContextImpl(openAPI, schemaResolver, extensionFactory, request);
         for (OpenAPIFilter filter : filters) {
             openAPI = filter.filterOpenAPI(openAPI, context);
             if (openAPI == null) {

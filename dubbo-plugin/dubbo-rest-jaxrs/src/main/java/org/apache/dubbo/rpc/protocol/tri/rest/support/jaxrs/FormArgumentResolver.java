@@ -37,7 +37,7 @@ public class FormArgumentResolver implements AnnotationBaseArgumentResolver<Anno
 
     @Override
     public NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation) {
-        return new NamedValueMeta(null, false, ParamType.Form);
+        return new NamedValueMeta().setParamType(ParamType.Body);
     }
 
     @Override

@@ -41,5 +41,5 @@ public abstract class AbstractAnnotationBaseArgumentResolver extends NamedValueA
         return cache.computeIfAbsent(parameter, k -> updateNamedValueMeta(k, createNamedValueMeta(k, annotation)));
     }
 
-    protected abstract NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann);
+    protected abstract NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> anno);
 }

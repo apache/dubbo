@@ -48,9 +48,12 @@ public class MatrixVariableArgumentResolver extends AbstractSpringArgumentResolv
     }
 
     @Override
-    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> anno) {
         return new MatrixNamedValueMeta(
-                ann.getValue(), Helper.isRequired(ann), Helper.defaultValue(ann), Helper.defaultValue(ann, "pathVar"));
+                anno.getValue(),
+                Helper.isRequired(anno),
+                Helper.defaultValue(anno),
+                Helper.defaultValue(anno, "pathVar"));
     }
 
     @Override

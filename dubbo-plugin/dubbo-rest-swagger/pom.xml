@@ -31,6 +31,7 @@
     <swagger-ui.version>5.18.2</swagger-ui.version>
     <redoc.version>2.2.0</redoc.version>
     <webjars-locator.version>1.0.0</webjars-locator.version>
+    <therapi.version>0.15.0</therapi.version>
   </properties>
 
   <dependencies>
@@ -59,6 +60,11 @@
       <groupId>org.webjars</groupId>
       <artifactId>webjars-locator-lite</artifactId>
       <version>${webjars-locator.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.therapi</groupId>
+      <artifactId>therapi-runtime-javadoc</artifactId>
+      <version>${therapi.version}</version>
     </dependency>
 
     <dependency>

@@ -42,5 +42,11 @@ public interface GreeterService {
      */
     StreamObserver<HelloRequest> sayHelloBiStream(StreamObserver<HelloReply> responseObserver);
 
+    /**
+     * Create an animal
+     * @param cat the cat
+     * @param dog the dog
+     * @return the animal
+     */
     Animal createAnimal(Cat cat, Dog dog);
 }

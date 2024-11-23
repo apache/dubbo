@@ -23,19 +23,19 @@ import java.lang.reflect.Type;
 
 public interface OpenAPISchemaResolver extends OpenAPIExtension {
 
-    Schema resolve(ParameterMeta parameter, Context context, Chain chain);
+    Schema resolve(ParameterMeta parameter, SchemaContext context, SchemaChain chain);
 
-    interface Chain {
+    interface SchemaChain {
 
-        Schema resolve(ParameterMeta parameter, Context context);
+        Schema resolve(ParameterMeta parameter, SchemaContext context);
     }
 
-    interface Context {
+    interface SchemaContext {
 
         void defineSchema(Class<?> type, Schema schema);
 
-        Schema getSchema(ParameterMeta parameter);
+        Schema resolve(ParameterMeta parameter);
 
-        Schema getSchema(Type type);
+        Schema resolve(Type type);
     }
 }

@@ -36,7 +36,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
     protected NamedValueMeta createNamedValueMeta(ParameterMeta param) {
-        return new NamedValueMeta(param.isAnnotated(Annotations.Nonnull));
+        return new NamedValueMeta(null, param.isAnnotated(Annotations.Nonnull));
     }
 
     @Override

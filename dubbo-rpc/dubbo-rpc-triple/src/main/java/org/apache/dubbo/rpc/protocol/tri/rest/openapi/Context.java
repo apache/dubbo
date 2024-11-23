@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
@@ -34,11 +33,9 @@ public interface Context {
 
     OpenAPI getOpenAPI();
 
-    OpenAPIConfig getConfig();
-
     boolean isOpenAPI31();
 
-    SchemaFactory getSchemaFactory();
+    SchemaResolver getSchemaResolver();
 
     ExtensionFactory getExtensionFactory();
 

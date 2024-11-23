@@ -114,11 +114,11 @@ public class SpringResponseRestFilter implements RestFilter, Listener {
         }
         List<Pair<Class<?>, MethodMeta>> candidates = new ArrayList<>();
         for (MethodMeta methodMeta : serviceMeta.getExceptionHandlers()) {
-            ExceptionHandler ann = methodMeta.getMethod().getAnnotation(ExceptionHandler.class);
-            if (ann == null) {
+            ExceptionHandler anno = methodMeta.getMethod().getAnnotation(ExceptionHandler.class);
+            if (anno == null) {
                 continue;
             }
-            for (Class<?> type : ann.value()) {
+            for (Class<?> type : anno.value()) {
                 if (type.isAssignableFrom(exType)) {
                     candidates.add(Pair.of(type, methodMeta));
                 }

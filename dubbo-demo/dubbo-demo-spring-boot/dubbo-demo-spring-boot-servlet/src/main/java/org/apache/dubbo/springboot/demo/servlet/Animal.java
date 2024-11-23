@@ -16,8 +16,14 @@
  */
 package org.apache.dubbo.springboot.demo.servlet;
 
+/**
+ * The animal
+ */
 public class Animal extends Live {
 
+    /**
+     * The name of the animal
+     */
     private String name;
 
     private int age;

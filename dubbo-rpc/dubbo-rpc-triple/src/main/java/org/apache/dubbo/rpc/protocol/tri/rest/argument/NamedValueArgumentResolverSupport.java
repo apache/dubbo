@@ -46,7 +46,6 @@ public abstract class NamedValueArgumentResolverSupport {
         if (arg != null) {
             return filterValue(arg, meta);
         }
-
         arg = meta.defaultValue();
         if (arg != null) {
             return arg;
