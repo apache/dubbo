@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
 
 public class ParamMatch {
     private String key;

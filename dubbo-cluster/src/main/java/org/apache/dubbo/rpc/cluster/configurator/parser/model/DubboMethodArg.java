@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
 public class DubboMethodArg {
     private int index;

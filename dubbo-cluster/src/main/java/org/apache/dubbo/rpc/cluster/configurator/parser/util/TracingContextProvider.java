@@ -14,15 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.util;
+package org.apache.dubbo.rpc.cluster.configurator.parser.util;
 
-import java.util.List;
-import java.util.Map;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
 
-public interface MeshRuleListener {
-    void onRuleChange(String appName, List<Map<String, Object>> rules);
+/**
+ * SPI to get tracing context from 3rd-party tracing utils ( e.g. OpenTracing )
+ */
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface TracingContextProvider {
 
-    void clearRule(String appName);
-
-    String ruleSuffix();
+    /**
+     * Get value from context
+     *
+     * @param invocation invocation
+     * @param key key of value
+     * @return value (null if absent)
+     */
+    String getValue(Invocation invocation, String key);
 }

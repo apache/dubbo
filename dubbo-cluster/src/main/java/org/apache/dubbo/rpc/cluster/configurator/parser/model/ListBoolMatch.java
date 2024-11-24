@@ -14,22 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.route;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
-public class MeshRuleConstants {
-    public static final String INVALID_APP_NAME = "unknown";
+import java.util.List;
 
-    public static final String DESTINATION_RULE_KEY = "DestinationRule";
+public class ListBoolMatch {
+    private List<BoolMatch> oneof;
 
-    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
+    public List<BoolMatch> getOneof() {
+        return oneof;
+    }
 
-    public static final String KIND_KEY = "kind";
+    public void setOneof(List<BoolMatch> oneof) {
+        this.oneof = oneof;
+    }
 
-    public static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
+    public boolean isMatch(boolean input) {
 
-    public static final String NAME_KEY = "name";
-
-    public static final String METADATA_KEY = "metadata";
-
-    public static final String STANDARD_ROUTER_KEY = "standard";
+        for (BoolMatch boolMatch : oneof) {
+            if (boolMatch.isMatch(input)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

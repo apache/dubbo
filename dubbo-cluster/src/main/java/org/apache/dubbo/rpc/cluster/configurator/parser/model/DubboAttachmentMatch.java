@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
+import org.apache.dubbo.rpc.cluster.configurator.parser.util.TracingContextProvider;
 
 import java.util.Map;
 import java.util.Set;

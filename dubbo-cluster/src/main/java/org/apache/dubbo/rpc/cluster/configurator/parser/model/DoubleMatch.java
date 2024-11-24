@@ -14,37 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
-public class DoubleRangeMatch {
-    private Double start;
-    private Double end;
+public class DoubleMatch {
+    private Double exact;
+    private DoubleRangeMatch range;
+    private Double mod;
 
-    public Double getStart() {
-        return start;
+    public Double getExact() {
+        return exact;
     }
 
-    public void setStart(Double start) {
-        this.start = start;
+    public void setExact(Double exact) {
+        this.exact = exact;
     }
 
-    public Double getEnd() {
-        return end;
+    public DoubleRangeMatch getRange() {
+        return range;
     }
 
-    public void setEnd(Double end) {
-        this.end = end;
+    public void setRange(DoubleRangeMatch range) {
+        this.range = range;
+    }
+
+    public Double getMod() {
+        return mod;
+    }
+
+    public void setMod(Double mod) {
+        this.mod = mod;
     }
 
     public boolean isMatch(Double input) {
-        if (start != null && end != null) {
-            return input.compareTo(start) >= 0 && input.compareTo(end) < 0;
-        } else if (start != null) {
-            return input.compareTo(start) >= 0;
-        } else if (end != null) {
-            return input.compareTo(end) < 0;
-        } else {
-            return false;
+        if (exact != null && mod == null) {
+            return input.equals(exact);
+        } else if (range != null) {
+            return range.isMatch(input);
+        } else if (exact != null) {
+            Double result = input % mod;
+            return result.equals(exact);
         }
+
+        return false;
     }
 }

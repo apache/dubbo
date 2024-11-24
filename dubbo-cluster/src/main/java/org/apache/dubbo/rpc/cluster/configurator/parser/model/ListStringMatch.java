@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
-public class DubboRouteDestination {
-    private DubboDestination destination;
-    private int weight;
+import java.util.List;
 
-    public DubboDestination getDestination() {
-        return destination;
+public class ListStringMatch {
+    private List<StringMatch> oneof;
+
+    public List<StringMatch> getOneof() {
+        return oneof;
     }
 
-    public void setDestination(DubboDestination destination) {
-        this.destination = destination;
+    public void setOneof(List<StringMatch> oneof) {
+        this.oneof = oneof;
     }
 
-    public int getWeight() {
-        return weight;
-    }
+    public boolean isMatch(String input) {
 
-    public void setWeight(int weight) {
-        this.weight = weight;
+        for (StringMatch stringMatch : oneof) {
+            if (stringMatch.isMatch(input)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

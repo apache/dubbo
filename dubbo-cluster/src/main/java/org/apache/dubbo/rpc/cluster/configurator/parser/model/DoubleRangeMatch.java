@@ -14,30 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.loadbalance;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
-public class LoadBalancerSettings {
-    private SimpleLB simple;
-    private ConsistentHashLB consistentHash;
+public class DoubleRangeMatch {
+    private Double start;
+    private Double end;
 
-    public SimpleLB getSimple() {
-        return simple;
+    public Double getStart() {
+        return start;
     }
 
-    public void setSimple(SimpleLB simple) {
-        this.simple = simple;
+    public void setStart(Double start) {
+        this.start = start;
     }
 
-    public ConsistentHashLB getConsistentHash() {
-        return consistentHash;
+    public Double getEnd() {
+        return end;
     }
 
-    public void setConsistentHash(ConsistentHashLB consistentHash) {
-        this.consistentHash = consistentHash;
+    public void setEnd(Double end) {
+        this.end = end;
     }
 
-    @Override
-    public String toString() {
-        return "LoadBalancerSettings{" + "simple=" + simple + ", consistentHash=" + consistentHash + '}';
+    public boolean isMatch(Double input) {
+        if (start != null && end != null) {
+            return input.compareTo(start) >= 0 && input.compareTo(end) < 0;
+        } else if (start != null) {
+            return input.compareTo(start) >= 0;
+        } else if (end != null) {
+            return input.compareTo(end) < 0;
+        } else {
+            return false;
+        }
     }
 }

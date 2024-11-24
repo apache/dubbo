@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.destination;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.loadbalance.LoadBalancerSettings;
+public class BoolMatch {
+    private Boolean exact;
 
-public class TrafficPolicy {
-    private LoadBalancerSettings loadBalancer;
-
-    public LoadBalancerSettings getLoadBalancer() {
-        return loadBalancer;
+    public Boolean getExact() {
+        return exact;
     }
 
-    public void setLoadBalancer(LoadBalancerSettings loadBalancer) {
-        this.loadBalancer = loadBalancer;
+    public void setExact(Boolean exact) {
+        this.exact = exact;
     }
 
-    @Override
-    public String toString() {
-        return "TrafficPolicy{" + "loadBalancer=" + loadBalancer + '}';
+    public boolean isMatch(boolean input) {
+        if (exact != null) {
+            return input == exact;
+        }
+        return false;
     }
 }
