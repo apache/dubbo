@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.nested.OpenAPIConfig;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -28,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_OPENAPI_PREFIX;
 
@@ -87,6 +89,7 @@ public final class ConfigFactory {
         }
 
         int len = H2_SETTINGS_OPENAPI_PREFIX.length();
+        Map<Pair<String, String>, TreeMap<Integer, String>> valuesMap = new HashMap<>();
         for (String fullKey : allKeys) {
             if (fullKey.length() > len) {
                 char c = fullKey.charAt(len);
@@ -101,8 +104,30 @@ public final class ConfigFactory {
                 } else {
                     continue;
                 }
+
+                int brkStart = key.lastIndexOf('[');
+                if (brkStart > 0) {
+                    try {
+                        String value = configuration.getString(fullKey);
+                        if (StringUtils.isEmpty(value)) {
+                            continue;
+                        }
+                        int index = Integer.parseInt(key.substring(brkStart + 1, key.length() - 1));
+                        valuesMap
+                                .computeIfAbsent(Pair.of(group, key.substring(0, brkStart)), k -> new TreeMap<>())
+                                .put(index, value);
+                    } catch (NumberFormatException ignored) {
+                    }
+                    continue;
+                }
+
                 applyConfigValue(map, group, key, configuration.getString(fullKey));
             }
+        }
+        for (Map.Entry<Pair<String, String>, TreeMap<Integer, String>> entry : valuesMap.entrySet()) {
+            Pair<String, String> pair = entry.getKey();
+            String value = StringUtils.join(entry.getValue().values(), ",");
+            applyConfigValue(map, pair.getKey(), pair.getValue(), value);
         }
         map.computeIfAbsent(Constants.GLOBAL_GROUP, k -> new OpenAPIConfig());
         return map;

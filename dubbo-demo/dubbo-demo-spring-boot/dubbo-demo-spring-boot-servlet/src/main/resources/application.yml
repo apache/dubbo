@@ -31,6 +31,10 @@ dubbo:
           enabled: true
           cache: false
           schema-flatten: false
+          schema-class-excludes:
+            - a.
+            - "!b.c."
+            - "!org.apache.dubbo.springboot.demo."
       servlet:
         enabled: true
   registry:

@@ -92,6 +92,9 @@ final class DefinitionResolver {
         if (definition == null) {
             return null;
         }
+        if (definition.getConfig() == null) {
+            definition.setConfig(configFactory.getConfig(definition.getGroup()));
+        }
 
         OperationContext context = new OperationContextImpl(definition, schemaResolver, extensionFactory);
         for (List<Registration> registrations : registrationsByMethod) {

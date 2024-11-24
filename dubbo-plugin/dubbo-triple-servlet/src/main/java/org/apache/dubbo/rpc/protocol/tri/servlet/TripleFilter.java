@@ -88,7 +88,7 @@ public class TripleFilter implements Filter {
                 return;
             }
         } else {
-            if (!isUpgradeRequest(request) && mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
+            if (notUpgradeRequest(request) && mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
                 handleHttp1(request, response);
                 return;
             }
@@ -157,6 +157,10 @@ public class TripleFilter implements Filter {
         return pathResolver.resolve(path.getPath(), group, version) != null;
     }
 
+    private boolean notUpgradeRequest(HttpServletRequest request) {
+        return request.getHeader(UPGRADE_HEADER_KEY) == null;
+    }
+
     private Http2ServerTransportListenerFactory determineHttp2ServerTransportListenerFactory(String contentType) {
         Set<Http2ServerTransportListenerFactory> http2ServerTransportListenerFactories = FrameworkModel.defaultModel()
                 .getExtensionLoader(Http2ServerTransportListenerFactory.class)
@@ -188,10 +192,6 @@ public class TripleFilter implements Filter {
         } catch (Throwable ignored) {
         }
         return 0;
-    }
-
-    private boolean isUpgradeRequest(HttpServletRequest request) {
-        return request.getHeader(UPGRADE_HEADER_KEY) != null;
     }
 
     private static final class TripleAsyncListener implements AsyncListener {

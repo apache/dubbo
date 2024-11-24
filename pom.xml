@@ -162,7 +162,8 @@
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
-    <maven_gmavenplus.version>3.0.2</maven_gmavenplus.version>
+    <maven_gmavenplus_version>3.0.2</maven_gmavenplus_version>
+    <dubbo_maven_version>3.3.2</dubbo_maven_version>
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.0</spring-6.version>
@@ -316,6 +317,18 @@
           <artifactId>maven-antrun-plugin</artifactId>
           <version>${maven_antrun_version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-maven-plugin</artifactId>
+          <version>${dubbo_maven_version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -383,7 +396,7 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>${maven_gmavenplus.version}</version>
+        <version>${maven_gmavenplus_version}</version>
         <configuration>
           <parameters>true</parameters>
         </configuration>

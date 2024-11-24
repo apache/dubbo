@@ -133,7 +133,7 @@ public final class TypeUtils {
 
     public static boolean isSystemType(Class<?> type) {
         String name = type.getName();
-        List<String> systemPrefixes = TypeUtils.getSystemPrefixes();
+        List<String> systemPrefixes = getSystemPrefixes();
         for (int i = 0, size = systemPrefixes.size(); i < size; i++) {
             if (name.startsWith(systemPrefixes.get(i))) {
                 return true;

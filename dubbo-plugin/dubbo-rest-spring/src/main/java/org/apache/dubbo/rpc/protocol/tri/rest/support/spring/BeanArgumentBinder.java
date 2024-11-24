@@ -75,12 +75,12 @@ final class BeanArgumentBinder {
             throw new IllegalStateException(Messages.ARGUMENT_COULD_NOT_RESOLVED.format(paramMeta.getDescription()));
         }
         ConstructorMeta ct = CACHE.computeIfAbsent(type, k -> {
-            ConstructorMeta meta = resolveConstructor(paramMeta.getToolKit(), null, type);
-            if (meta == null) {
-                throw new IllegalStateException(
-                        Messages.ARGUMENT_COULD_NOT_RESOLVED.format(paramMeta.getDescription()));
+            try {
+                return resolveConstructor(paramMeta.getToolKit(), null, type);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException(Messages.ARGUMENT_COULD_NOT_RESOLVED.format(paramMeta.getDescription())
+                        + ", " + e.getMessage());
             }
-            return meta;
         });
         ParameterMeta[] parameters = ct.getParameters();
         int len = parameters.length;

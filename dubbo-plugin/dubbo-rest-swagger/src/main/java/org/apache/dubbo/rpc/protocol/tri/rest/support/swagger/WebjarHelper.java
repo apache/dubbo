@@ -18,6 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.swagger;
 
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,11 +44,25 @@ public class WebjarHelper {
         return INSTANCE;
     }
 
+    public HttpResult<?> handleAssets(String webjar, String path) {
+        try {
+            byte[] bytes = getWebjarResource(webjar, path);
+            if (bytes != null) {
+                return HttpResult.builder()
+                        .header("Cache-Control", "public, max-age=604800")
+                        .body(bytes)
+                        .build();
+            }
+        } catch (IOException ignored) {
+        }
+        throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
+    }
+
     public boolean hasWebjar(String webjar) {
         return locator.version(webjar) != null;
     }
 
-    public byte[] getWebjarResource(String webjar, String exactPath) throws IOException {
+    private byte[] getWebjarResource(String webjar, String exactPath) throws IOException {
         String fullPath = locator.fullPath(webjar, exactPath);
         if (fullPath != null) {
             InputStream is = WebJarVersionLocator.class.getClassLoader().getResourceAsStream(fullPath);

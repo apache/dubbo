@@ -1286,7 +1286,7 @@ public final class StringUtils {
 
     /**
      * Gets the substring before the first occurrence of a separator.
-     * If no match found, returns the original string
+     * <p>If nothing is found, returns the original string</p>
      */
     public static String substringBefore(String str, int separator) {
         if (isEmpty(str)) {
@@ -1298,7 +1298,7 @@ public final class StringUtils {
 
     /**
      * Gets the substring after the first occurrence of a separator.
-     * If no match found, returns the original string
+     * <p>If nothing is found, the empty string is returned.</p>
      */
     public static String substringAfter(String str, int separator) {
         if (isEmpty(str)) {
@@ -1310,7 +1310,7 @@ public final class StringUtils {
 
     /**
      * Gets the substring before the last occurrence of a separator.
-     * If no match found, returns the original string
+     * <p>If nothing is found, returns the original string</p>
      */
     public static String substringBeforeLast(String str, int separator) {
         if (isEmpty(str)) {
@@ -1322,14 +1322,14 @@ public final class StringUtils {
 
     /**
      * Gets the substring after the last occurrence of a separator.
-     * If no match found, returns the original string
+     * <p>If nothing is found, the empty string is returned.</p>
      */
     public static String substringAfterLast(String str, int separator) {
         if (isEmpty(str)) {
             return str;
         }
         int index = str.lastIndexOf(separator);
-        return index == INDEX_NOT_FOUND ? str : str.substring(index + 1);
+        return index == INDEX_NOT_FOUND || index == str.length() - 1 ? EMPTY_STRING : str.substring(index + 1);
     }
 
     /**

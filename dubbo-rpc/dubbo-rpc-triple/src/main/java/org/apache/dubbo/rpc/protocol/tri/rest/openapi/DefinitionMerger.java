@@ -80,8 +80,8 @@ final class DefinitionMerger {
     }
 
     public OpenAPI merge(List<OpenAPI> openAPIs, OpenAPIRequest request) {
-        OpenAPI model = new OpenAPI();
-        Info info = model.getInfo();
+        Info info = new Info();
+        OpenAPI model = new OpenAPI().setInfo(info);
 
         OpenAPIConfig globalConfig = configFactory.getGlobalConfig();
         model.setGlobalConfig(globalConfig);

@@ -84,8 +84,8 @@ public class SwaggerUIRequestHandler implements OpenAPIRequestHandler {
             case "swagger-config":
                 return handleSwaggerConfig();
             default:
-                if (requestPath.startsWith("assets/")) {
-                    return handleSwaggerUIAssets(resPath.substring(7));
+                if (WebjarHelper.ENABLED && requestPath.startsWith("assets/")) {
+                    return WebjarHelper.getInstance().handleAssets("swagger-ui", resPath.substring(7));
                 }
         }
         throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
@@ -143,21 +143,5 @@ public class SwaggerUIRequestHandler implements OpenAPIRequestHandler {
         Map<String, Object> configMap = new LinkedHashMap<>();
         configMap.put("urls", urls);
         return HttpResult.of(JsonUtils.toJson(configMap).getBytes(UTF_8));
-    }
-
-    private HttpResult<?> handleSwaggerUIAssets(String path) {
-        if (WebjarHelper.ENABLED) {
-            try {
-                byte[] bytes = WebjarHelper.getInstance().getWebjarResource("swagger-ui", path);
-                if (bytes != null) {
-                    return HttpResult.builder()
-                            .header("Cache-Control", "public, max-age=604800")
-                            .body(bytes)
-                            .build();
-                }
-            } catch (IOException ignored) {
-            }
-        }
-        throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
     }
 }

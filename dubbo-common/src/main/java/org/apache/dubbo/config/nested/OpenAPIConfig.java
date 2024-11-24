@@ -122,7 +122,19 @@ public class OpenAPIConfig implements Serializable {
      */
     private Boolean schemaFlatten;
 
-    private String[] schemaClassFilter;
+    /**
+     * Specifies the classes to be excluded from schema generation.
+     * <p>For example:
+     * <ul>
+     *     <li>com.example.MyClass - Exclude the MyClass class.</li>
+     *     <li>com.example. - Exclude all classes in the com.example package.</li>
+     *     <li>!com.example.exclude. - Exclude all classes except those in the com.example.exclude package.</li>
+     * </ul>
+     * Note that the package name should end with a dot (.) or an exclamation mark (!) to indicate the exclusion scope.
+     * <p>Multiple classes or package names can be separated by commas, for
+     * example: com.example.MyClass,com.example.,!com.example.exclude
+     */
+    private String[] schemaClassExcludes;
 
     /**
      * The custom settings.
@@ -279,6 +291,14 @@ public class OpenAPIConfig implements Serializable {
 
     public void setSchemaFlatten(Boolean schemaFlatten) {
         this.schemaFlatten = schemaFlatten;
+    }
+
+    public String[] getSchemaClassExcludes() {
+        return schemaClassExcludes;
+    }
+
+    public void setSchemaClassExcludes(String[] schemaClassExcludes) {
+        this.schemaClassExcludes = schemaClassExcludes;
     }
 
     public Map<String, String> getSettings() {

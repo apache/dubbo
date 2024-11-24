@@ -73,8 +73,8 @@ public class RedocRequestHandler implements OpenAPIRequestHandler {
         String requestPath = StringUtils.substringBeforeLast(resPath, '.');
         if (requestPath.equals("index")) {
             return handleIndex(request.parameter("group", Constants.DEFAULT_GROUP));
-        } else if (requestPath.startsWith("assets/")) {
-            return handleSwaggerUIAssets(resPath.substring(7));
+        } else if (WebjarHelper.ENABLED && requestPath.startsWith("assets/")) {
+            return WebjarHelper.getInstance().handleAssets("redoc", resPath.substring(7));
         }
         throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
     }
@@ -99,21 +99,5 @@ public class RedocRequestHandler implements OpenAPIRequestHandler {
         } catch (IOException e) {
             throw new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR.getCode(), e);
         }
-    }
-
-    private HttpResult<?> handleSwaggerUIAssets(String path) {
-        if (WebjarHelper.ENABLED) {
-            try {
-                byte[] bytes = WebjarHelper.getInstance().getWebjarResource("redoc", path);
-                if (bytes != null) {
-                    return HttpResult.builder()
-                            .header("Cache-Control", "public, max-age=604800")
-                            .body(bytes)
-                            .build();
-                }
-            } catch (IOException ignored) {
-            }
-        }
-        throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
     }
 }

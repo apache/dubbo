@@ -96,7 +96,18 @@ public final class RadixTree<T> {
     }
 
     public T addPath(String path, T value) {
-        return addPath(PathExpression.parse(PathUtils.normalize(path)), value);
+        if (path == null) {
+            return value;
+        }
+        if (separator == '/') {
+            path = PathUtils.normalize(path);
+        } else {
+            path = path.replace(separator, '/');
+            if (path.isEmpty() || path.charAt(0) != '/') {
+                path = '/' + path;
+            }
+        }
+        return addPath(PathExpression.parse(path), value);
     }
 
     public void addPath(T value, String... paths) {

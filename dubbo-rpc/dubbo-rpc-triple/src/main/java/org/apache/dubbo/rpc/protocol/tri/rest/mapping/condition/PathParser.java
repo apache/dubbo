@@ -30,7 +30,7 @@ import java.util.ListIterator;
 /**
  * See
  * <p>
- * <a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/anno-requestmapping.html#mvc-anno-requestmapping-uri-templates">Spring uri templates</a>
+ * <a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html#mvc-ann-requestmapping-uri-templates">Spring uri templates</a>
  * <br/>
  * <a href="https://docs.jboss.org/resteasy/docs/6.2.7.Final/userguide/html/ch04.html">Path and regular expression mappings</a>
  * </p>

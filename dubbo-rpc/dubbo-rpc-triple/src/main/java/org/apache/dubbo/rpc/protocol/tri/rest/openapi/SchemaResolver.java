@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
@@ -35,6 +37,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +52,8 @@ public final class SchemaResolver {
     private final OpenAPISchemaResolver[] resolvers;
     private final OpenAPISchemaPredicate[] predicates;
     private final Map<Class<?>, Optional<Schema>> schemaMap = CollectionUtils.newConcurrentHashMap();
+
+    private volatile RadixTree<Boolean> classFilter;
 
     public SchemaResolver(FrameworkModel frameworkModel) {
         configFactory = frameworkModel.getOrRegisterBean(ConfigFactory.class);
@@ -140,7 +145,7 @@ public final class SchemaResolver {
             return existingSchema.map(s -> new Schema().setTargetSchema(s)).orElseGet(OBJECT::newSchema);
         }
 
-        if (TypeUtils.isSystemType(clazz)) {
+        if (isClassExcluded(clazz)) {
             schemaMap.put(clazz, Optional.empty());
             return OBJECT.newSchema();
         }
@@ -215,6 +220,57 @@ public final class SchemaResolver {
         }
 
         return beanSchema.addAllOf(resolve(superClass));
+    }
+
+    private boolean isClassExcluded(Class<?> clazz) {
+        RadixTree<Boolean> classFilter = this.classFilter;
+        if (classFilter == null) {
+            synchronized (this) {
+                classFilter = this.classFilter;
+                if (classFilter == null) {
+                    classFilter = new RadixTree<>('.');
+                    for (String prefix : TypeUtils.getSystemPrefixes()) {
+                        addPath(classFilter, prefix);
+                    }
+                    String[] excludes = configFactory.getGlobalConfig().getSchemaClassExcludes();
+                    if (excludes != null) {
+                        for (String exclude : excludes) {
+                            addPath(classFilter, exclude);
+                        }
+                    }
+                    this.classFilter = classFilter;
+                }
+            }
+        }
+
+        List<Match<Boolean>> matches = classFilter.match('.' + clazz.getName());
+        int size = matches.size();
+        if (size == 0) {
+            return false;
+        } else if (size > 1) {
+            Collections.sort(matches);
+        }
+        return matches.get(size - 1).getValue();
+    }
+
+    public static void addPath(RadixTree<Boolean> tree, String path) {
+        if (path == null) {
+            return;
+        }
+        int size = path.length();
+        if (size == 0) {
+            return;
+        }
+        boolean value = true;
+        if (path.charAt(0) == '!') {
+            path = path.substring(1);
+            size--;
+            value = false;
+        }
+        if (path.charAt(size - 1) == '.') {
+            path += "**";
+        }
+        tree.addPath(path, value);
     }
 
     private static final class SchemaChainImpl implements SchemaChain {

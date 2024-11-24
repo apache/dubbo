@@ -35,14 +35,6 @@
       <plugin>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-maven-plugin</artifactId>
-        <version>3.3.2</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
