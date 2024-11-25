@@ -104,7 +104,6 @@
     <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.7.1</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
-    <jedis_version>3.10.0</jedis_version>
     <hessian_version>4.0.66</hessian_version>
     <protobuf-java_version>3.25.5</protobuf-java_version>
     <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
@@ -161,7 +160,6 @@
     <awaitility_version>4.2.2</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
-    <embedded_redis_version>1.4.3</embedded_redis_version>
     <mockito_version>4.11.0</mockito_version>
     <spock_version>2.3-groovy-4.0</spock_version>
 
@@ -173,7 +171,6 @@
 
     <snappy_java_version>1.1.10.7</snappy_java_version>
     <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
-    <sofa_registry_version>5.4.3</sofa_registry_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.11.0</gson_version>
     <jackson_version>2.18.1</jackson_version>
@@ -185,7 +182,6 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <open_feign_version>3.1.9</open_feign_version>
     <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
@@ -399,11 +395,6 @@
             <artifactId>zookeeper</artifactId>
           </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>redis.clients</groupId>
-        <artifactId>jedis</artifactId>
-        <version>${jedis_version}</version>
       </dependency>
 
       <!-- Alibaba -->
@@ -724,19 +715,6 @@
         <version>${swagger_version}</version>
       </dependency>
 
-      <!-- for dubbo-registry-sofa -->
-      <dependency>
-        <groupId>com.alipay.sofa</groupId>
-        <artifactId>registry-client-all</artifactId>
-        <version>${sofa_registry_version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.alipay.sofa</groupId>
-        <artifactId>registry-test</artifactId>
-        <version>${sofa_registry_version}</version>
-        <scope>test</scope>
-      </dependency>
-
       <!-- Test libs -->
       <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -802,12 +780,6 @@
         <groupId>cglib</groupId>
         <artifactId>cglib-nodep</artifactId>
         <version>${cglib_version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.github.codemonstur</groupId>
-        <artifactId>embedded-redis</artifactId>
-        <version>${embedded_redis_version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -997,11 +969,6 @@
         <groupId>io.reactivex.rxjava2</groupId>
         <artifactId>rxjava</artifactId>
         <version>${rxjava.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-openfeign-core</artifactId>
-        <version>${open_feign_version}</version>
       </dependency>
       <dependency>
         <groupId>jakarta.xml.bind</groupId>
