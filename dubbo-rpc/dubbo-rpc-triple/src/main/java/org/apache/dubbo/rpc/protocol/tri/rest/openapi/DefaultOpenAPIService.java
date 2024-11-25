@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.Pair;
@@ -30,6 +31,7 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RadixTree.Match;
@@ -173,34 +175,42 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
 
     @Override
     public String getDocument(OpenAPIRequest request) {
-        request = Helper.formatRequest(request);
+        String path = null;
+        HttpResult<?> result;
+        try {
+            request = Helper.formatRequest(request);
 
-        HttpRequest httpRequest = RpcContext.getServiceContext().getRequest(HttpRequest.class);
-        if (!RequestUtils.isRestRequest(httpRequest)) {
-            return handleDocument(request);
-        }
+            HttpRequest httpRequest = RpcContext.getServiceContext().getRequest(HttpRequest.class);
+            if (!RequestUtils.isRestRequest(httpRequest)) {
+                return handleDocument(request);
+            }
 
-        String path = RequestUtils.getPathVariable(httpRequest, "path");
-        if (StringUtils.isEmpty(path)) {
-            throw HttpResult.found(PathUtils.join(httpRequest.path(), "swagger-ui/index.html"))
-                    .toPayload();
-        }
+            path = RequestUtils.getPathVariable(httpRequest, "path");
+            if (StringUtils.isEmpty(path)) {
+                throw HttpResult.found(PathUtils.join(httpRequest.path(), "swagger-ui/index.html")).toPayload();
+            }
 
-        path = '/' + path;
-        List<Match<OpenAPIRequestHandler>> matches = tree.matchRelaxed(path);
-        if (matches.isEmpty()) {
-            throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
-        }
+            path = '/' + path;
+            List<Match<OpenAPIRequestHandler>> matches = tree.matchRelaxed(path);
+            if (matches.isEmpty()) {
+                throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
+            }
 
-        Collections.sort(matches);
-        Match<OpenAPIRequestHandler> match = matches.get(0);
-        HttpResponse httpResponse = RpcContext.getServiceContext().getResponse(HttpResponse.class);
-        if (request.getFormat() == null) {
-            request.setFormat(Helper.parseFormat(httpResponse.contentType()));
+            Collections.sort(matches);
+            Match<OpenAPIRequestHandler> match = matches.get(0);
+            HttpResponse httpResponse = RpcContext.getServiceContext().getResponse(HttpResponse.class);
+            if (request.getFormat() == null) {
+                request.setFormat(Helper.parseFormat(httpResponse.contentType()));
+            }
+            httpRequest.setAttribute(OpenAPIRequest.class.getName(), request);
+            httpRequest.setAttribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE, match.getVariableMap());
+            result = match.getValue().handle(path, httpRequest, httpResponse);
+        } catch (Throwable t) {
+            Level level = ExceptionUtils.resolveLogLevel(t);
+            LOG.log(level, "Failed to processing OpenAPI request {} for path: '{}'", request, path, t);
+            throw t;
         }
-        httpRequest.setAttribute(OpenAPIRequest.class.getName(), request);
-        httpRequest.setAttribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE, match.getVariableMap());
-        throw match.getValue().handle(path, httpRequest, httpResponse).toPayload();
+        throw result.toPayload();
     }
 
     private String handleDocument(OpenAPIRequest request) {
