@@ -91,7 +91,7 @@
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.39</spring_version>
     <spring_boot_version>2.7.18</spring_boot_version>
-    <spring_security_version>5.8.15</spring_security_version>
+    <spring_security_version>5.8.16</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
     <byte-buddy_version>1.15.10</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
