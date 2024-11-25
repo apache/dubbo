@@ -250,7 +250,7 @@ public final class SchemaResolver {
         } else if (size > 1) {
             Collections.sort(matches);
         }
-        return matches.get(size - 1).getValue();
+        return matches.get(0).getValue();
     }
 
     public static void addPath(RadixTree<Boolean> tree, String path) {

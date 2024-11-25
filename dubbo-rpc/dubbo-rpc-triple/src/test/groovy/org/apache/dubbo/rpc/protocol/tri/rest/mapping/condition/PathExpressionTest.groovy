@@ -206,6 +206,7 @@ class PathExpressionTest extends Specification {
             '/one'                  | '/one'            | 0
             '/one'                  | '/two'            | 0
             '/one/{two}/three'      | '/one/{t}/three'  | 0
+            '/one/two'              | '/one/{two}'      | -1
             '/one/{two}/three'      | '/one/*/three'    | -1
             '/one/*/three'          | '/one/**/three'   | -1
             '/one/two'              | '/one'            | -1

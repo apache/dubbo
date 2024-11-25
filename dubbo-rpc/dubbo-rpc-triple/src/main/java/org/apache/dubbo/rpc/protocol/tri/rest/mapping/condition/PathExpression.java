@@ -104,7 +104,7 @@ public final class PathExpression implements Comparable<PathExpression> {
                 return result;
             }
         }
-        return otherSize - size;
+        return size - otherSize;
     }
 
     @Override

@@ -193,9 +193,9 @@ public final class PathSegment implements Comparable<PathSegment> {
                 return comparison;
             }
         }
-        int size = variables == null ? 0 : variables.size();
-        int otherSize = other.variables == null ? 0 : other.variables.size();
-        return otherSize - size;
+        int size = variables == null ? 99 : variables.size();
+        int otherSize = other.variables == null ? 99 : other.variables.size();
+        return size - otherSize;
     }
 
     public enum Type {
@@ -212,18 +212,18 @@ public final class PathSegment implements Comparable<PathSegment> {
         LITERAL(1),
         /**
          * A wildcard segment.
-         * E.g.: 't?st*uv' and '/foo/&ast;/bar'
+         * E.g.: 't?st*uv'
          */
         WILDCARD,
         /**
          * A wildcard matching suffix.
          * Transient type used for parsing, will not be present in the PathExpression
-         * E.g.: '/foo/**' and '/**' and '/{*bar}'
+         * E.g.: '/foo/**' or '/**' or '/{*bar}'
          */
         WILDCARD_TAIL,
         /**
          * A template variable segment.
-         * E.g.: '{foo}'
+         * E.g.: '{foo}' or '/foo/&ast;/bar'
          */
         VARIABLE(10),
         /**

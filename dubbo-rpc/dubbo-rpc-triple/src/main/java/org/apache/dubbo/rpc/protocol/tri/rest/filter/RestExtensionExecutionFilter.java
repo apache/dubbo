@@ -171,7 +171,7 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
                 if (size > 1) {
                     Collections.sort(matches);
                 }
-                if (matches.get(size - 1).getValue()) {
+                if (matches.get(0).getValue()) {
                     continue;
                 }
             }

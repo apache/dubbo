@@ -25,8 +25,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpResult;
-import org.apache.dubbo.remoting.http12.HttpStatus;
-import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.exception.HttpResultPayloadException;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.RpcContext;
@@ -176,7 +175,6 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
     @Override
     public String getDocument(OpenAPIRequest request) {
         String path = null;
-        HttpResult<?> result;
         try {
             request = Helper.formatRequest(request);
 
@@ -187,13 +185,14 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
 
             path = RequestUtils.getPathVariable(httpRequest, "path");
             if (StringUtils.isEmpty(path)) {
-                throw HttpResult.found(PathUtils.join(httpRequest.path(), "swagger-ui/index.html")).toPayload();
+                String url = PathUtils.join(httpRequest.path(), "swagger-ui/index.html");
+                throw HttpResult.found(url).toPayload();
             }
 
             path = '/' + path;
             List<Match<OpenAPIRequestHandler>> matches = tree.matchRelaxed(path);
             if (matches.isEmpty()) {
-                throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode());
+                throw HttpResult.notFound().toPayload();
             }
 
             Collections.sort(matches);
@@ -204,13 +203,14 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
             }
             httpRequest.setAttribute(OpenAPIRequest.class.getName(), request);
             httpRequest.setAttribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE, match.getVariableMap());
-            result = match.getValue().handle(path, httpRequest, httpResponse);
+            throw match.getValue().handle(path, httpRequest, httpResponse).toPayload();
+        } catch (HttpResultPayloadException e) {
+            throw e;
         } catch (Throwable t) {
-            Level level = ExceptionUtils.resolveLogLevel(t);
+            Level level = ExceptionUtils.resolveLogLevel(ExceptionUtils.unwrap(t));
             LOG.log(level, "Failed to processing OpenAPI request {} for path: '{}'", request, path, t);
             throw t;
         }
-        throw result.toPayload();
     }
 
     private String handleDocument(OpenAPIRequest request) {
