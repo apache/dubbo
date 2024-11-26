@@ -92,6 +92,11 @@ public class OpenAPIConfig implements Serializable {
     private String securityScheme;
 
     /**
+     * The security.
+     */
+    private String security;
+
+    /**
      * The strategy used to generate operation id and schema name.
      */
     private String nameStrategy;
@@ -243,6 +248,14 @@ public class OpenAPIConfig implements Serializable {
 
     public void setSecurityScheme(String securityScheme) {
         this.securityScheme = securityScheme;
+    }
+
+    public String getSecurity() {
+        return security;
+    }
+
+    public void setSecurity(String security) {
+        this.security = security;
     }
 
     public String getNameStrategy() {

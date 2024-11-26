@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -48,6 +49,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Server;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
 import java.util.ArrayList;
@@ -94,6 +96,13 @@ final class DefinitionResolver {
         }
         if (definition.getConfig() == null) {
             definition.setConfig(configFactory.getConfig(definition.getGroup()));
+        }
+
+        if (CollectionUtils.isEmpty(definition.getServers())) {
+            URL url = serviceMeta.getUrl();
+            definition.addServer(new Server()
+                    .setUrl("http://" + url.getHost() + ':' + url.getPort())
+                    .setDescription(Constants.DUBBO_SERVER));
         }
 
         OperationContext context = new OperationContextImpl(definition, schemaResolver, extensionFactory);

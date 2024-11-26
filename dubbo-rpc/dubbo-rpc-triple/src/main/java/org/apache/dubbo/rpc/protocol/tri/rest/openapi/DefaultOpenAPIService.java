@@ -113,7 +113,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
         }
         return HttpResult.builder()
                 .contentType(MediaType.APPLICATION + '/' + request.getFormat())
-                .body(handleDocument(request).getBytes(StandardCharsets.UTF_8))
+                .body(handleDocument(request, httpRequest).getBytes(StandardCharsets.UTF_8))
                 .build();
     }
 
@@ -180,7 +180,7 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
 
             HttpRequest httpRequest = RpcContext.getServiceContext().getRequest(HttpRequest.class);
             if (!RequestUtils.isRestRequest(httpRequest)) {
-                return handleDocument(request);
+                return handleDocument(request, null);
             }
 
             path = RequestUtils.getPathVariable(httpRequest, "path");
@@ -213,12 +213,22 @@ public class DefaultOpenAPIService implements OpenAPIRequestHandler, OpenAPIServ
         }
     }
 
-    private String handleDocument(OpenAPIRequest request) {
+    private String handleDocument(OpenAPIRequest request, HttpRequest httpRequest) {
         if (Boolean.FALSE.equals(configFactory.getGlobalConfig().getCache())) {
             return definitionEncoder.encode(getOpenAPI(request), request);
         }
 
-        String cacheKey = request.toString();
+        StringBuilder sb = new StringBuilder();
+        if (httpRequest != null) {
+            String host = httpRequest.serverHost();
+            if (host != null) {
+                String referer = httpRequest.header(Constants.REFERER);
+                sb.append(referer != null && referer.contains(host) ? '/' : host);
+            }
+        }
+        sb.append('|').append(request.toString());
+
+        String cacheKey = sb.toString();
         SoftReference<String> ref = cache.get(cacheKey);
         if (ref != null) {
             String value = ref.get();

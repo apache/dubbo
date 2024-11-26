@@ -26,6 +26,7 @@ public final class SecurityScheme extends Node<SecurityScheme> {
         APIKEY("apiKey"),
         HTTP("http"),
         OAUTH2("oauth2"),
+        MUTUAL_TLS("mutualTLS"),
         OPEN_ID_CONNECT("openIdConnect");
 
         private final String value;
@@ -147,10 +148,15 @@ public final class SecurityScheme extends Node<SecurityScheme> {
 
     @Override
     public Map<String, Object> writeTo(Map<String, Object> node, Context context) {
-        write(node, "type", type);
+        if (type == null) {
+            return node;
+        }
+        write(node, "type", type.toString());
         write(node, "description", description);
         write(node, "name", name);
-        write(node, "in", in);
+        if (in != null) {
+            write(node, "in", in.toString());
+        }
         write(node, "scheme", scheme);
         write(node, "bearerFormat", bearerFormat);
         write(node, "flows", flows, context);

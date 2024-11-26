@@ -43,6 +43,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityScheme;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Server;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
+import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -53,12 +55,17 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.setValue;
 
 final class DefinitionMerger {
 
     private static final FluentLogger LOG = FluentLogger.of(DefinitionMerger.class);
     private static final String NAMING_STRATEGY_PREFIX = "naming-strategy-";
     private static final String NAMING_STRATEGY_DEFAULT = "default";
+    private static Type SECURITY_SCHEMES_TYPE;
+    private static Type SECURITY_TYPE;
 
     private final ExtensionFactory extensionFactory;
     private final ConfigFactory configFactory;
@@ -85,8 +92,8 @@ final class DefinitionMerger {
 
         OpenAPIConfig globalConfig = configFactory.getGlobalConfig();
         model.setGlobalConfig(globalConfig);
+        applyConfig(model, globalConfig);
         if (openAPIs.isEmpty()) {
-            applyConfig(model, globalConfig);
             return model;
         }
 
@@ -106,7 +113,6 @@ final class DefinitionMerger {
 
         OpenAPIConfig config = configFactory.getConfig(group);
         model.setConfig(config);
-        applyConfig(model, config);
 
         for (OpenAPI api : openAPIs) {
             if (isServiceNotMatch(api.getMeta().getServiceInterface(), services)) {
@@ -124,7 +130,7 @@ final class DefinitionMerger {
             mergeTags(model, api);
         }
 
-        applyConfig(model, globalConfig);
+        applyConfig(model, config);
 
         addSchemas(model, version, group);
 
@@ -141,67 +147,55 @@ final class DefinitionMerger {
         }
 
         Info info = api.getInfo();
-        if (info.getTitle() == null) {
-            info.setTitle(config.getInfoTitle());
-        }
-        if (info.getDescription() == null) {
-            info.setDescription(config.getInfoDescription());
-        }
-        if (info.getVersion() == null) {
-            info.setVersion(config.getInfoVersion());
-        }
+        setValue(info::setTitle, config::getInfoTitle);
+        setValue(info::setDescription, config::getInfoDescription);
+        setValue(info::setVersion, config::getInfoVersion);
 
         Contact contact = info.getContact();
         if (contact == null) {
             info.setContact(contact = new Contact());
         }
-        if (contact.getName() == null) {
-            contact.setName(config.getInfoContactName());
-        }
-        if (contact.getUrl() == null) {
-            contact.setUrl(config.getInfoContactUrl());
-        }
-        if (contact.getEmail() == null) {
-            contact.setEmail(config.getInfoContactEmail());
-        }
-
-        if (info.getVersion() == null) {
-            info.setVersion(config.getInfoVersion());
-        }
+        setValue(contact::setName, config::getInfoContactName);
+        setValue(contact::setUrl, config::getInfoContactUrl);
+        setValue(contact::setEmail, config::getInfoContactEmail);
 
         ExternalDocs externalDocs = api.getExternalDocs();
         if (externalDocs == null) {
             api.setExternalDocs(externalDocs = new ExternalDocs());
         }
-        if (externalDocs.getDescription() == null) {
-            externalDocs.setDescription(config.getExternalDocsDescription());
-        }
-        if (externalDocs.getUrl() == null) {
-            externalDocs.setUrl(config.getExternalDocsUrl());
-        }
+        setValue(externalDocs::setDescription, config::getExternalDocsDescription);
+        setValue(externalDocs::setUrl, config::getExternalDocsUrl);
 
-        if (api.getServers() == null) {
-            String[] servers = config.getServers();
-            if (servers != null) {
-                for (String server : servers) {
-                    api.addServer(new Server().setUrl(server));
-                }
-            }
+        String[] servers = config.getServers();
+        if (servers != null) {
+            api.setServers(Arrays.stream(servers).map(Helper::parseServer).collect(Collectors.toList()));
         }
 
         Components components = api.getComponents();
         if (api.getComponents() == null) {
             api.setComponents(components = new Components());
         }
-        if (components.getSecuritySchemes() == null) {
-            String securityScheme = config.getSecurityScheme();
-            if (securityScheme != null) {
-                try {
-                    components.setSecuritySchemes(JsonUtils.toJavaObject(
-                            securityScheme,
-                            Components.class.getDeclaredField("securitySchemes").getGenericType()));
-                } catch (NoSuchFieldException ignored) {
+
+        String securityScheme = config.getSecurityScheme();
+        if (securityScheme != null) {
+            try {
+                if (SECURITY_SCHEMES_TYPE == null) {
+                    SECURITY_SCHEMES_TYPE =
+                            Components.class.getDeclaredField("securitySchemes").getGenericType();
                 }
+                components.setSecuritySchemes(JsonUtils.toJavaObject(securityScheme, SECURITY_SCHEMES_TYPE));
+            } catch (NoSuchFieldException ignored) {
+            }
+        }
+
+        String security = config.getSecurity();
+        if (security != null) {
+            try {
+                if (SECURITY_TYPE == null) {
+                    SECURITY_TYPE = OpenAPI.class.getDeclaredField("security").getGenericType();
+                }
+                api.setSecurity(JsonUtils.toJavaObject(securityScheme, SECURITY_TYPE));
+            } catch (NoSuchFieldException ignored) {
             }
         }
     }
@@ -209,31 +203,20 @@ final class DefinitionMerger {
     private void mergeBasic(OpenAPI api, OpenAPI from) {
         mergeInfo(api, from);
 
-        List<Server> fromServers = from.getServers();
-        if (fromServers != null) {
-            List<Server> servers = api.getServers();
-            if (servers == null) {
-                api.setServers(Node.clone(fromServers));
-            }
+        if (api.getServers() == null) {
+            api.setServers(Node.clone(from.getServers()));
         }
 
         List<SecurityRequirement> fromSecurity = from.getSecurity();
-        if (fromSecurity != null) {
-            List<SecurityRequirement> security = api.getSecurity();
-            if (security == null) {
-                api.setSecurity(Node.clone(fromSecurity));
-            }
+        if (api.getSecurity() == null) {
+            api.setSecurity(Node.clone(fromSecurity));
         }
 
         ExternalDocs fromExternalDocs = from.getExternalDocs();
         if (fromExternalDocs != null) {
             ExternalDocs externalDocs = api.getExternalDocs();
-            if (externalDocs.getDescription() == null) {
-                externalDocs.setDescription(fromExternalDocs.getDescription());
-            }
-            if (externalDocs.getUrl() == null) {
-                externalDocs.setUrl(fromExternalDocs.getUrl());
-            }
+            setValue(externalDocs::setDescription, fromExternalDocs::getDescription);
+            setValue(externalDocs::setUrl, fromExternalDocs::getUrl);
             externalDocs.addExtensions(fromExternalDocs.getExtensions());
         }
 
@@ -247,52 +230,28 @@ final class DefinitionMerger {
         }
 
         Info info = api.getInfo();
-        if (info.getTitle() == null) {
-            info.setTitle(fromInfo.getTitle());
-        }
-        if (info.getSummary() == null) {
-            info.setDescription(fromInfo.getSummary());
-        }
-        if (info.getDescription() == null) {
-            info.setDescription(fromInfo.getDescription());
-        }
-        if (info.getTermsOfService() == null) {
-            info.setTermsOfService(fromInfo.getTermsOfService());
-        }
+        setValue(info::setTitle, fromInfo::getTitle);
+        setValue(info::setSummary, fromInfo::getSummary);
+        setValue(info::setDescription, fromInfo::getDescription);
+        setValue(info::setTermsOfService, fromInfo::getTermsOfService);
+        setValue(info::setVersion, fromInfo::getVersion);
 
         Contact fromContact = fromInfo.getContact();
         if (fromContact != null) {
             Contact contact = info.getContact();
-            if (contact.getName() == null) {
-                contact.setName(fromContact.getName());
-            }
-            if (contact.getUrl() == null) {
-                contact.setUrl(fromContact.getUrl());
-            }
-            if (contact.getEmail() == null) {
-                contact.setEmail(fromContact.getEmail());
-            }
+            setValue(contact::setName, fromContact::getName);
+            setValue(contact::setUrl, fromContact::getUrl);
+            setValue(contact::setEmail, fromContact::getEmail);
 
-            if (info.getVersion() == null) {
-                info.setVersion(fromInfo.getVersion());
-            }
             contact.addExtensions(fromContact.getExtensions());
         }
 
         License fromLicense = fromInfo.getLicense();
         if (fromLicense != null) {
             License license = info.getLicense();
-            if (license.getName() == null) {
-                license.setName(fromLicense.getName());
-            }
-            if (license.getUrl() == null) {
-                license.setUrl(fromLicense.getUrl());
-            }
+            setValue(license::setName, fromLicense::getName);
+            setValue(license::setUrl, fromLicense::getUrl);
             license.addExtensions(fromLicense.getExtensions());
-        }
-
-        if (info.getVersion() == null) {
-            info.setVersion(fromInfo.getVersion());
         }
 
         info.addExtensions(fromInfo.getExtensions());

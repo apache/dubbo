@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.remoting.http12.HttpMethods;
+import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ApiResponse;
@@ -31,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.RequestBody;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.SecurityScheme;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Server;
 
 import java.util.Iterator;
 import java.util.List;
@@ -52,30 +54,56 @@ final class DefinitionFilter {
 
     public OpenAPI filter(OpenAPI openAPI, OpenAPIRequest request) {
         OpenAPIFilter[] filters = extensionFactory.getExtensions(OpenAPIFilter.class, request.getGroup());
-        if (filters.length == 0) {
-            return openAPI;
-        }
-
         Context context = new ContextImpl(openAPI, schemaResolver, extensionFactory, request);
-        for (OpenAPIFilter filter : filters) {
-            openAPI = filter.filterOpenAPI(openAPI, context);
-            if (openAPI == null) {
-                return null;
+
+        if (filters.length > 0) {
+            for (OpenAPIFilter filter : filters) {
+                openAPI = filter.filterOpenAPI(openAPI, context);
+                if (openAPI == null) {
+                    return null;
+                }
+            }
+
+            filterPaths(openAPI, filters, context);
+
+            filterComponents(openAPI, filters, context);
+
+            for (OpenAPIFilter filter : filters) {
+                openAPI = filter.filterOpenAPICompletion(openAPI, context);
+                if (openAPI == null) {
+                    return null;
+                }
             }
         }
 
-        filterPaths(openAPI, filters, context);
-
-        filterComponents(openAPI, filters, context);
-
-        for (OpenAPIFilter filter : filters) {
-            openAPI = filter.filterOpenAPICompletion(openAPI, context);
-            if (openAPI == null) {
-                return null;
-            }
-        }
+        filterServer(openAPI, context);
 
         return openAPI;
+    }
+
+    private static void filterServer(OpenAPI openAPI, Context context) {
+        List<Server> servers = openAPI.getServers();
+        if (servers == null || servers.size() != 1) {
+            return;
+        }
+        Server server = servers.get(0);
+        if (!Constants.DUBBO_SERVER.equals(server.getDescription())) {
+            return;
+        }
+        HttpRequest httpRequest = context.getHttpRequest();
+        if (httpRequest == null) {
+            return;
+        }
+        String host = httpRequest.serverHost();
+        if (host == null) {
+            return;
+        }
+        String referer = httpRequest.header(Constants.REFERER);
+        if (referer != null && referer.contains(host)) {
+            servers.clear();
+        } else {
+            server.setUrl(httpRequest.scheme() + "://" + host);
+        }
     }
 
     private void filterPaths(OpenAPI openAPI, OpenAPIFilter[] filters, Context context) {

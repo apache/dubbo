@@ -300,7 +300,7 @@ public class DefaultHttpRequest implements HttpRequest {
         if (isHttp2()) {
             scheme = headers.getFirst(PseudoHeaderName.SCHEME.value());
         }
-        return scheme == null ? HttpConstants.HTTPS : scheme;
+        return scheme == null ? HttpConstants.HTTP : scheme;
     }
 
     @Override

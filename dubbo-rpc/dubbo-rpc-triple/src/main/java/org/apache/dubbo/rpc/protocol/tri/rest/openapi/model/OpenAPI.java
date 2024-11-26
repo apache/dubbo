@@ -75,10 +75,17 @@ public final class OpenAPI extends Node<OpenAPI> {
     }
 
     public OpenAPI addServer(Server server) {
-        if (servers == null) {
-            servers = new ArrayList<>();
+        List<Server> thisServers = servers;
+        if (thisServers == null) {
+            servers = thisServers = new ArrayList<>();
+        } else {
+            for (int i = 0, size = thisServers.size(); i < size; i++) {
+                if (thisServers.get(i).getUrl().equals(server.getUrl())) {
+                    return this;
+                }
+            }
         }
-        servers.add(server);
+        thisServers.add(server);
         return this;
     }
 

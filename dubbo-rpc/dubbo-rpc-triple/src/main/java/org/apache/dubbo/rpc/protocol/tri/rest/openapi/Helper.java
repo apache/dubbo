@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.apache.dubbo.remoting.http12.HttpMethods.DELETE;
 import static org.apache.dubbo.remoting.http12.HttpMethods.GET;
@@ -225,6 +228,30 @@ public final class Helper {
             }
         }
         return properties;
+    }
+
+    public static Server parseServer(String server) {
+        String url = null;
+        String description = null;
+        int equalIndex = server.indexOf('=');
+        if (equalIndex > 0) {
+            int index = server.indexOf("://");
+            if (index == -1 || index > equalIndex) {
+                url = trim(server.substring(equalIndex + 1));
+                description = trim(server.substring(0, equalIndex));
+            }
+        }
+        if (url == null) {
+            url = trim(server);
+        }
+        return new Server().setDescription(description).setUrl(url);
+    }
+
+    public static void setValue(Consumer<String> setter, Supplier<String> getter) {
+        String value = trim(getter.get());
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 
     public static String pathToRef(String path) {

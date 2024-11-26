@@ -29,5 +29,8 @@ public final class Constants {
     public static final String X_JAVA_METHOD = "x-java-method";
     public static final String X_JAVA_PARAM = "x-java-param";
 
+    public static final String DUBBO_SERVER = "Dubbo Server";
+    public static final String REFERER = "referer";
+
     private Constants() {}
 }
