@@ -20,6 +20,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -128,14 +129,23 @@ public final class TypeUtils {
     }
 
     public static void addSystemPrefixes(String... prefixes) {
-        SYSTEM_PREFIXES.addAll(Arrays.asList(prefixes));
+        for (String prefix : prefixes) {
+            if (StringUtils.isNotEmpty(prefix)) {
+                SYSTEM_PREFIXES.add(prefix);
+            }
+        }
     }
 
     public static boolean isSystemType(Class<?> type) {
         String name = type.getName();
         List<String> systemPrefixes = getSystemPrefixes();
-        for (int i = 0, size = systemPrefixes.size(); i < size; i++) {
-            if (name.startsWith(systemPrefixes.get(i))) {
+        for (int i = systemPrefixes.size() - 1; i >= 0; i--) {
+            String prefix = systemPrefixes.get(i);
+            if (prefix.charAt(0) == '!') {
+                if (name.regionMatches(0, prefix, 1, prefix.length() - 1)) {
+                    return false;
+                }
+            } else if (name.startsWith(prefix)) {
                 return true;
             }
         }

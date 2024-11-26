@@ -242,6 +242,9 @@ public final class BeanMeta extends ParameterMeta {
         private ConstructorParameterMeta[] initParameters(RestToolKit toolKit, String prefix, Constructor<?> ct) {
             Parameter[] cps = ct.getParameters();
             int len = cps.length;
+            if (len == 0) {
+                return new ConstructorParameterMeta[0];
+            }
             String[] parameterNames = toolKit == null ? null : toolKit.getParameterNames(ct);
             ConstructorParameterMeta[] parameters = new ConstructorParameterMeta[len];
             for (int i = 0; i < len; i++) {

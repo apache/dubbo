@@ -81,7 +81,12 @@ public final class Helper {
                     if (GET.name().equals(httpMethod)) {
                         for (ParameterMeta parameter : method.getParameters()) {
                             ParamType paramType = parameter.getNamedValueMeta().paramType();
-                            if (paramType != null) {
+                            if (paramType == null) {
+                                if (parameter.isSimple()) {
+                                    continue;
+                                }
+                                return Arrays.asList(GET.name(), POST.name());
+                            } else {
                                 switch (paramType) {
                                     case Form:
                                     case Part:

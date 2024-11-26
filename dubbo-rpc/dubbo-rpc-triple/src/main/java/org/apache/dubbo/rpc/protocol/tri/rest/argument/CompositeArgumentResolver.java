@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
@@ -89,8 +90,12 @@ public final class CompositeArgumentResolver implements ArgumentResolver {
         }
 
         for (ArgumentResolver resolver : resolvers) {
-            if (resolver.accept(parameter) && resolver instanceof AbstractArgumentResolver) {
-                return ((AbstractArgumentResolver) resolver).getNamedValueMeta(parameter);
+            if (resolver.accept(parameter)) {
+                if (resolver instanceof AbstractArgumentResolver) {
+                    return ((AbstractArgumentResolver) resolver).getNamedValueMeta(parameter);
+                } else {
+                    return new NamedValueMeta().setParamType(ParamType.Attribute);
+                }
             }
         }
 
