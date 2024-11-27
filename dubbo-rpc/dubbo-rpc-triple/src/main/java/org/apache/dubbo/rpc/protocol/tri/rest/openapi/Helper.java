@@ -17,8 +17,10 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 import org.apache.dubbo.remoting.http12.rest.ParamType;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
@@ -247,10 +249,31 @@ public final class Helper {
         return new Server().setDescription(description).setUrl(url);
     }
 
-    public static void setValue(Consumer<String> setter, Supplier<String> getter) {
+    public static void setValue(Supplier<String> getter, Consumer<String> setter) {
         String value = trim(getter.get());
         if (value != null) {
             setter.accept(value);
+        }
+    }
+
+    public static void setBoolValue(Supplier<String> getter, Consumer<Boolean> setter) {
+        String value = trim(getter.get());
+        if (value != null) {
+            setter.accept(StringUtils.toBoolean(value));
+        }
+    }
+
+    public static void setValue(AnnotationMeta<?> schema, String key, Consumer<String> setter) {
+        String value = trim(schema.getString(key));
+        if (value != null) {
+            setter.accept(value);
+        }
+    }
+
+    public static void setBoolValue(AnnotationMeta<?> schema, String key, Consumer<Boolean> setter) {
+        Boolean value = schema.getBoolean(key);
+        if (Boolean.TRUE.equals(value)) {
+            setter.accept(true);
         }
     }
 

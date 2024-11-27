@@ -87,7 +87,7 @@ final class DefinitionFilter {
             return;
         }
         Server server = servers.get(0);
-        if (!Constants.DUBBO_SERVER.equals(server.getDescription())) {
+        if (!Constants.DUBBO_DEFAULT_SERVER.equals(server.getDescription())) {
             return;
         }
         HttpRequest httpRequest = context.getHttpRequest();
@@ -375,6 +375,8 @@ final class DefinitionFilter {
                 filterSchema(it::next, it::set, schema, filters, context);
             }
         }
+
+        filterSchema(schema::getNot, schema::setNot, schema, filters, context);
     }
 
     private void filterSecuritySchemes(Components components, OpenAPIFilter[] filters, Context context) {

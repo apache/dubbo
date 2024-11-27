@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Constants;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Context;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter.In;
+import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -311,8 +312,9 @@ public final class Operation extends Node<Operation> {
         write(node, "security", security, context);
         write(node, "servers", servers, context);
         writeExtensions(node);
-        write(node, Constants.X_JAVA_TYPE, meta.getServiceMeta().getServiceInterface());
+        write(node, Constants.X_JAVA_CLASS, meta.getServiceMeta().getServiceInterface());
         write(node, Constants.X_JAVA_METHOD, meta.getMethod().getName());
+        write(node, Constants.X_JAVA_METHOD_DESCRIPTOR, TypeUtils.getMethodDescriptor(meta));
         return node;
     }
 }

@@ -102,7 +102,7 @@ final class DefinitionResolver {
             URL url = serviceMeta.getUrl();
             definition.addServer(new Server()
                     .setUrl("http://" + url.getHost() + ':' + url.getPort())
-                    .setDescription(Constants.DUBBO_SERVER));
+                    .setDescription(Constants.DUBBO_DEFAULT_SERVER));
         }
 
         OperationContext context = new OperationContextImpl(definition, schemaResolver, extensionFactory);

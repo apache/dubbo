@@ -39,8 +39,9 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.function.Consumer;
 
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.setBoolValue;
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.setValue;
 import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.trim;
 
 @Activate(order = 100)
@@ -150,8 +151,8 @@ public final class BasicOpenAPIDefinitionResolver
         setValue(annoMeta, "name", schema::setName);
         String title = trim(annoMeta.getValue());
         schema.setTitle(title == null ? trim(annoMeta.getString("title")) : title);
-        setValue(annoMeta, "title", schema::setTitle);
         setValue(annoMeta, "description", schema::setDescription);
+        setValue(annoMeta, "defaultValue", schema::setDefaultValue);
         setValue(annoMeta, "max", v -> schema.setMaxLength(Integer.parseInt(v)));
         setValue(annoMeta, "min", v -> schema.setMinLength(Integer.parseInt(v)));
         setValue(annoMeta, "pattern", schema::setPattern);
@@ -161,7 +162,6 @@ public final class BasicOpenAPIDefinitionResolver
             schema.setEnumeration(Arrays.asList(enumItems));
         }
         setBoolValue(annoMeta, "required", schema::setRequired);
-        setValue(annoMeta, "defaultValue", schema::setDefaultValue);
         setBoolValue(annoMeta, "readOnly", schema::setReadOnly);
         setBoolValue(annoMeta, "writeOnly", schema::setWriteOnly);
         setBoolValue(annoMeta, "nullable", schema::setNullable);
@@ -174,19 +174,5 @@ public final class BasicOpenAPIDefinitionResolver
     public Boolean acceptProperty(BeanMeta bean, PropertyMeta property) {
         AnnotationMeta<?> annoMeta = property.getAnnotation(Annotations.Schema);
         return annoMeta == null ? null : annoMeta.getBoolean(HIDDEN);
-    }
-
-    private static void setValue(AnnotationMeta<?> schema, String key, Consumer<String> setter) {
-        String value = trim(schema.getString(key));
-        if (value != null) {
-            setter.accept(value);
-        }
-    }
-
-    private static void setBoolValue(AnnotationMeta<?> schema, String key, Consumer<Boolean> setter) {
-        Boolean value = schema.getBoolean(key);
-        if (Boolean.TRUE.equals(value)) {
-            setter.accept(true);
-        }
     }
 }

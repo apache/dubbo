@@ -93,6 +93,7 @@
       <artifactId>spring-boot-starter-log4j2</artifactId>
     </dependency>
 
+    <!-- generate json format javadoc for openapi -->
     <dependency>
       <groupId>com.github.therapi</groupId>
       <artifactId>therapi-runtime-javadoc-scribe</artifactId>

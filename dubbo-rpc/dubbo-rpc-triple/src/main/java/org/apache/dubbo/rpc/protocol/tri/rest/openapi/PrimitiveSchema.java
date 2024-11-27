@@ -98,7 +98,6 @@ public enum PrimitiveSchema {
         TYPE_MAPPING.put(java.io.InputStream.class, BYTE);
         TYPE_MAPPING.put(java.net.InetAddress.class, IP_V4);
 
-        TYPE_MAPPING.put("int", INT);
         TYPE_MAPPING.put("object", OBJECT);
     }
 
@@ -128,6 +127,10 @@ public enum PrimitiveSchema {
             schema = TYPE_MAPPING.get(type.getName());
         }
         return schema == null ? null : schema.newSchema();
+    }
+
+    public static boolean isPrimitive(Class<?> type) {
+        return TYPE_MAPPING.containsKey(type);
     }
 
     public static void addTypeMapping(Object key, PrimitiveSchema schema) {

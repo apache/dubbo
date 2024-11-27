@@ -632,7 +632,7 @@ public final class Schema extends Node<Schema> {
         write(schema, "deprecated", deprecated);
         writeExtensions(schema);
         if (javaType != null) {
-            schema.put(Constants.X_JAVA_TYPE, javaType.getName());
+            schema.put(Constants.X_JAVA_CLASS, javaType.getName());
         }
         return schema;
     }

@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.Constants;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIDefinitionResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaPredicate;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPISchemaResolver;
@@ -35,15 +36,20 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.License;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema.Type;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
+import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.setValue;
 import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.Helper.trim;
 
 @Activate(order = 50, onClass = "io.swagger.v3.oas.annotations.OpenAPIDefinition")
@@ -98,7 +104,14 @@ public final class SwaggerOpenAPIDefinitionResolver
 
         openAPI.setExternalDocs(toExternalDocs(anno.externalDocs()));
 
-        openAPI.setExtensions(toProperties(anno.extensions()));
+        Map<String, String> properties = toProperties(anno.extensions());
+        if (properties != null) {
+            String group = properties.remove(Constants.X_API_GROUP);
+            if (group != null) {
+                openAPI.setGroup(group);
+            }
+            openAPI.setExtensions(properties);
+        }
         return openAPI;
     }
 
@@ -142,27 +155,74 @@ public final class SwaggerOpenAPIDefinitionResolver
         for (String tag : anno.tags()) {
             operation.addTag(tag);
         }
+        Map<String, String> properties = toProperties(anno.extensions());
+        if (properties != null) {
+            String group = properties.remove(Constants.X_API_GROUP);
+            if (group != null) {
+                operation.setGroup(group);
+            }
+            String version = properties.remove(Constants.X_API_VERSION);
+            if (version != null) {
+                operation.setVersion(version);
+            }
+            operation.setExtensions(properties);
+        }
         return operation
                 .setSummary(trim(anno.summary()))
                 .setDescription(trim(anno.description()))
                 .setExternalDocs(toExternalDocs(anno.externalDocs()))
                 .setOperationId(trim(anno.operationId()))
-                .setDeprecated(anno.deprecated() ? Boolean.TRUE : null)
-                .setExtensions(toProperties(anno.extensions()));
+                .setDeprecated(anno.deprecated() ? Boolean.TRUE : null);
     }
 
     @Override
     public Schema resolve(ParameterMeta parameter, SchemaContext context, SchemaChain chain) {
-        AnnotationMeta<io.swagger.v3.oas.annotations.media.Schema> meta =
+        AnnotationMeta<io.swagger.v3.oas.annotations.media.Schema> annoMeta =
                 parameter.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
-        if (meta == null) {
+        if (annoMeta == null) {
             return chain.resolve(parameter, context);
         }
-        io.swagger.v3.oas.annotations.media.Schema schema = meta.getAnnotation();
-        if (schema.hidden() || parameter.isHierarchyAnnotated(Hidden.class)) {
+        io.swagger.v3.oas.annotations.media.Schema anno = annoMeta.getAnnotation();
+        if (anno.hidden() || parameter.isHierarchyAnnotated(Hidden.class)) {
             return null;
         }
-        return chain.resolve(parameter, context);
+        Schema schema = chain.resolve(parameter, context);
+        if (schema == null) {
+            return null;
+        }
+
+        Map<String, String> properties = toProperties(anno.extensions());
+        if (properties != null) {
+            String group = properties.remove(Constants.X_API_GROUP);
+            if (group != null) {
+                schema.setGroup(group);
+            }
+            String version = properties.remove(Constants.X_API_VERSION);
+            if (version != null) {
+                schema.setVersion(version);
+            }
+            schema.setExtensions(properties);
+        }
+
+        setValue(anno::type, v -> schema.setType(Type.valueOf(v)));
+        setValue(anno::format, schema::setFormat);
+        setValue(anno::name, schema::setName);
+        setValue(anno::title, schema::setTitle);
+        setValue(anno::description, schema::setDescription);
+        setValue(anno::defaultValue, schema::setDefaultValue);
+        setValue(anno::pattern, schema::setPattern);
+        setValue(anno::example, schema::setExample);
+        String[] enumItems = trim(anno.allowableValues());
+        if (enumItems != null) {
+            schema.setEnumeration(Arrays.asList(enumItems));
+        }
+        schema.setRequired(anno.requiredMode() == RequiredMode.REQUIRED ? Boolean.TRUE : null);
+        schema.setReadOnly(anno.accessMode() == AccessMode.READ_ONLY ? Boolean.TRUE : null);
+        schema.setWriteOnly(anno.accessMode() == AccessMode.WRITE_ONLY ? Boolean.TRUE : null);
+        schema.setNullable(anno.nullable() ? Boolean.TRUE : null);
+        schema.setDeprecated(anno.deprecated() ? Boolean.TRUE : null);
+
+        return schema;
     }
 
     @Override

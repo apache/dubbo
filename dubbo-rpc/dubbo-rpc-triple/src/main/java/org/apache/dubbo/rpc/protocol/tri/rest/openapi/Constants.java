@@ -25,11 +25,14 @@ public final class Constants {
     public static final String DEFAULT_GROUP = "default";
     public static final String GLOBAL_GROUP = "";
 
-    public static final String X_JAVA_TYPE = "x-java-type";
-    public static final String X_JAVA_METHOD = "x-java-method";
-    public static final String X_JAVA_PARAM = "x-java-param";
+    public static final String X_API_GROUP = "x-api-group";
+    public static final String X_API_VERSION = "x-api-version";
 
-    public static final String DUBBO_SERVER = "Dubbo Server";
+    public static final String X_JAVA_CLASS = "x-java-class";
+    public static final String X_JAVA_METHOD = "x-java-method";
+    public static final String X_JAVA_METHOD_DESCRIPTOR = "x-java-method-descriptor";
+
+    public static final String DUBBO_DEFAULT_SERVER = "Dubbo Default Server";
     public static final String REFERER = "referer";
 
     private Constants() {}

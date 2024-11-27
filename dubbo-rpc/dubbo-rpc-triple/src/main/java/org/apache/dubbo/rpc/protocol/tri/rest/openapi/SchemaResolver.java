@@ -40,7 +40,6 @@ import java.lang.reflect.WildcardType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import static org.apache.dubbo.rpc.protocol.tri.rest.openapi.PrimitiveSchema.ARRAY;
@@ -51,7 +50,7 @@ public final class SchemaResolver {
     private final ConfigFactory configFactory;
     private final OpenAPISchemaResolver[] resolvers;
     private final OpenAPISchemaPredicate[] predicates;
-    private final Map<Class<?>, Optional<Schema>> schemaMap = CollectionUtils.newConcurrentHashMap();
+    private final Map<Class<?>, Schema> schemaMap = CollectionUtils.newConcurrentHashMap();
 
     private volatile RadixTree<Boolean> classFilter;
 
@@ -102,16 +101,15 @@ public final class SchemaResolver {
                 Type[] argTypes = pType.getActualTypeArguments();
                 if (Iterable.class.isAssignableFrom(clazz)) {
                     Type itemType = TypeUtils.getActualGenericType(argTypes[0]);
-                    return ARRAY.newSchema().setItems(doResolveNestedType(itemType, parameter));
+                    return ARRAY.newSchema()
+                            .addExtension(Constants.X_JAVA_CLASS, TypeUtils.toTypeString(type))
+                            .setItems(doResolveNestedType(itemType, parameter));
                 }
 
                 if (Map.class.isAssignableFrom(clazz)) {
-                    Schema schema = OBJECT.newSchema();
-                    Type keyType = argTypes[0];
-                    if (String.class != keyType) {
-                        schema.addExtension(Constants.X_JAVA_TYPE, TypeUtils.toTypeString(keyType));
-                    }
-                    return schema.setAdditionalPropertiesSchema(doResolveNestedType(argTypes[1], parameter));
+                    return OBJECT.newSchema()
+                            .addExtension(Constants.X_JAVA_CLASS, TypeUtils.toTypeString(type))
+                            .setAdditionalPropertiesSchema(doResolveNestedType(argTypes[1], parameter));
                 }
 
                 return doResolveClass(clazz, parameter);
@@ -124,8 +122,9 @@ public final class SchemaResolver {
             return doResolveNestedType(((WildcardType) type).getUpperBounds()[0], parameter);
         }
         if (type instanceof GenericArrayType) {
-            Type nestedType = ((GenericArrayType) type).getGenericComponentType();
-            return ARRAY.newSchema().setItems(doResolveNestedType(nestedType, parameter));
+            return ARRAY.newSchema()
+                    .addExtension(Constants.X_JAVA_CLASS, TypeUtils.toTypeString(type))
+                    .setItems(doResolveNestedType(((GenericArrayType) type).getGenericComponentType(), parameter));
         }
         return OBJECT.newSchema();
     }
@@ -137,17 +136,22 @@ public final class SchemaResolver {
         }
 
         if (clazz.isArray()) {
-            return ARRAY.newSchema().setItems(doResolveNestedType(clazz.getComponentType(), parameter));
+            schema = ARRAY.newSchema();
+            if (!PrimitiveSchema.isPrimitive(clazz.getComponentType())) {
+                schema.addExtension(Constants.X_JAVA_CLASS, TypeUtils.toTypeString(clazz));
+            }
+            return schema.setItems(doResolveNestedType(clazz.getComponentType(), parameter));
         }
 
-        Optional<Schema> existingSchema = schemaMap.get(clazz);
+        Schema existingSchema = schemaMap.get(clazz);
         if (existingSchema != null) {
-            return existingSchema.map(s -> new Schema().setTargetSchema(s)).orElseGet(OBJECT::newSchema);
+            return new Schema().setTargetSchema(existingSchema);
         }
 
         if (isClassExcluded(clazz)) {
-            schemaMap.put(clazz, Optional.empty());
-            return OBJECT.newSchema();
+            schema = OBJECT.newSchema().addExtension(Constants.X_JAVA_CLASS, TypeUtils.toTypeString(clazz));
+            schemaMap.put(clazz, schema);
+            return schema;
         }
 
         TypeParameterMeta typeParameter = new TypeParameterMeta(clazz);
@@ -159,8 +163,9 @@ public final class SchemaResolver {
             if (accepted) {
                 break;
             } else {
-                schemaMap.put(clazz, Optional.empty());
-                return OBJECT.newSchema();
+                schema = OBJECT.newSchema().addExtension(Constants.X_JAVA_CLASS, TypeUtils.toTypeString(clazz));
+                schemaMap.put(clazz, schema);
+                return schema;
             }
         }
 
@@ -169,7 +174,7 @@ public final class SchemaResolver {
             for (Object value : clazz.getEnumConstants()) {
                 schema.addEnumeration(value);
             }
-            schemaMap.put(clazz, Optional.of(schema));
+            schemaMap.put(clazz, schema);
             return schema.clone();
         }
 
@@ -184,7 +189,7 @@ public final class SchemaResolver {
 
     private Schema doResolveBeanClass(RestToolKit toolKit, Class<?> clazz, boolean flatten) {
         Schema beanSchema = OBJECT.newSchema().setJavaType(clazz);
-        schemaMap.put(clazz, Optional.of(beanSchema));
+        schemaMap.put(clazz, beanSchema);
         BeanMeta beanMeta = new BeanMeta(toolKit, clazz, flatten);
         out:
         for (PropertyMeta property : beanMeta.getProperties()) {
@@ -297,7 +302,7 @@ public final class SchemaResolver {
 
         @Override
         public void defineSchema(Class<?> type, Schema schema) {
-            schemaMap.putIfAbsent(type, Optional.of(schema));
+            schemaMap.putIfAbsent(type, schema);
         }
 
         @Override

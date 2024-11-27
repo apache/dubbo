@@ -88,92 +88,93 @@ final class DefinitionMerger {
 
     public OpenAPI merge(List<OpenAPI> openAPIs, OpenAPIRequest request) {
         Info info = new Info();
-        OpenAPI model = new OpenAPI().setInfo(info);
+        OpenAPI target = new OpenAPI().setInfo(info);
 
         OpenAPIConfig globalConfig = configFactory.getGlobalConfig();
-        model.setGlobalConfig(globalConfig);
-        applyConfig(model, globalConfig);
+        target.setGlobalConfig(globalConfig);
+        applyConfig(target, globalConfig);
         if (openAPIs.isEmpty()) {
-            return model;
+            return target;
         }
 
         String group = request.getGroup();
-        String version = request.getVersion();
-        String[] tags = request.getTag();
-        String[] services = request.getService();
-
         if (group == null) {
             group = Constants.DEFAULT_GROUP;
         }
-        model.setGroup(group);
+        target.setGroup(group);
+
+        String version = request.getVersion();
         if (version != null) {
             info.setVersion(version);
         }
-        model.setOpenapi(Helper.formatSpecVersion(request.getOpenapi()));
+        target.setOpenapi(Helper.formatSpecVersion(request.getOpenapi()));
 
         OpenAPIConfig config = configFactory.getConfig(group);
-        model.setConfig(config);
+        target.setConfig(config);
 
-        for (OpenAPI api : openAPIs) {
-            if (isServiceNotMatch(api.getMeta().getServiceInterface(), services)) {
+        String[] tags = request.getTag();
+        String[] services = request.getService();
+        for (int i = openAPIs.size() - 1; i >= 0; i--) {
+            OpenAPI source = openAPIs.get(i);
+            if (isServiceNotMatch(source.getMeta().getServiceInterface(), services)) {
                 continue;
             }
 
-            if (group.equals(api.getGroup())) {
-                mergeBasic(model, api);
+            if (group.equals(source.getGroup())) {
+                mergeBasic(target, source);
             }
 
-            mergePaths(model, api, group, version, tags);
+            mergePaths(target, source, group, version, tags);
 
-            mergeSecuritySchemes(model, api);
+            mergeSecuritySchemes(target, source);
 
-            mergeTags(model, api);
+            mergeTags(target, source);
         }
 
-        applyConfig(model, config);
+        applyConfig(target, config);
 
-        addSchemas(model, version, group);
+        addSchemas(target, version, group);
 
-        completeOperations(model);
+        completeOperations(target);
 
-        completeModel(model);
+        completeModel(target);
 
-        return model;
+        return target;
     }
 
-    private void applyConfig(OpenAPI api, OpenAPIConfig config) {
+    private void applyConfig(OpenAPI target, OpenAPIConfig config) {
         if (config == null) {
             return;
         }
 
-        Info info = api.getInfo();
-        setValue(info::setTitle, config::getInfoTitle);
-        setValue(info::setDescription, config::getInfoDescription);
-        setValue(info::setVersion, config::getInfoVersion);
+        Info info = target.getInfo();
+        setValue(config::getInfoTitle, info::setTitle);
+        setValue(config::getInfoDescription, info::setDescription);
+        setValue(config::getInfoVersion, info::setVersion);
 
         Contact contact = info.getContact();
         if (contact == null) {
             info.setContact(contact = new Contact());
         }
-        setValue(contact::setName, config::getInfoContactName);
-        setValue(contact::setUrl, config::getInfoContactUrl);
-        setValue(contact::setEmail, config::getInfoContactEmail);
+        setValue(config::getInfoContactName, contact::setName);
+        setValue(config::getInfoContactUrl, contact::setUrl);
+        setValue(config::getInfoContactEmail, contact::setEmail);
 
-        ExternalDocs externalDocs = api.getExternalDocs();
+        ExternalDocs externalDocs = target.getExternalDocs();
         if (externalDocs == null) {
-            api.setExternalDocs(externalDocs = new ExternalDocs());
+            target.setExternalDocs(externalDocs = new ExternalDocs());
         }
-        setValue(externalDocs::setDescription, config::getExternalDocsDescription);
-        setValue(externalDocs::setUrl, config::getExternalDocsUrl);
+        setValue(config::getExternalDocsDescription, externalDocs::setDescription);
+        setValue(config::getExternalDocsUrl, externalDocs::setUrl);
 
         String[] servers = config.getServers();
         if (servers != null) {
-            api.setServers(Arrays.stream(servers).map(Helper::parseServer).collect(Collectors.toList()));
+            target.setServers(Arrays.stream(servers).map(Helper::parseServer).collect(Collectors.toList()));
         }
 
-        Components components = api.getComponents();
-        if (api.getComponents() == null) {
-            api.setComponents(components = new Components());
+        Components components = target.getComponents();
+        if (target.getComponents() == null) {
+            target.setComponents(components = new Components());
         }
 
         String securityScheme = config.getSecurityScheme();
@@ -194,86 +195,86 @@ final class DefinitionMerger {
                 if (SECURITY_TYPE == null) {
                     SECURITY_TYPE = OpenAPI.class.getDeclaredField("security").getGenericType();
                 }
-                api.setSecurity(JsonUtils.toJavaObject(securityScheme, SECURITY_TYPE));
+                target.setSecurity(JsonUtils.toJavaObject(securityScheme, SECURITY_TYPE));
             } catch (NoSuchFieldException ignored) {
             }
         }
     }
 
-    private void mergeBasic(OpenAPI api, OpenAPI from) {
-        mergeInfo(api, from);
+    private void mergeBasic(OpenAPI target, OpenAPI source) {
+        mergeInfo(target, source);
 
-        if (api.getServers() == null) {
-            api.setServers(Node.clone(from.getServers()));
+        if (target.getServers() == null) {
+            target.setServers(Node.clone(source.getServers()));
         }
 
-        List<SecurityRequirement> fromSecurity = from.getSecurity();
-        if (api.getSecurity() == null) {
-            api.setSecurity(Node.clone(fromSecurity));
+        List<SecurityRequirement> sourceSecurity = source.getSecurity();
+        if (target.getSecurity() == null) {
+            target.setSecurity(Node.clone(sourceSecurity));
         }
 
-        ExternalDocs fromExternalDocs = from.getExternalDocs();
-        if (fromExternalDocs != null) {
-            ExternalDocs externalDocs = api.getExternalDocs();
-            setValue(externalDocs::setDescription, fromExternalDocs::getDescription);
-            setValue(externalDocs::setUrl, fromExternalDocs::getUrl);
-            externalDocs.addExtensions(fromExternalDocs.getExtensions());
+        ExternalDocs sourceExternalDocs = source.getExternalDocs();
+        if (sourceExternalDocs != null) {
+            ExternalDocs targetExternalDocs = target.getExternalDocs();
+            setValue(sourceExternalDocs::getDescription, targetExternalDocs::setDescription);
+            setValue(sourceExternalDocs::getUrl, targetExternalDocs::setUrl);
+            targetExternalDocs.addExtensions(sourceExternalDocs.getExtensions());
         }
 
-        api.addExtensions(from.getExtensions());
+        target.addExtensions(source.getExtensions());
     }
 
-    private void mergeInfo(OpenAPI api, OpenAPI from) {
-        Info fromInfo = from.getInfo();
-        if (fromInfo == null) {
+    private void mergeInfo(OpenAPI target, OpenAPI source) {
+        Info sourceInfo = source.getInfo();
+        if (sourceInfo == null) {
             return;
         }
 
-        Info info = api.getInfo();
-        setValue(info::setTitle, fromInfo::getTitle);
-        setValue(info::setSummary, fromInfo::getSummary);
-        setValue(info::setDescription, fromInfo::getDescription);
-        setValue(info::setTermsOfService, fromInfo::getTermsOfService);
-        setValue(info::setVersion, fromInfo::getVersion);
+        Info info = target.getInfo();
+        setValue(sourceInfo::getTitle, info::setTitle);
+        setValue(sourceInfo::getSummary, info::setSummary);
+        setValue(sourceInfo::getDescription, info::setDescription);
+        setValue(sourceInfo::getTermsOfService, info::setTermsOfService);
+        setValue(sourceInfo::getVersion, info::setVersion);
 
-        Contact fromContact = fromInfo.getContact();
-        if (fromContact != null) {
+        Contact sourceContact = sourceInfo.getContact();
+        if (sourceContact != null) {
             Contact contact = info.getContact();
-            setValue(contact::setName, fromContact::getName);
-            setValue(contact::setUrl, fromContact::getUrl);
-            setValue(contact::setEmail, fromContact::getEmail);
+            setValue(sourceContact::getName, contact::setName);
+            setValue(sourceContact::getUrl, contact::setUrl);
+            setValue(sourceContact::getEmail, contact::setEmail);
 
-            contact.addExtensions(fromContact.getExtensions());
+            contact.addExtensions(sourceContact.getExtensions());
         }
 
-        License fromLicense = fromInfo.getLicense();
-        if (fromLicense != null) {
+        License sourceLicense = sourceInfo.getLicense();
+        if (sourceLicense != null) {
             License license = info.getLicense();
-            setValue(license::setName, fromLicense::getName);
-            setValue(license::setUrl, fromLicense::getUrl);
-            license.addExtensions(fromLicense.getExtensions());
+            setValue(sourceLicense::getName, license::setName);
+            setValue(sourceLicense::getUrl, license::setUrl);
+            license.addExtensions(sourceLicense.getExtensions());
         }
 
-        info.addExtensions(fromInfo.getExtensions());
+        info.addExtensions(sourceInfo.getExtensions());
     }
 
-    private void mergePaths(OpenAPI api, OpenAPI from, String group, String version, String[] tags) {
-        Map<String, PathItem> fromPaths = from.getPaths();
-        if (fromPaths == null) {
+    private void mergePaths(OpenAPI target, OpenAPI source, String group, String version, String[] tags) {
+        Map<String, PathItem> sourcePaths = source.getPaths();
+        if (sourcePaths == null) {
             return;
         }
 
-        Map<String, PathItem> paths = api.getPaths();
+        Map<String, PathItem> paths = target.getPaths();
         if (paths == null) {
-            api.setPaths(paths = new TreeMap<>());
+            target.setPaths(paths = new TreeMap<>());
         }
 
-        for (Entry<String, PathItem> entry : fromPaths.entrySet()) {
+        for (Entry<String, PathItem> entry : sourcePaths.entrySet()) {
             String path = entry.getKey();
-            PathItem fromPathItem = entry.getValue();
+            PathItem sourcePathItem = entry.getValue();
             PathItem pathItem = paths.get(path);
             if (pathItem != null) {
-                String ref = fromPathItem.getRef();
+                String ref = sourcePathItem.getRef();
                 if (ref != null) {
                     pathItem = paths.get(ref);
                 }
@@ -281,64 +282,64 @@ final class DefinitionMerger {
             if (pathItem == null) {
                 paths.put(path, pathItem = new PathItem());
             }
-            mergePath(path, pathItem, fromPathItem, group, version, tags);
+            mergePath(path, pathItem, sourcePathItem, group, version, tags);
         }
     }
 
-    private void mergePath(String path, PathItem pathItem, PathItem from, String group, String version, String[] tags) {
-        if (pathItem.getRef() == null) {
-            pathItem.setRef(from.getRef());
+    private void mergePath(String path, PathItem target, PathItem source, String group, String version, String[] tags) {
+        if (target.getRef() == null) {
+            target.setRef(source.getRef());
         }
-        if (pathItem.getSummary() == null) {
-            pathItem.setSummary(from.getSummary());
+        if (target.getSummary() == null) {
+            target.setSummary(source.getSummary());
         }
-        if (pathItem.getDescription() == null) {
-            pathItem.setDescription(from.getDescription());
+        if (target.getDescription() == null) {
+            target.setDescription(source.getDescription());
         }
 
-        Map<HttpMethods, Operation> fromOperations = from.getOperations();
-        if (fromOperations != null) {
-            for (Entry<HttpMethods, Operation> entry : fromOperations.entrySet()) {
+        Map<HttpMethods, Operation> sourceOperations = source.getOperations();
+        if (sourceOperations != null) {
+            for (Entry<HttpMethods, Operation> entry : sourceOperations.entrySet()) {
                 HttpMethods httpMethod = entry.getKey();
-                Operation fromOperation = entry.getValue();
-                if (isGroupNotMatch(group, fromOperation.getGroup())
-                        || isVersionNotMatch(version, fromOperation.getVersion())
-                        || isTagNotMatch(tags, fromOperation.getTags())) {
+                Operation sourceOperation = entry.getValue();
+                if (isGroupNotMatch(group, sourceOperation.getGroup())
+                        || isVersionNotMatch(version, sourceOperation.getVersion())
+                        || isTagNotMatch(tags, sourceOperation.getTags())) {
                     continue;
                 }
 
-                Operation operation = pathItem.getOperation(httpMethod);
+                Operation operation = target.getOperation(httpMethod);
                 if (operation == null) {
-                    pathItem.addOperation(httpMethod, fromOperation.clone());
+                    target.addOperation(httpMethod, sourceOperation.clone());
                 } else if (operation.getMeta() != null) {
                     LOG.internalWarn(
                             "Operation already exists, path='{}', httpMethod='{}', method={}",
                             path,
                             httpMethod,
-                            fromOperation.getMeta());
+                            sourceOperation.getMeta());
                 }
             }
         }
 
-        if (pathItem.getServers() == null) {
-            List<Server> fromServers = from.getServers();
-            if (fromServers != null) {
-                pathItem.setServers(Node.clone(fromServers));
+        if (target.getServers() == null) {
+            List<Server> sourceServers = source.getServers();
+            if (sourceServers != null) {
+                target.setServers(Node.clone(sourceServers));
             }
         }
 
-        List<Parameter> fromParameters = from.getParameters();
-        if (fromParameters != null) {
-            if (pathItem.getParameters() == null) {
-                pathItem.setParameters(Node.clone(fromParameters));
+        List<Parameter> sourceParameters = source.getParameters();
+        if (sourceParameters != null) {
+            if (target.getParameters() == null) {
+                target.setParameters(Node.clone(sourceParameters));
             } else {
-                for (Parameter parameter : fromParameters) {
-                    pathItem.addParameter(parameter.clone());
+                for (Parameter parameter : sourceParameters) {
+                    target.addParameter(parameter.clone());
                 }
             }
         }
 
-        pathItem.addExtensions(from.getExtensions());
+        target.addExtensions(source.getExtensions());
     }
 
     private static boolean isServiceNotMatch(String apiService, String[] services) {
@@ -353,14 +354,14 @@ final class DefinitionMerger {
         return true;
     }
 
-    private static boolean isGroupNotMatch(String group, String fromGroup) {
-        return !(fromGroup == null && Constants.DEFAULT_GROUP.equals(group)
+    private static boolean isGroupNotMatch(String group, String sourceGroup) {
+        return !(sourceGroup == null && Constants.DEFAULT_GROUP.equals(group)
                 || Constants.ALL_GROUP.equals(group)
-                || group.equals(fromGroup));
+                || group.equals(sourceGroup));
     }
 
-    private static boolean isVersionNotMatch(String version, String fromVersion) {
-        return !(version == null || fromVersion == null || Helper.isVersionGreaterOrEqual(fromVersion, version));
+    private static boolean isVersionNotMatch(String version, String sourceVersion) {
+        return !(version == null || sourceVersion == null || Helper.isVersionGreaterOrEqual(sourceVersion, version));
     }
 
     private static boolean isTagNotMatch(String[] tags, Set<String> operationTags) {
@@ -375,50 +376,47 @@ final class DefinitionMerger {
         return true;
     }
 
-    private void mergeSecuritySchemes(OpenAPI api, OpenAPI from) {
-        Components fromComponents = from.getComponents();
-        if (fromComponents == null) {
+    private void mergeSecuritySchemes(OpenAPI target, OpenAPI source) {
+        Components sourceComponents = source.getComponents();
+        if (sourceComponents == null) {
             return;
         }
 
-        Map<String, SecurityScheme> fromSecuritySchemes = fromComponents.getSecuritySchemes();
-        if (fromSecuritySchemes == null) {
+        Map<String, SecurityScheme> sourceSecuritySchemes = sourceComponents.getSecuritySchemes();
+        if (sourceSecuritySchemes == null) {
             return;
         }
 
-        Components components = api.getComponents();
+        Components components = target.getComponents();
         Map<String, SecurityScheme> securitySchemes = components.getSecuritySchemes();
         if (securitySchemes == null) {
-            components.setSecuritySchemes(Node.clone(fromSecuritySchemes));
+            components.setSecuritySchemes(Node.clone(sourceSecuritySchemes));
         } else {
-            for (Entry<String, SecurityScheme> entry : fromSecuritySchemes.entrySet()) {
-                String key = entry.getKey();
-                if (securitySchemes.containsKey(key)) {
-                    continue;
-                }
-                securitySchemes.put(key, entry.getValue().clone());
+            for (Entry<String, SecurityScheme> entry : sourceSecuritySchemes.entrySet()) {
+                securitySchemes.computeIfAbsent(
+                        entry.getKey(), k -> entry.getValue().clone());
             }
         }
     }
 
-    private void mergeTags(OpenAPI api, OpenAPI from) {
-        List<Tag> fromTags = from.getTags();
-        if (fromTags == null) {
+    private void mergeTags(OpenAPI target, OpenAPI source) {
+        List<Tag> sourceTags = source.getTags();
+        if (sourceTags == null) {
             return;
         }
 
-        if (api.getTags() == null) {
-            api.setTags(Node.clone(fromTags));
+        if (target.getTags() == null) {
+            target.setTags(Node.clone(sourceTags));
         } else {
-            for (Tag tag : fromTags) {
-                api.addTag(tag.clone());
+            for (Tag tag : sourceTags) {
+                target.addTag(tag.clone());
             }
         }
     }
 
-    private void addSchemas(OpenAPI api, String version, String group) {
+    private void addSchemas(OpenAPI target, String version, String group) {
         Map<Schema, Schema> schemas = new IdentityHashMap<>();
-        for (PathItem pathItem : api.getPaths().values()) {
+        for (PathItem pathItem : target.getPaths().values()) {
             Map<HttpMethods, Operation> operations = pathItem.getOperations();
             if (operations == null) {
                 continue;
@@ -469,9 +467,9 @@ final class DefinitionMerger {
             }
         }
 
-        Components components = api.getComponents();
+        Components components = target.getComponents();
         if (components == null) {
-            api.setComponents(components = new Components());
+            target.setComponents(components = new Components());
         }
 
         Set<String> names = CollectionUtils.newHashSet(schemas.size());
@@ -487,10 +485,10 @@ final class DefinitionMerger {
             String name = schema.getName();
             if (name == null) {
                 Class<?> clazz = schema.getJavaType();
-                name = strategy.generateSchemaName(clazz, api);
+                name = strategy.generateSchemaName(clazz, target);
                 for (int i = 1; i < 100; i++) {
                     if (names.contains(name)) {
-                        name = strategy.resolveSchemaNameConflict(i, name, clazz, api);
+                        name = strategy.resolveSchemaNameConflict(i, name, clazz, target);
                     } else {
                         names.add(name);
                         break;
@@ -561,22 +559,23 @@ final class DefinitionMerger {
 
         targetSchema.addSourceSchema(schema);
 
-        schemas.computeIfAbsent(targetSchema, s -> {
-            Schema newSchema = s.clone();
+        Schema newSchema = schemas.get(targetSchema);
+        if (newSchema == null) {
+            newSchema = targetSchema.clone();
+            schemas.put(targetSchema, newSchema);
             addSchema(newSchema, schemas, group, version);
-            return newSchema;
-        });
+        }
     }
 
-    private void completeOperations(OpenAPI api) {
-        Map<String, PathItem> paths = api.getPaths();
+    private void completeOperations(OpenAPI target) {
+        Map<String, PathItem> paths = target.getPaths();
         if (paths == null) {
             return;
         }
 
         Set<String> allOperationIds = new HashSet<>(32);
         Set<String> allTags = new HashSet<>(32);
-        api.walkOperations(operation -> {
+        target.walkOperations(operation -> {
             String operationId = operation.getOperationId();
             if (operationId != null) {
                 allOperationIds.add(operationId);
@@ -588,15 +587,15 @@ final class DefinitionMerger {
         });
 
         OpenAPINamingStrategy strategy = getNamingStrategy();
-        api.walkOperations(operation -> {
+        target.walkOperations(operation -> {
             String id = operation.getOperationId();
             if (id != null) {
                 return;
             }
-            id = strategy.generateOperationId(operation.getMeta(), api);
+            id = strategy.generateOperationId(operation.getMeta(), target);
             for (int i = 1; i < 100; i++) {
                 if (allOperationIds.contains(id)) {
-                    id = strategy.resolveOperationIdConflict(i, id, operation.getMeta(), api);
+                    id = strategy.resolveOperationIdConflict(i, id, operation.getMeta(), target);
                 } else {
                     allOperationIds.add(id);
                     break;
@@ -605,7 +604,7 @@ final class DefinitionMerger {
             operation.setOperationId(id);
         });
 
-        List<Tag> tags = api.getTags();
+        List<Tag> tags = target.getTags();
         if (tags != null) {
             ListIterator<Tag> it = tags.listIterator();
             while (it.hasNext()) {
@@ -617,17 +616,17 @@ final class DefinitionMerger {
         }
     }
 
-    private void completeModel(OpenAPI api) {
-        Info info = api.getInfo();
+    private void completeModel(OpenAPI target) {
+        Info info = target.getInfo();
         if (info.getTitle() == null) {
             info.setTitle("Dubbo OpenAPI");
         }
         if (info.getVersion() == null) {
             info.setVersion("v1");
         }
-        ExternalDocs docs = api.getExternalDocs();
+        ExternalDocs docs = target.getExternalDocs();
         if (docs.getUrl() == null && docs.getDescription() == null) {
-            docs.setUrl("../redoc/index.html?group=" + api.getGroup()).setDescription("ReDoc");
+            docs.setUrl("../redoc/index.html?group=" + target.getGroup()).setDescription("ReDoc");
         }
     }
 }

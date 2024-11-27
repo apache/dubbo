@@ -21,6 +21,8 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -409,7 +411,8 @@ public final class TypeUtils {
 
     public static String toTypeString(Type type) {
         if (type instanceof Class) {
-            return ((Class<?>) type).getName();
+            Class<?> clazz = (Class<?>) type;
+            return clazz.isArray() ? clazz.getComponentType().getName() + "[]" : clazz.getName();
         }
         StringBuilder result = new StringBuilder(32);
         buildGenericTypeString(type, result);
@@ -418,7 +421,13 @@ public final class TypeUtils {
 
     private static void buildGenericTypeString(Type type, StringBuilder sb) {
         if (type instanceof Class<?>) {
-            sb.append(((Class<?>) type).getName());
+            Class<?> clazz = (Class<?>) type;
+            if (clazz.isArray()) {
+                buildGenericTypeString(clazz.getComponentType(), sb);
+                sb.append("[]");
+            } else {
+                sb.append(clazz.getName());
+            }
         } else if (type instanceof ParameterizedType) {
             ParameterizedType pzType = (ParameterizedType) type;
             Type[] typeArgs = pzType.getActualTypeArguments();
@@ -465,5 +474,29 @@ public final class TypeUtils {
         } else {
             sb.append(type.toString());
         }
+    }
+
+    public static Object getMethodDescriptor(MethodMeta methodMeta) {
+        StringBuilder sb = new StringBuilder(64);
+        sb.append(toTypeString(methodMeta.getGenericReturnType()))
+                .append(' ')
+                .append(methodMeta.getMethod().getName())
+                .append('(');
+        ParameterMeta[] parameters = methodMeta.getParameters();
+        for (int i = 0, len = parameters.length; i < len; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            ParameterMeta paramMeta = parameters[i];
+            String name = paramMeta.getName();
+            sb.append(toTypeString(paramMeta.getGenericType())).append(' ');
+            if (name == null) {
+                sb.append("arg").append(i + 1);
+            } else {
+                sb.append(name);
+            }
+        }
+        sb.append(')');
+        return sb.toString();
     }
 }
