@@ -17,8 +17,6 @@
 package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
@@ -31,9 +29,6 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
 public abstract class AbstractConnectionClient extends AbstractClient {
-
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(AbstractConnectionClient.class);
 
     protected WireProtocol protocol;
 

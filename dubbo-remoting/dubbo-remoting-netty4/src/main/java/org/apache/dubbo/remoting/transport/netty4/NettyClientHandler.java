@@ -58,12 +58,13 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         Channel ch = ctx.channel();
         NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         handler.connected(channel);
+
         if (logger.isInfoEnabled()) {
             logger.info(
                     "The connection {} of {} -> {} is established.",
                     ch,
-                    AddressUtils.getLocalAddressKey(ch),
-                    AddressUtils.getRemoteAddressKey(ch));
+                    channel.getLocalAddressKey(),
+                    channel.getRemoteAddressKey());
         }
     }
 
@@ -81,8 +82,8 @@ public class NettyClientHandler extends ChannelDuplexHandler {
             logger.info(
                     "The connection {} of {} -> {} is disconnected.",
                     ch,
-                    AddressUtils.getLocalAddressKey(ch),
-                    AddressUtils.getRemoteAddressKey(ch));
+                    channel.getLocalAddressKey(),
+                    channel.getRemoteAddressKey());
         }
     }
 

@@ -18,8 +18,6 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -44,9 +42,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
 
 public abstract class AbstractNettyConnectionClient extends AbstractConnectionClient {
-
-    private static final ErrorTypeAwareLogger LOGGER =
-            LoggerFactory.getErrorTypeAwareLogger(AbstractNettyConnectionClient.class);
 
     private AtomicReference<Promise<Object>> connectingPromiseRef;
 
@@ -94,8 +89,8 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
     protected void doClose() {
         // AbstractPeer close can set closed true.
         if (isClosed()) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Connection:%s freed ", this));
+            if (logger.isDebugEnabled()) {
+                logger.debug("Connection:{} freed", this);
             }
             performClose();
             closePromise.setSuccess(null);
@@ -117,9 +112,14 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         }
 
         if (isClosed()) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("%s aborted to reconnect cause connection closed. ", this));
+            if (logger.isDebugEnabled()) {
+                logger.debug("Connection:{} aborted to reconnect cause connection closed", this);
             }
+            return;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Connection:{} attempting to reconnect to server {}", this, getConnectAddress());
         }
 
         init.compareAndSet(false, true);
@@ -145,11 +145,11 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                             + ", error message is:" + cause.getMessage(),
                     cause);
 
-            LOGGER.error(
+            logger.error(
                     TRANSPORT_FAILED_CONNECT_PROVIDER,
                     "network disconnected",
                     "",
-                    "Failed to connect to provider server by other reason.",
+                    "Failed to connect to provider server by other reason",
                     cause);
 
             throw remotingException;
@@ -163,8 +163,8 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                             + " using dubbo version "
                             + Version.getVersion());
 
-            LOGGER.error(
-                    TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "", "Client-side timeout.", remotingException);
+            logger.error(
+                    TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "", "Client-side timeout", remotingException);
 
             throw remotingException;
         }
@@ -177,6 +177,17 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         NettyChannel.removeChannelIfDisconnected(getNettyChannel());
     }
 
+    protected void doReconnect() {
+        connectivityExecutor.execute(() -> {
+            try {
+                doConnect();
+            } catch (RemotingException e) {
+                logger.error(
+                        TRANSPORT_FAILED_RECONNECT, "", "", "Failed to reconnect to server: " + getConnectAddress());
+            }
+        });
+    }
+
     @Override
     public void onConnected(Object channel) {
         if (!(channel instanceof io.netty.channel.Channel)) {
@@ -186,8 +197,8 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         io.netty.channel.Channel nettyChannel = ((io.netty.channel.Channel) channel);
         if (isClosed()) {
             nettyChannel.close();
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("%s is closed, ignoring connected event", this));
+            if (logger.isDebugEnabled()) {
+                logger.debug("Connection:{} is closed, ignoring connected event", this);
             }
             return;
         }
@@ -211,8 +222,8 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         // Notify the connection is available.
         connectedPromise.trySuccess(null);
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("%s connected ", this));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Connection:{} connected", this);
         }
     }
 
@@ -229,8 +240,8 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                 nettyChannel.close();
             }
             NettyChannel.removeChannelIfDisconnected(nettyChannel);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("%s goaway", this));
+            if (logger.isDebugEnabled()) {
+                logger.debug("Connection:{} goaway", this);
             }
         }
     }
@@ -272,7 +283,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             try {
                 doConnect();
             } catch (RemotingException e) {
-                LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "", "Failed to connect to server: " + getConnectAddress());
+                logger.error(TRANSPORT_FAILED_RECONNECT, "", "", "Failed to connect to server: " + getConnectAddress());
             }
         }
 
@@ -349,36 +360,25 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             }
             AbstractNettyConnectionClient connectionClient = AbstractNettyConnectionClient.this;
             if (connectionClient.isClosed() || connectionClient.getCounter() == 0) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(String.format(
-                            "%s aborted to reconnect. %s",
-                            connectionClient, future.cause().getMessage()));
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Connection:{} aborted to reconnect. {}",
+                            connectionClient,
+                            future.cause().getMessage());
                 }
                 return;
             }
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format(
-                        "%s is reconnecting, attempt=%d cause=%s",
-                        connectionClient, 0, future.cause().getMessage()));
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Connection:{} is reconnecting, attempt=0 cause={}",
+                        connectionClient,
+                        future.cause().getMessage());
             }
 
             // Notify the connection is unavailable.
             disconnectedPromise.trySuccess(null);
 
-            connectivityExecutor.schedule(
-                    () -> {
-                        try {
-                            connectionClient.doConnect();
-                        } catch (RemotingException e) {
-                            LOGGER.error(
-                                    TRANSPORT_FAILED_RECONNECT,
-                                    "",
-                                    "",
-                                    "Failed to connect to server: " + getConnectAddress());
-                        }
-                    },
-                    reconnectDuration,
-                    TimeUnit.MILLISECONDS);
+            doReconnect();
         }
     }
 }

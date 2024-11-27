@@ -665,7 +665,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
              * and obtained it in IsolationExecutorRepository#createExecutor method
              */
             providerModel.getServiceMetadata().addAttribute(SERVICE_EXECUTOR, getExecutor());
-            url.getAttributes().put(SERVICE_EXECUTOR, getExecutor());
+            url.putAttribute(SERVICE_EXECUTOR, getExecutor());
         }
     }
 
