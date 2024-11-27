@@ -114,6 +114,7 @@
     <module>dubbo-demo/dubbo-demo-spring-boot-idl</module>
   </modules>
 
+
   <scm>
     <connection>scm:git:https://github.com/apache/dubbo.git</connection>
     <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
