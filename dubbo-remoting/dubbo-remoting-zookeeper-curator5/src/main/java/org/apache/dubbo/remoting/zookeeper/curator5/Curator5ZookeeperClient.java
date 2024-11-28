@@ -39,6 +39,7 @@ import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.curator.utils.CloseableUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -339,6 +340,7 @@ public class Curator5ZookeeperClient
     @Override
     public void doClose() {
         super.doClose();
+        nodeCacheMap.forEach((path, nodeCache) -> CloseableUtils.closeQuietly(nodeCache));
         client.close();
     }
 
