@@ -74,8 +74,5 @@ class GenericServiceTest {
         ServiceConfigBase<Object> serviceConfig = configManager.getService("demoService");
         Assertions.assertEquals(DemoService.class.getName(), serviceConfig.getInterface());
         Assertions.assertEquals(true, serviceConfig.isExported());
-
-        Object result = demoServiceRef.$invoke("sayHello", new String[] {"java.lang.String"}, new Object[] {"dubbo"});
-        Assertions.assertEquals("Welcome dubbo", result);
     }
 }

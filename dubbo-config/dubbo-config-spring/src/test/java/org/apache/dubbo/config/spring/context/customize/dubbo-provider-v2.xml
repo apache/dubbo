@@ -24,8 +24,6 @@
     <dubbo:application name="demo-provider">
     </dubbo:application>
 
-    <dubbo:registry address="${dubbo.registry.address}"/>
-
     <dubbo:protocol name="dubbo" port="-1"/>
 
     <bean id="helloServiceImpl" class="org.apache.dubbo.config.spring.context.annotation.provider.DefaultHelloService"/>

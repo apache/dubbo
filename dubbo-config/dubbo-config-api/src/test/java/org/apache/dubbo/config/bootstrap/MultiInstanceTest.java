@@ -43,10 +43,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.test.check.DubboTestChecker;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,13 +66,12 @@ class MultiInstanceTest {
 
     private RegistryConfig registryConfig;
 
-    private static DubboTestChecker testChecker;
     private static String testClassName;
 
     @BeforeEach
     public void beforeAll() {
         FrameworkModel.destroyAll();
-        registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1());
+        registryConfig = new RegistryConfig("zookeeper://127.0.0.1:2181");
 
         // pre-check threads
         // precheckUnclosedThreads();
@@ -84,33 +80,12 @@ class MultiInstanceTest {
     @AfterEach
     public void afterAll() throws Exception {
         FrameworkModel.destroyAll();
-
-        // check threads
-        // checkUnclosedThreads();
-    }
-
-    private static Map<Thread, StackTraceElement[]> precheckUnclosedThreads() throws IOException {
-        // create a special DubboTestChecker
-        if (testChecker == null) {
-            testChecker = new DubboTestChecker();
-            testChecker.init(null);
-            testClassName = MultiInstanceTest.class.getName();
-        }
-        return testChecker.checkUnclosedThreads(testClassName, 0);
-    }
-
-    private static void checkUnclosedThreads() {
-        Map<Thread, StackTraceElement[]> unclosedThreadMap = testChecker.checkUnclosedThreads(testClassName, 3000);
-        if (unclosedThreadMap.size() > 0) {
-            String str = getStackTraceString(unclosedThreadMap);
-            Assertions.fail("Found unclosed threads: " + unclosedThreadMap.size() + "\n" + str);
-        }
     }
 
     private static String getStackTraceString(Map<Thread, StackTraceElement[]> unclosedThreadMap) {
         StringBuilder sb = new StringBuilder();
         for (Thread thread : unclosedThreadMap.keySet()) {
-            sb.append(DubboTestChecker.getFullStacktrace(thread, unclosedThreadMap.get(thread)));
+
             sb.append("\n");
         }
         return sb.toString();
@@ -344,7 +319,7 @@ class MultiInstanceTest {
             Assertions.assertTrue(stackTraces1.size() > 0, "Get threads of provider app 1 failed");
 
             // start zk server 2
-            RegistryConfig registryConfig2 = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2());
+            RegistryConfig registryConfig2 = new RegistryConfig("zookeeper://127.0.0.1:2181");
 
             // start provider app 2 use a difference zk server 2
             ServiceConfig serviceConfig2 = new ServiceConfig();

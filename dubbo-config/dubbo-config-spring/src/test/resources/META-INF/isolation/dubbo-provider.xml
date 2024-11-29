@@ -25,9 +25,9 @@
     <dubbo:application name="demo-provider" executor-management-mode="isolation">
     </dubbo:application>
 
-    <dubbo:config-center address="zookeeper://127.0.0.1:2181"/>
-    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
-    <dubbo:registry id="registry1" address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:config-center address="mock://127.0.0.1:2181"/>
+    <dubbo:metadata-report address="mock://127.0.0.1:2181"/>
+    <dubbo:registry id="registry1" address="mock://127.0.0.1:2181"/>
 
     <dubbo:protocol name="dubbo" port="-1"/>
     <dubbo:protocol name="tri" port="-1"/>

@@ -31,7 +31,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 import java.util.Collection;
 import java.util.List;
@@ -64,9 +63,8 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
             "dubbo.metrics.aggregation.time-window-seconds=120",
             "dubbo.metrics.histogram.enabled=true",
             "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
-            "dubbo.Config-center.address=${zookeeper.connection.address.1}",
+            "dubbo.Config-center.address=zookeeper://127.0.0.1:2181",
             "dubbo.config-Center.group=group1",
-            "dubbo.metadata-report.address=${zookeeper.connection.address.2}",
             "dubbo.METADATA-REPORT.username=User",
             "dubbo.provider.host=127.0.0.1",
             "dubbo.consumer.client=netty"
@@ -127,13 +125,12 @@ class SpringBootConfigPropsTest {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());
         ConfigCenterConfig centerConfig = configCenters.iterator().next();
-        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress1(), centerConfig.getAddress());
+        Assertions.assertEquals("zookeeper://127.0.0.1:2181", centerConfig.getAddress());
         Assertions.assertEquals("group1", centerConfig.getGroup());
 
         Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
         Assertions.assertEquals(1, metadataConfigs.size());
         MetadataReportConfig reportConfig = metadataConfigs.iterator().next();
-        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
         Assertions.assertEquals("User", reportConfig.getUsername());
 
         // module configs

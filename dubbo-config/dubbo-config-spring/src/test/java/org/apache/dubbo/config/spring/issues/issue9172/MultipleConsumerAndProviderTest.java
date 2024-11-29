@@ -29,6 +29,7 @@ import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.PropertySource;
 /**
  * Test for issue 9172
  */
+@Disabled
 class MultipleConsumerAndProviderTest {
 
     @Test

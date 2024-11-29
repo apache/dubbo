@@ -24,9 +24,9 @@
     <dubbo:application name="demo-consumer">
     </dubbo:application>
 
-    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:metadata-report address="mock://127.0.0.1:2181"/>
 
-    <dubbo:registry id="demo1" address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+    <dubbo:registry id="demo1" address="mock://127.0.0.1:2181?registry-type=service"/>
 
     <dubbo:reference id="helloService" check="false" interface="org.apache.dubbo.config.spring.api.HelloService" registry="N/A" />
 
