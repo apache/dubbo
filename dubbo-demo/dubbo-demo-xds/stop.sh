@@ -11,7 +11,20 @@ PROVIDER_PORT=50051
 ISTIO_PORT=15010
 
 # Define operating system type (options: linux, windows, mac)
-OS_TYPE="windows"  # Modify this variable to switch the operating system
+OS_TYPE="mac"  # Modify this variable to switch the operating system
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    OS_TYPE="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS_TYPE="mac"
+elif [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "nt" ]]; then
+    OS_TYPE="windows"
+else
+    echo "Unsupported OS type: $OSTYPE"
+    exit 1
+fi
+
+echo "Current OSTYPE: $OS_TYPE"
 
 # Define the method to delete Docker images
 function delete_docker_images() {
