@@ -10,7 +10,7 @@ PROVIDER_DEBUG_PORT=31001
 PROVIDER_PORT=50051
 ISTIO_PORT=15010
 
-# Define operating system type (options: linux, windows)
+# Define operating system type (options: linux, windows, mac)
 OS_TYPE="windows"  # Modify this variable to switch the operating system
 
 # Define the method to delete Docker images
@@ -31,8 +31,8 @@ function delete_docker_images() {
 function stop_processes_by_port() {
     local ports=("$@")
     for port in "${ports[@]}"; do
-        if [ "$OS_TYPE" = "linux" ]; then
-            # Linux system commands
+        if [ "$OS_TYPE" = "linux" ] || [ "$OS_TYPE" = "mac" ]; then
+            # Linux and macOS system commands
             pid=$(lsof -t -i:$port)
             if [ -n "$pid" ]; then
                 echo "Killing process with PID $pid on port $port"
