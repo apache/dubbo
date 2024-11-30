@@ -17,8 +17,8 @@
 package org.apache.dubbo.spring.boot.context.event;
 
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIService;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,7 +41,11 @@ public class DubboOpenAPIExportListener implements ApplicationListener<Applicati
             return;
         }
         ApplicationModel applicationModel = DubboBeanUtils.getApplicationModel(event.getApplicationContext());
-        OpenAPIService openAPIService = applicationModel.getBean(OpenAPIService.class);
+        if (applicationModel == null) {
+            return;
+        }
+        OpenAPIService openAPIService =
+                applicationModel.getFrameworkModel().getDefaultExtensionOrNull(OpenAPIService.class);
         if (openAPIService != null) {
             openAPIService.export();
         }

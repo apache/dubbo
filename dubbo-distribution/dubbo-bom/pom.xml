@@ -303,7 +303,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-rest-swagger</artifactId>
+        <artifactId>dubbo-rest-openapi</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

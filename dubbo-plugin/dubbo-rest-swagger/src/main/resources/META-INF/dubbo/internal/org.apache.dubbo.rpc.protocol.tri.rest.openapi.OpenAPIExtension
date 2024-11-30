@@ -1,4 +1,0 @@
-resolver-swagger=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.SwaggerOpenAPIDefinitionResolver
-resolver-javadoc=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.JavadocOpenAPIDefinitionResolver
-handler-swagger-ui=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.SwaggerUIRequestHandler
-handler-redoc=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.RedocRequestHandler

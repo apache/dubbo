@@ -24,6 +24,7 @@ import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -31,6 +32,7 @@ import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestMappingException;
@@ -40,8 +42,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesConditio
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.ConfigFactory;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.DefaultOpenAPIService;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.KeyString;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.MethodWalker;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
@@ -67,7 +67,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private final AtomicBoolean initialized = new AtomicBoolean();
 
     private ContentNegotiator contentNegotiator;
-    private DefaultOpenAPIService openAPIService;
+    private OpenAPIService openAPIService;
     private List<RequestMappingResolver> resolvers;
     private RestConfig restConfig;
     private RadixTree<Registration> tree;
@@ -78,14 +78,16 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     private void init(Invoker<?> invoker) {
         contentNegotiator = frameworkModel.getOrRegisterBean(ContentNegotiator.class);
-        if (ConfigFactory.isOpenAPIEnabled(frameworkModel)) {
-            openAPIService = frameworkModel.getOrRegisterBean(DefaultOpenAPIService.class);
-            openAPIService.setRequestMappingRegistry(this);
+        if (TripleProtocol.OPENAPI_ENABLED) {
+            openAPIService = frameworkModel.getDefaultExtensionOrNull(OpenAPIService.class);
         }
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
         restConfig = ConfigManager.getProtocolOrDefault(invoker.getUrl())
                 .getTripleOrDefault()
                 .getRestOrDefault();
+        for (RequestMappingResolver resolver : resolvers) {
+            resolver.setRestConfig(restConfig);
+        }
         tree = new RadixTree<>(restConfig.getCaseSensitiveMatchOrDefault());
     }
 

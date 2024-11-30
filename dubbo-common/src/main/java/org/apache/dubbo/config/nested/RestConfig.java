@@ -35,6 +35,18 @@ public class RestConfig implements Serializable {
     public static final String DEFAULT_FORMAT_PARAMETER_NAME = "format";
 
     /**
+     * Whether to enable rest support
+     * <p>The default value is 'true'.
+     */
+    private Boolean enabled;
+
+    /**
+     *  Whether to enable the default mapping '/{interfaceName}/{methodName}'.
+     * <p>The default value is 'true'.
+     */
+    private Boolean enableDefaultMapping;
+
+    /**
      * Whether path matching should be match paths with a trailing slash.
      * If enabled, a method mapped to "/users" also matches to "/users/".
      * <p>The default value is {@code true}.
@@ -89,6 +101,22 @@ public class RestConfig implements Serializable {
      * Multiple configurations for openapi.
      */
     private Map<String, OpenAPIConfig> openapis;
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Boolean getEnableDefaultMapping() {
+        return enableDefaultMapping;
+    }
+
+    public void setEnableDefaultMapping(Boolean enableDefaultMapping) {
+        this.enableDefaultMapping = enableDefaultMapping;
+    }
 
     public Boolean getTrailingSlashMatch() {
         return trailingSlashMatch;

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
@@ -32,18 +33,22 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 @Activate(onClass = {"javax.ws.rs.Path", "javax.ws.rs.container.ContainerRequestContext"})
 public class JaxrsRequestMappingResolver implements RequestMappingResolver {
 
-    private final FrameworkModel frameworkModel;
     private final RestToolKit toolKit;
+    private RestConfig restConfig;
     private CorsMeta globalCorsMeta;
 
     public JaxrsRequestMappingResolver(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
         toolKit = new JaxrsRestToolKit(frameworkModel);
     }
 
     @Override
     public RestToolKit getRestToolKit() {
         return toolKit;
+    }
+
+    @Override
+    public void setRestConfig(RestConfig restConfig) {
+        this.restConfig = restConfig;
     }
 
     @Override
@@ -70,7 +75,7 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
         }
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         if (globalCorsMeta == null) {
-            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+            globalCorsMeta = CorsUtils.getGlobalCorsMeta(restConfig);
         }
         return builder(methodMeta, path, httpMethod)
                 .name(methodMeta.getMethod().getName())

@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 public final class MetadataServiceV2OuterClass {
+
     private MetadataServiceV2OuterClass() {}
 
     public static void registerAllExtensions(com.google.protobuf.ExtensionRegistryLite registry) {}
@@ -45,6 +46,14 @@ public final class MetadataServiceV2OuterClass {
             internal_static_org_apache_dubbo_metadata_ServiceInfoV2_ParamsEntry_descriptor;
     static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_org_apache_dubbo_metadata_ServiceInfoV2_ParamsEntry_fieldAccessorTable;
+    static final com.google.protobuf.Descriptors.Descriptor
+            internal_static_org_apache_dubbo_metadata_OpenAPIRequest_descriptor;
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internal_static_org_apache_dubbo_metadata_OpenAPIRequest_fieldAccessorTable;
+    static final com.google.protobuf.Descriptors.Descriptor
+            internal_static_org_apache_dubbo_metadata_OpenAPI_descriptor;
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internal_static_org_apache_dubbo_metadata_OpenAPI_fieldAccessorTable;
 
     public static com.google.protobuf.Descriptors.FileDescriptor getDescriptor() {
         return descriptor;
@@ -67,12 +76,20 @@ public final class MetadataServiceV2OuterClass {
                     + "(\005\022\014\n\004path\030\006 \001(\t\022D\n\006params\030\007 \003(\01324.org.a"
                     + "pache.dubbo.metadata.ServiceInfoV2.Param"
                     + "sEntry\032-\n\013ParamsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005va"
-                    + "lue\030\002 \001(\t:\0028\0012}\n\021MetadataServiceV2\022h\n\017Ge"
-                    + "tMetadataInfo\022*.org.apache.dubbo.metadat"
-                    + "a.MetadataRequest\032).org.apache.dubbo.met"
-                    + "adata.MetadataInfoV2BZ\n\031org.apache.dubbo"
-                    + ".metadataP\001Z;dubbo.apache.org/dubbo-go/v"
-                    + "3/metadata/triple_api;triple_apib\006proto3"
+                    + "lue\030\002 \001(\t:\0028\001\"\372\001\n\016OpenAPIRequest\022\022\n\005grou"
+                    + "p\030\001 \001(\tH\000\210\001\001\022\024\n\007version\030\002 \001(\tH\001\210\001\001\022\013\n\003ta"
+                    + "g\030\003 \003(\t\022\017\n\007service\030\004 \003(\t\022\024\n\007openapi\030\005 \001("
+                    + "\tH\002\210\001\001\022=\n\006format\030\006 \001(\0162(.org.apache.dubb"
+                    + "o.metadata.OpenAPIFormatH\003\210\001\001\022\023\n\006pretty\030"
+                    + "\007 \001(\010H\004\210\001\001B\010\n\006_groupB\n\n\010_versionB\n\n\010_ope"
+                    + "napiB\t\n\007_formatB\t\n\007_pretty\"\030\n\007OpenAPI\022\r\n"
+                    + "\005value\030\001 \001(\t*.\n\rOpenAPIFormat\022\010\n\004JSON\020\000\022"
+                    + "\010\n\004YAML\020\001\022\t\n\005PROTO\020\0022\332\001\n\021MetadataService"
+                    + "V2\022h\n\017GetMetadataInfo\022*.org.apache.dubbo"
+                    + ".metadata.MetadataRequest\032).org.apache.d"
+                    + "ubbo.metadata.MetadataInfoV2\022[\n\nGetOpenA" + "PI\022).org.apache.dubbo.metadata.OpenAPIRe"
+                    + "quest\032\".org.apache.dubbo.metadata.OpenAP" + "IBZ\n\031org.apache.dubbo.metadataP\001Z;dubbo."
+                    + "apache.org/dubbo-go/v3/metadata/triple_a" + "pi;triple_apib\006proto3"
         };
         descriptor = com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
                 descriptorData, new com.google.protobuf.Descriptors.FileDescriptor[] {});
@@ -115,6 +132,20 @@ public final class MetadataServiceV2OuterClass {
                 new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
                         internal_static_org_apache_dubbo_metadata_ServiceInfoV2_ParamsEntry_descriptor, new String[] {
                             "Key", "Value",
+                        });
+        internal_static_org_apache_dubbo_metadata_OpenAPIRequest_descriptor =
+                getDescriptor().getMessageTypes().get(3);
+        internal_static_org_apache_dubbo_metadata_OpenAPIRequest_fieldAccessorTable =
+                new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+                        internal_static_org_apache_dubbo_metadata_OpenAPIRequest_descriptor, new String[] {
+                            "Group", "Version", "Tag", "Service", "Openapi", "Format", "Pretty",
+                        });
+        internal_static_org_apache_dubbo_metadata_OpenAPI_descriptor =
+                getDescriptor().getMessageTypes().get(4);
+        internal_static_org_apache_dubbo_metadata_OpenAPI_fieldAccessorTable =
+                new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+                        internal_static_org_apache_dubbo_metadata_OpenAPI_descriptor, new String[] {
+                            "Value",
                         });
     }
 

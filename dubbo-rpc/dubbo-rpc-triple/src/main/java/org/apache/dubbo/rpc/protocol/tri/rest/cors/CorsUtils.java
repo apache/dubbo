@@ -16,23 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.cors;
 
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.CorsConfig;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 
 public class CorsUtils {
 
     private CorsUtils() {}
 
-    public static CorsMeta getGlobalCorsMeta(FrameworkModel frameworkModel) {
-        CorsConfig config = ConfigManager.getProtocolOrDefault(CommonConstants.TRIPLE)
-                .getTripleOrDefault()
-                .getRestOrDefault()
-                .getCorsOrDefault();
+    public static CorsMeta getGlobalCorsMeta(RestConfig restConfig) {
+        CorsConfig config = restConfig.getCorsOrDefault();
         return CorsMeta.builder()
                 .allowedOrigins(config.getAllowedOrigins())
                 .allowedMethods(config.getAllowedMethods())
@@ -41,10 +34,6 @@ public class CorsUtils {
                 .exposedHeaders(config.getExposedHeaders())
                 .maxAge(config.getMaxAge())
                 .build();
-    }
-
-    private static String[] getValues(Configuration config, String key) {
-        return StringUtils.tokenize(config.getString(key), ',');
     }
 
     public static String formatOrigin(String value) {

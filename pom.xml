@@ -106,7 +106,7 @@
     <module>dubbo-plugin/dubbo-filter-validation</module>
     <module>dubbo-plugin/dubbo-rest-jaxrs</module>
     <module>dubbo-plugin/dubbo-rest-spring</module>
-    <module>dubbo-plugin/dubbo-rest-swagger</module>
+    <module>dubbo-plugin/dubbo-rest-openapi</module>
     <module>dubbo-plugin/dubbo-triple-servlet</module>
     <module>dubbo-plugin/dubbo-triple-websocket</module>
     <module>dubbo-demo/dubbo-demo-api</module>

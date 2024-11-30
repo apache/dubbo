@@ -46,6 +46,14 @@ public interface ExtensionAccessor {
         return extensionLoader != null ? extensionLoader.getDefaultExtension() : null;
     }
 
+    default <T> T getDefaultExtensionOrNull(Class<T> type) {
+        ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
+        if (extensionLoader == null) {
+            return null;
+        }
+        return extensionLoader.getExtension(extensionLoader.getDefaultExtensionName(), true);
+    }
+
     default <T> List<T> getActivateExtensions(Class<T> type) {
         ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
         return extensionLoader != null ? extensionLoader.getActivateExtensions() : Collections.emptyList();

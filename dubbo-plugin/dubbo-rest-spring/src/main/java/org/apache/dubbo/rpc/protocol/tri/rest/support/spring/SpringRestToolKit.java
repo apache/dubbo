@@ -38,8 +38,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 
-import javax.annotation.Nullable;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -166,7 +164,6 @@ final class SpringRestToolKit implements RestToolKit {
         return parameterNameReader.readParameterNames(method);
     }
 
-    @Nullable
     @Override
     public String[] getParameterNames(Constructor<?> ctor) {
         return parameterNameReader.readParameterNames(ctor);

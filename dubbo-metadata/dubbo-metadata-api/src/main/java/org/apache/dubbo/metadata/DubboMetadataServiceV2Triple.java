@@ -62,6 +62,11 @@ public final class DubboMetadataServiceV2Triple {
         return new MetadataServiceV2Stub((Invoker<MetadataServiceV2>) invoker);
     }
 
+    /**
+     * <pre>
+     *  Retrieves metadata information.
+     * </pre>
+     */
     private static final StubMethodDescriptor getMetadataInfoMethod = new StubMethodDescriptor(
             "GetMetadataInfo",
             MetadataRequest.class,
@@ -91,10 +96,46 @@ public final class DubboMetadataServiceV2Triple {
             obj -> ((Message) obj).toByteArray(),
             MetadataRequest::parseFrom,
             MetadataInfoV2::parseFrom);
+    /**
+     * <pre>
+     *  Retrieves OpenAPI.
+     * </pre>
+     */
+    private static final StubMethodDescriptor getOpenAPIMethod = new StubMethodDescriptor(
+            "GetOpenAPI",
+            OpenAPIRequest.class,
+            OpenAPI.class,
+            MethodDescriptor.RpcType.UNARY,
+            obj -> ((Message) obj).toByteArray(),
+            obj -> ((Message) obj).toByteArray(),
+            OpenAPIRequest::parseFrom,
+            OpenAPI::parseFrom);
+
+    private static final StubMethodDescriptor getOpenAPIAsyncMethod = new StubMethodDescriptor(
+            "GetOpenAPI",
+            OpenAPIRequest.class,
+            CompletableFuture.class,
+            MethodDescriptor.RpcType.UNARY,
+            obj -> ((Message) obj).toByteArray(),
+            obj -> ((Message) obj).toByteArray(),
+            OpenAPIRequest::parseFrom,
+            OpenAPI::parseFrom);
+
+    private static final StubMethodDescriptor getOpenAPIProxyAsyncMethod = new StubMethodDescriptor(
+            "GetOpenAPIAsync",
+            OpenAPIRequest.class,
+            OpenAPI.class,
+            MethodDescriptor.RpcType.UNARY,
+            obj -> ((Message) obj).toByteArray(),
+            obj -> ((Message) obj).toByteArray(),
+            OpenAPIRequest::parseFrom,
+            OpenAPI::parseFrom);
 
     static {
         serviceDescriptor.addMethod(getMetadataInfoMethod);
         serviceDescriptor.addMethod(getMetadataInfoProxyAsyncMethod);
+        serviceDescriptor.addMethod(getOpenAPIMethod);
+        serviceDescriptor.addMethod(getOpenAPIProxyAsyncMethod);
     }
 
     public static class MetadataServiceV2Stub implements MetadataServiceV2, Destroyable {
@@ -109,6 +150,11 @@ public final class DubboMetadataServiceV2Triple {
             invoker.destroy();
         }
 
+        /**
+         * <pre>
+         *  Retrieves metadata information.
+         * </pre>
+         */
         @Override
         public MetadataInfoV2 getMetadataInfo(MetadataRequest request) {
             return StubInvocationUtil.unaryCall(invoker, getMetadataInfoMethod, request);
@@ -118,8 +164,36 @@ public final class DubboMetadataServiceV2Triple {
             return StubInvocationUtil.unaryCall(invoker, getMetadataInfoAsyncMethod, request);
         }
 
+        /**
+         * <pre>
+         *  Retrieves metadata information.
+         * </pre>
+         */
         public void getMetadataInfo(MetadataRequest request, StreamObserver<MetadataInfoV2> responseObserver) {
             StubInvocationUtil.unaryCall(invoker, getMetadataInfoMethod, request, responseObserver);
+        }
+
+        /**
+         * <pre>
+         *  Retrieves OpenAPI.
+         * </pre>
+         */
+        @Override
+        public OpenAPI getOpenAPI(OpenAPIRequest request) {
+            return StubInvocationUtil.unaryCall(invoker, getOpenAPIMethod, request);
+        }
+
+        public CompletableFuture<OpenAPI> getOpenAPIAsync(OpenAPIRequest request) {
+            return StubInvocationUtil.unaryCall(invoker, getOpenAPIAsyncMethod, request);
+        }
+
+        /**
+         * <pre>
+         *  Retrieves OpenAPI.
+         * </pre>
+         */
+        public void getOpenAPI(OpenAPIRequest request, StreamObserver<OpenAPI> responseObserver) {
+            StubInvocationUtil.unaryCall(invoker, getOpenAPIMethod, request, responseObserver);
         }
     }
 
@@ -146,12 +220,28 @@ public final class DubboMetadataServiceV2Triple {
             return CompletableFuture.completedFuture(getMetadataInfo(request));
         }
 
+        @Override
+        public CompletableFuture<OpenAPI> getOpenAPIAsync(OpenAPIRequest request) {
+            return CompletableFuture.completedFuture(getOpenAPI(request));
+        }
+
         /**
          * This server stream type unary method is <b>only</b> used for generated stub to support async unary method.
          * It will not be called if you are NOT using Dubbo3 generated triple stub and <b>DO NOT</b> implement this method.
          */
         public void getMetadataInfo(MetadataRequest request, StreamObserver<MetadataInfoV2> responseObserver) {
             getMetadataInfoAsync(request).whenComplete((r, t) -> {
+                if (t != null) {
+                    responseObserver.onError(t);
+                } else {
+                    responseObserver.onNext(r);
+                    responseObserver.onCompleted();
+                }
+            });
+        }
+
+        public void getOpenAPI(OpenAPIRequest request, StreamObserver<OpenAPI> responseObserver) {
+            getOpenAPIAsync(request).whenComplete((r, t) -> {
                 if (t != null) {
                     responseObserver.onError(t);
                 } else {
@@ -174,6 +264,12 @@ public final class DubboMetadataServiceV2Triple {
             pathResolver.addNativeStub("/" + JAVA_SERVICE_NAME + "/GetMetadataInfo");
             pathResolver.addNativeStub("/" + JAVA_SERVICE_NAME + "/GetMetadataInfoAsync");
 
+            pathResolver.addNativeStub("/" + SERVICE_NAME + "/GetOpenAPI");
+            pathResolver.addNativeStub("/" + SERVICE_NAME + "/GetOpenAPIAsync");
+            // for compatibility
+            pathResolver.addNativeStub("/" + JAVA_SERVICE_NAME + "/GetOpenAPI");
+            pathResolver.addNativeStub("/" + JAVA_SERVICE_NAME + "/GetOpenAPIAsync");
+
             BiConsumer<MetadataRequest, StreamObserver<MetadataInfoV2>> getMetadataInfoFunc = this::getMetadataInfo;
             handlers.put(getMetadataInfoMethod.getMethodName(), new UnaryStubMethodHandler<>(getMetadataInfoFunc));
             BiConsumer<MetadataRequest, StreamObserver<MetadataInfoV2>> getMetadataInfoAsyncFunc =
@@ -181,6 +277,10 @@ public final class DubboMetadataServiceV2Triple {
             handlers.put(
                     getMetadataInfoProxyAsyncMethod.getMethodName(),
                     new UnaryStubMethodHandler<>(getMetadataInfoAsyncFunc));
+            BiConsumer<OpenAPIRequest, StreamObserver<OpenAPI>> getOpenAPIFunc = this::getOpenAPI;
+            handlers.put(getOpenAPIMethod.getMethodName(), new UnaryStubMethodHandler<>(getOpenAPIFunc));
+            BiConsumer<OpenAPIRequest, StreamObserver<OpenAPI>> getOpenAPIAsyncFunc = syncToAsync(this::getOpenAPI);
+            handlers.put(getOpenAPIProxyAsyncMethod.getMethodName(), new UnaryStubMethodHandler<>(getOpenAPIAsyncFunc));
 
             return new StubInvoker<>(this, url, MetadataServiceV2.class, handlers);
         }
@@ -188,6 +288,11 @@ public final class DubboMetadataServiceV2Triple {
         @Override
         public MetadataInfoV2 getMetadataInfo(MetadataRequest request) {
             throw unimplementedMethodException(getMetadataInfoMethod);
+        }
+
+        @Override
+        public OpenAPI getOpenAPI(OpenAPIRequest request) {
+            throw unimplementedMethodException(getOpenAPIMethod);
         }
 
         @Override

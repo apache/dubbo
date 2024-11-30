@@ -16,17 +16,28 @@
  */
 package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.remoting.http12.rest.Mapping;
-
 import java.util.concurrent.CompletableFuture;
 
-@Mapping(enabled = false)
 public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub {
 
     String JAVA_SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
     String SERVICE_NAME = "org.apache.dubbo.metadata.MetadataServiceV2";
 
+    /**
+     * <pre>
+     *  Retrieves metadata information.
+     * </pre>
+     */
     MetadataInfoV2 getMetadataInfo(MetadataRequest request);
 
     CompletableFuture<MetadataInfoV2> getMetadataInfoAsync(MetadataRequest request);
+
+    /**
+     * <pre>
+     *  Retrieves OpenAPI.
+     * </pre>
+     */
+    OpenAPI getOpenAPI(OpenAPIRequest request);
+
+    CompletableFuture<OpenAPI> getOpenAPIAsync(OpenAPIRequest request);
 }

@@ -29,8 +29,9 @@ import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIService;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -220,11 +221,15 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     @Override
     public String getOpenAPI(OpenAPIRequest request) {
-        OpenAPIService openAPIService = applicationModel.getBean(OpenAPIService.class);
-        if (openAPIService == null) {
-            throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "OpenAPI is not available");
+        if (TripleProtocol.OPENAPI_ENABLED) {
+            OpenAPIService openAPIService =
+                    applicationModel.getFrameworkModel().getDefaultExtensionOrNull(OpenAPIService.class);
+            if (openAPIService != null) {
+                return openAPIService.getDocument(request);
+            }
         }
-        return openAPIService.getDocument(request);
+
+        throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "OpenAPI is not available");
     }
 
     private SortedSet<String> getServiceURLs(
