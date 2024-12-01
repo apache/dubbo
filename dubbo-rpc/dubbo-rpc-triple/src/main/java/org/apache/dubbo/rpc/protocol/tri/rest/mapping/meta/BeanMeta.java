@@ -32,9 +32,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -417,6 +419,21 @@ public final class BeanMeta extends ParameterMeta {
                 return parameter;
             }
             return getMethod;
+        }
+
+        @Override
+        public List<? extends AnnotatedElement> getAnnotatedElements() {
+            List<AnnotatedElement> elements = new ArrayList<>(3);
+            if (field != null) {
+                elements.add(field);
+            }
+            if (parameter != null) {
+                elements.add(parameter);
+            }
+            if (getMethod != null) {
+                elements.add(getMethod);
+            }
+            return elements;
         }
 
         public Object getValue(Object bean) {

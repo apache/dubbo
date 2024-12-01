@@ -44,8 +44,7 @@ public class DubboOpenAPIExportListener implements ApplicationListener<Applicati
         if (applicationModel == null) {
             return;
         }
-        OpenAPIService openAPIService =
-                applicationModel.getFrameworkModel().getDefaultExtensionOrNull(OpenAPIService.class);
+        OpenAPIService openAPIService = applicationModel.getBean(OpenAPIService.class);
         if (openAPIService != null) {
             openAPIService.export();
         }

@@ -17,9 +17,7 @@
 package org.apache.dubbo.common.serialize;
 
 import org.apache.dubbo.common.serialize.support.PreferSerializationProviderImpl;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class SerializationScopeModelInitializer implements ScopeModelInitializer {
@@ -27,10 +25,4 @@ public class SerializationScopeModelInitializer implements ScopeModelInitializer
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         frameworkModel.getBeanFactory().registerBean(PreferSerializationProviderImpl.class);
     }
-
-    @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {}
-
-    @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

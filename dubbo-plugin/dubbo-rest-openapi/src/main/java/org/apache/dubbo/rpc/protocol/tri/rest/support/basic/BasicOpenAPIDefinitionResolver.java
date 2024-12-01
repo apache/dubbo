@@ -32,11 +32,14 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.ExternalDocs;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Info;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema.Type;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -101,6 +104,19 @@ public final class BasicOpenAPIDefinitionResolver
     }
 
     @Override
+    public Collection<HttpMethods> resolve(PathItem pathItem, MethodMeta methodMeta, OperationContext context) {
+        AnnotationMeta<?> annoMeta = methodMeta.findAnnotation(Annotations.Operation);
+        if (annoMeta == null) {
+            return null;
+        }
+        String method = trim(annoMeta.getString("method"));
+        if (method == null) {
+            return null;
+        }
+        return Collections.singletonList(HttpMethods.of(method.toUpperCase()));
+    }
+
+    @Override
     public Operation resolve(Operation operation, MethodMeta methodMeta, OperationContext ctx, OperationChain chain) {
         AnnotationMeta<?> annoMeta = methodMeta.findAnnotation(Annotations.Operation);
         if (annoMeta == null) {
@@ -108,11 +124,6 @@ public final class BasicOpenAPIDefinitionResolver
         }
         if (annoMeta.getBoolean(HIDDEN)) {
             return null;
-        }
-
-        String method = trim(annoMeta.getString("method"));
-        if (method != null) {
-            operation.setHttpMethod(HttpMethods.of(method.toUpperCase()));
         }
 
         String[] tags = trim(annoMeta.getStringArray("tags"));

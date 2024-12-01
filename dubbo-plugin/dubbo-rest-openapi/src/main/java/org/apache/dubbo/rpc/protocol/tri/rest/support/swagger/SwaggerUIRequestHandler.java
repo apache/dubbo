@@ -132,7 +132,7 @@ public class SwaggerUIRequestHandler implements OpenAPIRequestHandler {
     }
 
     private HttpResult<?> handleSwaggerConfig() {
-        OpenAPIService openAPIService = frameworkModel.getDefaultExtensionOrNull(OpenAPIService.class);
+        OpenAPIService openAPIService = frameworkModel.getBean(OpenAPIService.class);
         if (openAPIService == null) {
             return HttpResult.notFound();
         }

@@ -45,7 +45,7 @@ public class GetOpenAPI implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        OpenAPIService openAPIService = frameworkModel.getDefaultExtensionOrNull(OpenAPIService.class);
+        OpenAPIService openAPIService = frameworkModel.getBean(OpenAPIService.class);
         if (openAPIService == null) {
             return "OpenAPI is not available";
         }

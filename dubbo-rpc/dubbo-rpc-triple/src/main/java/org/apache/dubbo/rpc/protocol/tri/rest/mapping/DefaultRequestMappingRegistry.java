@@ -79,7 +79,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private void init(Invoker<?> invoker) {
         contentNegotiator = frameworkModel.getOrRegisterBean(ContentNegotiator.class);
         if (TripleProtocol.OPENAPI_ENABLED) {
-            openAPIService = frameworkModel.getDefaultExtensionOrNull(OpenAPIService.class);
+            openAPIService = frameworkModel.getBean(OpenAPIService.class);
         }
         resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
         restConfig = ConfigManager.getProtocolOrDefault(invoker.getUrl())

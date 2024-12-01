@@ -16,14 +16,20 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
+
+import java.util.Collection;
 
 public interface OpenAPIDefinitionResolver extends OpenAPIExtension {
 
     OpenAPI resolve(OpenAPI openAPI, ServiceMeta serviceMeta, OpenAPIChain chain);
+
+    Collection<HttpMethods> resolve(PathItem pathItem, MethodMeta methodMeta, OperationContext context);
 
     Operation resolve(Operation operation, MethodMeta methodMeta, OperationContext context, OperationChain chain);
 

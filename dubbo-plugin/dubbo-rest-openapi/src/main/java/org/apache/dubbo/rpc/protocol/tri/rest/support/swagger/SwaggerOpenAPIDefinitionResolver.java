@@ -35,11 +35,14 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Info;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.License;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema.Type;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Tag;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
@@ -134,6 +137,20 @@ public final class SwaggerOpenAPIDefinitionResolver
                 .setDescription(trim(anno.description()))
                 .setUrl(trim(anno.url()))
                 .setExtensions(toProperties(anno.extensions()));
+    }
+
+    @Override
+    public Collection<HttpMethods> resolve(PathItem pathItem, MethodMeta methodMeta, OperationContext context) {
+        AnnotationMeta<io.swagger.v3.oas.annotations.Operation> annoMeta =
+                methodMeta.findAnnotation(io.swagger.v3.oas.annotations.Operation.class);
+        if (annoMeta == null) {
+            return null;
+        }
+        String method = trim(annoMeta.getAnnotation().method());
+        if (method == null) {
+            return null;
+        }
+        return Collections.singletonList(HttpMethods.of(method.toUpperCase()));
     }
 
     @Override

@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.Registration;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.MethodsCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -144,53 +146,61 @@ final class DefinitionResolver {
             MethodMeta methodMeta,
             RequestMapping mapping,
             OperationContext context) {
-        return new OperationChainImpl(resolvers, operation -> {
-                            for (String method : determineHttpMethods(openAPI, methodMeta, mapping, operation)) {
-                                HttpMethods httpMethod = HttpMethods.of(method.toUpperCase());
-                                Operation existingOperation = pathItem.getOperation(httpMethod);
-                                if (existingOperation == null) {
-                                    pathItem.addOperation(httpMethod, operation);
-                                } else {
-                                    if (existingOperation.getMeta() != null) {
-                                        LOG.internalWarn(
-                                                "Operation already exists, path='{}', httpMethod='{}', method={}",
-                                                path,
-                                                method,
-                                                methodMeta);
-                                    }
-                                    continue;
-                                }
-                                resolveOperation(path, httpMethod, operation, openAPI, methodMeta, mapping);
-                            }
-                            return operation;
-                        })
-                        .resolve(new Operation().setMeta(methodMeta), methodMeta, context)
-                != null;
-    }
-
-    private Collection<String> determineHttpMethods(
-            OpenAPI openAPI, MethodMeta meta, RequestMapping mapping, Operation operation) {
-        Collection<String> httpMethods = null;
-        if (operation.getHttpMethod() != null) {
-            httpMethods = Collections.singletonList(operation.getHttpMethod().name());
+        Collection<HttpMethods> httpMethods = null;
+        for (OpenAPIDefinitionResolver resolver : resolvers) {
+            httpMethods = resolver.resolve(pathItem, methodMeta, context);
+            if (httpMethods != null) {
+                break;
+            }
         }
         if (httpMethods == null) {
-            if (mapping.getMethodsCondition() != null) {
-                httpMethods = mapping.getMethodsCondition().getMethods();
+            httpMethods = new LinkedList<>();
+            for (String method : determineHttpMethods(openAPI, methodMeta, mapping)) {
+                httpMethods.add(HttpMethods.of(method.toUpperCase()));
             }
-            if (httpMethods == null) {
-                String[] defaultHttpMethods = openAPI.getConfigValue(OpenAPIConfig::getDefaultHttpMethods);
-                if (defaultHttpMethods == null) {
-                    httpMethods = Helper.guessHttpMethod(meta);
-                } else {
-                    httpMethods = Arrays.asList(defaultHttpMethods);
-                }
+        }
+
+        boolean added = false;
+        for (HttpMethods httpMethod : httpMethods) {
+            Operation operation = new Operation().setMeta(methodMeta);
+            Operation existingOperation = pathItem.getOperation(httpMethod);
+            if (existingOperation != null && existingOperation.getMeta() != null) {
+                LOG.internalWarn(
+                        "Operation already exists, path='{}', httpMethod='{}', method={}",
+                        path,
+                        httpMethod,
+                        methodMeta);
+                continue;
+            }
+            operation = new OperationChainImpl(
+                            resolvers, op -> resolveOperation(path, httpMethod, op, openAPI, methodMeta, mapping))
+                    .resolve(operation, methodMeta, context);
+            if (operation != null) {
+                pathItem.addOperation(httpMethod, operation);
+                added = true;
+            }
+        }
+        return added;
+    }
+
+    private Collection<String> determineHttpMethods(OpenAPI openAPI, MethodMeta meta, RequestMapping mapping) {
+        Collection<String> httpMethods = null;
+        MethodsCondition condition = mapping.getMethodsCondition();
+        if (condition != null) {
+            httpMethods = condition.getMethods();
+        }
+        if (httpMethods == null) {
+            String[] defaultHttpMethods = openAPI.getConfigValue(OpenAPIConfig::getDefaultHttpMethods);
+            if (defaultHttpMethods == null) {
+                httpMethods = Helper.guessHttpMethod(meta);
+            } else {
+                httpMethods = Arrays.asList(defaultHttpMethods);
             }
         }
         return httpMethods;
     }
 
-    private void resolveOperation(
+    private Operation resolveOperation(
             String path,
             HttpMethods httpMethod,
             Operation operation,
@@ -257,6 +267,7 @@ final class DefinitionResolver {
                 resolveResponse(httpStatusCode, response, openAPI, meta, mapping);
             }
         }
+        return operation;
     }
 
     private void resolveParameter(HttpMethods httpMethod, Operation operation, ParameterMeta meta, boolean traverse) {

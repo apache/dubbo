@@ -16,13 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12.rest;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-
 import java.util.Collection;
 
-@SPI(value = CommonConstants.DEFAULT_KEY, scope = ExtensionScope.FRAMEWORK)
 public interface OpenAPIService {
 
     Collection<String> getOpenAPIGroups();

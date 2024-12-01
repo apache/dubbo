@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mesh;
+package org.apache.dubbo.common.resource;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleManager;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelInitializer;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
 
-public class MeshScopeModelInitializer implements ScopeModelInitializer {
+/**
+ * An interface for Initializing resources
+ */
+public interface Initializable {
 
-    public void initializeModuleModel(ModuleModel moduleModel) {
-        ScopeBeanFactory beanFactory = moduleModel.getBeanFactory();
-        beanFactory.registerBean(MeshRuleManager.class);
+    default void initialize(ExtensionAccessor accessor) {
+        initialize();
     }
+
+    default void initialize() {}
 }

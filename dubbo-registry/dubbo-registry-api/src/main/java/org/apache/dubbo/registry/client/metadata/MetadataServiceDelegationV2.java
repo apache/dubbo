@@ -80,7 +80,7 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
     @Override
     public OpenAPI getOpenAPI(org.apache.dubbo.metadata.OpenAPIRequest request) {
         if (TripleProtocol.OPENAPI_ENABLED) {
-            OpenAPIService openAPIService = frameworkModel.getDefaultExtensionOrNull(OpenAPIService.class);
+            OpenAPIService openAPIService = frameworkModel.getBean(OpenAPIService.class);
             if (openAPIService != null) {
                 OpenAPIRequest oRequest = new OpenAPIRequest();
                 oRequest.setGroup(request.getGroup());

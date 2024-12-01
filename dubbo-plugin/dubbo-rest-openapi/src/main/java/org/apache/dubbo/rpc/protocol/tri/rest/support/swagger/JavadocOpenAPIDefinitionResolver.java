@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.swagger;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta.ReturnParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
@@ -30,12 +31,14 @@ import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Info;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.OpenAPI;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Operation;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Parameter;
+import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.PathItem;
 import org.apache.dubbo.rpc.protocol.tri.rest.openapi.model.Schema;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +83,11 @@ public class JavadocOpenAPIDefinitionResolver implements OpenAPIDefinitionResolv
 
         populateComment(javadoc.getComment(), info::setSummary, info::setDescription);
         return openAPI;
+    }
+
+    @Override
+    public Collection<HttpMethods> resolve(PathItem pathItem, MethodMeta methodMeta, OperationContext context) {
+        return null;
     }
 
     @Override
@@ -152,16 +160,26 @@ public class JavadocOpenAPIDefinitionResolver implements OpenAPIDefinitionResolv
                 } else if (element instanceof Field) {
                     Field field = (Field) element;
 
-                    ClassJavadocWrapper classJavadoc = getClassJavadoc(field.getDeclaringClass());
-                    FieldJavadoc fieldJavadoc = classJavadoc.getField(field);
+                    ClassJavadocWrapper javadoc = getClassJavadoc(field.getDeclaringClass());
+                    FieldJavadoc fieldJavadoc = javadoc.getField(field);
                     if (fieldJavadoc != null) {
                         comment = fieldJavadoc.getComment();
                         break;
                     }
 
-                    ParamJavadoc paramJavadoc = classJavadoc.getRecordComponent(field.getName());
+                    ParamJavadoc paramJavadoc = javadoc.getRecordComponent(field.getName());
                     if (paramJavadoc != null) {
                         comment = paramJavadoc.getComment();
+                        break;
+                    }
+                } else if (element instanceof Method) {
+                    Method method = (Method) element;
+
+                    ClassJavadocWrapper javadoc = getClassJavadoc(method.getDeclaringClass());
+                    MethodJavadoc methodJavadoc = javadoc.getMethod(method);
+
+                    if (methodJavadoc != null) {
+                        comment = methodJavadoc.getReturns();
                         break;
                     }
                 }

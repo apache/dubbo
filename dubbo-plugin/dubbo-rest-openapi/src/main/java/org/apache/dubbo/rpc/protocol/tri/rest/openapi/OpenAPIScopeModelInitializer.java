@@ -14,28 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos;
+package org.apache.dubbo.rpc.protocol.tri.rest.openapi;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.qos.command.ActuatorCommandExecutor;
-import org.apache.dubbo.qos.command.util.SerializeCheckUtils;
-import org.apache.dubbo.qos.server.Server;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-public class QosScopeModelInitializer implements ScopeModelInitializer {
+@Activate
+public class OpenAPIScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(Server.class);
-        beanFactory.registerBean(SerializeCheckUtils.class);
-    }
-
-    @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(ActuatorCommandExecutor.class);
+        frameworkModel.getBeanFactory().registerBeanDefinition(DefaultOpenAPIService.class);
     }
 }

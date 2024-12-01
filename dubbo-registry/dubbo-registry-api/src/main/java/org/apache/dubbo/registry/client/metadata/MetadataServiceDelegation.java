@@ -222,8 +222,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     @Override
     public String getOpenAPI(OpenAPIRequest request) {
         if (TripleProtocol.OPENAPI_ENABLED) {
-            OpenAPIService openAPIService =
-                    applicationModel.getFrameworkModel().getDefaultExtensionOrNull(OpenAPIService.class);
+            OpenAPIService openAPIService = applicationModel.getBean(OpenAPIService.class);
             if (openAPIService != null) {
                 return openAPIService.getDocument(request);
             }
