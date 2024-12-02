@@ -115,7 +115,8 @@ public final class SwaggerOpenAPIDefinitionResolver
             }
             openAPI.setExtensions(properties);
         }
-        return openAPI;
+
+        return chain.resolve(openAPI, serviceMeta);
     }
 
     private static Map<String, String> toProperties(io.swagger.v3.oas.annotations.extensions.Extension[] extensions) {
@@ -184,12 +185,14 @@ public final class SwaggerOpenAPIDefinitionResolver
             }
             operation.setExtensions(properties);
         }
-        return operation
+        operation
                 .setSummary(trim(anno.summary()))
                 .setDescription(trim(anno.description()))
                 .setExternalDocs(toExternalDocs(anno.externalDocs()))
                 .setOperationId(trim(anno.operationId()))
                 .setDeprecated(anno.deprecated() ? Boolean.TRUE : null);
+
+        return chain.resolve(operation, methodMeta, ctx);
     }
 
     @Override
@@ -239,7 +242,7 @@ public final class SwaggerOpenAPIDefinitionResolver
         schema.setNullable(anno.nullable() ? Boolean.TRUE : null);
         schema.setDeprecated(anno.deprecated() ? Boolean.TRUE : null);
 
-        return schema;
+        return chain.resolve(parameter, context);
     }
 
     @Override

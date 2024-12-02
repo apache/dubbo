@@ -100,6 +100,7 @@ public final class BasicOpenAPIDefinitionResolver
 
         openAPI.setPriority(annoMeta.getNumber("order"));
         openAPI.setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
+
         return chain.resolve(openAPI, serviceMeta);
     }
 
@@ -131,15 +132,20 @@ public final class BasicOpenAPIDefinitionResolver
             operation.setTags(new LinkedHashSet<>(Arrays.asList(tags)));
         }
 
-        operation.setGroup(trim(annoMeta.getString("group")));
-        operation.setVersion(trim(annoMeta.getString("version")));
-        operation.setOperationId(trim(annoMeta.getString("id")));
         String summary = trim(annoMeta.getValue());
-        operation.setSummary(summary == null ? trim(annoMeta.getString("summary")) : summary);
-        operation.setDescription(trim(annoMeta.getString("description")));
-        operation.setDeprecated(annoMeta.getBoolean("deprecated"));
-        operation.setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
-        return operation;
+        if (summary == null) {
+            summary = trim(annoMeta.getString("summary"));
+        }
+        operation
+                .setGroup(trim(annoMeta.getString("group")))
+                .setVersion(trim(annoMeta.getString("version")))
+                .setOperationId(trim(annoMeta.getString("id")))
+                .setSummary(summary)
+                .setDescription(trim(annoMeta.getString("description")))
+                .setDeprecated(annoMeta.getBoolean("deprecated"))
+                .setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
+
+        return chain.resolve(operation, methodMeta, ctx);
     }
 
     @Override
@@ -178,7 +184,8 @@ public final class BasicOpenAPIDefinitionResolver
         setBoolValue(annoMeta, "nullable", schema::setNullable);
         setBoolValue(annoMeta, "deprecated", schema::setDeprecated);
         schema.setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
-        return schema;
+
+        return chain.resolve(parameter, context);
     }
 
     @Override
