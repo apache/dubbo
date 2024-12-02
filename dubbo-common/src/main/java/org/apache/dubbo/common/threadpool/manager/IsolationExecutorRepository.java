@@ -46,7 +46,7 @@ public class IsolationExecutorRepository extends DefaultExecutorRepository {
 
     @Override
     protected String getProviderKey(URL url) {
-        if (url.hasAttribute(SERVICE_EXECUTOR)) {
+        if (url.getAttributes().containsKey(SERVICE_EXECUTOR)) {
             return url.getServiceKey();
         } else {
             return super.getProviderKey(url);
@@ -55,7 +55,7 @@ public class IsolationExecutorRepository extends DefaultExecutorRepository {
 
     @Override
     protected String getProviderKey(ProviderModel providerModel, URL url) {
-        if (url.hasAttribute(SERVICE_EXECUTOR)) {
+        if (url.getAttributes().containsKey(SERVICE_EXECUTOR)) {
             return providerModel.getServiceKey();
         } else {
             return super.getProviderKey(url);
@@ -64,7 +64,7 @@ public class IsolationExecutorRepository extends DefaultExecutorRepository {
 
     @Override
     protected ExecutorService createExecutor(URL url) {
-        Object executor = url.getAttribute(SERVICE_EXECUTOR);
+        Object executor = url.getAttributes().get(SERVICE_EXECUTOR);
         if (executor instanceof ExecutorService) {
             return (ExecutorService) executor;
         }

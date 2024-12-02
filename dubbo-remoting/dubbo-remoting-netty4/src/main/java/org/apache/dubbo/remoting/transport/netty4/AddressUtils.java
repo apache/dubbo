@@ -59,38 +59,6 @@ public final class AddressUtils {
         return (InetSocketAddress) channel.localAddress();
     }
 
-    public static String getRemoteAddressKey(Channel channel) {
-        InetSocketAddress address;
-        for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
-            ChannelAddressAccessor accessor = ACCESSORS.get(i);
-            address = accessor.getRemoteAddress(channel);
-            if (address != null) {
-                return accessor.getProtocol() + ' ' + toAddressString(address);
-            }
-        }
-        InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
-        if (remoteAddress == null) {
-            return "UNKNOWN";
-        }
-        return toAddressString(remoteAddress);
-    }
-
-    public static String getLocalAddressKey(Channel channel) {
-        InetSocketAddress address;
-        for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
-            ChannelAddressAccessor accessor = ACCESSORS.get(i);
-            address = accessor.getLocalAddress(channel);
-            if (address != null) {
-                return accessor.getProtocol() + ' ' + toAddressString(address);
-            }
-        }
-        SocketAddress localAddress = channel.localAddress();
-        if (localAddress == null) {
-            return "UNKNOWN";
-        }
-        return toAddressString((InetSocketAddress) localAddress);
-    }
-
     static void initAddressIfNecessary(NettyChannel nettyChannel) {
         Channel channel = nettyChannel.getNioChannel();
         SocketAddress address = channel.localAddress();
@@ -122,12 +90,18 @@ public final class AddressUtils {
 
     static String getLocalAddressKey(NettyChannel channel) {
         InetSocketAddress address = getLocalAddress(channel);
+        if (address == null) {
+            return "UNKNOWN";
+        }
         String protocol = (String) channel.getAttribute(PROTOCOL_KEY);
         return protocol == null ? toAddressString(address) : protocol + ' ' + toAddressString(address);
     }
 
     static String getRemoteAddressKey(NettyChannel channel) {
         InetSocketAddress address = getRemoteAddress(channel);
+        if (address == null) {
+            return "UNKNOWN";
+        }
         String protocol = (String) channel.getAttribute(PROTOCOL_KEY);
         return protocol == null ? toAddressString(address) : protocol + ' ' + toAddressString(address);
     }

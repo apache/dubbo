@@ -31,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.netty.bootstrap.Bootstrap;
@@ -63,6 +64,7 @@ public class NettyHttp3Server extends AbstractServer {
     public NettyHttp3Server(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
         pipelineConfigurator = (Consumer<ChannelPipeline>) getUrl().getAttribute(PIPELINE_CONFIGURATOR_KEY);
+        Objects.requireNonNull(pipelineConfigurator, "pipelineConfigurator should be set");
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
@@ -83,8 +85,8 @@ public class NettyHttp3Server extends AbstractServer {
                                 @Override
                                 protected void initChannel(QuicChannel ch) {
                                     ChannelPipeline pipeline = ch.pipeline();
-                                    pipeline.addLast(nettyServerHandler);
                                     pipelineConfigurator.accept(pipeline);
+                                    pipeline.addLast(nettyServerHandler);
                                 }
                             })
                             .build())

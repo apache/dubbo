@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http3.Http3SslContexts;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -44,9 +45,9 @@ import static org.apache.dubbo.remoting.http3.netty4.Constants.PIPELINE_CONFIGUR
 
 public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionClient {
 
+    private Consumer<ChannelPipeline> pipelineConfigurator;
     private AtomicReference<io.netty.channel.Channel> datagramChannel;
     private QuicChannelBootstrap bootstrap;
-    private Consumer<ChannelPipeline> pipelineConfigurator;
 
     public NettyHttp3ConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -58,6 +59,7 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
         super.initConnectionClient();
         datagramChannel = new AtomicReference<>();
         pipelineConfigurator = (Consumer<ChannelPipeline>) getUrl().getAttribute(PIPELINE_CONFIGURATOR_KEY);
+        Objects.requireNonNull(pipelineConfigurator, "pipelineConfigurator should be set");
     }
 
     @Override
