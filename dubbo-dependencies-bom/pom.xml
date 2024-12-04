@@ -91,7 +91,7 @@
     <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     <spring_version>5.3.39</spring_version>
     <spring_boot_version>2.7.18</spring_boot_version>
-    <spring_security_version>5.8.15</spring_security_version>
+    <spring_security_version>5.8.16</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
     <byte-buddy_version>1.15.10</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
@@ -149,8 +149,8 @@
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-    <log4j2_version>2.24.1</log4j2_version>
-    <commons_io_version>2.17.0</commons_io_version>
+    <log4j2_version>2.24.2</log4j2_version>
+    <commons_io_version>2.18.0</commons_io_version>
     <commons-codec_version>1.17.1</commons-codec_version>
     <groovy_version>4.0.24</groovy_version>
 
@@ -165,7 +165,7 @@
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
-    <test_container_version>1.20.3</test_container_version>
+    <test_container_version>1.20.4</test_container_version>
     <hessian_lite_version>4.0.3</hessian_lite_version>
     <swagger_version>1.6.14</swagger_version>
 

@@ -180,6 +180,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (tree == null) {
             return;
         }
+
         lock.writeLock().lock();
         try {
             tree.remove(mapping -> mapping.meta.getInvoker() == invoker);
@@ -193,6 +194,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (tree == null) {
             return;
         }
+
         lock.writeLock().lock();
         try {
             tree.clear();
@@ -202,6 +204,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     public HandlerMeta lookup(HttpRequest request) {
+        if (tree == null) {
+            return null;
+        }
+
         String stringPath = PathUtils.normalize(request.uri());
         request.setAttribute(RestConstants.PATH_ATTRIBUTE, stringPath);
         KeyString path = new KeyString(stringPath, restConfig.getCaseSensitiveMatchOrDefault());
@@ -365,6 +371,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     @Override
     public boolean exists(String stringPath, String method) {
+        if (tree == null) {
+            return false;
+        }
+
         KeyString path = new KeyString(stringPath, restConfig.getCaseSensitiveMatchOrDefault());
         if (tryExists(path, method)) {
             return true;
