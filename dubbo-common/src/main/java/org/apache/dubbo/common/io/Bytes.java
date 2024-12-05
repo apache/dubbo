@@ -19,10 +19,10 @@ package org.apache.dubbo.common.io;
 import org.apache.dubbo.common.utils.IOUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -844,7 +844,7 @@ public class Bytes {
      * @return MD5 byte array.
      */
     public static byte[] getMD5(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
+        InputStream is = Files.newInputStream(file.toPath());
         try {
             return getMD5(is);
         } finally {

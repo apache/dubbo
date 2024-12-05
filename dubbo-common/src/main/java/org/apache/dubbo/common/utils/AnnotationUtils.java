@@ -154,7 +154,7 @@ public interface AnnotationUtils {
             }
 
             //  exclude string attribute  default is empty
-            if ((attribute instanceof String) && ((String) attribute).length() == 0) {
+            if ((attribute instanceof String) && ((String) attribute).isEmpty()) {
                 continue;
             }
 

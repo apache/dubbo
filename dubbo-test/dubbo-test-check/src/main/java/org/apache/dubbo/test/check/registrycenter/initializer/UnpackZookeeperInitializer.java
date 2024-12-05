@@ -32,7 +32,7 @@ import java.nio.file.Paths;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Unpack the downloaded zookeeper binary archive.
@@ -52,7 +52,7 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
         File sourceFile = context.getSourceFile().toFile();
         Path targetPath = Paths.get(context.getSourceFile().getParent().toString(), String.valueOf(clientPort));
         // check if it's unpacked.
-        if (targetPath.toFile() != null && targetPath.toFile().isDirectory()) {
+        if (targetPath.toFile().isDirectory()) {
             logger.info(String.format("The file has been unpacked, target path:%s", targetPath.toString()));
             return;
         }

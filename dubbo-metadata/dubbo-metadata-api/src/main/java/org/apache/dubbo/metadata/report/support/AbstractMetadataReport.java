@@ -36,13 +36,13 @@ import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -233,7 +233,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     void loadProperties() {
         if (file != null && file.exists()) {
-            try (InputStream in = new FileInputStream(file)) {
+            try (InputStream in = Files.newInputStream(file.toPath())) {
                 properties.load(in);
                 if (logger.isInfoEnabled()) {
                     logger.info("Load service store file " + file + ", data: " + properties);

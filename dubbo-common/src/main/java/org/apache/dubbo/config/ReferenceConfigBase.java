@@ -321,7 +321,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                     resolveFile = userResolveFile.getAbsolutePath();
                 }
             }
-            if (resolveFile != null && resolveFile.length() > 0) {
+            if (resolveFile != null && !resolveFile.isEmpty()) {
                 Properties properties = new RegexProperties();
                 try (FileInputStream fis = new FileInputStream(resolveFile)) {
                     properties.load(fis);

@@ -110,7 +110,7 @@ public class RpcUtils {
 
     public static Long getInvocationId(Invocation inv) {
         String id = inv.getAttachment(ID_KEY);
-        return id == null ? null : new Long(id);
+        return id == null ? null : Long.valueOf(id);
     }
 
     /**

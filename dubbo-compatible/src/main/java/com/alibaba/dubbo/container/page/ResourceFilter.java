@@ -27,11 +27,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,7 +137,7 @@ public class ResourceFilter implements Filter {
             String path = resource + uri;
             try {
                 if (isFile(path)) {
-                    return new FileInputStream(path);
+                    return Files.newInputStream(Paths.get(path));
                 } else if (path.startsWith(CLASSPATH_PREFIX)) {
                     return Thread.currentThread()
                             .getContextClassLoader()
