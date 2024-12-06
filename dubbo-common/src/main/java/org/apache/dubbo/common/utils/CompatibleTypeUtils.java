@@ -63,10 +63,8 @@ public class CompatibleTypeUtils {
             String string = (String) value;
             if (char.class.equals(type) || Character.class.equals(type)) {
                 if (string.length() != 1) {
-                    throw new IllegalArgumentException(String.format(
-                            "CAN NOT convert String(%s) to char!"
-                                    + " when convert String to char, the String MUST only 1 char.",
-                            string));
+                    throw new IllegalArgumentException(String.format("CAN NOT convert String(%s) to char!"
+                            + " when convert String to char, the String MUST only 1 char.", string));
                 }
                 return string.charAt(0);
             }
@@ -80,13 +78,13 @@ public class CompatibleTypeUtils {
                 return new BigDecimal(string);
             }
             if (type == Short.class || type == short.class) {
-                return new Short(string);
+                return Short.valueOf(string);
             }
             if (type == Integer.class || type == int.class) {
-                return new Integer(string);
+                return Integer.valueOf(string);
             }
             if (type == Long.class || type == long.class) {
-                return new Long(string);
+                return Long.valueOf(string);
             }
             if (type == Double.class || type == double.class) {
                 return new Double(string);
@@ -95,14 +93,12 @@ public class CompatibleTypeUtils {
                 return new Float(string);
             }
             if (type == Byte.class || type == byte.class) {
-                return new Byte(string);
+                return Byte.valueOf(string);
             }
             if (type == Boolean.class || type == boolean.class) {
                 return Boolean.valueOf(string);
             }
-            if (type == Date.class
-                    || type == java.sql.Date.class
-                    || type == java.sql.Timestamp.class
+            if (type == Date.class || type == java.sql.Date.class || type == java.sql.Timestamp.class
                     || type == java.sql.Time.class) {
                 try {
                     Date date = new SimpleDateFormat(DATE_FORMAT).parse(string);
@@ -119,8 +115,7 @@ public class CompatibleTypeUtils {
                 } catch (ParseException e) {
                     throw new IllegalStateException(
                             "Failed to parse date " + value + " by format " + DATE_FORMAT + ", cause: "
-                                    + e.getMessage(),
-                            e);
+                                    + e.getMessage(), e);
                 }
             }
             if (type == java.time.LocalDateTime.class) {
@@ -209,8 +204,7 @@ public class CompatibleTypeUtils {
             }
             if (!type.isInterface()) {
                 try {
-                    Collection result =
-                            (Collection) type.getDeclaredConstructor().newInstance();
+                    Collection result = (Collection) type.getDeclaredConstructor().newInstance();
                     result.addAll(collection);
                     return result;
                 } catch (Throwable ignored) {

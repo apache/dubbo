@@ -32,7 +32,7 @@ import java.nio.file.Paths;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Unpack the downloaded zookeeper binary archive.
@@ -52,14 +52,11 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
         File sourceFile = context.getSourceFile().toFile();
         Path targetPath = Paths.get(context.getSourceFile().getParent().toString(), String.valueOf(clientPort));
         // check if it's unpacked.
-        if (targetPath.toFile() != null && targetPath.toFile().isDirectory()) {
+        if (targetPath.toFile().isDirectory()) {
             logger.info(String.format("The file has been unpacked, target path:%s", targetPath.toString()));
             return;
         }
-        try (FileInputStream fileInputStream = new FileInputStream(sourceFile);
-                GzipCompressorInputStream gzipCompressorInputStream = new GzipCompressorInputStream(fileInputStream);
-                TarArchiveInputStream tarArchiveInputStream =
-                        new TarArchiveInputStream(gzipCompressorInputStream, "UTF-8")) {
+        try (FileInputStream fileInputStream = new FileInputStream(sourceFile); GzipCompressorInputStream gzipCompressorInputStream = new GzipCompressorInputStream(fileInputStream); TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(gzipCompressorInputStream, "UTF-8")) {
             File targetFile = targetPath.toFile();
             TarArchiveEntry entry;
             while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
@@ -87,28 +84,31 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             // get the file name, just like apache-zookeeper-{version}-bin
             // the version we maybe unknown if the zookeeper archive binary file is copied by user self.
             Path parentPath = Paths.get(context.getSourceFile().getParent().toString(), String.valueOf(clientPort));
-            if (!Files.exists(parentPath)
-                    || !parentPath.toFile().isDirectory()
-                    || parentPath.toFile().listFiles().length != 1) {
+            if (!Files.exists(parentPath) || !parentPath.toFile().isDirectory()) {
+                throw new IllegalStateException("There is something wrong in unpacked file!");
+            }
+
+            File[] files = parentPath.toFile().listFiles();
+            if (files == null || files.length != 1) {
                 throw new IllegalStateException("There is something wrong in unpacked file!");
             }
             // rename directory
-            File sourceFile = parentPath.toFile().listFiles()[0];
-            File targetFile = Paths.get(parentPath.toString(), context.getUnpackedDirectory())
-                    .toFile();
+            File sourceFile = files[0];
+            File targetFile = Paths.get(parentPath.toString(), context.getUnpackedDirectory()).toFile();
             sourceFile.renameTo(targetFile);
             if (!Files.exists(targetFile.toPath()) || !targetFile.isDirectory()) {
-                throw new IllegalStateException(String.format(
-                        "Failed to rename the directory. source directory: %s, target directory: %s",
-                        sourceFile.toPath().toString(), targetFile.toPath().toString()));
+                throw new IllegalStateException(String.format("Failed to rename the directory. source directory: %s, target directory: %s", sourceFile.toPath(), targetFile.toPath()));
             }
             // get the bin path
             Path zookeeperBin = Paths.get(targetFile.toString(), "bin");
             // update file permission
-            for (File file : zookeeperBin.toFile().listFiles()) {
-                file.setExecutable(true, false);
-                file.setReadable(true, false);
-                file.setWritable(false, false);
+            File[] zookeeperBinFiles = zookeeperBin.toFile().listFiles();
+            if (zookeeperBinFiles != null) {
+                for (File file : zookeeperBinFiles) {
+                    file.setExecutable(true, false);
+                    file.setReadable(true, false);
+                    file.setWritable(false, false);
+                }
             }
         }
     }

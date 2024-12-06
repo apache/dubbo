@@ -27,11 +27,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,10 +51,10 @@ public class ResourceFilter implements Filter {
 
     public void init(FilterConfig filterConfig) throws ServletException {
         String config = filterConfig.getInitParameter("resources");
-        if (config != null && config.length() > 0) {
+        if (config != null && !config.isEmpty()) {
             String[] configs = Constants.COMMA_SPLIT_PATTERN.split(config);
             for (String c : configs) {
-                if (c != null && c.length() > 0) {
+                if (c != null && !c.isEmpty()) {
                     c = c.replace('\\', '/');
                     if (c.endsWith("/")) {
                         c = c.substring(0, c.length() - 1);
@@ -66,8 +67,10 @@ public class ResourceFilter implements Filter {
 
     public void destroy() {}
 
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-            throws IOException, ServletException {
+    public void doFilter(
+            ServletRequest req,
+            ServletResponse res,
+            FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (response.isCommitted()) {
@@ -118,7 +121,7 @@ public class ResourceFilter implements Filter {
 
     private long getLastModified(String uri) {
         for (String resource : resources) {
-            if (resource != null && resource.length() > 0) {
+            if (resource != null && !resource.isEmpty()) {
                 String path = resource + uri;
                 if (isFile(path)) {
                     File file = new File(path);
@@ -136,7 +139,7 @@ public class ResourceFilter implements Filter {
             String path = resource + uri;
             try {
                 if (isFile(path)) {
-                    return new FileInputStream(path);
+                    return Files.newInputStream(Paths.get(path));
                 } else if (path.startsWith(CLASSPATH_PREFIX)) {
                     return Thread.currentThread()
                             .getContextClassLoader()

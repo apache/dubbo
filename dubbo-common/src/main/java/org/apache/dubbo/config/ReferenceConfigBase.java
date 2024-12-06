@@ -135,8 +135,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     protected void preProcessRefresh() {
         super.preProcessRefresh();
         if (consumer == null) {
-            consumer = getModuleConfigManager()
-                    .getDefaultConsumer()
+            consumer = getModuleConfigManager().getDefaultConsumer()
                     .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
         // try set properties from `dubbo.reference` if not set in current config
@@ -230,9 +229,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
-            return Dubbo2CompactUtils.isEnabled() && Dubbo2CompactUtils.isGenericServiceClassLoaded()
-                    ? Dubbo2CompactUtils.getGenericServiceClass()
-                    : GenericService.class;
+            return Dubbo2CompactUtils.isEnabled()
+                    && Dubbo2CompactUtils.isGenericServiceClassLoaded() ? Dubbo2CompactUtils.getGenericServiceClass() : GenericService.class;
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
@@ -263,8 +261,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         } else {
             if (interfaceClass != null) {
                 try {
-                    if (!interfaceClass.equals(
-                            Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
+                    if (!interfaceClass.equals(Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
                         // interfaceClass is not visible from origin classloader, override the classloader from
                         // interfaceClass into referenceConfig
                         setInterfaceClassLoader(interfaceClass.getClassLoader());
@@ -315,13 +312,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (StringUtils.isEmpty(resolve)) {
             resolveFile = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.DubboProperty.DUBBO_RESOLVE_FILE);
             if (StringUtils.isEmpty(resolveFile)) {
-                File userResolveFile = new File(
-                        new File(SystemPropertyConfigUtils.getSystemProperty(USER_HOME)), "dubbo-resolve.properties");
+                File userResolveFile = new File(new File(SystemPropertyConfigUtils.getSystemProperty(USER_HOME)), "dubbo-resolve.properties");
                 if (userResolveFile.exists()) {
                     resolveFile = userResolveFile.getAbsolutePath();
                 }
             }
-            if (resolveFile != null && resolveFile.length() > 0) {
+            if (resolveFile != null && !resolveFile.isEmpty()) {
                 Properties properties = new RegexProperties();
                 try (FileInputStream fis = new FileInputStream(resolveFile)) {
                     properties.load(fis);
@@ -336,17 +332,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             url = resolve;
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {
-                    logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "",
                             "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + ""
                                     + resolve + " to p2p invoke remote service.");
                 } else {
-                    logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "",
                             "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
                 }
             }
@@ -369,9 +359,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     public String getVersion() {
-        return StringUtils.isEmpty(this.version)
-                ? (consumer != null ? consumer.getVersion() : this.version)
-                : this.version;
+        return StringUtils.isEmpty(this.version) ? (
+                consumer != null ? consumer.getVersion() : this.version) : this.version;
     }
 
     @Override

@@ -19,10 +19,10 @@ package org.apache.dubbo.common.io;
 import org.apache.dubbo.common.utils.IOUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -34,12 +34,10 @@ import java.util.zip.InflaterInputStream;
  * CodecUtils.
  */
 public class Bytes {
-    private static final String C64 =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; // default base64.
 
-    private static final char[]
-            BASE16 = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'},
-            BASE64 = C64.toCharArray();
+    private static final String C64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; // default base64.
+
+    private static final char[] BASE16 = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'}, BASE64 = C64.toCharArray();
     private static final int MASK4 = 0x0f, MASK6 = 0x3f, MASK8 = 0xff;
 
     private static final Map<Integer, byte[]> DECODE_TABLE_MAP = new ConcurrentHashMap<>();
@@ -287,10 +285,8 @@ public class Bytes {
      * @return int.
      */
     public static int bytes2int(byte[] b, int off) {
-        return ((b[off + 3] & 0xFF) << 0)
-                + ((b[off + 2] & 0xFF) << 8)
-                + ((b[off + 1] & 0xFF) << 16)
-                + ((b[off + 0]) << 24);
+        return ((b[off + 3] & 0xFF) << 0) + ((b[off + 2] & 0xFF) << 8) + ((b[off + 1] & 0xFF) << 16) + ((b[off + 0])
+                << 24);
     }
 
     /**
@@ -311,10 +307,8 @@ public class Bytes {
      * @return int.
      */
     public static float bytes2float(byte[] b, int off) {
-        int i = ((b[off + 3] & 0xFF) << 0)
-                + ((b[off + 2] & 0xFF) << 8)
-                + ((b[off + 1] & 0xFF) << 16)
-                + ((b[off + 0]) << 24);
+        int i = ((b[off + 3] & 0xFF) << 0) + ((b[off + 2] & 0xFF) << 8) + ((b[off + 1] & 0xFF) << 16) + ((b[off + 0])
+                << 24);
         return Float.intBitsToFloat(i);
     }
 
@@ -336,14 +330,9 @@ public class Bytes {
      * @return long.
      */
     public static long bytes2long(byte[] b, int off) {
-        return ((b[off + 7] & 0xFFL) << 0)
-                + ((b[off + 6] & 0xFFL) << 8)
-                + ((b[off + 5] & 0xFFL) << 16)
-                + ((b[off + 4] & 0xFFL) << 24)
-                + ((b[off + 3] & 0xFFL) << 32)
-                + ((b[off + 2] & 0xFFL) << 40)
-                + ((b[off + 1] & 0xFFL) << 48)
-                + (((long) b[off + 0]) << 56);
+        return ((b[off + 7] & 0xFFL) << 0) + ((b[off + 6] & 0xFFL) << 8) + ((b[off + 5] & 0xFFL) << 16) + (
+                (b[off + 4] & 0xFFL) << 24) + ((b[off + 3] & 0xFFL) << 32) + ((b[off + 2] & 0xFFL) << 40) + (
+                (b[off + 1] & 0xFFL) << 48) + (((long) b[off + 0]) << 56);
     }
 
     /**
@@ -364,14 +353,9 @@ public class Bytes {
      * @return double.
      */
     public static double bytes2double(byte[] b, int off) {
-        long j = ((b[off + 7] & 0xFFL) << 0)
-                + ((b[off + 6] & 0xFFL) << 8)
-                + ((b[off + 5] & 0xFFL) << 16)
-                + ((b[off + 4] & 0xFFL) << 24)
-                + ((b[off + 3] & 0xFFL) << 32)
-                + ((b[off + 2] & 0xFFL) << 40)
-                + ((b[off + 1] & 0xFFL) << 48)
-                + (((long) b[off + 0]) << 56);
+        long j = ((b[off + 7] & 0xFFL) << 0) + ((b[off + 6] & 0xFFL) << 8) + ((b[off + 5] & 0xFFL) << 16) + (
+                (b[off + 4] & 0xFFL) << 24) + ((b[off + 3] & 0xFFL) << 32) + ((b[off + 2] & 0xFFL) << 40) + (
+                (b[off + 1] & 0xFFL) << 48) + (((long) b[off + 0]) << 56);
         return Double.longBitsToDouble(j);
     }
 
@@ -766,9 +750,7 @@ public class Bytes {
 
             b[w++] = (byte) ((c1 << 2) | (c2 >> 4));
         } else if (rem == 3) {
-            int c1 = indexOf(code, str.charAt(r++)),
-                    c2 = indexOf(code, str.charAt(r++)),
-                    c3 = indexOf(code, str.charAt(r++));
+            int c1 = indexOf(code, str.charAt(r++)), c2 = indexOf(code, str.charAt(r++)), c3 = indexOf(code, str.charAt(r++));
 
             b[w++] = (byte) ((c1 << 2) | (c2 >> 4));
             b[w++] = (byte) ((c2 << 4) | (c3 >> 2));
@@ -844,7 +826,7 @@ public class Bytes {
      * @return MD5 byte array.
      */
     public static byte[] getMD5(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
+        InputStream is = Files.newInputStream(file.toPath());
         try {
             return getMD5(is);
         } finally {

@@ -154,7 +154,7 @@ public interface AnnotationUtils {
             }
 
             //  exclude string attribute  default is empty
-            if ((attribute instanceof String) && ((String) attribute).length() == 0) {
+            if ((attribute instanceof String) && ((String) attribute).isEmpty()) {
                 continue;
             }
 
@@ -174,8 +174,9 @@ public interface AnnotationUtils {
      * @return the {@link Annotation} if found
      * @throws ClassCastException If the {@link Annotation annotation} type that client requires can't match actual type
      */
-    static <A extends Annotation> A getAnnotation(AnnotatedElement annotatedElement, String annotationClassName)
-            throws ClassCastException {
+    static <A extends Annotation> A getAnnotation(
+            AnnotatedElement annotatedElement,
+            String annotationClassName) throws ClassCastException {
         Class<? extends Annotation> annotationType = resolveAnnotationType(annotatedElement, annotationClassName);
         if (annotationType == null) {
             return null;
@@ -259,13 +260,10 @@ public interface AnnotationUtils {
     @SuppressWarnings("unchecked")
     static List<Annotation> getMetaAnnotations(
             Class<? extends Annotation> annotationType, Predicate<Annotation>... metaAnnotationsToFilter) {
-        return getDeclaredAnnotations(
-                annotationType,
+        return getDeclaredAnnotations(annotationType,
                 // Excludes the Java native annotation types or it causes the stack overflow, e.g,
                 // @Target annotates itself
-                excludedType(Target.class),
-                excludedType(Retention.class),
-                excludedType(Documented.class),
+                excludedType(Target.class), excludedType(Retention.class), excludedType(Documented.class),
                 // Add other predicates
                 and(metaAnnotationsToFilter));
     }
@@ -522,6 +520,7 @@ public interface AnnotationUtils {
 
     /**
      * Filter default value of Annotation type
+     *
      * @param annotationType annotation type from {@link Annotation#annotationType()}
      * @param attributes
      * @return
@@ -544,6 +543,7 @@ public interface AnnotationUtils {
 
     /**
      * Filter default value of Annotation type
+     *
      * @param annotation
      * @param attributes
      * @return
@@ -554,6 +554,7 @@ public interface AnnotationUtils {
 
     /**
      * Get attributes of annotation
+     *
      * @param annotation
      * @return
      */
