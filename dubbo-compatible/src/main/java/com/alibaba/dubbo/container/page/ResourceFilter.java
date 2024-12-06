@@ -51,10 +51,10 @@ public class ResourceFilter implements Filter {
 
     public void init(FilterConfig filterConfig) throws ServletException {
         String config = filterConfig.getInitParameter("resources");
-        if (config != null && config.length() > 0) {
+        if (config != null && !config.isEmpty()) {
             String[] configs = Constants.COMMA_SPLIT_PATTERN.split(config);
             for (String c : configs) {
-                if (c != null && c.length() > 0) {
+                if (c != null && !c.isEmpty()) {
                     c = c.replace('\\', '/');
                     if (c.endsWith("/")) {
                         c = c.substring(0, c.length() - 1);
@@ -119,7 +119,7 @@ public class ResourceFilter implements Filter {
 
     private long getLastModified(String uri) {
         for (String resource : resources) {
-            if (resource != null && resource.length() > 0) {
+            if (resource != null && !resource.isEmpty()) {
                 String path = resource + uri;
                 if (isFile(path)) {
                     File file = new File(path);
