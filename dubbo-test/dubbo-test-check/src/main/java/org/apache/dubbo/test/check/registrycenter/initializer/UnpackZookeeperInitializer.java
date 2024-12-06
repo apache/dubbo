@@ -104,7 +104,7 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             if (!Files.exists(targetFile.toPath()) || !targetFile.isDirectory()) {
                 throw new IllegalStateException(String.format(
                         "Failed to rename the directory. source directory: %s, target directory: %s",
-                        sourceFile.toPath().toString(), targetFile.toPath().toString()));
+                        sourceFile.toPath(), targetFile.toPath()));
             }
             // get the bin path
             Path zookeeperBin = Paths.get(targetFile.toString(), "bin");
