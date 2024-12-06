@@ -18,8 +18,6 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -54,8 +52,6 @@ import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
  * AbstractClient
  */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
-
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractClient.class);
 
     private final Lock connectLock = new ReentrantLock();
 
@@ -148,7 +144,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private void initExecutor(URL url) {
         ExecutorRepository executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
 
-        /**
+        /*
          * Consumer's executor is shared globally, provider ip doesn't need to be part of the thread name.
          *
          * Instance of url is InstanceAddressURL, so addParameter actually adds parameters into ServiceInstance,
@@ -415,36 +411,26 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     /**
      * Open client.
-     *
-     * @throws Throwable
      */
     protected abstract void doOpen() throws Throwable;
 
     /**
      * Close client.
-     *
-     * @throws Throwable
      */
     protected abstract void doClose() throws Throwable;
 
     /**
      * Connect to server.
-     *
-     * @throws Throwable
      */
     protected abstract void doConnect() throws Throwable;
 
     /**
      * disConnect to server.
-     *
-     * @throws Throwable
      */
     protected abstract void doDisConnect() throws Throwable;
 
     /**
      * Get the connected channel.
-     *
-     * @return channel
      */
     protected abstract Channel getChannel();
 }

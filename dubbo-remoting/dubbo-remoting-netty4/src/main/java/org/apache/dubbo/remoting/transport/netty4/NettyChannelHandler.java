@@ -56,8 +56,8 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
                 logger.info(
                         "The connection {} of {} -> {} is established.",
                         ch,
-                        AddressUtils.getRemoteAddressKey(ch),
-                        AddressUtils.getLocalAddressKey(ch));
+                        channel.getRemoteAddressKey(),
+                        channel.getLocalAddressKey());
             }
         }
     }
@@ -71,12 +71,13 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
             dubboChannels.remove(NetUtils.toAddressString((InetSocketAddress) ch.remoteAddress()));
             if (channel != null) {
                 handler.disconnected(channel);
+
                 if (logger.isInfoEnabled()) {
                     logger.info(
                             "The connection {} of {} -> {} is disconnected.",
                             ch,
-                            AddressUtils.getRemoteAddressKey(ch),
-                            AddressUtils.getLocalAddressKey(ch));
+                            channel.getRemoteAddressKey(),
+                            channel.getLocalAddressKey());
                 }
             }
         } finally {

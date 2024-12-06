@@ -17,6 +17,9 @@ codecov:
   require_ci_to_pass: false
   notify:
     wait_for_ci: false
+fixes:
+  - "/home/runner/work/dubbo/dubbo/::"
+  - "/home/runner/work/dubbo/dubbo/dubbo/::"
 coverage:
   status:
     # pull-requests only

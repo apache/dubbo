@@ -25,7 +25,7 @@ import io.netty.incubator.codec.quic.QuicCongestionControlAlgorithm;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-final class Helper {
+final class Http3Helper {
 
     @SuppressWarnings("unchecked")
     static <T extends QuicCodecBuilder<T>> T configCodec(QuicCodecBuilder<T> builder, URL url) {
