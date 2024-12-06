@@ -17,9 +17,6 @@ codecov:
   require_ci_to_pass: false
   notify:
     wait_for_ci: false
-fixes:
-  - "/home/runner/work/dubbo/dubbo/::"
-  - "/home/runner/work/dubbo/dubbo/dubbo/::"
 coverage:
   status:
     # pull-requests only
@@ -28,9 +25,9 @@ coverage:
         threshold: 0.1%
 ignore:
   - "**/aot/**/*"
-  - "**/dubbo-demo/**/*"
-  - "**/dubbo-compiler/**/*"
-  - "**/dubbo-test/**/*"
-  - "**/dubbo-compatible/**/*"
-  - "**/dubbo-native/**/*"
-  - "**/dubbo-maven-plugin/**/*"
+  - "dubbo-demo/**/*"
+  - "dubbo-compiler/**/*"
+  - "dubbo-test/**/*"
+  - "dubbo-compatible/**/*"
+  - "dubbo-native/**/*"
+  - "dubbo-maven-plugin/**/*"
