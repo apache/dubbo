@@ -24,6 +24,7 @@ coverage:
       default:
         threshold: 0.1%
 ignore:
+  - "**/aot/**/*"
   - "**/dubbo-demo/**/*"
   - "**/dubbo-compiler/**/*"
   - "**/dubbo-test/**/*"
