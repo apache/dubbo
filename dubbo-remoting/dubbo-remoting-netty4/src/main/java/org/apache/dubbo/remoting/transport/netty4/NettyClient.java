@@ -20,8 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -66,8 +64,6 @@ public class NettyClient extends AbstractClient {
     private static final String SOCKS_PROXY_PORT = "socksProxyPort";
 
     private static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
-
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyClient.class);
 
     /**
      * netty client bootstrap

@@ -18,8 +18,6 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -58,9 +56,6 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  * PortUnificationServer.
  */
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
-
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(NettyPortUnificationServer.class);
 
     private final int serverShutdownTimeoutMills;
     /**

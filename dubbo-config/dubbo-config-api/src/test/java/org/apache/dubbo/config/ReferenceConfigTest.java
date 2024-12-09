@@ -137,6 +137,7 @@ class ReferenceConfigTest {
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
+        FrameworkModel.destroyAll();
         ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -144,6 +145,7 @@ class ReferenceConfigTest {
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
+        FrameworkModel.destroyAll();
         Mockito.framework().clearInlineMocks();
     }
 

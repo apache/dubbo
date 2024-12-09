@@ -136,7 +136,6 @@
     <argline>-server -Xms256m -Xmx512m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
       -Djava.net.preferIPv4Stack=true</argline>
     <arguments />
-    <jacocoArgLine />
     <profile.name>oss</profile.name>
     <updateReleaseInfo>true</updateReleaseInfo>
     <skip_maven_deploy>false</skip_maven_deploy>
@@ -167,7 +166,7 @@
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.0</spring-6.version>
-    <spring-boot-3.version>3.3.5</spring-boot-3.version>
+    <spring-boot-3.version>3.4.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
@@ -360,9 +359,6 @@
             <goals>
               <goal>prepare-agent</goal>
             </goals>
-            <configuration>
-              <propertyName>jacocoArgLine</propertyName>
-            </configuration>
           </execution>
           <execution>
             <id>report-aggregate</id>
@@ -387,10 +383,11 @@
         <configuration>
           <useSystemClassLoader>true</useSystemClassLoader>
           <forkCount>1</forkCount>
-          <argLine>${argline} ${jacocoArgLine}</argLine>
           <systemProperties>
             <!-- common shared -->
           </systemProperties>
+          <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+          <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
         </configuration>
       </plugin>
       <plugin>
@@ -775,7 +772,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <version>2.4.0</version>
+            <version>2.5.0</version>
             <executions>
               <execution>
                 <id>license-check</id>
@@ -808,27 +805,11 @@
       <activation>
         <jdk>[15,</jdk>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <useSystemClassLoader>true</useSystemClassLoader>
-              <forkCount>1</forkCount>
-              <argLine>${argline} ${jacocoArgLine}
-                                --add-opens java.base/java.lang=ALL-UNNAMED
-                                --add-opens java.base/java.math=ALL-UNNAMED
-                                --add-opens java.base/java.util=ALL-UNNAMED</argLine>
-              <systemProperties>
-                <!-- common shared -->
-              </systemProperties>
-              <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
-              <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED
+          --add-opens java.base/java.math=ALL-UNNAMED
+          --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+      </properties>
     </profile>
     <profile>
       <id>jdk15ge-simple</id>
@@ -840,7 +821,6 @@
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
               <forkCount>1</forkCount>
-              <argLine>${argline} ${jacocoArgLine}</argLine>
               <systemProperties>
                 <!-- common shared -->
               </systemProperties>
@@ -896,13 +876,6 @@
       </activation>
       <properties>
         <palantirJavaFormat.version>2.39.0</palantirJavaFormat.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>jacoco089</id>
-      <properties>
-        <maven_jacoco_version>0.8.9</maven_jacoco_version>
       </properties>
     </profile>
 
