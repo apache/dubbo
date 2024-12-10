@@ -27,7 +27,6 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
         implements
         // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.MetadataRequest)
         MetadataRequestOrBuilder {
-
     private static final long serialVersionUID = 0L;
 
     // Use MetadataRequest.newBuilder() to construct.
@@ -270,7 +269,6 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
             implements
             // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.MetadataRequest)
             MetadataRequestOrBuilder {
-
         public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
             return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_MetadataRequest_descriptor;
         }

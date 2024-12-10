@@ -34,10 +34,10 @@ public interface MetadataServiceV2 extends org.apache.dubbo.rpc.model.DubboStub 
 
     /**
      * <pre>
-     *  Retrieves OpenAPI.
+     *  Retrieves OpenAPI information.
      * </pre>
      */
-    OpenAPI getOpenAPI(OpenAPIRequest request);
+    OpenAPIInfo getOpenAPIInfo(OpenAPIRequest request);
 
-    CompletableFuture<OpenAPI> getOpenAPIAsync(OpenAPIRequest request);
+    CompletableFuture<OpenAPIInfo> getOpenAPIInfoAsync(OpenAPIRequest request);
 }

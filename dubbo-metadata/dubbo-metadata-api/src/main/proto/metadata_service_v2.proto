@@ -23,33 +23,32 @@ option java_package = "org.apache.dubbo.metadata";
 option java_multiple_files = true;
 
 // Metadata service V2.
-service MetadataServiceV2{
-
+service MetadataServiceV2 {
     // Retrieves metadata information.
     rpc GetMetadataInfo(MetadataRequest) returns (MetadataInfoV2);
 
-    // Retrieves OpenAPI.
-    rpc GetOpenAPI(OpenAPIRequest) returns (OpenAPI);
+    // Retrieves OpenAPI information.
+    rpc GetOpenAPIInfo(OpenAPIRequest) returns (OpenAPIInfo);
 }
 
 // Metadata request message.
-message MetadataRequest{
+message MetadataRequest {
     // The revision of the metadata.
     string revision = 1;
 }
 
 // Metadata information message.
-message MetadataInfoV2{
+message MetadataInfoV2 {
     // The application name.
     string app = 1;
     // The application version.
     string version = 2;
     // A map of service information.
-    map<string,ServiceInfoV2> services = 3;
+    map<string, ServiceInfoV2> services = 3;
 }
 
 // Service information message.
-message ServiceInfoV2{
+message ServiceInfoV2 {
     // The service name.
     string name = 1;
     // The service group.
@@ -63,7 +62,7 @@ message ServiceInfoV2{
     // The service path.
     string path = 6;
     // A map of service parameters.
-    map<string,string> params = 7;
+    map<string, string> params = 7;
 }
 
 // OpenAPI request message.
@@ -99,8 +98,8 @@ enum OpenAPIFormat {
     PROTO = 2;
 }
 
-// OpenAPI message.
-message OpenAPI {
-    // The value of the OpenAPI.
-    string value = 1;
+// OpenAPI information message.
+message OpenAPIInfo {
+    // The OpenAPI definition.
+    string definition = 1;
 }

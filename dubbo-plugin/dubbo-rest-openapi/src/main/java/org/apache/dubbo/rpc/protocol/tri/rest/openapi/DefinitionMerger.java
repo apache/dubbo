@@ -250,6 +250,9 @@ final class DefinitionMerger {
         License sourceLicense = sourceInfo.getLicense();
         if (sourceLicense != null) {
             License license = info.getLicense();
+            if (license == null) {
+                info.setLicense(license = new License());
+            }
             setValue(sourceLicense::getName, license::setName);
             setValue(sourceLicense::getUrl, license::setUrl);
             license.addExtensions(sourceLicense.getExtensions());

@@ -16,28 +16,28 @@
  */
 package org.apache.dubbo.metadata;
 
-public interface OpenAPIOrBuilder
+public interface OpenAPIInfoOrBuilder
         extends
-        // @@protoc_insertion_point(interface_extends:org.apache.dubbo.metadata.OpenAPI)
+        // @@protoc_insertion_point(interface_extends:org.apache.dubbo.metadata.OpenAPIInfo)
         com.google.protobuf.MessageOrBuilder {
 
     /**
      * <pre>
-     * The value of the OpenAPI.
+     * The OpenAPI definition.
      * </pre>
      *
-     * <code>string value = 1;</code>
-     * @return The value.
+     * <code>string definition = 1;</code>
+     * @return The definition.
      */
-    String getValue();
+    String getDefinition();
 
     /**
      * <pre>
-     * The value of the OpenAPI.
+     * The OpenAPI definition.
      * </pre>
      *
-     * <code>string value = 1;</code>
-     * @return The bytes for value.
+     * <code>string definition = 1;</code>
+     * @return The bytes for definition.
      */
-    com.google.protobuf.ByteString getValueBytes();
+    com.google.protobuf.ByteString getDefinitionBytes();
 }

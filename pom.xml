@@ -162,7 +162,6 @@
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
     <maven_gmavenplus_version>3.0.2</maven_gmavenplus_version>
-    <dubbo_maven_version>3.3.2</dubbo_maven_version>
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.0</spring-6.version>
@@ -319,12 +318,14 @@
         <plugin>
           <groupId>org.apache.dubbo</groupId>
           <artifactId>dubbo-maven-plugin</artifactId>
-          <version>${dubbo_maven_version}</version>
+          <version>${project.version}</version>
           <executions>
             <execution>
+              <id>generate-stubs</id>
               <goals>
                 <goal>compile</goal>
               </goals>
+              <phase>generate-sources</phase>
             </execution>
           </executions>
         </plugin>

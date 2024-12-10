@@ -294,7 +294,9 @@ public class MetadataInfo implements Serializable {
 
     public String getParameter(String key, String serviceKey) {
         ServiceInfo serviceInfo = getValidServiceInfo(serviceKey);
-        if (serviceInfo == null) return null;
+        if (serviceInfo == null) {
+            return null;
+        }
         return serviceInfo.getParameter(key);
     }
 

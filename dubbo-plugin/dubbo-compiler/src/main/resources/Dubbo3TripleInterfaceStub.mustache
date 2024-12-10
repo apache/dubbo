@@ -31,6 +31,7 @@ import java.util.function.BiConsumer;
 import java.util.concurrent.CompletableFuture;
 
 public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
+
     String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
 {{#commonPackageName}}
     String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
@@ -39,6 +40,7 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
     String SERVICE_NAME = "{{serviceName}}";
 {{/commonPackageName}}
 {{#unaryMethods}}
+
     {{#javaDoc}}
     {{{javaDoc}}}
     {{/javaDoc}}
@@ -50,6 +52,7 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
     CompletableFuture<{{outputType}}> {{methodName}}Async({{#needRequestAnnotation}}@GRequest {{/needRequestAnnotation}}{{inputType}} request);
 {{/unaryMethods}}
 {{#serverStreamingMethods}}
+
     {{#javaDoc}}
     {{{javaDoc}}}
     {{/javaDoc}}
@@ -59,12 +62,14 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
     void {{methodName}}({{#needRequestAnnotation}}@GRequest{{#body}}("{{body}}"){{/body}} {{/needRequestAnnotation}}{{inputType}} request, StreamObserver<{{outputType}}> responseObserver);
 {{/serverStreamingMethods}}
 {{#biStreamingWithoutClientStreamMethods}}
+
     {{#javaDoc}}
     {{{javaDoc}}}
     {{/javaDoc}}
     StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver);
 {{/biStreamingWithoutClientStreamMethods}}
 {{#clientStreamingMethods}}
+
     {{#javaDoc}}
     {{{javaDoc}}}
     {{/javaDoc}}

@@ -23,8 +23,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.DubboMetadataServiceV2Triple.MetadataServiceV2ImplBase;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataRequest;
-import org.apache.dubbo.metadata.OpenAPI;
 import org.apache.dubbo.metadata.OpenAPIFormat;
+import org.apache.dubbo.metadata.OpenAPIInfo;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.remoting.http12.HttpStatus;
@@ -57,7 +57,7 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
     @Override
     public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(MetadataRequest metadataRequestV2) {
         String revision = metadataRequestV2.getRevision();
-        MetadataInfo info = null;
+        MetadataInfo info;
         if (StringUtils.isEmpty(revision)) {
             return null;
         }
@@ -78,7 +78,7 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
     }
 
     @Override
-    public OpenAPI getOpenAPI(org.apache.dubbo.metadata.OpenAPIRequest request) {
+    public OpenAPIInfo getOpenAPIInfo(org.apache.dubbo.metadata.OpenAPIRequest request) {
         if (TripleProtocol.OPENAPI_ENABLED) {
             OpenAPIService openAPIService = frameworkModel.getBean(OpenAPIService.class);
             if (openAPIService != null) {
@@ -96,7 +96,7 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
                     oRequest.setPretty(request.getPretty());
                 }
                 String document = openAPIService.getDocument(oRequest);
-                return OpenAPI.newBuilder().setValue(document).build();
+                return OpenAPIInfo.newBuilder().setDefinition(document).build();
             }
         }
 

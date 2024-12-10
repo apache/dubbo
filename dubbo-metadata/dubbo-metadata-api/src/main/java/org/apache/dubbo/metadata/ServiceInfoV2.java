@@ -27,7 +27,6 @@ public final class ServiceInfoV2 extends com.google.protobuf.GeneratedMessageV3
         implements
         // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.ServiceInfoV2)
         ServiceInfoV2OrBuilder {
-
     private static final long serialVersionUID = 0L;
 
     // Use ServiceInfoV2.newBuilder() to construct.
@@ -319,7 +318,6 @@ public final class ServiceInfoV2 extends com.google.protobuf.GeneratedMessageV3
     public static final int PARAMS_FIELD_NUMBER = 7;
 
     private static final class ParamsDefaultEntryHolder {
-
         static final com.google.protobuf.MapEntry<String, String> defaultEntry =
                 com.google.protobuf.MapEntry.<String, String>newDefaultInstance(
                         MetadataServiceV2OuterClass
@@ -660,7 +658,6 @@ public final class ServiceInfoV2 extends com.google.protobuf.GeneratedMessageV3
             implements
             // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.ServiceInfoV2)
             ServiceInfoV2OrBuilder {
-
         public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
             return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_ServiceInfoV2_descriptor;
         }

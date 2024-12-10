@@ -68,7 +68,9 @@ public abstract class Node<T extends Node<T>> implements Cloneable {
 
     @SuppressWarnings("unchecked")
     public T setExtensions(Map<String, ?> extensions) {
-        this.extensions = new LinkedHashMap<>(extensions);
+        if (extensions != null) {
+            this.extensions = new LinkedHashMap<>(extensions);
+        }
         return (T) this;
     }
 

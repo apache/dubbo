@@ -27,7 +27,6 @@ public final class OpenAPIRequest extends com.google.protobuf.GeneratedMessageV3
         implements
         // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.OpenAPIRequest)
         OpenAPIRequestOrBuilder {
-
     private static final long serialVersionUID = 0L;
 
     // Use OpenAPIRequest.newBuilder() to construct.
@@ -655,7 +654,6 @@ public final class OpenAPIRequest extends com.google.protobuf.GeneratedMessageV3
             implements
             // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.OpenAPIRequest)
             OpenAPIRequestOrBuilder {
-
         public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
             return MetadataServiceV2OuterClass.internal_static_org_apache_dubbo_metadata_OpenAPIRequest_descriptor;
         }
