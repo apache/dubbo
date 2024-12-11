@@ -294,7 +294,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: samples-test-result-${{matrix.jdk}}
+          name: samples-test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
   samples-test-result:
     needs: [samples-test-job]
@@ -313,7 +313,8 @@ jobs:
       - name: "Download test result"
         uses: actions/download-artifact@v4
         with:
-          name: samples-test-result-${{matrix.jdk}}
+          name: samples-test-result-*
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
@@ -392,7 +393,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: integration-test-result-${{matrix.jdk}}
+          name: integration-test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
   integration-test-result:
     needs: [integration-test-job]
@@ -411,7 +412,8 @@ jobs:
       - name: "Download test result"
         uses: actions/download-artifact@v4
         with:
-          name: integration-test-result-${{matrix.jdk}}
+          name: integration-test-result-*
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
