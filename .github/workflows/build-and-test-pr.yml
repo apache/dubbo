@@ -342,7 +342,7 @@ jobs:
       - name: "Upload jacoco"
         uses: actions/upload-artifact@v4
         with:
-          name: samples-jacoco-result-${{job.container.id}}
+          name: samples-jacoco-result-${{matrix.job_id}}
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
@@ -445,7 +445,7 @@ jobs:
       - name: "Upload jacoco"
         uses: actions/upload-artifact@v4
         with:
-          name: jacoco-result-${{job.container.id}}
+          name: jacoco-result-${{matrix.job_id}}
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()

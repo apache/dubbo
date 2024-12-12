@@ -294,7 +294,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: samples-test-result-${{job.container.id}}
+          name: samples-test-result-${{matrix.job_id}}-${{matrix.jdk}}
           path: test/jobs/*-result*
   samples-test-result:
     needs: [samples-test-job]
@@ -393,7 +393,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: integration-test-result-${{job.container.id}}
+          name: integration-test-result-${{matrix.job_id}}-${{matrix.jdk}}
           path: test/jobs/*-result*
   integration-test-result:
     needs: [integration-test-job]
