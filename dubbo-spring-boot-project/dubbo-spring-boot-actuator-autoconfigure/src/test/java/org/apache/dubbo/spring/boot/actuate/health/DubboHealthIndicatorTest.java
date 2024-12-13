@@ -20,16 +20,17 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link DubboHealthIndicator} Test
@@ -37,7 +38,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see DubboHealthIndicator
  * @since 2.7.0
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(
         properties = {
             "dubbo.application.id = my-application-1",
@@ -54,30 +55,30 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = {DubboHealthIndicator.class, DubboHealthIndicatorTest.class})
 @EnableConfigurationProperties(DubboHealthIndicatorProperties.class)
 @EnableDubboConfig
-public class DubboHealthIndicatorTest {
+class DubboHealthIndicatorTest {
 
     @Autowired
     private DubboHealthIndicator dubboHealthIndicator;
 
     @Test
-    public void testResolveStatusCheckerNamesMap() {
+    void testResolveStatusCheckerNamesMap() {
 
         Map<String, String> statusCheckerNamesMap = dubboHealthIndicator.resolveStatusCheckerNamesMap();
 
-        Assert.assertEquals(5, statusCheckerNamesMap.size());
+        assertEquals(5, statusCheckerNamesMap.size());
 
-        Assert.assertEquals("dubbo-protocol@ProtocolConfig.getStatus()", statusCheckerNamesMap.get("registry"));
-        Assert.assertEquals("dubbo-provider@ProviderConfig.getStatus()", statusCheckerNamesMap.get("server"));
-        Assert.assertEquals("management.health.dubbo.status.defaults", statusCheckerNamesMap.get("memory"));
-        Assert.assertEquals("management.health.dubbo.status.extras", statusCheckerNamesMap.get("load"));
-        Assert.assertEquals("management.health.dubbo.status.extras", statusCheckerNamesMap.get("threadpool"));
+        assertEquals("dubbo-protocol@ProtocolConfig.getStatus()", statusCheckerNamesMap.get("registry"));
+        assertEquals("dubbo-provider@ProviderConfig.getStatus()", statusCheckerNamesMap.get("server"));
+        assertEquals("management.health.dubbo.status.defaults", statusCheckerNamesMap.get("memory"));
+        assertEquals("management.health.dubbo.status.extras", statusCheckerNamesMap.get("load"));
+        assertEquals("management.health.dubbo.status.extras", statusCheckerNamesMap.get("threadpool"));
     }
 
     @Test
-    public void testHealth() {
+    void testHealth() {
 
         Health health = dubboHealthIndicator.health();
 
-        Assert.assertEquals(Status.UNKNOWN, health.getStatus());
+        assertEquals(Status.UNKNOWN, health.getStatus());
     }
 }

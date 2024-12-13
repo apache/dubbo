@@ -30,7 +30,7 @@ public abstract class AbstractStream implements Stream {
     protected Executor executor;
     protected final FrameworkModel frameworkModel;
 
-    private static final boolean HAS_PROTOBUF = hasProtobuf();
+    private static final boolean HAS_PROTOBUF = ClassUtils.hasProtobuf();
 
     public AbstractStream(Executor executor, FrameworkModel frameworkModel) {
         this.executor = new SerializingExecutor(executor);
@@ -43,14 +43,5 @@ public abstract class AbstractStream implements Stream {
 
     public static boolean getGrpcStatusDetailEnabled() {
         return HAS_PROTOBUF;
-    }
-
-    private static boolean hasProtobuf() {
-        try {
-            ClassUtils.forName("com.google.protobuf.Message");
-            return true;
-        } catch (ClassNotFoundException ignore) {
-            return false;
-        }
     }
 }

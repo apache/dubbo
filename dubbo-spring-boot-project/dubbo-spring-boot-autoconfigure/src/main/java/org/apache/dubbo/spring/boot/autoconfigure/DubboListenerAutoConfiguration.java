@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.spring.boot.context.event.AwaitingNonWebApplicationListener;
 import org.apache.dubbo.spring.boot.context.event.DubboConfigBeanDefinitionConflictApplicationListener;
+import org.apache.dubbo.spring.boot.context.event.DubboOpenAPIExportListener;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,5 +47,12 @@ public class DubboListenerAutoConfiguration {
     @Bean
     public AwaitingNonWebApplicationListener awaitingNonWebApplicationListener() {
         return new AwaitingNonWebApplicationListener();
+    }
+
+    @ConditionalOnMissingBean
+    @Bean
+    @ConditionalOnProperty(prefix = Constants.H2_SETTINGS_OPENAPI_PREFIX, name = "enabled", havingValue = "true")
+    public DubboOpenAPIExportListener dubboOpenAPIExportListener() {
+        return new DubboOpenAPIExportListener();
     }
 }

@@ -18,9 +18,11 @@ package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.util.ArrayList;
@@ -50,6 +52,10 @@ public final class CompositeArgumentResolver implements ArgumentResolver {
         argumentConverter = new CompositeArgumentConverter(frameworkModel);
     }
 
+    public ArgumentConverter getArgumentConverter() {
+        return argumentConverter;
+    }
+
     @Override
     public boolean accept(ParameterMeta parameter) {
         return true;
@@ -57,14 +63,14 @@ public final class CompositeArgumentResolver implements ArgumentResolver {
 
     @Override
     public Object resolve(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
-        AnnotationMeta[] annotations = parameter.findAnnotations();
-        for (AnnotationMeta annotation : annotations) {
+        for (AnnotationMeta annotation : parameter.findAnnotations()) {
             AnnotationBaseArgumentResolver resolver = resolverMap.get(annotation.getAnnotationType());
             if (resolver != null) {
                 Object value = resolver.resolve(parameter, annotation, request, response);
                 return argumentConverter.convert(value, parameter);
             }
         }
+
         for (ArgumentResolver resolver : resolvers) {
             if (resolver.accept(parameter)) {
                 Object value = resolver.resolve(parameter, request, response);
@@ -75,7 +81,24 @@ public final class CompositeArgumentResolver implements ArgumentResolver {
         throw new IllegalStateException(Messages.ARGUMENT_COULD_NOT_RESOLVED.format(parameter.getDescription()));
     }
 
-    public ArgumentConverter getArgumentConverter() {
-        return argumentConverter;
+    public NamedValueMeta getNamedValueMeta(ParameterMeta parameter) {
+        for (AnnotationMeta annotation : parameter.findAnnotations()) {
+            AnnotationBaseArgumentResolver resolver = resolverMap.get(annotation.getAnnotationType());
+            if (resolver != null) {
+                return resolver.getNamedValueMeta(parameter, annotation);
+            }
+        }
+
+        for (ArgumentResolver resolver : resolvers) {
+            if (resolver.accept(parameter)) {
+                if (resolver instanceof AbstractArgumentResolver) {
+                    return ((AbstractArgumentResolver) resolver).getNamedValueMeta(parameter);
+                } else {
+                    return new NamedValueMeta().setParamType(ParamType.Attribute);
+                }
+            }
+        }
+
+        return null;
     }
 }

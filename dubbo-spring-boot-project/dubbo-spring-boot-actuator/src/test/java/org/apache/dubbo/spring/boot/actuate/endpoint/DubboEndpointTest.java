@@ -21,7 +21,6 @@ import org.apache.dubbo.spring.boot.util.DubboUtils;
 
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +31,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.apache.dubbo.common.Version.getVersion;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * {@link DubboQosEndpoints} Test
@@ -64,21 +66,21 @@ class DubboEndpointTest {
 
         Map<String, Object> metadata = dubboQosEndpoints.invoke();
 
-        Assert.assertNotNull(metadata.get("timestamp"));
+        assertNotNull(metadata.get("timestamp"));
 
         Map<String, String> versions = (Map<String, String>) metadata.get("versions");
         Map<String, String> urls = (Map<String, String>) metadata.get("urls");
 
-        Assert.assertFalse(versions.isEmpty());
-        Assert.assertFalse(urls.isEmpty());
+        assertFalse(versions.isEmpty());
+        assertFalse(urls.isEmpty());
 
-        Assert.assertEquals(getVersion(DubboUtils.class, "1.0.0"), versions.get("dubbo-spring-boot"));
-        Assert.assertEquals(getVersion(), versions.get("dubbo"));
+        assertEquals(getVersion(DubboUtils.class, "1.0.0"), versions.get("dubbo-spring-boot"));
+        assertEquals(getVersion(), versions.get("dubbo"));
 
-        Assert.assertEquals("https://github.com/apache/dubbo", urls.get("dubbo"));
-        Assert.assertEquals("dev@dubbo.apache.org", urls.get("mailing-list"));
-        Assert.assertEquals("https://github.com/apache/dubbo-spring-boot-project", urls.get("github"));
-        Assert.assertEquals("https://github.com/apache/dubbo-spring-boot-project/issues", urls.get("issues"));
-        Assert.assertEquals("https://github.com/apache/dubbo-spring-boot-project.git", urls.get("git"));
+        assertEquals("https://github.com/apache/dubbo", urls.get("dubbo"));
+        assertEquals("dev@dubbo.apache.org", urls.get("mailing-list"));
+        assertEquals("https://github.com/apache/dubbo-spring-boot-project", urls.get("github"));
+        assertEquals("https://github.com/apache/dubbo-spring-boot-project/issues", urls.get("issues"));
+        assertEquals("https://github.com/apache/dubbo-spring-boot-project.git", urls.get("git"));
     }
 }

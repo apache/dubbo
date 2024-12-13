@@ -62,6 +62,10 @@
       <version>${project.parent.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -81,4 +85,13 @@
       <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!--      <plugin>
+              <groupId>org.apache.dubbo</groupId>
+              <artifactId>dubbo-maven-plugin</artifactId>
+            </plugin>-->
+    </plugins>
+  </build>
 </project>

@@ -23,16 +23,14 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.rest.Param;
 import org.apache.dubbo.remoting.http12.rest.ParamType;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.ConstructorMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.FieldMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.NestableParameterMeta;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.SetMethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.BeanMeta.PropertyMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
@@ -50,8 +48,8 @@ final class BeanArgumentBinder {
 
     private final CompositeArgumentResolver argumentResolver;
 
-    public BeanArgumentBinder(FrameworkModel frameworkModel) {
-        argumentResolver = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeArgumentResolver.class);
+    public BeanArgumentBinder(CompositeArgumentResolver argumentResolver) {
+        this.argumentResolver = argumentResolver;
     }
 
     public Object bind(ParameterMeta paramMeta, HttpRequest request, HttpResponse response) {
@@ -124,12 +122,8 @@ final class BeanArgumentBinder {
                 current.setValue(argumentResolver.getArgumentConverter().convert(value, current.paramMeta));
             }
 
-            for (FieldMeta fieldMeta : beanMeta.getFields()) {
-                resolveParam(fieldMeta, bean, request, response);
-            }
-
-            for (SetMethodMeta methodMeta : beanMeta.getMethods()) {
-                resolveParam(methodMeta, bean, request, response);
+            for (PropertyMeta propertyMeta : beanMeta.getProperties()) {
+                resolveParam(propertyMeta, bean, request, response);
             }
 
             return bean;
@@ -151,7 +145,7 @@ final class BeanArgumentBinder {
         if (paramMeta.isSimple() || Modifier.isAbstract(type.getModifiers())) {
             return null;
         }
-        return CACHE.computeIfAbsent(type, k -> new BeanMeta(paramMeta.getToolKit(), k));
+        return CACHE.computeIfAbsent(type, k -> paramMeta.getBeanMeta());
     }
 
     /**
@@ -208,14 +202,9 @@ final class BeanArgumentBinder {
                 return null;
             }
 
-            NestableParameterMeta methodMeta = beanMeta.getMethod(name);
-            if (methodMeta != null) {
-                return createChild(name, methodMeta, v -> methodMeta.setValue(value, v));
-            }
-
-            NestableParameterMeta fieldMeta = beanMeta.getField(name);
-            if (fieldMeta != null) {
-                return createChild(name, fieldMeta, v -> fieldMeta.setValue(value, v));
+            PropertyMeta propertyMeta = beanMeta.getProperty(name);
+            if (propertyMeta != null) {
+                return createChild(name, propertyMeta, v -> propertyMeta.setValue(value, v));
             }
 
             return null;

@@ -17,6 +17,9 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.rest.Mapping;
+import org.apache.dubbo.remoting.http12.rest.OpenAPI;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +32,7 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_OPENAPI_PREFIX;
 
 /**
  * This service is used to expose the metadata information inside a Dubbo process.
@@ -36,6 +40,7 @@ import static org.apache.dubbo.common.URL.buildKey;
  * 1. The Consumer queries the metadata information of the Provider to list the interfaces and each interface's configuration
  * 2. The Console (dubbo-admin) queries for the metadata of a specific process, or aggregate data of all processes.
  */
+@OpenAPI(hidden = "true")
 public interface MetadataService {
 
     /**
@@ -200,6 +205,7 @@ public interface MetadataService {
      * @param instanceMetadata {@link Map} of provider Service Instance Metadata
      * @since 3.0
      */
+    @Mapping(enabled = false)
     void exportInstanceMetadata(String instanceMetadata);
 
     /**
@@ -211,6 +217,7 @@ public interface MetadataService {
      * @return {@link Map} of {@link InstanceMetadataChangedListener}
      * @since 3.0
      */
+    @Mapping(enabled = false)
     Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap();
 
     /**
@@ -225,5 +232,12 @@ public interface MetadataService {
      * @return {@link Map} of provider Service Instance Metadata
      * @since 3.0
      */
+    @Mapping(enabled = false)
     String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener);
+
+    /**
+     * 1. Get the openAPI definition
+     */
+    @Mapping("//${" + H2_SETTINGS_OPENAPI_PREFIX + ".path:dubbo/openapi}/{*path}")
+    String getOpenAPI(OpenAPIRequest request);
 }

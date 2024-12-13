@@ -22,34 +22,35 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link DubboConfigBeanDefinitionConflictApplicationListener} Test
  *
  * @since 2.7.5
  */
-public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
+class DubboConfigBeanDefinitionConflictApplicationListenerTest {
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         DubboBootstrap.reset();
         // context.addApplicationListener(new DubboConfigBeanDefinitionConflictApplicationListener());
     }
 
-    @After
-    public void destroy() {
+    @AfterEach
+    void destroy() {
         DubboBootstrap.reset();
     }
 
     // @Test
-    public void testNormalCase() {
+    void testNormalCase() {
 
         System.setProperty("dubbo.application.name", "test-dubbo-application");
 
@@ -59,7 +60,7 @@ public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
 
             ApplicationConfig applicationConfig = context.getBean(ApplicationConfig.class);
 
-            Assert.assertEquals("test-dubbo-application", applicationConfig.getName());
+            assertEquals("test-dubbo-application", applicationConfig.getName());
         } finally {
             System.clearProperty("dubbo.application.name");
             context.close();
@@ -67,7 +68,7 @@ public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
     }
 
     @Test
-    public void testDuplicatedConfigsCase() {
+    void testDuplicatedConfigsCase() {
 
         AnnotationConfigApplicationContext context =
                 new AnnotationConfigApplicationContext(PropertySourceConfig.class, DubboConfig.class, XmlConfig.class);
@@ -79,9 +80,9 @@ public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
 
             ApplicationConfig applicationConfig = beansMap.get("dubbo-consumer-2.7.x");
 
-            Assert.assertEquals(1, beansMap.size());
+            assertEquals(1, beansMap.size());
 
-            Assert.assertEquals("dubbo-consumer-2.7.x", applicationConfig.getName());
+            assertEquals("dubbo-consumer-2.7.x", applicationConfig.getName());
         } finally {
             context.close();
         }

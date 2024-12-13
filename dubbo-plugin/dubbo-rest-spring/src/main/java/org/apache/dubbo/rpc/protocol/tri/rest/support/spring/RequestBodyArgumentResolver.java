@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
@@ -38,17 +39,22 @@ public class RequestBodyArgumentResolver extends AbstractSpringArgumentResolver 
     }
 
     @Override
-    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        return new NamedValueMeta(Helper.isRequired(ann), null);
+    protected ParamType getParamType(NamedValueMeta meta) {
+        return ParamType.Body;
+    }
+
+    @Override
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> anno) {
+        return new NamedValueMeta(null, Helper.isRequired(anno));
     }
 
     @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
         if (RequestUtils.isFormOrMultiPart(request)) {
-            if (meta.parameterMeta().isSimple()) {
+            if (meta.parameter().isSimple()) {
                 return request.formParameter(meta.name());
             }
-            return meta.parameterMeta().bind(request, response);
+            return meta.parameter().bind(request, response);
         }
         return RequestUtils.decodeBody(request, meta.genericType());
     }

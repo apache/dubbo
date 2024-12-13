@@ -59,6 +59,10 @@ public class NegotiateClientCall {
         CompletableFuture<String> future = new CompletableFuture<>();
         try {
             Channel channel = connectionClient.getChannel(true);
+            if (channel == null) {
+                future.completeExceptionally(new IllegalStateException("Channel is null"));
+                return future;
+            }
             Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(channel);
             bootstrap.handler(new ChannelInboundHandlerAdapter() {
                 @Override
@@ -112,9 +116,6 @@ public class NegotiateClientCall {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            if (endStream) {
-                return;
-            }
             CharSequence line = headers.status();
             if (line != null) {
                 HttpResponseStatus status = HttpResponseStatus.parseLine(line);
@@ -123,6 +124,9 @@ public class NegotiateClientCall {
                     executor.execute(() -> future.complete(String.valueOf(altSvc)));
                     return;
                 }
+            }
+            if (endStream) {
+                return;
             }
             executor.execute(() -> future.completeExceptionally(new RuntimeException("Status: " + line)));
         }

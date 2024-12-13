@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestParameterException;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
@@ -45,7 +46,6 @@ public abstract class NamedValueArgumentResolverSupport {
         if (arg != null) {
             return filterValue(arg, meta);
         }
-
         arg = meta.defaultValue();
         if (arg != null) {
             return arg;
@@ -56,21 +56,27 @@ public abstract class NamedValueArgumentResolverSupport {
         return null;
     }
 
-    protected final NamedValueMeta updateNamedValueMeta(ParameterMeta parameterMeta, NamedValueMeta meta) {
+    protected final NamedValueMeta updateNamedValueMeta(ParameterMeta parameter, NamedValueMeta meta) {
         if (meta.isNameEmpty()) {
-            meta.setName(parameterMeta.getName());
+            meta.setName(parameter.getName());
         }
-
-        Class<?> type = parameterMeta.getActualType();
+        if (meta.paramType() == null) {
+            meta.setParamType(getParamType(meta));
+        }
+        Class<?> type = parameter.getActualType();
         meta.setType(type);
-        meta.setGenericType(parameterMeta.getActualGenericType());
+        meta.setGenericType(parameter.getActualGenericType());
         if (type.isArray()) {
             meta.setNestedTypes(new Class<?>[] {type});
         } else {
             meta.setNestedTypes(TypeUtils.getNestedActualTypes(meta.genericType()));
         }
-        meta.setParameterMeta(parameterMeta);
+        meta.setParameter(parameter);
         return meta;
+    }
+
+    protected ParamType getParamType(NamedValueMeta meta) {
+        return null;
     }
 
     protected String emptyDefaultValue(NamedValueMeta meta) {

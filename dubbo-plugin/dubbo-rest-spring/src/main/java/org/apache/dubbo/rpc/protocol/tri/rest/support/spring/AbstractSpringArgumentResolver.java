@@ -28,9 +28,11 @@ import java.util.Optional;
 public abstract class AbstractSpringArgumentResolver extends AbstractAnnotationBaseArgumentResolver {
 
     @Override
-    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        boolean required = param.getType() != Optional.class && Helper.isRequired(ann);
-        return new NamedValueMeta(ann.getValue(), required, Helper.defaultValue(ann));
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> anno) {
+        return new NamedValueMeta(
+                anno.getValue(),
+                param.getType() != Optional.class && Helper.isRequired(anno),
+                Helper.defaultValue(anno));
     }
 
     @Override

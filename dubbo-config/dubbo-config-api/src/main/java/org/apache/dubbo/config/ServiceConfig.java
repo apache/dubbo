@@ -395,7 +395,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         exported = true;
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
-            if (url.getParameters().containsKey(SERVICE_NAME_MAPPING_KEY)) {
+            if (url.getParameter(SERVICE_NAME_MAPPING_KEY, false)) {
                 ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
                 ScheduledExecutorService scheduledExecutor = getScopeModel()
                         .getBeanFactory()

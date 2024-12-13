@@ -30,7 +30,6 @@ import io.netty.channel.EventLoop;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 @Sharable
@@ -62,7 +61,7 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             connectionClient.onGoaway(nettyChannel);
         }
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Channel %s go away ,schedule reconnect", nettyChannel));
+            LOGGER.debug("Channel {} go away ,schedule reconnect", nettyChannel);
         }
         reconnect(nettyChannel);
     }
@@ -74,43 +73,30 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
         }
         Channel nettyChannel = ((Channel) channel);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Connection %s is reconnecting, attempt=%d", connectionClient, 1));
+            LOGGER.debug("Connection:{} is reconnecting, attempt={}", connectionClient, 1);
         }
         EventLoop eventLoop = nettyChannel.eventLoop();
         if (connectionClient.isClosed()) {
-            LOGGER.info("The client has been closed and will not reconnect. ");
+            LOGGER.info("The connection {} has been closed and will not reconnect", connectionClient);
             return;
         }
-        eventLoop.schedule(
-                () -> {
-                    try {
-                        connectionClient.doConnect();
-                    } catch (Throwable e) {
-                        LOGGER.error(
-                                TRANSPORT_FAILED_RECONNECT,
-                                "",
-                                "",
-                                "Fail to connect to " + connectionClient.getChannel(),
-                                e);
-                    }
-                },
-                1,
-                TimeUnit.SECONDS);
+        eventLoop.schedule(connectionClient::doReconnect, 1, TimeUnit.SECONDS);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ctx.fireChannelActive();
         Channel ch = ctx.channel();
-        NettyChannel.getOrAddChannel(ch, connectionClient.getUrl(), connectionClient);
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, connectionClient.getUrl(), connectionClient);
         if (!connectionClient.isClosed()) {
             connectionClient.onConnected(ch);
-            if (LOGGER.isInfoEnabled()) {
+
+            if (LOGGER.isInfoEnabled() && channel != null) {
                 LOGGER.info(
                         "The connection {} of {} -> {} is established.",
                         ch,
-                        AddressUtils.getLocalAddressKey(ch),
-                        AddressUtils.getRemoteAddressKey(ch));
+                        channel.getLocalAddressKey(),
+                        channel.getRemoteAddressKey());
             }
         } else {
             ctx.close();
@@ -121,16 +107,20 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         Channel ch = ctx.channel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, connectionClient.getUrl(), connectionClient);
         try {
             Attribute<Boolean> goawayAttr = ch.attr(GO_AWAY_KEY);
             if (!Boolean.TRUE.equals(goawayAttr.get())) {
                 reconnect(ch);
             }
-            LOGGER.info(
-                    "The connection {} of {} -> {} is disconnected.",
-                    ch,
-                    AddressUtils.getLocalAddressKey(ch),
-                    AddressUtils.getRemoteAddressKey(ch));
+
+            if (LOGGER.isInfoEnabled() && channel != null) {
+                LOGGER.info(
+                        "The connection {} of {} -> {} is disconnected.",
+                        ch,
+                        channel.getLocalAddressKey(),
+                        channel.getRemoteAddressKey());
+            }
         } finally {
             NettyChannel.removeChannel(ch);
         }

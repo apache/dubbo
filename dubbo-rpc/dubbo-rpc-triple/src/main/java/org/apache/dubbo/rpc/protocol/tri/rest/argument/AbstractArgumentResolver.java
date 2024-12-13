@@ -25,9 +25,11 @@ public abstract class AbstractArgumentResolver extends NamedValueArgumentResolve
 
     @Override
     public Object resolve(ParameterMeta parameter, HttpRequest request, HttpResponse response) {
-        NamedValueMeta namedValue =
-                cache.computeIfAbsent(parameter, k -> updateNamedValueMeta(k, createNamedValueMeta(k)));
-        return resolve(namedValue, request, response);
+        return resolve(getNamedValueMeta(parameter), request, response);
+    }
+
+    public final NamedValueMeta getNamedValueMeta(ParameterMeta parameter) {
+        return cache.computeIfAbsent(parameter, k -> updateNamedValueMeta(k, createNamedValueMeta(k)));
     }
 
     protected abstract NamedValueMeta createNamedValueMeta(ParameterMeta parameter);

@@ -38,6 +38,7 @@ import java.util.concurrent.locks.Lock;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class ScopeModel implements ExtensionAccessor {
     protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeModel.class);
 
@@ -200,8 +201,16 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return extensionDirector;
     }
 
-    public ScopeBeanFactory getBeanFactory() {
+    public final ScopeBeanFactory getBeanFactory() {
         return beanFactory;
+    }
+
+    public final <T> T getOrRegisterBean(Class<T> type) {
+        return beanFactory.getOrRegisterBean(type);
+    }
+
+    public final <T> T getBean(Class<T> type) {
+        return beanFactory.getBean(type);
     }
 
     public ScopeModel getParent() {
@@ -259,6 +268,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
      * @deprecated use modelEnvironment() instead
      */
     @Deprecated
+    @SuppressWarnings("DeprecatedIsStillUsed")
     public final Environment getModelEnvironment() {
         try {
             return modelEnvironment();

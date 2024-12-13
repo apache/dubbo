@@ -79,14 +79,11 @@
     <module>dubbo-rpc</module>
     <module>dubbo-cluster</module>
     <module>dubbo-registry</module>
+    <module>dubbo-configcenter</module>
     <module>dubbo-config</module>
-    <module>dubbo-plugin</module>
     <module>dubbo-serialization</module>
     <module>dubbo-compatible</module>
     <module>dubbo-dependencies-bom</module>
-    <module>dubbo-distribution</module>
-    <module>dubbo-configcenter</module>
-    <module>dubbo-dependencies</module>
     <module>dubbo-metadata</module>
     <module>dubbo-metrics</module>
     <module>dubbo-test</module>
@@ -97,6 +94,24 @@
     <module>dubbo-spring-boot-project/dubbo-spring-boot-starters</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-actuator-autoconfigure</module>
+    <module>dubbo-plugin/dubbo-qos</module>
+    <module>dubbo-plugin/dubbo-auth</module>
+    <module>dubbo-plugin/dubbo-reactive</module>
+    <module>dubbo-plugin/dubbo-security</module>
+    <module>dubbo-plugin/dubbo-spring-security</module>
+    <module>dubbo-plugin/dubbo-qos-api</module>
+    <module>dubbo-plugin/dubbo-native</module>
+    <module>dubbo-plugin/dubbo-compiler</module>
+    <module>dubbo-plugin/dubbo-filter-cache</module>
+    <module>dubbo-plugin/dubbo-filter-validation</module>
+    <module>dubbo-plugin/dubbo-rest-jaxrs</module>
+    <module>dubbo-plugin/dubbo-rest-spring</module>
+    <module>dubbo-plugin/dubbo-rest-openapi</module>
+    <module>dubbo-plugin/dubbo-triple-servlet</module>
+    <module>dubbo-plugin/dubbo-triple-websocket</module>
+    <module>dubbo-demo/dubbo-demo-api</module>
+    <module>dubbo-demo/dubbo-demo-spring-boot</module>
+    <module>dubbo-demo/dubbo-demo-spring-boot-idl</module>
   </modules>
 
   <scm>
@@ -121,7 +136,6 @@
     <argline>-server -Xms256m -Xmx512m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
       -Djava.net.preferIPv4Stack=true</argline>
     <arguments />
-    <jacocoArgLine />
     <profile.name>oss</profile.name>
     <updateReleaseInfo>true</updateReleaseInfo>
     <skip_maven_deploy>false</skip_maven_deploy>
@@ -129,6 +143,7 @@
     <checkstyle_unix.skip>true</checkstyle_unix.skip>
     <rat.skip>true</rat.skip>
     <jacoco.skip>true</jacoco.skip>
+    <spotless.action>check</spotless.action>
 
     <!-- Maven plugins -->
     <maven_jar_version>3.4.2</maven_jar_version>
@@ -137,7 +152,7 @@
     <maven_deploy_version>3.1.3</maven_deploy_version>
     <maven_compiler_version>3.13.0</maven_compiler_version>
     <maven_source_version>3.3.1</maven_source_version>
-    <maven_javadoc_version>3.11.1</maven_javadoc_version>
+    <maven_javadoc_version>3.11.2</maven_javadoc_version>
     <maven_jetty_version>9.4.56.v20240826</maven_jetty_version>
     <maven_checkstyle_version>3.6.0</maven_checkstyle_version>
     <maven_jacoco_version>0.8.12</maven_jacoco_version>
@@ -146,15 +161,18 @@
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
-    <maven_gmavenplus.version>3.0.2</maven_gmavenplus.version>
+    <maven_gmavenplus_version>3.0.2</maven_gmavenplus_version>
+
+    <!-- For unify spring boot 3 version -->
+    <spring-6.version>6.2.0</spring-6.version>
+    <spring-boot-3.version>3.4.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
-    <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.3.2-SNAPSHOT</revision>
+    <revision>3.3.3-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -297,6 +315,20 @@
           <artifactId>maven-antrun-plugin</artifactId>
           <version>${maven_antrun_version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-maven-plugin</artifactId>
+          <version>${project.version}</version>
+          <executions>
+            <execution>
+              <id>generate-stubs</id>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <phase>generate-sources</phase>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -328,9 +360,6 @@
             <goals>
               <goal>prepare-agent</goal>
             </goals>
-            <configuration>
-              <propertyName>jacocoArgLine</propertyName>
-            </configuration>
           </execution>
           <execution>
             <id>report-aggregate</id>
@@ -355,16 +384,17 @@
         <configuration>
           <useSystemClassLoader>true</useSystemClassLoader>
           <forkCount>1</forkCount>
-          <argLine>${argline} ${jacocoArgLine}</argLine>
           <systemProperties>
             <!-- common shared -->
           </systemProperties>
+          <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+          <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>${maven_gmavenplus.version}</version>
+        <version>${maven_gmavenplus_version}</version>
         <configuration>
           <parameters>true</parameters>
         </configuration>
@@ -652,6 +682,12 @@
       <id>release</id>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-plugin-loom</module>
+        <module>dubbo-distribution/dubbo-all</module>
+        <module>dubbo-distribution/dubbo-all-shaded</module>
+        <module>dubbo-distribution/dubbo-apache-release</module>
+        <module>dubbo-distribution/dubbo-bom</module>
+        <module>dubbo-distribution/dubbo-core-spi</module>
       </modules>
       <properties>
         <log4j2_version>2.17.2</log4j2_version>
@@ -710,8 +746,6 @@
                       <version>${log4j2_version}</version>
                     </additionalDependency>
                   </additionalDependencies>
-                  <!--FIXME-->
-                  <!--<doclint>all,-missing</doclint>-->
                   <doclint>none</doclint>
                 </configuration>
               </execution>
@@ -739,7 +773,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <version>2.4.0</version>
+            <version>2.5.0</version>
             <executions>
               <execution>
                 <id>license-check</id>
@@ -772,27 +806,11 @@
       <activation>
         <jdk>[15,</jdk>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <useSystemClassLoader>true</useSystemClassLoader>
-              <forkCount>1</forkCount>
-              <argLine>${argline} ${jacocoArgLine}
-                                --add-opens java.base/java.lang=ALL-UNNAMED
-                                --add-opens java.base/java.math=ALL-UNNAMED
-                                --add-opens java.base/java.util=ALL-UNNAMED</argLine>
-              <systemProperties>
-                <!-- common shared -->
-              </systemProperties>
-              <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
-              <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED
+          --add-opens java.base/java.math=ALL-UNNAMED
+          --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+      </properties>
     </profile>
     <profile>
       <id>jdk15ge-simple</id>
@@ -804,7 +822,6 @@
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
               <forkCount>1</forkCount>
-              <argLine>${argline} ${jacocoArgLine}</argLine>
               <systemProperties>
                 <!-- common shared -->
               </systemProperties>
@@ -860,13 +877,6 @@
       </activation>
       <properties>
         <palantirJavaFormat.version>2.39.0</palantirJavaFormat.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>jacoco089</id>
-      <properties>
-        <maven_jacoco_version>0.8.9</maven_jacoco_version>
       </properties>
     </profile>
 
@@ -972,15 +982,226 @@
       </properties>
     </profile>
     <profile>
-      <id>demo</id>
+      <id>loom</id>
       <activation>
-        <property>
-          <name>!demo.skip</name>
-        </property>
+        <jdk>[21,)</jdk>
       </activation>
       <modules>
-        <module>dubbo-demo</module>
+        <module>dubbo-plugin/dubbo-plugin-loom</module>
       </modules>
+    </profile>
+    <profile>
+      <id>dubbo-core-spi</id>
+      <modules>
+        <module>dubbo-distribution/dubbo-core-spi</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>dubbo-all</id>
+      <activation>
+        <jdk>[1.7,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-distribution/dubbo-all</module>
+        <module>dubbo-distribution/dubbo-bom</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>spring-6</id>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-indexer</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core-test</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-expression</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-instrument</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jcl</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring-6.version}</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+    <profile>
+      <id>spring-boot-3</id>
+      <properties>
+        <tomcat.version>10.1.31</tomcat.version>
+      </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test-autoconfigure</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-actuator</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-actuator-autoconfigure</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot-3.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>${tomcat.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-el</artifactId>
+            <version>${tomcat.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-websocket</artifactId>
+            <version>${tomcat.version}</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
     </profile>
   </profiles>
 </project>

@@ -25,10 +25,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import javax.annotation.Nullable;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Optional;
 
 public abstract class ParameterMeta extends AnnotationSupport {
 
@@ -37,6 +35,8 @@ public abstract class ParameterMeta extends AnnotationSupport {
     private Boolean simple;
     private Class<?> actualType;
     private Type actualGenericType;
+    private BeanMeta beanMeta;
+    private NamedValueMeta namedValueMeta;
 
     protected ParameterMeta(RestToolKit toolKit, String prefix, String name) {
         super(toolKit);
@@ -83,7 +83,7 @@ public abstract class ParameterMeta extends AnnotationSupport {
         Class<?> type = actualType;
         if (type == null) {
             type = getType();
-            if (type == Optional.class) {
+            if (TypeUtils.isWrapperType(type)) {
                 type = TypeUtils.getNestedActualType(getGenericType(), 0);
                 if (type == null) {
                     type = Object.class;
@@ -98,8 +98,8 @@ public abstract class ParameterMeta extends AnnotationSupport {
         Type type = actualGenericType;
         if (type == null) {
             type = getGenericType();
-            if (type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == Optional.class) {
-                type = TypeUtils.getNestedGenericType(getGenericType(), 0);
+            if (TypeUtils.isWrapperType(TypeUtils.getActualType(type))) {
+                type = TypeUtils.getNestedGenericType(type, 0);
                 if (type == null) {
                     type = Object.class;
                 }
@@ -109,8 +109,28 @@ public abstract class ParameterMeta extends AnnotationSupport {
         return type;
     }
 
+    public final BeanMeta getBeanMeta() {
+        BeanMeta beanMeta = this.beanMeta;
+        if (beanMeta == null) {
+            this.beanMeta = beanMeta = new BeanMeta(getToolKit(), getActualType());
+        }
+        return beanMeta;
+    }
+
     public final Object bind(HttpRequest request, HttpResponse response) {
         return getToolKit().bind(this, request, response);
+    }
+
+    public final NamedValueMeta getNamedValueMeta() {
+        NamedValueMeta namedValueMeta = this.namedValueMeta;
+        if (namedValueMeta == null) {
+            namedValueMeta = getToolKit().getNamedValueMeta(this);
+            if (namedValueMeta == null) {
+                namedValueMeta = NamedValueMeta.EMPTY;
+            }
+            this.namedValueMeta = namedValueMeta;
+        }
+        return namedValueMeta;
     }
 
     public int getIndex() {

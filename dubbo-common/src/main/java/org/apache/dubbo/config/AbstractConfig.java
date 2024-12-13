@@ -795,6 +795,12 @@ public abstract class AbstractConfig implements Serializable {
         List<Method> methods =
                 MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
         for (Method method : methods) {
+            // filter non attribute
+            Parameter parameter = method.getAnnotation(Parameter.class);
+            if (parameter != null && !parameter.attribute()) {
+                continue;
+            }
+
             if (isPropertySetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
 

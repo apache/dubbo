@@ -78,7 +78,7 @@ public class NettyHandler extends SimpleChannelHandler {
             NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
         }
 
-        if (logger.isInfoEnabled()) {
+        if (logger.isInfoEnabled() && channel != null) {
             logger.info("The connection between " + channel.getRemoteAddress() + " and " + channel.getLocalAddress()
                     + " is established");
         }

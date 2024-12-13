@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
 
 public class MetadataServiceV2Detector implements BuiltinServiceDetector {
@@ -29,20 +30,14 @@ public class MetadataServiceV2Detector implements BuiltinServiceDetector {
 
     @Override
     public Class<?> getService() {
-        if (!support()) {
-            logger.info(
-                    "To use MetadataServiceV2, Protobuf dependencies are required. Fallback to MetadataService(V1).");
-            return null;
+        if (ClassUtils.hasProtobuf()) {
+            return MetadataServiceV2.class;
         }
-        return org.apache.dubbo.metadata.MetadataServiceV2.class;
+        logger.info("To use MetadataServiceV2, Protobuf dependencies are required. Fallback to MetadataService(V1).");
+        return null;
     }
 
     public static boolean support() {
-        try {
-            Class.forName("com.google.protobuf.Message");
-        } catch (ClassNotFoundException classNotFoundException) {
-            return false;
-        }
-        return true;
+        return ClassUtils.hasProtobuf();
     }
 }

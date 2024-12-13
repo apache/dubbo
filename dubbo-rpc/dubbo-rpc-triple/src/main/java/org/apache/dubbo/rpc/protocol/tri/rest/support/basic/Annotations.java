@@ -23,6 +23,9 @@ import java.lang.annotation.Annotation;
 public enum Annotations implements AnnotationEnum {
     Mapping,
     Param,
+    OpenAPI,
+    Operation,
+    Schema,
     Nonnull("javax.annotation.Nonnull");
 
     private final String className;

@@ -24,6 +24,7 @@ import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -31,6 +32,7 @@ import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestMappingException;
@@ -46,6 +48,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,24 +63,31 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private static final FluentLogger LOGGER = FluentLogger.of(DefaultRequestMappingRegistry.class);
 
     private final FrameworkModel frameworkModel;
-    private final ContentNegotiator contentNegotiator;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final AtomicBoolean initialized = new AtomicBoolean();
 
-    private RestConfig restConfig;
+    private ContentNegotiator contentNegotiator;
+    private OpenAPIService openAPIService;
     private List<RequestMappingResolver> resolvers;
+    private RestConfig restConfig;
     private RadixTree<Registration> tree;
 
     public DefaultRequestMappingRegistry(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        contentNegotiator = frameworkModel.getBeanFactory().getOrRegisterBean(ContentNegotiator.class);
     }
 
     private void init(Invoker<?> invoker) {
+        contentNegotiator = frameworkModel.getOrRegisterBean(ContentNegotiator.class);
+        if (TripleProtocol.OPENAPI_ENABLED) {
+            openAPIService = frameworkModel.getBean(OpenAPIService.class);
+        }
+        resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
         restConfig = ConfigManager.getProtocolOrDefault(invoker.getUrl())
                 .getTripleOrDefault()
                 .getRestOrDefault();
-        resolvers = frameworkModel.getActivateExtensions(RequestMappingResolver.class);
+        for (RequestMappingResolver resolver : resolvers) {
+            resolver.setRestConfig(restConfig);
+        }
         tree = new RadixTree<>(restConfig.getCaseSensitiveMatchOrDefault());
     }
 
@@ -124,7 +135,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         return;
                     }
                     RequestMapping methodMapping = resolver.resolve(methodMeta);
-                    if (methodMapping == null) {
+                    if (methodMapping == null || methodMapping.getPathCondition() == null) {
                         return;
                     }
                     if (md == null) {
@@ -144,6 +155,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 });
             }
         });
+        onMappingChanged();
         LOGGER.info(
                 "Registered {} rest mappings for service [{}] at url [{}] in {}ms",
                 counter,
@@ -155,17 +167,15 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     private void register0(RequestMapping mapping, HandlerMeta handler, AtomicInteger counter) {
         lock.writeLock().lock();
         try {
-            Registration registration = new Registration();
-            registration.mapping = mapping;
-            registration.meta = handler;
+            Registration registration = new Registration(mapping, handler);
             for (PathExpression path : mapping.getPathCondition().getExpressions()) {
                 Registration exists = tree.addPath(path, registration);
                 if (exists == null) {
+                    counter.incrementAndGet();
                     if (LOGGER.isDebugEnabled()) {
                         String msg = "Register rest mapping: '{}' -> mapping={}, method={}";
                         LOGGER.debug(msg, path, mapping, handler.getMethod());
                     }
-                    counter.incrementAndGet();
                 } else if (LOGGER.isWarnEnabled()) {
                     LOGGER.internalWarn(Messages.DUPLICATE_MAPPING.format(path, mapping, handler.getMethod(), exists));
                 }
@@ -180,9 +190,11 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (tree == null) {
             return;
         }
+
         lock.writeLock().lock();
         try {
-            tree.remove(mapping -> mapping.meta.getInvoker() == invoker);
+            tree.remove(r -> r.getMeta().getInvoker() == invoker);
+            onMappingChanged();
         } finally {
             lock.writeLock().unlock();
         }
@@ -193,6 +205,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (tree == null) {
             return;
         }
+
         lock.writeLock().lock();
         try {
             tree.clear();
@@ -202,6 +215,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
     }
 
     public HandlerMeta lookup(HttpRequest request) {
+        if (tree == null) {
+            return null;
+        }
+
         String stringPath = PathUtils.normalize(request.uri());
         request.setAttribute(RestConstants.PATH_ATTRIBUTE, stringPath);
         KeyString path = new KeyString(stringPath, restConfig.getCaseSensitiveMatchOrDefault());
@@ -213,10 +230,9 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         if (candidates.isEmpty()) {
             int end = path.length();
 
-            if (restConfig.getTrailingSlashMatchOrDefault()) {
+            if (end > 1 && restConfig.getTrailingSlashMatchOrDefault()) {
                 if (path.charAt(end - 1) == '/') {
-                    end--;
-                    tryMatch(request, path.subSequence(0, end), candidates, partialMatches);
+                    tryMatch(request, path.subSequence(0, --end), candidates, partialMatches);
                 }
             }
 
@@ -310,11 +326,11 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
         for (int i = 0; i < size; i++) {
             Match<Registration> match = matches.get(i);
-            RequestMapping mapping = match.getValue().mapping.match(request, match.getExpression());
+            RequestMapping mapping = match.getValue().getMapping().match(request, match.getExpression());
             if (mapping != null) {
                 Candidate candidate = new Candidate();
                 candidate.mapping = mapping;
-                candidate.meta = match.getValue().meta;
+                candidate.meta = match.getValue().getMeta();
                 candidate.expression = match.getExpression();
                 candidate.variableMap = match.getVariableMap();
                 candidates.add(candidate);
@@ -322,7 +338,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         }
         if (candidates.isEmpty()) {
             for (int i = 0; i < size; i++) {
-                partialMatches.add(matches.get(i).getValue().mapping);
+                partialMatches.add(matches.get(i).getValue().getMapping());
             }
         }
     }
@@ -365,6 +381,10 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
 
     @Override
     public boolean exists(String stringPath, String method) {
+        if (tree == null) {
+            return false;
+        }
+
         KeyString path = new KeyString(stringPath, restConfig.getCaseSensitiveMatchOrDefault());
         if (tryExists(path, method)) {
             return true;
@@ -401,6 +421,18 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
         return false;
     }
 
+    @Override
+    public Collection<Registration> getRegistrations() {
+        lock.readLock().lock();
+        try {
+            Map<Registration, Boolean> registrations = new IdentityHashMap<>();
+            tree.walk((expr, registration) -> registrations.put(registration, Boolean.TRUE));
+            return registrations.keySet();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     private boolean tryExists(KeyString path, String method) {
         List<Match<Registration>> matches = new ArrayList<>();
         lock.readLock().lock();
@@ -410,37 +442,16 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
             lock.readLock().unlock();
         }
         for (int i = 0, size = matches.size(); i < size; i++) {
-            if (matches.get(i).getValue().mapping.matchMethod(method)) {
+            if (matches.get(i).getValue().getMapping().matchMethod(method)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static final class Registration {
-
-        RequestMapping mapping;
-        HandlerMeta meta;
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || obj.getClass() != Registration.class) {
-                return false;
-            }
-            return mapping.equals(((Registration) obj).mapping);
-        }
-
-        @Override
-        public int hashCode() {
-            return mapping.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return "Registration{mapping=" + mapping + ", method=" + meta.getMethod() + '}';
+    private void onMappingChanged() {
+        if (openAPIService != null) {
+            openAPIService.refresh();
         }
     }
 

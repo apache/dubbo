@@ -43,6 +43,10 @@ public enum HttpMethods {
         return name().equals(name);
     }
 
+    public boolean supportBody() {
+        return this == POST || this == PUT || this == PATCH;
+    }
+
     @SuppressWarnings("StringEquality")
     public static HttpMethods of(String name) {
         // fast-path

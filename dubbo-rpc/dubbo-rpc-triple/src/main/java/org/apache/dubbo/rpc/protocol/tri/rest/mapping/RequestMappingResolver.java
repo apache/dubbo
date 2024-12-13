@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ServiceMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -26,6 +27,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 public interface RequestMappingResolver {
 
     RestToolKit getRestToolKit();
+
+    default void setRestConfig(RestConfig restConfig) {}
 
     default boolean accept(ServiceMeta serviceMeta) {
         return true;
