@@ -47,7 +47,6 @@ import java.util.List;
  * @since 2.0.7
  */
 public class IOUtils {
-
     private static final int BUFFER_SIZE = 1024 * 8;
     public static final int EOF = -1;
 
@@ -88,10 +87,8 @@ public class IOUtils {
      * @return count.
      * @throws IOException If an I/O error occurs
      */
-    public static long write(
-            final InputStream input,
-            final OutputStream output,
-            final byte[] buffer) throws IOException {
+    public static long write(final InputStream input, final OutputStream output, final byte[] buffer)
+            throws IOException {
         long count = 0;
         int n;
         while (EOF != (n = input.read(buffer))) {

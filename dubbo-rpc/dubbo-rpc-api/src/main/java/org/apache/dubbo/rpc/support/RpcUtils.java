@@ -60,9 +60,11 @@ public class RpcUtils {
 
     public static Class<?> getReturnType(Invocation invocation) {
         try {
-            if (invocation != null && invocation.getInvoker() != null && invocation.getInvoker().getUrl() != null
-                    && invocation.getInvoker().getInterface() != GenericService.class && !invocation.getMethodName()
-                    .startsWith("$")) {
+            if (invocation != null
+                    && invocation.getInvoker() != null
+                    && invocation.getInvoker().getUrl() != null
+                    && invocation.getInvoker().getInterface() != GenericService.class
+                    && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
@@ -77,9 +79,11 @@ public class RpcUtils {
 
     public static Type[] getReturnTypes(Invocation invocation) {
         try {
-            if (invocation != null && invocation.getInvoker() != null && invocation.getInvoker().getUrl() != null
-                    && invocation.getInvoker().getInterface() != GenericService.class && !invocation.getMethodName()
-                    .startsWith("$")) {
+            if (invocation != null
+                    && invocation.getInvoker() != null
+                    && invocation.getInvoker().getUrl() != null
+                    && invocation.getInvoker().getInterface() != GenericService.class
+                    && !invocation.getMethodName().startsWith("$")) {
                 Type[] returnTypes = null;
                 if (invocation instanceof RpcInvocation) {
                     returnTypes = ((RpcInvocation) invocation).getReturnTypes();
@@ -132,7 +136,8 @@ public class RpcUtils {
 
     public static String getMethodName(Invocation invocation) {
         if (($INVOKE.equals(invocation.getMethodName()) || $INVOKE_ASYNC.equals(invocation.getMethodName()))
-                && invocation.getArguments() != null && invocation.getArguments().length > 0
+                && invocation.getArguments() != null
+                && invocation.getArguments().length > 0
                 && invocation.getArguments()[0] instanceof String) {
             return (String) invocation.getArguments()[0];
         }
@@ -141,7 +146,8 @@ public class RpcUtils {
 
     public static Object[] getArguments(Invocation invocation) {
         if (($INVOKE.equals(invocation.getMethodName()) || $INVOKE_ASYNC.equals(invocation.getMethodName()))
-                && invocation.getArguments() != null && invocation.getArguments().length > 2
+                && invocation.getArguments() != null
+                && invocation.getArguments().length > 2
                 && invocation.getArguments()[2] instanceof Object[]) {
             return (Object[]) invocation.getArguments()[2];
         }
@@ -150,7 +156,8 @@ public class RpcUtils {
 
     public static Class<?>[] getParameterTypes(Invocation invocation) {
         if (($INVOKE.equals(invocation.getMethodName()) || $INVOKE_ASYNC.equals(invocation.getMethodName()))
-                && invocation.getArguments() != null && invocation.getArguments().length > 1
+                && invocation.getArguments() != null
+                && invocation.getArguments().length > 1
                 && invocation.getArguments()[1] instanceof String[]) {
             String[] types = (String[]) invocation.getArguments()[1];
             if (types == null) {
@@ -237,8 +244,9 @@ public class RpcUtils {
 
     private static Method getMethodByService(Invocation invocation, String service) throws NoSuchMethodException {
         Class<?> invokerInterface = invocation.getInvoker().getInterface();
-        Class<?> cls = invokerInterface
-                != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service) : ReflectUtils.forName(service);
+        Class<?> cls = invokerInterface != null
+                ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
+                : ReflectUtils.forName(service);
         Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         if (method.getReturnType() == void.class) {
             return null;
@@ -279,7 +287,8 @@ public class RpcUtils {
         int timeout = (int) defaultTimeout;
         if (countdown == null) {
             if (url != null) {
-                timeout = (int) RpcUtils.getTimeout(url, methodName, RpcContext.getClientAttachment(), invocation, defaultTimeout);
+                timeout = (int) RpcUtils.getTimeout(
+                        url, methodName, RpcContext.getClientAttachment(), invocation, defaultTimeout);
                 if (url.getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                     // pass timeout to remote server
                     invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);

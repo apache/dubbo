@@ -56,7 +56,10 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             logger.info(String.format("The file has been unpacked, target path:%s", targetPath.toString()));
             return;
         }
-        try (FileInputStream fileInputStream = new FileInputStream(sourceFile); GzipCompressorInputStream gzipCompressorInputStream = new GzipCompressorInputStream(fileInputStream); TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(gzipCompressorInputStream, "UTF-8")) {
+        try (FileInputStream fileInputStream = new FileInputStream(sourceFile);
+                GzipCompressorInputStream gzipCompressorInputStream = new GzipCompressorInputStream(fileInputStream);
+                TarArchiveInputStream tarArchiveInputStream =
+                        new TarArchiveInputStream(gzipCompressorInputStream, "UTF-8")) {
             File targetFile = targetPath.toFile();
             TarArchiveEntry entry;
             while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
