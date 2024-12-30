@@ -29,7 +29,7 @@
   <description>The cluster module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <nashorn-core.version>15.4</nashorn-core.version>
+    <nashorn-core.version>15.6</nashorn-core.version>
   </properties>
   <dependencies>
     <dependency>
