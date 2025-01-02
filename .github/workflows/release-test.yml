@@ -313,7 +313,7 @@ jobs:
       - name: "Download test result"
         uses: actions/download-artifact@v4
         with:
-          name: samples-test-result-${{matrix.jdk}}-*
+          pattern: samples-test-result-${{matrix.jdk}}-*
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
       - name: "Merge test result"
@@ -412,7 +412,7 @@ jobs:
       - name: "Download test result"
         uses: actions/download-artifact@v4
         with:
-          name: integration-test-result-${{matrix.jdk}}-*
+          pattern: integration-test-result-${{matrix.jdk}}-*
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
       - name: "Merge test result"

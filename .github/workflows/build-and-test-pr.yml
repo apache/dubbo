@@ -346,9 +346,9 @@ jobs:
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: samples-test-result
+          name: samples-test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
   samples-test-result:
     needs: [check-format, samples-test-job]
@@ -362,9 +362,9 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: samples-test-result
+          pattern: samples-test-result-*
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
@@ -449,9 +449,9 @@ jobs:
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: test-result
+          name: test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
   integration-test-result:
     needs: [check-format, integration-test-job]
@@ -465,9 +465,9 @@ jobs:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: test-result
+          pattern: test-result-*
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
