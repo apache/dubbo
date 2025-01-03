@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ class TelnetCodecTest {
     protected byte[] objectToByte(Object obj) {
         byte[] bytes;
         if (obj instanceof String) {
-            bytes = ((String) obj).getBytes();
+            bytes = ((String) obj).getBytes(StandardCharsets.UTF_8);
         } else if (obj instanceof byte[]) {
             bytes = (byte[]) obj;
         } else {
