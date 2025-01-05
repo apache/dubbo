@@ -247,7 +247,7 @@ class TelnetCodecTest {
         testDecode_assertEquals(new byte[] {'\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 8}));
 
         // test chinese
-        byte[] chineseBytes = "中".getBytes();
+        byte[] chineseBytes = "中".getBytes(StandardCharsets.UTF_8);
         byte[] request = join(chineseBytes, new byte[] {'\b'});
         testDecode_assertEquals(request, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 32, 8, 8}));
         // There may be some problem handling chinese (negative number recognition). Ignoring this problem, the
