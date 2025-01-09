@@ -119,7 +119,8 @@ public class CompatibleTypeUtils {
                 } catch (ParseException e) {
                     throw new IllegalStateException(
                             "Failed to parse date " + value + " by format " + DATE_FORMAT + ", cause: "
-                                    + e.getMessage(), e);
+                                    + e.getMessage(),
+                            e);
                 }
             }
             if (type == java.time.LocalDateTime.class) {
