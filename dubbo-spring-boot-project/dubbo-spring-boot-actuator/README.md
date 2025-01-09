@@ -55,7 +55,7 @@ If your project failed to resolve the dependency, try to add the following repos
 
 
 
-Suppose a Spring Boot Web application did not specify `management.server.port`, you can access http://localhost:8080/actuator/health via Web Client and will get a response with JSON format is like below : 
+Suppose a Spring Boot Web application did not specify `management.server.port`, you can access http://localhost:8080/actuator/health via Web Client and will get a response with JSON format is like below :
 
 ```json
 {
@@ -100,10 +100,10 @@ Suppose a Spring Boot Web application did not specify `management.server.port`, 
 ```
 
 
- `memory`, `load`,  `threadpool` and `server` are Dubbo's build-in `StatusChecker`s in above example. 
- Dubbo allows the application to extend `StatusChecker`'s SPI. 
+ `memory`, `load`,  `threadpool` and `server` are Dubbo's build-in `StatusChecker`s in above example.
+ Dubbo allows the application to extend `StatusChecker`'s SPI.
 
-Default , `memory` and `load` will be added into Dubbo's `HealthIndicator` , it could be overridden by 
+Default , `memory` and `load` will be added into Dubbo's `HealthIndicator` , it could be overridden by
 externalized configuration [`StatusChecker`'s defaults](#statuschecker-defaults).
 
 
@@ -127,7 +127,6 @@ externalized configuration [`StatusChecker`'s defaults](#statuschecker-defaults)
 ```properties
 registry=org.apache.dubbo.registry.status.RegistryStatusChecker
 spring=org.apache.dubbo.config.spring.status.SpringStatusChecker
-datasource=org.apache.dubbo.config.spring.status.DataSourceStatusChecker
 memory=org.apache.dubbo.common.status.support.MemoryStatusChecker
 load=org.apache.dubbo.common.status.support.LoadStatusChecker
 server=org.apache.dubbo.rpc.protocol.dubbo.status.ServerStatusChecker
@@ -144,7 +143,7 @@ The property key that is name of  `StatusChecker` can be a valid value of `manag
 
 
 
-Actuator endpoint `dubbo` supports Actuator Endpoints : 
+Actuator endpoint `dubbo` supports Actuator Endpoints :
 
 | ID       | Enabled          | HTTP URI            | HTTP Method | Description                         | Content Type       |
 | ------------------- | ----------- | ----------------------------------- | ------------------ | ------------------ | ------------------ |
@@ -198,7 +197,7 @@ Actuator endpoint `dubbo` supports Actuator Endpoints :
 
 ####  `/actuator/dubbo`
 
-`/dubbo` exposes Dubbo's meta data : 
+`/dubbo` exposes Dubbo's meta data :
 
 ```json
 {
@@ -217,11 +216,11 @@ Actuator endpoint `dubbo` supports Actuator Endpoints :
 }
 ```
 
-### 
+###
 
 #### `/actuator/dubbo/properties`
 
-`/actuator/dubbo/properties` exposes all Dubbo's Properties from Spring Boot Externalized Configuration (a.k.a `PropertySources`) : 
+`/actuator/dubbo/properties` exposes all Dubbo's Properties from Spring Boot Externalized Configuration (a.k.a `PropertySources`) :
 
 ```json
 {
@@ -380,16 +379,16 @@ The key is the string presentation of `@Reference` `Field` or `Method  ` , `Refe
     }
   },
   "ConsumerConfig": {
-    
+
   },
   "MethodConfig": {
-    
+
   },
   "ModuleConfig": {
-    
+
   },
   "MonitorConfig": {
-    
+
   },
   "ProtocolConfig": {
     "dubbo": {
@@ -425,16 +424,16 @@ The key is the string presentation of `@Reference` `Field` or `Method  ` , `Refe
     }
   },
   "ProviderConfig": {
-    
+
   },
   "ReferenceConfig": {
-    
+
   },
   "RegistryConfig": {
-    
+
   },
   "ServiceConfig": {
-    
+
   }
 }
 ```
@@ -521,7 +520,7 @@ Compared with the `simple profiler` mode, the `detail profiler` collects more ti
 
 
 
-`management.health.dubbo.status.defaults` is a property name for setting names of `StatusChecker`s , its value is allowed to multiple-values , for example : 
+`management.health.dubbo.status.defaults` is a property name for setting names of `StatusChecker`s , its value is allowed to multiple-values , for example :
 
 ```properties
 management.health.dubbo.status.defaults = registry,memory,load
@@ -531,7 +530,7 @@ management.health.dubbo.status.defaults = registry,memory,load
 
 #### Default Value
 
-The default value is : 
+The default value is :
 
 ```properties
 management.health.dubbo.status.defaults = memory,load
