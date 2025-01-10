@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
 
+import javax.net.ssl.SSLSession;
+
 import java.net.SocketAddress;
 
 import io.netty.handler.codec.http2.Http2Headers;
@@ -73,6 +75,13 @@ public interface Stream {
      * @return socket address of remote peer
      */
     SocketAddress remoteAddress();
+
+    /**
+     * Get ssl session.
+     *
+     * @return ssl session
+     */
+    SSLSession getSslSession();
 
     /**
      * Request n message from remote peer.

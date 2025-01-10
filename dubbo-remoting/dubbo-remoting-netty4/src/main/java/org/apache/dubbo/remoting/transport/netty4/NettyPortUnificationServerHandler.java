@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -42,6 +43,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
+import io.netty.util.AttributeKey;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
@@ -55,6 +57,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     private final Map<String, WireProtocol> protocols;
     private final Map<String, URL> urlMapper;
     private final Map<String, ChannelHandler> handlerMapper;
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
 
     public NettyPortUnificationServerHandler(
             URL url,
@@ -89,6 +92,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                 SSLSession session =
                         ctx.pipeline().get(SslHandler.class).engine().getSession();
                 LOGGER.info("TLS negotiation succeed with session: " + session);
+                ctx.channel().attr(SSL_SESSION_KEY).set(session);
             } else {
                 LOGGER.error(
                         INTERNAL_ERROR,
