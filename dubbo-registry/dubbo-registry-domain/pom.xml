@@ -15,36 +15,31 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-parent</artifactId>
+    <artifactId>dubbo-registry</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-registry</artifactId>
-  <packaging>pom</packaging>
+
+  <artifactId>dubbo-registry-domain</artifactId>
+  <packaging>jar</packaging>
+
   <name>${project.artifactId}</name>
-  <description>The registry module of dubbo project</description>
-  <modules>
-    <module>dubbo-registry-api</module>
-    <module>dubbo-registry-multicast</module>
-    <module>dubbo-registry-zookeeper</module>
-    <module>dubbo-registry-nacos</module>
-    <module>dubbo-registry-multiple</module>
-    <module>dubbo-registry-domain</module>
-  </modules>
-  <properties>
-    <skip_maven_deploy>false</skip_maven_deploy>
-  </properties>
+  <description>The domain-based registry module of dubbo project</description>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-test-check</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
+      <artifactId>dubbo-registry-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-common</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>
