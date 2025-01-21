@@ -40,8 +40,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
@@ -147,7 +145,7 @@ public class DomainRegistry extends FailbackRegistry {
                             super.doRegister(url);
                         } else {
                             logger.warn("Failed to resolve domain for registration: " + url
-                                + ". Registration will proceed with domain name.");
+                                    + ". Registration will proceed with domain name.");
                         }
                     }
                 }
@@ -155,8 +153,8 @@ public class DomainRegistry extends FailbackRegistry {
                 logger.info("Skip registration since it's neither provider nor consumer registration enabled: " + url);
             }
         } catch (Throwable e) {
-            throw new RpcException("Failed to register " + url + " to domain registry "
-                + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException(
+                    "Failed to register " + url + " to domain registry " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
 
@@ -177,8 +175,9 @@ public class DomainRegistry extends FailbackRegistry {
                 }
             }
         } catch (Throwable e) {
-            throw new RpcException("Failed to unregister " + url + " from domain registry "
-                + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException(
+                    "Failed to unregister " + url + " from domain registry " + getUrl() + ", cause: " + e.getMessage(),
+                    e);
         }
     }
 
@@ -190,7 +189,7 @@ public class DomainRegistry extends FailbackRegistry {
         if (listener == null) {
             throw new IllegalArgumentException("subscribe listener == null");
         }
-        
+
         String host = url.getHost();
         if (NetUtils.isIP(host)) {
             // If the URL already contains an IP address, notify directly
@@ -202,40 +201,44 @@ public class DomainRegistry extends FailbackRegistry {
 
         // Schedule periodic DNS resolution
         ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(
-            () -> {
-                try {
-                    List<URL> resolvedUrls = resolveDomain(url);
-                    if (!resolvedUrls.isEmpty()) {
-                        resolvedAddresses.put(url, resolvedUrls);
-                        notify(url, listener, resolvedUrls);
-                    } else {
-                        // If DNS resolution fails, try fallback
-                        List<URL> cachedUrls = resolvedAddresses.get(url);
-                        if (cachedUrls != null && !cachedUrls.isEmpty()) {
-                            notify(url, listener, cachedUrls);
+                () -> {
+                    try {
+                        List<URL> resolvedUrls = resolveDomain(url);
+                        if (!resolvedUrls.isEmpty()) {
+                            resolvedAddresses.put(url, resolvedUrls);
+                            notify(url, listener, resolvedUrls);
                         } else {
-                            // Check if fallback should be used for this URL
-                            if (shouldFallback(url)) {
-                                logger.info("DNS resolution failed, falling back to traditional registry for: " + url);
-                                super.doSubscribe(url, listener);
+                            // If DNS resolution fails, try fallback
+                            List<URL> cachedUrls = resolvedAddresses.get(url);
+                            if (cachedUrls != null && !cachedUrls.isEmpty()) {
+                                notify(url, listener, cachedUrls);
                             } else {
-                                notify(url, listener, new ArrayList<>());
+                                // Check if fallback should be used for this URL
+                                if (shouldFallback(url)) {
+                                    logger.info(
+                                            "DNS resolution failed, falling back to traditional registry for: " + url);
+                                    super.doSubscribe(url, listener);
+                                } else {
+                                    notify(url, listener, new ArrayList<>());
+                                }
                             }
                         }
+                    } catch (Throwable e) {
+                        logger.error(
+                                REGISTRY_FAILED_NOTIFY_EVENT,
+                                "",
+                                "",
+                                "Failed to resolve domain for " + url + ", cause: " + e.getMessage(),
+                                e);
                     }
-                } catch (Throwable e) {
-                    logger.error(REGISTRY_FAILED_NOTIFY_EVENT, "", "", 
-                        "Failed to resolve domain for " + url + ", cause: " + e.getMessage(), e);
-                }
-            },
-            0,
-            url.getParameter(DNS_REFRESH_PERIOD_KEY, DEFAULT_DNS_REFRESH_PERIOD),
-            TimeUnit.SECONDS
-        );
-        
+                },
+                0,
+                url.getParameter(DNS_REFRESH_PERIOD_KEY, DEFAULT_DNS_REFRESH_PERIOD),
+                TimeUnit.SECONDS);
+
         domainResolutionTasks.put(url, future);
     }
-    
+
     private List<URL> resolveDomain(URL url) {
         List<URL> urls = new ArrayList<>();
         try {
@@ -245,8 +248,11 @@ public class DomainRegistry extends FailbackRegistry {
                 urls.add(url.setHost(address.getHostAddress()));
             }
         } catch (UnknownHostException e) {
-            logger.warn(REGISTRY_FAILED_NOTIFY_EVENT, "", "",
-                "Failed to resolve domain " + url.getHost() + ", cause: " + e.getMessage());
+            logger.warn(
+                    REGISTRY_FAILED_NOTIFY_EVENT,
+                    "",
+                    "",
+                    "Failed to resolve domain " + url.getHost() + ", cause: " + e.getMessage());
         }
         return urls;
     }
@@ -259,13 +265,13 @@ public class DomainRegistry extends FailbackRegistry {
         if (listener == null) {
             throw new IllegalArgumentException("unsubscribe listener == null");
         }
-        
+
         // Cancel the DNS resolution task
         ScheduledFuture<?> future = domainResolutionTasks.remove(url);
         if (future != null) {
             future.cancel(true);
         }
-        
+
         // Clean up resolved addresses
         resolvedAddresses.remove(url);
     }
@@ -275,14 +281,14 @@ public class DomainRegistry extends FailbackRegistry {
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
-        
+
         // Cancel all DNS resolution tasks
         for (ScheduledFuture<?> future : domainResolutionTasks.values()) {
             future.cancel(true);
         }
         domainResolutionTasks.clear();
         resolvedAddresses.clear();
-        
+
         super.destroy();
     }
 }
