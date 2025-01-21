@@ -63,6 +63,12 @@ public class DomainRegistry extends FailbackRegistry {
     private static final String DNS_REFRESH_PERIOD_KEY = "dns.refresh.period";
     private static final String ENABLE_FALLBACK_KEY = "domain.registry.fallback";
     private static final boolean DEFAULT_ENABLE_FALLBACK = true;
+    private static final String DEFAULT_FALLBACK_MODE = "all";
+    private static final String FALLBACK_MODE_ALL = "all";
+    private static final String FALLBACK_MODE_NONE = "none";
+    private static final String FALLBACK_MODE_SPECIFIED = "specified";
+    private static final String FALLBACK_MODE_KEY = "domain.registry.fallback.mode";
+    private static final String FALLBACK_SERVICES_KEY = "domain.registry.fallback.services";
 
     // Track registered services and their domain mappings
     private final Set<URL> registeredServices = new ConcurrentHashSet<>();
@@ -131,7 +137,7 @@ public class DomainRegistry extends FailbackRegistry {
                 registeredServices.add(url);
                 // If the URL uses a domain name, attempt to resolve it
                 String host = url.getHost();
-                if (!NetUtils.isIP(host)) {
+                if (!host.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
                     List<URL> resolvedUrls = resolveDomain(url);
                     if (!resolvedUrls.isEmpty()) {
                         // Successfully resolved domain, register all IP addresses
@@ -142,12 +148,15 @@ public class DomainRegistry extends FailbackRegistry {
                         // Check if fallback should be used for this URL
                         if (shouldFallback(url)) {
                             logger.info("DNS resolution failed, falling back to traditional registry for: " + url);
-                            super.doRegister(url);
+                            super.register(url);
                         } else {
                             logger.warn("Failed to resolve domain for registration: " + url
                                     + ". Registration will proceed with domain name.");
+                            super.register(url);
                         }
                     }
+                } else {
+                    super.register(url);
                 }
             } else {
                 logger.info("Skip registration since it's neither provider nor consumer registration enabled: " + url);
@@ -168,7 +177,7 @@ public class DomainRegistry extends FailbackRegistry {
             registeredServices.remove(url);
             // If it's a domain-based URL, also remove any resolved IP addresses
             String host = url.getHost();
-            if (!NetUtils.isIP(host)) {
+            if (!host.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
                 List<URL> resolvedUrls = resolveDomain(url);
                 for (URL resolvedUrl : resolvedUrls) {
                     registeredServices.remove(resolvedUrl);
@@ -191,7 +200,7 @@ public class DomainRegistry extends FailbackRegistry {
         }
 
         String host = url.getHost();
-        if (NetUtils.isIP(host)) {
+        if (host.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
             // If the URL already contains an IP address, notify directly
             List<URL> urls = new ArrayList<>();
             urls.add(url);
@@ -217,7 +226,7 @@ public class DomainRegistry extends FailbackRegistry {
                                 if (shouldFallback(url)) {
                                     logger.info(
                                             "DNS resolution failed, falling back to traditional registry for: " + url);
-                                    super.doSubscribe(url, listener);
+                                    super.subscribe(url, listener);
                                 } else {
                                     notify(url, listener, new ArrayList<>());
                                 }
