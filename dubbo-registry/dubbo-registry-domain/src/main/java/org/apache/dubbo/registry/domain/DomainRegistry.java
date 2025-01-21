@@ -131,7 +131,6 @@ public class DomainRegistry extends FailbackRegistry {
             if (PROVIDER_SIDE.equals(url.getSide()) || getUrl().getParameter(REGISTER_CONSUMER_URL_KEY, false)) {
                 // Store the registration for fallback support
                 registeredServices.add(url);
-                
                 // If the URL uses a domain name, attempt to resolve it
                 String host = url.getHost();
                 if (!NetUtils.isIP(host)) {
@@ -147,8 +146,8 @@ public class DomainRegistry extends FailbackRegistry {
                             logger.info("DNS resolution failed, falling back to traditional registry for: " + url);
                             super.doRegister(url);
                         } else {
-                            logger.warn("Failed to resolve domain for registration: " + url + 
-                                ". Registration will proceed with domain name.");
+                            logger.warn("Failed to resolve domain for registration: " + url
+                                + ". Registration will proceed with domain name.");
                         }
                     }
                 }
@@ -156,8 +155,8 @@ public class DomainRegistry extends FailbackRegistry {
                 logger.info("Skip registration since it's neither provider nor consumer registration enabled: " + url);
             }
         } catch (Throwable e) {
-            throw new RpcException("Failed to register " + url + " to domain registry " + 
-                getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to register " + url + " to domain registry "
+                + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
 
@@ -169,7 +168,6 @@ public class DomainRegistry extends FailbackRegistry {
         try {
             // Remove both the original URL and any resolved IP-based URLs
             registeredServices.remove(url);
-            
             // If it's a domain-based URL, also remove any resolved IP addresses
             String host = url.getHost();
             if (!NetUtils.isIP(host)) {
@@ -179,8 +177,8 @@ public class DomainRegistry extends FailbackRegistry {
                 }
             }
         } catch (Throwable e) {
-            throw new RpcException("Failed to unregister " + url + " from domain registry " + 
-                getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to unregister " + url + " from domain registry "
+                + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
 
