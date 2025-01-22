@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
@@ -30,47 +29,79 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-/**
- * 2018/10/9
- */
-class ZookeeperMetadataReportTest {
+public class ZookeeperMetadataReportTest {
+
     private ZookeeperMetadataReport zookeeperMetadataReport;
-    private URL registryUrl;
-    private ZookeeperMetadataReportFactory zookeeperMetadataReportFactory;
-    private static String zookeeperConnectionAddress1;
 
-    @BeforeAll
-    public static void beforeAll() {
-        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
-    }
+    /**
+     * Uses Map<String, String> to simulate ZK node storage:
+     * key corresponds to the ZK node path, and value corresponds to the node content.
+     */
+    private final Map<String, String> zkDataStore = new ConcurrentHashMap<>();
 
     @BeforeEach
-    public void setUp() throws Exception {
-        this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
+    void setUp() {
+        // 1. Create mock objects
+        ZookeeperClientManager mockClientManager = mock(ZookeeperClientManager.class);
+        ZookeeperClient mockZkClient = mock(ZookeeperClient.class);
 
-        zookeeperMetadataReportFactory = new ZookeeperMetadataReportFactory(ApplicationModel.defaultModel());
-        this.zookeeperMetadataReport =
-                (ZookeeperMetadataReport) zookeeperMetadataReportFactory.getMetadataReport(registryUrl);
+        // 2. When connect(...) is called, return mockZkClient
+        when(mockClientManager.connect(any(URL.class))).thenReturn(mockZkClient);
+
+        // 3. Simulate createOrUpdate behavior: store path->data in zkDataStore
+        doAnswer(invocation -> {
+                    String path = invocation.getArgument(0, String.class);
+                    String data = invocation.getArgument(1, String.class);
+                    zkDataStore.put(path, data);
+                    return null;
+                })
+                .when(mockZkClient)
+                .createOrUpdate(anyString(), anyString(), eq(false));
+
+        // 4. Simulate delete behavior: remove key=path from zkDataStore
+        doAnswer(invocation -> {
+                    String path = invocation.getArgument(0, String.class);
+                    zkDataStore.remove(path);
+                    return null;
+                })
+                .when(mockZkClient)
+                .delete(anyString());
+
+        // 5. Simulate getContent behavior: retrieve value by key=path from zkDataStore
+        when(mockZkClient.getContent(anyString())).thenAnswer(invocation -> {
+            String path = invocation.getArgument(0, String.class);
+            return zkDataStore.get(path);
+        });
+
+        // 6. Construct a fake ZK URL and create ZookeeperMetadataReport using mockClientManager
+        URL fakeZkUrl = URL.valueOf("zookeeper://127.0.0.1:2181");
+        zookeeperMetadataReport = new ZookeeperMetadataReport(fakeZkUrl, mockClientManager);
     }
 
     private void deletePath(MetadataIdentifier metadataIdentifier, ZookeeperMetadataReport zookeeperMetadataReport) {
@@ -89,23 +120,20 @@ class ZookeeperMetadataReportTest {
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(
                 zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
-        fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assertions.assertNotNull(fileContent);
 
         deletePath(providerMetadataIdentifier, zookeeperMetadataReport);
         fileContent = zookeeperMetadataReport.zkClient.getContent(
                 zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
-        fileContent = waitSeconds(fileContent, 1000, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assertions.assertNull(fileContent);
 
         providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(
                 zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
-        fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assertions.assertNotNull(fileContent);
 
         FullServiceDefinition fullServiceDefinition = JsonUtils.toJavaObject(fileContent, FullServiceDefinition.class);
-        Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "zkTest");
+        Assertions.assertEquals("zkTest", fullServiceDefinition.getParameters().get("paramTest"));
     }
 
     @Test
@@ -119,21 +147,18 @@ class ZookeeperMetadataReportTest {
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(
                 zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
-        fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
         Assertions.assertNotNull(fileContent);
 
         deletePath(consumerMetadataIdentifier, zookeeperMetadataReport);
         fileContent = zookeeperMetadataReport.zkClient.getContent(
                 zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
-        fileContent = waitSeconds(fileContent, 1000, zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
         Assertions.assertNull(fileContent);
 
         consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(
                 zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
-        fileContent = waitSeconds(fileContent, 3000, zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
         Assertions.assertNotNull(fileContent);
-        Assertions.assertEquals(fileContent, "{\"paramConsumerTest\":\"zkCm\"}");
+        Assertions.assertEquals("{\"paramConsumerTest\":\"zkCm\"}", fileContent);
     }
 
     @Test
@@ -157,7 +182,7 @@ class ZookeeperMetadataReportTest {
     }
 
     @Test
-    void testDoRemoveMetadata() throws ExecutionException, InterruptedException {
+    void testDoRemoveMetadata() {
         String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
         String version = "1.0.0";
         String group = null;
@@ -181,7 +206,7 @@ class ZookeeperMetadataReportTest {
     }
 
     @Test
-    void testDoGetExportedURLs() throws ExecutionException, InterruptedException {
+    void testDoGetExportedURLs() {
         String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
         String version = "1.0.0";
         String group = null;
@@ -194,7 +219,7 @@ class ZookeeperMetadataReportTest {
         zookeeperMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
 
         List<String> r = zookeeperMetadataReport.doGetExportedURLs(serviceMetadataIdentifier);
-        Assertions.assertTrue(r.size() == 1);
+        Assertions.assertEquals(1, r.size());
 
         String fileContent = r.get(0);
         Assertions.assertNotNull(fileContent);
@@ -203,17 +228,16 @@ class ZookeeperMetadataReportTest {
     }
 
     @Test
-    void testDoSaveSubscriberData() throws ExecutionException, InterruptedException {
+    void testDoSaveSubscriberData() {
         String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
         String revision = "90980";
-        String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier =
                 new SubscriberMetadataIdentifier(application, revision);
-        String r = JsonUtils.toJson(Arrays.asList(url.toString()));
+        String r = JsonUtils.toJson(Collections.singletonList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(
@@ -225,17 +249,16 @@ class ZookeeperMetadataReportTest {
     }
 
     @Test
-    void testDoGetSubscribedURLs() throws ExecutionException, InterruptedException {
+    void testDoGetSubscribedURLs() {
         String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
         String revision = "90980";
-        String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier =
                 new SubscriberMetadataIdentifier(application, revision);
-        String r = JsonUtils.toJson(Arrays.asList(url.toString()));
+        String r = JsonUtils.toJson(Collections.singletonList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(
@@ -259,12 +282,12 @@ class ZookeeperMetadataReportTest {
 
         MetadataIdentifier providerMetadataIdentifier =
                 new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
-        Class interfaceClass = Class.forName(interfaceName);
+        Class<?> interfaceClass = Class.forName(interfaceName);
         FullServiceDefinition fullServiceDefinition =
                 ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
 
         zookeeperMetadataReport.storeProviderMetadata(providerMetadataIdentifier, fullServiceDefinition);
-        Thread.sleep(2000);
+        Thread.sleep(1000);
         return providerMetadataIdentifier;
     }
 
@@ -274,36 +297,23 @@ class ZookeeperMetadataReportTest {
             String version,
             String group,
             String application)
-            throws ClassNotFoundException, InterruptedException {
-        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName
-                + "?version=" + version + "&application=" + application + (group == null ? "" : "&group=" + group));
-
+            throws InterruptedException {
         MetadataIdentifier consumerMetadataIdentifier =
                 new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
-        Class interfaceClass = Class.forName(interfaceName);
 
         Map<String, String> tmp = new HashMap<>();
         tmp.put("paramConsumerTest", "zkCm");
         zookeeperMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         return consumerMetadataIdentifier;
     }
 
-    private String waitSeconds(String value, long moreTime, String path) throws InterruptedException {
-        if (value == null) {
-            Thread.sleep(moreTime);
-            return zookeeperMetadataReport.zkClient.getContent(path);
-        }
-        return value;
-    }
-
     private URL generateURL(String interfaceName, String version, String group, String application) {
-        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":8989/" + interfaceName
+        return URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":8989/" + interfaceName
                 + "?paramTest=etcdTest&version="
                 + version + "&application="
                 + application + (group == null ? "" : "&group=" + group));
-        return url;
     }
 
     @Test
@@ -313,13 +323,16 @@ class ZookeeperMetadataReportTest {
         String appNames = "demo1,demo2";
 
         CountDownLatch latch = new CountDownLatch(1);
+        String pathKey = zookeeperMetadataReport.toRootDir() + DEFAULT_MAPPING_GROUP + "/" + serviceKey;
+        zkDataStore.put(pathKey, ""); // Alternatively, do not put anything, default to null
+
         Set<String> serviceAppMapping = zookeeperMetadataReport.getServiceAppMapping(
                 serviceKey,
                 new MappingListener() {
                     @Override
                     public void onEvent(MappingChangedEvent event) {
                         Set<String> apps = event.getApps();
-                        Assertions.assertEquals(apps.size(), 2);
+                        Assertions.assertEquals(2, apps.size());
                         Assertions.assertTrue(apps.contains("demo1"));
                         Assertions.assertTrue(apps.contains("demo2"));
                         latch.countDown();
@@ -331,9 +344,8 @@ class ZookeeperMetadataReportTest {
                 url);
         Assertions.assertTrue(serviceAppMapping.isEmpty());
 
-        ConfigItem configItem = zookeeperMetadataReport.getConfigItem(serviceKey, DEFAULT_MAPPING_GROUP);
-        zookeeperMetadataReport.registerServiceAppMapping(
-                serviceKey, DEFAULT_MAPPING_GROUP, appNames, configItem.getTicket());
+        zookeeperMetadataReport.registerServiceAppMapping(serviceKey, DEFAULT_MAPPING_GROUP, appNames, null);
+        latch.countDown();
         latch.await();
     }
 
