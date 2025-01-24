@@ -87,7 +87,8 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             // get the file name, just like apache-zookeeper-{version}-bin
             // the version we maybe unknown if the zookeeper archive binary file is copied by user self.
             Path parentPath = Paths.get(context.getSourceFile().getParent().toString(), String.valueOf(clientPort));
-            if (!Files.exists(parentPath) || !parentPath.toFile().isDirectory()) {
+            if (!Files.exists(parentPath)
+                    || !parentPath.toFile().isDirectory()) {
                 throw new IllegalStateException("There is something wrong in unpacked file!");
             }
 
@@ -100,7 +101,9 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             File targetFile = Paths.get(parentPath.toString(), context.getUnpackedDirectory()).toFile();
             sourceFile.renameTo(targetFile);
             if (!Files.exists(targetFile.toPath()) || !targetFile.isDirectory()) {
-                throw new IllegalStateException(String.format("Failed to rename the directory. source directory: %s, target directory: %s", sourceFile.toPath(), targetFile.toPath()));
+                throw new IllegalStateException(String.format(
+                        "Failed to rename the directory. source directory: %s, target directory: %s",
+                        sourceFile.toPath(), targetFile.toPath()));
             }
             // get the bin path
             Path zookeeperBin = Paths.get(targetFile.toString(), "bin");
