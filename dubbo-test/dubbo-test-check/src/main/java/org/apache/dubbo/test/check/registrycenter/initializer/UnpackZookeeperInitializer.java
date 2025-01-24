@@ -98,7 +98,8 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             }
             // rename directory
             File sourceFile = files[0];
-            File targetFile = Paths.get(parentPath.toString(), context.getUnpackedDirectory()).toFile();
+            File targetFile = Paths.get(parentPath.toString(), context.getUnpackedDirectory())
+                    .toFile();
             sourceFile.renameTo(targetFile);
             if (!Files.exists(targetFile.toPath()) || !targetFile.isDirectory()) {
                 throw new IllegalStateException(String.format(
