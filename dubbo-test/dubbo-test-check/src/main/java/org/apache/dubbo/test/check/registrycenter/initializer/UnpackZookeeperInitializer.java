@@ -88,8 +88,7 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             // the version we maybe unknown if the zookeeper archive binary file is copied by user self.
             Path parentPath = Paths.get(context.getSourceFile().getParent().toString(), String.valueOf(clientPort));
             if (!Files.exists(parentPath)
-                    || !parentPath.toFile().isDirectory())
-            {
+                    || !parentPath.toFile().isDirectory()) {
                 throw new IllegalStateException("There is something wrong in unpacked file!");
             }
 
