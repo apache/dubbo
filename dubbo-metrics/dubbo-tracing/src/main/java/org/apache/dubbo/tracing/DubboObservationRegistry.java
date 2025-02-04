@@ -16,16 +16,6 @@
  */
 package org.apache.dubbo.tracing;
 
-import io.micrometer.observation.ObservationHandler;
-
-import io.micrometer.observation.ObservationRegistry;
-import io.micrometer.tracing.Tracer;
-import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
-import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
-import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
-
-import io.micrometer.tracing.propagation.Propagator;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -40,11 +30,20 @@ import org.apache.dubbo.tracing.tracer.PropagatorProviderFactory;
 import org.apache.dubbo.tracing.tracer.TracerProvider;
 import org.apache.dubbo.tracing.tracer.TracerProviderFactory;
 
+import io.micrometer.observation.ObservationHandler;
+import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
+import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
+import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
+import io.micrometer.tracing.propagation.Propagator;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_NOT_FOUND_TRACER_DEPENDENCY;
 
 public class DubboObservationRegistry {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboObservationRegistry.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DubboObservationRegistry.class);
 
     private final ApplicationModel applicationModel;
 
@@ -57,8 +56,8 @@ public class DubboObservationRegistry {
 
     public void initObservationRegistry() {
         // If get ObservationRegistry.class from external(eg Spring.), use external.
-        ObservationRegistry externalObservationRegistry = applicationModel.getBeanFactory()
-                .getBean(ObservationRegistry.class);
+        ObservationRegistry externalObservationRegistry =
+                applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
         if (externalObservationRegistry != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("ObservationRegistry.class from external is existed.");
@@ -72,7 +71,11 @@ public class DubboObservationRegistry {
 
         TracerProvider tracerProvider = TracerProviderFactory.getProvider(applicationModel, tracingConfig);
         if (tracerProvider == null) {
-            logger.warn(COMMON_NOT_FOUND_TRACER_DEPENDENCY, "", "", "Can not found OpenTelemetry/Brave tracer dependencies, skip init ObservationRegistry.");
+            logger.warn(
+                    COMMON_NOT_FOUND_TRACER_DEPENDENCY,
+                    "",
+                    "",
+                    "Can not found OpenTelemetry/Brave tracer dependencies, skip init ObservationRegistry.");
             return;
         }
         // The real tracer will come from tracer implementation (OTel / Brave)
@@ -86,8 +89,13 @@ public class DubboObservationRegistry {
         registry.observationConfig()
                 // set up a first matching handler that creates spans - it comes from Micrometer Tracing.
                 // set up spans for sending and receiving data over the wire and a default one.
-                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(new PropagatingSenderTracingObservationHandler<>(tracer, propagator), new PropagatingReceiverTracingObservationHandler<>(tracer, propagator), new DefaultTracingObservationHandler(tracer)))
-                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(new DubboClientTracingObservationHandler<>(tracer), new DubboServerTracingObservationHandler<>(tracer)));
+                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(
+                        new PropagatingSenderTracingObservationHandler<>(tracer, propagator),
+                        new PropagatingReceiverTracingObservationHandler<>(tracer, propagator),
+                        new DefaultTracingObservationHandler(tracer)))
+                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(
+                        new DubboClientTracingObservationHandler<>(tracer),
+                        new DubboServerTracingObservationHandler<>(tracer)));
 
         if (MetricsSupportUtil.isSupportMetrics()) {
             ObservationMeter.addMeterRegistry(registry, applicationModel);
@@ -97,6 +105,4 @@ public class DubboObservationRegistry {
         applicationModel.getBeanFactory().registerBean(tracer);
         applicationModel.getBeanFactory().registerBean(propagator);
     }
-
-
 }
