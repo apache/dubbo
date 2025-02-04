@@ -35,6 +35,7 @@ public final class MethodMeta extends AnnotationSupport {
     private final Method method;
     private MethodDescriptor methodDescriptor;
     private ParameterMeta[] parameters;
+    private ParameterMeta returnParameter;
     private final ServiceMeta serviceMeta;
 
     public MethodMeta(List<Method> hierarchy, MethodDescriptor methodDescriptor, ServiceMeta serviceMeta) {
@@ -106,6 +107,14 @@ public final class MethodMeta extends AnnotationSupport {
         return parameters;
     }
 
+    public ParameterMeta getReturnParameter() {
+        ParameterMeta returnParameter = this.returnParameter;
+        if (returnParameter == null) {
+            this.returnParameter = returnParameter = new ReturnParameterMeta(getToolKit(), hierarchy, method);
+        }
+        return returnParameter;
+    }
+
     public ServiceMeta getServiceMeta() {
         return serviceMeta;
     }
@@ -114,12 +123,20 @@ public final class MethodMeta extends AnnotationSupport {
         return method.getReturnType();
     }
 
+    public Class<?> getActualReturnType() {
+        return getReturnParameter().getActualType();
+    }
+
     public Type getGenericReturnType() {
         return method.getGenericReturnType();
     }
 
+    public Type getActualGenericReturnType() {
+        return getReturnParameter().getActualGenericType();
+    }
+
     @Override
-    protected List<? extends AnnotatedElement> getAnnotatedElements() {
+    public List<? extends AnnotatedElement> getAnnotatedElements() {
         return hierarchy;
     }
 
@@ -153,7 +170,7 @@ public final class MethodMeta extends AnnotationSupport {
         return MethodUtils.toShortString(method);
     }
 
-    private static final class StreamParameterMeta extends ParameterMeta {
+    public static final class StreamParameterMeta extends ParameterMeta {
 
         private final Class<?> type;
         private final Type genericType;
@@ -193,8 +210,44 @@ public final class MethodMeta extends AnnotationSupport {
         }
 
         @Override
-        protected List<? extends AnnotatedElement> getAnnotatedElements() {
+        public List<? extends AnnotatedElement> getAnnotatedElements() {
             return elements;
+        }
+    }
+
+    public static final class ReturnParameterMeta extends ParameterMeta {
+
+        private final List<Method> hierarchy;
+        private final Method method;
+
+        ReturnParameterMeta(RestToolKit toolKit, List<Method> hierarchy, Method method) {
+            super(toolKit, null);
+            this.hierarchy = hierarchy;
+            this.method = method;
+        }
+
+        public Method getMethod() {
+            return method;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return method.getReturnType();
+        }
+
+        @Override
+        public Type getGenericType() {
+            return method.getGenericReturnType();
+        }
+
+        @Override
+        public List<? extends AnnotatedElement> getAnnotatedElements() {
+            return hierarchy;
+        }
+
+        @Override
+        protected AnnotatedElement getAnnotatedElement() {
+            return method;
         }
     }
 }

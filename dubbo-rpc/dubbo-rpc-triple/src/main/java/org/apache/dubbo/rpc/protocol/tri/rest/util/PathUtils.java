@@ -70,6 +70,25 @@ public final class PathUtils {
         return true;
     }
 
+    public static String join(String path1, String path2) {
+        if (StringUtils.isEmpty(path1)) {
+            return StringUtils.isEmpty(path2) ? StringUtils.EMPTY_STRING : path2;
+        }
+        if (StringUtils.isEmpty(path2)) {
+            return path1;
+        }
+        if (path1.charAt(path1.length() - 1) == '/') {
+            if (path2.charAt(0) == '/') {
+                return path1 + path2.substring(1);
+            }
+            return path1 + path2;
+        }
+        if (path2.charAt(0) == '/') {
+            return path1 + path2;
+        }
+        return path1 + '/' + path2;
+    }
+
     /**
      * See
      * <a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/AntPathMatcher.html#combine(java.lang.String,java.lang.String)">AntPathMatcher#combine</a>
@@ -121,6 +140,9 @@ public final class PathUtils {
 
         boolean slash1 = last1 == '/';
         boolean slash2 = path2.charAt(0) == '/';
+        if (slash2 && path2.length() > 1 && path2.charAt(1) == '/') {
+            return path2.substring(1);
+        }
         if (slash1) {
             return slash2 ? path1 + path2.substring(1) : path1 + path2;
         }

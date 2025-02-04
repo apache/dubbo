@@ -20,6 +20,8 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
+import java.util.Collection;
+
 /**
  * RequestMappingRegistry used for registering and unregistering rest request mappings.
  */
@@ -32,6 +34,8 @@ public interface RequestMappingRegistry {
     HandlerMeta lookup(HttpRequest request);
 
     boolean exists(String path, String method);
+
+    Collection<Registration> getRegistrations();
 
     void destroy();
 }

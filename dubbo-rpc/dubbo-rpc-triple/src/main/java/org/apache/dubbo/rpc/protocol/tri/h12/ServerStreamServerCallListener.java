@@ -33,6 +33,13 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onMessage(Object message) {
+        Class<?>[] params = invocation.getParameterTypes();
+        if (params.length == 1) {
+            if (params[0].isInstance(responseObserver)) {
+                invocation.setArguments(new Object[] {responseObserver});
+                return;
+            }
+        }
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
         }

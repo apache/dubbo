@@ -1,3 +1,0 @@
-org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAutoConfiguration
-org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboHealthIndicatorAutoConfiguration
-org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointMetadataAutoConfiguration

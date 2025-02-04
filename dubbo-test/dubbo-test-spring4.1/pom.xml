@@ -85,10 +85,18 @@
 
   <profiles>
     <profile>
-      <id>jdk15ge-simple</id>
+      <id>jdk15ge-add-open</id>
       <activation>
         <jdk>[15,</jdk>
       </activation>
+      <properties>
+        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED
+          --add-opens java.base/java.math=ALL-UNNAMED
+          --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk15ge-simple</id>
       <build>
         <plugins>
           <plugin>
@@ -97,10 +105,6 @@
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
               <forkCount>1</forkCount>
-              <argLine>${argline} ${jacocoArgLine}
-                                --add-opens java.base/java.lang=ALL-UNNAMED
-                                --add-opens java.base/java.math=ALL-UNNAMED
-                                --add-opens java.base/java.util=ALL-UNNAMED</argLine>
               <systemProperties>
                 <!-- common shared -->
               </systemProperties>

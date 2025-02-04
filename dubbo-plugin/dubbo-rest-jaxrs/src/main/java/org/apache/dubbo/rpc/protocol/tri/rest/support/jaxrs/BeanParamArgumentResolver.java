@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AnnotationBaseArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.lang.annotation.Annotation;
@@ -31,6 +32,11 @@ public class BeanParamArgumentResolver implements AnnotationBaseArgumentResolver
     @Override
     public Class<Annotation> accept() {
         return Annotations.BeanParam.type();
+    }
+
+    @Override
+    public NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation) {
+        return null;
     }
 
     @Override

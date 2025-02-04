@@ -21,8 +21,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.TripleConfig;
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
-import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
@@ -64,8 +62,7 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpMetadata metadata) {
-        HttpHeaders headers = metadata.headers();
-        String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        String contentType = metadata.contentType();
         Http2ServerTransportListenerFactory factory = UrlUtils.computeServiceAttribute(
                         url,
                         TRANSPORT_LISTENER_FACTORY_CACHE,

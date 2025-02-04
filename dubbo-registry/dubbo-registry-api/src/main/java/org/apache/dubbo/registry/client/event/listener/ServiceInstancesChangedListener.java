@@ -182,28 +182,8 @@ public class ServiceInstancesChangedListener {
         }
 
         int emptyNum = hasEmptyMetadata(revisionToInstances);
-        if (emptyNum != 0) { // retry every 10 seconds
+        if (emptyNum != 0) {
             hasEmptyMetadata = true;
-            if (retryPermission.tryAcquire()) {
-                if (retryFuture != null && !retryFuture.isDone()) {
-                    // cancel last retryFuture because only one retryFuture will be canceled at destroy().
-                    retryFuture.cancel(true);
-                }
-                try {
-                    retryFuture = scheduler.schedule(
-                            new AddressRefreshRetryTask(retryPermission, event.getServiceName()),
-                            10_000L,
-                            TimeUnit.MILLISECONDS);
-                } catch (Exception e) {
-                    logger.error(
-                            INTERNAL_ERROR,
-                            "unknown error in registry module",
-                            "",
-                            "Error submitting async retry task.");
-                }
-                logger.warn(
-                        INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
-            }
 
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
@@ -214,10 +194,12 @@ public class ServiceInstancesChangedListener {
                         "",
                         "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
 
+                submitRetryTask(event);
                 return;
             }
+        } else {
+            hasEmptyMetadata = false;
         }
-        hasEmptyMetadata = false;
 
         Map<String, Map<Integer, Map<Set<String>, Object>>> protocolRevisionsToUrls = new HashMap<>();
         Map<String, List<ProtocolServiceKeyWithUrls>> newServiceUrls = new HashMap<>();
@@ -241,6 +223,30 @@ public class ServiceInstancesChangedListener {
 
         this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
+
+        if (hasEmptyMetadata) {
+            submitRetryTask(event);
+        }
+    }
+
+    private void submitRetryTask(ServiceInstancesChangedEvent event) {
+        // retry every 10 seconds
+        if (retryPermission.tryAcquire()) {
+            if (retryFuture != null && !retryFuture.isDone()) {
+                // cancel last retryFuture because only one retryFuture will be canceled at destroy().
+                retryFuture.cancel(true);
+            }
+            try {
+                retryFuture = scheduler.schedule(
+                        new AddressRefreshRetryTask(retryPermission, event.getServiceName()),
+                        10_000L,
+                        TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                logger.error(
+                        INTERNAL_ERROR, "unknown error in registry module", "", "Error submitting async retry task.");
+            }
+            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
+        }
     }
 
     public synchronized void addListenerAndNotify(URL url, NotifyListener listener) {

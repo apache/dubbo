@@ -278,7 +278,21 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-rest-openapi</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-triple-servlet</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-triple-websocket</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -339,6 +353,13 @@
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-http3</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-websocket</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
@@ -499,6 +520,7 @@
                   <include>org.apache.dubbo:dubbo-remoting-api</include>
                   <include>org.apache.dubbo:dubbo-remoting-http12</include>
                   <include>org.apache.dubbo:dubbo-remoting-http3</include>
+                  <include>org.apache.dubbo:dubbo-remoting-websocket</include>
                   <include>org.apache.dubbo:dubbo-remoting-netty4</include>
                   <include>org.apache.dubbo:dubbo-remoting-netty</include>
                   <include>org.apache.dubbo:dubbo-remoting-zookeeper-curator5</include>
@@ -508,7 +530,9 @@
                   <include>org.apache.dubbo:dubbo-rpc-triple</include>
                   <include>org.apache.dubbo:dubbo-rest-jaxrs</include>
                   <include>org.apache.dubbo:dubbo-rest-spring</include>
+                  <include>org.apache.dubbo:dubbo-rest-openapi</include>
                   <include>org.apache.dubbo:dubbo-triple-servlet</include>
+                  <include>org.apache.dubbo:dubbo-triple-websocket</include>
                   <include>org.apache.dubbo:dubbo-serialization-api</include>
                   <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                   <include>org.apache.dubbo:dubbo-serialization-fastjson2</include>
@@ -599,6 +623,9 @@
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.common.url.component.param.DynamicParamSource</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.common.utils.ParameterNameReader</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.config.ConfigInitializer</resource>
@@ -741,6 +768,9 @@
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.http3.Http3ServerTransportListenerFactory</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.websocket.WebSocketServerTransportListenerFactory</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.telnet.TelnetHandler</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -856,6 +886,9 @@
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMappingResolver</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.rest.openapi.OpenAPIExtension</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.route.RequestHandlerMapping</resource>

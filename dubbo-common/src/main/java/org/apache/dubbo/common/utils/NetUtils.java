@@ -451,6 +451,11 @@ public final class NetUtils {
                 || !networkInterface.isUp()) {
             return true;
         }
+        if (Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+                        CommonConstants.DubboProperty.DUBBO_NETWORK_INTERFACE_POINT_TO_POINT_IGNORED, "false"))
+                && networkInterface.isPointToPoint()) {
+            return true;
+        }
         String ignoredInterfaces = SystemPropertyConfigUtils.getSystemProperty(
                 CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
         String networkInterfaceDisplayName;

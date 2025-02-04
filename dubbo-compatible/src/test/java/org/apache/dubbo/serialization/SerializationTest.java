@@ -29,6 +29,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -74,6 +76,7 @@ class SerializationTest {
     }
 
     @Test
+    @DisabledOnOs(OS.WINDOWS) // Charset maynot UTF-8 on Windows JDK 8 ~ 17
     void testWriteUTF() throws IOException {
         myObjectOutput.writeUTF("Pace");
         myObjectOutput.writeUTF("和平");

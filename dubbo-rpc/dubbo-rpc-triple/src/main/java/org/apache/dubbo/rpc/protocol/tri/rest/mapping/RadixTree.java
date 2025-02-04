@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
@@ -42,14 +43,24 @@ public final class RadixTree<T> {
 
     private final Map<KeyString, List<Match<T>>> directPathMap = new HashMap<>();
     private final Node<T> root = new Node<>();
+    private final char separator;
     private final boolean caseSensitive;
 
-    public RadixTree(boolean caseSensitive) {
+    public RadixTree(boolean caseSensitive, char separator) {
         this.caseSensitive = caseSensitive;
+        this.separator = separator;
+    }
+
+    public RadixTree(boolean caseSensitive) {
+        this(caseSensitive, '/');
+    }
+
+    public RadixTree(char separator) {
+        this(true, separator);
     }
 
     public RadixTree() {
-        caseSensitive = true;
+        this(true, '/');
     }
 
     public T addPath(PathExpression path, T value) {
@@ -85,7 +96,24 @@ public final class RadixTree<T> {
     }
 
     public T addPath(String path, T value) {
-        return addPath(PathExpression.parse(PathUtils.normalize(path)), value);
+        if (path == null) {
+            return value;
+        }
+        if (separator == '/') {
+            path = PathUtils.normalize(path);
+        } else {
+            path = path.replace(separator, '/');
+            if (path.isEmpty() || path.charAt(0) != '/') {
+                path = '/' + path;
+            }
+        }
+        return addPath(PathExpression.parse(path), value);
+    }
+
+    public void addPath(T value, String... paths) {
+        for (String path : paths) {
+            addPath(path, value);
+        }
     }
 
     private Node<T> getChild(Node<T> current, PathSegment segment) {
@@ -136,6 +164,29 @@ public final class RadixTree<T> {
         }
     }
 
+    public void walk(BiConsumer<PathExpression, T> consumer) {
+        for (List<Match<T>> matches : directPathMap.values()) {
+            for (Match<T> match : matches) {
+                consumer.accept(match.getExpression(), match.getValue());
+            }
+        }
+        walkRecursive(root, consumer);
+    }
+
+    private void walkRecursive(Node<T> root, BiConsumer<PathExpression, T> consumer) {
+        for (Pair<PathExpression, T> pair : root.values) {
+            consumer.accept(pair.getLeft(), pair.getRight());
+        }
+
+        for (Node<T> node : root.children.values()) {
+            walkRecursive(node, consumer);
+        }
+
+        for (Node<T> node : root.fuzzyChildren.values()) {
+            walkRecursive(node, consumer);
+        }
+    }
+
     /**
      * Ensure that the path is normalized using {@link PathUtils#normalize(String)} before matching.
      */
@@ -179,20 +230,50 @@ public final class RadixTree<T> {
         return match(new KeyString(path, caseSensitive));
     }
 
+    public List<Match<T>> matchRelaxed(String path) {
+        KeyString keyPath = new KeyString(path, caseSensitive);
+        List<Match<T>> matches = new ArrayList<>();
+        match(keyPath, matches);
+        if (!matches.isEmpty()) {
+            return matches;
+        }
+
+        int end = path.length();
+        if (end > 1 && path.charAt(end - 1) == '/') {
+            match(keyPath.subSequence(0, --end), matches);
+            if (!matches.isEmpty()) {
+                return matches;
+            }
+        }
+
+        for (int i = end - 1; i >= 0; i--) {
+            char ch = path.charAt(i);
+            if (ch == '/') {
+                break;
+            }
+            if (ch == '.') {
+                match(keyPath.subSequence(0, i), matches);
+                if (!matches.isEmpty()) {
+                    return matches;
+                }
+            }
+        }
+
+        return matches;
+    }
+
     private void matchRecursive(
             Node<T> current, KeyString path, int start, Map<String, String> variableMap, List<Match<T>> matches) {
         int end = -2;
         if (!current.children.isEmpty()) {
-            end = path.indexOf('/', start);
-            Node<T> node = current.children.get(path.subSequence(start, end));
-            if (node != null) {
+            end = path.indexOf(separator, start);
+            Node<T> child = current.children.get(path.subSequence(start, end));
+            if (child != null) {
                 if (end == -1) {
-                    if (node.isLeaf()) {
-                        addMatch(node, variableMap, matches);
-                    }
-                    return;
+                    addMatch(child, variableMap, matches);
+                } else {
+                    matchRecursive(child, path, end + 1, variableMap, matches);
                 }
-                matchRecursive(node, path, end + 1, variableMap, matches);
             }
         }
 
@@ -200,7 +281,7 @@ public final class RadixTree<T> {
             return;
         }
         if (end == -2) {
-            end = path.indexOf('/', start);
+            end = path.indexOf(separator, start);
         }
         Map<String, String> workVariableMap = new LinkedHashMap<>();
         for (Map.Entry<PathSegment, Node<T>> entry : current.fuzzyChildren.entrySet()) {
@@ -212,9 +293,7 @@ public final class RadixTree<T> {
                     addMatch(child, workVariableMap, matches);
                 } else {
                     if (end == -1) {
-                        if (child.isLeaf()) {
-                            addMatch(child, workVariableMap, matches);
-                        }
+                        addMatch(child, workVariableMap, matches);
                     } else {
                         matchRecursive(child, path, end + 1, workVariableMap, matches);
                     }
@@ -228,6 +307,17 @@ public final class RadixTree<T> {
 
     private static <T> void addMatch(Node<T> node, Map<String, String> variableMap, List<Match<T>> matches) {
         List<Pair<PathExpression, T>> values = node.values;
+        if (values.isEmpty()) {
+            if (node.fuzzyChildren.isEmpty()) {
+                return;
+            }
+            for (Entry<PathSegment, Node<T>> entry : node.fuzzyChildren.entrySet()) {
+                if (entry.getKey().getType() == Type.WILDCARD_TAIL) {
+                    addMatch(entry.getValue(), variableMap, matches);
+                }
+            }
+            return;
+        }
         variableMap = variableMap.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(variableMap);
         for (int i = 0, size = values.size(); i < size; i++) {
             Pair<PathExpression, T> pair = values.get(i);

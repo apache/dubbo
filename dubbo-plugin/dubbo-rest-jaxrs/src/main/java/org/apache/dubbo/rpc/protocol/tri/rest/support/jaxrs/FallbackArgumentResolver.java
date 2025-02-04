@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
@@ -40,7 +41,8 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
 
     @Override
     protected NamedValueMeta createNamedValueMeta(ParameterMeta param) {
-        return new NamedValueMeta(param.isAnnotated(Annotations.Nonnull), Helper.defaultValue(param));
+        return new NamedValueMeta(null, param.isAnnotated(Annotations.Nonnull), Helper.defaultValue(param))
+                .setParamType(param.isSimple() ? null : ParamType.Body);
     }
 
     @Override
@@ -49,7 +51,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         if (value != null) {
             return value;
         }
-        if (meta.parameterMeta().isSimple()) {
+        if (meta.parameter().isSimple()) {
             return request.parameter(meta.name());
         }
         return null;

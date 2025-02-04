@@ -20,6 +20,7 @@ public enum ParamType {
     PathVariable,
     MatrixVariable,
     Param,
+    Form,
     Header,
     Cookie,
     Attribute,

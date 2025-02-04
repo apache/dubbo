@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http3.netty4;
 
 import org.apache.dubbo.common.io.StreamUtils;
+import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
@@ -34,13 +35,17 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
+import io.netty.incubator.codec.http3.DefaultHttp3Headers;
 import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
 import io.netty.incubator.codec.http3.Http3DataFrame;
 import io.netty.incubator.codec.http3.Http3Headers;
 import io.netty.incubator.codec.http3.Http3HeadersFrame;
 import io.netty.incubator.codec.http3.Http3RequestStreamInboundHandler;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
+
+import static org.apache.dubbo.remoting.http3.netty4.Constants.TRI_PING;
 
 @Sharable
 public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler implements ChannelOutboundHandler {
@@ -49,7 +54,21 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
 
     @Override
     protected void channelRead(ChannelHandlerContext ctx, Http3HeadersFrame frame) {
-        ctx.fireChannelRead(new Http2MetadataFrame(getStreamId(ctx), new DefaultHttpHeaders(frame.headers()), false));
+        Http3Headers headers = frame.headers();
+        if (headers.contains(TRI_PING)) {
+            pingReceived(ctx);
+            return;
+        }
+
+        ctx.fireChannelRead(new Http2MetadataFrame(getStreamId(ctx), new DefaultHttpHeaders(headers), false));
+    }
+
+    private void pingReceived(ChannelHandlerContext ctx) {
+        Http3Headers pongHeader = new DefaultHttp3Headers(false);
+        pongHeader.set(TRI_PING, "0");
+        pongHeader.set(PseudoHeaderName.STATUS.value(), HttpStatus.OK.getStatusString());
+        ctx.write(new DefaultHttp3HeadersFrame(pongHeader));
+        ctx.close();
     }
 
     @Override

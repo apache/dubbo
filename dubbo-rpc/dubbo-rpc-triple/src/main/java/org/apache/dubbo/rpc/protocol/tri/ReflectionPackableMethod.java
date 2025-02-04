@@ -73,19 +73,9 @@ public class ReflectionPackableMethod implements PackableMethod {
         switch (method.getRpcType()) {
             case CLIENT_STREAM:
             case BI_STREAM:
-                actualRequestTypes = new Class<?>[] {
-                    obtainActualTypeInStreamObserver(
-                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0])
-                };
-                actualResponseType = obtainActualTypeInStreamObserver(
-                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
-                                .getActualTypeArguments()[0]);
-                break;
             case SERVER_STREAM:
-                actualRequestTypes = method.getMethod().getParameterTypes();
-                actualResponseType = obtainActualTypeInStreamObserver(
-                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
-                                .getActualTypeArguments()[0]);
+                actualRequestTypes = method.getActualRequestTypes();
+                actualResponseType = method.getActualResponseType();
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
@@ -410,6 +400,9 @@ public class ReflectionPackableMethod implements PackableMethod {
             builder.setSerializeType(serialize);
             for (String type : argumentsType) {
                 builder.addArgTypes(type);
+            }
+            if (actualRequestTypes == null || actualRequestTypes.length == 0) {
+                return builder.build().toByteArray();
             }
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             for (int i = 0; i < arguments.length; i++) {

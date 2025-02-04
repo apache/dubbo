@@ -37,6 +37,8 @@ public interface GreeterService {
      */
     void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> responseObserver);
 
+    void sayHelloServerStreamNoParameter(StreamObserver<HelloReply> responseObserver);
+
     /**
      * Sends greetings with bi streaming
      */

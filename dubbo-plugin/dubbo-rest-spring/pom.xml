@@ -19,9 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-plugin</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>dubbo-rest-spring</artifactId>
@@ -84,8 +84,24 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java-util</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.spockframework</groupId>
       <artifactId>spock-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-test-check</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -111,9 +127,9 @@
       <id>rpc-rest-test</id>
       <dependencies>
         <dependency>
-          <groupId>org.apache.dubbo</groupId>
+          <groupId>org.apache.dubbo.extensions</groupId>
           <artifactId>dubbo-rpc-rest</artifactId>
-          <version>3.3.1-SNAPSHOT</version>
+          <version>3.3.1</version>
           <scope>test</scope>
         </dependency>
       </dependencies>

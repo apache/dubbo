@@ -211,8 +211,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 mappingLock.lock();
                 mappingByUrl = serviceNameMapping.getMapping(url);
                 try {
-                    MappingListener mappingListener = new DefaultMappingListener(url, mappingByUrl, listener);
+                    DefaultMappingListener mappingListener = new DefaultMappingListener(url, mappingByUrl, listener);
                     mappingByUrl = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
+                    // update the initial mapping apps we started to listen, to make sure it reflects the real value
+                    // used do subscription before any event.
+                    // it's protected by the mapping lock, so it won't override the event value.
+                    mappingListener.updateInitialApps(mappingByUrl);
                     synchronized (mappingListeners) {
                         mappingListeners
                                 .computeIfAbsent(url.getProtocolServiceKey(), (k) -> new ConcurrentHashSet<>())
@@ -399,8 +403,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private class DefaultMappingListener implements MappingListener {
         private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultMappingListener.class);
         private final URL url;
-        private Set<String> oldApps;
-        private NotifyListener listener;
+        private final NotifyListener listener;
+        private volatile Set<String> oldApps;
         private volatile boolean stopped;
 
         public DefaultMappingListener(URL subscribedURL, Set<String> serviceNames, NotifyListener listener) {
@@ -424,16 +428,15 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             Set<String> newApps = event.getApps();
             Set<String> tempOldApps = oldApps;
 
-            if (CollectionUtils.isEmpty(newApps) || CollectionUtils.equals(newApps, tempOldApps)) {
-                return;
-            }
-
-            logger.info(
-                    "Mapping of service " + event.getServiceKey() + "changed from " + tempOldApps + " to " + newApps);
-
             Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
             try {
                 mappingLock.lock();
+                if (CollectionUtils.isEmpty(newApps) || CollectionUtils.equals(newApps, tempOldApps)) {
+                    return;
+                }
+                logger.info("Mapping of service " + event.getServiceKey() + "changed from " + tempOldApps + " to "
+                        + newApps);
+
                 if (CollectionUtils.isEmpty(tempOldApps) && !newApps.isEmpty()) {
                     serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
@@ -456,6 +459,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                                 oldListener.removeListener(url.getServiceKey(), listener);
                                 if (!oldListener.hasListeners()) {
                                     oldListener.destroy();
+                                    serviceListeners.remove(appKey);
                                     removeAppSubscriptionLock(appKey);
                                 }
                             } finally {
@@ -475,6 +479,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         protected NotifyListener getListener() {
             return listener;
+        }
+
+        // writing of oldApps is protected by mapping lock to guarantee sequence consistency.
+        public void updateInitialApps(Set<String> oldApps) {
+            if (oldApps != null && !CollectionUtils.equals(oldApps, this.oldApps)) {
+                this.oldApps = oldApps;
+                logger.info("Update initial mapping apps from " + this.oldApps + " to " + oldApps);
+            }
         }
 
         @Override

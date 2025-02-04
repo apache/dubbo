@@ -20,6 +20,7 @@ import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -81,8 +82,12 @@ public class TestResponse {
         List<T> bodies = (List<T>) this.bodies;
         if (bodies == null) {
             bodies = new ArrayList<>(oss.size());
-            for (OutputStream os : oss) {
-                ByteArrayOutputStream bos = (ByteArrayOutputStream) os;
+            boolean isTextEvent = MediaType.TEXT_EVENT_STREAM.getName().equals(getContentType());
+            for (int i = 0, size = oss.size(); i < size; i++) {
+                if (isTextEvent && i % 3 != 1) {
+                    continue;
+                }
+                ByteArrayOutputStream bos = (ByteArrayOutputStream) oss.get(i);
                 if (bos.size() == 0) {
                     bodies.add(null);
                 } else {

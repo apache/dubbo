@@ -1,0 +1,6 @@
+resolver-basic=org.apache.dubbo.rpc.protocol.tri.rest.support.basic.BasicOpenAPIDefinitionResolver
+resolver-swagger=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.SwaggerOpenAPIDefinitionResolver
+resolver-javadoc=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.JavadocOpenAPIDefinitionResolver
+naming-strategy-default=org.apache.dubbo.rpc.protocol.tri.rest.openapi.DefaultOpenAPINamingStrategy
+handler-swagger-ui=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.SwaggerUIRequestHandler
+handler-redoc=org.apache.dubbo.rpc.protocol.tri.rest.support.swagger.RedocRequestHandler

@@ -4,3 +4,4 @@ yaml=org.apache.dubbo.remoting.http12.message.codec.YamlCodecFactory
 xml=org.apache.dubbo.remoting.http12.message.codec.XmlCodecFactory
 html=org.apache.dubbo.remoting.http12.message.codec.HtmlCodecFactory
 plaintext=org.apache.dubbo.remoting.http12.message.codec.PlainTextCodecFactory
+binary=org.apache.dubbo.remoting.http12.message.codec.BinaryCodecFactory

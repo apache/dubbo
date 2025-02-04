@@ -24,6 +24,8 @@ public enum HttpHeaderNames {
 
     PATH(PseudoHeaderName.PATH.value()),
 
+    METHOD(PseudoHeaderName.METHOD.value()),
+
     ACCEPT(io.netty.handler.codec.http.HttpHeaderNames.ACCEPT),
 
     CONTENT_TYPE(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE),
@@ -33,6 +35,8 @@ public enum HttpHeaderNames {
     CONTENT_LANGUAGE(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LANGUAGE),
 
     TRANSFER_ENCODING(io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING),
+
+    CACHE_CONTROL(io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL),
 
     LOCATION(io.netty.handler.codec.http.HttpHeaderNames.LOCATION),
 
@@ -45,6 +49,8 @@ public enum HttpHeaderNames {
     LAST_MODIFIED(io.netty.handler.codec.http.HttpHeaderNames.LAST_MODIFIED),
 
     TE(io.netty.handler.codec.http.HttpHeaderNames.TE),
+
+    CONNECTION(io.netty.handler.codec.http.HttpHeaderNames.CONNECTION),
 
     ALT_SVC("alt-svc");
 

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
@@ -34,19 +35,24 @@ public final class ModelAttributeArgumentResolver extends AbstractSpringArgument
     }
 
     @Override
+    protected ParamType getParamType(NamedValueMeta meta) {
+        return ParamType.Param;
+    }
+
+    @Override
     protected Object resolveValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        if (meta.parameterMeta().isSimple()) {
+        if (meta.parameter().isSimple()) {
             return request.parameter(meta.name());
         }
-        return meta.parameterMeta().bind(request, response);
+        return meta.parameter().bind(request, response);
     }
 
     @Override
     protected Object resolveCollectionValue(NamedValueMeta meta, HttpRequest request, HttpResponse response) {
-        if (meta.parameterMeta().isSimple()) {
+        if (meta.parameter().isSimple()) {
             return request.parameterValues(meta.name());
         }
-        return meta.parameterMeta().bind(request, response);
+        return meta.parameter().bind(request, response);
     }
 
     @Override
@@ -54,6 +60,6 @@ public final class ModelAttributeArgumentResolver extends AbstractSpringArgument
         if (TypeUtils.isSimpleProperty(meta.nestedType(1))) {
             return RequestUtils.getParametersMap(request);
         }
-        return meta.parameterMeta().bind(request, response);
+        return meta.parameter().bind(request, response);
     }
 }

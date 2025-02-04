@@ -164,14 +164,7 @@ public final class ProducesCondition implements Condition<ProducesCondition, Htt
     }
 
     public List<MediaType> getMediaTypes() {
-        List<MediaTypeExpression> expressions = this.expressions;
-        int size = expressions.size();
-        List<MediaType> mediaTypes = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            MediaTypeExpression expr = expressions.get(i);
-            mediaTypes.add(new MediaType(expr.getType(), expr.getSubType()));
-        }
-        return mediaTypes;
+        return MediaTypeExpression.toMediaTypes(expressions);
     }
 
     @Override

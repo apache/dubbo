@@ -48,6 +48,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -143,13 +144,13 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
     private RestFilter[] matchFilters(RestFilter[] filters, String path) {
         int len = filters.length;
         BitSet bitSet = new BitSet(len);
-        out:
         for (int i = 0; i < len; i++) {
             RestFilter filter = filters[i];
             String[] patterns = filter.getPatterns();
             if (ArrayUtils.isEmpty(patterns)) {
                 continue;
             }
+
             RadixTree<Boolean> filterTree = filterTreeCache.computeIfAbsent(filter, f -> {
                 RadixTree<Boolean> tree = new RadixTree<>();
                 for (String pattern : patterns) {
@@ -166,16 +167,15 @@ public class RestExtensionExecutionFilter extends RestFilterAdapter {
 
             List<Match<Boolean>> matches = filterTree.match(path);
             int size = matches.size();
-            if (size == 0) {
-                bitSet.set(i);
-                continue;
-            }
-            for (int j = 0; j < size; j++) {
-                if (!matches.get(j).getValue()) {
-                    bitSet.set(i);
-                    continue out;
+            if (size > 0) {
+                if (size > 1) {
+                    Collections.sort(matches);
+                }
+                if (matches.get(0).getValue()) {
+                    continue;
                 }
             }
+            bitSet.set(i);
         }
         if (bitSet.isEmpty()) {
             return filters;

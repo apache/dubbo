@@ -19,9 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-demo</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>dubbo-demo-api</artifactId>
@@ -30,28 +30,12 @@
   <modules>
     <module>dubbo-demo-api-provider</module>
     <module>dubbo-demo-api-consumer</module>
+    <module>dubbo-demo-api-interface</module>
   </modules>
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
     <spring-boot-maven-plugin.version>2.7.18</spring-boot-maven-plugin.version>
   </properties>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${spring-boot-maven-plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

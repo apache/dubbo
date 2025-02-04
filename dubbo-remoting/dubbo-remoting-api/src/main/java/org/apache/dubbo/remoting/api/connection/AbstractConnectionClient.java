@@ -17,8 +17,6 @@
 package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
@@ -31,9 +29,6 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
 public abstract class AbstractConnectionClient extends AbstractClient {
-
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(AbstractConnectionClient.class);
 
     protected WireProtocol protocol;
 
@@ -61,13 +56,17 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     /**
      * Increments the reference count by 1.
      */
-    public final AbstractConnectionClient retain() {
+    public final boolean retain() {
         long oldCount = COUNTER_UPDATER.getAndIncrement(this);
         if (oldCount <= 0) {
             COUNTER_UPDATER.getAndDecrement(this);
-            throw new AssertionError("This instance has been destroyed");
+            logger.info(
+                    "Retain failed, because connection " + remote
+                            + " has been destroyed but not yet removed, will create a new one instead."
+                            + " Check logs below to confirm that this connection finally gets removed to make sure there's no potential memory leak!");
+            return false;
         }
-        return this;
+        return true;
     }
 
     /**
@@ -77,6 +76,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
         long remainingCount = COUNTER_UPDATER.decrementAndGet(this);
 
         if (remainingCount == 0) {
+            logger.info("Destroying connection to {}, because the reference count reaches 0", remote);
             destroy();
             return true;
         } else if (remainingCount <= -1) {

@@ -16,38 +16,47 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.AnnotationUtils;
+import org.apache.dubbo.common.utils.DefaultParameterNameReader;
+import org.apache.dubbo.common.utils.ParameterNameReader;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
+
+import javax.annotation.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.Map;
 
 public abstract class AbstractRestToolKit implements RestToolKit {
 
     protected final FrameworkModel frameworkModel;
     protected final TypeConverter typeConverter;
+    protected final ParameterNameReader parameterNameReader;
+    protected final CompositeArgumentResolver argumentResolver;
 
     public AbstractRestToolKit(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
+        typeConverter = frameworkModel.getOrRegisterBean(GeneralTypeConverter.class);
+        parameterNameReader = frameworkModel.getOrRegisterBean(DefaultParameterNameReader.class);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
     }
 
     @Override
     public String resolvePlaceholders(String text) {
-        return RestUtils.hasPlaceholder(text) ? getEnvironment().resolvePlaceholders(text) : text;
-    }
-
-    private Environment getEnvironment() {
-        return frameworkModel.defaultApplication().modelEnvironment();
+        return RestUtils.replacePlaceholder(text, k -> frameworkModel
+                .defaultApplication()
+                .modelEnvironment()
+                .getConfiguration()
+                .getString(k));
     }
 
     @Override
@@ -65,18 +74,19 @@ public abstract class AbstractRestToolKit implements RestToolKit {
     }
 
     @Override
+    public NamedValueMeta getNamedValueMeta(ParameterMeta parameter) {
+        return argumentResolver.getNamedValueMeta(parameter);
+    }
+
+    @Override
     public String[] getParameterNames(Method method) {
-        Parameter[] parameters = method.getParameters();
-        int len = parameters.length;
-        String[] names = new String[len];
-        for (int i = 0; i < len; i++) {
-            Parameter param = parameters[i];
-            if (!param.isNamePresent()) {
-                return null;
-            }
-            names[i] = param.getName();
-        }
-        return names;
+        return parameterNameReader.readParameterNames(method);
+    }
+
+    @Nullable
+    @Override
+    public String[] getParameterNames(Constructor<?> ctor) {
+        return parameterNameReader.readParameterNames(ctor);
     }
 
     @Override

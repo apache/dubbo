@@ -20,6 +20,7 @@ import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Configuration for triple rest protocol.
@@ -32,6 +33,18 @@ public class RestConfig implements Serializable {
     public static final boolean DEFAULT_SUFFIX_PATTERN_MATCH = true;
     public static final boolean DEFAULT_CASE_SENSITIVE_MATCH = true;
     public static final String DEFAULT_FORMAT_PARAMETER_NAME = "format";
+
+    /**
+     * Whether to enable rest support
+     * <p>The default value is 'true'.
+     */
+    private Boolean enabled;
+
+    /**
+     *  Whether to enable the default mapping '/{interfaceName}/{methodName}'.
+     * <p>The default value is 'true'.
+     */
+    private Boolean enableDefaultMapping;
 
     /**
      * Whether path matching should be match paths with a trailing slash.
@@ -68,10 +81,42 @@ public class RestConfig implements Serializable {
     private String jsonFramework;
 
     /**
+     * The disallowed content-types.
+     */
+    private String[] disallowedContentTypes;
+
+    /**
      *  The cors configuration.
      */
     @Nested
     private CorsConfig cors;
+
+    /**
+     * The openapi configuration.
+     */
+    @Nested
+    private OpenAPIConfig openapi;
+
+    /**
+     * Multiple configurations for openapi.
+     */
+    private Map<String, OpenAPIConfig> openapis;
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Boolean getEnableDefaultMapping() {
+        return enableDefaultMapping;
+    }
+
+    public void setEnableDefaultMapping(Boolean enableDefaultMapping) {
+        this.enableDefaultMapping = enableDefaultMapping;
+    }
 
     public Boolean getTrailingSlashMatch() {
         return trailingSlashMatch;
@@ -133,6 +178,14 @@ public class RestConfig implements Serializable {
         this.jsonFramework = jsonFramework;
     }
 
+    public String[] getDisallowedContentTypes() {
+        return disallowedContentTypes;
+    }
+
+    public void setDisallowedContentTypes(String[] disallowedContentTypes) {
+        this.disallowedContentTypes = disallowedContentTypes;
+    }
+
     public CorsConfig getCors() {
         return cors;
     }
@@ -147,5 +200,25 @@ public class RestConfig implements Serializable {
 
     public void setCors(CorsConfig cors) {
         this.cors = cors;
+    }
+
+    @Parameter(excluded = true)
+    public OpenAPIConfig getOpenapi() {
+        return openapi;
+    }
+
+    @Parameter(attribute = false)
+    public void setOpenapi(OpenAPIConfig openapi) {
+        this.openapi = openapi;
+    }
+
+    @Parameter(excluded = true)
+    public Map<String, OpenAPIConfig> getOpenapis() {
+        return openapis;
+    }
+
+    @Parameter(attribute = false)
+    public void setOpenapis(Map<String, OpenAPIConfig> openapis) {
+        this.openapis = openapis;
     }
 }

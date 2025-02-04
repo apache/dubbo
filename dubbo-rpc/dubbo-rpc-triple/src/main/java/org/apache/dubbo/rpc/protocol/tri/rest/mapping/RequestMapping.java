@@ -119,6 +119,18 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return methodsCondition == null || methodsCondition.getMethods().contains(method);
     }
 
+    public boolean matchParams(HttpRequest request) {
+        return paramsCondition == null || paramsCondition.match(request) != null;
+    }
+
+    public boolean matchConsumes(HttpRequest request) {
+        return consumesCondition == null || consumesCondition.match(request) != null;
+    }
+
+    public boolean matchProduces(HttpRequest request) {
+        return producesCondition == null || producesCondition.match(request) != null;
+    }
+
     @Override
     public RequestMapping match(HttpRequest request) {
         return doMatch(request, null);
@@ -206,6 +218,18 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
     public MethodsCondition getMethodsCondition() {
         return methodsCondition;
+    }
+
+    public ParamsCondition getParamsCondition() {
+        return paramsCondition;
+    }
+
+    public HeadersCondition getHeadersCondition() {
+        return headersCondition;
+    }
+
+    public ConsumesCondition getConsumesCondition() {
+        return consumesCondition;
     }
 
     public ProducesCondition getProducesCondition() {
@@ -457,7 +481,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                     isEmpty(consumes) ? null : new ConsumesCondition(consumes),
                     isEmpty(produces) ? null : new ProducesCondition(produces),
                     customCondition == null ? null : ConditionWrapper.wrap(customCondition),
-                    cors == null ? null : cors,
+                    cors == null || cors.isEmpty() ? null : cors,
                     responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason));
         }
     }

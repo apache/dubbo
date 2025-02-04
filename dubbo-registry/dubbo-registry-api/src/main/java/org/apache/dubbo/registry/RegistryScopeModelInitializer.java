@@ -22,10 +22,10 @@ import org.apache.dubbo.registry.integration.ExporterFactory;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class RegistryScopeModelInitializer implements ScopeModelInitializer {
+
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
@@ -38,7 +38,4 @@ public class RegistryScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(RegistryManager.class);
         beanFactory.registerBean(MetadataServiceDelegation.class);
     }
-
-    @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

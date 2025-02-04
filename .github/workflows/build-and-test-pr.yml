@@ -78,13 +78,13 @@ jobs:
     needs: check-format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: "Check License"
         uses: apache/skywalking-eyes@e1a02359b239bd28de3f6d35fdc870250fa513d5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Set up JDK 21"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
@@ -107,11 +107,9 @@ jobs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v3
-        with:
-          path: dubbo
+        uses: actions/checkout@v4
       - name: "Set up JDK"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
@@ -135,7 +133,6 @@ jobs:
         run: rm -rf ~/.m2/repository/org/apache/dubbo
       - name: "Build Dubbo with maven"
         run: |
-          cd ./dubbo
           ./mvnw ${{ env.MAVEN_ARGS }} clean install -Psources,'!demo',skip-spotless,checkstyle -Dmaven.test.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Save dubbo cache"
         uses: actions/cache/save@v4
@@ -155,7 +152,7 @@ jobs:
           shopt -s globstar
           zip ${{ github.workspace }}/class.zip **/target/classes/* -r
       - name: "Upload class result"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "class-file"
           path: ${{ github.workspace }}/class.zip
@@ -163,7 +160,7 @@ jobs:
         if: failure()
         run: zip ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
       - name: "Upload checkstyle file if failure"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: "checkstyle-file"
@@ -171,7 +168,7 @@ jobs:
       - name: "Calculate Dubbo Version"
         id: dubbo-version
         run: |
-          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./pom.xml`
           echo "version=$REVISION" >> $GITHUB_OUTPUT
           echo "dubbo version: $REVISION"
 
@@ -182,7 +179,7 @@ jobs:
     strategy:
       fail-fast: false
     env:
-      ZOOKEEPER_VERSION: 3.6.3
+      ZOOKEEPER_VERSION: 3.7.2
     steps:
       - name: "Cache zookeeper binary archive"
         uses: actions/cache@v3
@@ -210,7 +207,7 @@ jobs:
           ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
 
   unit-test:
-    needs: [check-format, build-source, unit-test-prepare]
+    needs: [check-format, unit-test-prepare]
     name: "Unit Test On ubuntu-latest"
     runs-on: ubuntu-latest
     strategy:
@@ -218,14 +215,14 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       CURRENT_ROLE: ${{ matrix.case-role }}
-      ZOOKEEPER_VERSION: 3.6.3
+      ZOOKEEPER_VERSION: 3.7.2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: "Set up JDK ${{ matrix.jdk }}"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
@@ -251,15 +248,23 @@ jobs:
         timeout-minutes: 90
         run: |
           set -o pipefail
-          ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge','!demo',skip-spotless,jacoco089 -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
+          ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge','!demo',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
       - name: "Print test error log"
         if: failure()
         run: cat test_errors.log
-      - name: "Upload coverage result"
-        uses: actions/upload-artifact@v3
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v5
         with:
-          name: coverage-result
-          path: "**/target/site/**/jacoco.xml"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
+          flags: unit-tests
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: "Upload surefire reports"
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: "**/target/surefire-reports/**"
 
   samples-test-prepare:
     needs: check-format
@@ -267,14 +272,14 @@ jobs:
     env:
       JOB_COUNT: 3
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Prepare test list"
         run: bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: samples-test-list
           path: test/jobs
@@ -289,9 +294,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        job_id: [1, 2, 3]
+        job_id: [1,2,3]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-samples'
           ref: master
@@ -314,12 +319,12 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: samples-test-list
           path: test/jobs/
       - name: "Set up JDK 8"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 8
@@ -335,15 +340,15 @@ jobs:
       - name: "merge jacoco result"
         run: cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: samples-jacoco-result
+          name: samples-jacoco-result-${{matrix.job_id}}
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: samples-test-result
+          name: samples-test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
   samples-test-result:
     needs: [check-format, samples-test-job]
@@ -352,14 +357,14 @@ jobs:
     env:
       JAVA_VER: 8
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: samples-test-result
+          pattern: samples-test-result-*
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
@@ -370,14 +375,14 @@ jobs:
     env:
       JOB_COUNT: 3
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Prepare test list"
         run: bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-list
           path: test/jobs
@@ -392,9 +397,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        job_id: [1, 2, 3]
+        job_id: [1,2,3]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-integration-cases'
           ref: main
@@ -417,12 +422,12 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-list
           path: test/jobs/
       - name: "Set up JDK 8"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 8
@@ -438,15 +443,15 @@ jobs:
       - name: "merge jacoco result"
         run: cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: jacoco-result
+          name: jacoco-result-${{matrix.job_id}}
           path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: test-result
+          name: test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
   integration-test-result:
     needs: [check-format, integration-test-job]
@@ -455,89 +460,123 @@ jobs:
     env:
       JAVA_VER: 8
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Download test result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: test-result
+          pattern: test-result-*
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
 
-  jacoco-result-merge:
+  samples-jacoco-result-merge:
     runs-on: ubuntu-latest
-    needs: [check-format, integration-test-result, samples-test-result, unit-test]
+    needs: [check-format, samples-test-result]
     steps:
-      - uses: actions/checkout@v3
-        with:
-          path: "./dubbo"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-samples'
           path: "./dubbo-samples"
-      - uses: actions/checkout@v3
-        with:
-          repository: 'apache/dubbo-integration-cases'
-          path: "./dubbo-integration-cases"
       - name: "Set up JDK 21"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
       - name: "Restore class result"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: "class-file"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ github.workspace }}
       - name: "Unpack class result"
         run: |
-          cd ${{ github.workspace }}/dubbo
           unzip -o ${{ github.workspace }}/class.zip
-      - name: "Restore jacoco exec"
-        uses: actions/download-artifact@v3
+      - name: "Restore samples jacoco exec"
+        uses: actions/download-artifact@v4
         with:
-          name: samples-jacoco-result
+          pattern: samples-jacoco-result-*
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: dubbo-samples/target/
-      - name: "Restore integration jacoco exec"
-        uses: actions/download-artifact@v3
-        with:
-          name: jacoco-result
-          path: dubbo-integration-cases/target/
-      - name: "Merge jacoco result"
-        run: |
-          cd ${{ github.workspace }}/dubbo-samples/test/dubbo-test-jacoco-merger
-          mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-samples ${{github.workspace}}/dubbo"
       - name: "Merge samples jacoco result"
         run: |
-          cd ${{ github.workspace }}/dubbo-integration-cases/test/dubbo-test-jacoco-merger
-          mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-integration-cases ${{github.workspace}}/dubbo"
-      - name: "Restore coverage result"
-        uses: actions/download-artifact@v3
-        with:
-          name: coverage-result
-          path: dubbo/
+          cd ${{ github.workspace }}/dubbo-samples/test/dubbo-test-jacoco-merger
+          mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-samples ${{github.workspace}}"
+      - name: "Remove old test result"
+        run: |
+          rm -rf ${{ github.workspace }}/dubbo-samples
       - name: "Upload coverage to Codecov"
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: samples-tests
           verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  integration-jacoco-result-merge:
+    runs-on: ubuntu-latest
+    needs: [check-format, integration-test-result, samples-test-result]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: 'apache/dubbo-integration-cases'
+          path: "./dubbo-integration-cases"
+      - name: "Set up JDK 21"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: "Restore class result"
+        uses: actions/download-artifact@v4
+        with:
+          name: "class-file"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ github.workspace }}
+      - name: "Unpack class result"
+        run: |
+          unzip -o ${{ github.workspace }}/class.zip
+      - name: "Restore integration test jacoco exec"
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jacoco-result-*
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: dubbo-integration-cases/target/
+      - name: "Merge integration test jacoco result"
+        run: |
+          cd ${{ github.workspace }}/dubbo-integration-cases/test/dubbo-test-jacoco-merger
+          mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoReport" -Dexec.args="${{github.workspace}}/dubbo-integration-cases ${{github.workspace}}"
+      - name: "Remove old test result"
+        run: |
+          rm -rf ${{ github.workspace }}/dubbo-integration-cases
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: integration-tests
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
 
   error-code-inspecting:
     needs: check-format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: "./dubbo"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-test-tools'
           ref: main
           path: "./dubbo-test-tools"
       - name: "Set up JDK 21"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
@@ -563,7 +602,7 @@ jobs:
       - name: "Upload error code inspection result"
         # always() should not be used here, since we don't need to handle the 'canceled' situation.
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "error-inspection-result"
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
@@ -572,10 +611,10 @@ jobs:
     needs: check-format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: "./dubbo"
-      - name: "Setup GraalVM environment"
+      - name: "Set up GraalVM environment"
         uses: graalvm/setup-graalvm@v1
         with:
           version: '22.3.0'
@@ -583,7 +622,7 @@ jobs:
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
-      - name: "Setup Zookeeper environment"
+      - name: "Set up Zookeeper environment"
         run: |
           wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
           tar -zxvf apache-zookeeper-3.8.4-bin.tar.gz
@@ -595,7 +634,7 @@ jobs:
           native-image --version
       - name: "Set current date as env variable"
         run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
-      - name: "Restore local maven repository cache"
+      - name: "Restore local Maven repository cache"
         uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
@@ -607,14 +646,21 @@ jobs:
         run: |
           cd ${{ github.workspace }}/dubbo
           ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P '!demo',skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
-      - name: "Compile and run Dubbo demo for native (Linux)"
+      - name: "Checkout dubbo-samples repository"
+        uses: actions/checkout@v4
+        with:
+          repository: 'apache/dubbo-samples'
+          ref: master
+          path: "./dubbo-samples"
+      - name: "Compile and run Dubbo native image demo"
         run: |
-          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-interface
-          MVNW="${{ github.workspace }}/dubbo/mvnw ${{ env.MAVEN_ARGS }} -T 2C -Dmaven.test.skip=true"
-          $MVNW clean install
-          cd ../dubbo-demo-native-provider
-          $MVNW clean package -P native  native:compile
-          nohup ./target/dubbo-demo-native-provider &
-          cd ../dubbo-demo-native-consumer
+          MVNW="${{ github.workspace }}/dubbo-samples/mvnw ${{ env.MAVEN_ARGS }} -Dmaven.test.skip=true"
+          cd ${{ github.workspace }}/dubbo-samples/2-advanced/dubbo-samples-native-image/dubbo-samples-native-image-provider
           $MVNW clean package -P native native:compile
-          ./target/dubbo-demo-native-consumer
+          nohup ./target/dubbo-samples-native-image-provider &
+          sleep 10
+          curl \
+            --header "Content-Type: application/json" \
+            --data '{"name":"Dubbo"}' \
+            http://localhost:50052/org.apache.dubbo.nativeimage.DemoService/sayHello/
+

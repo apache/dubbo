@@ -102,7 +102,7 @@ class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
     @Test
     void testNodeCacheShouldNotRecycle() {
         int loop = 10000;
-        // tmperately add a new invoker
+        // temperately add a new invoker
         weightInvokers.add(weightInvokerTmp);
         try {
             Map<Invoker, InvokeResult> resultMap = getWeightedInvokeResult(loop, RoundRobinLoadBalance.NAME);
@@ -143,7 +143,7 @@ class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
         }
 
         int loop = 10000;
-        // tmperately add a new invoker
+        // temperately add a new invoker
         weightInvokers.add(weightInvokerTmp);
         try {
             Map<Invoker, InvokeResult> resultMap = getWeightedInvokeResult(loop, RoundRobinLoadBalance.NAME);

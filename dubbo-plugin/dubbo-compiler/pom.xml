@@ -20,9 +20,9 @@
 
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-plugin</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>dubbo-compiler</artifactId>
   <packaging>jar</packaging>
@@ -59,6 +59,17 @@
       <groupId>com.salesforce.servicelibs</groupId>
       <artifactId>grpc-contrib</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-test-check</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -78,7 +89,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>org.apache.dubbo.gen.grpc.DubboGrpcGenerator</mainClass>
+              <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -100,5 +111,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

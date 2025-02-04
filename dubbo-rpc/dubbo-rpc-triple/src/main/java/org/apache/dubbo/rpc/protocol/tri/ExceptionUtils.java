@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,8 +32,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
 public class ExceptionUtils {
-
-    private static final int NOT_FOUND = -1;
 
     public static String getStackTrace(final Throwable throwable) {
         final StringWriter sw = new StringWriter();
@@ -80,6 +81,19 @@ public class ExceptionUtils {
 
     public static List<String> getStackFrameList(final Throwable t) {
         return getStackFrameList(t, Integer.MAX_VALUE);
+    }
+
+    public static Level resolveLogLevel(final Throwable t) {
+        if (t instanceof HttpStatusException) {
+            int httpStatusCode = ((HttpStatusException) t).getStatusCode();
+            if (httpStatusCode < HttpStatus.BAD_REQUEST.getCode()) {
+                return TripleProtocol.VERBOSE_ENABLED ? Level.INFO : Level.DEBUG;
+            }
+            if (httpStatusCode < HttpStatus.INTERNAL_SERVER_ERROR.getCode()) {
+                return Level.INFO;
+            }
+        }
+        return Level.ERROR;
     }
 
     /**

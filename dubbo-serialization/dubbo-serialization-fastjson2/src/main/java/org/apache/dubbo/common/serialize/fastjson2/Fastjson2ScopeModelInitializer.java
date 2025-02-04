@@ -17,9 +17,7 @@
 package org.apache.dubbo.common.serialize.fastjson2;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
@@ -38,10 +36,4 @@ public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
             beanFactory.registerBean(Fastjson2SecurityManager.class);
         }
     }
-
-    @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {}
-
-    @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

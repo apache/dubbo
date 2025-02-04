@@ -24,6 +24,9 @@ import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 import io.netty.buffer.ByteBufOutputStream;
 
 public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObserver {
@@ -52,8 +55,18 @@ public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObs
     @Override
     protected void customizeHeaders(HttpHeaders headers, Throwable throwable, HttpOutputMessage message) {
         super.customizeHeaders(headers, throwable, message);
-        int contentLength = message == null ? 0 : ((ByteBufOutputStream) message.getBody()).writtenBytes();
-        headers.set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(contentLength));
+        int contentLength = 0;
+        if (message != null) {
+            OutputStream body = message.getBody();
+            if (body instanceof ByteBufOutputStream) {
+                contentLength = ((ByteBufOutputStream) body).writtenBytes();
+            } else if (body instanceof ByteArrayOutputStream) {
+                contentLength = ((ByteArrayOutputStream) body).size();
+            } else {
+                throw new IllegalArgumentException("Unsupported body type: " + body.getClass());
+            }
+        }
+        headers.set(HttpHeaderNames.CONTENT_LENGTH.getKey(), String.valueOf(contentLength));
     }
 
     @Override

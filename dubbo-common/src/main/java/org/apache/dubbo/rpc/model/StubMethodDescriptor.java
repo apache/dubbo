@@ -120,6 +120,16 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     }
 
     @Override
+    public Class<?>[] getActualRequestTypes() {
+        return this.parameterClasses;
+    }
+
+    @Override
+    public Class<?> getActualResponseType() {
+        return this.returnClass;
+    }
+
+    @Override
     public Pack getRequestPack() {
         return requestPack;
     }

@@ -123,7 +123,7 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
             }
             Map<String, List<String>> hrs = this.headers;
             if (hrs == null) {
-                hrs = new LinkedHashMap<>(headers.size());
+                this.headers = hrs = new LinkedHashMap<>(headers.size());
             }
             for (Entry<CharSequence, String> entry : headers) {
                 CharSequence key = entry.getKey();
@@ -170,6 +170,10 @@ public class DefaultHttpResult<T> implements HttpResult<T> {
         public Builder<T> addHeader(String key, String value) {
             headers().computeIfAbsent(key, k -> new ArrayList<>()).add(value);
             return this;
+        }
+
+        public Builder<T> contentType(String value) {
+            return headerIf(HttpHeaderNames.CONTENT_TYPE.getName(), value);
         }
 
         public Builder<T> from(HttpResult<T> result) {

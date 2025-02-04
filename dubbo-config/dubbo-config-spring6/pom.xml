@@ -28,8 +28,6 @@
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <spring.version>6.1.13</spring.version>
-    <spring-boot.version>3.0.9</spring-boot.version>
   </properties>
 
   <dependencies>
@@ -48,22 +46,22 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>${spring.version}</version>
+      <version>${spring-6.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>${spring.version}</version>
+      <version>${spring-6.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <version>${spring.version}</version>
+      <version>${spring-6.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>${spring.version}</version>
+      <version>${spring-6.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -74,7 +72,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
-      <version>${spring-boot.version}</version>
+      <version>${spring-boot-3.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

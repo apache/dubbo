@@ -27,4 +27,9 @@ public interface HttpMetadata {
     default String header(CharSequence name) {
         return headers().getFirst(name);
     }
+
+    default HttpMetadata header(CharSequence name, String value) {
+        headers().set(name, value);
+        return this;
+    }
 }

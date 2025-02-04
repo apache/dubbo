@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.servlet;
 
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.Enumeration;
+
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 
 public final class HttpMetadataAdapter implements Http2Header {
 
@@ -50,6 +53,10 @@ public final class HttpMetadataAdapter implements Http2Header {
                     headers.add(key, ven.nextElement());
                 }
             }
+            headers.add(PseudoHeaderName.METHOD.value(), method());
+            headers.add(PseudoHeaderName.SCHEME.value(), request.getScheme());
+            headers.add(PseudoHeaderName.AUTHORITY.value(), request.getHeader(HttpHeaderNames.HOST.getName()));
+            headers.add(PseudoHeaderName.PROTOCOL.value(), request.getProtocol());
             this.headers = headers;
         }
         return headers;

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.HttpStatus;
@@ -61,7 +62,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private final HttpChannel httpChannel;
     private final RequestRouter requestRouter;
     private final ExceptionCustomizerWrapper exceptionCustomizerWrapper;
-    private final List<HeaderFilter> headerFilters;
 
     private Executor executor;
     private HEADER httpMetadata;
@@ -72,11 +72,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
-        requestRouter = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestRouter.class);
+        requestRouter = frameworkModel.getOrRegisterBean(DefaultRequestRouter.class);
         exceptionCustomizerWrapper = new ExceptionCustomizerWrapper(frameworkModel);
-        headerFilters = frameworkModel
-                .getExtensionLoader(HeaderFilter.class)
-                .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
     }
 
     @Override
@@ -278,12 +275,25 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         if (consumerAppName != null) {
             inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY, consumerAppName);
         }
+
         // customizer RpcInvocation
-        headerFilters.forEach(f -> f.invoke(invoker, inv));
+        HeaderFilter[] headerFilters =
+                UrlUtils.computeServiceAttribute(invoker.getUrl(), HEADER_FILTERS_CACHE, this::loadHeaderFilters);
+        for (HeaderFilter headerFilter : headerFilters) {
+            headerFilter.invoke(invoker, inv);
+        }
 
         initializeAltSvc(url);
 
         return onBuildRpcInvocationCompletion(inv);
+    }
+
+    private HeaderFilter[] loadHeaderFilters(URL url) {
+        List<HeaderFilter> headerFilters = frameworkModel
+                .getExtensionLoader(HeaderFilter.class)
+                .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
+        LOGGER.info("Header filters for [{}] loaded: {}", url, headerFilters);
+        return headerFilters.toArray(new HeaderFilter[0]);
     }
 
     protected RpcInvocation onBuildRpcInvocationCompletion(RpcInvocation invocation) {
