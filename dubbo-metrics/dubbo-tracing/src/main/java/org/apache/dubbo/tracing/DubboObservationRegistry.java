@@ -20,15 +20,23 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.TracingConfig;
-import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.tracing.handler.DubboClientTracingObservationHandler;
 import org.apache.dubbo.tracing.handler.DubboServerTracingObservationHandler;
+import org.apache.dubbo.tracing.metrics.ObservationMeter;
 import org.apache.dubbo.tracing.tracer.PropagatorProvider;
 import org.apache.dubbo.tracing.tracer.PropagatorProviderFactory;
 import org.apache.dubbo.tracing.tracer.TracerProvider;
 import org.apache.dubbo.tracing.tracer.TracerProviderFactory;
+
+import io.micrometer.observation.ObservationHandler;
+import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
+import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
+import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
+import io.micrometer.tracing.propagation.Propagator;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_NOT_FOUND_TRACER_DEPENDENCY;
 
@@ -48,8 +56,8 @@ public class DubboObservationRegistry {
 
     public void initObservationRegistry() {
         // If get ObservationRegistry.class from external(eg Spring.), use external.
-        io.micrometer.observation.ObservationRegistry externalObservationRegistry =
-                applicationModel.getBeanFactory().getBean(io.micrometer.observation.ObservationRegistry.class);
+        ObservationRegistry externalObservationRegistry =
+                applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
         if (externalObservationRegistry != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("ObservationRegistry.class from external is existed.");
@@ -71,36 +79,26 @@ public class DubboObservationRegistry {
             return;
         }
         // The real tracer will come from tracer implementation (OTel / Brave)
-        io.micrometer.tracing.Tracer tracer = tracerProvider.getTracer();
+        Tracer tracer = tracerProvider.getTracer();
 
         // The real propagator will come from tracer implementation (OTel / Brave)
         PropagatorProvider propagatorProvider = PropagatorProviderFactory.getPropagatorProvider();
-        io.micrometer.tracing.propagation.Propagator propagator = propagatorProvider != null
-                ? propagatorProvider.getPropagator()
-                : io.micrometer.tracing.propagation.Propagator.NOOP;
+        Propagator propagator = propagatorProvider != null ? propagatorProvider.getPropagator() : Propagator.NOOP;
 
-        io.micrometer.observation.ObservationRegistry registry = io.micrometer.observation.ObservationRegistry.create();
+        ObservationRegistry registry = ObservationRegistry.create();
         registry.observationConfig()
                 // set up a first matching handler that creates spans - it comes from Micrometer Tracing.
                 // set up spans for sending and receiving data over the wire and a default one.
-                .observationHandler(
-                        new io.micrometer.observation.ObservationHandler.FirstMatchingCompositeObservationHandler(
-                                new io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<>(
-                                        tracer, propagator),
-                                new io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<>(
-                                        tracer, propagator),
-                                new io.micrometer.tracing.handler.DefaultTracingObservationHandler(tracer)))
-                .observationHandler(
-                        new io.micrometer.observation.ObservationHandler.FirstMatchingCompositeObservationHandler(
-                                new DubboClientTracingObservationHandler<>(tracer),
-                                new DubboServerTracingObservationHandler<>(tracer)));
+                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(
+                        new PropagatingSenderTracingObservationHandler<>(tracer, propagator),
+                        new PropagatingReceiverTracingObservationHandler<>(tracer, propagator),
+                        new DefaultTracingObservationHandler(tracer)))
+                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(
+                        new DubboClientTracingObservationHandler<>(tracer),
+                        new DubboServerTracingObservationHandler<>(tracer)));
 
         if (MetricsSupportUtil.isSupportMetrics()) {
-            io.micrometer.core.instrument.MeterRegistry meterRegistry =
-                    MetricsGlobalRegistry.getCompositeRegistry(applicationModel);
-            registry.observationConfig()
-                    .observationHandler(new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(
-                            meterRegistry));
+            ObservationMeter.addMeterRegistry(registry, applicationModel);
         }
 
         applicationModel.getBeanFactory().registerBean(registry);
