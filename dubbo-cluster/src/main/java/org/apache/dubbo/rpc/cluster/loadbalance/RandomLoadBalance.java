@@ -78,9 +78,9 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             }
         }
         if (totalWeight > 0 && !sameWeight) {
-            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on
-            // totalWeight.
+            // If (not every invoker has the same weight & at least one invoker's weight > 0), select randomly based on totalWeight.
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
+        
             // Return an invoker based on the random value.
             if (length <= 4) {
                 for (int i = 0; i < length; i++) {
@@ -90,17 +90,25 @@ public class RandomLoadBalance extends AbstractLoadBalance {
                 }
             } else {
                 int i = Arrays.binarySearch(weights, offset);
+                
                 if (i < 0) {
-                    i = -i - 1;
+                    i = -i - 1; // Get the insertion point
                 } else {
-                    while (weights[i + 1] == offset) {
-                        i++;
+                    while (i + 1 < length && weights[i + 1] == offset) { 
+                        i++; // Move to the last matching index
                     }
-                    i++;
+                    i++; 
                 }
+        
+                // Ensure index does not exceed bounds
+                if (i >= length) {
+                    i = length - 1;
+                }
+        
                 return invokers.get(i);
             }
         }
+        
         // If all invokers have the same weight value or totalWeight=0, return evenly.
         return invokers.get(ThreadLocalRandom.current().nextInt(length));
     }
