@@ -144,12 +144,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ServiceDescriptor serviceDescriptor = consumerModel.getServiceModel();
         MethodDescriptor methodDescriptor =
                 serviceDescriptor.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-        if (methodDescriptor == null
-                && RpcUtils.isGenericCall(
-                        ((RpcInvocation) invocation).getParameterTypesDesc(), invocation.getMethodName())) {
-            // Only reach when server generic
-            methodDescriptor = ServiceDescriptorInternalCache.genericService()
-                    .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        if (methodDescriptor == null) {
+            if (RpcUtils.isGenericCall(
+                    ((RpcInvocation) invocation).getParameterTypesDesc(), invocation.getMethodName())) {
+                // Only reach when server generic
+                methodDescriptor = ServiceDescriptorInternalCache.genericService()
+                        .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+            } else if (RpcUtils.isEcho(
+                    ((RpcInvocation) invocation).getParameterTypesDesc(), invocation.getMethodName())) {
+                methodDescriptor = ServiceDescriptorInternalCache.echoService()
+                        .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+            }
         }
         ExecutorService callbackExecutor =
                 isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
