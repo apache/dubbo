@@ -110,9 +110,10 @@ public class NacosNamingServiceWrapper {
         }
     }
 
-    public List<Instance> getAllInstances(String serviceName, String group) throws NacosException {
-        return apply(
-                () -> nacosConnectionManager.getNamingService().getAllInstances(handleInnerSymbol(serviceName), group));
+    public List<Instance> getAllInstancesWithoutSubscription(String serviceName, String group) throws NacosException {
+        return apply(() -> nacosConnectionManager
+                .getNamingService()
+                .getAllInstances(handleInnerSymbol(serviceName), group, false));
     }
 
     public void registerInstance(String serviceName, String group, Instance instance) throws NacosException {

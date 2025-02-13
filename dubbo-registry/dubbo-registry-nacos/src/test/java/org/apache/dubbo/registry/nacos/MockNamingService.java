@@ -86,7 +86,8 @@ public class MockNamingService implements NamingService {
     }
 
     @Override
-    public List<Instance> getAllInstances(String serviceName, String groupName, boolean subscribe) {
+    public List<Instance> getAllInstances(String serviceName, String groupName, boolean subscribe)
+            throws NacosException {
         return null;
     }
 

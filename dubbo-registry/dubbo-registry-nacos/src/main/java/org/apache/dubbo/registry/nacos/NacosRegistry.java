@@ -158,8 +158,8 @@ public class NacosRegistry extends FailbackRegistry {
             List<URL> urls = new LinkedList<>();
             Set<String> serviceNames = getServiceNames(url, null);
             for (String serviceName : serviceNames) {
-                List<Instance> instances =
-                        namingService.getAllInstances(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
+                List<Instance> instances = namingService.getAllInstancesWithoutSubscription(
+                        serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
                 urls.addAll(buildURLs(url, instances));
             }
             return urls;
@@ -267,8 +267,8 @@ public class NacosRegistry extends FailbackRegistry {
                  * in https://github.com/apache/dubbo/issues/5978
                  */
                 for (String serviceName : serviceNames) {
-                    List<Instance> instances =
-                            namingService.getAllInstances(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
+                    List<Instance> instances = namingService.getAllInstancesWithoutSubscription(
+                            serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
                     notifySubscriber(url, serviceName, listener, instances);
                 }
                 for (String serviceName : serviceNames) {
@@ -277,8 +277,8 @@ public class NacosRegistry extends FailbackRegistry {
             } else {
                 for (String serviceName : serviceNames) {
                     List<Instance> instances = new LinkedList<>();
-                    instances.addAll(
-                            namingService.getAllInstances(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP)));
+                    instances.addAll(namingService.getAllInstancesWithoutSubscription(
+                            serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP)));
                     String serviceInterface = serviceName;
                     String[] segments = serviceName.split(SERVICE_NAME_SEPARATOR, -1);
                     if (segments.length == 4) {
