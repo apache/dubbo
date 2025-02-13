@@ -344,6 +344,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 }
             }
         }
+
+        getScopeModel().getDeployer().registerServiceInstance();
     }
 
     @Override

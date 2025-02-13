@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.serial;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -72,6 +73,11 @@ public final class SerializingExecutor implements Executor, Runnable {
                 if (!isShutdown(executor)) {
                     executor.execute(this);
                     success = true;
+                }
+            } catch (RejectedExecutionException e) {
+                if (!isShutdown(executor)) {
+                    // ignore exception if the executor is shutdown
+                    throw e;
                 }
             } finally {
                 // It is possible that at this point that there are still tasks in

@@ -980,7 +980,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return factory.getDynamicConfiguration(connectionURL);
     }
 
-    private volatile boolean registered;
+    private volatile boolean registered = false;
 
     private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
 
@@ -989,21 +989,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
 
-    private void registerServiceInstance() {
-        try {
-            registered = true;
+    public synchronized void registerServiceInstance() {
+        if (!registered) {
+            try {
+                registered = true;
 
-            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+                ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
 
-        } catch (Exception e) {
-            logger.error(
-                    CONFIG_REGISTER_INSTANCE_ERROR,
-                    "configuration server disconnected",
-                    "",
-                    "Register instance error.",
-                    e);
-        }
-        if (registered) {
+            } catch (Exception e) {
+                logger.error(
+                        CONFIG_REGISTER_INSTANCE_ERROR,
+                        "configuration server disconnected",
+                        "",
+                        "Register instance error.",
+                        e);
+            }
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = frameworkExecutorRepository
                     .getSharedScheduledExecutor()
