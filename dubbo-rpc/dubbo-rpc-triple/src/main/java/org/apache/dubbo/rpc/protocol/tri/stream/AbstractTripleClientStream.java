@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -38,6 +39,8 @@ import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
+import javax.net.ssl.SSLSession;
+
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -56,6 +59,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
@@ -69,6 +73,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(AbstractTripleClientStream.class);
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
 
     private final ClientStream.Listener listener;
     protected final TripleWriteQueue writeQueue;
@@ -145,6 +150,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     @Override
     public SocketAddress remoteAddress() {
         return parent.remoteAddress();
+    }
+
+    @Override
+    public SSLSession getSslSession() {
+        return parent.attr(SSL_SESSION_KEY).get();
     }
 
     @Override
