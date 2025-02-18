@@ -39,6 +39,5 @@ public class RegistryScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(RegistryManager.class);
         beanFactory.registerBean(MetadataServiceDelegation.class);
         beanFactory.registerBean(MetadataServiceDelegationV2.class);
-        beanFactory.registerBean(MetadataServiceDelegationV2.class);
     }
 }
