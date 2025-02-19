@@ -29,6 +29,7 @@
 
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
+    <spring.oauth2.server>1.3.4</spring.oauth2.server>
   </properties>
 
   <dependencies>
@@ -65,7 +66,13 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- spring security -->
+    <!-- spring security OAuth2 -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-oauth2-authorization-server</artifactId>
+      <version>${spring.oauth2.server}</version>
+      <optional>true</optional>
+    </dependency>
 
     <!-- jackson -->
     <dependency>
