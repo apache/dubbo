@@ -165,7 +165,7 @@
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.3</spring-6.version>
-    <spring-boot-3.version>3.4.2</spring-boot-3.version>
+    <spring-boot-3.version>3.4.3</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
