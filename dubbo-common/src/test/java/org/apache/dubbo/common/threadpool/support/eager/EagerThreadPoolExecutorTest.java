@@ -101,6 +101,8 @@ class EagerThreadPoolExecutorTest {
         Thread.sleep(5000);
         // cores theads are all alive.
         Assertions.assertEquals(executor.getPoolSize(), cores, "more than cores threads alive!");
+
+        executor.shutdown();
     }
 
     @Test
@@ -163,6 +165,8 @@ class EagerThreadPoolExecutorTest {
         await().until(() -> executor.getActiveCount() == 0);
 
         await().until(() -> executor.getPoolSize() == cores);
+
+        executor.shutdown();
     }
 
     @Test
@@ -218,6 +222,8 @@ class EagerThreadPoolExecutorTest {
         await().until(() -> executor.getActiveCount() == 0);
 
         executor.execute(runnable);
+
+        executor.shutdown();
     }
 
     @Test
@@ -273,5 +279,7 @@ class EagerThreadPoolExecutorTest {
         executor.execute(runnable);
         semaphore.release(5);
         await().until(() -> executor.getActiveCount() == 0);
+
+        executor.shutdown();
     }
 }
