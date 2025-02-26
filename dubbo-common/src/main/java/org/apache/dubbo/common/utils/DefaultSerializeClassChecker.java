@@ -164,8 +164,6 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
                 if (serializeSecurityManager.getWarnedClasses().add(className)) {
                     logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
-
-                throw new IllegalArgumentException(msg);
             }
         }
 
@@ -185,8 +183,6 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
                 if (serializeSecurityManager.getWarnedClasses().add(className)) {
                     logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
-
-                throw new IllegalArgumentException(msg);
             }
         }
 

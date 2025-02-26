@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -169,6 +170,11 @@ class DefaultSerializeClassCheckerTest {
                 ReentrantReadWriteLock.class,
                 defaultSerializeClassChecker.loadClass(
                         Thread.currentThread().getContextClassLoader(), ReentrantReadWriteLock.class.getName()));
+
+        Assertions.assertEquals(
+                Level.class,
+                defaultSerializeClassChecker.loadClass(
+                        Thread.currentThread().getContextClassLoader(), Level.class.getName()));
 
         ssm.setCheckStatus(SerializeCheckStatus.DISABLE);
         Assertions.assertEquals(
