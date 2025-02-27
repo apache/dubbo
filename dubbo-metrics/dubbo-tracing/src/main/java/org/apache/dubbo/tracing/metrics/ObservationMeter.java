@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.ssl;
+package org.apache.dubbo.tracing.metrics;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.metrics.MetricsGlobalRegistry;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.net.SocketAddress;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface CertProvider {
-    boolean isSupport(URL address);
+public class ObservationMeter {
 
-    default boolean isSupport(URL address, SocketAddress remoteAddress) {
-        return isSupport(address);
+    public static void addMeterRegistry(ObservationRegistry registry, ApplicationModel applicationModel) {
+        MeterRegistry meterRegistry = MetricsGlobalRegistry.getCompositeRegistry(applicationModel);
+        registry.observationConfig()
+                .observationHandler(
+                        new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(meterRegistry));
     }
-
-    ProviderCert getProviderConnectionConfig(URL localAddress);
-
-    default ProviderCert getProviderConnectionConfig(URL localAddress, SocketAddress remoteAddress) {
-        return getProviderConnectionConfig(localAddress);
-    }
-
-    Cert getConsumerConnectionConfig(URL remoteAddress);
 }

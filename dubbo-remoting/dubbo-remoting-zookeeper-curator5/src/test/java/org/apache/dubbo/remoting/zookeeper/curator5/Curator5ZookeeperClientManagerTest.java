@@ -18,22 +18,32 @@ package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstructionWithAnswer;
 
 class Curator5ZookeeperClientManagerTest {
     private ZookeeperClient zookeeperClient;
     private ZookeeperClientManager zookeeperClientManager;
+    private static MockedConstruction<Curator5ZookeeperClient> mockedCurator5ZookeeperClientConstruction;
     private static String zookeeperConnectionAddress1;
 
     @BeforeAll
     public static void beforeAll() {
         zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        Curator5ZookeeperClient mockCurator5ZookeeperClient = mock(Curator5ZookeeperClient.class);
+        mockedCurator5ZookeeperClientConstruction =
+                mockConstructionWithAnswer(Curator5ZookeeperClient.class, invocationOnMock -> invocationOnMock
+                        .getMethod()
+                        .invoke(mockCurator5ZookeeperClient, invocationOnMock.getArguments()));
     }
 
     @BeforeEach
@@ -46,5 +56,10 @@ class Curator5ZookeeperClientManagerTest {
     void testZookeeperClient() {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        mockedCurator5ZookeeperClientConstruction.close();
     }
 }

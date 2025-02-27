@@ -174,6 +174,7 @@ public interface Constants {
 
     List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
     String CONTENT_LENGTH_KEY = "content-length";
+    String SSL_SESSION_KEY = "ssl-session";
 
     String CONNECTION_HANDLER_NAME = "connectionHandler";
 }

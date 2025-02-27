@@ -42,6 +42,8 @@ public interface ModuleDeployer extends Deployer<ModuleModel> {
 
     ReferenceCache getReferenceCache();
 
+    void registerServiceInstance();
+
     void prepare();
 
     void setPending();

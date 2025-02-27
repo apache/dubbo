@@ -279,6 +279,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         // customizer RpcInvocation
         HeaderFilter[] headerFilters =
                 UrlUtils.computeServiceAttribute(invoker.getUrl(), HEADER_FILTERS_CACHE, this::loadHeaderFilters);
+        if (headerFilters == null) {
+            headerFilters = this.loadHeaderFilters(invoker.getUrl());
+        }
         for (HeaderFilter headerFilter : headerFilters) {
             headerFilter.invoke(invoker, inv);
         }

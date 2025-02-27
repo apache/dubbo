@@ -661,7 +661,7 @@ class NacosNamingServiceWrapperTest {
             public void registerInstance(String serviceName, String groupName, Instance instance) {}
 
             @Override
-            public List<Instance> getAllInstances(String serviceName, String groupName) {
+            public List<Instance> getAllInstances(String serviceName, String groupName, boolean subscribe) {
                 return null;
             }
         };
@@ -674,7 +674,7 @@ class NacosNamingServiceWrapperTest {
             Assertions.fail(e);
         }
         try {
-            nacosNamingServiceWrapper.getAllInstances("Test", "Test");
+            nacosNamingServiceWrapper.getAllInstancesWithoutSubscription("Test", "Test");
         } catch (NacosException e) {
             Assertions.fail(e);
         }
@@ -690,7 +690,8 @@ class NacosNamingServiceWrapperTest {
             }
 
             @Override
-            public List<Instance> getAllInstances(String serviceName, String groupName) throws NacosException {
+            public List<Instance> getAllInstances(String serviceName, String groupName, boolean subscribe)
+                    throws NacosException {
                 throw new NacosException();
             }
         };
@@ -699,7 +700,9 @@ class NacosNamingServiceWrapperTest {
                 new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
         Assertions.assertThrows(
                 NacosException.class, () -> nacosNamingServiceWrapper.registerInstance("Test", "Test", null));
-        Assertions.assertThrows(NacosException.class, () -> nacosNamingServiceWrapper.getAllInstances("Test", "Test"));
+        Assertions.assertThrows(
+                NacosException.class,
+                () -> nacosNamingServiceWrapper.getAllInstancesWithoutSubscription("Test", "Test"));
     }
 
     @Test
@@ -717,7 +720,8 @@ class NacosNamingServiceWrapperTest {
             }
 
             @Override
-            public List<Instance> getAllInstances(String serviceName, String groupName) throws NacosException {
+            public List<Instance> getAllInstances(String serviceName, String groupName, boolean subscribe)
+                    throws NacosException {
                 if (count2.incrementAndGet() < 10) {
                     throw new NacosException();
                 }
@@ -735,9 +739,11 @@ class NacosNamingServiceWrapperTest {
             Assertions.fail(e);
         }
 
-        Assertions.assertThrows(NacosException.class, () -> nacosNamingServiceWrapper.getAllInstances("Test", "Test"));
+        Assertions.assertThrows(
+                NacosException.class,
+                () -> nacosNamingServiceWrapper.getAllInstancesWithoutSubscription("Test", "Test"));
         try {
-            nacosNamingServiceWrapper.getAllInstances("Test", "Test");
+            nacosNamingServiceWrapper.getAllInstancesWithoutSubscription("Test", "Test");
         } catch (NacosException e) {
             Assertions.fail(e);
         }
