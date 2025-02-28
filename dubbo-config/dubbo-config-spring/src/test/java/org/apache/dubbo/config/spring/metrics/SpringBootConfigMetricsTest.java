@@ -36,7 +36,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         properties = {
             "dubbo.application.NAME = dubbo-demo-application",
             "dubbo.module.name = dubbo-demo-module",
-            "dubbo.registry.address = zookeeper://localhost:2181",
+            "dubbo.registry.address = mock://localhost:2181",
             "dubbo.protocol.name=dubbo",
             "dubbo.protocol.port=20880",
             "dubbo.metrics.protocol=prometheus",
@@ -50,7 +50,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
             "dubbo.metrics.aggregation.bucket-num=5",
             "dubbo.metrics.aggregation.time-window-seconds=120",
             "dubbo.metrics.histogram.enabled=true",
-            "dubbo.metadata-report.address=${zookeeper.connection.address.2}"
+            "dubbo.metadata-report.address=mock://127.0.0.1:2181"
         },
         classes = {SpringBootConfigMetricsTest.class})
 @Configuration

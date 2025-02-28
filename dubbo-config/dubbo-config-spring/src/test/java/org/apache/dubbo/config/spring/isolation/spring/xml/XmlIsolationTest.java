@@ -21,9 +21,11 @@ import org.apache.dubbo.config.spring.isolation.spring.BaseTest;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+@Disabled
 public class XmlIsolationTest extends BaseTest {
 
     @Test

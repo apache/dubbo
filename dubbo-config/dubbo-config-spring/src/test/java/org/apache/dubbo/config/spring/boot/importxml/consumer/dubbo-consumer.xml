@@ -20,7 +20,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://code.alibabatech.com/schema/dubbo
 		http://code.alibabatech.com/schema/dubbo/dubbo.xsd" default-lazy-init ="false">
@@ -32,7 +32,7 @@
 	</dubbo:application>
 
 	<dubbo:protocol name="dubbo" accesslog="true" />
-	
+
 	<dubbo:registry id="cimmdmsSrvClientRegistry"
 		protocol="${dubbo.registry.protocol}" address="${dubbo.registry.address}" client="curator"
 		group="dubboservice/wisdom/cimmdmsservice/group_mdms_dev"

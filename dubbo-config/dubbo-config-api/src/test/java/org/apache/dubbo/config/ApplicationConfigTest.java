@@ -245,12 +245,10 @@ class ApplicationConfigTest {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
 
-        DubboBootstrap.getInstance().application(applicationConfig).initialize();
+        applicationConfig.refresh();
 
         Assertions.assertEquals(owner, applicationConfig.getOwner());
         Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
-
-        DubboBootstrap.getInstance().destroy();
     }
 
     @Test
@@ -263,14 +261,12 @@ class ApplicationConfigTest {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setId("demo-app");
 
-        DubboBootstrap.getInstance().application(applicationConfig).initialize();
+        applicationConfig.refresh();
 
         Assertions.assertEquals("demo-app", applicationConfig.getId());
         Assertions.assertEquals("demo-app", applicationConfig.getName());
         Assertions.assertEquals(owner, applicationConfig.getOwner());
         Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
-
-        DubboBootstrap.getInstance().destroy();
     }
 
     @Test
@@ -282,12 +278,10 @@ class ApplicationConfigTest {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-app");
 
-        DubboBootstrap.getInstance().application(applicationConfig).initialize();
+        applicationConfig.refresh();
 
         Assertions.assertEquals(owner, applicationConfig.getOwner());
         Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
-
-        DubboBootstrap.getInstance().destroy();
     }
 
     @Test

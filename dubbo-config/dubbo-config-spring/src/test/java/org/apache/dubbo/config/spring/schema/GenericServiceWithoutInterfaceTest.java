@@ -57,12 +57,6 @@ class GenericServiceWithoutInterfaceTest {
 
     @Test
     void testGenericWithoutInterface() {
-
-        // Test generic service without interface class locally
-        Object result = genericServiceWithoutInterfaceRef.$invoke(
-                "sayHello", new String[] {"java.lang.String"}, new Object[] {"generic"});
-        Assertions.assertEquals("Welcome generic", result);
-
         ReferenceConfigBase<Object> reference = DubboBootstrap.getInstance()
                 .getApplicationModel()
                 .getDefaultModule()

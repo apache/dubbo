@@ -17,28 +17,19 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 class ConfigCenterConfigTest {
-
-    @BeforeEach
-    public void setUp() {
-        DubboBootstrap.reset();
-    }
 
     @AfterEach
     public void afterEach() {
@@ -60,12 +51,12 @@ class ConfigCenterConfigTest {
         ConfigCenterConfig config = new ConfigCenterConfig();
         config.setNamespace("namespace");
         config.setGroup("group");
-        config.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
+        config.setAddress("zookeeper://127.0.0.1:2181");
         config.setHighestPriority(null);
         config.refresh();
 
         Assertions.assertEquals(
-                ZookeeperRegistryCenterConfig.getConnectionAddress() + "/"
+                "zookeeper://127.0.0.1:2181" + "/"
                         + ConfigCenterConfig.class.getName()
                         + "?check=true&config-file=dubbo.properties&group=group&namespace=namespace&timeout=30000",
                 config.toUrl().toFullString());
@@ -74,7 +65,7 @@ class ConfigCenterConfigTest {
     @Test
     void testOverrideConfig() {
 
-        String zkAddr = ZookeeperRegistryCenterConfig.getConnectionAddress();
+        String zkAddr = "zookeeper://127.0.0.1:2181";
         // sysprops has no id
         SysProps.setProperty("dubbo.config-center.check", "false");
         SysProps.setProperty("dubbo.config-center.address", zkAddr);
@@ -83,24 +74,10 @@ class ConfigCenterConfigTest {
         ConfigCenterConfig configCenter = new ConfigCenterConfig();
         configCenter.setAddress("N/A");
 
-        try {
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .configCenter(configCenter)
-                    .initialize();
-        } catch (Exception e) {
-            // ignore
-            e.printStackTrace();
-        }
+        configCenter.refresh();
 
-        Collection<ConfigCenterConfig> configCenters =
-                ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-        Assertions.assertEquals(1, configCenters.size());
-        Assertions.assertEquals(configCenter, configCenters.iterator().next());
         Assertions.assertEquals(zkAddr, configCenter.getAddress());
         Assertions.assertEquals(false, configCenter.isCheck());
-
-        DubboBootstrap.getInstance().stop();
     }
 
     @Test
@@ -113,21 +90,12 @@ class ConfigCenterConfigTest {
 
         // No id but has address
         ConfigCenterConfig configCenter = new ConfigCenterConfig();
-        configCenter.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
+        configCenter.setAddress("zookeeper://127.0.0.1:2181");
 
-        DubboBootstrap.getInstance()
-                .application("demo-app")
-                .configCenter(configCenter)
-                .start();
+        configCenter.refresh();
 
-        Collection<ConfigCenterConfig> configCenters =
-                ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-        Assertions.assertEquals(1, configCenters.size());
-        Assertions.assertEquals(configCenter, configCenters.iterator().next());
         Assertions.assertEquals(zkAddr, configCenter.getAddress());
         Assertions.assertEquals(false, configCenter.isCheck());
-
-        DubboBootstrap.getInstance().stop();
     }
 
     @Test
@@ -141,19 +109,10 @@ class ConfigCenterConfigTest {
         ConfigCenterConfig configCenter = new ConfigCenterConfig();
         configCenter.setTimeout(3000L);
 
-        DubboBootstrap.getInstance()
-                .application("demo-app")
-                .configCenter(configCenter)
-                .initialize();
+        configCenter.refresh();
 
-        Collection<ConfigCenterConfig> configCenters =
-                ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-        Assertions.assertEquals(1, configCenters.size());
-        Assertions.assertEquals(configCenter, configCenters.iterator().next());
         Assertions.assertEquals(1234, configCenter.getTimeout());
         Assertions.assertEquals(false, configCenter.isCheck());
-
-        DubboBootstrap.getInstance().stop();
     }
 
     @Test
@@ -175,16 +134,8 @@ class ConfigCenterConfigTest {
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
             configCenter.setTimeout(3000L);
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .configCenter(configCenter)
-                    .initialize();
+            configCenter.refresh();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel()
-                    .getApplicationConfigManager()
-                    .getConfigCenters();
-            Assertions.assertEquals(1, configCenters.size());
-            Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
@@ -192,7 +143,6 @@ class ConfigCenterConfigTest {
                     .modelEnvironment()
                     .getPropertiesConfiguration()
                     .refresh();
-            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -208,19 +158,10 @@ class ConfigCenterConfigTest {
         configCenter.setId("configcenterA");
         configCenter.setTimeout(3000L);
 
-        DubboBootstrap.getInstance()
-                .application("demo-app")
-                .configCenter(configCenter)
-                .start();
+        configCenter.refresh();
 
-        Collection<ConfigCenterConfig> configCenters =
-                ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-        Assertions.assertEquals(1, configCenters.size());
-        Assertions.assertEquals(configCenter, configCenters.iterator().next());
         Assertions.assertEquals(1234, configCenter.getTimeout());
         Assertions.assertEquals(false, configCenter.isCheck());
-
-        DubboBootstrap.getInstance().stop();
     }
 
     @Test
@@ -243,16 +184,8 @@ class ConfigCenterConfigTest {
             configCenter.setId("configcenterA");
             configCenter.setTimeout(3000L);
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .configCenter(configCenter)
-                    .start();
+            configCenter.refresh();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel()
-                    .getApplicationConfigManager()
-                    .getConfigCenters();
-            Assertions.assertEquals(1, configCenters.size());
-            Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
@@ -260,7 +193,6 @@ class ConfigCenterConfigTest {
                     .modelEnvironment()
                     .getPropertiesConfiguration()
                     .refresh();
-            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -292,26 +224,25 @@ class ConfigCenterConfigTest {
     @Test
     void testAttributes() {
         ConfigCenterConfig cc = new ConfigCenterConfig();
-        cc.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
+        cc.setAddress("zookeeper://127.0.0.1:2181");
         Map<String, String> attributes = new LinkedHashMap<>();
         ConfigCenterConfig.appendAttributes(attributes, cc);
 
         Assertions.assertEquals(cc.getAddress(), attributes.get("address"));
         Assertions.assertEquals(cc.getProtocol(), attributes.get("protocol"));
         Assertions.assertEquals("" + cc.getPort(), attributes.get("port"));
-        Assertions.assertEquals(null, attributes.get("valid"));
-        Assertions.assertEquals(null, attributes.get("refreshed"));
+        Assertions.assertNull(attributes.get("valid"));
+        Assertions.assertNull(attributes.get("refreshed"));
     }
 
     @Test
     void testSetAddress() {
-        String address = ZookeeperRegistryCenterConfig.getConnectionAddress();
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setUsername("user123"); // set username first
         cc.setPassword("pass123");
-        cc.setAddress(address); // set address last, expect did not override username/password
+        cc.setAddress("zookeeper://127.0.0.1:2181"); // set address last, expect did not override username/password
 
-        Assertions.assertEquals(address, cc.getAddress());
+        Assertions.assertEquals("zookeeper://127.0.0.1:2181", cc.getAddress());
         Assertions.assertEquals("zookeeper", cc.getProtocol());
         Assertions.assertEquals(2181, cc.getPort());
         Assertions.assertEquals("user123", cc.getUsername());

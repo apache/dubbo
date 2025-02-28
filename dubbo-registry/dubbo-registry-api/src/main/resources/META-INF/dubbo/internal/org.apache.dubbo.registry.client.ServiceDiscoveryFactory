@@ -1,1 +1,2 @@
 default=org.apache.dubbo.registry.client.DefaultServiceDiscoveryFactory
+mock=org.apache.dubbo.registry.mock.MockServiceDiscoveryFactory

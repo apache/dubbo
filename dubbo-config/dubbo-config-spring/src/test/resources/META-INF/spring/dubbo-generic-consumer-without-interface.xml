@@ -25,12 +25,12 @@
     <dubbo:application name="dubbo-generic-consumer-without-interface"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="${zookeeper.connection.address}"/>
+    <dubbo:registry address="mock://127.0.0.1:2181"/>
 
     <bean id="genericService" class="org.apache.dubbo.config.spring.schema.MyGenericService"/>
 
     <!-- generic service without interface class -->
-    <dubbo:reference id="genericServiceWithoutInterfaceRef" interface="org.apache.dubbo.config.spring.api.LocalMissClass" generic="true" init="false"/>
+    <dubbo:reference id="genericServiceWithoutInterfaceRef" interface="org.apache.dubbo.config.spring.api.LocalMissClass" generic="true" init="false" check="false"/>
     <dubbo:service id="genericServiceWithoutInterface" interface="org.apache.dubbo.config.spring.api.LocalMissClass" generic="true"
                    ref="genericService"/>
 </beans>

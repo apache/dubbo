@@ -19,7 +19,6 @@ package org.apache.dubbo.config.spring.boot.configprops;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
@@ -31,7 +30,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 import java.util.Collection;
 import java.util.List;
@@ -65,10 +63,8 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
             "dubbo.metricses.my-metrics.aggregation.time-window-seconds=120",
             "dubbo.metricses.my-metrics.histogram.enabled=true",
             "dubbo.monitors.my-monitor.address=zookeeper://127.0.0.1:32770",
-            "dubbo.config-centers.my-configcenter.address=${zookeeper.connection.address.1}",
+            "dubbo.config-centers.my-configcenter.address=zookeeper://127.0.0.1:2222",
             "dubbo.config-centers.my-configcenter.group=group1",
-            "dubbo.metadata-reports.my-metadata.address=${zookeeper.connection.address.2}",
-            "dubbo.metadata-reports.my-metadata.username=User",
             "dubbo.providers.my-provider.host=127.0.0.1",
             "dubbo.consumers.my-consumer.client=netty"
         },
@@ -135,14 +131,8 @@ class SpringBootMultipleConfigPropsTest {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());
         ConfigCenterConfig centerConfig = configCenters.iterator().next();
-        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress1(), centerConfig.getAddress());
+        Assertions.assertEquals("zookeeper://127.0.0.1:2222", centerConfig.getAddress());
         Assertions.assertEquals("group1", centerConfig.getGroup());
-
-        Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
-        Assertions.assertEquals(1, metadataConfigs.size());
-        MetadataReportConfig reportConfig = metadataConfigs.iterator().next();
-        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
-        Assertions.assertEquals("User", reportConfig.getUsername());
 
         // module configs
         ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();

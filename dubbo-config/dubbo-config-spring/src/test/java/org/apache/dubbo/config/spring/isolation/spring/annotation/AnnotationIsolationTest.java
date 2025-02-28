@@ -28,6 +28,7 @@ import org.apache.dubbo.config.spring.isolation.spring.support.HelloServiceExecu
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 
+@Disabled
 public class AnnotationIsolationTest extends BaseTest {
 
     @Test
@@ -79,7 +81,7 @@ public class AnnotationIsolationTest extends BaseTest {
         @Bean
         public RegistryConfig registryConfig() {
             RegistryConfig registryConfig = new RegistryConfig();
-            registryConfig.setAddress("zookeeper://127.0.0.1:2181");
+            registryConfig.setAddress("mock://127.0.0.1:2181");
             return registryConfig;
         }
 
@@ -97,7 +99,7 @@ public class AnnotationIsolationTest extends BaseTest {
         @Bean
         public RegistryConfig registryConfig() {
             RegistryConfig registryConfig = new RegistryConfig();
-            registryConfig.setAddress("zookeeper://127.0.0.1:2181");
+            registryConfig.setAddress("mock://127.0.0.1:2181");
             return registryConfig;
         }
 

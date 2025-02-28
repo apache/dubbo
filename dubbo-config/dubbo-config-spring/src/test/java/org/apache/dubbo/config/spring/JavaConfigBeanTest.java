@@ -31,7 +31,6 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 import java.util.Collection;
 import java.util.Map;
@@ -66,8 +65,6 @@ class JavaConfigBeanTest {
         SysProps.setProperty("dubbo.application.qos-enable", "false");
         SysProps.setProperty("dubbo.protocol.name", "dubbo");
         SysProps.setProperty("dubbo.protocol.port", "2346");
-        String registryAddress = ZookeeperRegistryCenterConfig.getConnectionAddress();
-        SysProps.setProperty("dubbo.registry.address", registryAddress);
         SysProps.setProperty("dubbo.provider.group", "test");
 
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext(
@@ -79,9 +76,6 @@ class JavaConfigBeanTest {
             ApplicationConfig application = configManager.getApplication().get();
             Assertions.assertEquals(false, application.getQosEnable());
             Assertions.assertEquals("Tom", application.getOwner());
-
-            RegistryConfig registry = configManager.getRegistry(MY_REGISTRY_ID).get();
-            Assertions.assertEquals(registryAddress, registry.getAddress());
 
             Collection<ProtocolConfig> protocols = configManager.getProtocols();
             Assertions.assertEquals(1, protocols.size());

@@ -1,1 +1,0 @@
-multipleConfigCenterServiceDiscoveryRegistry=org.apache.dubbo.config.integration.multiple.servicediscoveryregistry.MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener

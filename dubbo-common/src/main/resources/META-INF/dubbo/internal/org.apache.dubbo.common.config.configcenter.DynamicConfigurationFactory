@@ -1,1 +1,2 @@
 nop=org.apache.dubbo.common.config.configcenter.nop.NopDynamicConfigurationFactory
+mock=org.apache.dubbo.common.config.configcenter.mock.MockDynamicConfigurationFactory
