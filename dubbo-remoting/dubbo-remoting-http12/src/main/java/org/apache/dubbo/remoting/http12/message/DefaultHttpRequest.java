@@ -306,7 +306,7 @@ public class DefaultHttpRequest implements HttpRequest {
     @Override
     public String serverHost() {
         String host = getHost0();
-        return host == null ? localHost() + ':' + localPort() : host;
+        return StringUtils.isBlank(host) ? localHost() + ':' + localPort() : host;
     }
 
     @Override
@@ -316,7 +316,7 @@ public class DefaultHttpRequest implements HttpRequest {
             return host;
         }
         host = getHost0();
-        if (host != null) {
+        if (StringUtils.isNotBlank(host)) {
             int index = host.lastIndexOf(':');
             return index == -1 ? host : host.substring(0, index);
         }
@@ -330,7 +330,7 @@ public class DefaultHttpRequest implements HttpRequest {
             return Integer.parseInt(port);
         }
         String host = getHost0();
-        if (host != null) {
+        if (StringUtils.isNotBlank(host)) {
             int index = host.lastIndexOf(':');
             return index == -1 ? -1 : Integer.parseInt(host.substring(0, index));
         }
