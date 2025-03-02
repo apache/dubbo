@@ -150,7 +150,7 @@
     <maven_surefire_version>3.5.2</maven_surefire_version>
     <maven_deploy_version>3.1.3</maven_deploy_version>
     <maven_shade_version>3.6.0</maven_shade_version>
-    <maven_compiler_version>3.13.0</maven_compiler_version>
+    <maven_compiler_version>3.14.0</maven_compiler_version>
     <maven_source_version>3.3.1</maven_source_version>
     <maven_javadoc_version>3.11.2</maven_javadoc_version>
     <maven_checkstyle_version>3.6.0</maven_checkstyle_version>
@@ -165,7 +165,7 @@
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.3</spring-6.version>
-    <spring-boot-3.version>3.4.2</spring-boot-3.version>
+    <spring-boot-3.version>3.4.3</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
@@ -1058,7 +1058,7 @@
     <profile>
       <id>spring-boot-3</id>
       <properties>
-        <tomcat.version>10.1.35</tomcat.version>
+        <tomcat.version>10.1.36</tomcat.version>
       </properties>
       <dependencyManagement>
         <dependencies>
