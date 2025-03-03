@@ -93,7 +93,7 @@
     <spring_boot_version>2.7.18</spring_boot_version>
     <spring_security_version>5.8.16</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.17.1</byte-buddy_version>
+    <byte-buddy_version>1.17.2</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.1.118.Final</netty4_version>
     <netty_http3_version>0.0.28.Final</netty_http3_version>
