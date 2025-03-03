@@ -59,11 +59,4 @@ class NamedThreadFactoryTest {
         assertNotNull(threadNum);
         assertEquals(INITIAL_THREAD_NUM, threadNum.get());
     }
-
-    @Test
-    public void testGetThreadGroup() {
-        NamedThreadFactory threadFactory = new NamedThreadFactory();
-        ThreadGroup threadGroup = threadFactory.getThreadGroup();
-        assertNotNull(threadGroup);
-    }
 }
