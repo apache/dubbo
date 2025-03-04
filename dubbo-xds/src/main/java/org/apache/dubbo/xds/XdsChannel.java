@@ -92,7 +92,7 @@ public class XdsChannel {
                 }
             } else {
                 BootstrapInfo bootstrapInfo = Bootstrapper.getInstance().bootstrap();
-                String server = bootstrapInfo.getServers().get(0).getTarget();
+                String server = bootstrapInfo.getXdsServers().get(0).getServerURI();
                 // URLAddress address = URLAddress.parse(bootstrapInfo.getServers().get(0).getTarget(), null, false);
                 // EpollEventLoopGroup elg = new EpollEventLoopGroup();
                 managedChannel = NettyChannelBuilder.forTarget(server)

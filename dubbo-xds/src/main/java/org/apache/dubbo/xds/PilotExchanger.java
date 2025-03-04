@@ -28,18 +28,12 @@ import java.util.Set;
 
 public class PilotExchanger {
 
-    private int pollingTimeout;
-    private ApplicationModel applicationModel;
     protected final AdsObserver adsObserver;
-
-    private final Set<String> domainObserveRequest = new ConcurrentHashSet<String>();
 
     private static PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
 
     protected PilotExchanger(URL url) {
-        this.pollingTimeout = url.getParameter("pollingTimeout", 10);
         adsObserver = new AdsObserver(url);
-        this.applicationModel = url.getOrDefaultApplicationModel();
     }
 
     public <T extends ResourceUpdate> void subscribeXdsResource(

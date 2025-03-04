@@ -16,36 +16,27 @@
  */
 package org.apache.dubbo.xds.bootstrap;
 
-public class Locality {
+import java.util.Map;
 
-    private String region;
-    private String zone;
-    private String subZone;
+public class ChannelCreds {
+    private String type;
+    private Map<String, ?> config;
 
-    public String getRegion() {
-        return region;
+    public String getType() {
+        return type;
     }
 
-    public Locality setRegion(String region) {
-        this.region = region;
+    public ChannelCreds setType(String type) {
+        this.type = type;
         return this;
     }
 
-    public String getZone() {
-        return zone;
+    public Map<String, ?> getConfig() {
+        return config;
     }
 
-    public Locality setZone(String zone) {
-        this.zone = zone;
-        return this;
-    }
-
-    public String getSubZone() {
-        return subZone;
-    }
-
-    public Locality setSubZone(String subZone) {
-        this.subZone = subZone;
+    public ChannelCreds setConfig(Map<String, ?> config) {
+        this.config = config;
         return this;
     }
 }

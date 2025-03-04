@@ -16,36 +16,37 @@
  */
 package org.apache.dubbo.xds.bootstrap;
 
-public class Locality {
+import java.util.List;
 
-    private String region;
-    private String zone;
-    private String subZone;
+public class XdsServer {
+    private String serverURI;
+    private List<ChannelCreds> channelCreds;
+    private List<String> serverFeatures;
 
-    public String getRegion() {
-        return region;
+    public String getServerURI() {
+        return serverURI;
     }
 
-    public Locality setRegion(String region) {
-        this.region = region;
+    public XdsServer setServerURI(String serverURI) {
+        this.serverURI = serverURI;
         return this;
     }
 
-    public String getZone() {
-        return zone;
+    public List<ChannelCreds> getChannelCreds() {
+        return channelCreds;
     }
 
-    public Locality setZone(String zone) {
-        this.zone = zone;
+    public XdsServer setChannelCreds(List<ChannelCreds> channelCreds) {
+        this.channelCreds = channelCreds;
         return this;
     }
 
-    public String getSubZone() {
-        return subZone;
+    public List<String> getServerFeatures() {
+        return serverFeatures;
     }
 
-    public Locality setSubZone(String subZone) {
-        this.subZone = subZone;
+    public XdsServer setServerFeatures(List<String> serverFeatures) {
+        this.serverFeatures = serverFeatures;
         return this;
     }
 }

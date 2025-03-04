@@ -141,20 +141,6 @@ public class AdsObserver {
             requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(this, future));
         }
         requestObserver.onNext(discoveryRequest);
-        try {
-            // TODO：This is to make the child thread receive the information.
-            //  Maybe Using CountDownLatch would be better
-            String name = Thread.currentThread().getName();
-            if ("main".equals(name)) {
-                future.get(10000, TimeUnit.SECONDS);
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static class ResponseObserver implements StreamObserver<DiscoveryResponse> {

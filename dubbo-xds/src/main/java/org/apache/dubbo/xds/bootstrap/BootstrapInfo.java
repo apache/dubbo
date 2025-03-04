@@ -16,118 +16,48 @@
  */
 package org.apache.dubbo.xds.bootstrap;
 
-import org.apache.dubbo.xds.bootstrap.Bootstrapper.AuthorityInfo;
-import org.apache.dubbo.xds.bootstrap.Bootstrapper.CertificateProviderInfo;
-import org.apache.dubbo.xds.bootstrap.Bootstrapper.ServerInfo;
-
-import javax.annotation.Nullable;
-
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 public class BootstrapInfo {
-    private final ImmutableList<ServerInfo> servers;
-    private final Node node;
+    private List<XdsServer> xdsServers;
+    private Node node;
+    private Map<String, CertificateProvider> certProviders;
+    private String serverListenerResourceNameTemplate;
 
-    @Nullable
-    private final ImmutableMap<String, CertificateProviderInfo> certProviders;
-
-    @Nullable
-    private final String serverListenerResourceNameTemplate;
-
-    private final String clientDefaultListenerResourceNameTemplate;
-    private final ImmutableMap<String, AuthorityInfo> authorities;
-
-    private BootstrapInfo(Builder builder) {
-        this.servers = ImmutableList.copyOf(builder.servers);
-        this.node = builder.node;
-        this.certProviders = builder.certProviders == null ? null : ImmutableMap.copyOf(builder.certProviders);
-        this.serverListenerResourceNameTemplate = builder.serverListenerResourceNameTemplate;
-        this.clientDefaultListenerResourceNameTemplate = builder.clientDefaultListenerResourceNameTemplate;
-        this.authorities = builder.authorities == null ? null : ImmutableMap.copyOf(builder.authorities);
+    public List<XdsServer> getXdsServers() {
+        return xdsServers;
     }
 
-    public ImmutableList<ServerInfo> getServers() {
-        return servers;
+    public BootstrapInfo setXdsServers(List<XdsServer> xdsServers) {
+        this.xdsServers = xdsServers;
+        return this;
     }
 
     public Node getNode() {
         return node;
     }
 
-    @Nullable
-    public ImmutableMap<String, CertificateProviderInfo> getCertProviders() {
+    public BootstrapInfo setNode(Node node) {
+        this.node = node;
+        return this;
+    }
+
+    public Map<String, CertificateProvider> getCertProviders() {
         return certProviders;
     }
 
-    @Nullable
+    public BootstrapInfo setCertProviders(Map<String, CertificateProvider> certProviders) {
+        this.certProviders = certProviders;
+        return this;
+    }
+
     public String getServerListenerResourceNameTemplate() {
         return serverListenerResourceNameTemplate;
     }
 
-    public String getClientDefaultListenerResourceNameTemplate() {
-        return clientDefaultListenerResourceNameTemplate;
-    }
-
-    public ImmutableMap<String, AuthorityInfo> getAuthorities() {
-        return authorities;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static final class Builder {
-        private List<ServerInfo> servers;
-        private Node node;
-        private Map<String, CertificateProviderInfo> certProviders;
-        private String serverListenerResourceNameTemplate;
-        private String clientDefaultListenerResourceNameTemplate;
-        private Map<String, AuthorityInfo> authorities;
-
-        public Builder servers(List<ServerInfo> servers) {
-            this.servers = servers;
-            return this;
-        }
-
-        public Builder node(Node node) {
-            this.node = node;
-            return this;
-        }
-
-        public Builder certProviders(@Nullable Map<String, CertificateProviderInfo> certProviders) {
-            this.certProviders = certProviders;
-            return this;
-        }
-
-        public Builder serverListenerResourceNameTemplate(@Nullable String serverListenerResourceNameTemplate) {
-            this.serverListenerResourceNameTemplate = serverListenerResourceNameTemplate;
-            return this;
-        }
-
-        public Builder clientDefaultListenerResourceNameTemplate(String clientDefaultListenerResourceNameTemplate) {
-            this.clientDefaultListenerResourceNameTemplate = clientDefaultListenerResourceNameTemplate;
-            return this;
-        }
-
-        public Builder authorities(Map<String, AuthorityInfo> authorities) {
-            this.authorities = authorities;
-            return this;
-        }
-
-        public BootstrapInfo build() {
-            return new BootstrapInfo(this);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "BootstrapInfo{" + "servers=" + servers + ", node=" + node + ", certProviders=" + certProviders
-                + ", serverListenerResourceNameTemplate='" + serverListenerResourceNameTemplate + '\''
-                + ", clientDefaultListenerResourceNameTemplate='" + clientDefaultListenerResourceNameTemplate + '\''
-                + ", authorities=" + authorities + '}';
+    public BootstrapInfo setServerListenerResourceNameTemplate(String serverListenerResourceNameTemplate) {
+        this.serverListenerResourceNameTemplate = serverListenerResourceNameTemplate;
+        return this;
     }
 }

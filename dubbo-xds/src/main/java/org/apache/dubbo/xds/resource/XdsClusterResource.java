@@ -17,7 +17,7 @@
 package org.apache.dubbo.xds.resource;
 
 import org.apache.dubbo.common.lang.Nullable;
-import org.apache.dubbo.xds.bootstrap.Bootstrapper.ServerInfo;
+import org.apache.dubbo.xds.bootstrap.XdsServer;
 import org.apache.dubbo.xds.resource.cluster.LoadBalancerConfigFactory;
 import org.apache.dubbo.xds.resource.cluster.OutlierDetection;
 import org.apache.dubbo.xds.resource.exception.ResourceInvalidException;
@@ -96,7 +96,7 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
         return processCluster((Cluster) unpackedMessage, certProviderInstances, args.serverInfo);
     }
 
-    static CdsUpdate processCluster(Cluster cluster, Set<String> certProviderInstances, ServerInfo serverInfo)
+    static CdsUpdate processCluster(Cluster cluster, Set<String> certProviderInstances, XdsServer serverInfo)
             throws ResourceInvalidException {
         StructOrError<CdsUpdate.Builder> structOrError;
         switch (cluster.getClusterDiscoveryTypeCase()) {
@@ -152,9 +152,9 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
     }
 
     private static StructOrError<CdsUpdate.Builder> parseNonAggregateCluster(
-            Cluster cluster, Set<String> certProviderInstances, ServerInfo serverInfo) {
+            Cluster cluster, Set<String> certProviderInstances, XdsServer serverInfo) {
         String clusterName = cluster.getName();
-        ServerInfo lrsServerInfo = null;
+        XdsServer lrsServerInfo = null;
         Long maxConcurrentRequests = null;
         UpstreamTlsContext upstreamTlsContext = null;
         OutlierDetection outlierDetection = null;
@@ -225,12 +225,7 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
                 return StructOrError.fromError("EDS service_name must be set when Cluster resource has an xdstp name");
             }
             return StructOrError.fromStruct(CdsUpdate.forEds(
-                    clusterName,
-                    edsServiceName,
-                    lrsServerInfo,
-                    maxConcurrentRequests,
-                    upstreamTlsContext,
-                    outlierDetection));
+                    clusterName, edsServiceName, maxConcurrentRequests, upstreamTlsContext, outlierDetection));
         } else if (type.equals(Cluster.DiscoveryType.LOGICAL_DNS)) {
             if (!cluster.hasLoadAssignment()) {
                 return StructOrError.fromError(
