@@ -28,7 +28,7 @@
 
   <properties>
     <swagger-annotations.version>2.2.28</swagger-annotations.version>
-    <swagger-ui.version>5.18.3</swagger-ui.version>
+    <swagger-ui.version>5.20.0</swagger-ui.version>
     <redoc.version>2.2.0</redoc.version>
     <webjars-locator.version>1.0.1</webjars-locator.version>
     <therapi.version>0.15.0</therapi.version>
