@@ -110,7 +110,8 @@ class EagerThreadPoolExecutorTest {
         String name = "eager-tf";
         int queues = 5;
         int cores = 5;
-        int threads = 10;
+        // github actions usually run on 4 cores which could be determined by LoadStatusCheckerTest
+        int threads = 5;
         // alive 1 second
         long alive = 1000;
 
@@ -127,7 +128,7 @@ class EagerThreadPoolExecutorTest {
         taskQueue.setExecutor(executor);
 
         CountDownLatch countDownLatch1 = new CountDownLatch(1);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             executor.execute(() -> {
                 try {
                     countDownLatch1.await();
@@ -136,8 +137,8 @@ class EagerThreadPoolExecutorTest {
                 }
             });
         }
-        await().until(() -> executor.getPoolSize() == 10);
-        Assertions.assertEquals(10, executor.getActiveCount());
+        await().until(() -> executor.getPoolSize() == 5);
+        Assertions.assertEquals(5, executor.getActiveCount());
 
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         AtomicBoolean started = new AtomicBoolean(false);
@@ -153,8 +154,8 @@ class EagerThreadPoolExecutorTest {
         }
 
         await().until(() -> executor.getQueue().size() == 5);
-        Assertions.assertEquals(10, executor.getActiveCount());
-        Assertions.assertEquals(10, executor.getPoolSize());
+        Assertions.assertEquals(5, executor.getActiveCount());
+        Assertions.assertEquals(5, executor.getPoolSize());
         Assertions.assertFalse(started.get());
         countDownLatch1.countDown();
 
