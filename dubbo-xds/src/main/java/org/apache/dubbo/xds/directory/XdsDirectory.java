@@ -455,9 +455,13 @@ public class XdsDirectory<T> extends AbstractDirectory<T> {
                 // set load balance policy
                 //            url = url.addParameter("loadbalance", lbPolicy);
                 //  cluster to invoker
-                Invoker<T> invoker = protocol.refer(serviceType, url);
+                try {
+                    Invoker<T> invoker = protocol.refer(serviceType, url);
 
-                invokers.add(invoker);
+                    invokers.add(invoker);
+                } catch (Throwable e) {
+                    logger.error("Failed to refer invoker from address " + address, e);
+                }
             });
             // TODO: Consider cases where some clients are not available
             // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor multi clusters.

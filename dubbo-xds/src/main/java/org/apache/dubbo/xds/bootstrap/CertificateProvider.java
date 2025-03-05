@@ -18,8 +18,12 @@ package org.apache.dubbo.xds.bootstrap;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class CertificateProvider {
+    @JsonAlias("plugin_name")
     private String pluginName;
+
     private Map<String, ?> config;
 
     public String getPluginName() {

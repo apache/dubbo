@@ -18,9 +18,15 @@ package org.apache.dubbo.xds.bootstrap;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class XdsServer {
+    @JsonAlias("server_uri")
     private String serverURI;
+
+    @JsonAlias("channel_creds")
     private List<ChannelCreds> channelCreds;
+
     private List<String> serverFeatures;
 
     public String getServerURI() {

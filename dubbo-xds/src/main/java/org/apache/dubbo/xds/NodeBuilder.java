@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.xds;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 
@@ -27,16 +28,19 @@ import com.google.protobuf.NullValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.envoyproxy.envoy.config.core.v3.Node;
+import io.envoyproxy.envoy.config.core.v3.Node.Builder;
 
 public class NodeBuilder {
 
     public static Node build() {
         BootstrapInfo bootstrapInfo = Bootstrapper.getInstance().bootstrap();
-        return Node.newBuilder()
+        Builder builder = Node.newBuilder()
                 .setMetadata(mapToStruct(bootstrapInfo.getNode().getMetadata()))
-                .setId(bootstrapInfo.getNode().getId())
-                .setCluster(bootstrapInfo.getNode().getCluster())
-                .build();
+                .setId(bootstrapInfo.getNode().getId());
+        if (StringUtils.isNoneEmpty(bootstrapInfo.getNode().getCluster())) {
+            builder.setCluster(bootstrapInfo.getNode().getCluster());
+        }
+        return builder.build();
     }
 
     public static Struct mapToStruct(Map<String, ?> map) {

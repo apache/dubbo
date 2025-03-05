@@ -19,10 +19,18 @@ package org.apache.dubbo.xds.bootstrap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class BootstrapInfo {
+    @JsonAlias("xds_servers")
     private List<XdsServer> xdsServers;
+
     private Node node;
+
+    @JsonAlias("cert_providers")
     private Map<String, CertificateProvider> certProviders;
+
+    @JsonAlias("server_listener_resource_name_template")
     private String serverListenerResourceNameTemplate;
 
     public List<XdsServer> getXdsServers() {

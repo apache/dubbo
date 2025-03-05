@@ -32,6 +32,8 @@ import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import io.grpc.Grpc;
+import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
@@ -95,10 +97,9 @@ public class XdsChannel {
                 String server = bootstrapInfo.getXdsServers().get(0).getServerURI();
                 // URLAddress address = URLAddress.parse(bootstrapInfo.getServers().get(0).getTarget(), null, false);
                 // EpollEventLoopGroup elg = new EpollEventLoopGroup();
-                managedChannel = NettyChannelBuilder.forTarget(server)
+                managedChannel = Grpc.newChannelBuilder(server, InsecureChannelCredentials.create())
                         // .eventLoopGroup(elg)
                         // .channelType(EpollDomainSocketChannel.class)
-                        .usePlaintext()
                         .build();
             }
         } catch (Exception e) {
@@ -110,6 +111,14 @@ public class XdsChannel {
                     e);
         }
         channel = managedChannel;
+    }
+
+    public static void main(String[] args) {
+        NettyChannelBuilder.forTarget("unix:///etc/istio/proxy/XDS")
+                // .eventLoopGroup(elg)
+                // .channelType(EpollDomainSocketChannel.class)
+                .usePlaintext()
+                .build();
     }
 
     public StreamObserver<DeltaDiscoveryRequest> observeDeltaDiscoveryRequest(
