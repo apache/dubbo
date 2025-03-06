@@ -14,33 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.threadlocal;
+package org.apache.dubbo.remoting.http12.message.codec;
 
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.remoting.http12.HttpUtils;
 
-/**
- * NamedInternalThreadFactory
- * This is a threadFactory which produce {@link InternalThread}
- */
-public class NamedInternalThreadFactory extends NamedThreadFactory {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    public NamedInternalThreadFactory() {
-        super();
-    }
+public class HttpUtilsTest {
 
-    public NamedInternalThreadFactory(String prefix) {
-        super(prefix, false);
-    }
-
-    public NamedInternalThreadFactory(String prefix, boolean daemon) {
-        super(prefix, daemon);
-    }
-
-    @Override
-    public Thread newThread(Runnable runnable) {
-        String name = mPrefix + mThreadNum.getAndIncrement();
-        InternalThread ret = new InternalThread(InternalRunnable.Wrap(runnable), name);
-        ret.setDaemon(mDaemon);
-        return ret;
+    @Test
+    void testParseCharset() {
+        String charset = HttpUtils.parseCharset("text/html;charset=utf-8");
+        Assertions.assertEquals("utf-8", charset);
+        charset = HttpUtils.parseCharset("text/html");
+        Assertions.assertEquals("", charset);
+        charset = HttpUtils.parseCharset("application/json;charset=utf-8; boundary=__X_PAW_BOUNDARY__");
+        Assertions.assertEquals("utf-8", charset);
+        charset = HttpUtils.parseCharset("multipart/form-data; charset=utf-8; boundary=__X_PAW_BOUNDARY__");
+        Assertions.assertEquals("utf-8", charset);
     }
 }

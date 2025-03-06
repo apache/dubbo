@@ -93,9 +93,9 @@
     <spring_boot_version>2.7.18</spring_boot_version>
     <spring_security_version>5.8.16</spring_security_version>
     <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.17.1</byte-buddy_version>
+    <byte-buddy_version>1.17.2</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.1.118.Final</netty4_version>
+    <netty4_version>4.1.119.Final</netty4_version>
     <netty_http3_version>0.0.28.Final</netty_http3_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
@@ -153,12 +153,12 @@
     <log4j2_version>2.24.3</log4j2_version>
     <commons_io_version>2.18.0</commons_io_version>
     <commons-codec_version>1.18.0</commons-codec_version>
-    <groovy_version>4.0.25</groovy_version>
+    <groovy_version>4.0.26</groovy_version>
 
     <!-- Test libs -->
     <junit_jupiter_version>5.12.0</junit_jupiter_version>
     <junit_platform_version>1.12.0</junit_platform_version>
-    <awaitility_version>4.2.2</awaitility_version>
+    <awaitility_version>4.3.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
     <mockito_version>4.11.0</mockito_version>
@@ -174,10 +174,10 @@
     <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.12.1</gson_version>
-    <jackson_version>2.18.2</jackson_version>
+    <jackson_version>2.18.3</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
-    <maven_flatten_version>1.6.0</maven_flatten_version>
+    <maven_flatten_version>1.7.0</maven_flatten_version>
     <commons_compress_version>1.27.1</commons_compress_version>
     <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>

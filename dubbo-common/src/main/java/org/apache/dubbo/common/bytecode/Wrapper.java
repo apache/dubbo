@@ -112,16 +112,17 @@ public abstract class Wrapper {
      * @return Wrapper instance(not null).
      */
     public static Wrapper getWrapper(Class<?> c) {
-        while (ClassGenerator.isDynamicClass(c)) // can not wrapper on dynamic class.
-        {
-            c = c.getSuperclass();
-        }
+        return ConcurrentHashMapUtils.computeIfAbsent(WRAPPER_MAP, c, (clazz) -> {
+            while (ClassGenerator.isDynamicClass(clazz)) // can not wrapper on dynamic class.
+            {
+                clazz = clazz.getSuperclass();
+            }
 
-        if (c == Object.class) {
-            return OBJECT_WRAPPER;
-        }
-
-        return ConcurrentHashMapUtils.computeIfAbsent(WRAPPER_MAP, c, Wrapper::makeWrapper);
+            if (clazz == Object.class) {
+                return OBJECT_WRAPPER;
+            }
+            return makeWrapper(clazz);
+        });
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
