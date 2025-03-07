@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.directory;
+package org.apache.dubbo.xds;
 
 public interface XdsResourceListener<T> {
     void onResourceUpdate(T resource);

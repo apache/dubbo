@@ -21,7 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.xds.directory.XdsResourceListener;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 import org.apache.dubbo.xds.resource.update.ValidatedResourceUpdate;
@@ -48,12 +48,10 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 
 public class AdsObserver {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AdsObserver.class);
-    private final ApplicationModel applicationModel;
-    private final URL url;
     private final Node node;
     private volatile XdsChannel xdsChannel;
 
-    private final Map<XdsResourceType<?>, ConcurrentMap<String, XdsRawResourceProtocol>> rawResourceListeners =
+    private final Map<XdsResourceType<?>, ConcurrentMap<String, XdsRawResourceProtocol<?>>> rawResourceListeners =
             new ConcurrentHashMap<>();
     protected StreamObserver<DiscoveryRequest> requestObserver;
 
@@ -61,11 +59,9 @@ public class AdsObserver {
 
     private final Map<String, XdsResourceType<?>> subscribedResourceTypeUrls = new HashMap<>();
 
-    public AdsObserver(URL url) {
-        this.url = url;
+    public AdsObserver() {
         this.node = NodeBuilder.build();
-        this.xdsChannel = new XdsChannel(url);
-        this.applicationModel = url.getOrDefaultApplicationModel();
+        this.xdsChannel = new XdsChannel();
     }
 
     public boolean hasSubscribed(XdsResourceType<?> type) {
@@ -79,11 +75,11 @@ public class AdsObserver {
     @SuppressWarnings("unchecked")
     public <T extends ResourceUpdate> void addListener(
             String resourceName, XdsResourceType<T> resourceType, XdsResourceListener<T> resourceListener) {
-        ConcurrentMap<String, XdsRawResourceProtocol> resourceListeners =
+        ConcurrentMap<String, XdsRawResourceProtocol<?>> resourceListeners =
                 rawResourceListeners.computeIfAbsent(resourceType, k -> new ConcurrentHashMap<>());
 
         XdsRawResourceProtocol<T> xdsProtocol = (XdsRawResourceProtocol<T>) resourceListeners.computeIfAbsent(
-                resourceName, k -> new XdsRawResourceProtocol<>(this, node, resourceType, applicationModel));
+                resourceName, k -> new XdsRawResourceProtocol<>(this, node, resourceType));
 
         xdsProtocol.subscribeResource(resourceName, resourceType, resourceListener);
     }
@@ -93,10 +89,10 @@ public class AdsObserver {
     }
 
     public Set<String> getResourcesToObserve(XdsResourceType<?> resourceType) {
-        Map<String, XdsRawResourceProtocol> listenerMap =
+        Map<String, XdsRawResourceProtocol<?>> listenerMap =
                 rawResourceListeners.getOrDefault(resourceType, new ConcurrentHashMap<>());
         Set<String> resourceNames = new HashSet<>();
-        for (Map.Entry<String, XdsRawResourceProtocol> entry : listenerMap.entrySet()) {
+        for (Map.Entry<String, XdsRawResourceProtocol<?>> entry : listenerMap.entrySet()) {
             resourceNames.add(entry.getKey());
         }
         return resourceNames;
@@ -115,9 +111,9 @@ public class AdsObserver {
                 .collect(Collectors.toConcurrentMap(
                         Entry::getKey, e -> e.getValue().getResourceUpdate()));
 
-        Map<String, XdsRawResourceProtocol> resourceListenerMap =
+        Map<String, XdsRawResourceProtocol<?>> resourceListenerMap =
                 rawResourceListeners.getOrDefault(resourceTypeInstance, new ConcurrentHashMap<>());
-        for (Map.Entry<String, XdsRawResourceProtocol> entry : resourceListenerMap.entrySet()) {
+        for (Map.Entry<String, XdsRawResourceProtocol<?>> entry : resourceListenerMap.entrySet()) {
             String resourceName = entry.getKey();
             XdsRawResourceProtocol rawResourceListener = entry.getValue();
             if (parsedResources.containsKey(resourceName)) {
@@ -195,8 +191,7 @@ public class AdsObserver {
     }
 
     private void triggerReConnectTask() {
-        ScheduledExecutorService scheduledFuture = applicationModel
-                .getFrameworkModel()
+        ScheduledExecutorService scheduledFuture = FrameworkModel.defaultModel()
                 .getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class)
                 .getSharedScheduledExecutor();
@@ -205,7 +200,7 @@ public class AdsObserver {
 
     private void recover() {
         try {
-            xdsChannel = new XdsChannel(url);
+            xdsChannel = new XdsChannel();
             if (xdsChannel.getChannel() != null) {
                 // Child thread not need to wait other child thread.
                 requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(this, null));

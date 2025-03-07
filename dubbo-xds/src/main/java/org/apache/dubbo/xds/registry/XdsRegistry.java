@@ -17,18 +17,29 @@
 package org.apache.dubbo.xds.registry;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
+import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.xds.XdsResourceFactory;
 
-/**
- * Empty implements for xDS <br/>
- * xDS only support `Service Discovery` mode register <br/>
- * Used to compat past version like 2.6.x, 2.7.x with interface level register <br/>
- * {@link XdsServiceDiscovery} is the real implementation of xDS
- */
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
+
 public class XdsRegistry extends FailbackRegistry {
+
+    private XdsResourceFactory xdsResourceFactory = XdsResourceFactory.getInstance();
+    private ApplicationModel applicationModel;
+
     public XdsRegistry(URL url) {
         super(url);
+        this.applicationModel = url.getApplicationModel();
     }
 
     @Override
@@ -43,7 +54,15 @@ public class XdsRegistry extends FailbackRegistry {
     public void doUnregister(URL url) {}
 
     @Override
-    public void doSubscribe(URL url, NotifyListener listener) {}
+    public void doSubscribe(URL url, NotifyListener listener) {
+        String providedBy = url.getParameter(PROVIDED_BY);
+        xdsResourceFactory.subscribeApp(providedBy, (addresses -> {
+            List<URL> instances = addresses.stream()
+                    .map(address -> new DubboServiceAddressURL(address.getUrlAddress(), address.getUrlParam(), url, null))
+                    .collect(Collectors.toList());
+            listener.notify(instances);
+        }));
+    }
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {}

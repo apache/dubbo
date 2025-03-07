@@ -20,7 +20,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
-import org.apache.dubbo.xds.directory.XdsDirectory;
 
 public class XdsCluster extends AbstractCluster {
 
@@ -28,8 +27,7 @@ public class XdsCluster extends AbstractCluster {
 
     @Override
     protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        XdsDirectory<T> xdsDirectory = new XdsDirectory<>(directory);
-        return new XdsClusterInvoker<>(xdsDirectory);
+        return new XdsClusterInvoker<>(directory);
     }
 
     public boolean isAvailable() {
