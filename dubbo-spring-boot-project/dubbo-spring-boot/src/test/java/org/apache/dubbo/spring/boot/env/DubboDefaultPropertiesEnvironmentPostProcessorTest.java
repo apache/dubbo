@@ -105,6 +105,5 @@ class DubboDefaultPropertiesEnvironmentPostProcessorTest {
         defaultPropertySource = propertySources.get("defaultProperties");
         assertNotNull(defaultPropertySource);
         assertEquals("virtual", defaultPropertySource.getProperty("dubbo.protocol.threadpool"));
-
     }
 }
