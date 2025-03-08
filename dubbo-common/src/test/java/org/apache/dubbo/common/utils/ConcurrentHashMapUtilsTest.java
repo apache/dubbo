@@ -77,17 +77,21 @@ class ConcurrentHashMapUtilsTest {
     }
 
 
-    private static ConcurrentMap<String, List<Long>> SHARED_MAP;
+    private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK8;
+
+    private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK17;
 
     private static final String TEST_KEY = "testKey";
     /**
      * number of executions
+     * 100 K
      */
-    private static final int REPEATED_TEST_NUM = 10_0000;
+    private static final int REPEATED_TEST_NUM = 100_000;
 
     @BeforeAll
     public static void initSharedMap() {
-        SHARED_MAP = new ConcurrentHashMap<>();
+        SHARED_MAP_JDK8 = new ConcurrentHashMap<>();
+        SHARED_MAP_JDK17 = new ConcurrentHashMap<>();
     }
 
 
@@ -96,9 +100,7 @@ class ConcurrentHashMapUtilsTest {
     @Execution(ExecutionMode.CONCURRENT)
     @DisplayName("ConcurrentHashMapUtils#computeIfAbsent for java8 thread safety test")
     public void threadSafetyOperatorForJava8Test() {
-        // 创建一个 ConcurrentMap
-        System.out.println(Thread.currentThread().getName());
-        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP, TEST_KEY, key -> new ArrayList<>(), list -> {
+        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK8, TEST_KEY, key -> new ArrayList<>(), list -> {
             list.add(System.currentTimeMillis());
         });
     }
@@ -108,17 +110,21 @@ class ConcurrentHashMapUtilsTest {
     @DisplayName("ConcurrentHashMapUtils#computeIfAbsent  for java17 thread safety test")
     @RepeatedTest(value = REPEATED_TEST_NUM)
     public void threadSafetyOperatorForJava17Test() {
-        // 创建一个 ConcurrentMap
-        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP, TEST_KEY, key -> new ArrayList<>(), list -> {
+        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK17, TEST_KEY, key -> new ArrayList<>(), list -> {
             list.add(System.currentTimeMillis());
         });
     }
 
     @AfterAll
     public static void verifyTestResults() {
-        if (SHARED_MAP.isEmpty()) return;
-        assertEquals(REPEATED_TEST_NUM, SHARED_MAP.get(TEST_KEY).size());
-    }
+        if (!SHARED_MAP_JDK8.isEmpty())
+            assertEquals(REPEATED_TEST_NUM, SHARED_MAP_JDK8.get(TEST_KEY).size());
 
+        if (!SHARED_MAP_JDK17.isEmpty())
+            assertEquals(REPEATED_TEST_NUM, SHARED_MAP_JDK8.get(TEST_KEY).size());
+
+        SHARED_MAP_JDK8 = null;
+        SHARED_MAP_JDK17 = null;
+    }
 
 }
