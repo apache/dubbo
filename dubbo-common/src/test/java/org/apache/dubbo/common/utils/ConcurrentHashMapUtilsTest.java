@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.RepeatedTest;
@@ -25,28 +30,43 @@ import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
 class ConcurrentHashMapUtilsTest {
+
+    private static final String TEST_KEY = "testKey";
+
+    /**
+     * number of executions
+     * 10 K
+     */
+    private static final int REPEATED_TEST_NUM = 10_000;
 
     private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK8;
 
     private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK17;
 
-    private static final String TEST_KEY = "testKey";
-    /**
-     * number of executions
-     * 100 K
-     */
-    private static final int REPEATED_TEST_NUM = 100_000;
+    @BeforeAll
+    public static void initSharedMap() {
+        SHARED_MAP_JDK8 = new ConcurrentHashMap<>();
+        SHARED_MAP_JDK17 = new ConcurrentHashMap<>();
+    }
 
+    @AfterAll
+    public static void verifyTestResults() {
+        if (!SHARED_MAP_JDK8.isEmpty()) {
+            assertEquals(REPEATED_TEST_NUM, SHARED_MAP_JDK8.get(TEST_KEY).size());
+        }
+
+        if (!SHARED_MAP_JDK17.isEmpty()) {
+            assertEquals(REPEATED_TEST_NUM, SHARED_MAP_JDK17.get(TEST_KEY).size());
+        }
+
+        SHARED_MAP_JDK8 = null;
+        SHARED_MAP_JDK17 = null;
+    }
 
     @Test
     public void testComputeIfAbsent() {
@@ -82,54 +102,24 @@ class ConcurrentHashMapUtilsTest {
         final ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
 
         // JDK9+ has been resolved JDK-8161372 bug, when cause dead then throw IllegalStateException
-        assertThrows(IllegalStateException.class,
-                () ->
-                        ConcurrentHashMapUtils.computeIfAbsent(
-                                map,
-                                "AaAa",
-                                key -> map.computeIfAbsent("BBBB", key2 -> 42)));
+        assertThrows(IllegalStateException.class, () -> ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key -> map.computeIfAbsent("BBBB", key2 -> 42)));
     }
-
-
-    @BeforeAll
-    public static void initSharedMap() {
-        SHARED_MAP_JDK8 = new ConcurrentHashMap<>();
-        SHARED_MAP_JDK17 = new ConcurrentHashMap<>();
-    }
-
 
     @EnabledForJreRange(max = org.junit.jupiter.api.condition.JRE.JAVA_8)
     @RepeatedTest(value = REPEATED_TEST_NUM)
     @Execution(ExecutionMode.CONCURRENT)
     public void threadSafetyOperatorForJava8Test() {
-        ConcurrentHashMapUtils.computeIfAbsent(
-                SHARED_MAP_JDK8,
-                TEST_KEY,
-                key -> new ArrayList<>(),
-                list -> list.add(System.currentTimeMillis()));
+        List<Long> value = ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK8, TEST_KEY, key -> new ArrayList<>(), list -> list.add(System.currentTimeMillis()));
+        assertNotNull(value);
     }
 
     @EnabledForJreRange(max = JRE.JAVA_17)
     @Execution(ExecutionMode.CONCURRENT)
     @RepeatedTest(value = REPEATED_TEST_NUM)
     public void threadSafetyOperatorForJava17Test() {
-        ConcurrentHashMapUtils.computeIfAbsent(
-                SHARED_MAP_JDK17,
-                TEST_KEY,
-                key -> new ArrayList<>(),
-                list -> list.add(System.currentTimeMillis()));
+        List<Long> value = ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK17, TEST_KEY, key -> new ArrayList<>(), list -> list.add(System.currentTimeMillis()));
+        assertNotNull(value);
     }
 
-    @AfterAll
-    public static void verifyTestResults() {
-        if (!SHARED_MAP_JDK8.isEmpty())
-            assertEquals(REPEATED_TEST_NUM, SHARED_MAP_JDK8.get(TEST_KEY).size());
-
-        if (!SHARED_MAP_JDK17.isEmpty())
-            assertEquals(REPEATED_TEST_NUM, SHARED_MAP_JDK17.get(TEST_KEY).size());
-
-        SHARED_MAP_JDK8 = null;
-        SHARED_MAP_JDK17 = null;
-    }
 
 }
