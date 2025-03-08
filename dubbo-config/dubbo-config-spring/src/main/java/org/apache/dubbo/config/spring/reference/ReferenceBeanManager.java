@@ -25,20 +25,13 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 
@@ -112,13 +105,13 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     }
 
     public void registerReferenceKeyAndBeanName(String referenceKey, String referenceBeanNameOrAlias) {
-        List<String> list =
-                ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, referenceKey, (key) -> new ArrayList<>());
-        if (!list.contains(referenceBeanNameOrAlias)) {
-            list.add(referenceBeanNameOrAlias);
-            // register bean name as alias
-            referenceAliasMap.put(referenceBeanNameOrAlias, list.get(0));
-        }
+        ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, referenceKey, (key) -> new ArrayList<>(), list -> {
+            if (!list.contains(referenceBeanNameOrAlias)) {
+                list.add(referenceBeanNameOrAlias);
+                // register bean name as alias
+                referenceAliasMap.put(referenceBeanNameOrAlias, list.get(0));
+            }
+        });
     }
 
     public ReferenceBean getById(String referenceBeanNameOrAlias) {

@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -27,11 +28,18 @@ public class ConcurrentHashMapUtils {
 
     /**
      * A temporary workaround for Java 8 ConcurrentHashMap#computeIfAbsent specific performance issue: JDK-8161372.</br>
-     * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8161372">https://bugs.openjdk.java.net/browse/JDK-8161372</a>
      *
+     * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8161372">https://bugs.openjdk.java.net/browse/JDK-8161372</a>
      */
     public static <K, V> V computeIfAbsent(ConcurrentMap<K, V> map, K key, Function<? super K, ? extends V> func) {
+        return computeIfAbsent(map, key, func, null);
+    }
+
+
+    public static <K, V> V computeIfAbsent
+            (ConcurrentMap<K, V> map, K key, Function<? super K, ? extends V> func, Consumer<V> threadSafeOperation) {
         Objects.requireNonNull(func);
+        V value = null;
         if (JRE.JAVA_8.isCurrentVersion()) {
             V v = map.get(key);
             if (null == v) {
@@ -47,13 +55,23 @@ public class ConcurrentHashMapUtils {
                 if (null != res) {
                     // if pre value present, means other thread put value already, and putIfAbsent not effect
                     // return exist value
-                    return res;
+                    value = res;
+                }else {
+                    value = v;
                 }
                 // if pre value is null, means putIfAbsent effected, return current value
+            } else {
+                value = v;
             }
-            return v;
         } else {
-            return map.computeIfAbsent(key, func);
+            value = map.computeIfAbsent(key, func);
         }
+        if (value != null && threadSafeOperation != null) {
+            // make sure value operations are thread - safe.
+            synchronized (value){
+                threadSafeOperation.accept(value);
+            }
+        }
+        return value;
     }
 }

@@ -16,13 +16,20 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 class ConcurrentHashMapUtilsTest {
 
@@ -64,4 +71,51 @@ class ConcurrentHashMapUtilsTest {
             ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key -> map.computeIfAbsent("BBBB", key2 -> 42));
         });
     }
+
+
+    private static ConcurrentMap<String, List<Long>> SHARED_MAP;
+
+    private static final String TEST_KEY = "testKey";
+    /**
+     * number of executions
+     */
+    private static final int REPEATED_TEST_NUM = 10_0000;
+
+    @BeforeAll
+    public static void initSharedMap() {
+        SHARED_MAP = new ConcurrentHashMap<>();
+    }
+
+
+    @EnabledForJreRange(max = org.junit.jupiter.api.condition.JRE.JAVA_8)
+    @RepeatedTest(value = REPEATED_TEST_NUM)
+    @Execution(ExecutionMode.CONCURRENT)
+    @DisplayName("ConcurrentHashMapUtils#computeIfAbsent for java8 thread safety test")
+    public void threadSafetyOperatorForJava8Test() {
+        // 创建一个 ConcurrentMap
+        System.out.println(Thread.currentThread().getName());
+        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP, TEST_KEY, key -> new ArrayList<>(), list -> {
+            list.add(System.currentTimeMillis());
+        });
+    }
+
+    @EnabledForJreRange(max = JRE.JAVA_17)
+    @Execution(ExecutionMode.CONCURRENT)
+    @DisplayName("ConcurrentHashMapUtils#computeIfAbsent  for java17 thread safety test")
+    @RepeatedTest(value = REPEATED_TEST_NUM)
+    public void threadSafetyOperatorForJava17Test() {
+        // 创建一个 ConcurrentMap
+        String testKey = "testKey";
+        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP, testKey, key -> new ArrayList<>(), list -> {
+            list.add(System.currentTimeMillis());
+        });
+    }
+
+    @AfterAll
+    public static void verifyTestResults() {
+        if (SHARED_MAP.isEmpty()) return;
+        assertEquals(REPEATED_TEST_NUM, SHARED_MAP.get(TEST_KEY).size());
+    }
+
+
 }
