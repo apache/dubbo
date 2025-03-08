@@ -112,13 +112,17 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     }
 
     public void registerReferenceKeyAndBeanName(String referenceKey, String referenceBeanNameOrAlias) {
-        ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, referenceKey, (key) -> new ArrayList<>(), list -> {
-            if (!list.contains(referenceBeanNameOrAlias)) {
-                list.add(referenceBeanNameOrAlias);
-                // register bean name as alias
-                referenceAliasMap.put(referenceBeanNameOrAlias, list.get(0));
-            }
-        });
+        ConcurrentHashMapUtils.computeIfAbsent(
+                referenceKeyMap,
+                referenceKey,
+                (key) -> new ArrayList<>(),
+                list -> {
+                    if (!list.contains(referenceBeanNameOrAlias)) {
+                        list.add(referenceBeanNameOrAlias);
+                        // register bean name as alias
+                        referenceAliasMap.put(referenceBeanNameOrAlias, list.get(0));
+                    }
+                });
     }
 
     public ReferenceBean getById(String referenceBeanNameOrAlias) {
