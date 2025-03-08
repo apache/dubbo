@@ -56,7 +56,7 @@ public class ConcurrentHashMapUtils {
                     // if pre value present, means other thread put value already, and putIfAbsent not effect
                     // return exist value
                     value = res;
-                }else {
+                } else {
                     value = v;
                 }
                 // if pre value is null, means putIfAbsent effected, return current value
@@ -68,7 +68,7 @@ public class ConcurrentHashMapUtils {
         }
         if (value != null && threadSafeOperation != null) {
             // make sure value operations are thread - safe.
-            synchronized (value){
+            synchronized (value) {
                 threadSafeOperation.accept(value);
             }
         }

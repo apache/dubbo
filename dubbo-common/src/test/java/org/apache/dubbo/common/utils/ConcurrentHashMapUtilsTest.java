@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.parallel.Execution;
@@ -105,8 +109,7 @@ class ConcurrentHashMapUtilsTest {
     @RepeatedTest(value = REPEATED_TEST_NUM)
     public void threadSafetyOperatorForJava17Test() {
         // 创建一个 ConcurrentMap
-        String testKey = "testKey";
-        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP, testKey, key -> new ArrayList<>(), list -> {
+        ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP, TEST_KEY, key -> new ArrayList<>(), list -> {
             list.add(System.currentTimeMillis());
         });
     }

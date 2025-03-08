@@ -25,11 +25,18 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -40,16 +47,16 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     // reference key -> reference bean names
-    private ConcurrentMap<String, List<String>> referenceKeyMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<String>> referenceKeyMap = new ConcurrentHashMap<>();
 
     // reference alias -> reference bean name
-    private ConcurrentMap<String, String> referenceAliasMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> referenceAliasMap = new ConcurrentHashMap<>();
 
     // reference bean name -> ReferenceBean
-    private ConcurrentMap<String, ReferenceBean> referenceBeanMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReferenceBean> referenceBeanMap = new ConcurrentHashMap<>();
 
     // reference key -> ReferenceConfig instance
-    private ConcurrentMap<String, ReferenceConfig> referenceConfigMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReferenceConfig> referenceConfigMap = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
     private volatile boolean initialized = false;
