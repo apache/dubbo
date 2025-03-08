@@ -18,7 +18,6 @@ package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
@@ -36,6 +35,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class ConcurrentHashMapUtilsTest {
+
+    private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK8;
+
+    private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK17;
+
+    private static final String TEST_KEY = "testKey";
+    /**
+     * number of executions
+     * 100 K
+     */
+    private static final int REPEATED_TEST_NUM = 100_000;
+
 
     @Test
     public void testComputeIfAbsent() {
@@ -77,17 +88,6 @@ class ConcurrentHashMapUtilsTest {
     }
 
 
-    private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK8;
-
-    private static ConcurrentMap<String, List<Long>> SHARED_MAP_JDK17;
-
-    private static final String TEST_KEY = "testKey";
-    /**
-     * number of executions
-     * 100 K
-     */
-    private static final int REPEATED_TEST_NUM = 100_000;
-
     @BeforeAll
     public static void initSharedMap() {
         SHARED_MAP_JDK8 = new ConcurrentHashMap<>();
@@ -98,7 +98,6 @@ class ConcurrentHashMapUtilsTest {
     @EnabledForJreRange(max = org.junit.jupiter.api.condition.JRE.JAVA_8)
     @RepeatedTest(value = REPEATED_TEST_NUM)
     @Execution(ExecutionMode.CONCURRENT)
-    @DisplayName("ConcurrentHashMapUtils#computeIfAbsent for java8 thread safety test")
     public void threadSafetyOperatorForJava8Test() {
         ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK8, TEST_KEY, key -> new ArrayList<>(), list -> {
             list.add(System.currentTimeMillis());
@@ -107,7 +106,6 @@ class ConcurrentHashMapUtilsTest {
 
     @EnabledForJreRange(max = JRE.JAVA_17)
     @Execution(ExecutionMode.CONCURRENT)
-    @DisplayName("ConcurrentHashMapUtils#computeIfAbsent  for java17 thread safety test")
     @RepeatedTest(value = REPEATED_TEST_NUM)
     public void threadSafetyOperatorForJava17Test() {
         ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK17, TEST_KEY, key -> new ArrayList<>(), list -> {
