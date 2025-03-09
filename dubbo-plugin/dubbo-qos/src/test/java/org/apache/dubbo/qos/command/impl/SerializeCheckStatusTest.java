@@ -19,49 +19,67 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.qos.api.CommandContext;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+/**
+ * Unit tests for {@link SerializeSecurityManager}.
+ */
 class SerializeCheckStatusTest {
 
-    private SerializeSecurityManager ssm;
+    private SerializeSecurityManager serializeSecurityManager;
 
     @BeforeEach
     void setUp() {
-        // Initialize SerializeSecurityManager
-        ssm = new SerializeSecurityManager();
+        // Initialize SerializeSecurityManager before each test
+        serializeSecurityManager = new SerializeSecurityManager();
     }
 
     @Test
-    void testNotify() {
-        // Mocking CommandContext
+    void testSerializationSecurityManagement() {
+        // Mock CommandContext instances
         CommandContext commandContext1 = Mockito.mock(CommandContext.class);
         Mockito.when(commandContext1.isHttp()).thenReturn(false);
+
         CommandContext commandContext2 = Mockito.mock(CommandContext.class);
         Mockito.when(commandContext2.isHttp()).thenReturn(true);
 
-        // Testing Allowed Class
-        Assertions.assertFalse(ssm.getAllowedPrefix().contains("Test1234"));
-        ssm.addToAllowed("Test1234");
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("Test1234"));
+        // Test: Allowed Class
+        Assertions.assertFalse(serializeSecurityManager.getAllowedPrefix().contains("Test1234"),
+                "Class 'Test1234' should not be in the allowed list initially.");
+        
+        serializeSecurityManager.addToAllowed("Test1234");
+        
+        Assertions.assertTrue(serializeSecurityManager.getAllowedPrefix().contains("Test1234"),
+                "Class 'Test1234' should be added to the allowed list.");
 
-        // Testing Disallowed Class
-        Assertions.assertFalse(ssm.getDisAllowedPrefix().contains("Test4321"));
-        ssm.addToDisAllowed("Test4321");
-        Assertions.assertTrue(ssm.getDisAllowedPrefix().contains("Test4321"));
+        // Test: Disallowed Class
+        Assertions.assertFalse(serializeSecurityManager.getDisAllowedPrefix().contains("Test4321"),
+                "Class 'Test4321' should not be in the disallowed list initially.");
+        
+        serializeSecurityManager.addToDisAllowed("Test4321");
+        
+        Assertions.assertTrue(serializeSecurityManager.getDisAllowedPrefix().contains("Test4321"),
+                "Class 'Test4321' should be added to the disallowed list.");
 
-        // Testing CheckSerializable
-        Assertions.assertTrue(ssm.isCheckSerializable());
-        ssm.setCheckSerializable(false);
-        Assertions.assertFalse(ssm.isCheckSerializable());
+        // Test: CheckSerializable Default Behavior
+        Assertions.assertTrue(serializeSecurityManager.isCheckSerializable(),
+                "CheckSerializable should be enabled by default.");
+        
+        serializeSecurityManager.setCheckSerializable(false);
+        
+        Assertions.assertFalse(serializeSecurityManager.isCheckSerializable(),
+                "CheckSerializable should be disabled after calling setCheckSerializable(false).");
 
-        // Testing CheckStatus
-        Assertions.assertNotEquals(SerializeCheckStatus.DISABLE, ssm.getCheckStatus());
-        ssm.setCheckStatus(SerializeCheckStatus.DISABLE);
-        Assertions.assertEquals(SerializeCheckStatus.DISABLE, ssm.getCheckStatus());
+        // Test: CheckStatus Default & Update
+        Assertions.assertNotEquals(SerializeCheckStatus.DISABLE, serializeSecurityManager.getCheckStatus(),
+                "Default check status should not be DISABLE.");
+        
+        serializeSecurityManager.setCheckStatus(SerializeCheckStatus.DISABLE);
+        
+        Assertions.assertEquals(SerializeCheckStatus.DISABLE, serializeSecurityManager.getCheckStatus(),
+                "CheckStatus should be updated to DISABLE.");
     }
 }
