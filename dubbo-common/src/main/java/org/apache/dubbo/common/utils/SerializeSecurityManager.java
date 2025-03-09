@@ -85,26 +85,26 @@ public class SerializeSecurityManager {
             return;
         }
 
-        // If has been set to WARN, ignore STRICT
-        if (this.checkStatus.level() <= checkStatus.level()) {
+        // If the current status is WARN, ignore STRICT updates
+        if (this.checkStatus == SerializeCheckStatus.WARN && checkStatus == SerializeCheckStatus.STRICT) {
             return;
         }
 
         this.checkStatus = checkStatus;
-        logger.info("Serialize check level: " + checkStatus.name());
+        logger.info("Serialize check level updated to: " + checkStatus.name());
         notifyCheckStatus();
     }
 
     public void setDefaultCheckStatus(SerializeCheckStatus checkStatus) {
         this.defaultCheckStatus = checkStatus;
-        logger.info("Serialize check default level: " + checkStatus.name());
+        logger.info("Serialize check default level set to: " + checkStatus.name());
         notifyCheckStatus();
     }
 
     public void setCheckSerializable(boolean checkSerializable) {
         if (this.checkSerializable == null || (Boolean.TRUE.equals(this.checkSerializable) && !checkSerializable)) {
             this.checkSerializable = checkSerializable;
-            logger.info("Serialize check serializable: " + checkSerializable);
+            logger.info("Serialize check serializable set to: " + checkSerializable);
             notifyCheckSerializable();
         }
     }
