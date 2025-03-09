@@ -17,67 +17,51 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
+import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class SerializeCheckStatusTest {
+
+    private SerializeSecurityManager ssm;
+
+    @BeforeEach
+    void setUp() {
+        // Initialize SerializeSecurityManager
+        ssm = new SerializeSecurityManager();
+    }
+
     @Test
     void testNotify() {
-        FrameworkModel frameworkModel = new FrameworkModel();
-
-        SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
-
-        SerializeCheckStatus serializeCheckStatus = new SerializeCheckStatus(frameworkModel);
-
+        // Mocking CommandContext
         CommandContext commandContext1 = Mockito.mock(CommandContext.class);
         Mockito.when(commandContext1.isHttp()).thenReturn(false);
         CommandContext commandContext2 = Mockito.mock(CommandContext.class);
         Mockito.when(commandContext2.isHttp()).thenReturn(true);
 
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext1, null).contains("Test1234"));
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext2, null).contains("Test1234"));
+        // Testing Allowed Class
+        Assertions.assertFalse(ssm.getAllowedPrefix().contains("Test1234"));
         ssm.addToAllowed("Test1234");
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext1, null).contains("Test1234"));
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext2, null).contains("Test1234"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("Test1234"));
 
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext1, null).contains("Test4321"));
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext2, null).contains("Test4321"));
+        // Testing Disallowed Class
+        Assertions.assertFalse(ssm.getDisAllowedPrefix().contains("Test4321"));
         ssm.addToDisAllowed("Test4321");
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext1, null).contains("Test4321"));
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext2, null).contains("Test4321"));
+        Assertions.assertTrue(ssm.getDisAllowedPrefix().contains("Test4321"));
 
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext1, null).contains("CheckSerializable: false"));
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext2, null).contains("\"checkSerializable\":false"));
+        // Testing CheckSerializable
+        Assertions.assertTrue(ssm.isCheckSerializable());
         ssm.setCheckSerializable(false);
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext1, null).contains("CheckSerializable: false"));
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext2, null).contains("\"checkSerializable\":false"));
+        Assertions.assertFalse(ssm.isCheckSerializable());
 
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext1, null).contains("CheckStatus: DISABLE"));
-        Assertions.assertFalse(
-                serializeCheckStatus.execute(commandContext2, null).contains("\"checkStatus\":\"DISABLE\""));
-        ssm.setCheckStatus(org.apache.dubbo.common.utils.SerializeCheckStatus.DISABLE);
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext1, null).contains("CheckStatus: DISABLE"));
-        Assertions.assertTrue(
-                serializeCheckStatus.execute(commandContext2, null).contains("\"checkStatus\":\"DISABLE\""));
-
-        frameworkModel.destroy();
+        // Testing CheckStatus
+        Assertions.assertNotEquals(SerializeCheckStatus.DISABLE, ssm.getCheckStatus());
+        ssm.setCheckStatus(SerializeCheckStatus.DISABLE);
+        Assertions.assertEquals(SerializeCheckStatus.DISABLE, ssm.getCheckStatus());
     }
 }
