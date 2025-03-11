@@ -61,6 +61,8 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
 
     public static final String SPRING_THREAD_POOL_PROPERTY = "spring.threads.virtual.enabled";
 
+    private static final String ENABLED_VALUE = "true";
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         MutablePropertySources propertySources = environment.getPropertySources();
@@ -85,7 +87,7 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
 
     private void setDubboVirtualThreadsProperty(Environment environment, Map<String, Object> defaultProperties) {
         String virtualEnabled = environment.getProperty(SPRING_THREAD_POOL_PROPERTY);
-        if (StringUtils.hasLength(virtualEnabled)) {
+        if (ENABLED_VALUE.equals(virtualEnabled)) {
             defaultProperties.put(DUBBO_THREAD_POOL_PROPERTY, VIRTUAL_THREAD);
         }
     }
