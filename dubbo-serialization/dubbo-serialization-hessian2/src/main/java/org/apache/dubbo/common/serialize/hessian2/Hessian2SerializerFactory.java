@@ -25,7 +25,12 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
     @Override
     public ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (contextClassLoader == null) {
+            throw new IllegalStateException("context class loader is null");
+        }
+
+        return contextClassLoader;
     }
 
 }
