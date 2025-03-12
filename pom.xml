@@ -170,6 +170,10 @@
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
     <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
+    <!-- use a lower version of this dependency to override the version
+     defined by spotless-maven-plugin.version to support JDK
+     versions ranging from 1.8 to 11. -->
+    <spotless-maven-plugin.lower.version>2.22.0</spotless-maven-plugin.lower.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
     <revision>3.3.4-SNAPSHOT</revision>
@@ -813,12 +817,13 @@
     </profile>
 
     <profile>
-      <id>jdk9-jdk11-spotless</id>
+      <id>jdk8-jdk11-spotless</id>
       <activation>
         <jdk>[1.8, 11)</jdk>
       </activation>
       <properties>
         <palantirJavaFormat.version>1.1.0</palantirJavaFormat.version>
+        <spotless-maven-plugin.version>${spotless-maven-plugin.lower.version}</spotless-maven-plugin.version>
       </properties>
     </profile>
 
