@@ -102,14 +102,18 @@ class ConcurrentHashMapUtilsTest {
         final ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
 
         // JDK9+ has been resolved JDK-8161372 bug, when cause dead then throw IllegalStateException
-        assertThrows(IllegalStateException.class, () -> ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key -> map.computeIfAbsent("BBBB", key2 -> 42)));
+        assertThrows(
+                IllegalStateException.class,
+                () -> ConcurrentHashMapUtils.computeIfAbsent(
+                        map, "AaAa", key -> map.computeIfAbsent("BBBB", key2 -> 42)));
     }
 
     @EnabledForJreRange(max = org.junit.jupiter.api.condition.JRE.JAVA_8)
     @RepeatedTest(value = REPEATED_TEST_NUM)
     @Execution(ExecutionMode.CONCURRENT)
     public void threadSafetyOperatorForJava8Test() {
-        List<Long> value = ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK8, TEST_KEY, key -> new ArrayList<>(), list -> list.add(System.currentTimeMillis()));
+        List<Long> value = ConcurrentHashMapUtils.computeIfAbsent(
+                SHARED_MAP_JDK8, TEST_KEY, key -> new ArrayList<>(), list -> list.add(System.currentTimeMillis()));
         assertNotNull(value);
     }
 
@@ -117,9 +121,8 @@ class ConcurrentHashMapUtilsTest {
     @Execution(ExecutionMode.CONCURRENT)
     @RepeatedTest(value = REPEATED_TEST_NUM)
     public void threadSafetyOperatorForJava17Test() {
-        List<Long> value = ConcurrentHashMapUtils.computeIfAbsent(SHARED_MAP_JDK17, TEST_KEY, key -> new ArrayList<>(), list -> list.add(System.currentTimeMillis()));
+        List<Long> value = ConcurrentHashMapUtils.computeIfAbsent(
+                SHARED_MAP_JDK17, TEST_KEY, key -> new ArrayList<>(), list -> list.add(System.currentTimeMillis()));
         assertNotNull(value);
     }
-
-
 }

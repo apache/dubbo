@@ -69,7 +69,10 @@ public class ReferenceBeanManager implements ApplicationContextAware {
 
         if (!initialized) {
             // TODO add issue url to describe early initialization
-            logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "",
+            logger.warn(
+                    CONFIG_DUBBO_BEAN_INITIALIZER,
+                    "",
+                    "",
                     "Early initialize reference bean before DubboConfigBeanInitializer,"
                             + " the BeanPostProcessor has not been loaded at this time, which may cause abnormalities in some components (such as seata): "
                             + referenceBeanName + " = "
@@ -82,10 +85,10 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         ReferenceBean oldReferenceBean = referenceBeanMap.get(referenceBeanName);
         if (oldReferenceBean != null) {
             if (referenceBean != oldReferenceBean) {
-                String oldReferenceKey = ReferenceBeanSupport.generateReferenceKey(oldReferenceBean, applicationContext);
-                throw new IllegalStateException(
-                        "Found duplicated ReferenceBean with id: " + referenceBeanName + ", old: " + oldReferenceKey
-                                + ", new: " + referenceKey);
+                String oldReferenceKey =
+                        ReferenceBeanSupport.generateReferenceKey(oldReferenceBean, applicationContext);
+                throw new IllegalStateException("Found duplicated ReferenceBean with id: " + referenceBeanName
+                        + ", old: " + oldReferenceKey + ", new: " + referenceKey);
             }
             return;
         }
