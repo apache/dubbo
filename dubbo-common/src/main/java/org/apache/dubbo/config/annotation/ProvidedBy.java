@@ -25,7 +25,9 @@ import java.lang.annotation.Target;
 
 /**
  * Class-level annotation used for declaring Dubbo interface.
- * Example:
+ * Example: <br/>
+ * <pre>
+ * {@code
  * @ProvidedBy("dubbo-samples-xds-provider")
  * public interface GreetingService {
  *     String sayHello(String name);
@@ -36,6 +38,7 @@ import java.lang.annotation.Target;
  *     @DubboReference(version = "1.0.0")
  *     private GreetingService greetingService;
  * }
+ * </pre>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
