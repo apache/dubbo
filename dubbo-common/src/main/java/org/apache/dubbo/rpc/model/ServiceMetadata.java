@@ -48,7 +48,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
         this.defaultGroup = group;
         this.group = group;
         this.version = version;
-        this.serviceKey = buildServiceKey(serviceInterfaceName, group, version);
+        this.serviceKey = buildServiceKey(serviceInterfaceName, group, version, 20880); // Updated with default port
         this.serviceType = serviceType;
     }
 
