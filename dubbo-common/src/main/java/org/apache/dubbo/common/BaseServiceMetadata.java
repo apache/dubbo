@@ -26,7 +26,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
  */
 public class BaseServiceMetadata {
     public static final char COLON_SEPARATOR = ':';
-    private static final int DEFAULT_PORT = 20880; // Default Dubbo port
 
     protected String serviceKey;
     protected String serviceInterfaceName;
@@ -34,11 +33,11 @@ public class BaseServiceMetadata {
     protected volatile String group;
     private ServiceModel serviceModel;
 
-    public static String buildServiceKey(String path, String group, String version, int port) {
+    public static String buildServiceKey(String path, String group, String version) {
         int length = path == null ? 0 : path.length();
         length += group == null ? 0 : group.length();
         length += version == null ? 0 : version.length();
-        length += 10; // Additional space for port and separators
+        length += 2;
         StringBuilder buf = new StringBuilder(length);
         if (StringUtils.isNotEmpty(group)) {
             buf.append(group).append('/');
@@ -47,43 +46,38 @@ public class BaseServiceMetadata {
         if (StringUtils.isNotEmpty(version)) {
             buf.append(':').append(version);
         }
-        buf.append(':').append(port); // Add port to the service key
         return buf.toString();
     }
 
-    public static int portFromServiceKey(String serviceKey) {
-        int lastColonIndex = serviceKey.lastIndexOf(':');
-        if (lastColonIndex == -1) {
-            throw new IllegalArgumentException("Invalid service key format: " + serviceKey);
-        }
-        return Integer.parseInt(serviceKey.substring(lastColonIndex + 1));
-    }
-
     public static String versionFromServiceKey(String serviceKey) {
-        int firstColonIndex = serviceKey.indexOf(':');
-        int lastColonIndex = serviceKey.lastIndexOf(':');
-        if (firstColonIndex == -1 || lastColonIndex == firstColonIndex) {
+        int index = serviceKey.indexOf(":");
+        if (index == -1) {
             return DEFAULT_VERSION;
         }
-        return serviceKey.substring(firstColonIndex + 1, lastColonIndex);
+        return serviceKey.substring(index + 1);
     }
 
     public static String groupFromServiceKey(String serviceKey) {
-        int groupIndex = serviceKey.indexOf('/');
-        if (groupIndex == -1) {
+        int index = serviceKey.indexOf("/");
+        if (index == -1) {
             return null;
         }
-        return serviceKey.substring(0, groupIndex);
+        return serviceKey.substring(0, index);
     }
 
     public static String interfaceFromServiceKey(String serviceKey) {
-        int groupIndex = serviceKey.indexOf('/');
-        int versionIndex = serviceKey.indexOf(':');
+        int groupIndex = serviceKey.indexOf("/");
+        int versionIndex = serviceKey.indexOf(":");
         groupIndex = (groupIndex == -1) ? 0 : groupIndex + 1;
         versionIndex = (versionIndex == -1) ? serviceKey.length() : versionIndex;
         return serviceKey.substring(groupIndex, versionIndex);
     }
 
+    /**
+     * Format : interface:version
+     *
+     * @return
+     */
     public String getDisplayServiceKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
         serviceNameBuilder.append(serviceInterfaceName);
@@ -91,6 +85,12 @@ public class BaseServiceMetadata {
         return serviceNameBuilder.toString();
     }
 
+    /**
+     * revert of org.apache.dubbo.common.ServiceDescriptor#getDisplayServiceKey()
+     *
+     * @param displayKey
+     * @return
+     */
     public static BaseServiceMetadata revertDisplayServiceKey(String displayKey) {
         String[] eles = StringUtils.split(displayKey, COLON_SEPARATOR);
         if (eles == null || eles.length < 1 || eles.length > 2) {
@@ -116,7 +116,7 @@ public class BaseServiceMetadata {
     }
 
     public void generateServiceKey() {
-        this.serviceKey = buildServiceKey(serviceInterfaceName, group, version, DEFAULT_PORT);
+        this.serviceKey = buildServiceKey(serviceInterfaceName, group, version);
     }
 
     public void setServiceKey(String serviceKey) {

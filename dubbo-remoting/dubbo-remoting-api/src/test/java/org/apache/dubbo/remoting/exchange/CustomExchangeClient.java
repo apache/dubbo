@@ -16,57 +16,63 @@
  */
 package org.apache.dubbo.remoting.exchange;
 
+import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.net.InetSocketAddress;
 
-import org.junit.Test;
+public class CustomExchangeClient implements ExchangeClient {
+    private final HeaderExchangeClient delegate;
 
-import static org.junit.Assert.assertNotNull;
+    public CustomExchangeClient(HeaderExchangeClient delegate) {
+        this.delegate = delegate;
+    }
 
-public class CustomExchangerTest {
-    @Test
-    public void testGeneralizedCallWithCustomExchanger() throws Exception {
-        URL serverUrl = URL.valueOf("dubbo://localhost:20880/com.example.TestService?exchanger=custom");
-        ExchangeHandler handler = new ExchangeHandler() {
-            @Override
-            public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
-                Map<String, Object> response = new HashMap<>();
-                response.put("result", "Hello from CustomExchanger");
-                return response;
-            }
+    @Override
+    public void close() {
+        delegate.close();
+    }
 
-            @Override
-            public void connected(ExchangeChannel channel) {}
+    @Override
+    public boolean isClosed() {
+        return delegate.isClosed();
+    }
 
-            @Override
-            public void disconnected(ExchangeChannel channel) {}
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return delegate.getLocalAddress();
+    }
 
-            @Override
-            public void sent(ExchangeChannel channel, Object message) {}
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        return delegate.getRemoteAddress();
+    }
 
-            @Override
-            public void received(ExchangeChannel channel, Object message) {}
+    @Override
+    public void send(Object message) throws RemotingException {
+        delegate.send(message);
+    }
 
-            @Override
-            public void caught(ExchangeChannel channel, Throwable exception) {}
-        };
+    @Override
+    public void send(Object message, boolean sent) throws RemotingException {
+        delegate.send(message, sent);
+    }
 
-        CustomExchanger exchanger = new CustomExchanger();
-        ExchangeServer server = exchanger.bind(serverUrl, handler);
-        assertNotNull(server);
+    @Override
+    public URL getUrl() {
+        return delegate.getUrl();
+    }
 
-        URL clientUrl = URL.valueOf("dubbo://localhost:20880/com.example.TestService?exchanger=custom&generic=true");
-        CustomExchangeClient client = new CustomExchangeClient(new HeaderExchangeClient(clientUrl, handler));
+    @Override
+    public ChannelHandler getChannelHandler() {
+        return delegate.getChannelHandler();
+    }
 
-        Map<String, Object> request = new HashMap<>();
-        request.put("method", "sayHello");
-        request.put("parameterTypes", new String[] {"java.lang.String"});
-        request.put("args", new Object[] {"World"});
-        client.send(request);
-
-        client.close();
-        server.close();
+    @Override
+    public void reset(Parameters parameters) {
+        delegate.reset(parameters);
     }
 }

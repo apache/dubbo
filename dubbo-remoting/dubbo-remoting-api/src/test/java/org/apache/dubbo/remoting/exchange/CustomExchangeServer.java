@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.exchange;
 
+import org.apache.dubbo.common.Parameters;
+import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
 
@@ -50,6 +52,11 @@ public class CustomExchangeServer implements ExchangeServer {
     }
 
     @Override
+    public Channel getChannel(InetSocketAddress remoteAddress) {
+        return delegate.getChannel(remoteAddress);
+    }
+
+    @Override
     public InetSocketAddress getLocalAddress() {
         return delegate.getLocalAddress();
     }
@@ -62,5 +69,10 @@ public class CustomExchangeServer implements ExchangeServer {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         delegate.send(message, sent);
+    }
+
+    @Override
+    public void reset(Parameters parameters) {
+        delegate.reset(parameters);
     }
 }

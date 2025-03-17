@@ -18,19 +18,20 @@ package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
-import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
+import org.apache.dubbo.remoting.exchange.support.header.HeaderExchanger;
 
 public class CustomExchanger implements Exchanger {
+    private final HeaderExchanger delegate = new HeaderExchanger();
+
     @Override
     public ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException {
         System.out.println("CustomExchanger: Binding server at " + url);
-        return new CustomExchangeServer(new HeaderExchangeServer(url, handler));
+        return new CustomExchangeServer(delegate.bind(url, handler));
     }
 
     @Override
     public ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
         System.out.println("CustomExchanger: Connecting client to " + url);
-        return new CustomExchangeClient(new HeaderExchangeClient(url, handler));
+        return new CustomExchangeClient(delegate.connect(url, handler));
     }
 }

@@ -17,45 +17,59 @@
 package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.RemotingException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class CustomExchangerTest {
+
     @Test
     public void testGeneralizedCallWithCustomExchanger() throws Exception {
-        // Server URL with custom exchanger
         URL serverUrl = URL.valueOf("dubbo://localhost:20880/com.example.TestService?exchanger=custom");
-        ExchangeHandler handler = new ExchangeHandlerAdapter() {
+        ExchangeHandler handler = new ExchangeHandler() {
             @Override
-            public Object reply(ExchangeChannel channel, Object request) {
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 Map<String, Object> response = new HashMap<>();
                 response.put("result", "Hello from CustomExchanger");
-                return response;
+                return CompletableFuture.completedFuture(response);
             }
+
+            @Override
+            public void connected(Channel channel) throws RemotingException {}
+
+            @Override
+            public void disconnected(Channel channel) throws RemotingException {}
+
+            @Override
+            public void sent(Channel channel, Object message) throws RemotingException {}
+
+            @Override
+            public void received(Channel channel, Object message) throws RemotingException {}
+
+            @Override
+            public void caught(Channel channel, Throwable exception) throws RemotingException {}
         };
 
-        // Start server
         CustomExchanger exchanger = new CustomExchanger();
         ExchangeServer server = exchanger.bind(serverUrl, handler);
         assertNotNull(server);
 
-        // Client URL with generalized call
         URL clientUrl = URL.valueOf("dubbo://localhost:20880/com.example.TestService?exchanger=custom&generic=true");
-        CustomExchangeClient client = new CustomExchangeClient(new HeaderExchangeClient(clientUrl, handler));
+        CustomExchangeClient client = (CustomExchangeClient) exchanger.connect(clientUrl, handler);
 
-        // Simulate generalized invocation
         Map<String, Object> request = new HashMap<>();
         request.put("method", "sayHello");
         request.put("parameterTypes", new String[] {"java.lang.String"});
         request.put("args", new Object[] {"World"});
         client.send(request);
 
-        // Cleanup
         client.close();
         server.close();
     }
