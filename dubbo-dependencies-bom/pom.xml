@@ -122,14 +122,15 @@
     <snakeyaml_version>2.4</snakeyaml_version>
     <commons_lang3_version>3.17.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.14.4</micrometer.version>
+    <micrometer.version>1.14.5</micrometer.version>
     <opentelemetry.version>1.48.0</opentelemetry.version>
     <zipkin-reporter.version>3.5.0</zipkin-reporter.version>
-    <micrometer-tracing.version>1.4.3</micrometer-tracing.version>
+    <zipkin.version>3.5.0</zipkin.version>
+    <micrometer-tracing.version>1.4.4</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
-    <reactor.version>3.7.3</reactor.version>
+    <reactor.version>3.7.4</reactor.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>3.14.9</okhttp_version>
 
@@ -157,7 +158,7 @@
 
     <!-- Test libs -->
     <junit_jupiter_version>5.12.0</junit_jupiter_version>
-    <junit_platform_version>1.12.0</junit_platform_version>
+    <junit_platform_version>1.12.1</junit_platform_version>
     <awaitility_version>4.3.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
@@ -244,6 +245,11 @@
         <version>${zipkin-reporter.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.zipkin.zipkin2</groupId>
+        <artifactId>zipkin</artifactId>
+        <version>${zipkin.version}</version>
       </dependency>
       <dependency>
         <groupId>io.prometheus</groupId>
