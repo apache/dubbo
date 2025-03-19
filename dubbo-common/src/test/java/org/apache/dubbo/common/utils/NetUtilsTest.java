@@ -387,6 +387,14 @@ class NetUtilsTest {
         }
     }
 
+    @Test
+    void testRepeatedStatusChecking() {
+        int port = NetUtils.getAvailablePort();
+        for (int i = 0; i < 10000; i++) {
+            assertFalse(NetUtils.isPortInUsed(port));
+        }
+    }
+
     private String getIgnoredInterfaces() {
         return SystemPropertyConfigUtils.getSystemProperty(
                 CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
