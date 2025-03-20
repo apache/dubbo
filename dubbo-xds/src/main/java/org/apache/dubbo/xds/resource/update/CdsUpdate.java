@@ -18,7 +18,7 @@ package org.apache.dubbo.xds.resource.update;
 
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
-import org.apache.dubbo.xds.bootstrap.Bootstrapper.ServerInfo;
+import org.apache.dubbo.xds.bootstrap.XdsServer;
 import org.apache.dubbo.xds.resource.cluster.OutlierDetection;
 import org.apache.dubbo.xds.resource.listener.security.UpstreamTlsContext;
 
@@ -59,7 +59,6 @@ public class CdsUpdate implements ResourceUpdate {
     public static Builder forEds(
             String clusterName,
             @Nullable String edsServiceName,
-            @Nullable ServerInfo lrsServerInfo,
             @Nullable Long maxConcurrentRequests,
             @Nullable UpstreamTlsContext upstreamTlsContext,
             @Nullable OutlierDetection outlierDetection) {
@@ -70,7 +69,8 @@ public class CdsUpdate implements ResourceUpdate {
                 .maxRingSize(0)
                 .choiceCount(0)
                 .edsServiceName(edsServiceName)
-                .lrsServerInfo(lrsServerInfo)
+                .lrsServerInfo(
+                        Bootstrapper.getInstance().bootstrap().getXdsServers().get(0))
                 .maxConcurrentRequests(maxConcurrentRequests)
                 .upstreamTlsContext(upstreamTlsContext)
                 .outlierDetection(outlierDetection);
@@ -79,7 +79,7 @@ public class CdsUpdate implements ResourceUpdate {
     public static Builder forLogicalDns(
             String clusterName,
             String dnsHostName,
-            @Nullable ServerInfo lrsServerInfo,
+            @Nullable XdsServer lrsServerInfo,
             @Nullable Long maxConcurrentRequests,
             @Nullable UpstreamTlsContext upstreamTlsContext) {
         return new Builder()
@@ -113,7 +113,7 @@ public class CdsUpdate implements ResourceUpdate {
     private final String dnsHostName;
 
     @Nullable
-    private final Bootstrapper.ServerInfo lrsServerInfo;
+    private final XdsServer lrsServerInfo;
 
     @Nullable
     private final Long maxConcurrentRequests;
@@ -138,7 +138,7 @@ public class CdsUpdate implements ResourceUpdate {
             int choiceCount,
             String edsServiceName,
             String dnsHostName,
-            Bootstrapper.ServerInfo lrsServerInfo,
+            XdsServer lrsServerInfo,
             Long maxConcurrentRequests,
             UpstreamTlsContext upstreamTlsContext,
             List<String> prioritizedClusterNames,
@@ -194,7 +194,7 @@ public class CdsUpdate implements ResourceUpdate {
     }
 
     @Nullable
-    public Bootstrapper.ServerInfo getLrsServerInfo() {
+    public XdsServer getLrsServerInfo() {
         return lrsServerInfo;
     }
 
@@ -305,7 +305,7 @@ public class CdsUpdate implements ResourceUpdate {
         private int choiceCount;
         private String edsServiceName;
         private String dnsHostName;
-        private Bootstrapper.ServerInfo lrsServerInfo;
+        private XdsServer lrsServerInfo;
         private Long maxConcurrentRequests;
         private UpstreamTlsContext upstreamTlsContext;
         private List<String> prioritizedClusterNames;
@@ -366,7 +366,7 @@ public class CdsUpdate implements ResourceUpdate {
             return this;
         }
 
-        public Builder lrsServerInfo(Bootstrapper.ServerInfo lrsServerInfo) {
+        public Builder lrsServerInfo(XdsServer lrsServerInfo) {
             this.lrsServerInfo = lrsServerInfo;
             return this;
         }

@@ -16,36 +16,35 @@
  */
 package org.apache.dubbo.xds.bootstrap;
 
-public class Locality {
+public class ServerInfo {
+    private String target;
+    private Object implSpecificConfig;
+    private boolean ignoreResourceDeletion;
 
-    private String region;
-    private String zone;
-    private String subZone;
-
-    public String getRegion() {
-        return region;
+    public String getTarget() {
+        return target;
     }
 
-    public Locality setRegion(String region) {
-        this.region = region;
+    public ServerInfo setTarget(String target) {
+        this.target = target;
         return this;
     }
 
-    public String getZone() {
-        return zone;
+    public Object getImplSpecificConfig() {
+        return implSpecificConfig;
     }
 
-    public Locality setZone(String zone) {
-        this.zone = zone;
+    public ServerInfo setImplSpecificConfig(Object implSpecificConfig) {
+        this.implSpecificConfig = implSpecificConfig;
         return this;
     }
 
-    public String getSubZone() {
-        return subZone;
+    public boolean isIgnoreResourceDeletion() {
+        return ignoreResourceDeletion;
     }
 
-    public Locality setSubZone(String subZone) {
-        this.subZone = subZone;
+    public ServerInfo setIgnoreResourceDeletion(boolean ignoreResourceDeletion) {
+        this.ignoreResourceDeletion = ignoreResourceDeletion;
         return this;
     }
 }

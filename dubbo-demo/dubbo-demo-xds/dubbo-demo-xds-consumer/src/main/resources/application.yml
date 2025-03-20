@@ -26,6 +26,6 @@ dubbo:
     name: tri
     port: 50050
   registry:
-    address: xds://47.251.12.148:15010?security=plaintext&use-agent=true # istio://istiod.istio-system.svc:15012
+    address: xds://47.251.12.148:15010?use-agent=true # istio://istiod.istio-system.svc:15012
 
 

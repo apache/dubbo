@@ -14,23 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.cluster;
+package org.apache.dubbo.xds.bootstrap;
 
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
+import java.util.Map;
 
-public class XdsCluster extends AbstractCluster {
+import com.fasterxml.jackson.annotation.JsonAlias;
 
-    public static final String NAME = "xds";
+public class CertificateProvider {
+    @JsonAlias("plugin_name")
+    private String pluginName;
 
-    @Override
-    protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new XdsClusterInvoker<>(directory);
+    private Map<String, ?> config;
+
+    public String getPluginName() {
+        return pluginName;
     }
 
-    public boolean isAvailable() {
-        return true;
+    public CertificateProvider setPluginName(String pluginName) {
+        this.pluginName = pluginName;
+        return this;
+    }
+
+    public Map<String, ?> getConfig() {
+        return config;
+    }
+
+    public CertificateProvider setConfig(Map<String, ?> config) {
+        this.config = config;
+        return this;
     }
 }

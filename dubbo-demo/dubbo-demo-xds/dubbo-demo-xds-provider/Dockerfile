@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM openjdk:8-jdk
-ARG ARTIFACT
-ADD ./target/$ARTIFACT app.jar
-ADD ./src/main/resources/bootstrap.json bootstrap.json
+FROM openjdk:21-jdk
+ADD ./target/dubbo-demo-xds-provider-3.3.4-SNAPSHOT.jar app.jar
 CMD java -jar /app.jar
 EXPOSE 50051
 EXPOSE 31001

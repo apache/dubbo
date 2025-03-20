@@ -16,50 +16,70 @@
  */
 package org.apache.dubbo.xds;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
-import org.apache.dubbo.xds.istio.IstioEnv;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.envoyproxy.envoy.config.core.v3.Node;
+import io.envoyproxy.envoy.config.core.v3.Node.Builder;
 
 public class NodeBuilder {
 
     public static Node build() {
         BootstrapInfo bootstrapInfo = Bootstrapper.getInstance().bootstrap();
-        assert bootstrapInfo.getNode().getMetadata() != null;
-        String podId = bootstrapInfo.getNode().getId();
-        String podNamespace =
-                (String) bootstrapInfo.getNode().getMetadata().getOrDefault("NAMESPACE", "EMPTY_NAME_SPACE");
-        String clusterName = (String) bootstrapInfo.getNode().getMetadata().getOrDefault("CLUSTER_ID", "Kubernetes");
-        String generatorName = (String) bootstrapInfo.getNode().getMetadata().getOrDefault("GENERATOR", "grpc");
-        String saName = IstioEnv.getInstance().getServiceAccountName();
+        Builder builder = Node.newBuilder()
+                .setMetadata(mapToStruct(bootstrapInfo.getNode().getMetadata()))
+                .setId(bootstrapInfo.getNode().getId());
+        if (StringUtils.isNoneEmpty(bootstrapInfo.getNode().getCluster())) {
+            builder.setCluster(bootstrapInfo.getNode().getCluster());
+        }
+        return builder.build();
+    }
 
-        Map<String, Value> metadataMap = new HashMap<>();
+    public static Struct mapToStruct(Map<String, ?> map) {
+        Struct.Builder structBuilder = Struct.newBuilder();
+        for (Map.Entry<String, ?> entry : map.entrySet()) {
+            structBuilder.putFields(entry.getKey(), toValue(entry.getValue()));
+        }
+        return structBuilder.build();
+    }
 
-        metadataMap.put(
-                "ISTIO_META_NAMESPACE",
-                Value.newBuilder().setStringValue(podNamespace).build());
-        metadataMap.put(
-                "SERVICE_ACCOUNT", Value.newBuilder().setStringValue(saName).build());
-
-        metadataMap.put(
-                "GENERATOR", Value.newBuilder().setStringValue(generatorName).build());
-        metadataMap.put(
-                "NAMESPACE", Value.newBuilder().setStringValue(podNamespace).build());
-
-        Struct metadata = Struct.newBuilder().putAllFields(metadataMap).build();
-
-        // id -> sidecar~ip~{POD_NAME}~{NAMESPACE_NAME}.svc.cluster.local
-        // cluster -> {SVC_NAME}
-        return Node.newBuilder()
-                .setMetadata(metadata)
-                .setId(podId)
-                .setCluster(clusterName)
-                .build();
+    private static Value toValue(Object obj) {
+        if (obj == null) {
+            return Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+        } else if (obj instanceof String) {
+            return Value.newBuilder().setStringValue((String) obj).build();
+        } else if (obj instanceof Number) {
+            return Value.newBuilder()
+                    .setNumberValue(((Number) obj).doubleValue())
+                    .build();
+        } else if (obj instanceof Boolean) {
+            return Value.newBuilder().setBoolValue((Boolean) obj).build();
+        } else if (obj instanceof Map) {
+            Map<?, ?> mapObj = (Map<?, ?>) obj;
+            Struct.Builder nestedStruct = Struct.newBuilder();
+            for (Map.Entry<?, ?> e : mapObj.entrySet()) {
+                if (e.getKey() instanceof String) {
+                    nestedStruct.putFields((String) e.getKey(), toValue(e.getValue()));
+                }
+            }
+            return Value.newBuilder().setStructValue(nestedStruct.build()).build();
+        } else if (obj instanceof List) {
+            List<?> listObj = (List<?>) obj;
+            ListValue.Builder listValue = ListValue.newBuilder();
+            for (Object element : listObj) {
+                listValue.addValues(toValue(element));
+            }
+            return Value.newBuilder().setListValue(listValue.build()).build();
+        } else {
+            return Value.newBuilder().setStringValue(obj.toString()).build();
+        }
     }
 }

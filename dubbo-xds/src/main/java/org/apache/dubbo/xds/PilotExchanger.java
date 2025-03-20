@@ -17,29 +17,17 @@
 package org.apache.dubbo.xds;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.xds.directory.XdsDirectory;
-import org.apache.dubbo.xds.directory.XdsResourceListener;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
-import java.util.Set;
-
 public class PilotExchanger {
 
-    private int pollingTimeout;
-    private ApplicationModel applicationModel;
     protected final AdsObserver adsObserver;
-
-    private final Set<String> domainObserveRequest = new ConcurrentHashSet<String>();
 
     private static PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
 
-    protected PilotExchanger(URL url) {
-        this.pollingTimeout = url.getParameter("pollingTimeout", 10);
-        adsObserver = new AdsObserver(url);
-        this.applicationModel = url.getOrDefaultApplicationModel();
+    protected PilotExchanger() {
+        adsObserver = new AdsObserver();
     }
 
     public <T extends ResourceUpdate> void subscribeXdsResource(
@@ -51,29 +39,13 @@ public class PilotExchanger {
         adsObserver.addListener(resourceName, resourceType, resourceListener);
     }
 
-    public void unSubscribeXdsResource(String clusterName, XdsDirectory listener) {}
-
-    public static PilotExchanger initialize(URL url) {
+    public static PilotExchanger getInstance() {
         synchronized (PilotExchanger.class) {
             if (GLOBAL_PILOT_EXCHANGER != null) {
                 return GLOBAL_PILOT_EXCHANGER;
             }
-            return (GLOBAL_PILOT_EXCHANGER = new PilotExchanger(url));
+            return (GLOBAL_PILOT_EXCHANGER = new PilotExchanger());
         }
-    }
-
-    public static PilotExchanger getInstance() {
-        synchronized (PilotExchanger.class) {
-            return GLOBAL_PILOT_EXCHANGER;
-        }
-    }
-
-    public static PilotExchanger createInstance(URL url) {
-        return new PilotExchanger(url);
-    }
-
-    public static boolean isEnabled() {
-        return GLOBAL_PILOT_EXCHANGER != null;
     }
 
     public void destroy() {

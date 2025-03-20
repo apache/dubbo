@@ -20,7 +20,7 @@ import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
-import org.apache.dubbo.xds.bootstrap.Bootstrapper.ServerInfo;
+import org.apache.dubbo.xds.bootstrap.XdsServer;
 import org.apache.dubbo.xds.resource.exception.ResourceInvalidException;
 import org.apache.dubbo.xds.resource.filter.FilterRegistry;
 import org.apache.dubbo.xds.resource.listener.security.TlsContextManager;
@@ -85,7 +85,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
             new Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null); // TODO
 
     public static class Args {
-        final ServerInfo serverInfo;
+        final XdsServer serverInfo;
         final String versionInfo;
         final String nonce;
         final BootstrapInfo bootstrapInfo;
@@ -99,7 +99,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
         final @Nullable Set<String> subscribedResources;
 
         public Args(
-                ServerInfo serverInfo,
+                XdsServer serverInfo,
                 String versionInfo,
                 String nonce,
                 BootstrapInfo bootstrapInfo,

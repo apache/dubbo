@@ -32,6 +32,8 @@ import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import io.grpc.Grpc;
+import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
@@ -45,62 +47,20 @@ public class XdsChannel {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsChannel.class);
 
-    private static final String USE_AGENT = "use-agent";
-
-    private URL url;
-
-    private static final String SECURITY = "security";
-
-    private static final String PLAINTEXT = "plaintext";
-
     private final ManagedChannel channel;
-
-    public URL getUrl() {
-        return url;
-    }
 
     public ManagedChannel getChannel() {
         return channel;
     }
 
-    public XdsChannel(URL url) {
+    public XdsChannel() {
         ManagedChannel managedChannel = null;
-        this.url = url;
         try {
-            if (!url.getParameter(USE_AGENT, false)) {
-                // TODO：Need to consider situation where only user sa_jwt
-                if (PLAINTEXT.equals(url.getParameter(SECURITY))) {
-                    managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
-                            .usePlaintext()
-                            .build();
-                } else {
-                    CertSource signer = url.getOrDefaultApplicationModel()
-                            .getExtensionLoader(CertSource.class)
-                            .getExtension(url.getProtocol());
-                    CertPair certPair = signer.getCert(url, null);
-                    SslContext context = GrpcSslContexts.forClient()
-                            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                            .keyManager(
-                                    new ByteArrayInputStream(
-                                            certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
-                                    new ByteArrayInputStream(
-                                            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
-                            .build();
-                    managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
-                            .sslContext(context)
-                            .build();
-                }
-            } else {
-                BootstrapInfo bootstrapInfo = Bootstrapper.getInstance().bootstrap();
-                String server = bootstrapInfo.getServers().get(0).getTarget();
-                // URLAddress address = URLAddress.parse(bootstrapInfo.getServers().get(0).getTarget(), null, false);
-                // EpollEventLoopGroup elg = new EpollEventLoopGroup();
-                managedChannel = NettyChannelBuilder.forTarget(server)
-                        // .eventLoopGroup(elg)
-                        // .channelType(EpollDomainSocketChannel.class)
-                        .usePlaintext()
-                        .build();
-            }
+            BootstrapInfo bootstrapInfo = Bootstrapper.getInstance().bootstrap();
+            String server = bootstrapInfo.getXdsServers().get(0).getServerURI();
+            // TODO(xDS): channel cred support other types
+            managedChannel = Grpc.newChannelBuilder(server, InsecureChannelCredentials.create())
+                    .build();
         } catch (Exception e) {
             logger.error(
                     REGISTRY_ERROR_CREATE_CHANNEL_XDS,

@@ -14,8 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.xds.directory;
+package org.apache.dubbo.xds.bootstrap;
 
-public interface XdsResourceListener<T> {
-    void onResourceUpdate(T resource);
+import java.util.Map;
+
+public class ChannelCreds {
+    private String type;
+    private Map<String, ?> config;
+
+    public String getType() {
+        return type;
+    }
+
+    public ChannelCreds setType(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public Map<String, ?> getConfig() {
+        return config;
+    }
+
+    public ChannelCreds setConfig(Map<String, ?> config) {
+        this.config = config;
+        return this;
+    }
 }

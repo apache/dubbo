@@ -18,8 +18,6 @@ package org.apache.dubbo.xds;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.xds.directory.XdsResourceListener;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
@@ -44,13 +42,10 @@ public class XdsRawResourceProtocol<T extends ResourceUpdate> {
     // serviceKey to watcher
     protected volatile Map<String, XdsResourceListener<T>> resourceListeners = new ConcurrentHashMap<>();
 
-    protected ApplicationModel applicationModel;
-
     public XdsRawResourceProtocol(
-            AdsObserver adsObserver, Node node, XdsResourceType<T> resourceType, ApplicationModel applicationModel) {
+            AdsObserver adsObserver, Node node, XdsResourceType<T> resourceType) {
         this.adsObserver = adsObserver;
         this.node = node;
-        this.applicationModel = applicationModel;
         this.resourceTypeInstance = resourceType;
     }
 

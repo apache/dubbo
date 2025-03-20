@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.xds;
 
-public final class XdsInitializationException extends RuntimeException {
-
-    public XdsInitializationException(String message) {
-        super(message);
-    }
-
-    public XdsInitializationException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public interface XdsResourceListener<T> {
+    void onResourceUpdate(T resource);
 }
