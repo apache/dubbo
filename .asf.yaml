@@ -34,15 +34,15 @@ github:
     # Enable projects for project management boards
     projects: true
   protected_branches:
-    master:
-      # only disable force push
-      foo: bar
-    3.0:
-      # only disable force push
-      foo: bar
-    3.1:
-      # only disable force push
-      foo: bar
+    master: {}
+    2.5.x: {}
+    2.6.x: {}
+    2.7.x: {}
+    3.0: {}
+    3.1: {}
+    3.2: {}
+    3.3: {}
+    3.4: {}
   labels:
     - java
     - rpc
@@ -55,5 +55,3 @@ github:
     - http
     - grpc
     - web
-  collaborators:
-    - oxsean
