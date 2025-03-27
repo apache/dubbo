@@ -196,7 +196,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         ServiceInstance oldServiceInstance = this.serviceInstance;
         DefaultServiceInstance newServiceInstance =
                 new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
-        newServiceInstance.setServiceMetadata(oldServiceInstance.getServiceMetadata().clone());
+        newServiceInstance.setServiceMetadata(
+                oldServiceInstance.getServiceMetadata().clone());
         boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
         if (revisionUpdated) {
             logger.info(String.format(

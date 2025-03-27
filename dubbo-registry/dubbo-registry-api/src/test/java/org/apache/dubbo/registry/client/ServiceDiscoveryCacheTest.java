@@ -147,17 +147,20 @@ class ServiceDiscoveryCacheTest {
                 .reportMetadata(Mockito.any(MetadataInfo.class));
         Assertions.assertThrows(RuntimeException.class, mockServiceDiscovery::update);
 
-        Mockito.verify(mockServiceDiscovery, Mockito.times(1)).doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
+        Mockito.verify(mockServiceDiscovery, Mockito.times(1))
+                .doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
 
         Mockito.doNothing().when(mockServiceDiscovery).reportMetadata(Mockito.any(MetadataInfo.class));
         // second time
         Assertions.assertDoesNotThrow(mockServiceDiscovery::update);
 
-        Mockito.verify(mockServiceDiscovery, Mockito.times(2)).doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
+        Mockito.verify(mockServiceDiscovery, Mockito.times(2))
+                .doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
 
         Assertions.assertDoesNotThrow(mockServiceDiscovery::update);
         // if update success, revision won't changed when next scheduled time, so doUpdate will not be called
-        Mockito.verify(mockServiceDiscovery, Mockito.times(2)).doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
+        Mockito.verify(mockServiceDiscovery, Mockito.times(2))
+                .doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
 
         applicationModel.destroy();
     }
