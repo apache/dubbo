@@ -196,6 +196,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         ServiceInstance oldServiceInstance = this.serviceInstance;
         DefaultServiceInstance newServiceInstance =
                 new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
+        newServiceInstance.setServiceMetadata(oldServiceInstance.getServiceMetadata().clone());
         boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
         if (revisionUpdated) {
             logger.info(String.format(
@@ -348,8 +349,6 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
      */
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) {
         this.doUnregister(oldServiceInstance);
-
-        this.serviceInstance = newServiceInstance;
 
         if (!EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
             reportMetadata(newServiceInstance.getServiceMetadata());
