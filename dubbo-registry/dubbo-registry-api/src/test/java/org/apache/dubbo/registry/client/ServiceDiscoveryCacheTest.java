@@ -29,7 +29,6 @@ import java.util.Objects;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CACHE_EXPIRE_KEY;
