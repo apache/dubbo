@@ -156,6 +156,10 @@ class ServiceDiscoveryCacheTest {
 
         Mockito.verify(mockServiceDiscovery, Mockito.times(2)).doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
 
+        Assertions.assertDoesNotThrow(mockServiceDiscovery::update);
+        // if update success, revision won't changed when next scheduled time, so doUpdate will not be called
+        Mockito.verify(mockServiceDiscovery, Mockito.times(2)).doUpdate(Mockito.any(ServiceInstance.class), Mockito.any(ServiceInstance.class));
+
         applicationModel.destroy();
     }
 }
