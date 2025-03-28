@@ -25,15 +25,22 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
@@ -41,6 +48,8 @@ import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.s
 public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
     private Bootstrap bootstrap;
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyConnectionClient.class);
+    private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
 
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -97,6 +106,28 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
     @Override
     protected ChannelFuture performConnect() {
-        return bootstrap.connect();
+        ChannelFuture future = bootstrap.connect();
+
+        future.addListener((ChannelFutureListener) connectFuture -> {
+            if (!connectFuture.isSuccess()) {
+                LOGGER.warn("Connection attempt failed: " + getConnectAddress(), connectFuture.cause());
+                scheduleReconnect();
+            }
+        });
+
+        return future;
+    }
+
+    private void scheduleReconnect() {
+        EXECUTOR_SERVICE.schedule(
+                () -> {
+                    try {
+                        doConnect();
+                    } catch (RemotingException e) {
+                        LOGGER.error("Failed to reconnect to server: " + getConnectAddress(), e);
+                    }
+                },
+                1L,
+                TimeUnit.SECONDS);
     }
 }
