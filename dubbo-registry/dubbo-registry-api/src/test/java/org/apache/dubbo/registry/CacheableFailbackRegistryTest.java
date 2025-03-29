@@ -74,33 +74,32 @@ class CacheableFailbackRegistryTest {
 
     @Test
     void testFullURLCache() {
-        final AtomicReference<Integer> resCount = new AtomicReference<>(0);
+        final AtomicReference<Integer> resultCount = new AtomicReference<>(0);
         registry = new MockCacheableRegistryImpl(registryUrl);
-        URL url = URLStrParser.parseEncodedStr(urlStr);
+        URL baseUrl = URLStrParser.parseEncodedStr(urlStr);
 
-        NotifyListener listener = urls -> resCount.set(urls.size());
+        NotifyListener listener = urls -> resultCount.set(urls.size());
 
+        validateRegistryUpdate(baseUrl, serviceUrl, listener, resultCount, 1);
+        validateRegistryUpdate(baseUrl, serviceUrl, listener, resultCount, 1);
+
+        URL urlWithParam = baseUrl.addParameter("k1", "v1");
+        validateRegistryUpdate(urlWithParam, serviceUrl, listener, resultCount, 2);
+
+        URL urlWithNewHost = urlWithParam.setHost("192.168.1.1");
+        validateRegistryUpdate(urlWithNewHost, serviceUrl, listener, resultCount, 3);
+    }
+
+    private void validateRegistryUpdate(
+            URL url, URL serviceUrl, NotifyListener listener, AtomicReference<Integer> resultCount, int expectedCount) {
         registry.addChildren(url);
         registry.subscribe(serviceUrl, listener);
-        assertEquals(1, registry.getStringUrls().get(serviceUrl).size());
-        assertEquals(1, resCount.get());
 
-        registry.addChildren(url);
-        registry.subscribe(serviceUrl, listener);
-        assertEquals(1, registry.getStringUrls().get(serviceUrl).size());
-        assertEquals(1, resCount.get());
+        int actualSize = registry.getStringUrls().get(serviceUrl).size();
+        int actualCount = resultCount.get();
 
-        URL url1 = url.addParameter("k1", "v1");
-        registry.addChildren(url1);
-        registry.subscribe(serviceUrl, listener);
-        assertEquals(2, registry.getStringUrls().get(serviceUrl).size());
-        assertEquals(2, resCount.get());
-
-        URL url2 = url1.setHost("192.168.1.1");
-        registry.addChildren(url2);
-        registry.subscribe(serviceUrl, listener);
-        assertEquals(3, registry.getStringUrls().get(serviceUrl).size());
-        assertEquals(3, resCount.get());
+        assertEquals(expectedCount, actualSize);
+        assertEquals(expectedCount, actualCount);
     }
 
     @Test

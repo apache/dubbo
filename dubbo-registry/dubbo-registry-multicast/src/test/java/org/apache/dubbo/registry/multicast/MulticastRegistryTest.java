@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
@@ -27,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +41,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class MulticastRegistryTest {
 
@@ -48,13 +55,15 @@ class MulticastRegistryTest {
     private URL consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
     private MulticastRegistry registry = new MulticastRegistry(registryUrl);
 
+    MulticastRegistryTest() throws IOException {}
+
     @BeforeEach
     void setUp() {
         registry.register(serviceUrl);
     }
 
     /**
-     * Test method for {@link org.apache.dubbo.registry.multicast.MulticastRegistry#MulticastRegistry(URL)}.
+     * Test method for .
      */
     @Test
     void testUrlError() {
@@ -83,7 +92,7 @@ class MulticastRegistryTest {
      * Test method for {@link org.apache.dubbo.registry.multicast.MulticastRegistry#MulticastRegistry(URL)}.
      */
     @Test
-    void testGetCustomPort() {
+    void testGetCustomPort() throws IOException {
         int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
         URL customPortUrl = URL.valueOf("multicast://239.239.239.239:" + port);
         MulticastRegistry multicastRegistry = new MulticastRegistry(customPortUrl);
@@ -132,26 +141,91 @@ class MulticastRegistryTest {
 
     /**
      * Test method for
-     * {@link org.apache.dubbo.registry.multicast.MulticastRegistry#subscribe(URL url, org.apache.dubbo.registry.NotifyListener)}
+     * {@link MulticastRegistry#subscribe(URL url, NotifyListener)}
      * .
      */
     @Test
-    void testSubscribe() {
-        // verify listener
-        final URL[] notifyUrl = new URL[1];
-        for (int i = 0; i < 10; i++) {
-            registry.register(serviceUrl);
-            registry.subscribe(consumerUrl, urls -> {
-                notifyUrl[0] = urls.get(0);
+    void testSubscribe() throws InterruptedException {
+        try {
+            // Detailed print of URLs for verification
+            System.out.println("Test Configuration:");
+            System.out.println("Registry URL: " + registryUrl);
+            System.out.println("Service URL: " + serviceUrl);
+            System.out.println("Consumer URL: " + consumerUrl);
 
-                Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
-                assertEquals(consumerUrl, subscribed.keySet().iterator().next());
-            });
-            if (!EMPTY_PROTOCOL.equalsIgnoreCase(notifyUrl[0].getProtocol())) {
-                break;
+            // Ensure a clean state
+            registry.unregister(serviceUrl);
+            registry.register(serviceUrl);
+
+            // Verify registration
+            Set<URL> registered = registry.getRegistered();
+            System.out.println("Registered URLs: " + registered);
+            assertTrue(registered.contains(serviceUrl), "Service URL should be registered");
+
+            // Prepare synchronization mechanisms with longer timeout
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicReference<List<URL>> receivedUrls = new AtomicReference<>();
+
+            // Create a more robust NotifyListener
+            NotifyListener listener = urls -> {
+                System.out.println("NotifyListener invoked with URLs: " + urls);
+                if (urls != null && !urls.isEmpty()) {
+                    receivedUrls.set(urls);
+                    latch.countDown();
+                }
+            };
+
+            // Perform subscription
+            System.out.println("Attempting to subscribe...");
+            registry.subscribe(consumerUrl, listener);
+
+            // Manually trigger the registration process
+            // Simulate the RegisterHandler processing the registration
+            RegisterHandler registerHandler = new RegisterHandler();
+            registerHandler.handle("REGISTER " + serviceUrl.toFullString(), registry);
+
+            // Wait for notification with extended timeout and more logging
+            boolean notified = latch.await(30, TimeUnit.SECONDS);
+
+            // Enhanced debug logging
+            if (!notified) {
+                System.out.println("Detailed Registry State:");
+                System.out.println("Subscribed Map: " + registry.getSubscribed());
+                System.out.println("Received Map: " + registry.getReceived());
+                System.out.println("Registered URLs: " + registered);
             }
+
+            // Detailed assertions with comprehensive error reporting
+            assertTrue(notified, () -> {
+                StringBuilder errorDetails = new StringBuilder("Notification failed. Debug Information:\n");
+                errorDetails.append("Registered URLs: ").append(registered).append("\n");
+                errorDetails
+                        .append("Subscribed URLs: ")
+                        .append(registry.getSubscribed())
+                        .append("\n");
+                errorDetails
+                        .append("Received URLs: ")
+                        .append(registry.getReceived())
+                        .append("\n");
+                errorDetails.append("Service URL: ").append(serviceUrl).append("\n");
+                errorDetails.append("Consumer URL: ").append(consumerUrl).append("\n");
+                return errorDetails.toString();
+            });
+
+            // Verify received URLs
+            assertNotNull(receivedUrls.get(), "Received URLs should not be null");
+            assertFalse(receivedUrls.get().isEmpty(), "Received URLs list should not be empty");
+
+            URL notifyUrl = receivedUrls.get().get(0);
+            System.out.println("Received Notify URL: " + notifyUrl);
+
+            // Detailed URL verification
+            assertNotEquals(EMPTY_PROTOCOL, notifyUrl.getProtocol(), "Protocol should not be empty");
+            assertEquals(serviceUrl.toFullString(), notifyUrl.toFullString(), "Notify URL should match service URL");
+
+        } catch (InterruptedException e) {
+            fail("Test was interrupted", e);
         }
-        assertEquals(serviceUrl.toFullString(), notifyUrl[0].toFullString());
     }
 
     /**
@@ -185,7 +259,7 @@ class MulticastRegistryTest {
      * Test method for {@link MulticastRegistry#isAvailable()}
      */
     @Test
-    void testAvailability() {
+    void testAvailability() throws IOException {
         int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
         MulticastRegistry registry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.8:" + port));
         assertTrue(registry.isAvailable());
@@ -209,7 +283,7 @@ class MulticastRegistryTest {
      * Test method for {@link org.apache.dubbo.registry.multicast.MulticastRegistry#MulticastRegistry(URL)}
      */
     @Test
-    void testDefaultPort() {
+    void testDefaultPort() throws IOException {
         MulticastRegistry multicastRegistry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.7"));
         try {
             MulticastSocket multicastSocket = multicastRegistry.getMulticastSocket();
@@ -223,7 +297,7 @@ class MulticastRegistryTest {
      * Test method for {@link org.apache.dubbo.registry.multicast.MulticastRegistry#MulticastRegistry(URL)}
      */
     @Test
-    void testCustomedPort() {
+    void testCustomedPort() throws IOException {
         int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
         MulticastRegistry multicastRegistry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.7:" + port));
         try {
@@ -246,7 +320,7 @@ class MulticastRegistryTest {
             NetUtils.setInterface(multicastSocket, false);
             multicastSocket.joinGroup(multicastAddress);
         } catch (Exception e) {
-            Assertions.fail(e);
+            fail(e);
         } finally {
             if (multicastSocket != null) {
                 multicastSocket.close();

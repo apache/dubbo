@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
+import java.io.IOException;
+
 /**
  * MulticastRegistryLocator
  *
@@ -27,7 +29,7 @@ import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 public class MulticastRegistryFactory extends AbstractRegistryFactory {
 
     @Override
-    public Registry createRegistry(URL url) {
-        return new MulticastRegistry(url, applicationModel);
+    public Registry createRegistry(URL url) throws IOException {
+        return new MulticastRegistry(url);
     }
 }

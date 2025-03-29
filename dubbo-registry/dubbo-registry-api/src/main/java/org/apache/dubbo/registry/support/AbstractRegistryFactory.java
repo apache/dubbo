@@ -26,6 +26,8 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.io.IOException;
+
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
@@ -126,5 +128,5 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
         return url.toServiceStringWithoutResolving();
     }
 
-    protected abstract Registry createRegistry(URL url);
+    protected abstract Registry createRegistry(URL url) throws IOException;
 }
