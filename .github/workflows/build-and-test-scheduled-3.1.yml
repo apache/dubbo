@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 17
       - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
@@ -251,7 +251,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jdk: [ 8, 11 ]
+        jdk: [ 8, 11, 17, 21 ]
         job_id: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
@@ -307,7 +307,7 @@ jobs:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
       matrix:
-        jdk: [ 8, 11 ]
+        jdk: [ 8, 11, 17, 21 ]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -350,7 +350,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jdk: [ 8, 11 ]
+        jdk: [ 8, 11, 17, 21 ]
         job_id: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
@@ -406,7 +406,7 @@ jobs:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
       matrix:
-        jdk: [ 8, 11 ]
+        jdk: [ 8, 11, 17, 21 ]
     steps:
       - uses: actions/checkout@v4
         with:
