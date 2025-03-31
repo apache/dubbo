@@ -289,7 +289,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
       TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
     strategy:
       fail-fast: false
@@ -323,11 +323,11 @@ jobs:
         with:
           name: samples-test-list
           path: test/jobs/
-      - name: "Set up JDK 8"
+      - name: "Set up JDK 17"
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 17
       - name: "Init Candidate Versions"
         run: |
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
@@ -355,7 +355,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
     steps:
       - uses: actions/checkout@v4
         with:
@@ -392,7 +392,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
       TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
     strategy:
       fail-fast: false
@@ -430,7 +430,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 17
       - name: "Init Candidate Versions"
         run: |
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
@@ -458,7 +458,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      JAVA_VER: 8
+      JAVA_VER: 17
     steps:
       - uses: actions/checkout@v4
         with:
