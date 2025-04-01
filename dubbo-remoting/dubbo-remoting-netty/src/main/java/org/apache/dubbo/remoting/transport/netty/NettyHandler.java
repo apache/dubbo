@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -34,13 +34,15 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+
 /**
  * NettyHandler
  */
 @Sharable
 public class NettyHandler extends SimpleChannelHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyHandler.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyHandler.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<>(); // <ip:port, channel>
 
@@ -65,39 +67,43 @@ public class NettyHandler extends SimpleChannelHandler {
 
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
+        org.jboss.netty.channel.Channel ch = ctx.getChannel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         try {
             if (channel != null) {
-                channels.put(
-                        NetUtils.toAddressString(
-                                (InetSocketAddress) ctx.getChannel().getRemoteAddress()),
-                        channel);
+                channels.put(NetUtils.toAddressString((InetSocketAddress) ch.getRemoteAddress()), channel);
             }
             handler.connected(channel);
         } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
+            NettyChannel.removeChannelIfDisconnected(ch);
         }
 
         if (logger.isInfoEnabled() && channel != null) {
-            logger.info("The connection between " + channel.getRemoteAddress() + " and " + channel.getLocalAddress()
-                    + " is established");
+            logger.info(
+                    "The connection {} between {} and {} is established.",
+                    ch,
+                    channel.getRemoteAddress(),
+                    channel.getLocalAddress());
         }
     }
 
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
+        org.jboss.netty.channel.Channel ch = ctx.getChannel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         try {
-            channels.remove(NetUtils.toAddressString(
-                    (InetSocketAddress) ctx.getChannel().getRemoteAddress()));
+            channels.remove(NetUtils.toAddressString((InetSocketAddress) ch.getRemoteAddress()));
             handler.disconnected(channel);
         } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
+            NettyChannel.removeChannelIfDisconnected(ch);
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("The connection between " + channel.getRemoteAddress() + " and " + channel.getLocalAddress()
-                    + " is disconnected");
+            logger.info(
+                    "The connection {} between {} and {} is disconnected.",
+                    ch,
+                    channel.getRemoteAddress(),
+                    channel.getLocalAddress());
         }
     }
 
@@ -124,11 +130,25 @@ public class NettyHandler extends SimpleChannelHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
+        org.jboss.netty.channel.Channel ch = ctx.getChannel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         try {
             handler.caught(channel, e.getCause());
         } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
+            NettyChannel.removeChannelIfDisconnected(ch);
+        }
+
+        if (logger.isWarnEnabled()) {
+            logger.warn(
+                    TRANSPORT_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    channel == null
+                            ? String.format("The connection %s has exception.", ch)
+                            : String.format(
+                                    "The connection %s between %s and %s has exception.",
+                                    ch, channel.getRemoteAddress(), channel.getLocalAddress()),
+                    e.getCause());
         }
     }
 }
