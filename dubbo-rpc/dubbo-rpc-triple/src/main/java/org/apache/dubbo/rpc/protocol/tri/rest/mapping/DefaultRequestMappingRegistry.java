@@ -130,6 +130,12 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 consumer.accept((methods) -> {
                     Method method = methods.get(0);
                     MethodDescriptor md = sd.getMethod(method.getName(), method.getParameterTypes());
+                    if (md == null) {
+                        String originMethodName = method.getName();
+                        String upperMethod =
+                                Character.toUpperCase(originMethodName.charAt(0)) + originMethodName.substring(1);
+                        md = sd.getMethod(upperMethod, method.getParameterTypes());
+                    }
                     MethodMeta methodMeta = new MethodMeta(methods, md, serviceMeta);
                     if (!resolver.accept(methodMeta)) {
                         return;
