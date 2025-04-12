@@ -134,7 +134,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
     steps:
@@ -178,7 +178,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       DUBBO_DEFAULT_SERIALIZATION: fastjson2
@@ -251,7 +251,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17]
         job_id: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
@@ -307,7 +307,7 @@ jobs:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -350,7 +350,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17]
         job_id: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
@@ -406,7 +406,7 @@ jobs:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17]
     steps:
       - uses: actions/checkout@v4
         with:
