@@ -295,7 +295,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                             REGISTRY_EMPTY_ADDRESS,
                             "configuration",
                             "",
-                            "Service " + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
+                            "Service " + serviceKey
+                                    + " received empty address list with no EMPTY protocol set, trigger empty protection.");
 
                     invokerUrls.addAll(localCachedInvokerUrls);
                 }
@@ -316,8 +317,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
 
-            Map<URL, Invoker<T>> newUrlInvokerMap =
-                    toInvokers(oldUrlInvokerMap, invokerUrls);
+            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);
 
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
                 logger.error(
@@ -358,7 +358,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 + "Available Size: " + getValidInvokers().size() + ". "
                 + "Available Invokers: " + joinValidInvokerAddresses());
     }
-
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
@@ -834,5 +833,4 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
         return consumerUrl;
     }
-
 }

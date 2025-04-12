@@ -324,7 +324,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                     PROTOCOL_UNSUPPORTED,
                     "",
                     "",
-                    String.format("Received url with EMPTY protocol from registry %s, will clear all available addresses.", this));
+                    String.format(
+                            "Received url with EMPTY protocol from registry %s, will clear all available addresses.",
+                            this));
 
             // Use merged consumer URL for routing
             RpcContext.getServiceContext().setConsumerUrl(getEffectiveConsumerUrl());
@@ -341,7 +343,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                     PROTOCOL_UNSUPPORTED,
                     "",
                     "",
-                    String.format("Received empty url list from registry %s, will ignore for protection purpose.", this));
+                    String.format(
+                            "Received empty url list from registry %s, will ignore for protection purpose.", this));
             return;
         }
 
@@ -349,13 +352,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
         Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap = null;
         if (localUrlInvokerMap != null) {
-            oldUrlInvokerMap = new LinkedHashMap<>(
-                    Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+            oldUrlInvokerMap =
+                    new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
             localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
         }
 
-        Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap =
-                toInvokers(oldUrlInvokerMap, invokerUrls);
+        Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);
 
         logger.info(String.format("Refreshed invoker size %s from registry %s", newUrlInvokerMap.size(), this));
 
@@ -855,5 +857,4 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
         return consumerUrl;
     }
-    
 }
