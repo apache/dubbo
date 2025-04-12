@@ -38,6 +38,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Router;
@@ -277,102 +278,87 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (invokerUrls.size() == 1
                 && invokerUrls.get(0) != null
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            refreshRouter(
-                    BitList.emptyList(), () -> this.forbidden = true // Forbid to access
-                    );
+            RpcContext.getServiceContext().setConsumerUrl(getEffectiveConsumerUrl());
+            refreshRouter(BitList.emptyList(), () -> this.forbidden = true); // Forbid access
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
+            this.forbidden = false; // Allow access
 
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
-            // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
+
             Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
             if (invokerUrls.isEmpty()) {
                 if (CollectionUtils.isNotEmpty(localCachedInvokerUrls)) {
-                    // 1-4 Empty address.
                     logger.warn(
                             REGISTRY_EMPTY_ADDRESS,
-                            "configuration ",
+                            "configuration",
                             "",
-                            "Service" + serviceKey
-                                    + " received empty address list with no EMPTY protocol set, trigger empty protection.");
+                            "Service " + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
 
                     invokerUrls.addAll(localCachedInvokerUrls);
                 }
             } else {
-                localCachedInvokerUrls = new HashSet<>();
-                localCachedInvokerUrls.addAll(invokerUrls); // Cached invoker urls, convenient for comparison
+                localCachedInvokerUrls = new HashSet<>(invokerUrls);
                 this.cachedInvokerUrls = localCachedInvokerUrls;
             }
+
             if (invokerUrls.isEmpty()) {
                 return;
             }
 
-            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
-            // destroyAllInvokers().
             Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
-            // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
             Map<URL, Invoker<T>> oldUrlInvokerMap = null;
             if (localUrlInvokerMap != null) {
-                // the initial capacity should be set greater than the maximum number of entries divided by the load
-                // factor to avoid resizing.
                 oldUrlInvokerMap =
                         new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
+
             Map<URL, Invoker<T>> newUrlInvokerMap =
-                    toInvokers(oldUrlInvokerMap, invokerUrls); // Translate url list to Invoker map
+                    toInvokers(oldUrlInvokerMap, invokerUrls);
 
-            /*
-             * If the calculation is wrong, it is not processed.
-             *
-             * 1. The protocol configured by the client is inconsistent with the protocol of the server.
-             *    eg: consumer protocol = dubbo, provider only has other protocol services(rest).
-             * 2. The registration center is not robust and pushes illegal specification data.
-             *
-             */
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-
-                // 3-1 - Failed to convert the URL address into Invokers.
-
                 logger.error(
                         PROXY_FAILED_CONVERT_URL,
                         "inconsistency between the client protocol and the protocol of the server",
                         "",
                         "urls to invokers error",
                         new IllegalStateException("urls to invokers error. invokerUrls.size :" + invokerUrls.size()
-                                + ", invoker.size :0. urls :" + invokerUrls.toString()));
-
+                                + ", invoker.size :0. urls :" + invokerUrls));
                 return;
             }
 
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
             BitList<Invoker<T>> finalInvokers =
                     multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
-            // pre-route and build cache
+
+            // Inject merged consumer URL into routing context
+            RpcContext.getServiceContext().setConsumerUrl(getEffectiveConsumerUrl());
+
             refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
+
             this.urlInvokerMap = newUrlInvokerMap;
 
             try {
-                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
+                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap);
             } catch (Exception e) {
                 logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "destroyUnusedInvokers error. ", e);
             }
 
-            // notify invokers refreshed
-            this.invokersChanged();
+            this.invokersChanged(); // Notify refresh complete
         }
 
-        logger.info("Received invokers changed event from registry. " + "Registry type: interface. "
-                + "Service Key: "
-                + getConsumerUrl().getServiceKey() + ". " + "Urls Size : "
-                + invokerUrls.size() + ". " + "Invokers Size : "
-                + getInvokers().size() + ". " + "Available Size: "
-                + getValidInvokers().size() + ". " + "Available Invokers : "
-                + joinValidInvokerAddresses());
+        logger.info("Received invokers changed event from registry. "
+                + "Registry type: interface. "
+                + "Service Key: " + getConsumerUrl().getServiceKey() + ". "
+                + "Urls Size: " + invokerUrls.size() + ". "
+                + "Invokers Size: " + getInvokers().size() + ". "
+                + "Available Size: " + getValidInvokers().size() + ". "
+                + "Available Invokers: " + joinValidInvokerAddresses());
     }
+
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
@@ -840,4 +826,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     public String toString() {
         return "RegistryDirectory(" + "registry: " + getUrl().getAddress() + ")-" + super.toString();
     }
+
+    protected URL getEffectiveConsumerUrl() {
+        URL overrideDirectoryUrl = directoryUrl;
+        if (overrideDirectoryUrl != null) {
+            return consumerUrl.addParameters(overrideDirectoryUrl.getParameters());
+        }
+        return consumerUrl;
+    }
+
 }

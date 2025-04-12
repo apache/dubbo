@@ -324,77 +324,80 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                     PROTOCOL_UNSUPPORTED,
                     "",
                     "",
-                    String.format(
-                            "Received url with EMPTY protocol from registry %s, will clear all available addresses.",
-                            this));
-            refreshRouter(
-                    BitList.emptyList(), () -> this.forbidden = true // Forbid to access
-                    );
-            destroyAllInvokers(); // Close all invokers
-        } else {
-            this.forbidden = false; // Allow accessing
-            if (CollectionUtils.isEmpty(invokerUrls)) {
-                logger.warn(
-                        PROTOCOL_UNSUPPORTED,
-                        "",
-                        "",
-                        String.format(
-                                "Received empty url list from registry %s, will ignore for protection purpose.", this));
-                return;
-            }
+                    String.format("Received url with EMPTY protocol from registry %s, will clear all available addresses.", this));
 
-            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
-            // destroyAllInvokers().
-            Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
-            // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
-            Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap = null;
-            if (localUrlInvokerMap != null) {
-                // the initial capacity should be set greater than the maximum number of entries divided by the load
-                // factor to avoid resizing.
-                oldUrlInvokerMap =
-                        new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
-                localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
-            }
-            Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap =
-                    toInvokers(oldUrlInvokerMap, invokerUrls); // Translate url list to Invoker map
-            logger.info(String.format("Refreshed invoker size %s from registry %s", newUrlInvokerMap.size(), this));
+            // Use merged consumer URL for routing
+            RpcContext.getServiceContext().setConsumerUrl(getEffectiveConsumerUrl());
 
-            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(
-                        PROTOCOL_UNSUPPORTED,
-                        "",
-                        "",
-                        "Unsupported protocol.",
-                        new IllegalStateException(String.format(
-                                "Cannot create invokers from url address list (total %s)", invokerUrls.size())));
-                return;
-            }
-            List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            BitList<Invoker<T>> finalInvokers =
-                    multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
-            // pre-route and build cache
-            refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
-            this.urlInvokerMap = newUrlInvokerMap;
+            refreshRouter(BitList.emptyList(), () -> this.forbidden = true);
+            destroyAllInvokers();
+            return;
+        }
 
-            if (oldUrlInvokerMap != null) {
-                try {
-                    destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
-                } catch (Exception e) {
-                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", "destroyUnusedInvokers error. ", e);
-                }
+        this.forbidden = false;
+
+        if (CollectionUtils.isEmpty(invokerUrls)) {
+            logger.warn(
+                    PROTOCOL_UNSUPPORTED,
+                    "",
+                    "",
+                    String.format("Received empty url list from registry %s, will ignore for protection purpose.", this));
+            return;
+        }
+
+        // Safe reference for concurrent update protection
+        Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
+        Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap = null;
+        if (localUrlInvokerMap != null) {
+            oldUrlInvokerMap = new LinkedHashMap<>(
+                    Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+            localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
+        }
+
+        Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap =
+                toInvokers(oldUrlInvokerMap, invokerUrls);
+
+        logger.info(String.format("Refreshed invoker size %s from registry %s", newUrlInvokerMap.size(), this));
+
+        if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
+            logger.error(
+                    PROTOCOL_UNSUPPORTED,
+                    "",
+                    "",
+                    "Unsupported protocol.",
+                    new IllegalStateException(String.format(
+                            "Cannot create invokers from url address list (total %s)", invokerUrls.size())));
+            return;
+        }
+
+        List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
+        BitList<Invoker<T>> finalInvokers =
+                multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+
+        // Inject effective URL before routing
+        RpcContext.getServiceContext().setConsumerUrl(getEffectiveConsumerUrl());
+        refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
+
+        this.urlInvokerMap = newUrlInvokerMap;
+
+        if (oldUrlInvokerMap != null) {
+            try {
+                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap);
+            } catch (Exception e) {
+                logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", "destroyUnusedInvokers error.", e);
             }
         }
 
-        // notify invokers refreshed
+        // Notify about invoker update
         this.invokersChanged();
 
-        logger.info("Received invokers changed event from registry. " + "Registry type: instance. "
-                + "Service Key: "
-                + getConsumerUrl().getServiceKey() + ". " + "Urls Size : "
-                + invokerUrls.size() + ". " + "Invokers Size : "
-                + getInvokers().size() + ". " + "Available Size: "
-                + getValidInvokers().size() + ". " + "Available Invokers : "
-                + joinValidInvokerAddresses());
+        logger.info("Received invokers changed event from registry. "
+                + "Registry type: instance. "
+                + "Service Key: " + getConsumerUrl().getServiceKey() + ". "
+                + "Urls Size : " + invokerUrls.size() + ". "
+                + "Invokers Size : " + getInvokers().size() + ". "
+                + "Available Size: " + getValidInvokers().size() + ". "
+                + "Available Invokers : " + joinValidInvokerAddresses());
     }
 
     /**
@@ -844,4 +847,13 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 + ")-"
                 + super.toString();
     }
+
+    protected URL getEffectiveConsumerUrl() {
+        URL overrideDirectoryUrl = directoryUrl;
+        if (overrideDirectoryUrl != null) {
+            return consumerUrl.addParameters(overrideDirectoryUrl.getParameters());
+        }
+        return consumerUrl;
+    }
+    
 }
