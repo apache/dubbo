@@ -851,10 +851,18 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     protected URL getEffectiveConsumerUrl() {
-        URL overrideDirectoryUrl = directoryUrl;
+        URL overrideDirectoryUrl = this.directoryUrl;
         if (overrideDirectoryUrl != null) {
-            return consumerUrl.addParameters(overrideDirectoryUrl.getParameters());
+            Map<String, String> filteredParams = new HashMap<>();
+            for (Map.Entry<String, String> entry : overrideDirectoryUrl.getParameters().entrySet()) {
+                String value = entry.getValue();
+                if (value != null && !"null".equalsIgnoreCase(value.trim())) {
+                    filteredParams.put(entry.getKey(), value);
+                }
+            }
+            return consumerUrl.addParameters(filteredParams);
         }
         return consumerUrl;
     }
+
 }
