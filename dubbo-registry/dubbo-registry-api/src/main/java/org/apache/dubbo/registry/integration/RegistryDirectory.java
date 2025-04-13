@@ -830,7 +830,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         URL overrideDirectoryUrl = this.directoryUrl;
         if (overrideDirectoryUrl != null) {
             Map<String, String> filteredParams = new HashMap<>();
-            for (Map.Entry<String, String> entry : overrideDirectoryUrl.getParameters().entrySet()) {
+            for (Map.Entry<String, String> entry :
+                    overrideDirectoryUrl.getParameters().entrySet()) {
                 String value = entry.getValue();
                 if (value != null && !"null".equalsIgnoreCase(value.trim())) {
                     filteredParams.put(entry.getKey(), value);
@@ -840,5 +841,4 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
         return consumerUrl;
     }
-
 }
