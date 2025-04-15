@@ -22,6 +22,7 @@ notifications:
   issues:       notifications@dubbo.apache.org
   pullrequests: notifications@dubbo.apache.org
   jira_options: link label link label
+  discussions: notifications@dubbo.apache.org
 
 github:
   homepage: https://dubbo.apache.org/
@@ -33,6 +34,8 @@ github:
     issues: true
     # Enable projects for project management boards
     projects: true
+    # Enable GitHub Discussions for community discussions
+    discussions: true
   protected_branches:
     master: {}
     2.5.x: {}
