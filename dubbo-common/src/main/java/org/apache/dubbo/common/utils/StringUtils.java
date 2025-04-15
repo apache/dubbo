@@ -1253,7 +1253,6 @@ public final class StringUtils {
         if (one == null || others == null) {
             return null;
         }
-
         String another = arrayToDelimitedString(others, COMMA_SEPARATOR);
         return isEmpty(another) ? one : one + COMMA_SEPARATOR + another;
     }
