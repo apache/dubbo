@@ -350,6 +350,12 @@ jobs:
         with:
           name: samples-test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
+      - name: "Upload test logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: samples-test-logs-${{matrix.job_id}}
+          path: test/logs/*
   samples-test-result:
     needs: [check-format, samples-test-job]
     if: always()
@@ -453,6 +459,12 @@ jobs:
         with:
           name: test-result-${{matrix.job_id}}
           path: test/jobs/*-result*
+      - name: "Upload test logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-logs-${{matrix.job_id}}
+          path: test/logs/*
   integration-test-result:
     needs: [check-format, integration-test-job]
     if: always()

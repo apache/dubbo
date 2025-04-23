@@ -837,12 +837,9 @@ public class URLParam {
      * @return raw string like parameters
      */
     public String getRawParam() {
-        if (StringUtils.isNotEmpty(rawParam)) {
-            return rawParam;
-        } else {
-            // empty if parameters have been modified or init by Map
-            return toString();
-        }
+        // If rawParam is not null, return it directly
+        // If rawParam is null, it means that the parameters have been modified
+        return toString();
     }
 
     protected Map<String, Map<String, String>> getMethodParameters() {

@@ -293,6 +293,12 @@ jobs:
           cd test && bash ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
+      - name: "Upload test logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: samples-test-logs-${{matrix.jdk}}-${{matrix.job_id}}
+          path: test/logs/*
       - name: "Upload test result"
         if: always()
         uses: actions/upload-artifact@v4
@@ -392,6 +398,12 @@ jobs:
           cd test && bash ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
+      - name: "Upload test logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-logs-${{matrix.jdk}}-${{matrix.job_id}}
+          path: test/logs/*
       - name: "Upload test result"
         if: always()
         uses: actions/upload-artifact@v4
