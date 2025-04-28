@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
@@ -41,17 +42,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class TripleHttp3ProtocolTest {
 
+    private ApplicationModel applicationModel;
+
     @Test
     void testDemoProtocol() throws Exception {
-        IGreeterImpl serviceImpl = new IGreeterImpl();
+        // Full Environment Reset - Optimized
+        ApplicationModel oldAppModel = ApplicationModel.defaultModel();
+        if (oldAppModel != null) {
+            oldAppModel.destroy();
+            if (oldAppModel.getFrameworkModel() != null) {
+                oldAppModel.getFrameworkModel().destroy();
+            }
+        }
+        applicationModel = ApplicationModel.defaultModel();
 
+        // Fresh ApplicationModel ready
+        IGreeterImpl serviceImpl = new IGreeterImpl();
         int availablePort = NetUtils.getAvailablePort();
-        ApplicationModel applicationModel = ApplicationModel.defaultModel();
 
         Map<String, String> settings = new HashMap<>();
         settings.put(Constants.H3_SETTINGS_HTTP3_ENABLED, "true");
@@ -70,8 +83,7 @@ class TripleHttp3ProtocolTest {
 
         URL providerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
-        ModuleServiceRepository serviceRepository =
-                applicationModel.getDefaultModule().getServiceRepository();
+        ModuleServiceRepository serviceRepository = applicationModel.getDefaultModule().getServiceRepository();
         ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
 
         ProviderModel providerModel = new ProviderModel(
@@ -84,43 +96,44 @@ class TripleHttp3ProtocolTest {
         providerUrl = providerUrl.setServiceModel(providerModel);
 
         Protocol protocol = new TripleProtocol(providerUrl.getOrDefaultFrameworkModel());
-        ProxyFactory proxy =
-                applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxy = applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Invoker<IGreeter> invoker = proxy.getInvoker(serviceImpl, IGreeter.class, providerUrl);
+
         Exporter<IGreeter> export = protocol.export(invoker);
 
         URL consumerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
-
-        ConsumerModel consumerModel =
-                new ConsumerModel(consumerUrl.getServiceKey(), null, serviceDescriptor, null, null, null);
+        ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceKey(), null, serviceDescriptor, null, null, null);
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
+
         IGreeter greeterProxy = proxy.getProxy(protocol.refer(IGreeter.class, consumerUrl));
         Thread.sleep(1000);
 
         Assertions.assertTrue(Http3Exchanger.isEnabled(providerUrl));
 
-        // 1. test unaryStream
+        // 1. Test unaryStream
         String REQUEST_MSG = "hello world";
         Assertions.assertEquals(REQUEST_MSG, greeterProxy.echo(REQUEST_MSG));
         Assertions.assertEquals(REQUEST_MSG, serviceImpl.echoAsync(REQUEST_MSG).get());
 
-        // 2. test serverStream
+        // 2. Test serverStream
         MockStreamObserver outboundMessageSubscriber1 = new MockStreamObserver();
         greeterProxy.serverStream(REQUEST_MSG, outboundMessageSubscriber1);
         outboundMessageSubscriber1.getLatch().await(3000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(REQUEST_MSG, outboundMessageSubscriber1.getOnNextData());
         Assertions.assertTrue(outboundMessageSubscriber1.isOnCompleted());
 
-        // 3. test bidirectionalStream
+        // 3. Test bidirectionalStream
         MockStreamObserver outboundMessageSubscriber2 = new MockStreamObserver();
         StreamObserver<String> inboundMessageObserver = greeterProxy.bidirectionalStream(outboundMessageSubscriber2);
         inboundMessageObserver.onNext(REQUEST_MSG);
         inboundMessageObserver.onCompleted();
         outboundMessageSubscriber2.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        // verify client
+
+        // Verify client
         Assertions.assertEquals(IGreeter.SERVER_MSG, outboundMessageSubscriber2.getOnNextData());
         Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
-        // verify server
+
+        // Verify server
         MockStreamObserver serverOutboundMessageSubscriber = (MockStreamObserver) serviceImpl.getMockStreamObserver();
         serverOutboundMessageSubscriber.getLatch().await(1000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(REQUEST_MSG, serverOutboundMessageSubscriber.getOnNextData());
@@ -128,9 +141,24 @@ class TripleHttp3ProtocolTest {
 
         export.unexport();
         protocol.destroy();
-        // resource recycle.
         serviceRepository.destroy();
-        System.out.println("serviceRepository destroyed");
+        System.out.println("ServiceRepository destroyed at end of test");
+    }
+
+    @AfterEach
+    void cleanup() {
+        if (applicationModel != null) {
+            try {
+                DefaultRequestMappingRegistry registry =
+                        applicationModel.getFrameworkModel().getBeanFactory().getBean(DefaultRequestMappingRegistry.class);
+                if (registry != null) {
+                    registry.destroy();
+                    System.out.println("DefaultRequestMappingRegistry destroyed after test");
+                }
+            } catch (Exception e) {
+                System.err.println("Cleanup error: " + e.getMessage());
+            }
+        }
     }
 
     private static String getAbsolutePath(String resourcePath) throws Exception {
