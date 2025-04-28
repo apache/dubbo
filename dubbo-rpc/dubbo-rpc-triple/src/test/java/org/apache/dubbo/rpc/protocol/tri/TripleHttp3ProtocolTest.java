@@ -138,5 +138,4 @@ class TripleHttp3ProtocolTest {
         Assertions.assertNotNull(resourceUrl, "Cert file '" + resourcePath + "' is required");
         return Paths.get(resourceUrl.toURI()).toAbsolutePath().toString();
     }
-
 }
