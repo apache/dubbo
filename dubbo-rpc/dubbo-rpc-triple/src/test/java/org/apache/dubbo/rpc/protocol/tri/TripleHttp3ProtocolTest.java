@@ -83,7 +83,8 @@ class TripleHttp3ProtocolTest {
 
         URL providerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
-        ModuleServiceRepository serviceRepository = applicationModel.getDefaultModule().getServiceRepository();
+        ModuleServiceRepository serviceRepository =
+                applicationModel.getDefaultModule().getServiceRepository();
         ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
 
         ProviderModel providerModel = new ProviderModel(
@@ -96,13 +97,15 @@ class TripleHttp3ProtocolTest {
         providerUrl = providerUrl.setServiceModel(providerModel);
 
         Protocol protocol = new TripleProtocol(providerUrl.getOrDefaultFrameworkModel());
-        ProxyFactory proxy = applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        ProxyFactory proxy =
+                applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Invoker<IGreeter> invoker = proxy.getInvoker(serviceImpl, IGreeter.class, providerUrl);
 
         Exporter<IGreeter> export = protocol.export(invoker);
 
         URL consumerUrl = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
-        ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceKey(), null, serviceDescriptor, null, null, null);
+        ConsumerModel consumerModel =
+                new ConsumerModel(consumerUrl.getServiceKey(), null, serviceDescriptor, null, null, null);
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
 
         IGreeter greeterProxy = proxy.getProxy(protocol.refer(IGreeter.class, consumerUrl));
@@ -149,8 +152,10 @@ class TripleHttp3ProtocolTest {
     void cleanup() {
         if (applicationModel != null) {
             try {
-                DefaultRequestMappingRegistry registry =
-                        applicationModel.getFrameworkModel().getBeanFactory().getBean(DefaultRequestMappingRegistry.class);
+                DefaultRequestMappingRegistry registry = applicationModel
+                        .getFrameworkModel()
+                        .getBeanFactory()
+                        .getBean(DefaultRequestMappingRegistry.class);
                 if (registry != null) {
                     registry.destroy();
                     System.out.println("DefaultRequestMappingRegistry destroyed after test");
