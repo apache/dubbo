@@ -1250,6 +1250,12 @@ public final class StringUtils {
      * @since 2.7.8
      */
     public static String toCommaDelimitedString(String one, String... others) {
+        if (one == null) {
+            return null;
+        }
+        if (others == null) {
+            return one;
+        }
         String another = arrayToDelimitedString(others, COMMA_SEPARATOR);
         return isEmpty(another) ? one : one + COMMA_SEPARATOR + another;
     }
