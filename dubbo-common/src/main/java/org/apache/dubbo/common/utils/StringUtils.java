@@ -1242,11 +1242,11 @@ public final class StringUtils {
     }
 
     /**
-     * Create the common-delimited {@link String} by one or more {@link String} members
+     * Creates a comma-delimited string from one or more string values.
      *
-     * @param one    one {@link String}
-     * @param others others {@link String}
-     * @return <code>null</code> if <code>one</code> or <code>others</code> is <code>null</code>
+     * @param one    the first string value
+     * @param others additional string values
+     * @return the combined string, or null if the first value is null
      * @since 2.7.8
      */
     public static String toCommaDelimitedString(String one, String... others) {
