@@ -45,10 +45,14 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class TripleHttp3ProtocolTest {
 
     private ApplicationModel applicationModel;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp3ProtocolTest.class);
 
     @Test
     void testDemoProtocol() throws Exception {
@@ -145,7 +149,7 @@ class TripleHttp3ProtocolTest {
         export.unexport();
         protocol.destroy();
         serviceRepository.destroy();
-        System.out.println("ServiceRepository destroyed at end of test");
+        LOGGER.info("ServiceRepository destroyed at end of test");
     }
 
     @AfterEach
@@ -158,10 +162,11 @@ class TripleHttp3ProtocolTest {
                         .getBean(DefaultRequestMappingRegistry.class);
                 if (registry != null) {
                     registry.destroy();
-                    System.out.println("DefaultRequestMappingRegistry destroyed after test");
+                    LOGGER.info("DefaultRequestMappingRegistry destroyed after test");
                 }
             } catch (Exception e) {
-                System.err.println("Cleanup error: " + e.getMessage());
+                LOGGER.error("Cleanup error: {}", e.getMessage(), e);
+                throw e;
             }
         }
     }
