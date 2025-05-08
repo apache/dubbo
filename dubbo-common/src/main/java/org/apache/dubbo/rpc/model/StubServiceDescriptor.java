@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -46,10 +47,11 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     }
 
     public void addMethod(MethodDescriptor methodDescriptor) {
-        methods.put(methodDescriptor.getMethodName(), Collections.singletonList(methodDescriptor));
-        Map<String, MethodDescriptor> descMap =
-                descToMethods.computeIfAbsent(methodDescriptor.getMethodName(), k -> new HashMap<>());
-        descMap.put(methodDescriptor.getParamDesc(), methodDescriptor);
+        List<MethodDescriptor> descriptors = Collections.singletonList(methodDescriptor);
+        methods.put(methodDescriptor.getMethodName(), descriptors);
+        descToMethods
+                .computeIfAbsent(methodDescriptor.getMethodName(), k -> new HashMap<>())
+                .put(methodDescriptor.getParamDesc(), methodDescriptor);
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
@@ -96,6 +98,14 @@ public class StubServiceDescriptor implements ServiceDescriptor {
      */
     public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
         List<MethodDescriptor> methodModels = methods.get(methodName);
+        if (methodModels == null) {
+            for (Entry<String, List<MethodDescriptor>> entry : methods.entrySet()) {
+                if (methodName.equalsIgnoreCase(entry.getKey())) {
+                    methodModels = entry.getValue();
+                    break;
+                }
+            }
+        }
         if (CollectionUtils.isNotEmpty(methodModels)) {
             for (MethodDescriptor descriptor : methodModels) {
                 if (Arrays.equals(paramTypes, descriptor.getParameterClasses())) {
