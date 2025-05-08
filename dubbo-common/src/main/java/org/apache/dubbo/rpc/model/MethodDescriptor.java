@@ -23,6 +23,8 @@ public interface MethodDescriptor {
 
     String getMethodName();
 
+    String getJavaMethodName();
+
     String getParamDesc();
 
     /**
