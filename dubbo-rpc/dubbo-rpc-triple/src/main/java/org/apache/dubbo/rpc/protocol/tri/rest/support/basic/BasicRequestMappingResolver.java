@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping.Builder;
@@ -96,13 +97,14 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
         Builder builder = builder(mapping);
 
         String[] paths = resolvePaths(mapping);
+        ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         if (paths.length == 0) {
-            builder.path('/' + method.getName()).sig(TypeUtils.buildSig(method));
+            String pathSegment = buildPathSegment(restConfig, serviceMeta, method);
+            builder.path(pathSegment).sig(TypeUtils.buildSig(method));
         } else {
             builder.path(paths);
         }
 
-        ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         if (globalCorsMeta == null) {
             globalCorsMeta = CorsUtils.getGlobalCorsMeta(restConfig);
         }
@@ -110,6 +112,19 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
                 .service(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion())
                 .cors(globalCorsMeta)
                 .build();
+    }
+
+    private String buildPathSegment(RestConfig restConfig, ServiceMeta serviceMeta, Method method) {
+        if (restConfig != null && !restConfig.getCaseSensitiveMatchOrDefault()) {
+            return "/" + method.getName();
+        }
+
+        MethodDescriptor methodDescriptor =
+                serviceMeta.getServiceDescriptor().getMethod(method.getName(), method.getParameterTypes());
+        String modelMethodName = methodDescriptor.getMethodName();
+        String javaMethodName = method.getName();
+
+        return "/" + (modelMethodName.equals(javaMethodName) ? javaMethodName : modelMethodName);
     }
 
     private Builder builder(AnnotationMeta<?> mapping) {

@@ -70,6 +70,12 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     }
 
     @Override
+    public String getJavaMethodName() {
+        char ch = methodName.charAt(0);
+        return Character.isUpperCase(ch) ? Character.toLowerCase(ch) + methodName.substring(1) : methodName;
+    }
+
+    @Override
     public String getParamDesc() {
         return paramDesc;
     }
