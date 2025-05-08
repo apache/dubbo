@@ -53,6 +53,17 @@ public class GreeterServiceImpl implements GreeterService {
     }
 
     @Override
+    public void sayHelloServerStreamNoParameter(StreamObserver<HelloReply> responseObserver) {
+        LOGGER.info("Received sayHelloServerStreamNoParameter request");
+        for (int i = 1; i < 6; i++) {
+            LOGGER.info("sayHelloServerStreamNoParameter onNext:  {} times", i);
+            responseObserver.onNext(toReply("Hello " + ' ' + i + " times"));
+        }
+        LOGGER.info("sayHelloServerStreamNoParameter onCompleted");
+        responseObserver.onCompleted();
+    }
+
+    @Override
     public StreamObserver<HelloRequest> sayHelloBiStream(StreamObserver<HelloReply> responseObserver) {
         LOGGER.info("Received sayHelloBiStream request");
         return new StreamObserver<HelloRequest>() {

@@ -38,7 +38,7 @@ public final class ExceptionCustomizerWrapper {
     private boolean needWrap;
 
     public ExceptionCustomizerWrapper(FrameworkModel frameworkModel) {
-        exceptionHandler = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeExceptionHandler.class);
+        exceptionHandler = frameworkModel.getOrRegisterBean(CompositeExceptionHandler.class);
     }
 
     public void setMetadata(RequestMetadata metadata) {

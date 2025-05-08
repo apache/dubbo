@@ -31,21 +31,27 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 
 public class NettyHttp1Codec extends ChannelDuplexHandler {
+
+    private boolean keepAlive;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         // decode FullHttpRequest
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest request = (FullHttpRequest) msg;
+            keepAlive = HttpUtil.isKeepAlive(request);
             super.channelRead(
                     ctx,
                     new DefaultHttp1Request(
@@ -80,13 +86,22 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
         if (CollectionUtils.isNotEmpty(statusHeaders)) {
             status = HttpResponseStatus.valueOf(Integer.parseInt(statusHeaders.get(0)));
         }
+        if (keepAlive) {
+            headers.add(HttpHeaderNames.CONNECTION.getKey(), String.valueOf(HttpHeaderValues.KEEP_ALIVE));
+        } else {
+            headers.add(HttpHeaderNames.CONNECTION.getKey(), String.valueOf(HttpHeaderValues.CLOSE));
+        }
         // process normal headers
         ctx.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, status, headers.getHeaders()), promise);
     }
 
     private void doWriteMessage(ChannelHandlerContext ctx, HttpOutputMessage msg, ChannelPromise promise) {
         if (HttpOutputMessage.EMPTY_MESSAGE == msg) {
-            ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, promise);
+            if (keepAlive) {
+                ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, promise);
+            } else {
+                ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, promise).addListener(ChannelFutureListener.CLOSE);
+            }
             return;
         }
         OutputStream body = msg.getBody();

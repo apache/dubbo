@@ -243,14 +243,7 @@ public class DefaultHttpRequest implements HttpRequest {
         String charset = this.charset;
         if (charset == null) {
             String contentType = contentType();
-            if (contentType == null) {
-                charset = StringUtils.EMPTY_STRING;
-            } else {
-                int index = contentType.lastIndexOf(HttpUtils.CHARSET_PREFIX);
-                charset = index == -1
-                        ? StringUtils.EMPTY_STRING
-                        : contentType.substring(index + 8).trim();
-            }
+            charset = HttpUtils.parseCharset(contentType);
             this.charset = charset;
         }
         return charset.isEmpty() ? null : charset;
@@ -287,7 +280,7 @@ public class DefaultHttpRequest implements HttpRequest {
         if (locales == null) {
             locales = HttpUtils.parseAcceptLanguage(headers.getFirst(HttpHeaderNames.CONTENT_LANGUAGE.getKey()));
             if (locales.isEmpty()) {
-                locales.add(Locale.getDefault());
+                locales = Collections.singletonList(Locale.getDefault());
             }
             this.locales = locales;
         }
@@ -300,7 +293,7 @@ public class DefaultHttpRequest implements HttpRequest {
         if (isHttp2()) {
             scheme = headers.getFirst(PseudoHeaderName.SCHEME.value());
         }
-        return scheme == null ? HttpConstants.HTTPS : scheme;
+        return scheme == null ? HttpConstants.HTTP : scheme;
     }
 
     @Override

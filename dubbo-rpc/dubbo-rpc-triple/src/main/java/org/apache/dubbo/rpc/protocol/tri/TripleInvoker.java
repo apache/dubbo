@@ -152,12 +152,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ServiceDescriptor serviceDescriptor = consumerModel.getServiceModel();
         MethodDescriptor methodDescriptor =
                 serviceDescriptor.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-        if (methodDescriptor == null
-                && RpcUtils.isGenericCall(
-                        ((RpcInvocation) invocation).getParameterTypesDesc(), invocation.getMethodName())) {
-            // Only reach when server generic
-            methodDescriptor = ServiceDescriptorInternalCache.genericService()
-                    .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        if (methodDescriptor == null) {
+            if (RpcUtils.isGenericCall(
+                    ((RpcInvocation) invocation).getParameterTypesDesc(), invocation.getMethodName())) {
+                // Only reach when server generic
+                methodDescriptor = ServiceDescriptorInternalCache.genericService()
+                        .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+            } else if (RpcUtils.isEcho(
+                    ((RpcInvocation) invocation).getParameterTypesDesc(), invocation.getMethodName())) {
+                methodDescriptor = ServiceDescriptorInternalCache.echoService()
+                        .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+            }
         }
         ExecutorService callbackExecutor =
                 isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
@@ -207,10 +212,20 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation, ClientCall call) {
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
-        StreamObserver<Object> responseObserver =
-                (StreamObserver<Object>) invocation.getArguments()[1];
-        final StreamObserver<Object> requestObserver = streamCall(call, request, responseObserver);
-        requestObserver.onNext(invocation.getArguments()[0]);
+        Object[] arguments = invocation.getArguments();
+        final StreamObserver<Object> requestObserver;
+        if (arguments.length == 2) {
+            StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[1];
+            requestObserver = streamCall(call, request, responseObserver);
+            requestObserver.onNext(invocation.getArguments()[0]);
+        } else if (arguments.length == 1) {
+            StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[0];
+            requestObserver = streamCall(call, request, responseObserver);
+            requestObserver.onNext(null);
+        } else {
+            throw new IllegalStateException(
+                    "The first parameter must be a StreamObserver when there are no parameters, or the second parameter must be a StreamObserver when there are parameters");
+        }
         requestObserver.onCompleted();
         return new AsyncRpcResult(CompletableFuture.completedFuture(new AppResponse()), invocation);
     }

@@ -19,17 +19,25 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AnnotationBaseArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.lang.annotation.Annotation;
 
 @Activate(onClass = "org.jboss.resteasy.annotations.Form")
 public class FormArgumentResolver implements AnnotationBaseArgumentResolver<Annotation> {
+
     @Override
     public Class<Annotation> accept() {
         return Annotations.Form.type();
+    }
+
+    @Override
+    public NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation) {
+        return new NamedValueMeta().setParamType(ParamType.Body);
     }
 
     @Override

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
-import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
@@ -54,7 +53,6 @@ final class ParamConverterFactory {
         }
     }
 
-    @Nullable
     @SuppressWarnings("unchecked")
     public <T> ParamConverter<T> getParamConverter(Class<T> type, Type genericType, Annotation[] annotations) {
         if (providers.isEmpty()) {

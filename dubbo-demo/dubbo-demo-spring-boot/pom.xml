@@ -19,8 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-demo</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>dubbo-demo-spring-boot</artifactId>
@@ -33,10 +34,12 @@
   </modules>
 
   <properties>
+    <source.level>1.8</source.level>
+    <target.level>1.8</target.level>
     <skip_maven_deploy>true</skip_maven_deploy>
     <spring-boot.version>2.7.18</spring-boot.version>
     <spring-boot-maven-plugin.version>2.7.18</spring-boot-maven-plugin.version>
-    <micrometer-core.version>1.13.6</micrometer-core.version>
+    <micrometer-core.version>1.14.6</micrometer-core.version>
   </properties>
 
   <dependencyManagement>

@@ -65,7 +65,7 @@ class RadixTreeTest extends Specification {
             tree.addPath("/update/{ruleId}", "a")
             tree.addPath("/update/{ruleId}/state", "b")
         expect:
-            tree.match(path).first.value == result
+            tree.match(path).get(0).value == result
         where:
             path                    | result
             '/update/1222222'       | 'a'

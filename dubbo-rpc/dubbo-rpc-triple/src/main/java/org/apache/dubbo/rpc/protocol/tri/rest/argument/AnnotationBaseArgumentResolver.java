@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.argument;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.lang.annotation.Annotation;
@@ -26,6 +27,8 @@ import java.lang.annotation.Annotation;
 public interface AnnotationBaseArgumentResolver<T extends Annotation> extends ArgumentResolver {
 
     Class<T> accept();
+
+    NamedValueMeta getNamedValueMeta(ParameterMeta parameter, AnnotationMeta<Annotation> annotation);
 
     Object resolve(ParameterMeta parameter, AnnotationMeta<T> annotation, HttpRequest request, HttpResponse response);
 

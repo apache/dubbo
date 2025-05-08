@@ -29,7 +29,7 @@ final class BasicRestToolKit extends AbstractRestToolKit {
 
     public BasicRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
-        binder = new BeanArgumentBinder(frameworkModel);
+        binder = new BeanArgumentBinder(argumentResolver);
     }
 
     @Override

@@ -17,8 +17,6 @@
 package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -45,7 +43,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
  * AbstractServer
  */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractServer.class);
+
     private Set<ExecutorService> executors = new ConcurrentHashSet<>();
     private InetSocketAddress localAddress;
     private InetSocketAddress bindAddress;
@@ -198,10 +196,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     @Override
     public void disconnected(Channel ch) throws RemotingException {
         if (getChannelsSize() == 0) {
-            logger.warn(
-                    INTERNAL_ERROR,
-                    "unknown error in remoting module",
-                    "",
+            logger.info(
                     "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);

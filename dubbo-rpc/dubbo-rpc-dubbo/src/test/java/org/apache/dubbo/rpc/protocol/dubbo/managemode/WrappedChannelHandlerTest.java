@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
@@ -135,6 +136,8 @@ class WrappedChannelHandlerTest {
         preferredExecutorService = handler.getPreferredExecutorService(response);
         Assertions.assertEquals(preferredExecutorService, executor);
         future.cancel();
+
+        FrameworkModel.destroyAll();
     }
 
     class BizChannelHandler extends MockedChannelHandler {

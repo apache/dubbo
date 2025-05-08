@@ -1,29 +1,13 @@
 # Dubbo Demo
 
-This directory contains basic usages of Dubbo to help Dubbo developers for debugging and smoke test purpose. If you are looking for Dubbo samples for study purpose, you should look into [here](https://github.com/apache/dubbo-samples) where you will find comprehensive usages for how to use Dubbo in different scenarios with the different features.
+This directory contains basic Dubbo usages to help Dubbo developers with debugging and smoke test purposes. Check [dubbo-samples](https://github.com/apache/dubbo-samples) repository for more examples that showcase Dubbo's rich features.
 
-## How To Build
+## Brief introduction
 
-To build all demo applications from the source code, simply step into '*dubbo-demo*' directory and use maven to build:
+1. **`dubbo-demo-api`**
+   This demo demonstrates the basic usage of Dubbo's RPC protocol, serving as a fundamental example. It showcases how to define and implement a simple RPC service using Dubbo, how to start a server that serves at a specified port and then a consumer that consumes the service. 
+2. **`dubbo-demo-springboot`**
+   This demo illustrates the integration of Dubbo with Spring Boot, showing how Dubbo services can be utilized and configured within a Spring Boot application. It demonstrates how to configure and manage Dubbo services seamlessly through Spring Boot, making it ideal for developers leveraging the popular Spring Boot framework.
+3. **`dubbo-demo-springboot-idl`**
+   This demo focuses on showcasing how to use Dubbo with Spring Boot when IDL (Interface Definition Language) files such as Proto files are available. It illustrates how developers can work with Dubbo services defined through IDL, integrating them into a Spring Boot application.
 
-```bash
-mvn clean package
-```
-
-After build completes, a couple of fat jars are generated under '*target*' directory under each module directories, for example: '*dubbo-demo-api-provider-${project.version}.jar*' can be found under the directory '*dubbo-demo/dubbo-demo-api/dubbo-demo-api-provider/target*'.
-
-## How To Run
-
-Since the generated artifacts are fat jars backed by spring boot maven plugin, they can be executed directly with '*java -jar*', and since multicast is used for service registration, a necessary system property '**-Djava.net.preferIPv4Stack=true**' is required in order to registry and discover the demo service properly. 
-
-Use '*dubbo-demo/dubbo-demo-api*' as an example, to start the provider '*dubbo-demo-api-provider*', execute the following command:
-
-```bash
-java -Djava.net.preferIPv4Stack=true -jar dubbo-demo-api-provider-${project.version}.jar
-```
-
-To run the consumer '*dubbo-demo-api-consumer*', execute the following command:
-
-```bash
-java -Djava.net.preferIPv4Stack=true -jar dubbo-demo-api-consumer-${project.version}.jar
-```

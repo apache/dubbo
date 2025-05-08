@@ -16,9 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.util;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -38,6 +42,7 @@ import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
@@ -59,13 +64,16 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
 public final class TypeUtils {
 
     private static final Set<Class<?>> SIMPLE_TYPES = new ConcurrentHashSet<>();
+    private static final List<String> SYSTEM_PREFIXES = new CopyOnWriteArrayList<>();
 
     static {
         Collections.addAll(
@@ -80,6 +88,8 @@ public final class TypeUtils {
                 Currency.class,
                 Pattern.class,
                 Class.class);
+
+        Collections.addAll(SYSTEM_PREFIXES, "java.", "javax.", "sun.", "com.sun.", "com.google.protobuf.");
     }
 
     private TypeUtils() {}
@@ -110,6 +120,42 @@ public final class TypeUtils {
             return true;
         }
         return false;
+    }
+
+    public static void addSimpleTypes(Class<?>... types) {
+        SIMPLE_TYPES.addAll(Arrays.asList(types));
+    }
+
+    public static List<String> getSystemPrefixes() {
+        return SYSTEM_PREFIXES;
+    }
+
+    public static void addSystemPrefixes(String... prefixes) {
+        for (String prefix : prefixes) {
+            if (StringUtils.isNotEmpty(prefix)) {
+                SYSTEM_PREFIXES.add(prefix);
+            }
+        }
+    }
+
+    public static boolean isSystemType(Class<?> type) {
+        String name = type.getName();
+        List<String> systemPrefixes = getSystemPrefixes();
+        for (int i = systemPrefixes.size() - 1; i >= 0; i--) {
+            String prefix = systemPrefixes.get(i);
+            if (prefix.charAt(0) == '!') {
+                if (name.regionMatches(0, prefix, 1, prefix.length() - 1)) {
+                    return false;
+                }
+            } else if (name.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isWrapperType(Class<?> type) {
+        return type == Optional.class || type == CompletableFuture.class || type == StreamObserver.class;
     }
 
     public static Class<?> getMapValueType(Class<?> targetClass) {
@@ -360,6 +406,97 @@ public final class TypeUtils {
             String name = type.getName();
             sb.append(name.charAt(name.lastIndexOf('.') + 1));
         }
+        return sb.toString();
+    }
+
+    public static String toTypeString(Type type) {
+        if (type instanceof Class) {
+            Class<?> clazz = (Class<?>) type;
+            return clazz.isArray() ? clazz.getComponentType().getName() + "[]" : clazz.getName();
+        }
+        StringBuilder result = new StringBuilder(32);
+        buildGenericTypeString(type, result);
+        return result.toString();
+    }
+
+    private static void buildGenericTypeString(Type type, StringBuilder sb) {
+        if (type instanceof Class<?>) {
+            Class<?> clazz = (Class<?>) type;
+            if (clazz.isArray()) {
+                buildGenericTypeString(clazz.getComponentType(), sb);
+                sb.append("[]");
+            } else {
+                sb.append(clazz.getName());
+            }
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pzType = (ParameterizedType) type;
+            Type[] typeArgs = pzType.getActualTypeArguments();
+            buildGenericTypeString(pzType.getRawType(), sb);
+            sb.append('<');
+            for (int i = 0, len = typeArgs.length; i < len; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                buildGenericTypeString(typeArgs[i], sb);
+            }
+            sb.append('>');
+        } else if (type instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) type;
+            Type[] upperBounds = wildcardType.getUpperBounds();
+            Type[] lowerBounds = wildcardType.getLowerBounds();
+            if (lowerBounds.length > 0) {
+                sb.append("? super ");
+                buildGenericTypeString(lowerBounds[0], sb);
+            } else if (upperBounds.length > 0 && upperBounds[0] != Object.class) {
+                sb.append("? extends ");
+                buildGenericTypeString(upperBounds[0], sb);
+            } else {
+                sb.append('?');
+            }
+        } else if (type instanceof GenericArrayType) {
+            GenericArrayType genericArrayType = (GenericArrayType) type;
+            buildGenericTypeString(genericArrayType.getGenericComponentType(), sb);
+            sb.append("[]");
+        } else if (type instanceof TypeVariable) {
+            TypeVariable<?> typeVariable = (TypeVariable<?>) type;
+            sb.append(typeVariable.getName());
+            Type[] bounds = typeVariable.getBounds();
+            int len = bounds.length;
+            if (len > 0 && !(len == 1 && bounds[0] == Object.class)) {
+                sb.append(" extends ");
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(" & ");
+                    }
+                    buildGenericTypeString(bounds[i], sb);
+                }
+            }
+        } else {
+            sb.append(type.toString());
+        }
+    }
+
+    public static Object getMethodDescriptor(MethodMeta methodMeta) {
+        StringBuilder sb = new StringBuilder(64);
+        sb.append(toTypeString(methodMeta.getGenericReturnType()))
+                .append(' ')
+                .append(methodMeta.getMethod().getName())
+                .append('(');
+        ParameterMeta[] parameters = methodMeta.getParameters();
+        for (int i = 0, len = parameters.length; i < len; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            ParameterMeta paramMeta = parameters[i];
+            String name = paramMeta.getName();
+            sb.append(toTypeString(paramMeta.getGenericType())).append(' ');
+            if (name == null) {
+                sb.append("arg").append(i + 1);
+            } else {
+                sb.append(name);
+            }
+        }
+        sb.append(')');
         return sb.toString();
     }
 }

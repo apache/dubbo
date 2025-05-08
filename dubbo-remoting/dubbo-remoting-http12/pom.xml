@@ -46,10 +46,6 @@
       <artifactId>dubbo-remoting-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java-util</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>io.netty</groupId>
@@ -58,6 +54,12 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-codec-http2</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java-util</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>

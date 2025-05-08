@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.h3.negotiation;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -33,11 +32,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
-import static org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger;
 
 public class AutoSwitchConnectionClient extends AbstractConnectionClient {
 
-    private static final ErrorTypeAwareLogger LOGGER = getErrorTypeAwareLogger(AutoSwitchConnectionClient.class);
     private static final int MAX_RETRIES = 8;
 
     private final URL url;
@@ -58,8 +55,8 @@ public class AutoSwitchConnectionClient extends AbstractConnectionClient {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         connectionClient.addConnectedListener(() -> ClassUtils.runWith(tccl, () -> executor.execute(this::negotiate)));
         increase();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(
+        if (logger.isInfoEnabled()) {
+            logger.info(
                     "Start HTTP/3 AutoSwitchConnectionClient {} connect to the server {}",
                     NetUtils.getLocalAddress(),
                     url.toInetSocketAddress());
@@ -80,14 +77,14 @@ public class AutoSwitchConnectionClient extends AbstractConnectionClient {
         if (clientCall == null) {
             clientCall = new NegotiateClientCall(connectionClient, executor);
         }
-        LOGGER.info("Start HTTP/3 negotiation for [{}]", getBaseUrl());
+        logger.info("Start HTTP/3 negotiation for [{}]", getBaseUrl());
         clientCall.start(url).whenComplete((altSvc, t) -> {
             if (t == null) {
                 if (altSvc.contains("h3=")) {
                     negotiateSuccess();
                     return;
                 }
-                LOGGER.info(
+                logger.info(
                         "HTTP/3 negotiation succeed, but provider reply alt-svc='{}' not support HTTP/3 for [{}]",
                         altSvc,
                         getBaseUrl());
@@ -101,7 +98,7 @@ public class AutoSwitchConnectionClient extends AbstractConnectionClient {
 
     private void negotiateSuccess() {
         negotiated = true;
-        LOGGER.info("HTTP/3 negotiation succeed for [{}], create http3 client", getBaseUrl());
+        logger.info("HTTP/3 negotiation succeed for [{}], create http3 client", getBaseUrl());
         http3ConnectionClient = Helper.createHttp3Client(url, connectionClient.getDelegateHandler());
         http3ConnectionClient.addConnectedListener(() -> setHttp3Connected(true));
         http3ConnectionClient.addDisconnectedListener(() -> setHttp3Connected(false));
@@ -111,11 +108,11 @@ public class AutoSwitchConnectionClient extends AbstractConnectionClient {
     private void reScheduleNegotiate(Throwable t) {
         if (attempt++ < MAX_RETRIES) {
             int delay = 1 << attempt + 2;
-            LOGGER.info("HTTP/3 negotiation failed, retry after {} seconds for [{}]", delay, getBaseUrl(), t);
+            logger.info("HTTP/3 negotiation failed, retry after {} seconds for [{}]", delay, getBaseUrl(), t);
             executor.schedule(this::negotiate, delay, TimeUnit.SECONDS);
             return;
         }
-        LOGGER.warn(
+        logger.warn(
                 PROTOCOL_ERROR_CLOSE_CLIENT,
                 "",
                 "",
@@ -133,7 +130,7 @@ public class AutoSwitchConnectionClient extends AbstractConnectionClient {
 
     private void setHttp3Connected(boolean http3Connected) {
         this.http3Connected = http3Connected;
-        LOGGER.info("Switch protocol to {} for [{}]", http3Connected ? "HTTP/3" : "HTTP/2", url.toString(""));
+        logger.info("Switch protocol to {} for [{}]", http3Connected ? "HTTP/3" : "HTTP/2", url.toString(""));
     }
 
     public boolean isHttp3Connected() {
@@ -155,13 +152,13 @@ public class AutoSwitchConnectionClient extends AbstractConnectionClient {
         try {
             connectionClient.release();
         } catch (Throwable t) {
-            LOGGER.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
+            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
         }
         if (http3ConnectionClient != null) {
             try {
                 http3ConnectionClient.release();
             } catch (Throwable t) {
-                LOGGER.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
+                logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
             }
         }
         return true;

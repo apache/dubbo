@@ -94,7 +94,7 @@ public final class ServiceMeta extends AnnotationSupport {
     }
 
     @Override
-    protected List<? extends AnnotatedElement> getAnnotatedElements() {
+    public List<? extends AnnotatedElement> getAnnotatedElements() {
         return hierarchy;
     }
 

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import java.lang.annotation.Annotation;
@@ -32,12 +31,12 @@ import java.util.Optional;
 public abstract class AnnotationSupport {
 
     private static final AnnotationMeta[] EMPTY = new AnnotationMeta[0];
-    private static final Integer GET_KEY = 1;
-    private static final Integer GET_MERGED_KEY = 2;
-    private static final Integer FIND_KEY = 3;
-    private static final Integer FIND_MERGED_KEY = 4;
+    private static final int GET_KEY = 1;
+    private static final int GET_MERGED_KEY = 2;
+    private static final int FIND_KEY = 3;
+    private static final int FIND_MERGED_KEY = 4;
 
-    private final Map<Pair<Class, Integer>, Optional<AnnotationMeta>> cache = CollectionUtils.newConcurrentHashMap();
+    private final Map<Key, Optional<AnnotationMeta>> cache = CollectionUtils.newConcurrentHashMap();
     private final Map<Integer, AnnotationMeta[]> arrayCache = CollectionUtils.newConcurrentHashMap();
     private final RestToolKit toolKit;
 
@@ -72,7 +71,7 @@ public abstract class AnnotationSupport {
     }
 
     public final <A extends Annotation> AnnotationMeta<A> getAnnotation(Class<A> annotationType) {
-        return cache.computeIfAbsent(Pair.of(annotationType, GET_KEY), k -> {
+        return cache.computeIfAbsent(new Key(annotationType, GET_KEY), k -> {
                     AnnotatedElement element = getAnnotatedElement();
                     Annotation annotation = element.getAnnotation(annotationType);
                     if (annotation != null) {
@@ -96,7 +95,7 @@ public abstract class AnnotationSupport {
     }
 
     public final <A extends Annotation> AnnotationMeta<A> getMergedAnnotation(Class<A> annotationType) {
-        return cache.computeIfAbsent(Pair.of(annotationType, GET_MERGED_KEY), k -> {
+        return cache.computeIfAbsent(new Key(annotationType, GET_MERGED_KEY), k -> {
                     AnnotatedElement element = getAnnotatedElement();
                     Annotation[] annotations = element.getAnnotations();
                     for (Annotation annotation : annotations) {
@@ -144,7 +143,7 @@ public abstract class AnnotationSupport {
     }
 
     public final <A extends Annotation> AnnotationMeta<A> findAnnotation(Class<A> annotationType) {
-        return cache.computeIfAbsent(Pair.of(annotationType, FIND_KEY), k -> {
+        return cache.computeIfAbsent(new Key(annotationType, FIND_KEY), k -> {
                     List<? extends AnnotatedElement> elements = getAnnotatedElements();
                     for (int i = 0, size = elements.size(); i < size; i++) {
                         AnnotatedElement element = elements.get(i);
@@ -171,7 +170,7 @@ public abstract class AnnotationSupport {
     }
 
     public final <A extends Annotation> AnnotationMeta<A> findMergedAnnotation(Class<A> annotationType) {
-        return cache.computeIfAbsent(Pair.of(annotationType, FIND_MERGED_KEY), k -> {
+        return cache.computeIfAbsent(new Key(annotationType, FIND_MERGED_KEY), k -> {
                     List<? extends AnnotatedElement> elements = getAnnotatedElements();
                     for (int i = 0, size = elements.size(); i < size; i++) {
                         AnnotatedElement element = elements.get(i);
@@ -208,8 +207,31 @@ public abstract class AnnotationSupport {
         return toolKit;
     }
 
-    protected List<? extends AnnotatedElement> getAnnotatedElements() {
+    public List<? extends AnnotatedElement> getAnnotatedElements() {
         return Collections.singletonList(getAnnotatedElement());
+    }
+
+    private static final class Key {
+
+        private final Class<? extends Annotation> annotationType;
+        private final int type;
+
+        Key(Class<? extends Annotation> annotationType, int type) {
+            this.annotationType = annotationType;
+            this.type = type;
+        }
+
+        @Override
+        public int hashCode() {
+            return (annotationType.hashCode() << 2) + type;
+        }
+
+        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass", "EqualsDoesntCheckParameterClass"})
+        @Override
+        public boolean equals(Object obj) {
+            Key other = (Key) obj;
+            return annotationType == other.annotationType && type == other.type;
+        }
     }
 
     protected abstract AnnotatedElement getAnnotatedElement();

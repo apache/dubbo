@@ -52,6 +52,8 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
     void exportMetadataService();
 
+    void registerServiceInstance();
+
     /**
      * Register application instance and start internal services
      */

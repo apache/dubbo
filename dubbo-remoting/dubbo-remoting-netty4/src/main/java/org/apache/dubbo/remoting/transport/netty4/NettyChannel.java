@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,6 +45,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.EncoderException;
+import io.netty.util.ReferenceCountUtil;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ENCODE_IN_IO_THREAD;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -73,16 +75,16 @@ final class NettyChannel extends AbstractChannel {
 
     private final Netty4BatchWriteQueue writeQueue;
 
-    private Codec2 codec;
-
     private final boolean encodeInIOThread;
+
+    private Codec2 codec;
 
     /**
      * The constructor of NettyChannel.
      * It is private so NettyChannel usually create by {@link NettyChannel#getOrAddChannel(Channel, URL, ChannelHandler)}
      *
      * @param channel netty channel
-     * @param url
+     * @param url     dubbo url
      * @param handler dubbo handler that contain netty handler
      */
     private NettyChannel(Channel channel, URL url, ChannelHandler handler) {
@@ -94,6 +96,7 @@ final class NettyChannel extends AbstractChannel {
         this.writeQueue = Netty4BatchWriteQueue.createWriteQueue(channel);
         this.codec = getChannelCodec(url);
         this.encodeInIOThread = getUrl().getParameter(ENCODE_IN_IO_THREAD_KEY, DEFAULT_ENCODE_IN_IO_THREAD);
+        AddressUtils.initAddressIfNecessary(this);
     }
 
     /**
@@ -101,9 +104,8 @@ final class NettyChannel extends AbstractChannel {
      * Put netty channel into it if dubbo channel don't exist in the cache.
      *
      * @param ch      netty channel
-     * @param url
+     * @param url     dubbo url
      * @param handler dubbo handler that contain netty's handler
-     * @return
      */
     static NettyChannel getOrAddChannel(Channel ch, URL url, ChannelHandler handler) {
         if (ch == null) {
@@ -150,12 +152,20 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public InetSocketAddress getLocalAddress() {
-        return AddressUtils.getLocalAddress(channel);
+        return AddressUtils.getLocalAddress(this);
     }
 
     @Override
     public InetSocketAddress getRemoteAddress() {
-        return AddressUtils.getRemoteAddress(channel);
+        return AddressUtils.getRemoteAddress(this);
+    }
+
+    public String getLocalAddressKey() {
+        return AddressUtils.getLocalAddressKey(this);
+    }
+
+    public String getRemoteAddressKey() {
+        return AddressUtils.getRemoteAddressKey(this);
     }
 
     @Override
@@ -172,7 +182,7 @@ final class NettyChannel extends AbstractChannel {
     }
 
     /**
-     * Send message by netty and whether to wait the completion of the send.
+     * Send message by netty and whether to wait the completion of the sending.
      *
      * @param message message that need send.
      * @param sent    whether to ack async-sent
@@ -185,31 +195,29 @@ final class NettyChannel extends AbstractChannel {
 
         boolean success = true;
         int timeout = 0;
+        ByteBuf buf = null;
         try {
             Object outputMessage = message;
             if (!encodeInIOThread) {
-                ByteBuf buf = channel.alloc().buffer();
+                buf = channel.alloc().buffer();
                 ChannelBuffer buffer = new NettyBackedChannelBuffer(buf);
                 codec.encode(this, buffer, message);
                 outputMessage = buf;
             }
-            ChannelFuture future = writeQueue.enqueue(outputMessage).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    if (!(message instanceof Request)) {
+            ChannelFuture future = writeQueue.enqueue(outputMessage).addListener((ChannelFutureListener) f -> {
+                if (!(message instanceof Request)) {
+                    return;
+                }
+                ChannelHandler handler = getChannelHandler();
+                if (f.isSuccess()) {
+                    handler.sent(NettyChannel.this, message);
+                } else {
+                    Throwable t = f.cause();
+                    if (t == null) {
                         return;
                     }
-                    ChannelHandler handler = getChannelHandler();
-                    if (future.isSuccess()) {
-                        handler.sent(NettyChannel.this, message);
-                    } else {
-                        Throwable t = future.cause();
-                        if (t == null) {
-                            return;
-                        }
-                        Response response = buildErrorResponse((Request) message, t);
-                        handler.received(NettyChannel.this, response);
-                    }
+                    Response response = buildErrorResponse((Request) message, t);
+                    handler.received(NettyChannel.this, response);
                 }
             });
 
@@ -224,6 +232,10 @@ final class NettyChannel extends AbstractChannel {
             }
         } catch (Throwable e) {
             removeChannelIfDisconnected(channel);
+            if (buf != null) {
+                // Release the ByteBuf if an exception occurs
+                ReferenceCountUtil.safeRelease(buf);
+            }
             throw new RemotingException(
                     this,
                     "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "
@@ -318,18 +330,7 @@ final class NettyChannel extends AbstractChannel {
             return channel.equals(client.getNettyChannel());
         }
 
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        NettyChannel other = (NettyChannel) obj;
-        if (channel == null) {
-            if (other.channel != null) {
-                return false;
-            }
-        } else if (!channel.equals(other.channel)) {
-            return false;
-        }
-        return true;
+        return getClass() == obj.getClass() && Objects.equals(channel, ((NettyChannel) obj).channel);
     }
 
     @Override
@@ -359,6 +360,7 @@ final class NettyChannel extends AbstractChannel {
         return response;
     }
 
+    @SuppressWarnings("deprecation")
     private static Codec2 getChannelCodec(URL url) {
         String codecName = url.getParameter(Constants.CODEC_KEY);
         if (StringUtils.isEmpty(codecName)) {

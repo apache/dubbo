@@ -24,6 +24,8 @@ public enum HttpHeaderNames {
 
     PATH(PseudoHeaderName.PATH.value()),
 
+    METHOD(PseudoHeaderName.METHOD.value()),
+
     ACCEPT(io.netty.handler.codec.http.HttpHeaderNames.ACCEPT),
 
     CONTENT_TYPE(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE),
@@ -47,6 +49,8 @@ public enum HttpHeaderNames {
     LAST_MODIFIED(io.netty.handler.codec.http.HttpHeaderNames.LAST_MODIFIED),
 
     TE(io.netty.handler.codec.http.HttpHeaderNames.TE),
+
+    CONNECTION(io.netty.handler.codec.http.HttpHeaderNames.CONNECTION),
 
     ALT_SVC("alt-svc");
 

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.h3.grpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http3.Http3ServerTransportListenerFactory;
@@ -24,7 +25,7 @@ import org.apache.dubbo.remoting.http3.Http3TransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
 
-@Activate(order = -100, onClass = "com.google.protobuf.Message")
+@Activate(order = -100, onClass = CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME)
 public class GrpcHttp3ServerTransportListenerFactory implements Http3ServerTransportListenerFactory {
 
     @Override

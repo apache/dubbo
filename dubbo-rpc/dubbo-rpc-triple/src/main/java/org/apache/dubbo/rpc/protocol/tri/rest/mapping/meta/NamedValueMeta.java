@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
 
@@ -25,13 +26,16 @@ import java.util.Arrays;
 
 public class NamedValueMeta {
 
+    public static final NamedValueMeta EMPTY = new NamedValueMeta();
+
     private String name;
     private final boolean required;
     private final String defaultValue;
+    private ParamType paramType;
     private Class<?> type;
     private Type genericType;
     private Class<?>[] nestedTypes;
-    private ParameterMeta parameterMeta;
+    private ParameterMeta parameter;
 
     public NamedValueMeta(String name, boolean required, String defaultValue) {
         this.name = name;
@@ -39,10 +43,15 @@ public class NamedValueMeta {
         this.defaultValue = defaultValue;
     }
 
-    public NamedValueMeta(boolean required, String defaultValue) {
-        name = null;
+    public NamedValueMeta(String name, boolean required) {
+        this.name = name;
         this.required = required;
-        this.defaultValue = defaultValue;
+        defaultValue = null;
+    }
+
+    public NamedValueMeta() {
+        required = false;
+        defaultValue = null;
     }
 
     public String name() {
@@ -52,8 +61,9 @@ public class NamedValueMeta {
         return name;
     }
 
-    public void setName(String name) {
+    public NamedValueMeta setName(String name) {
         this.name = name;
+        return this;
     }
 
     public boolean isNameEmpty() {
@@ -68,20 +78,40 @@ public class NamedValueMeta {
         return defaultValue;
     }
 
+    public ParamType paramType() {
+        return paramType;
+    }
+
+    public NamedValueMeta setParamType(ParamType paramType) {
+        this.paramType = paramType;
+        return this;
+    }
+
     public Class<?> type() {
         return type;
     }
 
-    public void setType(Class<?> type) {
+    public NamedValueMeta setType(Class<?> type) {
         this.type = type;
+        return this;
     }
 
     public Type genericType() {
         return genericType;
     }
 
-    public void setGenericType(Type genericType) {
+    public NamedValueMeta setGenericType(Type genericType) {
         this.genericType = genericType;
+        return this;
+    }
+
+    public Class<?>[] nestedTypes() {
+        return nestedTypes;
+    }
+
+    public NamedValueMeta setNestedTypes(Class<?>[] nestedTypes) {
+        this.nestedTypes = nestedTypes;
+        return this;
     }
 
     public Class<?> nestedType() {
@@ -92,20 +122,13 @@ public class NamedValueMeta {
         return nestedTypes == null || nestedTypes.length <= index ? null : nestedTypes[index];
     }
 
-    public Class<?>[] nestedTypes() {
-        return nestedTypes;
+    public ParameterMeta parameter() {
+        return parameter;
     }
 
-    public void setNestedTypes(Class<?>[] nestedTypes) {
-        this.nestedTypes = nestedTypes;
-    }
-
-    public ParameterMeta parameterMeta() {
-        return parameterMeta;
-    }
-
-    public void setParameterMeta(ParameterMeta parameterMeta) {
-        this.parameterMeta = parameterMeta;
+    public NamedValueMeta setParameter(ParameterMeta parameter) {
+        this.parameter = parameter;
+        return this;
     }
 
     @Override
@@ -117,6 +140,9 @@ public class NamedValueMeta {
         }
         if (defaultValue != null) {
             sb.append(", defaultValue='").append(defaultValue).append('\'');
+        }
+        if (paramType != null) {
+            sb.append(", paramType=").append(paramType);
         }
         if (type != null) {
             sb.append(", type=").append(type);

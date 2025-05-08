@@ -22,10 +22,10 @@ import org.apache.dubbo.qos.command.util.SerializeCheckUtils;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class QosScopeModelInitializer implements ScopeModelInitializer {
+
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
@@ -38,7 +38,4 @@ public class QosScopeModelInitializer implements ScopeModelInitializer {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.registerBean(ActuatorCommandExecutor.class);
     }
-
-    @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

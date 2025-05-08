@@ -110,8 +110,11 @@ public interface Constants {
 
     String H2_SETTINGS_JSON_FRAMEWORK_NAME = "dubbo.protocol.triple.rest.json-framework";
     String H2_SETTINGS_DISALLOWED_CONTENT_TYPES = "dubbo.protocol.triple.rest.disallowed-content-types";
+    String H2_SETTINGS_OPENAPI_PREFIX = "dubbo.protocol.triple.rest.openapi";
 
     String H2_SETTINGS_VERBOSE_ENABLED = "dubbo.protocol.triple.verbose";
+    String H2_SETTINGS_REST_ENABLED = "dubbo.protocol.triple.rest.enabled";
+    String H2_SETTINGS_OPENAPI_ENABLED = "dubbo.protocol.triple.rest.openapi.enabled";
     String H2_SETTINGS_SERVLET_ENABLED = "dubbo.protocol.triple.servlet.enabled";
     String H3_SETTINGS_HTTP3_ENABLED = "dubbo.protocol.triple.http3.enabled";
     String H3_SETTINGS_HTTP3_NEGOTIATION = "dubbo.protocol.triple.http3.negotiation";

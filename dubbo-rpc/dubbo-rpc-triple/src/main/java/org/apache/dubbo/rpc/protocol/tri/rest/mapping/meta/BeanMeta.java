@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.remoting.http12.rest.Param;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
@@ -31,47 +32,88 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public final class BeanMeta {
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Message;
 
-    private final Map<String, FieldMeta> fields = new LinkedHashMap<>();
-    private final Map<String, SetMethodMeta> methods = new LinkedHashMap<>();
-    private final ConstructorMeta constructor;
+public final class BeanMeta extends ParameterMeta {
+
+    private static final boolean HAS_PB = ClassUtils.hasProtobuf();
+
+    private final Class<?> type;
+    private final boolean flatten;
+    private ConstructorMeta constructor;
+    private Map<String, PropertyMeta> propertyMap;
+
+    public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type, boolean flatten) {
+        super(toolKit, prefix, null);
+        this.type = type;
+        this.flatten = flatten;
+    }
+
+    public BeanMeta(RestToolKit toolKit, Class<?> type, boolean flatten) {
+        this(toolKit, null, type, flatten);
+    }
 
     public BeanMeta(RestToolKit toolKit, String prefix, Class<?> type) {
-        constructor = resolveConstructor(toolKit, prefix, type);
-        resolveFieldAndMethod(toolKit, prefix, type);
+        this(toolKit, prefix, type, true);
     }
 
     public BeanMeta(RestToolKit toolKit, Class<?> type) {
-        this(toolKit, null, type);
+        this(toolKit, null, type, true);
     }
 
-    public Collection<FieldMeta> getFields() {
-        return fields.values();
+    @Override
+    public Class<?> getType() {
+        return type;
     }
 
-    public FieldMeta getField(String name) {
-        return fields.get(name);
+    @Override
+    public Type getGenericType() {
+        return type;
     }
 
-    public Collection<SetMethodMeta> getMethods() {
-        return methods.values();
-    }
-
-    public SetMethodMeta getMethod(String name) {
-        return methods.get(name);
+    @Override
+    protected AnnotatedElement getAnnotatedElement() {
+        return type;
     }
 
     public ConstructorMeta getConstructor() {
+        if (constructor == null) {
+            constructor = resolveConstructor(getToolKit(), getPrefix(), type);
+        }
         return constructor;
     }
 
+    public Collection<PropertyMeta> getProperties() {
+        return getPropertiesMap().values();
+    }
+
+    public PropertyMeta getProperty(String name) {
+        return getPropertiesMap().get(name);
+    }
+
+    private Map<String, PropertyMeta> getPropertiesMap() {
+        Map<String, PropertyMeta> propertyMap = this.propertyMap;
+        if (propertyMap == null) {
+            propertyMap = new LinkedHashMap<>();
+            resolvePropertyMap(getToolKit(), getPrefix(), type, flatten, propertyMap);
+            this.propertyMap = propertyMap;
+        }
+        return propertyMap;
+    }
+
     public Object newInstance() {
-        return constructor.newInstance();
+        return getConstructor().newInstance();
     }
 
     public static ConstructorMeta resolveConstructor(RestToolKit toolKit, String prefix, Class<?> type) {
@@ -91,46 +133,98 @@ public final class BeanMeta {
         return new ConstructorMeta(toolKit, prefix, ct);
     }
 
-    private void resolveFieldAndMethod(RestToolKit toolKit, String prefix, Class<?> type) {
-        if (type == Object.class) {
+    public static void resolvePropertyMap(
+            RestToolKit toolKit, String prefix, Class<?> type, boolean flatten, Map<String, PropertyMeta> propertyMap) {
+        if (type == null || type == Object.class || TypeUtils.isSystemType(type)) {
             return;
         }
-        for (Field field : type.getDeclaredFields()) {
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
-                continue;
+
+        Set<String> pbFields = null;
+        if (HAS_PB && Message.class.isAssignableFrom(type)) {
+            try {
+                Descriptor descriptor =
+                        (Descriptor) type.getMethod("getDescriptor").invoke(null);
+                pbFields = descriptor.getFields().stream()
+                        .map(FieldDescriptor::getName)
+                        .collect(Collectors.toSet());
+            } catch (Exception ignored) {
             }
-            if (field.getAnnotations().length == 0) {
-                continue;
-            }
-            if (!field.isAccessible()) {
-                field.setAccessible(true);
-            }
-            FieldMeta fieldMeta = new FieldMeta(toolKit, prefix, field);
-            fields.put(fieldMeta.getName(), fieldMeta);
         }
-        for (Method method : type.getDeclaredMethods()) {
-            if (method.getParameterCount() != 1) {
-                continue;
+
+        Set<String> allNames = new LinkedHashSet<>();
+        Map<String, Field> fieldMap = new LinkedHashMap<>();
+        if (pbFields == null) {
+            for (Field field : type.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())
+                        || Modifier.isTransient(field.getModifiers())
+                        || field.isSynthetic()) {
+                    continue;
+                }
+                if (!field.isAccessible()) {
+                    field.setAccessible(true);
+                }
+                fieldMap.put(field.getName(), field);
+                allNames.add(field.getName());
             }
+        }
+
+        Map<String, Method> getMethodMap = new LinkedHashMap<>();
+        Map<String, Method> setMethodMap = new LinkedHashMap<>();
+        for (Method method : type.getDeclaredMethods()) {
             int modifiers = method.getModifiers();
             if ((modifiers & (Modifier.PUBLIC | Modifier.ABSTRACT | Modifier.STATIC)) == Modifier.PUBLIC) {
-                Parameter parameter = method.getParameters()[0];
                 String name = method.getName();
-                if (name.length() > 3 && name.startsWith("set")) {
-                    String getMethodName = "get" + name.substring(3);
-                    Method getMethod = null;
-                    try {
-                        getMethod = type.getDeclaredMethod(getMethodName);
-                    } catch (NoSuchMethodException ignored) {
+                int count = method.getParameterCount();
+                if (count == 0) {
+                    Class<?> returnType = method.getReturnType();
+                    if (returnType == Void.TYPE) {
+                        continue;
                     }
-                    name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
-                    SetMethodMeta methodMeta = new SetMethodMeta(toolKit, method, getMethod, parameter, prefix, name);
-                    methods.put(methodMeta.getName(), methodMeta);
+                    if (name.length() > 3 && name.startsWith("get")) {
+                        name = toName(name, 3);
+                        if (pbFields == null || pbFields.contains(name)) {
+                            getMethodMap.put(name, method);
+                            allNames.add(name);
+                        }
+                    } else if (name.length() > 2 && name.startsWith("is") && returnType == Boolean.TYPE) {
+                        if (pbFields == null || pbFields.contains(name)) {
+                            name = toName(name, 2);
+                            getMethodMap.put(name, method);
+                            allNames.add(name);
+                        }
+                    } else if (fieldMap.containsKey(name)) {
+                        // For record class
+                        getMethodMap.put(name, method);
+                        allNames.add(name);
+                    }
+                } else if (count == 1) {
+                    if (name.length() > 3 && name.startsWith("set")) {
+                        name = toName(name, 3);
+                        setMethodMap.put(name, method);
+                        allNames.add(name);
+                    }
                 }
             }
         }
-        resolveFieldAndMethod(toolKit, prefix, type.getSuperclass());
+
+        for (String name : allNames) {
+            Field field = fieldMap.get(name);
+            Method getMethod = getMethodMap.get(name);
+            Method setMethod = setMethodMap.get(name);
+            int visibility = pbFields == null
+                    ? (setMethod == null ? 0 : 1) << 2 | (getMethod == null ? 0 : 1) << 1 | (field == null ? 0 : 1)
+                    : 0b011;
+            PropertyMeta meta = new PropertyMeta(toolKit, field, getMethod, setMethod, prefix, name, visibility);
+            propertyMap.put(meta.getName(), meta);
+        }
+
+        if (flatten) {
+            resolvePropertyMap(toolKit, prefix, type.getSuperclass(), true, propertyMap);
+        }
+    }
+
+    private static String toName(String name, int index) {
+        return Character.toLowerCase(name.charAt(index)) + name.substring(index + 1);
     }
 
     public static final class ConstructorMeta {
@@ -150,9 +244,14 @@ public final class BeanMeta {
         private ConstructorParameterMeta[] initParameters(RestToolKit toolKit, String prefix, Constructor<?> ct) {
             Parameter[] cps = ct.getParameters();
             int len = cps.length;
+            if (len == 0) {
+                return new ConstructorParameterMeta[0];
+            }
+            String[] parameterNames = toolKit == null ? null : toolKit.getParameterNames(ct);
             ConstructorParameterMeta[] parameters = new ConstructorParameterMeta[len];
             for (int i = 0; i < len; i++) {
-                parameters[i] = new ConstructorParameterMeta(toolKit, cps[i], prefix);
+                String parameterName = parameterNames == null ? null : parameterNames[i];
+                parameters[i] = new ConstructorParameterMeta(toolKit, cps[i], prefix, parameterName);
             }
             return parameters;
         }
@@ -170,8 +269,8 @@ public final class BeanMeta {
 
         private final Parameter parameter;
 
-        ConstructorParameterMeta(RestToolKit toolKit, Parameter parameter, String prefix) {
-            super(toolKit, prefix, parameter.isNamePresent() ? parameter.getName() : null);
+        ConstructorParameterMeta(RestToolKit toolKit, Parameter parameter, String prefix, String name) {
+            super(toolKit, prefix, name == null && parameter.isNamePresent() ? parameter.getName() : name);
             this.parameter = parameter;
         }
 
@@ -222,11 +321,11 @@ public final class BeanMeta {
             return name;
         }
 
-        public void setValue(Object bean, Object value) {}
-
         public Object getValue(Object bean) {
             return null;
         }
+
+        public void setValue(Object bean, Object value) {}
 
         public final NestableParameterMeta getNestedMeta() {
             return nestedMeta;
@@ -251,104 +350,132 @@ public final class BeanMeta {
         }
     }
 
-    public static final class FieldMeta extends NestableParameterMeta {
+    public static final class PropertyMeta extends NestableParameterMeta {
 
         private final Field field;
+        private final Method getMethod;
+        private final Method setMethod;
+        private final Parameter parameter;
+        private final int visibility;
 
-        FieldMeta(RestToolKit toolKit, String prefix, Field field) {
-            super(toolKit, prefix, field.getName());
-            this.field = field;
+        PropertyMeta(RestToolKit toolKit, Field f, Method gm, Method sm, String prefix, String name, int visibility) {
+            super(toolKit, prefix, name);
+            this.visibility = visibility;
+            field = f;
+            getMethod = gm;
+            setMethod = sm;
+            parameter = setMethod == null ? null : setMethod.getParameters()[0];
             initNestedMeta();
         }
 
-        @Override
-        public Class<?> getType() {
-            return field.getType();
+        public int getVisibility() {
+            return visibility;
         }
 
-        @Override
-        public Type getGenericType() {
-            return field.getGenericType();
-        }
-
-        @Override
-        protected AnnotatedElement getAnnotatedElement() {
+        public Field getField() {
             return field;
         }
 
-        public void setValue(Object bean, Object value) {
-            try {
-                field.set(bean, value);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
-            }
+        public Method getGetMethod() {
+            return getMethod;
         }
 
-        public Object getValue(Object bean) {
-            try {
-                return field.get(bean);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
-            }
+        public Method getSetMethod() {
+            return setMethod;
         }
 
-        @Override
-        public String getDescription() {
-            return "FieldParameter{" + field + '}';
-        }
-    }
-
-    public static final class SetMethodMeta extends NestableParameterMeta {
-
-        private final Method method;
-        private final Method getMethod;
-        private final Parameter parameter;
-
-        SetMethodMeta(RestToolKit toolKit, Method m, Method gm, Parameter p, String prefix, String name) {
-            super(toolKit, prefix, name);
-            method = m;
-            getMethod = gm;
-            parameter = p;
-            initNestedMeta();
+        public Parameter getParameter() {
+            return parameter;
         }
 
         @Override
         public Class<?> getType() {
-            return parameter.getType();
+            if (field != null) {
+                return field.getType();
+            }
+            if (parameter != null) {
+                return parameter.getType();
+            }
+            return getMethod.getReturnType();
         }
 
         @Override
         public Type getGenericType() {
-            return parameter.getParameterizedType();
+            if (field != null) {
+                return field.getGenericType();
+            }
+            if (parameter != null) {
+                return parameter.getParameterizedType();
+            }
+            return getMethod.getGenericReturnType();
         }
 
         @Override
         protected AnnotatedElement getAnnotatedElement() {
-            return parameter;
+            if (field != null) {
+                return field;
+            }
+            if (parameter != null) {
+                return parameter;
+            }
+            return getMethod;
         }
 
-        public void setValue(Object bean, Object value) {
-            try {
-                method.invoke(bean, value);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
+        @Override
+        public List<? extends AnnotatedElement> getAnnotatedElements() {
+            List<AnnotatedElement> elements = new ArrayList<>(3);
+            if (field != null) {
+                elements.add(field);
             }
+            if (parameter != null) {
+                elements.add(parameter);
+            }
+            if (getMethod != null) {
+                elements.add(getMethod);
+            }
+            return elements;
         }
 
         public Object getValue(Object bean) {
-            if (getMethod == null) {
-                return null;
+            if (getMethod != null) {
+                try {
+                    return getMethod.invoke(bean);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
+            } else if (field != null) {
+                try {
+                    return field.get(bean);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
             }
-            try {
-                return getMethod.invoke(bean);
-            } catch (Throwable t) {
-                throw ExceptionUtils.wrap(t);
+            return null;
+        }
+
+        public void setValue(Object bean, Object value) {
+            if (setMethod != null) {
+                try {
+                    setMethod.invoke(bean, value);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
+            } else if (field != null) {
+                try {
+                    field.set(bean, value);
+                } catch (Throwable t) {
+                    throw ExceptionUtils.wrap(t);
+                }
             }
         }
 
         @Override
         public String getDescription() {
-            return "SetMethodParameter{" + method + '}';
+            return "PropertyMeta{" + (field == null ? (parameter == null ? getMethod : parameter) : field) + '}';
+        }
+
+        public boolean canSetValue() {
+            return setMethod != null || field != null;
         }
     }
 
@@ -376,7 +503,7 @@ public final class BeanMeta {
 
         @Override
         protected AnnotatedElement getAnnotatedElement() {
-            return null;
+            return type;
         }
 
         @Override

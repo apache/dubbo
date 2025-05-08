@@ -20,9 +20,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 import org.apache.dubbo.spring.security.jackson.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.jackson.ObjectMapperCodecCustomer;
@@ -69,10 +67,4 @@ public class SecurityScopeModelInitializer implements ScopeModelInitializer {
                     t);
         }
     }
-
-    @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {}
-
-    @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

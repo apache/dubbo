@@ -35,11 +35,11 @@ public final class Helper {
     private Helper() {}
 
     public static boolean isRequired(ParameterMeta parameter) {
-        return parameter.isAnnotated(Annotations.Nonnull);
+        return parameter.isHierarchyAnnotated(Annotations.Nonnull);
     }
 
-    public static String defaultValue(ParameterMeta annotation) {
-        AnnotationMeta<?> meta = annotation.getAnnotation(Annotations.DefaultValue);
+    public static String defaultValue(ParameterMeta parameter) {
+        AnnotationMeta<?> meta = parameter.findAnnotation(Annotations.DefaultValue);
         return meta == null ? null : meta.getValue();
     }
 

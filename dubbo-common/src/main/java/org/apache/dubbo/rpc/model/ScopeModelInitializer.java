@@ -22,9 +22,9 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(scope = ExtensionScope.SELF)
 public interface ScopeModelInitializer {
 
-    void initializeFrameworkModel(FrameworkModel frameworkModel);
+    default void initializeFrameworkModel(FrameworkModel frameworkModel) {}
 
-    void initializeApplicationModel(ApplicationModel applicationModel);
+    default void initializeApplicationModel(ApplicationModel applicationModel) {}
 
-    void initializeModuleModel(ModuleModel moduleModel);
+    default void initializeModuleModel(ModuleModel moduleModel) {}
 }

@@ -33,7 +33,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-demo-interface</artifactId>
+      <artifactId>dubbo-demo-api-interface</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>

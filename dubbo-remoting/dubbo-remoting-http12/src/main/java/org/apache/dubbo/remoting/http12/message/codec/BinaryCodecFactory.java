@@ -38,4 +38,9 @@ public final class BinaryCodecFactory implements HttpMessageEncoderFactory, Http
     public MediaType mediaType() {
         return MediaType.APPLICATION_OCTET_STREAM;
     }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(MediaType.APPLICATION_OCTET_STREAM.getName()) || mediaType.startsWith("image/");
+    }
 }

@@ -20,6 +20,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtension;
 
+import java.util.function.Function;
+
 public final class RestUtils {
 
     private RestUtils() {}
@@ -39,7 +41,7 @@ public final class RestUtils {
                 state = 1;
             } else if (c == '{') {
                 if (state == 1) {
-                    if (text.charAt(i + 1) != '$') {
+                    if (text.charAt(i - 1) != '$') {
                         return false;
                     }
                     state = 2;
@@ -49,6 +51,150 @@ public final class RestUtils {
             }
         }
         return false;
+    }
+
+    public static String replacePlaceholder(String text, Function<String, String> resolver) {
+        if (text == null) {
+            return null;
+        }
+        int len = text.length();
+        if (len < 2) {
+            return text;
+        }
+
+        int p = 0, nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
+        String value;
+        StringBuilder buf = null;
+        int state = State.START;
+        for (int i = 0; i < len; i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '$':
+                    if (state == State.START) {
+                        if (buf == null) {
+                            buf = new StringBuilder(len);
+                        }
+                        buf.append(text, p, i);
+                        p = i;
+                        state = State.DOLLAR;
+                    } else if (state == State.DOLLAR) {
+                        if (buf == null) {
+                            buf = new StringBuilder(len);
+                        }
+                        buf.append(text, p, i - 1);
+                        p = i;
+                        state = State.START;
+                    }
+                    break;
+                case '{':
+                    state = state == State.DOLLAR ? State.BRACE_OPEN : State.START;
+                    break;
+                case ':':
+                    state = state == State.NAME_START ? State.COLON : State.START;
+                    break;
+                case '}':
+                    switch (state) {
+                        case State.DOLLAR:
+                        case State.BRACE_OPEN:
+                            state = State.START;
+                            break;
+                        case State.COLON:
+                            state = State.START;
+                            valueStart = i;
+                            break;
+                        case State.DOLLAR_NAME_START:
+                        case State.NAME_START:
+                        case State.VALUE_START:
+                            value = resolver.apply(text.substring(nameStart, nameEnd));
+                            if (buf == null) {
+                                buf = new StringBuilder(len);
+                            }
+                            if (value == null) {
+                                if (state == State.VALUE_START) {
+                                    buf.append(text, valueStart, valueEnd);
+                                } else {
+                                    buf.append(text, p, i + 1);
+                                }
+                            } else {
+                                buf.append(value);
+                            }
+                            p = i + 1;
+                            state = State.START;
+                            break;
+                        default:
+                    }
+                    break;
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
+                    if (state == State.DOLLAR_NAME_START) {
+                        state = State.START;
+                        value = resolver.apply(text.substring(nameStart, nameEnd));
+                        if (buf == null) {
+                            buf = new StringBuilder(len);
+                        }
+                        if (value == null) {
+                            buf.append(text, p, i);
+                        } else {
+                            buf.append(value);
+                        }
+                        p = i;
+                    }
+                    break;
+                default:
+                    switch (state) {
+                        case State.DOLLAR:
+                            state = State.DOLLAR_NAME_START;
+                            nameStart = i;
+                            break;
+                        case State.BRACE_OPEN:
+                            state = State.NAME_START;
+                            nameStart = i;
+                            break;
+                        case State.COLON:
+                            state = State.VALUE_START;
+                            valueStart = i;
+                            break;
+                        case State.DOLLAR_NAME_START:
+                        case State.NAME_START:
+                            nameEnd = i + 1;
+                            break;
+                        case State.VALUE_START:
+                            valueEnd = i + 1;
+                            break;
+                        default:
+                    }
+            }
+        }
+        if (state == State.DOLLAR_NAME_START) {
+            value = resolver.apply(text.substring(nameStart, nameEnd));
+            if (buf == null) {
+                buf = new StringBuilder(len);
+            }
+            if (value == null) {
+                buf.append(text, p, len);
+            } else {
+                buf.append(value);
+            }
+        } else {
+            if (buf == null) {
+                return text;
+            }
+            buf.append(text, p, len);
+        }
+        return buf.toString();
+    }
+
+    private interface State {
+
+        int START = 0;
+        int DOLLAR = 1;
+        int BRACE_OPEN = 2;
+        int COLON = 3;
+        int DOLLAR_NAME_START = 4;
+        int NAME_START = 5;
+        int VALUE_START = 6;
     }
 
     public static boolean isMaybeJSONObject(String str) {

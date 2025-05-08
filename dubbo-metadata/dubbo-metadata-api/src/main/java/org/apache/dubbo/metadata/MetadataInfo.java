@@ -193,12 +193,7 @@ public class MetadataInfo implements Serializable {
         if (CollectionUtils.isEmptyMap(services)) {
             this.revision = EMPTY_REVISION;
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(app);
-            for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
-                sb.append(entry.getValue().toDescString());
-            }
-            String tempRevision = RevisionResolver.calRevision(sb.toString());
+            String tempRevision = calRevision();
             if (!StringUtils.isEquals(this.revision, tempRevision)) {
                 if (logger.isInfoEnabled()) {
                     logger.info(String.format(
@@ -210,6 +205,15 @@ public class MetadataInfo implements Serializable {
             }
         }
         return revision;
+    }
+
+    public synchronized String calRevision() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(app);
+        for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
+            sb.append(entry.getValue().toDescString());
+        }
+        return RevisionResolver.calRevision(sb.toString());
     }
 
     public void setRevision(String revision) {
@@ -294,7 +298,9 @@ public class MetadataInfo implements Serializable {
 
     public String getParameter(String key, String serviceKey) {
         ServiceInfo serviceInfo = getValidServiceInfo(serviceKey);
-        if (serviceInfo == null) return null;
+        if (serviceInfo == null) {
+            return null;
+        }
         return serviceInfo.getParameter(key);
     }
 

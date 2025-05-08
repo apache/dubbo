@@ -161,8 +161,10 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             config.setScopeModel(scopeModel);
         }
 
+        Class<? extends AbstractConfig> targetConfigType = getTargetConfigType(config.getClass());
+
         Map<String, AbstractConfig> configsMap =
-                configsCache.computeIfAbsent(getTagName(config.getClass()), type -> new ConcurrentHashMap<>());
+                configsCache.computeIfAbsent(getTagName(targetConfigType), type -> new ConcurrentHashMap<>());
 
         // fast check duplicated equivalent config before write lock
         if (!(config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase)) {
@@ -175,17 +177,21 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         // lock by config type
         synchronized (configsMap) {
-            return (T) addIfAbsent(config, configsMap);
+            return (T) addIfAbsent(config, configsMap, targetConfigType);
         }
     }
 
     protected boolean isSupportConfigType(Class<? extends AbstractConfig> type) {
+        return getTargetConfigType(type) != null;
+    }
+
+    protected Class<? extends AbstractConfig> getTargetConfigType(Class<? extends AbstractConfig> type) {
         for (Class<? extends AbstractConfig> supportedConfigType : supportedConfigTypes) {
             if (supportedConfigType.isAssignableFrom(type)) {
-                return true;
+                return supportedConfigType;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -196,7 +202,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
      * @return the existing equivalent config or the new adding config
      * @throws IllegalStateException
      */
-    private <C extends AbstractConfig> C addIfAbsent(C config, Map<String, C> configsMap) throws IllegalStateException {
+    private <C extends AbstractConfig> C addIfAbsent(
+            C config, Map<String, C> configsMap, Class<? extends AbstractConfig> targetConfigType)
+            throws IllegalStateException {
 
         if (config == null || configsMap == null) {
             return config;
@@ -218,7 +226,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         C existedConfig = configsMap.get(key);
         if (existedConfig != null && !isEquals(existedConfig, config)) {
-            String type = config.getClass().getSimpleName();
+            String type = targetConfigType.getSimpleName();
             logger.warn(
                     COMMON_UNEXPECTED_EXCEPTION,
                     "",

@@ -79,7 +79,7 @@ public final class MethodParameterMeta extends ParameterMeta {
     }
 
     @Override
-    protected List<? extends AnnotatedElement> getAnnotatedElements() {
+    public List<? extends AnnotatedElement> getAnnotatedElements() {
         return hierarchy;
     }
 

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -64,6 +65,16 @@ public final class MediaTypeExpression implements Comparable<MediaTypeExpression
         this.subType = subType;
         quality = 1.0F;
         negated = false;
+    }
+
+    public static List<MediaType> toMediaTypes(List<MediaTypeExpression> expressions) {
+        int size = expressions.size();
+        List<MediaType> mediaTypes = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            MediaTypeExpression expr = expressions.get(i);
+            mediaTypes.add(new MediaType(expr.getType(), expr.getSubType()));
+        }
+        return mediaTypes;
     }
 
     public static MediaTypeExpression parse(String expr) {

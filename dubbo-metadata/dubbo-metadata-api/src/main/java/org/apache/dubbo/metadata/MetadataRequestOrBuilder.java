@@ -22,11 +22,20 @@ public interface MetadataRequestOrBuilder
         com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <pre>
+     * The revision of the metadata.
+     * </pre>
+     *
      * <code>string revision = 1;</code>
      * @return The revision.
      */
     String getRevision();
+
     /**
+     * <pre>
+     * The revision of the metadata.
+     * </pre>
+     *
      * <code>string revision = 1;</code>
      * @return The bytes for revision.
      */

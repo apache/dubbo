@@ -33,7 +33,7 @@
     <curator5.version>4.2.0</curator5.version>
     <commons.compress.version>1.27.1</commons.compress.version>
     <commons.exec.version>1.4.0</commons.exec.version>
-    <async.http.client.version>2.12.3</async.http.client.version>
+    <async.http.client.version>2.12.4</async.http.client.version>
   </properties>
 
   <dependencies>

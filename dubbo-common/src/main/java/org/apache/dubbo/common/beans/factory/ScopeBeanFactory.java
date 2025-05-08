@@ -24,10 +24,12 @@ import org.apache.dubbo.common.extension.ExtensionPostProcessor;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.resource.Initializable;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.TypeUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_DESTROY_INVOKER;
@@ -55,6 +58,7 @@ public final class ScopeBeanFactory {
     private final List<ExtensionPostProcessor> extensionPostProcessors;
     private final Map<Class<?>, AtomicInteger> beanNameIdCounterMap = CollectionUtils.newConcurrentHashMap();
     private final List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
+    private final List<BeanDefinition<?>> registeredBeanDefinitions = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
     private final AtomicBoolean destroyed = new AtomicBoolean();
     private final Set<Class<?>> registeredClasses = new ConcurrentHashSet<>();
@@ -79,12 +83,33 @@ public final class ScopeBeanFactory {
         }
     }
 
-    public <T> T registerBean(Class<T> bean) throws ScopeBeanException {
-        return getOrRegisterBean(null, bean);
+    public <T> T registerBean(Class<T> clazz) throws ScopeBeanException {
+        return getOrRegisterBean(null, clazz);
     }
 
     public <T> T registerBean(String name, Class<T> clazz) throws ScopeBeanException {
         return getOrRegisterBean(name, clazz);
+    }
+
+    public <T> void registerBeanDefinition(Class<T> clazz) {
+        registerBeanDefinition(null, clazz);
+    }
+
+    public <T> void registerBeanDefinition(String name, Class<T> clazz) {
+        registeredBeanDefinitions.add(new BeanDefinition<>(name, clazz));
+    }
+
+    public <T> void registerBeanFactory(Supplier<T> factory) {
+        registerBeanFactory(null, factory);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> void registerBeanFactory(String name, Supplier<T> factory) {
+        Class<T> clazz = (Class<T>) TypeUtils.getSuperGenericType(factory.getClass(), 0);
+        if (clazz == null) {
+            throw new ScopeBeanException("unable to determine bean class from factory's superclass or interface");
+        }
+        registeredBeanDefinitions.add(new BeanDefinition<>(name, clazz, factory));
     }
 
     private <T> T createAndRegisterBean(String name, Class<T> clazz) {
@@ -174,6 +199,9 @@ public final class ScopeBeanFactory {
             for (ExtensionPostProcessor processor : extensionPostProcessors) {
                 processor.postProcessAfterInitialization(bean, name);
             }
+            if (bean instanceof Initializable) {
+                ((Initializable) bean).initialize(extensionAccessor);
+            }
         } catch (Exception e) {
             throw new ScopeBeanException(
                     "register bean failed! name=" + name + ", type="
@@ -182,9 +210,48 @@ public final class ScopeBeanFactory {
         }
     }
 
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    private void initializeBeanDefinitions(Class<?> type) {
+        for (int i = 0, size = registeredBeanDefinitions.size(); i < size; i++) {
+            BeanDefinition<?> definition = registeredBeanDefinitions.get(i);
+            if (definition.initialized) {
+                continue;
+            }
+
+            Class<?> beanClass = definition.beanClass;
+            if (!type.isAssignableFrom(beanClass)) {
+                continue;
+            }
+            synchronized (type) {
+                if (definition.initialized) {
+                    continue;
+                }
+
+                Object bean;
+                Supplier<?> factory = definition.beanFactory;
+                if (factory == null) {
+                    try {
+                        bean = instantiationStrategy.instantiate(beanClass);
+                    } catch (Throwable e) {
+                        throw new ScopeBeanException("create bean instance failed, type=" + beanClass.getName(), e);
+                    }
+                } else {
+                    initializeBean(definition.name, factory);
+                    try {
+                        bean = factory.get();
+                    } catch (Exception e) {
+                        throw new ScopeBeanException("create bean instance failed, type=" + beanClass.getName(), e);
+                    }
+                }
+                registerBean(definition.name, bean);
+                definition.initialized = true;
+            }
+        }
+    }
+
     private boolean containsBean(String name, Object bean) {
         for (BeanInfo beanInfo : registeredBeanInfos) {
-            if (beanInfo.instance == bean && (name == null || StringUtils.isEquals(name, beanInfo.name))) {
+            if (beanInfo.instance == bean && (name == null || name.equals(beanInfo.name))) {
                 return true;
             }
         }
@@ -199,6 +266,7 @@ public final class ScopeBeanFactory {
 
     @SuppressWarnings("unchecked")
     public <T> List<T> getBeansOfType(Class<T> type) {
+        initializeBeanDefinitions(type);
         List<T> currentBeans = (List<T>) registeredBeanInfos.stream()
                 .filter(beanInfo -> type.isInstance(beanInfo.instance))
                 .map(beanInfo -> beanInfo.instance)
@@ -223,19 +291,23 @@ public final class ScopeBeanFactory {
 
     @SuppressWarnings("unchecked")
     private <T> T getBeanFromCache(String name, Class<T> type) {
-        Object value = beanCache
-                .computeIfAbsent(Pair.of(type, name), k -> {
-                    try {
-                        return Optional.ofNullable(getBeanInternal(name, type));
-                    } catch (ScopeBeanException e) {
-                        return Optional.of(e);
-                    }
-                })
-                .orElse(null);
-        if (value instanceof ScopeBeanException) {
-            throw (ScopeBeanException) value;
+        Pair<Class<?>, String> key = Pair.of(type, name);
+        Optional<Object> value = beanCache.get(key);
+        if (value == null) {
+            initializeBeanDefinitions(type);
+            value = beanCache.computeIfAbsent(key, k -> {
+                try {
+                    return Optional.ofNullable(getBeanInternal(name, type));
+                } catch (ScopeBeanException e) {
+                    return Optional.of(e);
+                }
+            });
         }
-        return (T) value;
+        Object bean = value.orElse(null);
+        if (bean instanceof ScopeBeanException) {
+            throw (ScopeBeanException) bean;
+        }
+        return (T) bean;
     }
 
     @SuppressWarnings("unchecked")
@@ -301,6 +373,7 @@ public final class ScopeBeanFactory {
                 }
             }
             registeredBeanInfos.clear();
+            registeredBeanDefinitions.clear();
             beanCache.clear();
         }
     }
@@ -315,13 +388,33 @@ public final class ScopeBeanFactory {
         }
     }
 
-    static class BeanInfo {
+    static final class BeanInfo {
         private final String name;
         private final Object instance;
 
-        public BeanInfo(String name, Object instance) {
+        BeanInfo(String name, Object instance) {
             this.name = name;
             this.instance = instance;
+        }
+    }
+
+    static final class BeanDefinition<T> {
+
+        private final String name;
+        private final Class<T> beanClass;
+        private final Supplier<T> beanFactory;
+        private volatile boolean initialized;
+
+        BeanDefinition(String name, Class<T> beanClass) {
+            this.name = name;
+            this.beanClass = beanClass;
+            beanFactory = null;
+        }
+
+        BeanDefinition(String name, Class<T> beanClass, Supplier<T> beanFactory) {
+            this.name = name;
+            this.beanClass = beanClass;
+            this.beanFactory = beanFactory;
         }
     }
 

@@ -25,6 +25,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import java.net.InetSocketAddress;
@@ -56,14 +58,19 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
             RpcContext.restoreCancellationContext(
                     ((Http2CancelableStreamObserver<Object>) responseObserver).getCancellationContext());
         }
-        InetSocketAddress remoteAddress =
-                (InetSocketAddress) invocation.getAttributes().remove(REMOTE_ADDRESS_KEY);
-        RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
-        String remoteApp = (String) invocation.getAttributes().remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
+
+        RpcServiceContext serviceContext = RpcContext.getServiceContext();
+        serviceContext.setRemoteAddress((InetSocketAddress) invocation.remove(REMOTE_ADDRESS_KEY));
+        String remoteApp = (String) invocation.remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (remoteApp != null) {
-            RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
+            serviceContext.setRemoteApplicationName(remoteApp);
             invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
         }
+        if (serviceContext.getRequest() == null) {
+            serviceContext.setRequest(invocation.get(TripleConstants.HTTP_REQUEST_KEY));
+            serviceContext.setResponse(invocation.get(TripleConstants.HTTP_RESPONSE_KEY));
+        }
+
         try {
             long stInMillis = System.currentTimeMillis();
             Result response = invoker.invoke(invocation);

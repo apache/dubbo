@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -669,5 +670,9 @@ public class ClassUtils {
         }
         dmns.sort(Comparator.naturalOrder());
         return dmns.toArray(new String[0]);
+    }
+
+    public static boolean hasProtobuf() {
+        return isPresent(CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME);
     }
 }

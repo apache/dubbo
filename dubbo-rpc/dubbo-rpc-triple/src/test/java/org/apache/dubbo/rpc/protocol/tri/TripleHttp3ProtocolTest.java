@@ -108,7 +108,7 @@ class TripleHttp3ProtocolTest {
         MockStreamObserver outboundMessageSubscriber1 = new MockStreamObserver();
         greeterProxy.serverStream(REQUEST_MSG, outboundMessageSubscriber1);
         outboundMessageSubscriber1.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        Assertions.assertEquals(outboundMessageSubscriber1.getOnNextData(), REQUEST_MSG);
+        Assertions.assertEquals(REQUEST_MSG, outboundMessageSubscriber1.getOnNextData());
         Assertions.assertTrue(outboundMessageSubscriber1.isOnCompleted());
 
         // 3. test bidirectionalStream
@@ -118,7 +118,7 @@ class TripleHttp3ProtocolTest {
         inboundMessageObserver.onCompleted();
         outboundMessageSubscriber2.getLatch().await(3000, TimeUnit.MILLISECONDS);
         // verify client
-        Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), IGreeter.SERVER_MSG);
+        Assertions.assertEquals(IGreeter.SERVER_MSG, outboundMessageSubscriber2.getOnNextData());
         Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
         // verify server
         MockStreamObserver serverOutboundMessageSubscriber = (MockStreamObserver) serviceImpl.getMockStreamObserver();

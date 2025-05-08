@@ -73,6 +73,7 @@ class AbortPolicyWithReportTest {
 
         await().until(() -> AbortPolicyWithReport.guard.availablePermits() == 1);
         Assertions.assertNotNull(fileOutputStream.get());
+        executorService.shutdown();
     }
 
     @Test
@@ -128,6 +129,7 @@ class AbortPolicyWithReportTest {
         Assertions.assertEquals(
                 runTimes, finishedCount.get() + failureCount.get(), "all the test thread should be run completely");
         Assertions.assertEquals(1, jStackCount.get(), "'jstack' should be called only once in 10 minutes");
+        threadPoolExecutor.shutdown();
     }
 
     @Test

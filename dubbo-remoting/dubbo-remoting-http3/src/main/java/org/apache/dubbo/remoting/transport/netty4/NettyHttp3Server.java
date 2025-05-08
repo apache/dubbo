@@ -18,104 +18,78 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
 import org.apache.dubbo.remoting.http3.Http3SslContexts;
-import org.apache.dubbo.remoting.http3.netty4.NettyHttp3FrameCodec;
-import org.apache.dubbo.remoting.http3.netty4.NettyHttp3ProtocolSelectorHandler;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-import org.apache.dubbo.remoting.utils.UrlUtils;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
 import io.netty.incubator.codec.quic.InsecureQuicTokenHandler;
 import io.netty.incubator.codec.quic.QuicChannel;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.util.concurrent.Future;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
+import static org.apache.dubbo.remoting.http3.netty4.Constants.PIPELINE_CONFIGURATOR_KEY;
 
 public class NettyHttp3Server extends AbstractServer {
-
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyHttp3Server.class);
 
     private Map<String, Channel> channels;
     private Bootstrap bootstrap;
     private EventLoopGroup bossGroup;
     private io.netty.channel.Channel channel;
 
+    private final Consumer<ChannelPipeline> pipelineConfigurator;
     private final int serverShutdownTimeoutMills;
 
+    @SuppressWarnings("unchecked")
     public NettyHttp3Server(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
+        pipelineConfigurator = (Consumer<ChannelPipeline>) getUrl().getAttribute(PIPELINE_CONFIGURATOR_KEY);
+        Objects.requireNonNull(pipelineConfigurator, "pipelineConfigurator should be set");
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
     @Override
     protected void doOpen() throws Throwable {
         bootstrap = new Bootstrap();
-
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
-
         NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
-
-        FrameworkModel frameworkModel = ScopeModelUtil.getFrameworkModel(getUrl().getScopeModel());
-        NettyHttp3ProtocolSelectorHandler selectorHandler =
-                new NettyHttp3ProtocolSelectorHandler(getUrl(), frameworkModel);
-
-        int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
-        io.netty.channel.ChannelHandler codec = Helper.configCodec(Http3.newQuicServerCodecBuilder(), getUrl())
-                .sslContext(Http3SslContexts.buildServerSslContext(getUrl()))
-                .maxIdleTimeout(idleTimeout, MILLISECONDS)
-                .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
-                .handler(new ChannelInitializer<QuicChannel>() {
-                    @Override
-                    protected void initChannel(QuicChannel ch) {
-                        ch.pipeline()
-                                .addLast(nettyServerHandler)
-                                .addLast(new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
-                                .addLast(new Http3ServerConnectionHandler(new ChannelInitializer<QuicStreamChannel>() {
-                                    @Override
-                                    protected void initChannel(QuicStreamChannel ch) {
-                                        ch.pipeline()
-                                                .addLast(NettyHttp3FrameCodec.INSTANCE)
-                                                .addLast(new HttpWriteQueueHandler())
-                                                .addLast(selectorHandler);
-                                    }
-                                }));
-                    }
-                })
-                .build();
-
-        // bind
         try {
             ChannelFuture channelFuture = bootstrap
                     .group(bossGroup)
                     .channel(NioDatagramChannel.class)
-                    .handler(codec)
+                    .handler(Http3Helper.configCodec(Http3.newQuicServerCodecBuilder(), getUrl())
+                            .sslContext(Http3SslContexts.buildServerSslContext(getUrl()))
+                            .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
+                            .handler(new ChannelInitializer<QuicChannel>() {
+                                @Override
+                                protected void initChannel(QuicChannel ch) {
+                                    ChannelPipeline pipeline = ch.pipeline();
+                                    pipelineConfigurator.accept(pipeline);
+                                    pipeline.addLast(nettyServerHandler);
+                                }
+                            })
+                            .build())
                     .bind(getBindAddress());
             channelFuture.syncUninterruptibly();
             channel = channelFuture.channel();

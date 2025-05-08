@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.demo.consumer;
 
+import org.apache.dubbo.api.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.rpc.service.GenericService;
 
 public class Application {
@@ -42,7 +42,7 @@ public class Application {
         bootstrap
                 .application(new ApplicationConfig("dubbo-demo-api-consumer"))
                 .registry(new RegistryConfig(REGISTRY_URL))
-                .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
                 .reference(reference)
                 .start();
 
