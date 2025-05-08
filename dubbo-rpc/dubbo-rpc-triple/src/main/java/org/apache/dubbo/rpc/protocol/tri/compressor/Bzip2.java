@@ -47,11 +47,8 @@ public class Bzip2 implements Compressor, DeCompressor {
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        BZip2CompressorOutputStream cos;
-        try {
-            cos = new BZip2CompressorOutputStream(out);
+        try (BZip2CompressorOutputStream cos = new BZip2CompressorOutputStream(out)) {
             cos.write(payloadByteArr);
-            cos.close();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
