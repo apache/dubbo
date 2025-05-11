@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.DefaultRequestMappingRegistry;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
@@ -153,21 +152,10 @@ class TripleHttp3ProtocolTest {
     }
 
     @AfterEach
-    void cleanup() {
+    void destroyApplicationModel() {
         if (applicationModel != null) {
-            try {
-                DefaultRequestMappingRegistry registry = applicationModel
-                        .getFrameworkModel()
-                        .getBeanFactory()
-                        .getBean(DefaultRequestMappingRegistry.class);
-                if (registry != null) {
-                    registry.destroy();
-                    LOGGER.info("DefaultRequestMappingRegistry destroyed after test");
-                }
-            } catch (Exception e) {
-                LOGGER.error("Cleanup error: {}", e.getMessage(), e);
-                throw e;
-            }
+            applicationModel.destroy();
+            LOGGER.info("ApplicationModel destroyed after test");
         }
     }
 

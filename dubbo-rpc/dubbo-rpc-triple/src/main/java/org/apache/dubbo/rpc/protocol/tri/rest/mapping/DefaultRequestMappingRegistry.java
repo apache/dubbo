@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.RestConfig;
@@ -58,7 +59,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public final class DefaultRequestMappingRegistry implements RequestMappingRegistry {
+public final class DefaultRequestMappingRegistry implements RequestMappingRegistry, Disposable {
 
     private static final FluentLogger LOGGER = FluentLogger.of(DefaultRequestMappingRegistry.class);
 
