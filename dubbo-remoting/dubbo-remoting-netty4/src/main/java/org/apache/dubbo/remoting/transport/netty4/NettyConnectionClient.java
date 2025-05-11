@@ -130,4 +130,5 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                 1L,
                 TimeUnit.SECONDS);
     }
+
 }
