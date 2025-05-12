@@ -87,7 +87,6 @@ public class GrpcUtils {
         }
     }
 
-
     public static boolean isGrpcRequest(String contentType) {
         return contentType != null && contentType.startsWith(MediaType.APPLICATION_GRPC.getName());
     }
