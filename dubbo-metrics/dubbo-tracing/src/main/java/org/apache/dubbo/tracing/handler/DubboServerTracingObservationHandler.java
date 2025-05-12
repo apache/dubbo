@@ -21,7 +21,6 @@ import org.apache.dubbo.tracing.context.DubboServerContext;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
-import io.micrometer.observation.transport.ReceiverContext;
 import io.micrometer.tracing.TraceContext;
 import io.micrometer.tracing.Tracer;
 
@@ -46,6 +45,6 @@ public class DubboServerTracingObservationHandler<T extends DubboServerContext> 
 
     @Override
     public boolean supportsContext(Observation.Context context) {
-        return context instanceof ReceiverContext;
+        return context instanceof DubboServerContext;
     }
 }
