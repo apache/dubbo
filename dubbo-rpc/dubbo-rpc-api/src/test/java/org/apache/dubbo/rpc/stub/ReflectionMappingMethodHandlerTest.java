@@ -102,7 +102,8 @@ class ReflectionMappingMethodHandlerTest {
 
     @Test
     void testBusinessExceptionMethodInvoke() {
-        ReflectionMappingMethodHandler handler = new ReflectionMappingMethodHandler(testService, throwBusinessExceptionMethod);
+        ReflectionMappingMethodHandler handler =
+                new ReflectionMappingMethodHandler(testService, throwBusinessExceptionMethod);
         Object[] args = new Object[] {"test-error"};
         CompletableFuture<?> future = handler.invoke(args);
 
@@ -123,7 +124,6 @@ class ReflectionMappingMethodHandlerTest {
         Assertions.assertInstanceOf(NullPointerException.class, cause); // The original NPE
         Assertions.assertEquals("Input was null", cause.getMessage());
     }
-
 
     @Test
     void testIllegalArgumentExceptionFromReflection() {
