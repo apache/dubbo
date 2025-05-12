@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.StubServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
@@ -139,11 +140,12 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         return;
                     }
                     if (md == null) {
-                        if (!(sd instanceof ReflectionServiceDescriptor)) {
-                            return;
-                        }
                         md = new ReflectionMethodDescriptor(method);
-                        ((ReflectionServiceDescriptor) sd).addMethod(md);
+                        if (sd instanceof ReflectionServiceDescriptor) {
+                            ((ReflectionServiceDescriptor) sd).addMethod(md);
+                        } else if (sd instanceof StubServiceDescriptor) {
+                            ((StubServiceDescriptor) sd).addMethod(md);
+                        }
                         methodMeta.setMethodDescriptor(md);
                     }
                     if (classMapping != null) {

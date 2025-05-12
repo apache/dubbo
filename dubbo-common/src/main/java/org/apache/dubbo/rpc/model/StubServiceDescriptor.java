@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,7 +47,8 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     }
 
     public void addMethod(MethodDescriptor methodDescriptor) {
-        methods.put(methodDescriptor.getMethodName(), Collections.singletonList(methodDescriptor));
+        methods.computeIfAbsent(methodDescriptor.getMethodName(), k -> new ArrayList<>())
+                .add(methodDescriptor);
         Map<String, MethodDescriptor> descMap =
                 descToMethods.computeIfAbsent(methodDescriptor.getMethodName(), k -> new HashMap<>());
         descMap.put(methodDescriptor.getParamDesc(), methodDescriptor);

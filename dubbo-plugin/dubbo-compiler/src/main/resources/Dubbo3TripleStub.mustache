@@ -236,6 +236,20 @@ public final class {{className}} {
             handlers.put({{methodName}}Method.getMethodName(), new BiStreamMethodHandler<>(this::{{methodName}}));
         {{/biStreamingWithoutClientStreamMethods}}
 
+            Class<?> userImplementationClass = this.getClass();
+            java.lang.reflect.Method[] allUserDeclaredMethods = userImplementationClass.getDeclaredMethods();
+
+            for (java.lang.reflect.Method userMethod : allUserDeclaredMethods) {
+                if (userMethod.isAnnotationPresent(org.apache.dubbo.remoting.http12.rest.Mapping.class)) {
+                    if (!handlers.containsKey(userMethod.getName()) &&
+                        userMethod.getDeclaringClass() != Object.class &&
+                        !java.lang.reflect.Modifier.isStatic(userMethod.getModifiers()) &&
+                        !userMethod.isBridge()) {
+                        handlers.put(userMethod.getName(), new org.apache.dubbo.rpc.stub.ReflectionMappingMethodHandler(this, userMethod));
+                    }
+                }
+            }
+
             return new StubInvoker<>(this, url, {{interfaceClassName}}.class, handlers);
         }
     {{#unaryMethods}}
