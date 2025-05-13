@@ -56,10 +56,10 @@ Get more details by visiting the links below to get your hands dirty with some w
 | 3.2.16     | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94)  | **- Stable version (active)** <br/> **- Features** <br/> &nbsp;&nbsp;- Out-of-box metrics and tracing support.<br/> &nbsp;&nbsp;- Threadpool Isolation<br/> &nbsp;&nbsp;- 30% performance<br/> &nbsp;&nbsp;- Native Image  |
 | 3.1.11     | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L90) | **Stable version (not active)**                                                                                                                                                                                            |
 
-| **Dubbo2** | **JDK** | **Dependencies** | **Description** |
-| --- | --- | --- | --- |
+| **Dubbo2** | **JDK** | **Dependencies**                                                                                        | **Description** |
+| --- | --- |---------------------------------------------------------------------------------------------------------| --- |
 | 2.7.23 | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) | EOL |
-| 2.6.x, 2.5.x | 1.6 ～ 1.7 |  | EOL |
+| 2.6.x, 2.5.x | 1.6 ～ 1.7 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.6.12/dependencies-bom/pom.xml#L90)       | EOL |
 
 ## Contributing
 See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.

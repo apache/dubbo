@@ -21,6 +21,7 @@ spring:
 dubbo:
   application:
     name: ${spring.application.name}
+    qos-port: 33333
   protocol:
     name: dubbo
     port: -1
