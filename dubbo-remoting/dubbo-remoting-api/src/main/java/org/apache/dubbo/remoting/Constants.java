@@ -175,6 +175,7 @@ public interface Constants {
     String APACHE_HTTP_CLIENT = "apache-http-client";
 
     String CONTENT_LENGTH_KEY = "content-length";
+    String SSL_SESSION_KEY = "ssl-session";
 
     String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 

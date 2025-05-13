@@ -124,6 +124,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     public Object decode(Channel channel, InputStream input) throws IOException {
         int contentLength = input.available();
         getAttributes().put(Constants.CONTENT_LENGTH_KEY, contentLength);
+        Object sslSession = channel.getAttribute(Constants.SSL_SESSION_KEY);
+        if (null != sslSession) {
+            put(Constants.SSL_SESSION_KEY, sslSession);
+        }
 
         ObjectInput in = CodecSupport.getSerialization(serializationType).deserialize(channel.getUrl(), input);
         this.put(SERIALIZATION_ID_KEY, serializationType);
