@@ -34,13 +34,7 @@ class EnvironmentConfigurationTest {
     void testGetInternalProperty() {
         Map<String, String> map = new HashMap<>();
         map.put(MOCK_KEY, MOCK_VALUE);
-        EnvironmentConfiguration configuration = new EnvironmentConfiguration() {
-            @Override
-            protected String getenv(String key) {
-                return map.get(key);
-            }
-        };
-        // this UT maybe only works on particular platform, assert only when value is not null.
+        EnvironmentConfiguration configuration = new EnvironmentConfiguration(map);
         Assertions.assertEquals(MOCK_VALUE, configuration.getInternalProperty("dubbo.key"));
         Assertions.assertEquals(MOCK_VALUE, configuration.getInternalProperty("key"));
         Assertions.assertEquals(MOCK_VALUE, configuration.getInternalProperty("dubbo_key"));
@@ -58,5 +52,36 @@ class EnvironmentConfigurationTest {
             }
         };
         Assertions.assertEquals(map, configuration.getProperties());
+    }
+
+    @Test
+    void testHyphenAndDotKeyResolveFromEnv() {
+        Map<String, String> envMap = new HashMap<>();
+        envMap.put("DUBBO_ABC_DEF_GHI", "v1");
+        envMap.put("DUBBO_ABCDEF_GHI", "v2");
+        envMap.put("DUBBO_ABC-DEF_GHI", "v3");
+        envMap.put("dubbo_abc_def_ghi", "v4");
+
+        EnvironmentConfiguration configuration = new EnvironmentConfiguration(envMap);
+
+        String dubboKey = "dubbo.abc-def.ghi";
+
+        Assertions.assertEquals("v1", configuration.getProperty(dubboKey));
+
+        envMap.remove("DUBBO_ABC_DEF_GHI");
+        configuration = new EnvironmentConfiguration(envMap);
+        Assertions.assertEquals("v2", configuration.getProperty(dubboKey));
+
+        envMap.remove("DUBBO_ABCDEF_GHI");
+        configuration = new EnvironmentConfiguration(envMap);
+        Assertions.assertEquals("v3", configuration.getProperty(dubboKey));
+
+        envMap.remove("DUBBO_ABC-DEF_GHI");
+        configuration = new EnvironmentConfiguration(envMap);
+        Assertions.assertEquals("v4", configuration.getProperty(dubboKey));
+
+        envMap.remove("dubbo_abc_def_ghi");
+        configuration = new EnvironmentConfiguration(envMap);
+        Assertions.assertNull(configuration.getProperty(dubboKey));
     }
 }
