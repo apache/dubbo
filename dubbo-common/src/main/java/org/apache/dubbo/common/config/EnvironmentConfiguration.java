@@ -56,18 +56,21 @@ public class EnvironmentConfiguration implements Configuration {
         Set<String> candidates = new LinkedHashSet<>();
 
         // Dots and hyphens to underscores, uppercase
-        String normalizedKey = originalKey.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.UNDERLINE_SEPARATOR)
+        String normalizedKey = originalKey
+                .replace(CommonConstants.DOT_SEPARATOR, CommonConstants.UNDERLINE_SEPARATOR)
                 .replace(CommonConstants.PROPERTIES_CHAR_SEPARATOR, CommonConstants.UNDERLINE_SEPARATOR);
         candidates.add(normalizedKey.toUpperCase(Locale.ROOT));
 
         // Dots to underscores, hyphens removed, uppercase (Spring Boot style)
-        String springLikeNoHyphens = originalKey.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.UNDERLINE_SEPARATOR)
+        String springLikeNoHyphens = originalKey
+                .replace(CommonConstants.DOT_SEPARATOR, CommonConstants.UNDERLINE_SEPARATOR)
                 .replace(CommonConstants.PROPERTIES_CHAR_SEPARATOR, "")
                 .toUpperCase(Locale.ROOT);
         candidates.add(springLikeNoHyphens);
 
         // Dots to underscores, hyphens preserved, uppercase
-        String dotsToUnderscoresUpper = originalKey.replace(CommonConstants.DOT_SEPARATOR, CommonConstants.UNDERLINE_SEPARATOR)
+        String dotsToUnderscoresUpper = originalKey
+                .replace(CommonConstants.DOT_SEPARATOR, CommonConstants.UNDERLINE_SEPARATOR)
                 .toUpperCase(Locale.ROOT);
         candidates.add(dotsToUnderscoresUpper);
 
