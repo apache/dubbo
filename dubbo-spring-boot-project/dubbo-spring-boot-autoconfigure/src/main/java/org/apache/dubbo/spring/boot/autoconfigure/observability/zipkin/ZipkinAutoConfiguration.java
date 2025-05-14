@@ -67,6 +67,7 @@ public class ZipkinAutoConfiguration {
     public BytesEncoder<Span> spanBytesEncoder() {
         return SpanBytesEncoder.JSON_V2;
     }
+
     @Bean
     @ConditionalOnProperty(prefix = DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX, name = "endpoint")
     @ConditionalOnMissingBean
