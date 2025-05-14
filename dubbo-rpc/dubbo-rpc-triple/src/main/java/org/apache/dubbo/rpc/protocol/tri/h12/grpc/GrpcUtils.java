@@ -50,6 +50,43 @@ public class GrpcUtils {
         }
     }
 
+    /**
+     * Converts a timeout value to the gRPC `grpc-timeout` ASCII string format.
+     * <p>
+     * This method applies a greedy strategy: it chooses the largest possible unit
+     * (nanos, micros, millis, seconds, minutes, hours) such that the numeric part is
+     * less than 100_000_000, as required by the gRPC specification.
+     * For example, a 1-second timeout will be encoded as "1000000u" (in microseconds).
+     * </p>
+     *
+     * @param timeout the timeout value
+     * @param unit the time unit of the timeout
+     * @return a string suitable for use as the value of the gRPC `grpc-timeout` header
+     * @throws IllegalArgumentException if the timeout too small
+     */
+    public static String getTimeoutHeaderValue(Long timeout, TimeUnit unit) {
+        long timeoutNanos = timeout;
+        if (unit != TimeUnit.NANOSECONDS) {
+            timeoutNanos = unit.toNanos(timeout);
+        }
+        final long cutoff = 100_000_000L;
+        if (timeoutNanos < 0) {
+            throw new IllegalArgumentException("Timeout too small");
+        } else if (timeoutNanos < cutoff) {
+            return timeoutNanos + "n";
+        } else if (timeoutNanos < cutoff * 1_000L) {
+            return TimeUnit.NANOSECONDS.toMicros(timeoutNanos) + "u";
+        } else if (timeoutNanos < cutoff * 1_000_000L) {
+            return TimeUnit.NANOSECONDS.toMillis(timeoutNanos) + "m";
+        } else if (timeoutNanos < cutoff * 1_000_000_000L) {
+            return TimeUnit.NANOSECONDS.toSeconds(timeoutNanos) + "S";
+        } else if (timeoutNanos < cutoff * 1_000_000_000L * 60L) {
+            return TimeUnit.NANOSECONDS.toMinutes(timeoutNanos) + "M";
+        } else {
+            return TimeUnit.NANOSECONDS.toHours(timeoutNanos) + "H";
+        }
+    }
+
     public static boolean isGrpcRequest(String contentType) {
         return contentType != null && contentType.startsWith(MediaType.APPLICATION_GRPC.getName());
     }

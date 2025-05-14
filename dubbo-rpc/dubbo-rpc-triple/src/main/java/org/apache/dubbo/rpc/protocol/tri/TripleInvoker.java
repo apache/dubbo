@@ -53,6 +53,7 @@ import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
@@ -65,6 +66,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import io.netty.util.AsciiString;
@@ -326,7 +328,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         meta.version = url.getVersion();
         meta.acceptEncoding = acceptEncodings;
         if (timeout != null) {
-            meta.timeout = timeout + "m";
+            meta.timeout = GrpcUtils.getTimeoutHeaderValue(Long.valueOf(timeout), TimeUnit.MILLISECONDS);
         }
         String application = (String) invocation.getObjectAttachmentWithoutConvert(CommonConstants.APPLICATION_KEY);
         if (application == null) {

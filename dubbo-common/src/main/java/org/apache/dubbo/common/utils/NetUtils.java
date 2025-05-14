@@ -105,6 +105,21 @@ public final class NetUtils {
      */
     private static BitSet USED_PORT = new BitSet(65536);
 
+    private static boolean reuseAddressSupported;
+
+    static {
+        try (ServerSocket serverSocket = new ServerSocket()) {
+            serverSocket.setReuseAddress(true);
+            reuseAddressSupported = true;
+        } catch (Throwable ignored) {
+            // ignore.
+        }
+    }
+
+    public static boolean isReuseAddressSupported() {
+        return reuseAddressSupported;
+    }
+
     public static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
@@ -123,7 +138,12 @@ public final class NetUtils {
             if (USED_PORT.get(i)) {
                 continue;
             }
-            try (ServerSocket ignored = new ServerSocket(i)) {
+            try (ServerSocket serverSocket = new ServerSocket()) {
+                if (reuseAddressSupported) {
+                    // SO_REUSEADDR should be enabled before bind.
+                    serverSocket.setReuseAddress(true);
+                }
+                serverSocket.bind(new InetSocketAddress(i));
                 USED_PORT.set(i);
                 port = i;
                 break;
@@ -141,7 +161,12 @@ public final class NetUtils {
      * @return true if it's occupied
      */
     public static boolean isPortInUsed(int port) {
-        try (ServerSocket ignored = new ServerSocket(port)) {
+        try (ServerSocket serverSocket = new ServerSocket()) {
+            if (reuseAddressSupported) {
+                // SO_REUSEADDR should be enabled before bind.
+                serverSocket.setReuseAddress(true);
+            }
+            serverSocket.bind(new InetSocketAddress(port));
             return false;
         } catch (IOException e) {
             // continue
