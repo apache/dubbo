@@ -51,6 +51,9 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         if (value != null) {
             return value;
         }
+        if (meta.parameter().isStream()) {
+            return null;
+        }
         if (meta.parameter().isSimple()) {
             return request.parameter(meta.name());
         }

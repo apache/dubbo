@@ -17,6 +17,7 @@
 package org.apache.dubbo.springboot.demo.servlet;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.http12.message.ServerSentEvent;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -38,6 +39,8 @@ public interface GreeterService {
     void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> responseObserver);
 
     void sayHelloServerStreamNoParameter(StreamObserver<HelloReply> responseObserver);
+
+    void sayHelloServerStreamSSE(StreamObserver<ServerSentEvent<HelloReply>> responseObserver);
 
     /**
      * Sends greetings with bi streaming

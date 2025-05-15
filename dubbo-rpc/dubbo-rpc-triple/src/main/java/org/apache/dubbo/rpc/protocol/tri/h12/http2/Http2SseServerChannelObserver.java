@@ -19,11 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.ServerSentEventEncoder;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import java.io.IOException;
 
 public final class Http2SseServerChannelObserver extends Http2StreamServerChannelObserver {
 
@@ -32,22 +31,13 @@ public final class Http2SseServerChannelObserver extends Http2StreamServerChanne
     }
 
     @Override
+    public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
+        super.setResponseEncoder(new ServerSentEventEncoder(responseEncoder));
+    }
+
+    @Override
     protected HttpMetadata encodeHttpMetadata(boolean endStream) {
         return super.encodeHttpMetadata(endStream)
                 .header(HttpHeaderNames.CACHE_CONTROL.getKey(), HttpConstants.NO_CACHE);
-    }
-
-    @Override
-    protected void preOutputMessage(HttpOutputMessage message) throws IOException {
-        HttpOutputMessage prefixMessage = getHttpChannel().newOutputMessage();
-        prefixMessage.getBody().write(HttpConstants.SERVER_SENT_EVENT_DATA_PREFIX_BYTES);
-        getHttpChannel().writeMessage(prefixMessage);
-    }
-
-    @Override
-    protected void postOutputMessage(HttpOutputMessage message) throws IOException {
-        HttpOutputMessage lfMessage = getHttpChannel().newOutputMessage();
-        lfMessage.getBody().write(HttpConstants.SERVER_SENT_EVENT_LF_BYTES);
-        getHttpChannel().writeMessage(lfMessage);
     }
 }
