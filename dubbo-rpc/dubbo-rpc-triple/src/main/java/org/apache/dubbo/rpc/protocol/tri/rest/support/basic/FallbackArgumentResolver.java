@@ -111,6 +111,10 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
             }
         }
 
+        if (meta.parameter().isStream()) {
+            return null;
+        }
+
         if (single) {
             if (Map.class.isAssignableFrom(meta.type())) {
                 return RequestUtils.getParametersMap(request);
