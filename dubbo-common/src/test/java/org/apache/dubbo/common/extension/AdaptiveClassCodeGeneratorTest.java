@@ -39,7 +39,7 @@ class AdaptiveClassCodeGeneratorTest {
     @Test
     void testGenerate() throws IOException {
         AdaptiveClassCodeGenerator generator = new AdaptiveClassCodeGenerator(HasAdaptiveExt.class, "adaptive");
-        String value = generator.generate();
+        String value = generator.generate(true);
         URL url = getClass().getResource("/org/apache/dubbo/common/extension/adaptive/HasAdaptiveExt$Adaptive");
         try (InputStream inputStream = url.openStream()) {
             String content = IOUtils.read(new InputStreamReader(inputStream, StandardCharsets.UTF_8));

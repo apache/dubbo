@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+import org.apache.dubbo.rpc.Invocation;
 
 @Adaptive
 public class HasAdaptiveExt_ManualAdaptive implements HasAdaptiveExt {
@@ -27,5 +28,12 @@ public class HasAdaptiveExt_ManualAdaptive implements HasAdaptiveExt {
         HasAdaptiveExt addExt1 =
                 ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class).getExtension(url.getParameter("key"));
         return addExt1.echo(url, s);
+    }
+
+    @Override
+    public String echo(URL url, Invocation invocation) {
+        HasAdaptiveExt addExt1 =
+                ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class).getExtension(url.getParameter("key"));
+        return addExt1.echo(url, invocation);
     }
 }

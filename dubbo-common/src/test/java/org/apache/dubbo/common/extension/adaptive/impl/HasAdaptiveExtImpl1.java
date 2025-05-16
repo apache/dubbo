@@ -18,9 +18,15 @@ package org.apache.dubbo.common.extension.adaptive.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+import org.apache.dubbo.rpc.Invocation;
 
 public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
     public String echo(URL url, String s) {
+        return this.getClass().getSimpleName();
+    }
+
+    @Override
+    public String echo(URL url, Invocation s) {
         return this.getClass().getSimpleName();
     }
 }

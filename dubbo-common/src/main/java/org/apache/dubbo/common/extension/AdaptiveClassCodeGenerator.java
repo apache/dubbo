@@ -60,13 +60,19 @@ public class AdaptiveClassCodeGenerator {
     private static final String CODE_URL_NULL_CHECK =
             "if (arg%d == null) throw new IllegalArgumentException(\"url == null\");\n%s url = arg%d;\n";
 
-    private static final String CODE_EXT_NAME_ASSIGNMENT = "String extName = %s;\n";
+    /**
+     * @see org.apache.dubbo.common.utils.StringUtils#getFirstNotEmpty(String...)
+     */
+    private static final String CODE_EXT_NAME_START_WITH =
+            "String extName = StringUtils.getFirstNotEmpty(new String[] {";
+
+    private static final String CODE_EXT_NAME_END_WITH = "});\n";
 
     private static final String CODE_EXT_NAME_NULL_CHECK = "if(extName == null) "
             + "throw new IllegalStateException(\"Failed to get extension (%s) name from url (\" + url.toString() + \") use keys(%s)\");\n";
 
     private static final String CODE_INVOCATION_ARGUMENT_NULL_CHECK =
-            "if (arg%d == null) throw new IllegalArgumentException(\"invocation == null\"); "
+            "if (arg%d == null) throw new IllegalArgumentException(\"invocation == null\");\n"
                     + "String methodName = arg%d.getMethodName();\n";
 
     private static final String CODE_SCOPE_MODEL_ASSIGNMENT =
@@ -144,6 +150,7 @@ public class AdaptiveClassCodeGenerator {
         StringBuilder builder = new StringBuilder();
         builder.append(String.format(CODE_IMPORTS, ScopeModel.class.getName()));
         builder.append(String.format(CODE_IMPORTS, ScopeModelUtil.class.getName()));
+        builder.append(String.format(CODE_IMPORTS, StringUtils.class.getName()));
         return builder.toString();
     }
 
@@ -269,49 +276,31 @@ public class AdaptiveClassCodeGenerator {
      * generate extName assignment code
      */
     private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
-        // TODO: refactor it
-        String getNameCode = null;
-        for (int i = value.length - 1; i >= 0; --i) {
-            if (i == value.length - 1) {
-                if (null != defaultExtName) {
-                    if (!CommonConstants.PROTOCOL_KEY.equals(value[i])) {
-                        if (hasInvocation) {
-                            getNameCode = String.format(
-                                    "url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                        } else {
-                            getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
-                        }
-                    } else {
-                        getNameCode = String.format(
-                                "( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
-                    }
-                } else {
-                    if (!CommonConstants.PROTOCOL_KEY.equals(value[i])) {
-                        if (hasInvocation) {
-                            getNameCode = String.format(
-                                    "url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                        } else {
-                            getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
-                        }
-                    } else {
-                        getNameCode = "url.getProtocol()";
-                    }
-                }
-            } else {
-                if (!CommonConstants.PROTOCOL_KEY.equals(value[i])) {
-                    if (hasInvocation) {
-                        getNameCode = String.format(
-                                "url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                    } else {
-                        getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
-                    }
-                } else {
-                    getNameCode = String.format("url.getProtocol() == null ? (%s) : url.getProtocol()", getNameCode);
-                }
+        // order by ->
+        // [key1, key2, ... , default]
+        StringBuilder extNameCodeBuilder = new StringBuilder(CODE_EXT_NAME_START_WITH);
+        for (String item : value) {
+            if (StringUtils.isEmpty(item)) {
+                continue;
             }
+            String itemCode;
+            if (CommonConstants.PROTOCOL_KEY.equals(item)) {
+                itemCode = "url.getProtocol(),";
+            } else if (hasInvocation) {
+                itemCode = String.format("url.getMethodParameter(methodName,\"%s\"),", item);
+            } else {
+                itemCode = String.format("url.getParameter(\"%s\"),", item);
+            }
+            extNameCodeBuilder.append(itemCode);
         }
 
-        return String.format(CODE_EXT_NAME_ASSIGNMENT, getNameCode);
+        if (StringUtils.isNotEmpty(defaultExtName)) {
+            extNameCodeBuilder.append(String.format("\"%s\"", defaultExtName));
+        } else {
+            // remove the last ","
+            extNameCodeBuilder.deleteCharAt(extNameCodeBuilder.length() - 1);
+        }
+        return extNameCodeBuilder.append(CODE_EXT_NAME_END_WITH).toString();
     }
 
     /**

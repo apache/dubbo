@@ -515,6 +515,21 @@ public final class StringUtils {
     }
 
     /**
+     * find the first string that is not empty from low to high
+     *
+     * @param strings list of source string
+     * @return string not empty
+     */
+    public static String getFirstNotEmpty(String... strings) {
+        for (String str : strings) {
+            if (isNotEmpty(str)) {
+                return str;
+            }
+        }
+        return null;
+    }
+
+    /**
      * if s1 is null and s2 is null, then return true
      *
      * @param s1 str1
