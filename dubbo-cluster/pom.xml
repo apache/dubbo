@@ -69,7 +69,7 @@
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-metrics-default</artifactId>
       <version>${project.parent.version}</version>
-      <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
