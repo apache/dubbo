@@ -44,7 +44,8 @@ public class ObjectMapperCodecTest {
     @Test
     public void testOAuth2AuthorizedClientCodec() {
         ClientRegistration clientRegistration = clientRegistration().build();
-        OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(clientRegistration, "principal-name", noScopes());
+        OAuth2AuthorizedClient authorizedClient =
+                new OAuth2AuthorizedClient(clientRegistration, "principal-name", noScopes());
 
         String content = mapper.serialize(authorizedClient);
 
@@ -56,7 +57,10 @@ public class ObjectMapperCodecTest {
     @Test
     public void bearerTokenAuthenticationTest() {
         BearerTokenAuthentication bearerTokenAuthentication = new BearerTokenAuthentication(
-                new DefaultOAuth2AuthenticatedPrincipal("principal-name", Collections.singletonMap("name",  "kali"), Collections.singleton(new SimpleGrantedAuthority("1"))),
+                new DefaultOAuth2AuthenticatedPrincipal(
+                        "principal-name",
+                        Collections.singletonMap("name", "kali"),
+                        Collections.singleton(new SimpleGrantedAuthority("1"))),
                 new OAuth2AccessToken(TokenType.BEARER, "111", Instant.MIN, Instant.MAX),
                 Collections.emptyList());
         String content = mapper.serialize(bearerTokenAuthentication);
@@ -73,7 +77,8 @@ public class ObjectMapperCodecTest {
 
         String content = mapper.serialize(oAuth2ClientAuthenticationToken);
 
-        OAuth2ClientAuthenticationToken deserialize = mapper.deserialize(content.getBytes(), OAuth2ClientAuthenticationToken.class);
+        OAuth2ClientAuthenticationToken deserialize =
+                mapper.deserialize(content.getBytes(), OAuth2ClientAuthenticationToken.class);
 
         Assertions.assertNotNull(deserialize);
     }
@@ -89,8 +94,14 @@ public class ObjectMapperCodecTest {
                 .clientSecret("client-secret")
                 .clientIdIssuedAt(Instant.MIN)
                 .clientSecretExpiresAt(Instant.MAX)
-                .tokenSettings(TokenSettings.builder().accessTokenFormat(OAuth2TokenFormat.REFERENCE).accessTokenTimeToLive(Duration.ofSeconds(1000)).build())
-                .clientSettings(ClientSettings.builder().setting("name", "value").requireProofKey(true).build())
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenFormat(OAuth2TokenFormat.REFERENCE)
+                        .accessTokenTimeToLive(Duration.ofSeconds(1000))
+                        .build())
+                .clientSettings(ClientSettings.builder()
+                        .setting("name", "value")
+                        .requireProofKey(true)
+                        .build())
                 .build();
 
         String content = mapper.serialize(registeredClient);
