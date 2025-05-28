@@ -115,7 +115,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         return new ReflectionPackableMethod(methodDescriptor, url, serializeName, allSerialize);
     }
 
-    static boolean isStreamType(Class<?> type) {
+    public static boolean isStreamType(Class<?> type) {
         return StreamObserver.class.isAssignableFrom(type) || GRPC_STREAM_CLASS.equalsIgnoreCase(type.getName());
     }
 

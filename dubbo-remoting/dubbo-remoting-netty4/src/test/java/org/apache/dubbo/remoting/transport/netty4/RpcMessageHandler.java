@@ -18,26 +18,32 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.bytecode.NoSuchMethodException;
 import org.apache.dubbo.common.bytecode.Wrapper;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * RpcMessageHandler.
  */
 public class RpcMessageHandler implements Replier<RpcMessage> {
+    private static final ConcurrentMap<String, Object> IMPLEMENT_MAP = new ConcurrentHashMap<>();
     private static final ServiceProvider DEFAULT_PROVIDER = new ServiceProvider() {
         public Object getImplementation(String service) {
             String impl = service + "Impl";
-            try {
-                Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(impl);
-                return cl.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
+            return ConcurrentHashMapUtils.computeIfAbsent(IMPLEMENT_MAP, impl, (s) -> {
+                try {
+                    Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(s);
+                    return cl.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
         }
     };
     private ServiceProvider mProvider;

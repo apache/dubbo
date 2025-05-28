@@ -166,14 +166,7 @@ public class DefaultHttpResponse implements HttpResponse {
         String charset = this.charset;
         if (charset == null) {
             String contentType = contentType();
-            if (contentType == null) {
-                charset = StringUtils.EMPTY_STRING;
-            } else {
-                int index = contentType.lastIndexOf(HttpUtils.CHARSET_PREFIX);
-                charset = index == -1
-                        ? StringUtils.EMPTY_STRING
-                        : contentType.substring(index + 8).trim();
-            }
+            charset = HttpUtils.parseCharset(contentType);
             this.charset = charset;
         }
         return charset.isEmpty() ? null : charset;

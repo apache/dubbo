@@ -38,7 +38,7 @@ public class MetricsEventBus {
      * @param event event to post.
      */
     public static void publish(MetricsEvent event) {
-        if (event.getSource() == null) {
+        if (event == null || event.getSource() == null) {
             return;
         }
         MetricsEventMulticaster dispatcher = event.getMetricsEventMulticaster();
@@ -92,6 +92,9 @@ public class MetricsEventBus {
     }
 
     public static void tryInvoke(Runnable runnable) {
+        if (runnable == null) {
+            return;
+        }
         try {
             runnable.run();
         } catch (Throwable e) {
@@ -115,14 +118,20 @@ public class MetricsEventBus {
         if (dispatcher == null) return;
         tryInvoke(() -> {
             event.customAfterPost(result);
-            dispatcher.publishFinishEvent((TimeCounterEvent) event);
+            if (event instanceof TimeCounterEvent) {
+                dispatcher.publishFinishEvent((TimeCounterEvent) event);
+            }
         });
     }
 
     public static void error(MetricsEvent event) {
         MetricsEventMulticaster dispatcher = validate(event);
         if (dispatcher == null) return;
-        tryInvoke(() -> dispatcher.publishErrorEvent((TimeCounterEvent) event));
+        tryInvoke(() -> {
+            if (event instanceof TimeCounterEvent) {
+                dispatcher.publishErrorEvent((TimeCounterEvent) event);
+            }
+        });
     }
 
     private static MetricsEventMulticaster validate(MetricsEvent event) {

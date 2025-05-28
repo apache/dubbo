@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.aot;
 import org.apache.dubbo.aot.api.JdkProxyDescriber;
 import org.apache.dubbo.aot.api.ProxyDescriberRegistrar;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.service.EchoService;
 
@@ -30,6 +31,7 @@ public class MetadataProxyDescriberRegistrar implements ProxyDescriberRegistrar 
     public List<JdkProxyDescriber> getJdkProxyDescribers() {
         List<JdkProxyDescriber> describers = new ArrayList<>();
         describers.add(buildJdkProxyDescriber(MetadataService.class));
+        describers.add(buildJdkProxyDescriber(MetadataServiceV2.class));
         return describers;
     }
 

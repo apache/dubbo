@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.isolation.spring.annotation;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -113,14 +114,14 @@ public class AnnotationIsolationTest extends BaseTest {
         // expose services with dubbo protocol
         @Bean
         public ProtocolConfig dubbo() {
-            ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
+            ProtocolConfig protocolConfig = new ProtocolConfig("dubbo", NetUtils.getAvailablePort());
             return protocolConfig;
         }
 
         // expose services with tri protocol
         @Bean
         public ProtocolConfig tri() {
-            ProtocolConfig protocolConfig = new ProtocolConfig("tri");
+            ProtocolConfig protocolConfig = new ProtocolConfig("tri", NetUtils.getAvailablePort());
             return protocolConfig;
         }
 

@@ -32,7 +32,7 @@ public class DubboServerContext extends ReceiverContext<Invocation> {
     private final Invocation invocation;
 
     public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
-        super((carrier, s) -> String.valueOf(carrier.getAttachment(s)), Kind.SERVER);
+        super((carrier, s) -> carrier.getAttachment(s), Kind.SERVER);
         this.invoker = invoker;
         this.invocation = invocation;
         setCarrier(invocation);

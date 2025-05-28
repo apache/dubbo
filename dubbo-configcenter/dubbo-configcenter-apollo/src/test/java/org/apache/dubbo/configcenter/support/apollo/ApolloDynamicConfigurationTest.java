@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -60,6 +61,7 @@ class ApolloDynamicConfigurationTest {
      */
     @BeforeEach
     public void setUp() {
+        FrameworkModel.destroyAll();
         String apolloUrl = System.getProperty("apollo.configService");
         String urlForDubbo = "apollo://" + apolloUrl.substring(apolloUrl.lastIndexOf("/") + 1)
                 + "/org.apache.dubbo.apollo.testService?namespace=dubbo&check=true";
