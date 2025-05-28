@@ -32,8 +32,6 @@ public class NamedThreadFactory implements ThreadFactory {
 
     protected final boolean mDaemon;
 
-    protected final ThreadGroup mGroup;
-
     public NamedThreadFactory() {
         this("pool-" + POOL_SEQ.getAndIncrement(), false);
     }
@@ -45,20 +43,14 @@ public class NamedThreadFactory implements ThreadFactory {
     public NamedThreadFactory(String prefix, boolean daemon) {
         mPrefix = prefix + "-thread-";
         mDaemon = daemon;
-        SecurityManager s = System.getSecurityManager();
-        mGroup = (s == null) ? Thread.currentThread().getThreadGroup() : s.getThreadGroup();
     }
 
     @Override
     public Thread newThread(Runnable runnable) {
         String name = mPrefix + mThreadNum.getAndIncrement();
-        Thread ret = new Thread(mGroup, runnable, name, 0);
+        Thread ret = new Thread(runnable, name);
         ret.setDaemon(mDaemon);
         return ret;
-    }
-
-    public ThreadGroup getThreadGroup() {
-        return mGroup;
     }
 
     // for test

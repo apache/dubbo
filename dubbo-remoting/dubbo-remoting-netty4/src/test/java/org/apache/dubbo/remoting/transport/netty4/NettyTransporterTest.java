@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
@@ -59,6 +60,7 @@ class NettyTransporterTest {
         RemotingServer server = new NettyTransporter().bind(url, new ChannelHandlerAdapter());
 
         assertThat(server.isBound(), is(true));
+        Assertions.assertNotEquals(port, NetUtils.getAvailablePort(port));
     }
 
     @Test

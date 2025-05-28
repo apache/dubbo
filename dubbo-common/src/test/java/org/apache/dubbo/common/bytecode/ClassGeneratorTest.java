@@ -20,9 +20,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import javassist.ClassPool;
 
@@ -238,7 +238,7 @@ class ClassGeneratorTest {
         int threadCount = 5;
         CountDownLatch LATCH = new CountDownLatch(threadCount);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        List<Integer> hashCodeList = new ArrayList<>();
+        List<Integer> hashCodeList = new CopyOnWriteArrayList<>();
         for (int i = 0; i < threadCount; i++) {
             new Thread(new Runnable() {
                         @Override

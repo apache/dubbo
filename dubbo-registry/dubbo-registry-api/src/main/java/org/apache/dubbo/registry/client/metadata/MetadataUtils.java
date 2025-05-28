@@ -176,7 +176,7 @@ public class MetadataUtils {
         RemoteMetadataService remoteMetadataService;
         ProxyFactory proxyFactory =
                 applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        if (useV2) {
+        if (useV2 && !inNativeImage) {
             Invoker<MetadataServiceV2> invoker = protocol.refer(MetadataServiceV2.class, url);
 
             if (url.getParameter(AUTH_KEY, false)) {

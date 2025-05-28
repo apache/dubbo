@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.rpc.protocol.tri.h12.http1;
 
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-
-import java.io.IOException;
+import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.ServerSentEventEncoder;
 
 public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
 
@@ -31,23 +31,14 @@ public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
     }
 
     @Override
+    public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
+        super.setResponseEncoder(new ServerSentEventEncoder(responseEncoder));
+    }
+
+    @Override
     protected HttpMetadata encodeHttpMetadata(boolean endStream) {
         return super.encodeHttpMetadata(endStream)
                 .header(HttpHeaderNames.TRANSFER_ENCODING.getKey(), HttpConstants.CHUNKED)
                 .header(HttpHeaderNames.CACHE_CONTROL.getKey(), HttpConstants.NO_CACHE);
-    }
-
-    @Override
-    protected void preOutputMessage(HttpOutputMessage message) throws IOException {
-        HttpOutputMessage prefixMessage = getHttpChannel().newOutputMessage();
-        prefixMessage.getBody().write(HttpConstants.SERVER_SENT_EVENT_DATA_PREFIX_BYTES);
-        getHttpChannel().writeMessage(prefixMessage);
-    }
-
-    @Override
-    protected void postOutputMessage(HttpOutputMessage message) throws IOException {
-        HttpOutputMessage lfMessage = getHttpChannel().newOutputMessage();
-        lfMessage.getBody().write(HttpConstants.SERVER_SENT_EVENT_LF_BYTES);
-        getHttpChannel().writeMessage(lfMessage);
     }
 }

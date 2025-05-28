@@ -1001,73 +1001,77 @@ class ReferenceConfigTest {
 
         DemoService demoService = new DemoServiceImpl();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setInterface(DemoService.class);
-        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
-        serviceConfig.setScopeModel(moduleModel);
-        serviceConfig.setRef(demoService);
-        serviceConfig.export();
+        try {
+            serviceConfig.setInterface(DemoService.class);
+            serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
+            serviceConfig.setScopeModel(moduleModel);
+            serviceConfig.setRef(demoService);
+            serviceConfig.export();
 
-        String basePath = DemoService.class
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .getFile();
-        basePath = URLDecoder.decode(basePath, "UTF-8");
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        TestClassLoader classLoader1 = new TestClassLoader(classLoader, basePath);
-        TestClassLoader classLoader2 = new TestClassLoader(classLoader, basePath);
+            String basePath = DemoService.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .getFile();
+            basePath = URLDecoder.decode(basePath, "UTF-8");
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            TestClassLoader classLoader1 = new TestClassLoader(classLoader, basePath);
+            TestClassLoader classLoader2 = new TestClassLoader(classLoader, basePath);
 
-        Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
-        Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
+            Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
+            Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
 
-        Assertions.assertNotEquals(class1, class2);
+            Assertions.assertNotEquals(class1, class2);
 
-        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
-        referenceConfig1.setInterface(class1);
-        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
-        referenceConfig1.setScopeModel(moduleModel);
-        referenceConfig1.setScope("remote");
-        Object demoService1 = referenceConfig1.get();
+            ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+            referenceConfig1.setInterface(class1);
+            referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
+            referenceConfig1.setScopeModel(moduleModel);
+            referenceConfig1.setScope("remote");
+            Object demoService1 = referenceConfig1.get();
 
-        for (Class<?> anInterface : demoService1.getClass().getInterfaces()) {
-            Assertions.assertNotEquals(DemoService.class, anInterface);
+            for (Class<?> anInterface : demoService1.getClass().getInterfaces()) {
+                Assertions.assertNotEquals(DemoService.class, anInterface);
+            }
+            Assertions.assertTrue(Arrays.stream(demoService1.getClass().getInterfaces())
+                    .anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader1)));
+
+            java.lang.reflect.Method callBean1 = demoService1.getClass().getDeclaredMethod("callInnerClass");
+            callBean1.setAccessible(true);
+            Object result1 = callBean1.invoke(demoService1);
+
+            Assertions.assertNotEquals(result1.getClass(), DemoService.InnerClass.class);
+            Assertions.assertEquals(classLoader1, result1.getClass().getClassLoader());
+
+            ReferenceConfig<DemoService> referenceConfig2 = new ReferenceConfig<>();
+            referenceConfig2.setInterface(class2);
+            referenceConfig2.setRegistry(new RegistryConfig(zkUrl1));
+            referenceConfig2.setScopeModel(moduleModel);
+            referenceConfig2.setScope("remote");
+            Object demoService2 = referenceConfig2.get();
+
+            for (Class<?> anInterface : demoService2.getClass().getInterfaces()) {
+                Assertions.assertNotEquals(DemoService.class, anInterface);
+            }
+            Assertions.assertTrue(Arrays.stream(demoService2.getClass().getInterfaces())
+                    .anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader2)));
+
+            java.lang.reflect.Method callBean2 = demoService2.getClass().getDeclaredMethod("callInnerClass");
+            callBean2.setAccessible(true);
+            Object result2 = callBean2.invoke(demoService2);
+
+            Assertions.assertNotEquals(callBean1, callBean2);
+            Assertions.assertNotEquals(result2.getClass(), DemoService.InnerClass.class);
+            Assertions.assertEquals(classLoader2, result2.getClass().getClassLoader());
+            Assertions.assertNotEquals(result1.getClass(), result2.getClass());
+
+            applicationModel.destroy();
+            DubboBootstrap.getInstance().destroy();
+            Thread.currentThread().setContextClassLoader(classLoader);
+            Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
+        } finally {
+            serviceConfig.unexport();
         }
-        Assertions.assertTrue(Arrays.stream(demoService1.getClass().getInterfaces())
-                .anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader1)));
-
-        java.lang.reflect.Method callBean1 = demoService1.getClass().getDeclaredMethod("callInnerClass");
-        callBean1.setAccessible(true);
-        Object result1 = callBean1.invoke(demoService1);
-
-        Assertions.assertNotEquals(result1.getClass(), DemoService.InnerClass.class);
-        Assertions.assertEquals(classLoader1, result1.getClass().getClassLoader());
-
-        ReferenceConfig<DemoService> referenceConfig2 = new ReferenceConfig<>();
-        referenceConfig2.setInterface(class2);
-        referenceConfig2.setRegistry(new RegistryConfig(zkUrl1));
-        referenceConfig2.setScopeModel(moduleModel);
-        referenceConfig2.setScope("remote");
-        Object demoService2 = referenceConfig2.get();
-
-        for (Class<?> anInterface : demoService2.getClass().getInterfaces()) {
-            Assertions.assertNotEquals(DemoService.class, anInterface);
-        }
-        Assertions.assertTrue(Arrays.stream(demoService2.getClass().getInterfaces())
-                .anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader2)));
-
-        java.lang.reflect.Method callBean2 = demoService2.getClass().getDeclaredMethod("callInnerClass");
-        callBean2.setAccessible(true);
-        Object result2 = callBean2.invoke(demoService2);
-
-        Assertions.assertNotEquals(callBean1, callBean2);
-        Assertions.assertNotEquals(result2.getClass(), DemoService.InnerClass.class);
-        Assertions.assertEquals(classLoader2, result2.getClass().getClassLoader());
-        Assertions.assertNotEquals(result1.getClass(), result2.getClass());
-
-        applicationModel.destroy();
-        DubboBootstrap.getInstance().destroy();
-        Thread.currentThread().setContextClassLoader(classLoader);
-        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
     }
 
     @Test
@@ -1103,47 +1107,52 @@ class ReferenceConfigTest {
                 clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
 
         ServiceConfig serviceConfig = new ServiceConfig<>();
-        serviceConfig.setInterfaceClassLoader(classLoader1);
-        serviceConfig.setInterface(clazz1);
-        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
-        serviceConfig.setScopeModel(moduleModel);
-        serviceConfig.setRef(declaredConstructor.newInstance(innerRequestReference, innerResultReference));
-        serviceConfig.export();
+        try {
+            serviceConfig.setInterfaceClassLoader(classLoader1);
+            serviceConfig.setInterface(clazz1);
+            serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
+            serviceConfig.setScopeModel(moduleModel);
+            serviceConfig.setRef(declaredConstructor.newInstance(innerRequestReference, innerResultReference));
+            serviceConfig.export();
 
-        Class<?> clazz2 = classLoader2.loadClass(MultiClassLoaderService.class.getName(), false);
-        Class<?> requestClazzOrigin = classLoader2.loadClass(MultiClassLoaderServiceRequest.class.getName(), false);
-        Class<?> requestClazzCustom2 = compileCustomRequest(classLoader2);
-        Class<?> resultClazzCustom3 = compileCustomResult(classLoader3);
-        classLoader2.loadedClass.put(requestClazzCustom2.getName(), requestClazzCustom2);
-        classLoader3.loadedClass.put(resultClazzCustom3.getName(), resultClazzCustom3);
+            Class<?> clazz2 = classLoader2.loadClass(MultiClassLoaderService.class.getName(), false);
+            Class<?> requestClazzOrigin = classLoader2.loadClass(MultiClassLoaderServiceRequest.class.getName(), false);
+            Class<?> requestClazzCustom2 = compileCustomRequest(classLoader2);
+            Class<?> resultClazzCustom3 = compileCustomResult(classLoader3);
+            classLoader2.loadedClass.put(requestClazzCustom2.getName(), requestClazzCustom2);
+            classLoader3.loadedClass.put(resultClazzCustom3.getName(), resultClazzCustom3);
 
-        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
-        referenceConfig1.setInterface(clazz2);
-        referenceConfig1.setInterfaceClassLoader(classLoader3);
-        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
-        referenceConfig1.setScopeModel(moduleModel);
-        referenceConfig1.setScope("remote");
-        referenceConfig1.setTimeout(30000);
-        Object object1 = referenceConfig1.get();
+            ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+            referenceConfig1.setInterface(clazz2);
+            referenceConfig1.setInterfaceClassLoader(classLoader3);
+            referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
+            referenceConfig1.setScopeModel(moduleModel);
+            referenceConfig1.setScope("remote");
+            referenceConfig1.setTimeout(30000);
+            Object object1 = referenceConfig1.get();
 
-        java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
-        callBean1.setAccessible(true);
-        Object result1 = callBean1.invoke(
-                object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
+            java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
+            callBean1.setAccessible(true);
+            Object result1 = callBean1.invoke(
+                    object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
 
-        Assertions.assertEquals(resultClazzCustom3, result1.getClass());
-        Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
-        Assertions.assertEquals(
-                classLoader1, innerRequestReference.get().getClass().getClassLoader());
+            Assertions.assertEquals(resultClazzCustom3, result1.getClass());
+            Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
+            Assertions.assertEquals(
+                    classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
-        Thread.currentThread().setContextClassLoader(classLoader1);
-        callBean1.invoke(object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
-        Assertions.assertEquals(classLoader1, Thread.currentThread().getContextClassLoader());
+            Thread.currentThread().setContextClassLoader(classLoader1);
+            callBean1.invoke(
+                    object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
+            Assertions.assertEquals(classLoader1, Thread.currentThread().getContextClassLoader());
 
-        applicationModel.destroy();
-        DubboBootstrap.getInstance().destroy();
-        Thread.currentThread().setContextClassLoader(classLoader);
-        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
+            applicationModel.destroy();
+            DubboBootstrap.getInstance().destroy();
+            Thread.currentThread().setContextClassLoader(classLoader);
+            Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
+        } finally {
+            serviceConfig.unexport();
+        }
     }
 
     @Test
@@ -1157,26 +1166,30 @@ class ReferenceConfigTest {
         Thread.currentThread().setContextClassLoader(classLoader);
 
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
-        serviceConfig.setInterface(DemoService.class);
-        serviceConfig.setProtocol(new ProtocolConfig("dubbo", -1));
-        serviceConfig.setRegistry(new RegistryConfig("N/A"));
-        serviceConfig.setRef(new DemoServiceImpl());
-        serviceConfig.export();
+        try {
+            serviceConfig.setInterface(DemoService.class);
+            serviceConfig.setProtocol(new ProtocolConfig("dubbo", -1));
+            serviceConfig.setRegistry(new RegistryConfig("N/A"));
+            serviceConfig.setRef(new DemoServiceImpl());
+            serviceConfig.export();
 
-        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>(applicationModel.newModule());
-        referenceConfig.setInterface(DemoService.class);
-        referenceConfig.setRegistry(new RegistryConfig("N/A"));
-        DemoService demoService = referenceConfig.get();
+            ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>(applicationModel.newModule());
+            referenceConfig.setInterface(DemoService.class);
+            referenceConfig.setRegistry(new RegistryConfig("N/A"));
+            DemoService demoService = referenceConfig.get();
 
-        demoService.sayName("Dubbo");
-        Assertions.assertEquals(classLoader, Thread.currentThread().getContextClassLoader());
+            demoService.sayName("Dubbo");
+            Assertions.assertEquals(classLoader, Thread.currentThread().getContextClassLoader());
 
-        Thread.currentThread().setContextClassLoader(null);
-        demoService.sayName("Dubbo");
-        Assertions.assertNull(Thread.currentThread().getContextClassLoader());
+            Thread.currentThread().setContextClassLoader(null);
+            demoService.sayName("Dubbo");
+            Assertions.assertNull(Thread.currentThread().getContextClassLoader());
 
-        Thread.currentThread().setContextClassLoader(originClassLoader);
-        frameworkModel.destroy();
+            Thread.currentThread().setContextClassLoader(originClassLoader);
+            frameworkModel.destroy();
+        } finally {
+            serviceConfig.unexport();
+        }
     }
 
     private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {

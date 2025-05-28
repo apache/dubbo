@@ -474,6 +474,7 @@ class StringUtilsTest {
 
     /**
      * Test {@link StringUtils#toCommaDelimitedString(String, String...)}
+     *
      * @since 2.7.8
      */
     @Test
@@ -483,6 +484,9 @@ class StringUtilsTest {
 
         value = toCommaDelimitedString(null, null);
         assertNull(value);
+
+        value = toCommaDelimitedString("one", null);
+        assertEquals("one", value);
 
         value = toCommaDelimitedString("");
         assertEquals("", value);

@@ -20,6 +20,9 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.springboot.demo.DemoService;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -39,9 +42,23 @@ public class ConsumerApplication {
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
         String result = application.doSayHello("world");
         System.out.println("result: " + result);
+
+        CompletableFuture<String> future = application.doSayHelloAsync("world");
+        try {
+            System.out.println("async call returned: " + future.get());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String doSayHello(String name) {
         return demoService.sayHello(name);
+    }
+
+    public CompletableFuture<String> doSayHelloAsync(String name) {
+        CompletableFuture<String> sayHelloAsyncFuture = demoService.sayHelloAsync(name);
+        return sayHelloAsyncFuture;
     }
 }

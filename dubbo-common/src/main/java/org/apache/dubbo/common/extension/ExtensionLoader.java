@@ -800,8 +800,9 @@ public class ExtensionLoader<T> {
                                                 || ArrayUtils.contains(wrapper.matches(), name))
                                         && !ArrayUtils.contains(wrapper.mismatches(), name));
                         if (match) {
-                            instance = injectExtension(
-                                    (T) wrapperClass.getConstructor(type).newInstance(instance));
+                            instance = (T) wrapperClass.getConstructor(type).newInstance(instance);
+                            instance = postProcessBeforeInitialization(instance, name);
+                            injectExtension(instance);
                             instance = postProcessAfterInitialization(instance, name);
                         }
                     }

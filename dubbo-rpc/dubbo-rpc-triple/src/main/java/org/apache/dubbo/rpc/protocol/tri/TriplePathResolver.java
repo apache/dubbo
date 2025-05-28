@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class TriplePathResolver implements PathResolver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleProtocol.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TriplePathResolver.class);
 
     private final Map<String, Invoker<?>> mapping = CollectionUtils.newConcurrentHashMap();
     private final Map<String, Boolean> nativeStubs = CollectionUtils.newConcurrentHashMap();
