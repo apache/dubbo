@@ -16,19 +16,12 @@
  */
 package org.apache.dubbo.spring.security.oauth2;
 
+import org.apache.dubbo.common.utils.ClassUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
 
 public class OAuth2SecurityModule extends SimpleModule {
 
@@ -38,16 +31,66 @@ public class OAuth2SecurityModule extends SimpleModule {
 
     @Override
     public void setupModule(SetupContext context) {
-        context.setMixInAnnotations(OAuth2AuthenticatedPrincipal.class, OAuth2AuthenticatedPrincipalMixin.class);
-        context.setMixInAnnotations(DefaultOAuth2AuthenticatedPrincipal.class, OAuth2AuthenticatedPrincipalMixin.class);
-        context.setMixInAnnotations(BearerTokenAuthentication.class, BearerTokenAuthenticationMixin.class);
-        context.setMixInAnnotations(OAuth2ClientAuthenticationToken.class, OAuth2ClientAuthenticationTokenMixin.class);
-        context.setMixInAnnotations(ClientAuthenticationMethod.class, ClientAuthenticationMethodMixin.class);
-        context.setMixInAnnotations(RegisteredClient.class, RegisteredClientMixin.class);
-        context.setMixInAnnotations(AuthorizationGrantType.class, AuthorizationGrantTypeMixin.class);
-        context.setMixInAnnotations(ClientSettings.class, ClientSettingsMixin.class);
-        context.setMixInAnnotations(TokenSettings.class, TokenSettingsMixin.class);
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal",
+                "org.apache.dubbo.spring.security.oauth2.OAuth2AuthenticatedPrincipalMixin");
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal",
+                "org.apache.dubbo.spring.security.oauth2.OAuth2AuthenticatedPrincipalMixin");
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication",
+                "org.apache.dubbo.spring.security.oauth2.BearerTokenAuthenticationMixin");
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken",
+                "org.apache.dubbo.spring.security.oauth2.OAuth2ClientAuthenticationTokenMixin");
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.core.ClientAuthenticationMethod",
+                ClientAuthenticationMethodMixin.class);
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.server.authorization.client.RegisteredClient",
+                "org.apache.dubbo.spring.security.oauth2.RegisteredClientMixin");
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.core.AuthorizationGrantType",
+                AuthorizationGrantTypeMixin.class);
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.server.authorization.settings.ClientSettings",
+                ClientSettingsMixin.class);
+        setMixInAnnotations(
+                context,
+                "org.springframework.security.oauth2.server.authorization.settings.TokenSettings",
+                TokenSettingsMixin.class);
         context.setMixInAnnotations(
                 Collections.unmodifiableCollection(new ArrayList<>()).getClass(), UnmodifiableCollectionMixin.class);
+    }
+
+    private void setMixInAnnotations(SetupContext context, String oauth2ClassName, String mixinClassName) {
+        Class<?> oauth2Class = loadClassIfPresent(oauth2ClassName);
+        if (oauth2Class != null) {
+            context.setMixInAnnotations(oauth2Class, loadClassIfPresent(mixinClassName));
+        }
+    }
+
+    private void setMixInAnnotations(SetupContext context, String oauth2ClassName, Class<?> mixinClass) {
+        Class<?> oauth2Class = loadClassIfPresent(oauth2ClassName);
+        if (oauth2Class != null) {
+            context.setMixInAnnotations(oauth2Class, mixinClass);
+        }
+    }
+
+    private Class<?> loadClassIfPresent(String oauth2ClassName) {
+        try {
+            return ClassUtils.forName(oauth2ClassName, OAuth2SecurityModule.class.getClassLoader());
+
+        } catch (Throwable ignored) {
+        }
+        return null;
     }
 }
