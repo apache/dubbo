@@ -49,12 +49,14 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.ServerService;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.DubboStub;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.beans.Transient;
 import java.lang.reflect.Method;
@@ -303,6 +305,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         initServiceMetadata(provider);
         serviceMetadata.setServiceType(getInterfaceClass());
         serviceMetadata.setTarget(getRef());
+        if (DubboStub.class.isAssignableFrom(getInterfaceClass())) {
+            ServiceDescriptor serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
+            setInterface(serviceDescriptor.getInterfaceName());
+            serviceMetadata.setServiceInterfaceName(serviceDescriptor.getInterfaceName());
+        }
         serviceMetadata.generateServiceKey();
     }
 

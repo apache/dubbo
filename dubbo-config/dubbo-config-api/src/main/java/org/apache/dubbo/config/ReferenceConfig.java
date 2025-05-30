@@ -349,10 +349,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 initServiceMetadata(consumer);
 
                 serviceMetadata.setServiceType(getServiceInterfaceClass());
-                // TODO, uncomment this line once service key is unified
-                serviceMetadata.generateServiceKey();
-
-                Map<String, String> referenceParameters = appendConfig();
 
                 ModuleServiceRepository repository = getScopeModel().getServiceRepository();
                 ServiceDescriptor serviceDescriptor;
@@ -360,9 +356,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
                     repository.registerService(serviceDescriptor);
                     setInterface(serviceDescriptor.getInterfaceName());
+                    serviceMetadata.setServiceInterfaceName(serviceDescriptor.getInterfaceName());
                 } else {
                     serviceDescriptor = repository.registerService(interfaceClass);
                 }
+                serviceMetadata.generateServiceKey();
+
+                Map<String, String> referenceParameters = appendConfig();
+
                 consumerModel = new ConsumerModel(
                         serviceMetadata.getServiceKey(),
                         proxy,
