@@ -13,8 +13,8 @@ env:
   VERSIONS_LIMIT: 4
   JACOCO_ENABLE: true
   CANDIDATE_VERSIONS: '
-    spring.version:5.3.24;
-    spring-boot.version:2.7.6;
+    spring.version:5.3.24,6.1.5;
+    spring-boot.version:2.7.6,3.2.3;
     '
   MAVEN_OPTS: >-
     -XX:+UseG1GC
