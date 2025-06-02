@@ -325,6 +325,7 @@ jobs:
           pattern: samples-test-result-${{matrix.jdk}}-*
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
+          merge-multiple: true
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
 
@@ -430,6 +431,7 @@ jobs:
           pattern: integration-test-result-${{matrix.jdk}}-*
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
+          merge-multiple: true
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
 
