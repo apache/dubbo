@@ -124,7 +124,7 @@
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.15.0</micrometer.version>
     <opentelemetry.version>1.50.0</opentelemetry.version>
-    <zipkin-reporter.version>3.5.0</zipkin-reporter.version>
+    <zipkin-reporter.version>3.5.1</zipkin-reporter.version>
     <zipkin.version>3.5.1</zipkin.version>
     <micrometer-tracing.version>1.5.0</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
