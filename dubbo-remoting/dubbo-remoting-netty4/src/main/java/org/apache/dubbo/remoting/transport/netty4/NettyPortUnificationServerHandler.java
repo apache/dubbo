@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -47,6 +48,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CONNECT_INSECURE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
@@ -122,8 +124,27 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         ProviderCert providerConnectionConfig =
                 certManager.getProviderConnectionConfig(url, ctx.channel().remoteAddress());
 
-        if (providerConnectionConfig != null && isSsl(in)) {
-            enableSsl(ctx, providerConnectionConfig);
+        if (providerConnectionConfig != null && canDetectSsl(in)) {
+            if (isSsl(in)) {
+                enableSsl(ctx, providerConnectionConfig);
+            } else {
+                // check server should load TLS or not
+                if (providerConnectionConfig.getAuthPolicy() != AuthPolicy.NONE) {
+                    byte[] preface = new byte[in.readableBytes()];
+                    in.readBytes(preface);
+                    LOGGER.error(
+                            CONFIG_SSL_CONNECT_INSECURE,
+                            "client request server without TLS",
+                            "",
+                            String.format(
+                                    "Downstream=%s request without TLS preface, but server require it. " + "preface=%s",
+                                    ctx.channel().remoteAddress(), Bytes.bytes2hex(preface)));
+
+                    // Untrusted connection; discard everything and close the connection.
+                    in.clear();
+                    ctx.close();
+                }
+            }
         } else {
             detectProtocol(ctx, url, channel, in);
         }
@@ -148,6 +169,11 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             }
         });
         p.remove(this);
+    }
+
+    private boolean canDetectSsl(ByteBuf buf) {
+        // at least 5 bytes to determine if data is encrypted
+        return detectSsl && buf.readableBytes() >= 5;
     }
 
     private boolean isSsl(ByteBuf buf) {

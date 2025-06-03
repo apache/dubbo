@@ -46,6 +46,10 @@
       <groupId>io.zipkin.zipkin2</groupId>
       <artifactId>zipkin</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.zipkin.reporter2</groupId>
+      <artifactId>zipkin-sender-urlconnection</artifactId>
+    </dependency>
   </dependencies>
 
 </project>
