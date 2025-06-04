@@ -53,9 +53,10 @@ class SlidingWindowTest {
     @Test
     void testGetPaneData() {
         assertNull(window.getPaneValue(/* invalid time*/ -1L));
-        window.currentPane();
-        assertNotNull(window.getPaneValue(System.currentTimeMillis()));
-        assertNull(window.getPaneValue(System.currentTimeMillis() + window.getPaneIntervalInMs()));
+        long time = System.currentTimeMillis();
+        window.currentPane(time);
+        assertNotNull(window.getPaneValue(time));
+        assertNull(window.getPaneValue(time + window.getPaneIntervalInMs()));
     }
 
     @Test
