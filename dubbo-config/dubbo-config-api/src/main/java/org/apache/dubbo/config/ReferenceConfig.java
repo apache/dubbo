@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.SerializeSecurityConfigurator;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
@@ -48,7 +49,10 @@ import org.apache.dubbo.rpc.model.DubboStub;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
@@ -93,6 +97,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -394,7 +399,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
             } catch (Throwable t) {
                 logAndCleanup(t);
-
                 throw t;
             }
             initialized = true;
@@ -517,9 +521,34 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         consumerUrl = consumerUrl.setScopeModel(getScopeModel());
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
         MetadataUtils.publishServiceDefinition(consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
-
+        processSecurity();
         // create service proxy
         return (T) proxyFactory.getProxy(invoker, ProtocolUtils.isGeneric(generic));
+    }
+
+    private void processSecurity() {
+        try {
+            ServiceModel serviceModel = consumerModel;
+            ScopeModel scopeModel = getScopeModel();
+            SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
+                    .getBeanFactory()
+                    .getBean(SerializeSecurityConfigurator.class);
+            serializeSecurityConfigurator.refreshStatus();
+            serializeSecurityConfigurator.refreshCheck();
+
+            Optional.ofNullable(serviceModel)
+                    .map(ServiceModel::getServiceModel)
+                    .map(ServiceDescriptor::getServiceInterfaceClass)
+                    .ifPresent(serializeSecurityConfigurator::registerInterface);
+
+            Optional.ofNullable(serviceModel)
+                    .map(ServiceModel::getServiceMetadata)
+                    .map(ServiceMetadata::getServiceType)
+                    .ifPresent(serializeSecurityConfigurator::registerInterface);
+            serializeSecurityConfigurator.registerInterface(interfaceClass);
+        } catch (Throwable t) {
+            logger.error(INTERNAL_ERROR, "", "", "Failed to register interface for security check", t);
+        }
     }
 
     /**

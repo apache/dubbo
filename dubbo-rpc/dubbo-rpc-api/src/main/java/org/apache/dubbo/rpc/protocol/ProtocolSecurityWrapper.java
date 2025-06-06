@@ -87,24 +87,12 @@ public class ProtocolSecurityWrapper implements Protocol {
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         try {
-            ServiceModel serviceModel = url.getServiceModel();
             ScopeModel scopeModel = url.getScopeModel();
             SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
                     .getBeanFactory()
                     .getBean(SerializeSecurityConfigurator.class);
             serializeSecurityConfigurator.refreshStatus();
             serializeSecurityConfigurator.refreshCheck();
-
-            Optional.ofNullable(serviceModel)
-                    .map(ServiceModel::getServiceModel)
-                    .map(ServiceDescriptor::getServiceInterfaceClass)
-                    .ifPresent(serializeSecurityConfigurator::registerInterface);
-
-            Optional.ofNullable(serviceModel)
-                    .map(ServiceModel::getServiceMetadata)
-                    .map(ServiceMetadata::getServiceType)
-                    .ifPresent(serializeSecurityConfigurator::registerInterface);
-            serializeSecurityConfigurator.registerInterface(type);
         } catch (Throwable t) {
             logger.error(INTERNAL_ERROR, "", "", "Failed to register interface for security check", t);
         }
