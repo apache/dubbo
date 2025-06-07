@@ -84,6 +84,14 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
     }
 
     @Override
+    public void onConnectionPrefaceReceived(Object channel) {
+        if (!(channel instanceof Channel)) {
+            return;
+        }
+        connectionClient.onConnectionPrefaceReceived(channel);
+    }
+
+    @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ctx.fireChannelActive();
         Channel ch = ctx.channel();
