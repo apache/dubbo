@@ -57,8 +57,6 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
     private ConnectionListener connectionListener;
 
-    private AtomicReference<Promise<Void>> connectionPrefaceReceivedPromiseRef;
-
     public static final AttributeKey<AbstractConnectionClient> CONNECTION = AttributeKey.valueOf("connection");
 
     public AbstractNettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
@@ -83,12 +81,6 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         isReconnecting = new AtomicBoolean(false);
         connectionListener = new ConnectionListener();
         increase();
-
-        // Create connection preface received promise for Http2 client since it should wait server http2 settings frame
-        // before sending client Headers frame, see details at https://github.com/apache/dubbo/issues/15233
-        if (protocol != null && protocol.hasConnectionPreface()) {
-            connectionPrefaceReceivedPromiseRef = new AtomicReference<>();
-        }
     }
 
     protected abstract void initBootstrap() throws Exception;
@@ -137,11 +129,6 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         Future<Void> connectPromise = performConnect();
         connectPromise.addListener(connectionListener);
 
-        Promise<Void> connectionPrefaceReceivedPromise = null;
-        if (connectionPrefaceReceivedPromiseRef != null) {
-            connectionPrefaceReceivedPromise = getOrCreateConnectionPrefaceReceivedPromise();
-        }
-
         boolean ret = connectingPromise.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
         // destroy connectingPromise after used
         synchronized (this) {
@@ -180,35 +167,6 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                     TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "", "Client-side timeout", remotingException);
 
             throw remotingException;
-        }
-
-        if (connectionPrefaceReceivedPromise != null) {
-            long retainedTimeout = getConnectTimeout() - System.currentTimeMillis() + start;
-            ret = connectionPrefaceReceivedPromise.awaitUninterruptibly(retainedTimeout, TimeUnit.MILLISECONDS);
-            // destroy connectionPrefaceReceivedPromise after used
-            synchronized (this) {
-                connectionPrefaceReceivedPromiseRef.set(null);
-            }
-            if (!ret || !connectionPrefaceReceivedPromise.isSuccess()) {
-                // 6-2 Client-side connection preface timeout
-                RemotingException remotingException = new RemotingException(
-                        this,
-                        "client(url: " + getUrl() + ") failed to connect to server " + getConnectAddress()
-                                + " client-side connection preface timeout " + getConnectTimeout() + "ms (elapsed: "
-                                + (System.currentTimeMillis() - start) + "ms) from netty client "
-                                + NetUtils.getLocalHost()
-                                + " using dubbo version "
-                                + Version.getVersion());
-
-                logger.error(
-                        TRANSPORT_CLIENT_CONNECT_TIMEOUT,
-                        "provider crash",
-                        "",
-                        "Client-side connection preface timeout",
-                        remotingException);
-
-                throw remotingException;
-            }
         }
     }
 
@@ -288,16 +246,6 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         }
     }
 
-    public void onConnectionPrefaceReceived(Object channel) {
-        if (!(channel instanceof io.netty.channel.Channel) || connectionPrefaceReceivedPromiseRef == null) {
-            return;
-        }
-        Promise<Void> connectionPrefaceReceivedPromise = connectionPrefaceReceivedPromiseRef.get();
-        if (connectionPrefaceReceivedPromise != null) {
-            connectionPrefaceReceivedPromise.trySuccess(null);
-        }
-    }
-
     @Override
     protected Channel getChannel() {
         io.netty.channel.Channel c = getNettyChannel();
@@ -352,11 +300,6 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
     private Promise<Object> getOrCreateConnectingPromise() {
         connectingPromiseRef.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
         return connectingPromiseRef.get();
-    }
-
-    private Promise<Void> getOrCreateConnectionPrefaceReceivedPromise() {
-        connectionPrefaceReceivedPromiseRef.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
-        return connectionPrefaceReceivedPromiseRef.get();
     }
 
     public Promise<Void> getClosePromise() {

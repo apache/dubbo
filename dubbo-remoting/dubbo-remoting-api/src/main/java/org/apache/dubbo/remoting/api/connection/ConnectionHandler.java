@@ -31,11 +31,4 @@ public interface ConnectionHandler {
      * @param channel Channel
      */
     void reconnect(Object channel);
-
-    /**
-     * when connection preface is received.
-     *
-     * @param channel Channel
-     */
-    void onConnectionPrefaceReceived(Object channel);
 }
