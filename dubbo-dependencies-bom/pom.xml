@@ -158,7 +158,7 @@
 
     <!-- Test libs -->
     <junit_jupiter_version>5.12.2</junit_jupiter_version>
-    <junit_platform_version>1.12.2</junit_platform_version>
+    <junit_platform_version>1.13.1</junit_platform_version>
     <awaitility_version>4.3.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
