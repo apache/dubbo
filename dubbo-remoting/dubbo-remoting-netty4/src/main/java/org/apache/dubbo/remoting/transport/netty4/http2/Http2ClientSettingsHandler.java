@@ -42,9 +42,12 @@ public class Http2ClientSettingsHandler extends SimpleChannelInboundHandler<Http
             logger.debug("Receive Http2 Settings frame of " + ctx.channel().localAddress() + " -> "
                     + ctx.channel().remoteAddress());
         }
+        // connectionPrefaceReceivedPromise will be set null after first used.
         Promise<Void> connectionPrefaceReceivedPromise = connectionPrefaceReceivedPromiseRef.get();
-        if (connectionPrefaceReceivedPromise != null) {
-            // Notify the connection preface is received.
+        if (connectionPrefaceReceivedPromise == null) {
+            ctx.fireChannelRead(msg);
+        } else {
+            // Notify the connection preface is received when first inbound http2 settings frame is arrived.
             connectionPrefaceReceivedPromise.trySuccess(null);
         }
     }

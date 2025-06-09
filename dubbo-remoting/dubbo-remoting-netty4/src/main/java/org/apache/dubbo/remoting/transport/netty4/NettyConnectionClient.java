@@ -131,6 +131,29 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
     protected void doConnect() throws RemotingException {
         long start = System.currentTimeMillis();
         super.doConnect();
+        waitConnectionPreface(start);
+    }
+
+    /**
+     * Wait connection preface
+     * <br>
+     * Http2 client should set max header list size of http2 encoder based on server connection preface before
+     * sending first data frame, otherwise the http2 server might send back GO_AWAY frame and disconnect the connection
+     * immediately if the size of client Headers frame is bigger than the MAX_HEADER_LIST_SIZE of server settings.<br>
+     * @see <a href="https://httpwg.org/specs/rfc7540.html#ConnectionHeader">HTTP/2 Connection Preface</a><br>
+     * In HTTP/2, each endpoint is required to send a connection preface as a final confirmation of the protocol
+     * in use and to establish the initial settings for the HTTP/2 connection. The client and server each send a
+     * different connection preface. The client connection preface starts with a sequence of 24 octets,
+     * which in hex notation is:<br>
+     * 0x505249202a20485454502f322e300d0a0d0a534d0d0a0d0a<br>
+     * That is, the connection preface starts with the string PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n<br>
+     * This sequence MUST be followed by a SETTINGS frame (Section 6.5), which MAY be empty.
+     * The server connection preface consists of a potentially empty SETTINGS frame (Section 6.5) that MUST be
+     * the first frame the server sends in the HTTP/2 connection.
+     *
+     * @param start start time of doConnect in milliseconds.
+     */
+    private void waitConnectionPreface(long start) throws RemotingException {
         if (connectionPrefaceReceivedPromiseRef == null) {
             return;
         }
@@ -138,7 +161,7 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
         if (connectionPrefaceReceivedPromise != null) {
             long retainedTimeout = getConnectTimeout() - System.currentTimeMillis() + start;
             boolean ret = connectionPrefaceReceivedPromise.awaitUninterruptibly(retainedTimeout, TimeUnit.MILLISECONDS);
-            // destroy connectionPrefaceReceivedPromise after used
+            // Only process once: destroy connectionPrefaceReceivedPromise after used
             synchronized (this) {
                 connectionPrefaceReceivedPromiseRef.set(null);
             }
