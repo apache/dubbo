@@ -41,7 +41,6 @@ import org.apache.dubbo.rpc.protocol.tri.h12.TripleProtocolDetector;
 import org.apache.dubbo.rpc.protocol.tri.h12.http1.DefaultHttp11ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2SettingsHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 import org.apache.dubbo.rpc.protocol.tri.websocket.DefaultWebSocketServerTransportListenerFactory;
@@ -97,11 +96,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     @Override
-    public boolean hasConnectionPreface() {
-        return true;
-    }
-
-    @Override
     public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
         TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
         Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
@@ -122,7 +116,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new Http2MultiplexHandler(new ChannelDuplexHandler())));
         handlers.add(new ChannelHandlerPretender(new TriplePingPongHandler(UrlUtils.getCloseTimeout(url))));
         handlers.add(new ChannelHandlerPretender(new TripleGoAwayHandler()));
-        handlers.add(new ChannelHandlerPretender(new TripleHttp2SettingsHandler()));
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
         operator.configChannelHandler(handlers);
     }
