@@ -17,30 +17,44 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
+import org.apache.dubbo.remoting.transport.netty4.http2.Http2ClientSettingsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.DefaultPromise;
+import io.netty.util.concurrent.GlobalEventExecutor;
+import io.netty.util.concurrent.Promise;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
 
 public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
     private Bootstrap bootstrap;
+
+    private AtomicReference<Promise<Void>> connectionPrefaceReceivedPromiseRef;
 
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -87,6 +101,16 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
                 protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
+
+                ChannelHandlerContext http2FrameCodecHandlerCtx = pipeline.context(Http2FrameCodec.class);
+                if (http2FrameCodecHandlerCtx != null) {
+                    connectionPrefaceReceivedPromiseRef = new AtomicReference<>();
+                    pipeline.addAfter(
+                            http2FrameCodecHandlerCtx.name(),
+                            "client-connection-preface-handler",
+                            new Http2ClientSettingsHandler(connectionPrefaceReceivedPromiseRef));
+                }
+
                 // set null but do not close this client, it will be reconnecting in the future
                 ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
                 // TODO support Socks5
@@ -97,6 +121,48 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
     @Override
     protected ChannelFuture performConnect() {
+        if (connectionPrefaceReceivedPromiseRef != null) {
+            connectionPrefaceReceivedPromiseRef.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
+        }
         return bootstrap.connect();
+    }
+
+    @Override
+    protected void doConnect() throws RemotingException {
+        long start = System.currentTimeMillis();
+        super.doConnect();
+        if (connectionPrefaceReceivedPromiseRef == null) {
+            return;
+        }
+        Promise<Void> connectionPrefaceReceivedPromise = connectionPrefaceReceivedPromiseRef.get();
+        if (connectionPrefaceReceivedPromise != null) {
+            long retainedTimeout = getConnectTimeout() - System.currentTimeMillis() + start;
+            boolean ret = connectionPrefaceReceivedPromise.awaitUninterruptibly(retainedTimeout, TimeUnit.MILLISECONDS);
+            // destroy connectionPrefaceReceivedPromise after used
+            synchronized (this) {
+                connectionPrefaceReceivedPromiseRef.set(null);
+            }
+            if (!ret || !connectionPrefaceReceivedPromise.isSuccess()) {
+                // 6-2 Client-side connection preface timeout
+                RemotingException remotingException = new RemotingException(
+                        this,
+                        "client(url: " + getUrl() + ") failed to connect to server " + getConnectAddress()
+                                + " client-side connection preface timeout " + getConnectTimeout()
+                                + "ms (elapsed: "
+                                + (System.currentTimeMillis() - start) + "ms) from netty client "
+                                + NetUtils.getLocalHost()
+                                + " using dubbo version "
+                                + Version.getVersion());
+
+                logger.error(
+                        TRANSPORT_CLIENT_CONNECT_TIMEOUT,
+                        "provider crash",
+                        "",
+                        "Client-side connection preface timeout",
+                        remotingException);
+
+                throw remotingException;
+            }
+        }
     }
 }
