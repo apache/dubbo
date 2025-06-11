@@ -194,6 +194,32 @@ public class LoggerFactory {
     }
 
     /**
+     * Get error type aware logger by FQCN and Class object.
+     *
+     * @param fqcn the full qualified class name of caller
+     * @param key the returned logger will be named after clazz
+     * @return error type aware logger
+     */
+    public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String fqcn, Class<?> key) {
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                ERROR_TYPE_AWARE_LOGGERS,
+                key.getName(),
+                name -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, name)));
+    }
+
+    /**
+     * Get error type aware logger by FQCN and a String key.
+     *
+     * @param fqcn the full qualified class name of caller
+     * @param key the returned logger will be named after key
+     * @return error type aware logger
+     */
+    public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String fqcn, String key) {
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, k)));
+    }
+
+    /**
      * Get logging level
      *
      * @return logging level

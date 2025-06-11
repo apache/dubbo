@@ -112,6 +112,16 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
     }
 
     @Override
+    public Logger getLogger(String fqcn, Class<?> key) {
+        return new Log4jLogger(fqcn, LogManager.getLogger(key));
+    }
+
+    @Override
+    public Logger getLogger(String fqcn, String key) {
+        return new Log4jLogger(fqcn, LogManager.getLogger(key));
+    }
+
+    @Override
     public Level getLevel() {
         return fromLog4jLevel(LogManager.getRootLogger().getLevel());
     }

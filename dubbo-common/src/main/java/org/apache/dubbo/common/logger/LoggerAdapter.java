@@ -44,6 +44,24 @@ public interface LoggerAdapter {
     Logger getLogger(String key);
 
     /**
+     * Get a logger
+     *
+     * @param fqcn the full qualified class name of real caller
+     * @param key the returned logger will be named after clazz
+     * @return logger
+     */
+    Logger getLogger(String fqcn, Class<?> key);
+
+    /**
+     * Get a logger
+     *
+     * @param fqcn the full qualified class name of real caller
+     * @param key the returned logger will be named after key
+     * @return logger
+     */
+    Logger getLogger(String fqcn, String key);
+
+    /**
      * Get the current logging level
      *
      * @return current logging level

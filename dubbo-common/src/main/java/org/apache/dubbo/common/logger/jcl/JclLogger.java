@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.commons.logging.Log;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
+import org.slf4j.spi.LocationAwareLogger;
 
 /**
  * Adaptor to commons logging, depends on commons-logging.jar. For more information about commons logging, pls. refer to
@@ -28,115 +29,212 @@ import org.slf4j.helpers.MessageFormatter;
  */
 public class JclLogger implements Logger {
 
+    private String fqcn;
+
     private final Log logger;
 
     public JclLogger(Log logger) {
         this.logger = logger;
     }
 
+    public JclLogger(String fqcn, Log logger) {
+        this.fqcn = fqcn;
+        this.logger = logger;
+    }
+
     @Override
     public void trace(String msg) {
-        logger.trace(msg);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.TRACE_INT, msg, null, null);
+        } else {
+            logger.trace(msg);
+        }
     }
 
     @Override
     public void trace(String msg, Object... arguments) {
         FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-        logger.trace(ft.getMessage(), ft.getThrowable());
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.TRACE_INT, ft.getMessage(), null, ft.getThrowable());
+        } else {
+            logger.trace(ft.getMessage(), ft.getThrowable());
+        }
     }
 
     @Override
     public void trace(Throwable e) {
-        logger.trace(e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.TRACE_INT, e == null ? null : e.getMessage(), null, e);
+        } else {
+            logger.trace(e);
+        }
     }
 
     @Override
     public void trace(String msg, Throwable e) {
-        logger.trace(msg, e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.TRACE_INT, msg, null, e);
+        } else {
+            logger.trace(msg, e);
+        }
     }
 
     @Override
     public void debug(String msg) {
-        logger.debug(msg);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.DEBUG_INT, msg, null, null);
+        } else {
+            logger.debug(msg);
+        }
     }
 
     @Override
     public void debug(String msg, Object... arguments) {
         FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-        logger.debug(ft.getMessage(), ft.getThrowable());
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.DEBUG_INT, ft.getMessage(), null, ft.getThrowable());
+        } else {
+            logger.debug(ft.getMessage(), ft.getThrowable());
+        }
     }
 
     @Override
     public void debug(Throwable e) {
-        logger.debug(e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.DEBUG_INT, e == null ? null : e.getMessage(), null, e);
+        } else {
+            logger.debug(e);
+        }
     }
 
     @Override
     public void debug(String msg, Throwable e) {
-        logger.debug(msg, e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.DEBUG_INT, msg, null, e);
+        } else {
+            logger.debug(msg, e);
+        }
     }
 
     @Override
     public void info(String msg) {
-        logger.info(msg);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.INFO_INT, msg, null, null);
+        } else {
+            logger.info(msg);
+        }
     }
 
     @Override
     public void info(String msg, Object... arguments) {
         FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-        logger.info(ft.getMessage(), ft.getThrowable());
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.INFO_INT, ft.getMessage(), null, ft.getThrowable());
+        } else {
+            logger.info(ft.getMessage(), ft.getThrowable());
+        }
     }
 
     @Override
     public void info(Throwable e) {
-        logger.info(e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.INFO_INT, e == null ? null : e.getMessage(), null, e);
+        } else {
+            logger.info(e);
+        }
     }
 
     @Override
     public void info(String msg, Throwable e) {
-        logger.info(msg, e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.INFO_INT, msg, null, e);
+        } else {
+            logger.info(msg, e);
+        }
     }
 
     @Override
     public void warn(String msg) {
-        logger.warn(msg);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.WARN_INT, msg, null, null);
+        } else {
+            logger.warn(msg);
+        }
     }
 
     @Override
     public void warn(String msg, Object... arguments) {
         FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-        logger.warn(ft.getMessage(), ft.getThrowable());
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.WARN_INT, ft.getMessage(), null, ft.getThrowable());
+        } else {
+            logger.warn(ft.getMessage(), ft.getThrowable());
+        }
     }
 
     @Override
     public void warn(Throwable e) {
-        logger.warn(e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.WARN_INT, e == null ? null : e.getMessage(), null, e);
+        } else {
+            logger.warn(e);
+        }
     }
 
     @Override
     public void warn(String msg, Throwable e) {
-        logger.warn(msg, e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.WARN_INT, msg, null, e);
+        } else {
+            logger.warn(msg, e);
+        }
     }
 
     @Override
     public void error(String msg) {
-        logger.error(msg);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.ERROR_INT, msg, null, null);
+        } else {
+            logger.error(msg);
+        }
     }
 
     @Override
     public void error(String msg, Object... arguments) {
         FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-        logger.error(ft.getMessage(), ft.getThrowable());
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.ERROR_INT, ft.getMessage(), null, ft.getThrowable());
+        } else {
+            logger.error(ft.getMessage(), ft.getThrowable());
+        }
     }
 
     @Override
     public void error(Throwable e) {
-        logger.error(e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger)
+                    .log(null, fqcn, LocationAwareLogger.ERROR_INT, e == null ? null : e.getMessage(), null, e);
+        } else {
+            logger.error(e);
+        }
     }
 
     @Override
     public void error(String msg, Throwable e) {
-        logger.error(msg, e);
+        if (fqcn != null && logger instanceof LocationAwareLogger) {
+            ((LocationAwareLogger) logger).log(null, fqcn, LocationAwareLogger.ERROR_INT, msg, null, e);
+        } else {
+            logger.error(msg, e);
+        }
     }
 
     @Override

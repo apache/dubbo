@@ -94,6 +94,16 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
     }
 
     @Override
+    public Logger getLogger(String fqcn, Class<?> key) {
+        return new Log4j2Logger(fqcn, LogManager.getLogger(key));
+    }
+
+    @Override
+    public Logger getLogger(String fqcn, String key) {
+        return new Log4j2Logger(fqcn, LogManager.getLogger(key));
+    }
+
+    @Override
     public Level getLevel() {
         return level;
     }
