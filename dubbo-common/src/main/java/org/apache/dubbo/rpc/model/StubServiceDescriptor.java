@@ -32,13 +32,13 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class StubServiceDescriptor implements ServiceDescriptor {
+
     private final String interfaceName;
     private final Class<?> serviceInterfaceClass;
     // to accelerate search
     private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
-    private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions =
-            new ConcurrentSkipListMap<>();
+    private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     public StubServiceDescriptor(String interfaceName, Class<?> interfaceClass) {
         this.interfaceName = interfaceName;
@@ -47,15 +47,12 @@ public class StubServiceDescriptor implements ServiceDescriptor {
 
     public void addMethod(MethodDescriptor methodDescriptor) {
         methods.put(methodDescriptor.getMethodName(), Collections.singletonList(methodDescriptor));
-        Map<String, MethodDescriptor> descMap =
-                descToMethods.computeIfAbsent(methodDescriptor.getMethodName(), k -> new HashMap<>());
+        Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodDescriptor.getMethodName(), k -> new HashMap<>());
         descMap.put(methodDescriptor.getParamDesc(), methodDescriptor);
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
-        return serviceDefinitions.computeIfAbsent(
-                serviceKey,
-                (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
+        return serviceDefinitions.computeIfAbsent(serviceKey, (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
     }
 
     public String getInterfaceName() {
@@ -97,13 +94,18 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
         List<MethodDescriptor> methodModels = methods.get(methodName);
         if (CollectionUtils.isNotEmpty(methodModels)) {
-            st:for (MethodDescriptor descriptor : methodModels) {
+            st:
+            for (MethodDescriptor descriptor : methodModels) {
                 Class<?>[] parameterClasses = descriptor.getParameterClasses();
                 int idx = 0;
                 // skip params type of StreamObserver, only one param type is StreamObserver should be successful.
                 for (Class<?> paramType : paramTypes) {
-                    if (paramType.isAssignableFrom(StreamObserver.class)) continue;
-                    if (paramType != parameterClasses[idx++]) break st;
+                    if (paramType.isAssignableFrom(StreamObserver.class)) {
+                        continue;
+                    }
+                    if (paramType != parameterClasses[idx++]) {
+                        break st;
+                    }
                 }
                 return descriptor;
             }
@@ -126,8 +128,7 @@ public class StubServiceDescriptor implements ServiceDescriptor {
         StubServiceDescriptor that = (StubServiceDescriptor) o;
         return Objects.equals(interfaceName, that.interfaceName)
                 && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass)
-                && Objects.equals(methods, that.methods)
-                && Objects.equals(descToMethods, that.descToMethods);
+                && Objects.equals(methods, that.methods) && Objects.equals(descToMethods, that.descToMethods);
     }
 
     @Override
