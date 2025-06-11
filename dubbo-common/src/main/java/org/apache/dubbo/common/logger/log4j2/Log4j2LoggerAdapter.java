@@ -19,6 +19,7 @@ package org.apache.dubbo.common.logger.log4j2;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
+import org.apache.dubbo.common.utils.Pair;
 
 import java.io.File;
 
@@ -95,13 +96,12 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
     }
 
     @Override
-    public Logger getLogger(String fqcn, Class<?> key) {
-        return new Log4j2Logger(fqcn, (ExtendedLogger) LogManager.getLogger(key));
-    }
-
-    @Override
-    public Logger getLogger(String fqcn, String key) {
-        return new Log4j2Logger(fqcn, (ExtendedLogger) LogManager.getLogger(key));
+    public Logger getLogger(Pair<String, Object> pair) {
+        String fqcn = pair.getLeft();
+        Object key = pair.getRight();
+        return key instanceof Class<?>
+                ? new Log4j2Logger(fqcn, (ExtendedLogger) LogManager.getLogger((Class<?>) key))
+                : new Log4j2Logger(fqcn, (ExtendedLogger) LogManager.getLogger((String) key));
     }
 
     @Override

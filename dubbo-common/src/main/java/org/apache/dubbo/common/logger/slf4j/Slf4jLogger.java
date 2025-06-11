@@ -75,10 +75,11 @@ public class Slf4jLogger implements Logger {
     @Override
     public void trace(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, fqcn, LocationAwareLogger.TRACE_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.TRACE_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.trace(e.getMessage(), e);
+        logger.trace(e == null ? null : e.getMessage(), e);
     }
 
     @Override
@@ -113,10 +114,11 @@ public class Slf4jLogger implements Logger {
     @Override
     public void debug(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, fqcn, LocationAwareLogger.DEBUG_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.DEBUG_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.debug(e.getMessage(), e);
+        logger.debug(e == null ? null : e.getMessage(), e);
     }
 
     @Override
@@ -150,10 +152,11 @@ public class Slf4jLogger implements Logger {
     @Override
     public void info(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, fqcn, LocationAwareLogger.INFO_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.INFO_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.info(e.getMessage(), e);
+        logger.info(e == null ? null : e.getMessage(), e);
     }
 
     @Override
@@ -187,10 +190,11 @@ public class Slf4jLogger implements Logger {
     @Override
     public void warn(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, fqcn, LocationAwareLogger.WARN_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.WARN_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.warn(e.getMessage(), e);
+        logger.warn(e == null ? null : e.getMessage(), e);
     }
 
     @Override
@@ -225,10 +229,11 @@ public class Slf4jLogger implements Logger {
     @Override
     public void error(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, fqcn, LocationAwareLogger.ERROR_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.ERROR_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.error(e.getMessage(), e);
+        logger.error(e == null ? null : e.getMessage(), e);
     }
 
     @Override

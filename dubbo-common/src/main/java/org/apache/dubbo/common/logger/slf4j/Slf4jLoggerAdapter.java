@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.Pair;
 
 import java.io.File;
 
@@ -48,13 +49,12 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
     }
 
     @Override
-    public Logger getLogger(String fqcn, Class<?> key) {
-        return new Slf4jLogger(fqcn, org.slf4j.LoggerFactory.getLogger(key));
-    }
-
-    @Override
-    public Logger getLogger(String fqcn, String key) {
-        return new Slf4jLogger(fqcn, org.slf4j.LoggerFactory.getLogger(key));
+    public Logger getLogger(Pair<String, Object> pair) {
+        String fqcn = pair.getLeft();
+        Object key = pair.getRight();
+        return key instanceof Class<?>
+                ? new Slf4jLogger(fqcn, org.slf4j.LoggerFactory.getLogger((Class<?>) key))
+                : new Slf4jLogger(fqcn, org.slf4j.LoggerFactory.getLogger((String) key));
     }
 
     @Override

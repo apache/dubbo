@@ -18,6 +18,7 @@ package org.apache.dubbo.common.logger;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.Pair;
 
 import java.io.File;
 
@@ -46,23 +47,13 @@ public interface LoggerAdapter {
     /**
      * Get a logger
      *
-     * @param fqcn the full qualified class name of real caller
-     * @param key the returned logger will be named after clazz
+     * @param pair the left of the pair is the full qualified class name of caller,
+     *             the right of it is clazz or key that the returned logger will be named after.
      * @return logger
      */
-    default Logger getLogger(String fqcn, Class<?> key) {
-        return getLogger(key);
-    }
-
-    /**
-     * Get a logger
-     *
-     * @param fqcn the full qualified class name of real caller
-     * @param key the returned logger will be named after key
-     * @return logger
-     */
-    default Logger getLogger(String fqcn, String key) {
-        return getLogger(key);
+    default Logger getLogger(Pair<String, Object> pair) {
+        Object key = pair.getRight();
+        return key instanceof Class ? getLogger((Class<?>) key) : getLogger((String) key);
     }
 
     /**
