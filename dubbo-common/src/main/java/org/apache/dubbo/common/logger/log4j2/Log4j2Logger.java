@@ -25,161 +25,121 @@ public class Log4j2Logger implements Logger {
 
     private final String fqcn;
 
-    private final org.apache.logging.log4j.Logger logger;
+    private final org.apache.logging.log4j.spi.ExtendedLogger logger;
 
-    public Log4j2Logger(org.apache.logging.log4j.Logger logger) {
+    public Log4j2Logger(org.apache.logging.log4j.spi.ExtendedLogger logger) {
         this.fqcn = FailsafeLogger.class.getName();
         this.logger = logger;
     }
 
-    public Log4j2Logger(String fqcn, org.apache.logging.log4j.Logger logger) {
+    public Log4j2Logger(String fqcn, org.apache.logging.log4j.spi.ExtendedLogger logger) {
         this.fqcn = fqcn;
         this.logger = logger;
     }
 
     @Override
     public void trace(String msg) {
-        logger.logMessage(
-                Level.TRACE, null, fqcn, null, logger.getMessageFactory().newMessage(msg), null);
+        logger.logIfEnabled(fqcn, Level.TRACE, null, logger.getMessageFactory().newMessage(msg), null);
     }
 
     @Override
     public void trace(String msg, Object... arguments) {
-        logger.logMessage(
-                Level.TRACE, null, fqcn, null, logger.getMessageFactory().newMessage(msg, arguments), null);
+        logger.logIfEnabled(fqcn, Level.TRACE, null, logger.getMessageFactory().newMessage(msg, arguments), null);
     }
 
     @Override
     public void trace(Throwable e) {
-        logger.logMessage(
-                Level.TRACE,
-                null,
-                fqcn,
-                null,
-                logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()),
-                e);
+        logger.logIfEnabled(
+                fqcn, Level.TRACE, null, logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()), e);
     }
 
     @Override
     public void trace(String msg, Throwable e) {
-        logger.logMessage(
-                Level.TRACE, null, fqcn, null, logger.getMessageFactory().newMessage(msg), e);
+        logger.logIfEnabled(fqcn, Level.TRACE, null, logger.getMessageFactory().newMessage(msg), e);
     }
 
     @Override
     public void debug(String msg) {
-        logger.logMessage(
-                Level.DEBUG, null, fqcn, null, logger.getMessageFactory().newMessage(msg), null);
+        logger.logIfEnabled(fqcn, Level.DEBUG, null, logger.getMessageFactory().newMessage(msg), null);
     }
 
     @Override
     public void debug(String msg, Object... arguments) {
-        logger.logMessage(
-                Level.DEBUG, null, fqcn, null, logger.getMessageFactory().newMessage(msg, arguments), null);
+        logger.logIfEnabled(fqcn, Level.DEBUG, null, logger.getMessageFactory().newMessage(msg, arguments), null);
     }
 
     @Override
     public void debug(Throwable e) {
-        logger.logMessage(
-                Level.DEBUG,
-                null,
-                fqcn,
-                null,
-                logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()),
-                e);
+        logger.logIfEnabled(
+                fqcn, Level.DEBUG, null, logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()), e);
     }
 
     @Override
     public void debug(String msg, Throwable e) {
-        logger.logMessage(
-                Level.DEBUG, null, fqcn, null, logger.getMessageFactory().newMessage(msg), e);
+        logger.logIfEnabled(fqcn, Level.DEBUG, null, logger.getMessageFactory().newMessage(msg), e);
     }
 
     @Override
     public void info(String msg) {
-        logger.logMessage(
-                Level.INFO, null, fqcn, null, logger.getMessageFactory().newMessage(msg), null);
+        logger.logIfEnabled(fqcn, Level.INFO, null, logger.getMessageFactory().newMessage(msg), null);
     }
 
     @Override
     public void info(String msg, Object... arguments) {
-        logger.logMessage(
-                Level.INFO, null, fqcn, null, logger.getMessageFactory().newMessage(msg, arguments), null);
+        logger.logIfEnabled(fqcn, Level.INFO, null, logger.getMessageFactory().newMessage(msg, arguments), null);
     }
 
     @Override
     public void info(Throwable e) {
-        logger.logMessage(
-                Level.INFO,
-                null,
-                fqcn,
-                null,
-                logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()),
-                e);
+        logger.logIfEnabled(
+                fqcn, Level.INFO, null, logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()), e);
     }
 
     @Override
     public void info(String msg, Throwable e) {
-        logger.logMessage(
-                Level.INFO, null, fqcn, null, logger.getMessageFactory().newMessage(msg), e);
+        logger.logIfEnabled(fqcn, Level.INFO, null, logger.getMessageFactory().newMessage(msg), e);
     }
 
     @Override
     public void warn(String msg) {
-        logger.logMessage(
-                Level.WARN, null, fqcn, null, logger.getMessageFactory().newMessage(msg), null);
+        logger.logIfEnabled(fqcn, Level.WARN, null, logger.getMessageFactory().newMessage(msg), null);
     }
 
     @Override
     public void warn(String msg, Object... arguments) {
-        logger.logMessage(
-                Level.WARN, null, fqcn, null, logger.getMessageFactory().newMessage(msg, arguments), null);
+        logger.logIfEnabled(fqcn, Level.WARN, null, logger.getMessageFactory().newMessage(msg, arguments), null);
     }
 
     @Override
     public void warn(Throwable e) {
-        logger.logMessage(
-                Level.WARN,
-                null,
-                fqcn,
-                null,
-                logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()),
-                e);
+        logger.logIfEnabled(
+                fqcn, Level.WARN, null, logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()), e);
     }
 
     @Override
     public void warn(String msg, Throwable e) {
-        logger.logMessage(
-                Level.WARN, null, fqcn, null, logger.getMessageFactory().newMessage(msg), e);
+        logger.logIfEnabled(fqcn, Level.WARN, null, logger.getMessageFactory().newMessage(msg), e);
     }
 
     @Override
     public void error(String msg) {
-        logger.logMessage(
-                Level.ERROR, null, fqcn, null, logger.getMessageFactory().newMessage(msg), null);
+        logger.logIfEnabled(fqcn, Level.ERROR, null, logger.getMessageFactory().newMessage(msg), null);
     }
 
     @Override
     public void error(String msg, Object... arguments) {
-        logger.logMessage(
-                Level.ERROR, null, fqcn, null, logger.getMessageFactory().newMessage(msg, arguments), null);
+        logger.logIfEnabled(fqcn, Level.ERROR, null, logger.getMessageFactory().newMessage(msg, arguments), null);
     }
 
     @Override
     public void error(Throwable e) {
-        logger.logMessage(
-                Level.ERROR,
-                null,
-                fqcn,
-                null,
-                logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()),
-                e);
+        logger.logIfEnabled(
+                fqcn, Level.ERROR, null, logger.getMessageFactory().newMessage(e == null ? null : e.getMessage()), e);
     }
 
     @Override
     public void error(String msg, Throwable e) {
-        logger.logMessage(
-                Level.ERROR, null, fqcn, null, logger.getMessageFactory().newMessage(msg), e);
+        logger.logIfEnabled(fqcn, Level.ERROR, null, logger.getMessageFactory().newMessage(msg), e);
     }
 
     @Override
