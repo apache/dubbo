@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,10 +97,15 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
         List<MethodDescriptor> methodModels = methods.get(methodName);
         if (CollectionUtils.isNotEmpty(methodModels)) {
-            for (MethodDescriptor descriptor : methodModels) {
-                if (Arrays.equals(paramTypes, descriptor.getParameterClasses())) {
-                    return descriptor;
+            st:for (MethodDescriptor descriptor : methodModels) {
+                Class<?>[] parameterClasses = descriptor.getParameterClasses();
+                int idx = 0;
+                // skip params type of StreamObserver, only one param type is StreamObserver should be successful.
+                for (Class<?> paramType : paramTypes) {
+                    if (paramType.isAssignableFrom(StreamObserver.class)) continue;
+                    if (paramType != parameterClasses[idx++]) break st;
                 }
+                return descriptor;
             }
         }
         return null;
