@@ -40,16 +40,6 @@ public class JclLoggerAdapter implements LoggerAdapter {
     }
 
     @Override
-    public Logger getLogger(String fqcn, Class<?> key) {
-        return new JclLogger(fqcn, LogFactory.getLog(key));
-    }
-
-    @Override
-    public Logger getLogger(String fqcn, String key) {
-        return new JclLogger(fqcn, LogFactory.getLog(key));
-    }
-
-    @Override
     public Level getLevel() {
         return level;
     }

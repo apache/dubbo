@@ -50,7 +50,9 @@ public interface LoggerAdapter {
      * @param key the returned logger will be named after clazz
      * @return logger
      */
-    Logger getLogger(String fqcn, Class<?> key);
+    default Logger getLogger(String fqcn, Class<?> key) {
+        return getLogger(key);
+    }
 
     /**
      * Get a logger
@@ -59,7 +61,9 @@ public interface LoggerAdapter {
      * @param key the returned logger will be named after key
      * @return logger
      */
-    Logger getLogger(String fqcn, String key);
+    default Logger getLogger(String fqcn, String key) {
+        return getLogger(key);
+    }
 
     /**
      * Get the current logging level
