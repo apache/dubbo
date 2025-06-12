@@ -56,7 +56,9 @@ public class GreeterServiceImpl implements GreeterService {
             } catch (InterruptedException e) {
                 responseObserver.onError(e);
             }
-            responseObserver.onNext(HelloReply.newBuilder().setMessage(i + "# Hello " + request.getName()).build());
+            responseObserver.onNext(HelloReply.newBuilder()
+                    .setMessage(i + "# Hello " + request.getName())
+                    .build());
         }
         responseObserver.onCompleted();
     }
