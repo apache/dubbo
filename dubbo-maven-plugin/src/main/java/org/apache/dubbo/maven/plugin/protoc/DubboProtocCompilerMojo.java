@@ -125,8 +125,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         Properties versionMatrix = new Properties();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        InputStream stream = loader.getResourceAsStream("version-matrix.properties");
-        try {
+        try (InputStream stream = loader.getResourceAsStream("version-matrix.properties")) {
             versionMatrix.load(stream);
         } catch (IOException e) {
             getLog().warn("Unable to load default version matrix", e);
