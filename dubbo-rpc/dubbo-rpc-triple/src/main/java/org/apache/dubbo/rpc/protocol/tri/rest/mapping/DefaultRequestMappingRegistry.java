@@ -49,8 +49,6 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.MethodWalker;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -139,29 +137,7 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                     if (md == null && sd instanceof StubServiceDescriptor) {
                         int len = paramTypes.length;
                         if (len > 0 && StreamObserver.class.isAssignableFrom(paramTypes[len - 1])) {
-                            Class<?>[] realParamTypes = null;
-                            if (len > 1) {
-                                realParamTypes = Arrays.copyOf(paramTypes, len - 1);
-                                try {
-                                    service.getClass().getDeclaredMethod(method.getName(), realParamTypes);
-                                    realParamTypes = null;
-                                } catch (NoSuchMethodException ignore) {
-                                }
-                            } else {
-                                Type type = method.getGenericReturnType();
-                                if (type instanceof ParameterizedType) {
-                                    ParameterizedType parameterizedType = (ParameterizedType) type;
-                                    if (StreamObserver.class == parameterizedType.getRawType()) {
-                                        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                                        if (actualTypeArguments != null && actualTypeArguments.length == 1) {
-                                            realParamTypes = new Class[] {(Class<?>) actualTypeArguments[0]};
-                                        }
-                                    }
-                                }
-                            }
-                            if (realParamTypes != null) {
-                                md = sd.getMethod(method.getName(), realParamTypes);
-                            }
+                            md = sd.getMethod(method.getName(), Arrays.copyOf(paramTypes, len - 1));
                         }
                     }
                     MethodMeta methodMeta = new MethodMeta(methods, md, serviceMeta);
