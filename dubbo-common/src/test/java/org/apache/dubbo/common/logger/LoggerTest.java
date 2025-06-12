@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
-import org.apache.dubbo.common.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Stream;
@@ -52,8 +51,8 @@ class LoggerTest {
     void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
         LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
-        Logger logger = new FailsafeErrorTypeAwareLogger(
-                adapter.getLogger(Pair.of(FailsafeLogger.class.getName(), this.getClass())));
+        Logger logger =
+                new FailsafeErrorTypeAwareLogger(adapter.getLogger(FailsafeLogger.class.getName(), this.getClass()));
         logger.error("error");
         logger.warn("warn");
         logger.info("info");

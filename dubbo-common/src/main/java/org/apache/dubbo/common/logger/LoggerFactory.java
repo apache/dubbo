@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentMap;
 public class LoggerFactory {
 
     private static final ConcurrentMap<String, FailsafeLogger> LOGGERS = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Pair<String, Object>, FailsafeErrorTypeAwareLogger> ERROR_TYPE_AWARE_LOGGERS =
+    private static final ConcurrentMap<Object, FailsafeErrorTypeAwareLogger> ERROR_TYPE_AWARE_LOGGERS =
             new ConcurrentHashMap<>();
     private static volatile LoggerAdapter loggerAdapter;
 
@@ -178,9 +178,7 @@ public class LoggerFactory {
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(Class<?> key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
-                ERROR_TYPE_AWARE_LOGGERS,
-                Pair.of(FailsafeLogger.class.getName(), key),
-                pair -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(pair)));
+                ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(key)));
     }
 
     /**
@@ -191,9 +189,7 @@ public class LoggerFactory {
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
-                ERROR_TYPE_AWARE_LOGGERS,
-                Pair.of(FailsafeLogger.class.getName(), key),
-                pair -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(pair)));
+                ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(key)));
     }
 
     /**
@@ -206,8 +202,8 @@ public class LoggerFactory {
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String fqcn, Class<?> key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
                 ERROR_TYPE_AWARE_LOGGERS,
-                Pair.of(fqcn, key),
-                pair -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(pair)));
+                Pair.of(key, fqcn),
+                p -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, key)));
     }
 
     /**
@@ -220,8 +216,8 @@ public class LoggerFactory {
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String fqcn, String key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
                 ERROR_TYPE_AWARE_LOGGERS,
-                Pair.of(fqcn, key),
-                pair -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(pair)));
+                Pair.of(key, fqcn),
+                p -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, key)));
     }
 
     /**

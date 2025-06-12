@@ -19,7 +19,6 @@ package org.apache.dubbo.common.logger.log4j;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
-import org.apache.dubbo.common.utils.Pair;
 
 import java.io.File;
 import java.util.Enumeration;
@@ -113,12 +112,13 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
     }
 
     @Override
-    public Logger getLogger(Pair<String, Object> pair) {
-        String fqcn = pair.getLeft();
-        Object key = pair.getRight();
-        return key instanceof Class<?>
-                ? new Log4jLogger(fqcn, LogManager.getLogger((Class<?>) key))
-                : new Log4jLogger(fqcn, LogManager.getLogger((String) key));
+    public Logger getLogger(String fqcn, Class<?> key) {
+        return new Log4jLogger(fqcn, LogManager.getLogger(key));
+    }
+
+    @Override
+    public Logger getLogger(String fqcn, String key) {
+        return new Log4jLogger(fqcn, LogManager.getLogger(key));
     }
 
     @Override
