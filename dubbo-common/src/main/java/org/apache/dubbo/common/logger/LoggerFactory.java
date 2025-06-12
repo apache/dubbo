@@ -177,8 +177,9 @@ public class LoggerFactory {
      * @return error type aware logger
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(Class<?> key) {
+        final String name = key.getName();
         return ConcurrentHashMapUtils.computeIfAbsent(
-                ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(key)));
+                ERROR_TYPE_AWARE_LOGGERS, name, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(name)));
     }
 
     /**
@@ -200,10 +201,11 @@ public class LoggerFactory {
      * @return error type aware logger
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String fqcn, Class<?> key) {
+        final String name = key.getName();
         return ConcurrentHashMapUtils.computeIfAbsent(
                 ERROR_TYPE_AWARE_LOGGERS,
-                Pair.of(key, fqcn),
-                p -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, key)));
+                Pair.of(name, fqcn),
+                p -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, name)));
     }
 
     /**
