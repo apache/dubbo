@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.Pair;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -43,7 +44,7 @@ import java.util.concurrent.ConcurrentMap;
 public class LoggerFactory {
 
     private static final ConcurrentMap<String, FailsafeLogger> LOGGERS = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<String, FailsafeErrorTypeAwareLogger> ERROR_TYPE_AWARE_LOGGERS =
+    private static final ConcurrentMap<Object, FailsafeErrorTypeAwareLogger> ERROR_TYPE_AWARE_LOGGERS =
             new ConcurrentHashMap<>();
     private static volatile LoggerAdapter loggerAdapter;
 
@@ -176,10 +177,9 @@ public class LoggerFactory {
      * @return error type aware logger
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(Class<?> key) {
+        final String name = key.getName();
         return ConcurrentHashMapUtils.computeIfAbsent(
-                ERROR_TYPE_AWARE_LOGGERS,
-                key.getName(),
-                name -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(name)));
+                ERROR_TYPE_AWARE_LOGGERS, name, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(name)));
     }
 
     /**
@@ -190,7 +190,36 @@ public class LoggerFactory {
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String key) {
         return ConcurrentHashMapUtils.computeIfAbsent(
-                ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(k)));
+                ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(key)));
+    }
+
+    /**
+     * Get error type aware logger by FQCN and Class object.
+     *
+     * @param fqcn the full qualified class name of caller
+     * @param key the returned logger will be named after clazz
+     * @return error type aware logger
+     */
+    public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String fqcn, Class<?> key) {
+        final String name = key.getName();
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                ERROR_TYPE_AWARE_LOGGERS,
+                Pair.of(name, fqcn),
+                p -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, name)));
+    }
+
+    /**
+     * Get error type aware logger by FQCN and a String key.
+     *
+     * @param fqcn the full qualified class name of caller
+     * @param key the returned logger will be named after key
+     * @return error type aware logger
+     */
+    public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String fqcn, String key) {
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                ERROR_TYPE_AWARE_LOGGERS,
+                Pair.of(key, fqcn),
+                p -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(fqcn, key)));
     }
 
     /**
