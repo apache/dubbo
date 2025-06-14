@@ -21,12 +21,12 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,7 +50,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     protected ApplicationModel applicationModel;
     private final MappingCacheManager mappingCacheManager;
-    private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
 
@@ -198,7 +198,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     }
 
     public Lock getMappingLock(String key) {
-        return mappingLocks.computeIfAbsent(key, _k -> new ReentrantLock());
+        return ConcurrentHashMapUtils.computeIfAbsent(mappingLocks, key, _k -> new ReentrantLock());
     }
 
     protected void removeMappingLock(String key) {
@@ -239,8 +239,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                     String mappingKey = ServiceNameMapping.buildMappingKey(subscribedURL);
                     if (listener != null) {
                         mappedServices = toTreeSet(getAndListen(subscribedURL, listener));
-                        Set<MappingListener> listeners =
-                                mappingListeners.computeIfAbsent(mappingKey, _k -> new HashSet<>());
+                        Set<MappingListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(
+                                mappingListeners, mappingKey, _k -> new HashSet<>());
                         listeners.add(listener);
                         if (CollectionUtils.isNotEmpty(mappedServices)) {
                             if (notifyAtFirstTime) {

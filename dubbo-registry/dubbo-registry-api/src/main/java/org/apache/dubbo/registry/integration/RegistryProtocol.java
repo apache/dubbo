@@ -27,6 +27,7 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -181,7 +182,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     // To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer
     // exposed.
     // provider url <--> registry url <--> exporter
-    private final Map<String, Map<String, ExporterChangeableWrapper<?>>> bounds = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, ExporterChangeableWrapper<?>>> bounds =
+            new ConcurrentHashMap<>();
     protected Protocol protocol;
     protected ProxyFactory proxyFactory;
 
@@ -278,10 +280,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
-        Map<URL, Set<NotifyListener>> overrideListeners =
+        ConcurrentHashMap<URL, Set<NotifyListener>> overrideListeners =
                 getProviderConfigurationListener(overrideSubscribeUrl).getOverrideListeners();
-        overrideListeners
-                .computeIfAbsent(overrideSubscribeUrl, k -> new ConcurrentHashSet<>())
+        ConcurrentHashMapUtils.computeIfAbsent(overrideListeners, overrideSubscribeUrl, k -> new ConcurrentHashSet<>())
                 .add(overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
@@ -352,10 +353,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         ReferenceCountExporter<?> exporter =
                 exporterFactory.createExporter(providerUrlKey, () -> protocol.export(invokerDelegate));
-        return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(providerUrlKey, k -> new ConcurrentHashMap<>())
-                .computeIfAbsent(
-                        registryUrlKey,
-                        s -> new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker));
+        return (ExporterChangeableWrapper<T>) ConcurrentHashMapUtils.computeIfAbsent(
+                ConcurrentHashMapUtils.computeIfAbsent(bounds, providerUrlKey, k -> new ConcurrentHashMap<>()),
+                registryUrlKey,
+                s -> new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker));
     }
 
     public <T> void reExport(Exporter<T> exporter, URL newInvokerUrl) {
@@ -972,7 +973,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
-        private final Map<URL, Set<NotifyListener>> overrideListeners = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<URL, Set<NotifyListener>> overrideListeners = new ConcurrentHashMap<>();
 
         private final ModuleModel moduleModel;
 
@@ -1011,7 +1012,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
-        public Map<URL, Set<NotifyListener>> getOverrideListeners() {
+        public ConcurrentHashMap<URL, Set<NotifyListener>> getOverrideListeners() {
             return overrideListeners;
         }
     }

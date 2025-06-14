@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -452,7 +453,8 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
         }
-        Set<NotifyListener> listeners = subscribed.computeIfAbsent(url, n -> new ConcurrentHashSet<>());
+        Set<NotifyListener> listeners =
+                ConcurrentHashMapUtils.computeIfAbsent(subscribed, url, n -> new ConcurrentHashSet<>());
         listeners.add(listener);
     }
 
@@ -567,7 +569,8 @@ public abstract class AbstractRegistry implements Registry {
         if (result.size() == 0) {
             return;
         }
-        Map<String, List<URL>> categoryNotified = notified.computeIfAbsent(url, u -> new ConcurrentHashMap<>());
+        Map<String, List<URL>> categoryNotified =
+                ConcurrentHashMapUtils.computeIfAbsent(notified, url, u -> new ConcurrentHashMap<>());
         for (Map.Entry<String, List<URL>> entry : result.entrySet()) {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();

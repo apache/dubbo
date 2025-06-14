@@ -82,7 +82,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new ConcurrentHashMap<>();
-    private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     /* This lock has the same scope and lifecycle as its corresponding instance listener.
     It's used to make sure that only one interface mapping to the same app list can do subscribe or unsubscribe at the same moment.
     And the lock should be destroyed when listener destroying its corresponding instance listener.
@@ -218,8 +218,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     // it's protected by the mapping lock, so it won't override the event value.
                     mappingListener.updateInitialApps(mappingByUrl);
                     synchronized (mappingListeners) {
-                        mappingListeners
-                                .computeIfAbsent(url.getProtocolServiceKey(), (k) -> new ConcurrentHashSet<>())
+                        ConcurrentHashMapUtils.computeIfAbsent(
+                                        mappingListeners, url.getProtocolServiceKey(), (k) -> new ConcurrentHashSet<>())
                                 .add(mappingListener);
                     }
                 } catch (Exception e) {

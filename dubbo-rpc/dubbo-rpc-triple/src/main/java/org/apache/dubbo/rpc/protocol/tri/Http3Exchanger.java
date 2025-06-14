@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
@@ -56,7 +57,7 @@ public final class Http3Exchanger {
 
     private static final FluentLogger LOGGER = FluentLogger.of(Http3Exchanger.class);
     private static final boolean HAS_NETTY_HTTP3 = ClassUtils.isPresent("io.netty.incubator.codec.http3.Http3");
-    private static final Map<String, RemotingServer> SERVERS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, RemotingServer> SERVERS = new ConcurrentHashMap<>();
     private static final Map<String, AbstractConnectionClient> CLIENTS = new ConcurrentHashMap<>(16);
     private static final ChannelHandler HANDLER = new ChannelHandlerAdapter();
 
@@ -80,7 +81,7 @@ public final class Http3Exchanger {
 
     public static RemotingServer bind(URL url) {
         if (isEnabled(url)) {
-            return SERVERS.computeIfAbsent(url.getAddress(), addr -> {
+            return ConcurrentHashMapUtils.computeIfAbsent(SERVERS, url.getAddress(), addr -> {
                 try {
                     URL serverUrl = url.putAttribute(PIPELINE_CONFIGURATOR_KEY, configServerPipeline(url));
                     return new NettyHttp3Server(serverUrl, HANDLER);

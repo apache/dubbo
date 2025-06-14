@@ -696,7 +696,8 @@ public class UrlUtils {
         return Optional.ofNullable(url.getServiceModel())
                 .map(ServiceModel::getServiceMetadata)
                 .map(ServiceMetadata::getAttributeMap)
-                .map(stringObjectMap -> (T) stringObjectMap.computeIfAbsent(key, k -> fn.apply(url)))
+                .map(stringObjectMap ->
+                        (T) ConcurrentHashMapUtils.computeIfAbsent(stringObjectMap, key, k -> fn.apply(url)))
                 .orElse(null);
     }
 }

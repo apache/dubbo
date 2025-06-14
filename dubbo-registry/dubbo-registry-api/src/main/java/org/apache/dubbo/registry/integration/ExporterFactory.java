@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.registry.integration;
 
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.Exporter;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExporterFactory {
-    private final Map<String, ReferenceCountExporter<?>> exporters = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ReferenceCountExporter<?>> exporters = new ConcurrentHashMap<>();
 
     protected ReferenceCountExporter<?> createExporter(String providerKey, Callable<Exporter<?>> exporterProducer) {
-        return exporters.computeIfAbsent(providerKey, key -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(exporters, providerKey, key -> {
             try {
                 return new ReferenceCountExporter<>(exporterProducer.call(), key, this);
             } catch (Exception e) {

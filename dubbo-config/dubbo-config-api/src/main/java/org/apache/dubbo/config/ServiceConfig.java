@@ -30,6 +30,7 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -158,7 +159,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     /**
      * The exported services
      */
-    private final Map<RegisterTypeEnum, List<Exporter<?>>> exporters = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<RegisterTypeEnum, List<Exporter<?>>> exporters = new ConcurrentHashMap<>();
 
     private final List<ServiceListener> serviceListeners = new ArrayList<>();
 
@@ -969,8 +970,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             invoker = new DelegateProviderMetaDataInvoker(invoker, this);
         }
         Exporter<?> exporter = protocolSPI.export(invoker);
-        exporters
-                .computeIfAbsent(registerType, k -> new CopyOnWriteArrayList<>())
+        ConcurrentHashMapUtils.computeIfAbsent(exporters, registerType, k -> new CopyOnWriteArrayList<>())
                 .add(exporter);
     }
 

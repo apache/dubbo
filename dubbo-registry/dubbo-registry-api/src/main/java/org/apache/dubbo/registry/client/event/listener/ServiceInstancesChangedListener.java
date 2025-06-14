@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
@@ -77,7 +78,7 @@ public class ServiceInstancesChangedListener {
 
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
-    protected Map<String, Set<NotifyListenerWithKey>> listeners;
+    protected ConcurrentHashMap<String, Set<NotifyListenerWithKey>> listeners;
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -254,8 +255,8 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
-        Set<NotifyListenerWithKey> notifyListeners =
-                this.listeners.computeIfAbsent(url.getServiceKey(), _k -> new ConcurrentHashSet<>());
+        Set<NotifyListenerWithKey> notifyListeners = ConcurrentHashMapUtils.computeIfAbsent(
+                this.listeners, url.getServiceKey(), _k -> new ConcurrentHashSet<>());
         String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY, url.getProtocol());
         ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(
                 url.getServiceInterface(),
