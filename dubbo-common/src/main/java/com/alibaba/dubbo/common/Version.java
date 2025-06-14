@@ -58,7 +58,7 @@ public final class Version {
 
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
-            // find version info from MANIFEST.MF first
+            //从MAINFEST.MF中获得版本号
             String version = cls.getPackage().getImplementationVersion();
             if (version == null || version.length() == 0) {
                 version = cls.getPackage().getSpecificationVersion();

@@ -20,6 +20,7 @@ package com.alibaba.dubbo.config;
  * ConsumerConfig
  *
  * @export
+ * 消费者省缺值配置
  */
 public class ConsumerConfig extends AbstractReferenceConfig {
 

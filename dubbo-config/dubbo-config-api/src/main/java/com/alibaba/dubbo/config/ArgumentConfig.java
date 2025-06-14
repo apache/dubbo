@@ -22,6 +22,8 @@ import java.io.Serializable;
 
 /**
  * @export
+ * 方法参数配置
+ * 一个config对应一个参数
  */
 public class ArgumentConfig implements Serializable {
 

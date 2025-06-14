@@ -81,13 +81,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // layer
     protected String layer;
 
-    // application info
+    //当前应用信息
     protected ApplicationConfig application;
 
     // module info
     protected ModuleConfig module;
 
-    // registry centers
+    //注册中心信息
     protected List<RegistryConfig> registries;
 
     // connection events
@@ -102,6 +102,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
+    //校验RegistryConfig配置，实际上该方法会初始化RegistryConfig的配置属性
     protected void checkRegistry() {
         // for backward compatibility
         if (registries == null || registries.isEmpty()) {
@@ -130,9 +131,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * 校验ApplicationConfig配置
+     * 实际上，该方法会初始化ApplicationConfig的配置属性
+     */
     @SuppressWarnings("deprecation")
     protected void checkApplication() {
-        // for backward compatibility
+        //当application为空时，若有dubbo.application.name配置，则创建ApplicationConfig
         if (application == null) {
             String applicationName = ConfigUtils.getProperty("dubbo.application.name");
             if (applicationName != null && applicationName.length() > 0) {
@@ -143,6 +148,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             throw new IllegalStateException(
                     "No such application config! Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
+        //读取环境变量和properties配置到ApplicationConfig对象
         appendProperties(application);
 
         String wait = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
@@ -247,16 +253,23 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
+    /**
+     * 校验接口和方法
+     * 1.接口类非空，且是接口
+     * 2.方法(methods)在接口中已定义
+     * @param interfaceClass 接口类
+     * @param methods 方法数组
+     */
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
-        // interface cannot be null
+        //接口类非空
         if (interfaceClass == null) {
             throw new IllegalStateException("interface not allow null!");
         }
-        // to verify interfaceClass is an interface
+        //传入的是接口
         if (!interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
-        // check if methods exist in the interface
+        //校验每个方法在接口中已定义
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig methodBean : methods) {
                 String methodName = methodBean.getName();
@@ -278,6 +291,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    //校验Stub和Mock相关配置
     protected void checkStubAndMock(Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(local)) {
             Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);

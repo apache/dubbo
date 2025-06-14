@@ -68,24 +68,37 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see java.net.URL
  * @see java.net.URI
  */
+//dubbo://192.168.3.17:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider&default.delay=-1&default.retries=0&default.service.filter=demoFilter&delay=-1&dubbo=2.0.0&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&pid=19031&side=provider&timestamp=1519651641799
 public final class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
+    //协议名
+    //dubbo
     private final String protocol;
 
+    //用户名
     private final String username;
 
+    //密码
     private final String password;
 
     // by default, host to registry
+    //地址
+    //192.168.3.17
     private final String host;
 
     // by default, port to registry
+    //端口
+    //20880
     private final int port;
 
+    //路径(服务名)
+    //com.alibaba.dubbo.demo.DemoService
     private final String path;
 
+    //参数集合
+    //?后面的参数列表
     private final Map<String, String> parameters;
 
     // ==== cache ====
@@ -1153,6 +1166,8 @@ public final class URL implements Serializable {
         return buildString(appendUser, appendParameter, false, false, parameters);
     }
 
+    //parameters就是通过AbstractConfig.appendParameters()生成的
+    //dubbo://192.168.3.17:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider&default.delay=-1&default.retries=0&default.service.filter=demoFilter&delay=-1&dubbo=2.0.0&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&pid=19031&side=provider&timestamp=1519651641799
     private String buildString(boolean appendUser, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
         StringBuilder buf = new StringBuilder();
         if (protocol != null && protocol.length() > 0) {

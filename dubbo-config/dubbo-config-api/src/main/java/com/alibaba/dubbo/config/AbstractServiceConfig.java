@@ -27,6 +27,7 @@ import java.util.List;
  * AbstractServiceConfig
  *
  * @export
+ * 抽象服务配置类
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
@@ -41,10 +42,10 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // whether the service is deprecated
     protected Boolean deprecated;
 
-    // delay service exporting
+    //延迟多久暴露服务
     protected Integer delay;
 
-    // whether to export the service
+    //是否北路服务
     protected Boolean export;
 
     // weight
@@ -61,6 +62,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     // access log
     protected String accesslog;
+    //服务提供者协议
     protected List<ProtocolConfig> protocols;
     // max allowed execute times
     private Integer executes;

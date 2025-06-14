@@ -26,6 +26,7 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
  *
  * @export
  * @see com.alibaba.dubbo.config.ReferenceConfig
+ * 抽象引用配置类
  */
 public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
@@ -39,7 +40,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     // whether to eagle-init
     protected Boolean init;
 
-    // whether to use generic interface
+    //泛化标识
     protected String generic;
 
     // whether to find reference's instance from the current JVM

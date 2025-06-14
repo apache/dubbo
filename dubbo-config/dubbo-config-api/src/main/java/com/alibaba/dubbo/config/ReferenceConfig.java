@@ -59,6 +59,8 @@ import static com.alibaba.dubbo.common.utils.NetUtils.isInvalidLocalHost;
  * ReferenceConfig
  *
  * @export
+ * 引用远程服务：此实例很重，封装了与注册中心的连接以及与提供者的连接。如果使该配置需要缓存，不然容易造成内存和连接泄露
+ * 消费者引用服务配置类
  */
 public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
@@ -70,7 +72,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final List<URL> urls = new ArrayList<URL>();
-    // interface name
+    //接口名
     private String interfaceName;
     private Class<?> interfaceClass;
     // client type
@@ -85,7 +87,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // interface proxy reference
     private transient volatile T ref;
     private transient volatile Invoker<?> invoker;
+    //是否初始化标识
     private transient volatile boolean initialized;
+    //销毁标识
     private transient volatile boolean destroyed;
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
@@ -114,24 +118,31 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendAnnotation(Reference.class, reference);
     }
 
+    /**
+     * 检查属性集合中的事件通知方法是否正确
+     * 因为，此时方法配置的是字符串，需要通过反射获得 Method ，并添加到 attributes
+     * @param method 方法配置对象
+     * @param map 参数集合
+     * @param attributes 属性集合
+     */
     private static void checkAndConvertImplicitConfig(MethodConfig method, Map<String, String> map, Map<Object, Object> attributes) {
         //check config conflict
         if (Boolean.FALSE.equals(method.isReturn()) && (method.getOnreturn() != null || method.getOnthrow() != null)) {
             throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been setted.");
         }
-        //convert onreturn methodName to Method
+        //onreturn：将方法名字符串转换成方法
         String onReturnMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_RETURN_METHOD_KEY);
         Object onReturnMethod = attributes.get(onReturnMethodKey);
         if (onReturnMethod != null && onReturnMethod instanceof String) {
             attributes.put(onReturnMethodKey, getMethodByName(method.getOnreturn().getClass(), onReturnMethod.toString()));
         }
-        //convert onthrow methodName to Method
+        // onthrow：将方法名字符串转换成方法
         String onThrowMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_THROW_METHOD_KEY);
         Object onThrowMethod = attributes.get(onThrowMethodKey);
         if (onThrowMethod != null && onThrowMethod instanceof String) {
             attributes.put(onThrowMethodKey, getMethodByName(method.getOnthrow().getClass(), onThrowMethod.toString()));
         }
-        //convert oninvoke methodName to Method
+        // oninvoke：将方法名字符串转换成方法
         String onInvokeMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_INVOKE_METHOD_KEY);
         Object onInvokeMethod = attributes.get(onInvokeMethodKey);
         if (onInvokeMethod != null && onInvokeMethod instanceof String) {
@@ -155,10 +166,18 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return urls;
     }
 
+    /**
+     * ①进一步初始化ReferenceConfig对象
+     * ②校验ReferenceConfig中的配置项
+     * ③使用ReferenceConfig生成Dubbo URL对象数组
+     * ④使用Dubbo URL对象，应用服务
+     */
     public synchronized T get() {
+        //以销毁则不可取
         if (destroyed) {
             throw new IllegalStateException("Already destroyed!");
         }
+        //初始化
         if (ref == null) {
             init();
         }
@@ -183,40 +202,51 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void init() {
+        //已经初始化，直接返回
         if (initialized) {
             return;
         }
         initialized = true;
+        //校验接口名非空
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
-        // get consumer's global configuration
+        //拼接属性配置（环境变量+properties属性）到ConsumerConfig对象
         checkDefault();
+        //拼接属性配置到(环境变量和properties属性)当前对象ReferenceConfig
         appendProperties(this);
+        //若未设置generic(泛化)属性，使用ConsumerConfig.generic属性
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
         if (ProtocolUtils.isGeneric(getGeneric())) {
+            //泛化接口的实现
             interfaceClass = GenericService.class;
         } else {
             try {
+                //普通接口的实现：根据接口名获取接口类
                 interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
                         .getContextClassLoader());
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+            //校验接口和方法
             checkInterfaceAndMethods(interfaceClass, methods);
         }
+        //【直连提供者】第一优先级，通过-D参数指定 -> com.alibaba.xxx.XxxService=dubbo://localhost:20890
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
+        //【直连提供者】第二优先级，通过文件映射
         if (resolve == null || resolve.length() == 0) {
             resolveFile = System.getProperty("dubbo.resolve.file");
             if (resolveFile == null || resolveFile.length() == 0) {
+                //默认先加载，`${user.home}/dubbo-resolve.properties` 文件 ，无需配置
                 File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
                 if (userResolveFile.exists()) {
                     resolveFile = userResolveFile.getAbsolutePath();
                 }
             }
+            //存在resolveFile，则加载文件
             if (resolveFile != null && resolveFile.length() > 0) {
                 Properties properties = new Properties();
                 FileInputStream fis = null;
@@ -235,6 +265,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 resolve = properties.getProperty(interfaceName);
             }
         }
+        //设置直连提供者url
         if (resolve != null && resolve.length() > 0) {
             url = resolve;
             if (logger.isWarnEnabled()) {
@@ -245,6 +276,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
+
+        //从ConsumerConfig对象中读取application,module,registries,monitor配置对象
         if (consumer != null) {
             if (application == null) {
                 application = consumer.getApplication();
@@ -259,6 +292,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = consumer.getMonitor();
             }
         }
+        //从ModuleConfig中读取registries,monitor
         if (module != null) {
             if (registries == null) {
                 registries = module.getRegistries();
@@ -267,6 +301,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = module.getMonitor();
             }
         }
+        //从ApplicationConfig中读取RegistryConfig，MonitorConfig
         if (application != null) {
             if (registries == null) {
                 registries = application.getRegistries();
@@ -275,8 +310,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = application.getMonitor();
             }
         }
+        //校验ApplicationConfig配置
         checkApplication();
+        //校验Stub和Mock相关配置
         checkStubAndMock(interfaceClass);
+        //将side，dubbo，timestamp，pid设置到map中
+        //创建集合参数map，用于创建Dubbo URL的parameters属性
         Map<String, String> map = new HashMap<String, String>();
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
@@ -290,7 +329,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
             }
-
+            //获得接口的方法数组
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
@@ -300,14 +339,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
+        //将各种配置添加到map中
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
+        //获取服务键，作为前缀
         String prefix = StringUtils.getServiceKey(map);
+        //将MethodConfig数组添加到map中
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
+                //将MethodConfig添加到map中
                 appendParameters(map, method, method.getName());
+                // 当配置了`MethodConfig.retry = false` 时，强制禁用重试
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
@@ -315,11 +359,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
+                //将带有 @Parameter(attribute = true) 配置对象的属性天骄到参数集合中
                 appendAttributes(attributes, method, prefix + "." + method.getName());
+                //检查属性集合中的事件通知方法是否正确。如果正确则进行转换
                 checkAndConvertImplicitConfig(method, map, attributes);
             }
         }
-
+        //以系统变量DUBBO_IP_TO_REGISTRY作为注册地址
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry == null || hostToRegistry.length() == 0) {
             hostToRegistry = NetUtils.getLocalHost();
@@ -329,6 +375,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
         //attributes are stored by system context.
+        //添加到StaticContext缓存
         StaticContext.getSystemContext().putAll(attributes);
         ref = createProxy(map);
         ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), this, ref, interfaceClass.getMethods());
@@ -428,6 +475,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return (T) proxyFactory.getProxy(invoker);
     }
 
+    /**
+     * 校验ConsumerConfig
+     * 会拼接属性配置（环境变量 + properties 属性）到 ConsumerConfig 对象。
+     */
     private void checkDefault() {
         if (consumer == null) {
             consumer = new ConsumerConfig();
