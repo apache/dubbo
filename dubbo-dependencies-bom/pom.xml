@@ -126,7 +126,7 @@
     <opentelemetry.version>1.50.0</opentelemetry.version>
     <zipkin-reporter.version>3.5.0</zipkin-reporter.version>
     <zipkin.version>3.5.1</zipkin.version>
-    <micrometer-tracing.version>1.5.0</micrometer-tracing.version>
+    <micrometer-tracing.version>1.5.1</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
