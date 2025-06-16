@@ -27,7 +27,7 @@
   <artifactId>dubbo-rest-openapi</artifactId>
 
   <properties>
-    <swagger-annotations.version>2.2.32</swagger-annotations.version>
+    <swagger-annotations.version>2.2.33</swagger-annotations.version>
     <swagger-ui.version>5.22.0</swagger-ui.version>
     <redoc.version>2.2.0</redoc.version>
     <webjars-locator.version>1.0.1</webjars-locator.version>
