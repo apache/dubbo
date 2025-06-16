@@ -35,40 +35,20 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@EnableDubboConfig
-@DubboComponentScan
+@EnableDubboConfig//开启Dubbo Config
+@DubboComponentScan//扫描Dubbo @Service和@Reference
 public @interface EnableDubbo {
 
-    /**
-     * Base packages to scan for annotated @Service classes.
-     * <p>
-     * Use {@link #scanBasePackageClasses()} for a type-safe alternative to String-based
-     * package names.
-     *
-     * @return the base packages to scan
-     * @see DubboComponentScan#basePackages()
-     */
+    //配置@DubboComponentScan的扫描路径
     @AliasFor(annotation = DubboComponentScan.class, attribute = "basePackages")
     String[] scanBasePackages() default {};
 
-    /**
-     * Type-safe alternative to {@link #scanBasePackages()} for specifying the packages to
-     * scan for annotated @Service classes. The package of each class specified will be
-     * scanned.
-     *
-     * @return classes from the base packages to scan
-     * @see DubboComponentScan#basePackageClasses
-     */
+    //配置@DubboComponentScan的注解，扫描的类
     @AliasFor(annotation = DubboComponentScan.class, attribute = "basePackageClasses")
     Class<?>[] scanBasePackageClasses() default {};
 
 
-    /**
-     * It indicates whether {@link AbstractConfig} binding to multiple Spring Beans.
-     *
-     * @return the default value is <code>false</code>
-     * @see EnableDubboConfig#multiple()
-     */
+    //配置@EnableDubboConfig注解，配置是否绑定到多个Spring Bean上
     @AliasFor(annotation = EnableDubboConfig.class, attribute = "multiple")
     boolean multipleConfig() default false;
 

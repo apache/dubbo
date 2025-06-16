@@ -36,7 +36,9 @@ public class AnnotationProvider {
     }
 
     @Configuration
+    //使用@EnableDubbo注解，配置扫描com.alibaba.dubbo.examples.annotation.impl包下的@Service和@Reference
     @EnableDubbo(scanBasePackages = "com.alibaba.dubbo.examples.annotation.impl", multipleConfig = true)
+    //使用@PropertySource导入配置
     @PropertySource("classpath:/com/alibaba/dubbo/examples/annotation/dubbo-provider.properties")
 //    @ComponentScan(value = {"com.alibaba.dubbo.examples.annotation.impl"})
     static public class ProviderConfiguration {

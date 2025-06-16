@@ -312,6 +312,8 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <!--定义了复杂类型
+    配置项(ApplicationConfig的属性)-->
     <xsd:complexType name="applicationType">
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
@@ -1130,6 +1132,9 @@
         </xsd:annotation>
     </xsd:element>
 
+    <!--xsd:element
+       name定义了元素名称 name="application" 对应<dubbo:application />
+     type定义了内建数据类型的名称-->
     <xsd:element name="application" type="applicationType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The application config ]]></xsd:documentation>

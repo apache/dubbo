@@ -33,4 +33,8 @@ limitations under the License.
     local regular interface -->
     <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService"/>
 
+    <!--<dubbo:consumer>-->
+    <!--    <dubbo:reference interface=""></dubbo:reference>-->
+    <!--</dubbo:consumer>-->
+
 </beans>
