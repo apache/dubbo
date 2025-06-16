@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,6 +57,17 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
     private AtomicReference<Promise<Void>> connectionPrefaceReceivedPromiseRef;
 
+    /**
+     * await connection preface only after the channel was initialized.
+     */
+    private boolean isChannelInitialized;
+
+    /**
+     * the countdown latch for
+     * {@link org.apache.dubbo.remoting.transport.netty4.NettyConnectionClient#isChannelInitialized}
+     */
+    private CountDownLatch channelInitializedLatch;
+
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
@@ -69,6 +81,7 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
     }
 
     protected void initBootstrap() {
+        channelInitializedLatch = new CountDownLatch(1);
         Bootstrap bootstrap = new Bootstrap();
         bootstrap
                 .group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP.get())
@@ -104,7 +117,9 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
                 ChannelHandlerContext http2FrameCodecHandlerCtx = pipeline.context(Http2FrameCodec.class);
                 if (http2FrameCodecHandlerCtx != null) {
+                    // create connection preface received promise.
                     connectionPrefaceReceivedPromiseRef = new AtomicReference<>();
+                    connectionPrefaceReceivedPromiseRef.set(new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
                     pipeline.addAfter(
                             http2FrameCodecHandlerCtx.name(),
                             "client-connection-preface-handler",
@@ -114,6 +129,10 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                 // set null but do not close this client, it will be reconnecting in the future
                 ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
                 // TODO support Socks5
+
+                // set channel initialized flag and count down the latch.
+                isChannelInitialized = true;
+                channelInitializedLatch.countDown();
             }
         });
         this.bootstrap = bootstrap;
@@ -121,9 +140,7 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
     @Override
     protected ChannelFuture performConnect() {
-        if (connectionPrefaceReceivedPromiseRef != null) {
-            connectionPrefaceReceivedPromiseRef.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
-        }
+        // ChannelInitializer#initChannel will be invoked by Netty client work thread.
         return bootstrap.connect();
     }
 
@@ -154,23 +171,22 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
      * @param start start time of doConnect in milliseconds.
      */
     private void waitConnectionPreface(long start) throws RemotingException {
-        if (connectionPrefaceReceivedPromiseRef == null) {
-            return;
-        }
-        Promise<Void> connectionPrefaceReceivedPromise = connectionPrefaceReceivedPromiseRef.get();
-        if (connectionPrefaceReceivedPromise != null) {
+        // await channel initialization to ensure connection preface received promise had been created when necessary.
+        if (!isChannelInitialized) {
             long retainedTimeout = getConnectTimeout() - System.currentTimeMillis() + start;
-            boolean ret = connectionPrefaceReceivedPromise.awaitUninterruptibly(retainedTimeout, TimeUnit.MILLISECONDS);
-            // Only process once: destroy connectionPrefaceReceivedPromise after used
-            synchronized (this) {
-                connectionPrefaceReceivedPromiseRef.set(null);
+            try {
+                isChannelInitialized = channelInitializedLatch.await(retainedTimeout, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(
+                        "client(url: " + getUrl() + ") failed to connect to server " + getConnectAddress(), e);
             }
-            if (!ret || !connectionPrefaceReceivedPromise.isSuccess()) {
-                // 6-2 Client-side connection preface timeout
+            if (!isChannelInitialized) {
+                // 6-2 Client-side channel initialization timeout
                 RemotingException remotingException = new RemotingException(
                         this,
                         "client(url: " + getUrl() + ") failed to connect to server " + getConnectAddress()
-                                + " client-side connection preface timeout " + getConnectTimeout()
+                                + " client-side channel initialization timeout " + getConnectTimeout()
                                 + "ms (elapsed: "
                                 + (System.currentTimeMillis() - start) + "ms) from netty client "
                                 + NetUtils.getLocalHost()
@@ -181,11 +197,48 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                         TRANSPORT_CLIENT_CONNECT_TIMEOUT,
                         "provider crash",
                         "",
-                        "Client-side connection preface timeout",
+                        "Client-side channel initialization timeout",
                         remotingException);
 
                 throw remotingException;
             }
+        }
+
+        // await if connection preface received promise is not null.
+        if (connectionPrefaceReceivedPromiseRef == null) {
+            return;
+        }
+        Promise<Void> connectionPrefaceReceivedPromise = connectionPrefaceReceivedPromiseRef.get();
+        if (connectionPrefaceReceivedPromise == null) {
+            return;
+        }
+        long retainedTimeout = getConnectTimeout() - System.currentTimeMillis() + start;
+        boolean ret = connectionPrefaceReceivedPromise.awaitUninterruptibly(retainedTimeout, TimeUnit.MILLISECONDS);
+        // await only once: destroy connection preface received promise after used.
+        synchronized (this) {
+            connectionPrefaceReceivedPromiseRef.set(null);
+            connectionPrefaceReceivedPromiseRef = null;
+        }
+        if (!ret || !connectionPrefaceReceivedPromise.isSuccess()) {
+            // 6-2 Client-side connection preface timeout
+            RemotingException remotingException = new RemotingException(
+                    this,
+                    "client(url: " + getUrl() + ") failed to connect to server " + getConnectAddress()
+                            + " client-side connection preface timeout " + getConnectTimeout()
+                            + "ms (elapsed: "
+                            + (System.currentTimeMillis() - start) + "ms) from netty client "
+                            + NetUtils.getLocalHost()
+                            + " using dubbo version "
+                            + Version.getVersion());
+
+            logger.error(
+                    TRANSPORT_CLIENT_CONNECT_TIMEOUT,
+                    "provider crash",
+                    "",
+                    "Client-side connection preface timeout",
+                    remotingException);
+
+            throw remotingException;
         }
     }
 }
