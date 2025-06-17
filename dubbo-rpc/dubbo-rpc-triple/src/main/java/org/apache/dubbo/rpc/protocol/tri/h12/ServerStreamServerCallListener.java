@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -29,7 +30,12 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onReturn(Object value) {}
+    public void onReturn(Object value) {
+        if (value instanceof HttpResult) {
+            responseObserver.onNext(value);
+            responseObserver.onCompleted();
+        }
+    }
 
     @Override
     public void onMessage(Object message) {

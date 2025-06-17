@@ -166,13 +166,13 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (message != null) {
             headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), responseEncoder.contentType());
         }
+        customizeHeaders(headers, throwable, message);
         if (data instanceof HttpResult) {
             HttpResult<?> result = (HttpResult<?>) data;
             if (result.getHeaders() != null) {
                 headers.set(result.getHeaders());
             }
         }
-        customizeHeaders(headers, throwable, message);
         return metadata;
     }
 
@@ -195,7 +195,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
     }
 
-    protected final HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
+    protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
         if (statusCode < 200 || statusCode == 204 || statusCode == 304) {
             return null;
         }
