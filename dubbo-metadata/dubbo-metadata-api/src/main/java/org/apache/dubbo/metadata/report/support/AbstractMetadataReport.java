@@ -306,7 +306,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     boolean result = true;
                     try {
                         if (logger.isInfoEnabled()) {
-                            logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier
+                            logger.info("[METADATA_REGISTER] store provider metadata. Identifier : " + providerMetadataIdentifier
                                     + "; definition: " + serviceDefinition);
                         }
                         allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
@@ -347,7 +347,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: "
+                logger.info("[METADATA_REGISTER] store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: "
                         + serviceParameterMap);
             }
             allMetadataReports.put(consumerMetadataIdentifier, serviceParameterMap);

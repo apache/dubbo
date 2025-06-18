@@ -233,7 +233,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
                 if (CollectionUtils.isEmpty(mappingByUrl)) {
                     logger.info(
-                            "No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: "
+                            "[METADATA_REGISTER] No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: "
                                     + url);
                     //                if (check) {
                     //                    throw new IllegalStateException("Should has at least one way to know which

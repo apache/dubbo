@@ -553,7 +553,7 @@ public abstract class AbstractRegistry implements Registry {
             return;
         }
         if (logger.isInfoEnabled()) {
-            logger.info("Notify urls for subscribe url " + url + ", url size: " + urls.size());
+            logger.info("[INSTANCE_REGISTER] Notify urls for subscribe url " + url + ", url size: " + urls.size());
         }
         // keep every provider's category.
         Map<String, List<URL>> result = new HashMap<>();

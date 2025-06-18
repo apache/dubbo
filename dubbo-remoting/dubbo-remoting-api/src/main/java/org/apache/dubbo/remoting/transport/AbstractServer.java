@@ -66,7 +66,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
-                logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export "
+                logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export "
                         + getLocalAddress());
             }
         } catch (Throwable t) {

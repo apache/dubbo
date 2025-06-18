@@ -209,7 +209,7 @@ public class ModuleModel extends ScopeModel {
                 new HashMap<>(0),
                 ClassUtils.getClassLoader(internalService));
 
-        logger.info("Dynamically registering consumer model " + serviceKey + " into model " + this.getDesc());
+        logger.info("[INSTANCE_REGISTER] Dynamically registering consumer model " + serviceKey + " into model " + this.getDesc());
         serviceRepository.registerConsumer(consumerModel);
         return consumerModel;
     }

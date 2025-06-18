@@ -269,7 +269,7 @@ public class InternalServiceConfigBuilder<T> {
 
         this.nullAssert();
 
-        logger.info("Using " + this.protocol + " protocol to export " + interfaceClass.getName() + " service on port "
+        logger.info("[SERVICE_PUBLISH] [METADATA_REGISTER] Using " + this.protocol + " protocol to export " + interfaceClass.getName() + " service on port "
                 + protocolConfig.getPort());
 
         applicationModel

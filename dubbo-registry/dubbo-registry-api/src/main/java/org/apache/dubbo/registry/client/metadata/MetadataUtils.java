@@ -77,7 +77,7 @@ public class MetadataUtils {
     public static void publishServiceDefinition(
             URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).isEmpty()) {
-            logger.info("Remote Metadata Report Server is not provided or unavailable, "
+            logger.info("[METADATA_REGISTER] Remote Metadata Report Server is not provided or unavailable, "
                     + "will stop registering service definition to remote center!");
             return;
         }
