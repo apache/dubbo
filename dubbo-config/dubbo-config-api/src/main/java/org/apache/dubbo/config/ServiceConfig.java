@@ -427,25 +427,30 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (!exported) {
             return;
         }
-        logger.info("[INSTANCE_REGISTER] [METADATA_REGISTER] Try to register interface application mapping for service " + url.getServiceKey());
+        logger.info("[INSTANCE_REGISTER] [METADATA_REGISTER] Try to register interface application mapping for service "
+                + url.getServiceKey());
         boolean succeeded = false;
         try {
             succeeded = serviceNameMapping.map(url);
             if (succeeded) {
-                logger.info("[INSTANCE_REGISTER][METADATA_REGISTER] Successfully registered interface application mapping for service " + url.getServiceKey());
+                logger.info(
+                        "[INSTANCE_REGISTER][METADATA_REGISTER] Successfully registered interface application mapping for service "
+                                + url.getServiceKey());
             } else {
                 logger.error(
                         CONFIG_SERVER_DISCONNECTED,
                         "configuration server disconnected",
                         "",
-                        "[INSTANCE_REGISTER] [METADATA_REGISTER] Failed register interface application mapping for service " + url.getServiceKey());
+                        "[INSTANCE_REGISTER] [METADATA_REGISTER] Failed register interface application mapping for service "
+                                + url.getServiceKey());
             }
         } catch (Exception e) {
             logger.error(
                     CONFIG_SERVER_DISCONNECTED,
                     "configuration server disconnected",
                     "",
-                    "[INSTANCE_REGISTER] [METADATA_REGISTER] Failed register interface application mapping for service " + url.getServiceKey(),
+                    "[INSTANCE_REGISTER] [METADATA_REGISTER] Failed register interface application mapping for service "
+                            + url.getServiceKey(),
                     e);
         }
         if (!succeeded && serviceNameMapping.hasValidMetadataCenter()) {
@@ -931,8 +936,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
                 if (logger.isInfoEnabled()) {
                     if (url.getParameter(REGISTER_KEY, true)) {
-                        logger.info("[INSTANCE_REGISTER] Register dubbo service " + interfaceClass.getName() + " url " + url
-                                + " to registry " + registryURL.getAddress());
+                        logger.info("[INSTANCE_REGISTER] Register dubbo service " + interfaceClass.getName() + " url "
+                                + url + " to registry " + registryURL.getAddress());
                     } else {
                         logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                     }
@@ -944,7 +949,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         } else {
 
             if (logger.isInfoEnabled()) {
-                logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] Export dubbo service " + interfaceClass.getName()
+                        + " to url " + url);
             }
 
             doExportUrl(url, true, registerType);
@@ -986,7 +992,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         local = local.setScopeModel(getScopeModel()).setServiceModel(providerModel);
         local = local.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
         doExportUrl(local, false, RegisterTypeEnum.AUTO_REGISTER);
-        logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
+        logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] Export dubbo service " + interfaceClass.getName()
+                + " to local registry url : " + local);
     }
 
     /**
@@ -1167,7 +1174,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
             logger.warn(
-                    CONFIG_USE_RANDOM_PORT, "", "", "[SERVICE_PUBLISH] Use random available port(" + port + ") for protocol " + protocol);
+                    CONFIG_USE_RANDOM_PORT,
+                    "",
+                    "",
+                    "[SERVICE_PUBLISH] Use random available port(" + port + ") for protocol " + protocol);
         }
     }
 
