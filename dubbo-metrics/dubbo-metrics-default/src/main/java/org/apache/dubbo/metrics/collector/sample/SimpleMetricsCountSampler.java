@@ -55,19 +55,10 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implemen
 
         this.countConfigure(sampleConfigure);
 
-        Map<M, AtomicLong> metricAtomic = metricCounter.get(metricsName);
-
-        if (metricAtomic == null) {
-            metricAtomic = metricCounter.computeIfAbsent(metricsName, k -> new ConcurrentHashMap<>());
-        }
+        Map<M, AtomicLong>  metricAtomic = metricCounter.computeIfAbsent(metricsName, k -> new ConcurrentHashMap<>());
 
         Assert.notNull(sampleConfigure.getMetric(), "metrics is null");
 
-        AtomicLong atomicCounter = metricAtomic.get(sampleConfigure.getMetric());
-
-        if (atomicCounter == null) {
-            atomicCounter = metricAtomic.computeIfAbsent(sampleConfigure.getMetric(), k -> new AtomicLong());
-        }
-        return atomicCounter;
+        return metricAtomic.computeIfAbsent(sampleConfigure.getMetric(), k -> new AtomicLong());
     }
 }
