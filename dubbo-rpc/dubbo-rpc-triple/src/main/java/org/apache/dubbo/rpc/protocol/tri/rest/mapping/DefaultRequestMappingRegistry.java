@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.FluentLogger;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.RestConfig;
@@ -31,6 +32,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.StubServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
@@ -48,6 +50,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.PathUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
@@ -129,7 +132,14 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                 RequestMapping classMapping = resolver.resolve(serviceMeta);
                 consumer.accept((methods) -> {
                     Method method = methods.get(0);
-                    MethodDescriptor md = sd.getMethod(method.getName(), method.getParameterTypes());
+                    Class<?>[] paramTypes = method.getParameterTypes();
+                    MethodDescriptor md = sd.getMethod(method.getName(), paramTypes);
+                    if (md == null && sd instanceof StubServiceDescriptor) {
+                        int len = paramTypes.length;
+                        if (len > 0 && StreamObserver.class.isAssignableFrom(paramTypes[len - 1])) {
+                            md = sd.getMethod(method.getName(), Arrays.copyOf(paramTypes, len - 1));
+                        }
+                    }
                     MethodMeta methodMeta = new MethodMeta(methods, md, serviceMeta);
                     if (!resolver.accept(methodMeta)) {
                         return;
