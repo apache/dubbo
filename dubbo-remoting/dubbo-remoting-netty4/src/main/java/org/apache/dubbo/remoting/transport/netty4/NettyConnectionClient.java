@@ -106,7 +106,10 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                 protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
 
                 ChannelHandlerContext http2FrameCodecHandlerCtx = pipeline.context(Http2FrameCodec.class);
-                if (http2FrameCodecHandlerCtx != null) {
+                if (http2FrameCodecHandlerCtx == null) {
+                    // set connection preface received promise to null.
+                    connectionPrefaceReceivedPromiseRef = null;
+                } else {
                     // create connection preface received promise if necessary.
                     if (connectionPrefaceReceivedPromiseRef == null) {
                         connectionPrefaceReceivedPromiseRef = new AtomicReference<>();
