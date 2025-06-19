@@ -68,7 +68,7 @@ class DubboProtocolTest {
         ApplicationModel.defaultModel()
                 .getDefaultModule()
                 .getServiceRepository()
-                .unregisterService(DemoService.class);
+                .destroy();
     }
 
     @BeforeAll
