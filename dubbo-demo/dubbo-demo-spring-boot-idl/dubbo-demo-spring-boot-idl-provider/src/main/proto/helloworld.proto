@@ -32,4 +32,5 @@ message HelloReply {
 service GreeterService {
     // Sends a greeting.
     rpc sayHello(HelloRequest) returns (HelloReply);
+    rpc sayHelloStream(HelloRequest) returns (stream HelloReply);
 }

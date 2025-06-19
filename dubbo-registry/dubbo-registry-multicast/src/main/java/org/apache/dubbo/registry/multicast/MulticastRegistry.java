@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -345,7 +346,7 @@ public class MulticastRegistry extends FailbackRegistry {
         for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
             URL key = entry.getKey();
             if (UrlUtils.isMatch(key, url)) {
-                Set<URL> urls = received.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
+                Set<URL> urls = ConcurrentHashMapUtils.computeIfAbsent(received, key, k -> new ConcurrentHashSet<>());
                 urls.add(url);
                 List<URL> list = toList(urls);
                 for (final NotifyListener listener : entry.getValue()) {

@@ -113,7 +113,8 @@ public class ConfigurableMetadataServiceExporter {
         metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));
 
         if (logger.isInfoEnabled()) {
-            logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
+            logger.info("[SERVICE_PUBLISH] [METADATA_REGISTER] The MetadataService exports urls : "
+                    + serviceConfig.getExportedUrls());
         }
     }
 
@@ -137,7 +138,8 @@ public class ConfigurableMetadataServiceExporter {
         metadataServiceV2.setMetadataUrl(serviceConfigV2.getExportedUrls().get(0));
 
         if (logger.isInfoEnabled()) {
-            logger.info("The MetadataServiceV2 exports urls : " + serviceConfigV2.getExportedUrls());
+            logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] The MetadataServiceV2 exports urls : "
+                    + serviceConfigV2.getExportedUrls());
         }
     }
 

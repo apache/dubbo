@@ -26,8 +26,7 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Assertions;
@@ -44,16 +43,17 @@ public class MetricsSupportTest {
         config.setName("MockMetrics");
         applicationModel.getApplicationConfigManager().setApplication(config);
 
-        Map<MetricsKeyWrapper, Map<ServiceKeyMetric, AtomicLong>> data = new HashMap<>();
+        ConcurrentHashMap<MetricsKeyWrapper, ConcurrentHashMap<ServiceKeyMetric, AtomicLong>> data =
+                new ConcurrentHashMap<>();
         MetricsKeyWrapper key1 = new MetricsKeyWrapper(
                 METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD));
         MetricsKeyWrapper key2 = new MetricsKeyWrapper(
                 METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
         ServiceKeyMetric sm1 = new ServiceKeyMetric(applicationModel, "a.b.c");
         ServiceKeyMetric sm2 = new ServiceKeyMetric(applicationModel, "a.b.d");
-        data.computeIfAbsent(key1, k -> new HashMap<>()).put(sm1, new AtomicLong(1));
-        data.computeIfAbsent(key1, k -> new HashMap<>()).put(sm2, new AtomicLong(1));
-        data.put(key2, new HashMap<>());
+        data.computeIfAbsent(key1, k -> new ConcurrentHashMap<>()).put(sm1, new AtomicLong(1));
+        data.computeIfAbsent(key1, k -> new ConcurrentHashMap<>()).put(sm2, new AtomicLong(1));
+        data.put(key2, new ConcurrentHashMap<>());
         Assertions.assertEquals(
                 2, data.values().stream().mapToLong(map -> map.values().size()).sum());
         MetricsSupport.fillZero(data);

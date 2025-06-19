@@ -18,6 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.HandlerMeta;
 
+import java.util.Collections;
+import java.util.Objects;
+
 public final class Registration {
 
     private final RequestMapping mapping;
@@ -45,6 +48,24 @@ public final class Registration {
             return false;
         }
         return mapping.equals(((Registration) obj).mapping);
+    }
+
+    public boolean isMappingOverlap(Registration other) {
+        RequestMapping otherMapping = other.getMapping();
+        if (mapping == otherMapping) {
+            return true;
+        }
+        return (mapping.getMethodsCondition() == null
+                        || otherMapping.getMethodsCondition() == null
+                        || !Collections.disjoint(
+                                mapping.getMethodsCondition().getMethods(),
+                                otherMapping.getMethodsCondition().getMethods()))
+                && Objects.equals(mapping.getParamsCondition(), otherMapping.getParamsCondition())
+                && Objects.equals(mapping.getHeadersCondition(), otherMapping.getHeadersCondition())
+                && Objects.equals(mapping.getConsumesCondition(), otherMapping.getConsumesCondition())
+                && Objects.equals(mapping.getProducesCondition(), otherMapping.getProducesCondition())
+                && Objects.equals(mapping.getCustomCondition(), otherMapping.getCustomCondition())
+                && Objects.equals(mapping.getSig(), otherMapping.getSig());
     }
 
     @Override

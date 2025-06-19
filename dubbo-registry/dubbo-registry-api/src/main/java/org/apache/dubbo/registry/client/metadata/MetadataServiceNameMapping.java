@@ -80,7 +80,10 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         if (CollectionUtils.isEmpty(
                 applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
             logger.warn(
-                    COMMON_PROPERTY_TYPE_MISMATCH, "", "", "No valid metadata config center found for mapping report.");
+                    COMMON_PROPERTY_TYPE_MISMATCH,
+                    "",
+                    "",
+                    "[METADATA_REGISTER] No valid metadata config center found for mapping report.");
             return false;
         }
         String serviceInterface = url.getServiceInterface();

@@ -41,6 +41,14 @@ public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
     }
 
     @Override
+    protected void doOnCompleted(Throwable throwable) {
+        if (!isHeaderSent()) {
+            sendMetadata(encodeHttpMetadata(true));
+        }
+        super.doOnCompleted(throwable);
+    }
+
+    @Override
     protected HttpMetadata encodeHttpMetadata(boolean endStream) {
         return super.encodeHttpMetadata(endStream)
                 .header(HttpHeaderNames.TRANSFER_ENCODING.getKey(), HttpConstants.CHUNKED)

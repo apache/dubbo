@@ -236,6 +236,10 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return producesCondition;
     }
 
+    public ConditionWrapper getCustomCondition() {
+        return customCondition;
+    }
+
     public CorsMeta getCors() {
         return cors;
     }

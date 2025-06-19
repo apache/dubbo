@@ -17,10 +17,10 @@
 package org.apache.dubbo.common.serialize.fastjson2;
 
 import org.apache.dubbo.common.aot.NativeDetector;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.fastjson2.JSONFactory;
@@ -36,8 +36,8 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
      */
     private static final ClassLoader SYSTEM_CLASSLOADER_KEY = new ClassLoader() {};
 
-    private final Map<ClassLoader, ObjectReaderCreator> readerMap = new ConcurrentHashMap<>();
-    private final Map<ClassLoader, ObjectWriterCreator> writerMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ClassLoader, ObjectReaderCreator> readerMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ClassLoader, ObjectWriterCreator> writerMap = new ConcurrentHashMap<>();
 
     public Fastjson2CreatorManager(FrameworkModel frameworkModel) {
         frameworkModel.addClassLoaderListener(this);
@@ -51,8 +51,10 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
             JSONFactory.setContextReaderCreator(readerMap.putIfAbsent(classLoader, ObjectReaderCreator.INSTANCE));
             JSONFactory.setContextWriterCreator(writerMap.putIfAbsent(classLoader, ObjectWriterCreator.INSTANCE));
         } else {
-            JSONFactory.setContextReaderCreator(readerMap.computeIfAbsent(classLoader, ObjectReaderCreatorASM::new));
-            JSONFactory.setContextWriterCreator(writerMap.computeIfAbsent(classLoader, ObjectWriterCreatorASM::new));
+            JSONFactory.setContextReaderCreator(
+                    ConcurrentHashMapUtils.computeIfAbsent(readerMap, classLoader, ObjectReaderCreatorASM::new));
+            JSONFactory.setContextWriterCreator(
+                    ConcurrentHashMapUtils.computeIfAbsent(writerMap, classLoader, ObjectWriterCreatorASM::new));
         }
     }
 

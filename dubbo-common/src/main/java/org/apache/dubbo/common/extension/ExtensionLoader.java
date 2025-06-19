@@ -33,6 +33,7 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassLoaderResourceLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -141,7 +142,7 @@ public class ExtensionLoader<T> {
 
     private static final Map<String, String> specialSPILoadingStrategyMap = getSpecialSPILoadingStrategyMap();
 
-    private static SoftReference<Map<java.net.URL, List<String>>> urlListMapCache =
+    private static SoftReference<ConcurrentHashMap<java.net.URL, List<String>>> urlListMapCache =
             new SoftReference<>(new ConcurrentHashMap<>());
 
     private static final List<String> ignoredInjectMethodsDesc = getIgnoredInjectMethodsDesc();
@@ -1189,7 +1190,7 @@ public class ExtensionLoader<T> {
     }
 
     private List<String> getResourceContent(java.net.URL resourceURL) throws IOException {
-        Map<java.net.URL, List<String>> urlListMap = urlListMapCache.get();
+        ConcurrentHashMap<java.net.URL, List<String>> urlListMap = urlListMapCache.get();
         if (urlListMap == null) {
             synchronized (ExtensionLoader.class) {
                 if ((urlListMap = urlListMapCache.get()) == null) {
@@ -1199,7 +1200,7 @@ public class ExtensionLoader<T> {
             }
         }
 
-        List<String> contentList = urlListMap.computeIfAbsent(resourceURL, key -> {
+        List<String> contentList = ConcurrentHashMapUtils.computeIfAbsent(urlListMap, resourceURL, key -> {
             List<String> newContentList = new ArrayList<>();
 
             try (BufferedReader reader =

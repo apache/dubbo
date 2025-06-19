@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -61,8 +60,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private int bucketNum = DEFAULT_BUCKET_NUM;
     private int timeWindowSeconds = DEFAULT_TIME_WINDOW_SECONDS;
     private int qpsTimeWindowMillSeconds = DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS;
-    private final Map<MetricsKeyWrapper, ConcurrentHashMap<MethodMetric, TimeWindowCounter>> methodTypeCounter =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<MetricsKeyWrapper, ConcurrentHashMap<MethodMetric, TimeWindowCounter>>
+            methodTypeCounter = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
     private final ApplicationModel applicationModel;
@@ -204,8 +203,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         MethodMetric metric =
                 new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION), serviceLevel);
 
-        ConcurrentMap<MethodMetric, TimeWindowCounter> counter =
-                methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
+        ConcurrentMap<MethodMetric, TimeWindowCounter> counter = ConcurrentHashMapUtils.computeIfAbsent(
+                methodTypeCounter, metricsKeyWrapper, k -> new ConcurrentHashMap<>());
 
         TimeWindowCounter windowCounter = counter.get(metric);
         if (windowCounter == null) {
@@ -391,8 +390,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         MethodMetric metric =
                 new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION), serviceLevel);
 
-        ConcurrentMap<MethodMetric, TimeWindowCounter> counter =
-                methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
+        ConcurrentMap<MethodMetric, TimeWindowCounter> counter = ConcurrentHashMapUtils.computeIfAbsent(
+                methodTypeCounter, metricsKeyWrapper, k -> new ConcurrentHashMap<>());
 
         ConcurrentHashMapUtils.computeIfAbsent(
                 counter, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));

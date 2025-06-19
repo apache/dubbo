@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -79,9 +80,9 @@ public class NacosMetadataReport extends AbstractMetadataReport {
      */
     private String group;
 
-    private Map<String, NacosConfigListener> watchListenerMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, NacosConfigListener> watchListenerMap = new ConcurrentHashMap<>();
 
-    private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
 
     private MD5Utils md5Utils = new MD5Utils();
 
@@ -336,8 +337,8 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     private void addCasServiceMappingListener(String serviceKey, String group, MappingListener listener) {
-        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(
-                buildListenerKey(serviceKey, group), k -> new MappingDataListener(serviceKey, group));
+        MappingDataListener mappingDataListener = ConcurrentHashMapUtils.computeIfAbsent(
+                casListenerMap, buildListenerKey(serviceKey, group), k -> new MappingDataListener(serviceKey, group));
         mappingDataListener.addListeners(listener);
         addListener(serviceKey, DEFAULT_MAPPING_GROUP, mappingDataListener);
     }
@@ -355,8 +356,8 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     public void addListener(String key, String group, ConfigurationListener listener) {
         String listenerKey = buildListenerKey(key, group);
-        NacosConfigListener nacosConfigListener =
-                watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, group));
+        NacosConfigListener nacosConfigListener = ConcurrentHashMapUtils.computeIfAbsent(
+                watchListenerMap, listenerKey, k -> createTargetListener(key, group));
         nacosConfigListener.addListener(listener);
         try {
             configService.addListener(key, group, nacosConfigListener);

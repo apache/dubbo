@@ -188,6 +188,9 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     }
 
     protected final void sendMetadata(HttpMetadata metadata) {
+        if (headerSent) {
+            return;
+        }
         getHttpChannel().writeHeader(metadata);
         headerSent = true;
         if (LOGGER.isDebugEnabled()) {
@@ -325,6 +328,10 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected String getContentType() {
         return responseEncoder.contentType();
+    }
+
+    protected boolean isHeaderSent() {
+        return headerSent;
     }
 
     protected void customizeTrailers(HttpHeaders headers, Throwable throwable) {
