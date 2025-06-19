@@ -66,7 +66,8 @@ public final class Http2SseServerChannelObserver extends Http2StreamServerChanne
         }
         return super.buildMessage(statusCode, data);
     }
-  
+
+    @Override
     protected void doOnCompleted(Throwable throwable) {
         // if throwable is not null, the header will be flushed by super.doOnCompleted(throwable)
         if (!isHeaderSent() && throwable == null) {
