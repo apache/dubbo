@@ -74,6 +74,5 @@ public final class Http2SseServerChannelObserver extends Http2StreamServerChanne
             sendMetadata(encodeHttpMetadata(true));
         }
         super.doOnCompleted(throwable);
-
     }
 }
