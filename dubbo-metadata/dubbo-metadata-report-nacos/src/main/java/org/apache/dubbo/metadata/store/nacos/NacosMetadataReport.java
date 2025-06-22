@@ -300,13 +300,16 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         return new ConfigItem(content, casMd5);
     }
 
+    /**
+     * allow adding listener without checking if the serviceKey is existed in the map.
+     * there are multiple references which have the same serviceKey but might have multiple listeners,
+     * because the extra parameters of their subscribed URLs might be different.
+     */
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         String group = DEFAULT_MAPPING_GROUP;
 
-        if (null == casListenerMap.get(buildListenerKey(serviceKey, group))) {
-            addCasServiceMappingListener(serviceKey, group, listener);
-        }
+        addCasServiceMappingListener(serviceKey, group, listener);
         String content = getConfig(serviceKey, group);
         return ServiceNameMapping.getAppNames(content);
     }
