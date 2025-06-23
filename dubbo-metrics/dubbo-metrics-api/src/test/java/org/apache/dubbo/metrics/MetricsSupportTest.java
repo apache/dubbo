@@ -29,12 +29,18 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
 
 public class MetricsSupportTest {
+
+    @AfterEach
+    public void destroy() {
+        ApplicationModel.defaultModel().destroy();
+    }
 
     @Test
     void testFillZero() {
