@@ -170,6 +170,7 @@
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <grpc_version>1.54.0</grpc_version>
     <spotless-maven-plugin.version>2.44.4</spotless-maven-plugin.version>
+    <spotless-maven-plugin.support-jdk8.version>2.30.0</spotless-maven-plugin.support-jdk8.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
     <revision>3.3.6-SNAPSHOT</revision>
@@ -288,6 +289,86 @@
                 <goal>compile</goal>
               </goals>
               <phase>generate-sources</phase>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <configuration>
+            <java>
+              <excludes>
+                <exclude>src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/timer/Timeout.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/timer/Timer.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/timer/TimerTask.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java</exclude>
+                <exclude>src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/test/common/utils/TestSocketUtils.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/rest/cors/CorsHeaderFilter.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/Exclude.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/Include.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/aot/api/ExecutableMode.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/aot/api/MemberCategory.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/logger/helpers/FormattingTuple.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/common/logger/helpers/MessageFormatter.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/maven/plugin/protoc/DubboProtocCompilerMojo.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java</exclude>
+                <exclude>src/main/java/org/apache/dubbo/spring/boot/autoconfigure/DubboTriple3AutoConfiguration.java</exclude>
+                <exclude>**/generated-sources/**</exclude>
+              </excludes>
+              <removeUnusedImports />
+              <importOrder>
+                <file>dubbo-importorder.txt</file>
+              </importOrder>
+              <licenseHeader>
+                <file>checkstyle-header.txt</file>
+              </licenseHeader>
+            </java>
+            <pom>
+              <sortPom>
+                <expandEmptyElements>false</expandEmptyElements>
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+              </sortPom>
+            </pom>
+            <upToDateChecking>
+              <enabled>true</enabled>
+            </upToDateChecking>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>com.alibaba</groupId>
+              <artifactId>dubbo-shared-resources</artifactId>
+              <version>${dubbo-shared-resources.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <goals>
+                <goal>${spotless.action}</goal>
+              </goals>
+              <phase>process-sources</phase>
             </execution>
           </executions>
         </plugin>
@@ -822,13 +903,29 @@
     </profile>
 
     <profile>
-      <id>jdk9-jdk11-spotless</id>
+      <id>jdk8-jdk11-spotless</id>
       <activation>
         <jdk>[1.8, 11)</jdk>
       </activation>
       <properties>
         <palantirJavaFormat.version>1.1.0</palantirJavaFormat.version>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>${spotless-maven-plugin.support-jdk8.version}</version>
+            <configuration>
+              <java>
+                <palantirJavaFormat>
+                  <version>${palantirJavaFormat.version}</version>
+                </palantirJavaFormat>
+              </java>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <profile>
@@ -847,7 +944,7 @@
         <jdk>[21,)</jdk>
       </activation>
       <properties>
-        <palantirJavaFormat.version>2.39.0</palantirJavaFormat.version>
+        <palantirJavaFormat.version>2.57.0</palantirJavaFormat.version>
       </properties>
     </profile>
 
@@ -865,83 +962,11 @@
             <version>${spotless-maven-plugin.version}</version>
             <configuration>
               <java>
-                <excludes>
-                  <exclude>src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/timer/Timeout.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/timer/Timer.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/timer/TimerTask.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java</exclude>
-                  <exclude>src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/test/common/utils/TestSocketUtils.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/rpc/protocol/tri/rest/cors/CorsHeaderFilter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/Exclude.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/Include.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/aot/api/ExecutableMode.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/aot/api/MemberCategory.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/logger/helpers/FormattingTuple.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/common/logger/helpers/MessageFormatter.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/maven/plugin/protoc/DubboProtocCompilerMojo.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/gen/utils/ProtoTypeMap.java</exclude>
-                  <exclude>src/main/java/org/apache/dubbo/spring/boot/autoconfigure/DubboTriple3AutoConfiguration.java</exclude>
-                  <exclude>**/generated-sources/**</exclude>
-                </excludes>
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
                 </palantirJavaFormat>
-                <removeUnusedImports />
-                <importOrder>
-                  <file>dubbo-importorder.txt</file>
-                </importOrder>
-                <licenseHeader>
-                  <file>checkstyle-header.txt</file>
-                </licenseHeader>
               </java>
-              <pom>
-                <sortPom>
-                  <expandEmptyElements>false</expandEmptyElements>
-                  <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
-                </sortPom>
-              </pom>
-              <upToDateChecking>
-                <enabled>true</enabled>
-              </upToDateChecking>
             </configuration>
-            <dependencies>
-              <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>dubbo-shared-resources</artifactId>
-                <version>${dubbo-shared-resources.version}</version>
-              </dependency>
-            </dependencies>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>${spotless.action}</goal>
-                </goals>
-                <phase>process-sources</phase>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>

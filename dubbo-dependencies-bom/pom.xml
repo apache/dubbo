@@ -181,9 +181,15 @@
     <maven_flatten_version>1.7.0</maven_flatten_version>
     <commons_compress_version>1.27.1</commons_compress_version>
     <spotless-maven-plugin.version>2.44.4</spotless-maven-plugin.version>
+    <spotless-maven-plugin.support-jdk8.version>2.30.0</spotless-maven-plugin.support-jdk8.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
-    <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
+    <!--
+     Choose palantirJavaFormat version 1.1.0 for jdk8, 2.28.0 for jdk11, 2.57.0 for jdk21,
+     refer to JVM_SUPPORT in PalantirJavaFormatStep.java at https://github.com/diffplug/spotless:
+     JVM_SUPPORT = Jvm.<String> support(NAME).add(8, "1.1.0").add(11, "2.28.0").add(21, "2.57.0");
+     -->
+    <palantirJavaFormat.version>2.28.0</palantirJavaFormat.version>
     <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
@@ -991,6 +997,50 @@
   </dependencyManagement>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <configuration>
+            <java>
+              <removeUnusedImports />
+              <importOrder>
+                <file>dubbo-importorder.txt</file>
+              </importOrder>
+              <licenseHeader>
+                <file>checkstyle-header.txt</file>
+              </licenseHeader>
+            </java>
+            <pom>
+              <sortPom>
+                <expandEmptyElements>false</expandEmptyElements>
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+              </sortPom>
+            </pom>
+            <upToDateChecking>
+              <enabled>true</enabled>
+            </upToDateChecking>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>com.alibaba</groupId>
+              <artifactId>dubbo-shared-resources</artifactId>
+              <version>${dubbo-shared-resources.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <goals>
+                <goal>${spotless.action}</goal>
+              </goals>
+              <phase>process-sources</phase>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -1047,6 +1097,40 @@
       </build>
     </profile>
     <profile>
+      <id>jdk8-jdk11</id>
+      <activation>
+        <jdk>[1.8, 11)</jdk>
+      </activation>
+      <properties>
+        <palantirJavaFormat.version>1.1.0</palantirJavaFormat.version>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>${spotless-maven-plugin.support-jdk8.version}</version>
+            <configuration>
+              <java>
+                <palantirJavaFormat>
+                  <version>${palantirJavaFormat.version}</version>
+                </palantirJavaFormat>
+              </java>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk21-spotless</id>
+      <activation>
+        <jdk>[21,)</jdk>
+      </activation>
+      <properties>
+        <palantirJavaFormat.version>2.57.0</palantirJavaFormat.version>
+      </properties>
+    </profile>
+    <profile>
       <id>java11+</id>
       <activation>
         <jdk>[11,)</jdk>
@@ -1063,39 +1147,8 @@
                 <palantirJavaFormat>
                   <version>${palantirJavaFormat.version}</version>
                 </palantirJavaFormat>
-                <removeUnusedImports />
-                <importOrder>
-                  <file>dubbo-importorder.txt</file>
-                </importOrder>
-                <licenseHeader>
-                  <file>checkstyle-header.txt</file>
-                </licenseHeader>
               </java>
-              <pom>
-                <sortPom>
-                  <expandEmptyElements>false</expandEmptyElements>
-                  <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
-                </sortPom>
-              </pom>
-              <upToDateChecking>
-                <enabled>true</enabled>
-              </upToDateChecking>
             </configuration>
-            <dependencies>
-              <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>dubbo-shared-resources</artifactId>
-                <version>${dubbo-shared-resources.version}</version>
-              </dependency>
-            </dependencies>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>${spotless.action}</goal>
-                </goals>
-                <phase>process-sources</phase>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>
