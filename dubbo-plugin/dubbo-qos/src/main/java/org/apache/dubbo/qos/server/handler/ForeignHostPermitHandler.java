@@ -22,6 +22,7 @@ import org.apache.dubbo.qos.common.QosConstants;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Predicate;
 
 import io.netty.buffer.ByteBuf;
@@ -74,7 +75,7 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
 
         ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR
                         + "Foreign Ip Not Permitted, Consider Config It In Whitelist." + QosConstants.BR_STR)
-                .getBytes());
+                .getBytes(StandardCharsets.UTF_8));
         ctx.writeAndFlush(cb).addListener(ChannelFutureListener.CLOSE);
     }
 

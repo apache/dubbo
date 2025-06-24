@@ -37,6 +37,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -260,7 +261,7 @@ public class MulticastRegistry extends FailbackRegistry {
             logger.info("Send multicast message: " + msg + " to " + multicastAddress + ":" + multicastPort);
         }
         try {
-            byte[] data = (msg + "\n").getBytes();
+            byte[] data = (msg + "\n").getBytes(StandardCharsets.UTF_8);
             DatagramPacket hi = new DatagramPacket(data, data.length, multicastAddress, multicastPort);
             multicastSocket.send(hi);
         } catch (Exception e) {
@@ -273,7 +274,7 @@ public class MulticastRegistry extends FailbackRegistry {
             logger.info("Send unicast message: " + msg + " to " + host + ":" + multicastPort);
         }
         try {
-            byte[] data = (msg + "\n").getBytes();
+            byte[] data = (msg + "\n").getBytes(StandardCharsets.UTF_8);
             DatagramPacket hi = new DatagramPacket(data, data.length, InetAddress.getByName(host), multicastPort);
             multicastSocket.send(hi);
         } catch (Exception e) {

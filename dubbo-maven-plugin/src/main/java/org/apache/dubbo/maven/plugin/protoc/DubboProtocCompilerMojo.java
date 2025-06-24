@@ -533,6 +533,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
     }
 
     private static String fixUnicodeOutput(final String message) {
+        // TODO default charset is not UTF-8 ?
         return new String(message.getBytes(), StandardCharsets.UTF_8);
     }
 }

@@ -231,7 +231,7 @@ public class ZKTools {
     }
 
     public static void setData(String path, String data) throws Exception {
-        client.setData().inBackground().forPath(path, data.getBytes());
+        client.setData().inBackground().forPath(path, data.getBytes(StandardCharsets.UTF_8));
     }
 
     public static void testPathCache() throws Exception {

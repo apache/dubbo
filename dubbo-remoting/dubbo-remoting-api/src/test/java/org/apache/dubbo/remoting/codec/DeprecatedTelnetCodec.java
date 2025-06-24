@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -310,7 +311,7 @@ public class DeprecatedTelnetCodec implements Codec {
         if (history != null && history.size() > 0 && index != null && index >= 0 && index < history.size()) {
             String value = history.get(index);
             if (value != null) {
-                byte[] b1 = value.getBytes();
+                byte[] b1 = value.getBytes(StandardCharsets.UTF_8);
                 if (message != null && message.length > 0) {
                     byte[] b2 = new byte[b1.length + message.length];
                     System.arraycopy(b1, 0, b2, 0, b1.length);
