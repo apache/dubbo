@@ -22,6 +22,8 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -39,7 +41,7 @@ import org.springframework.security.oauth2.server.resource.authentication.Bearer
 
 public class ObjectMapperCodecTest {
 
-    private ObjectMapperCodec mapper = new ObjectMapperCodec();
+    private final ObjectMapperCodec mapper = new ObjectMapperCodec();
 
     @Test
     public void testOAuth2AuthorizedClientCodec() {
@@ -54,6 +56,7 @@ public class ObjectMapperCodecTest {
         Assertions.assertNotNull(deserialize);
     }
 
+    @EnabledForJreRange(min = JRE.JAVA_17)
     @Test
     public void bearerTokenAuthenticationTest() {
         BearerTokenAuthentication bearerTokenAuthentication = new BearerTokenAuthentication(
@@ -70,6 +73,7 @@ public class ObjectMapperCodecTest {
         Assertions.assertNotNull(deserialize);
     }
 
+    @EnabledForJreRange(min = JRE.JAVA_17)
     @Test
     public void oAuth2ClientAuthenticationTokenTest() {
         OAuth2ClientAuthenticationToken oAuth2ClientAuthenticationToken = new OAuth2ClientAuthenticationToken(
@@ -83,6 +87,7 @@ public class ObjectMapperCodecTest {
         Assertions.assertNotNull(deserialize);
     }
 
+    @EnabledForJreRange(min = JRE.JAVA_17)
     @Test
     public void registeredClientTest() {
         RegisteredClient registeredClient = RegisteredClient.withId("id")
