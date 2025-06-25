@@ -61,6 +61,12 @@
 
     <dependency>
       <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-oauth2-core</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-oauth2-client</artifactId>
       <scope>test</scope>
       <optional>true</optional>
@@ -70,6 +76,7 @@
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-oauth2-authorization-server</artifactId>
       <version>${spring.oauth2.server}</version>
+      <scope>test</scope>
       <optional>true</optional>
     </dependency>
     <!-- spring security -->
