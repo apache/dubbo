@@ -55,11 +55,11 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
         // using the hashcode of list to compute the hash only pay attention to the elements in the list
         int invokersHashCode = invokers.hashCode();
-        ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.compute(key, (k, oldSelector) ->
-                (oldSelector == null || oldSelector.identityHashCode != invokersHashCode)
+        ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.compute(
+                key,
+                (k, oldSelector) -> (oldSelector == null || oldSelector.identityHashCode != invokersHashCode)
                         ? new ConsistentHashSelector<>(invokers, methodName, invokersHashCode)
-                        : oldSelector
-        );
+                        : oldSelector);
         return selector.select(invocation);
     }
 
