@@ -22,26 +22,84 @@ option go_package = "dubbo.apache.org/dubbo-go/v3/metadata/triple_api;triple_api
 option java_package = "org.apache.dubbo.metadata";
 option java_multiple_files = true;
 
-service MetadataServiceV2{
+// Metadata service V2.
+service MetadataServiceV2 {
+    // Retrieves metadata information.
     rpc GetMetadataInfo(MetadataRequest) returns (MetadataInfoV2);
+
+    // Retrieves OpenAPI information.
+    rpc GetOpenAPIInfo(OpenAPIRequest) returns (OpenAPIInfo);
 }
 
-message MetadataRequest{
+// Metadata request message.
+message MetadataRequest {
+    // The revision of the metadata.
     string revision = 1;
 }
 
-message MetadataInfoV2{
+// Metadata information message.
+message MetadataInfoV2 {
+    // The application name.
     string app = 1;
+    // The application version.
     string version = 2;
-    map<string,ServiceInfoV2> services = 3;
+    // A map of service information.
+    map<string, ServiceInfoV2> services = 3;
 }
 
-message ServiceInfoV2{
+// Service information message.
+message ServiceInfoV2 {
+    // The service name.
     string name = 1;
+    // The service group.
     string group = 2;
+    // The service version.
     string version = 3;
+    // The service protocol.
     string protocol = 4;
+    // The service port.
     int32 port = 5;
+    // The service path.
     string path = 6;
-    map<string,string> params = 7;
+    // A map of service parameters.
+    map<string, string> params = 7;
+}
+
+// OpenAPI request message.
+message OpenAPIRequest {
+    // The openAPI group.
+    string group = 1;
+    // The openAPI version, using a major.minor.patch versioning scheme
+    // e.g. 1.0.1
+    string version = 2;
+    // The openAPI tags. Each tag is an or condition.
+    repeated string tag = 3;
+    // The openAPI services. Each service is an or condition.
+    repeated string service = 4;
+    // The openAPI specification version, using a major.minor.patch versioning scheme
+    // e.g. 3.0.1, 3.1.0
+    // The default value is '3.0.1'.
+    string openapi = 5;
+    // The format of the response.
+    // The default value is 'JSON'.
+    optional OpenAPIFormat format = 6;
+    // Whether to pretty print for json.
+    // The default value is 'false'.
+    optional bool pretty = 7;
+}
+
+// Response format enumeration.
+enum OpenAPIFormat {
+    // JSON format.
+    JSON = 0;
+    // YAML format.
+    YAML = 1;
+    // PROTO format.
+    PROTO = 2;
+}
+
+// OpenAPI information message.
+message OpenAPIInfo {
+    // The OpenAPI definition.
+    string definition = 1;
 }

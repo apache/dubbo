@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 
 import java.lang.annotation.Annotation;
@@ -173,6 +174,14 @@ public final class AnnotationMeta<A extends Annotation> {
         }
         if (expectedType == String.class) {
             return (T) value.toString();
+        }
+        if (expectedType == Boolean.class) {
+            Boolean b = StringUtils.toBoolean(value.toString());
+            return (T) (b == null ? Boolean.FALSE : b);
+        }
+        if (expectedType == Number.class) {
+            String str = value.toString();
+            return str.indexOf('.') > -1 ? (T) Double.valueOf(str) : (T) Long.valueOf(str);
         }
         if (expectedType.isArray()) {
             Class<?> expectedComponentType = expectedType.getComponentType();

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractAnnotationBaseArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
@@ -36,8 +37,13 @@ public final class BindParamArgumentResolver extends AbstractAnnotationBaseArgum
     }
 
     @Override
-    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        return new NamedValueMeta(ann.getValue(), param.isAnnotated(Annotations.Nonnull), null);
+    protected ParamType getParamType(NamedValueMeta meta) {
+        return ParamType.Param;
+    }
+
+    @Override
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> anno) {
+        return new NamedValueMeta(anno.getValue(), param.isAnnotated(Annotations.Nonnull));
     }
 
     @Override

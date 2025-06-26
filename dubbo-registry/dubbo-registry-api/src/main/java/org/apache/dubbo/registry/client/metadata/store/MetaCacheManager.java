@@ -23,6 +23,7 @@ import org.apache.dubbo.metadata.AbstractCacheManager;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_META_CACHE_ENTRYSIZE;
@@ -75,5 +76,14 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
     @Override
     protected String getName() {
         return "meta";
+    }
+
+    @Override
+    protected boolean validate(String key, MetadataInfo value) {
+        if (!super.validate(key, value)) {
+            return false;
+        }
+        String revision = value.calRevision();
+        return Objects.equals(key, revision);
     }
 }

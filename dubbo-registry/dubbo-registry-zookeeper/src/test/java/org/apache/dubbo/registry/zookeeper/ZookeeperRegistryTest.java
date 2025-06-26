@@ -17,10 +17,9 @@
 package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.status.RegistryStatusChecker;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -29,39 +28,51 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ZookeeperRegistryTest {
     private static String zookeeperConnectionAddress1;
     private ZookeeperRegistry zookeeperRegistry;
     private String service = "org.apache.dubbo.test.injvmServie";
-    private URL serviceUrl = URL.valueOf("zookeeper://zookeeper/" + service + "?notify=false&methods=test1,test2");
+    private String url = "zookeeper://zookeeper/" + service + "?notify=false&methods=test1,test2";
+    private URL serviceUrl = URL.valueOf(url);
     private URL anyUrl = URL.valueOf("zookeeper://zookeeper/*");
     private URL registryUrl;
     private ZookeeperRegistryFactory zookeeperRegistryFactory;
     private NotifyListener listener;
 
+    // mock object
+    private static ZookeeperClientManager mockZookeeperClientManager;
+    private static ZookeeperClient mockZookeeperClient;
+
     @BeforeAll
     public static void beforeAll() {
-        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        zookeeperConnectionAddress1 = "zookeeper://localhost:" + "2181";
     }
 
     @BeforeEach
     public void setUp() throws Exception {
+        mockZookeeperClientManager = mock(ZookeeperClientManager.class);
+        mockZookeeperClient = mock(ZookeeperClient.class);
         this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         zookeeperRegistryFactory = new ZookeeperRegistryFactory(ApplicationModel.defaultModel());
+        zookeeperRegistryFactory.setZookeeperTransporter(mockZookeeperClientManager);
+        when(mockZookeeperClientManager.connect(registryUrl)).thenReturn(mockZookeeperClient);
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
     }
 
@@ -105,6 +116,7 @@ class ZookeeperRegistryTest {
     @Test
     void testAvailable() {
         zookeeperRegistry.register(serviceUrl);
+        when(mockZookeeperClient.isConnected()).thenReturn(true);
         assertThat(zookeeperRegistry.isAvailable(), is(true));
 
         zookeeperRegistry.destroy();
@@ -113,6 +125,7 @@ class ZookeeperRegistryTest {
 
     @Test
     void testLookup() {
+        when(mockZookeeperClient.getChildren(any())).thenReturn(Lists.newArrayList(url));
         List<URL> lookup = zookeeperRegistry.lookup(serviceUrl);
         assertThat(lookup.size(), is(1));
 
@@ -134,29 +147,8 @@ class ZookeeperRegistryTest {
     @Test
     void testLookupWithException() {
         URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
+        when(mockZookeeperClient.getChildren(any())).thenThrow(new IllegalStateException());
         Assertions.assertThrows(RpcException.class, () -> zookeeperRegistry.lookup(errorUrl));
-    }
-
-    @Disabled
-    @Test
-    /*
-     This UT is unstable, consider remove it later.
-     @see https://github.com/apache/dubbo/issues/1787
-    */
-    public void testStatusChecker() {
-        RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker(ApplicationModel.defaultModel());
-        Status status = registryStatusChecker.check();
-        assertThat(status.getLevel(), is(Status.Level.UNKNOWN));
-
-        Registry registry = zookeeperRegistryFactory.getRegistry(registryUrl);
-        assertThat(registry, not(nullValue()));
-
-        status = registryStatusChecker.check();
-        assertThat(status.getLevel(), is(Status.Level.ERROR));
-
-        registry.register(serviceUrl);
-        status = registryStatusChecker.check();
-        assertThat(status.getLevel(), is(Status.Level.OK));
     }
 
     @Test
@@ -164,6 +156,12 @@ class ZookeeperRegistryTest {
         final CountDownLatch latch = new CountDownLatch(1);
         zookeeperRegistry.register(serviceUrl);
         zookeeperRegistry.subscribe(anyUrl, urls -> latch.countDown());
+        doAnswer(invocationOnMock -> {
+                    latch.countDown();
+                    return null;
+                })
+                .when(mockZookeeperClient)
+                .create(any(), anyBoolean(), anyBoolean());
         zookeeperRegistry.register(serviceUrl);
         latch.await();
     }
@@ -176,6 +174,7 @@ class ZookeeperRegistryTest {
 
     @Test
     void testDoRegisterWithException() {
+        doThrow(new IllegalStateException()).when(mockZookeeperClient).create(any(), anyBoolean(), anyBoolean());
         Assertions.assertThrows(RpcException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
             zookeeperRegistry.doRegister(errorUrl);
@@ -184,6 +183,7 @@ class ZookeeperRegistryTest {
 
     @Test
     void testDoUnregisterWithException() {
+        doThrow(new IllegalStateException()).when(mockZookeeperClient).delete(any());
         Assertions.assertThrows(RpcException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
             zookeeperRegistry.doUnregister(errorUrl);

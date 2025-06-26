@@ -26,7 +26,7 @@ import org.slf4j.spi.LocationAwareLogger;
 
 public class Slf4jLogger implements Logger {
 
-    private static final String FQCN = FailsafeLogger.class.getName();
+    private final String fqcn;
 
     private final org.slf4j.Logger logger;
 
@@ -38,13 +38,24 @@ public class Slf4jLogger implements Logger {
         } else {
             locationAwareLogger = null;
         }
+        this.fqcn = FailsafeLogger.class.getName();
+        this.logger = logger;
+    }
+
+    public Slf4jLogger(String fqcn, org.slf4j.Logger logger) {
+        if (logger instanceof LocationAwareLogger) {
+            locationAwareLogger = (LocationAwareLogger) logger;
+        } else {
+            locationAwareLogger = null;
+        }
+        this.fqcn = fqcn;
         this.logger = logger;
     }
 
     @Override
     public void trace(String msg) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.TRACE_INT, msg, null, null);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.TRACE_INT, msg, null, null);
             return;
         }
         logger.trace(msg);
@@ -55,7 +66,7 @@ public class Slf4jLogger implements Logger {
         if (locationAwareLogger != null && locationAwareLogger.isTraceEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(
-                    null, FQCN, LocationAwareLogger.TRACE_INT, msg, ft.getArgArray(), ft.getThrowable());
+                    null, fqcn, LocationAwareLogger.TRACE_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.trace(msg, arguments);
@@ -64,16 +75,17 @@ public class Slf4jLogger implements Logger {
     @Override
     public void trace(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.TRACE_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.TRACE_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.trace(e.getMessage(), e);
+        logger.trace(e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void trace(String msg, Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.TRACE_INT, msg, null, e);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.TRACE_INT, msg, null, e);
             return;
         }
         logger.trace(msg, e);
@@ -82,7 +94,7 @@ public class Slf4jLogger implements Logger {
     @Override
     public void debug(String msg) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, msg, null, null);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.DEBUG_INT, msg, null, null);
             return;
         }
         logger.debug(msg);
@@ -93,7 +105,7 @@ public class Slf4jLogger implements Logger {
         if (locationAwareLogger != null && locationAwareLogger.isDebugEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(
-                    null, FQCN, LocationAwareLogger.DEBUG_INT, msg, ft.getArgArray(), ft.getThrowable());
+                    null, fqcn, LocationAwareLogger.DEBUG_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.debug(msg, arguments);
@@ -102,16 +114,17 @@ public class Slf4jLogger implements Logger {
     @Override
     public void debug(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.DEBUG_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.debug(e.getMessage(), e);
+        logger.debug(e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void debug(String msg, Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.DEBUG_INT, msg, null, e);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.DEBUG_INT, msg, null, e);
             return;
         }
         logger.debug(msg, e);
@@ -120,7 +133,7 @@ public class Slf4jLogger implements Logger {
     @Override
     public void info(String msg) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.INFO_INT, msg, null, null);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.INFO_INT, msg, null, null);
             return;
         }
         logger.info(msg);
@@ -130,7 +143,7 @@ public class Slf4jLogger implements Logger {
     public void info(String msg, Object... arguments) {
         if (locationAwareLogger != null && locationAwareLogger.isInfoEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.INFO_INT, msg, ft.getArgArray(), ft.getThrowable());
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.INFO_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.info(msg, arguments);
@@ -139,16 +152,17 @@ public class Slf4jLogger implements Logger {
     @Override
     public void info(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.INFO_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.INFO_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.info(e.getMessage(), e);
+        logger.info(e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void info(String msg, Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.INFO_INT, msg, null, e);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.INFO_INT, msg, null, e);
             return;
         }
         logger.info(msg, e);
@@ -157,7 +171,7 @@ public class Slf4jLogger implements Logger {
     @Override
     public void warn(String msg) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.WARN_INT, msg, null, null);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.WARN_INT, msg, null, null);
             return;
         }
         logger.warn(msg);
@@ -167,7 +181,7 @@ public class Slf4jLogger implements Logger {
     public void warn(String msg, Object... arguments) {
         if (locationAwareLogger != null && locationAwareLogger.isWarnEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.WARN_INT, msg, ft.getArgArray(), ft.getThrowable());
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.WARN_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.warn(msg, arguments);
@@ -176,16 +190,17 @@ public class Slf4jLogger implements Logger {
     @Override
     public void warn(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.WARN_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.WARN_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.warn(e.getMessage(), e);
+        logger.warn(e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void warn(String msg, Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.WARN_INT, msg, null, e);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.WARN_INT, msg, null, e);
             return;
         }
         logger.warn(msg, e);
@@ -194,7 +209,7 @@ public class Slf4jLogger implements Logger {
     @Override
     public void error(String msg) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.ERROR_INT, msg, null, null);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.ERROR_INT, msg, null, null);
             return;
         }
         logger.error(msg);
@@ -205,7 +220,7 @@ public class Slf4jLogger implements Logger {
         if (locationAwareLogger != null && locationAwareLogger.isErrorEnabled()) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, arguments);
             locationAwareLogger.log(
-                    null, FQCN, LocationAwareLogger.ERROR_INT, msg, ft.getArgArray(), ft.getThrowable());
+                    null, fqcn, LocationAwareLogger.ERROR_INT, msg, ft.getArgArray(), ft.getThrowable());
             return;
         }
         logger.error(msg, arguments);
@@ -214,16 +229,17 @@ public class Slf4jLogger implements Logger {
     @Override
     public void error(Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.ERROR_INT, e.getMessage(), null, e);
+            locationAwareLogger.log(
+                    null, fqcn, LocationAwareLogger.ERROR_INT, e == null ? null : e.getMessage(), null, e);
             return;
         }
-        logger.error(e.getMessage(), e);
+        logger.error(e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void error(String msg, Throwable e) {
         if (locationAwareLogger != null) {
-            locationAwareLogger.log(null, FQCN, LocationAwareLogger.ERROR_INT, msg, null, e);
+            locationAwareLogger.log(null, fqcn, LocationAwareLogger.ERROR_INT, msg, null, e);
             return;
         }
         logger.error(msg, e);

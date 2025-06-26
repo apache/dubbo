@@ -37,7 +37,7 @@ public class ObservationConventionUtils {
 
     public static String getValueForKey(KeyValues keyValues, Object key)
             throws NoSuchFieldException, IllegalAccessException {
-        Field f = KeyValues.class.getDeclaredField("keyValues");
+        Field f = KeyValues.class.getDeclaredField("sortedSet");
         f.setAccessible(true);
         KeyValue[] kv = (KeyValue[]) f.get(keyValues);
         for (KeyValue keyValue : kv) {

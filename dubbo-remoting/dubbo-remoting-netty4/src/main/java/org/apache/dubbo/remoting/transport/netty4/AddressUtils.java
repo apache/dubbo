@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
@@ -25,10 +24,16 @@ import java.util.List;
 
 import io.netty.channel.Channel;
 
+import static org.apache.dubbo.common.utils.NetUtils.toAddressString;
+
 public final class AddressUtils {
 
     private static final List<ChannelAddressAccessor> ACCESSORS =
             FrameworkModel.defaultModel().getActivateExtensions(ChannelAddressAccessor.class);
+
+    private static final String LOCAL_ADDRESS_KEY = "NETTY_LOCAL_ADDRESS_KEY";
+    private static final String REMOTE_ADDRESS_KEY = "NETTY_REMOTE_ADDRESS_KEY";
+    private static final String PROTOCOL_KEY = "NETTY_PROTOCOL_KEY";
 
     private AddressUtils() {}
 
@@ -54,35 +59,50 @@ public final class AddressUtils {
         return (InetSocketAddress) channel.localAddress();
     }
 
-    public static String getRemoteAddressKey(Channel channel) {
-        InetSocketAddress address;
+    static void initAddressIfNecessary(NettyChannel nettyChannel) {
+        Channel channel = nettyChannel.getNioChannel();
+        SocketAddress address = channel.localAddress();
+        if (address instanceof InetSocketAddress) {
+            return;
+        }
+
         for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
             ChannelAddressAccessor accessor = ACCESSORS.get(i);
-            address = accessor.getRemoteAddress(channel);
-            if (address != null) {
-                return accessor.getProtocol() + ' ' + NetUtils.toAddressString(address);
+            InetSocketAddress localAddress = accessor.getLocalAddress(channel);
+            if (localAddress != null) {
+                nettyChannel.setAttribute(LOCAL_ADDRESS_KEY, localAddress);
+                nettyChannel.setAttribute(REMOTE_ADDRESS_KEY, accessor.getRemoteAddress(channel));
+                nettyChannel.setAttribute(PROTOCOL_KEY, accessor.getProtocol());
+                break;
             }
         }
-        InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
-        if (remoteAddress == null) {
-            return "UNKNOWN";
-        }
-        return NetUtils.toAddressString(remoteAddress);
     }
 
-    public static String getLocalAddressKey(Channel channel) {
-        InetSocketAddress address;
-        for (int i = 0, size = ACCESSORS.size(); i < size; i++) {
-            ChannelAddressAccessor accessor = ACCESSORS.get(i);
-            address = accessor.getLocalAddress(channel);
-            if (address != null) {
-                return accessor.getProtocol() + ' ' + NetUtils.toAddressString(address);
-            }
-        }
-        SocketAddress localAddress = channel.localAddress();
-        if (localAddress == null) {
+    static InetSocketAddress getLocalAddress(NettyChannel channel) {
+        InetSocketAddress address = (InetSocketAddress) channel.getAttribute(LOCAL_ADDRESS_KEY);
+        return address == null ? (InetSocketAddress) (channel.getNioChannel().localAddress()) : address;
+    }
+
+    static InetSocketAddress getRemoteAddress(NettyChannel channel) {
+        InetSocketAddress address = (InetSocketAddress) channel.getAttribute(REMOTE_ADDRESS_KEY);
+        return address == null ? (InetSocketAddress) (channel.getNioChannel().remoteAddress()) : address;
+    }
+
+    static String getLocalAddressKey(NettyChannel channel) {
+        InetSocketAddress address = getLocalAddress(channel);
+        if (address == null) {
             return "UNKNOWN";
         }
-        return NetUtils.toAddressString((InetSocketAddress) localAddress);
+        String protocol = (String) channel.getAttribute(PROTOCOL_KEY);
+        return protocol == null ? toAddressString(address) : protocol + ' ' + toAddressString(address);
+    }
+
+    static String getRemoteAddressKey(NettyChannel channel) {
+        InetSocketAddress address = getRemoteAddress(channel);
+        if (address == null) {
+            return "UNKNOWN";
+        }
+        String protocol = (String) channel.getAttribute(PROTOCOL_KEY);
+        return protocol == null ? toAddressString(address) : protocol + ' ' + toAddressString(address);
     }
 }

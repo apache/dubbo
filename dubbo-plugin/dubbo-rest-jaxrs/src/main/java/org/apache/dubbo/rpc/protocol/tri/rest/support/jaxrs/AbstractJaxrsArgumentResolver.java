@@ -26,7 +26,7 @@ import java.lang.annotation.Annotation;
 public abstract class AbstractJaxrsArgumentResolver extends AbstractAnnotationBaseArgumentResolver {
 
     @Override
-    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> ann) {
-        return new NamedValueMeta(ann.getValue(), Helper.isRequired(param), Helper.defaultValue(param));
+    protected NamedValueMeta createNamedValueMeta(ParameterMeta param, AnnotationMeta<Annotation> anno) {
+        return new NamedValueMeta(anno.getValue(), Helper.isRequired(param), Helper.defaultValue(param));
     }
 }

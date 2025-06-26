@@ -17,6 +17,10 @@
 package org.apache.dubbo.metadata;
 
 /**
+ * <pre>
+ * Metadata information message.
+ * </pre>
+ *
  * Protobuf type {@code org.apache.dubbo.metadata.MetadataInfoV2}
  */
 public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
@@ -24,6 +28,7 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.MetadataInfoV2)
         MetadataInfoV2OrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use MetadataInfoV2.newBuilder() to construct.
     private MetadataInfoV2(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
@@ -65,7 +70,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private volatile Object app_ = "";
+
     /**
+     * <pre>
+     * The application name.
+     * </pre>
+     *
      * <code>string app = 1;</code>
      * @return The app.
      */
@@ -81,7 +91,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             return s;
         }
     }
+
     /**
+     * <pre>
+     * The application name.
+     * </pre>
+     *
      * <code>string app = 1;</code>
      * @return The bytes for app.
      */
@@ -101,7 +116,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
 
     @SuppressWarnings("serial")
     private volatile Object version_ = "";
+
     /**
+     * <pre>
+     * The application version.
+     * </pre>
+     *
      * <code>string version = 2;</code>
      * @return The version.
      */
@@ -117,7 +137,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             return s;
         }
     }
+
     /**
+     * <pre>
+     * The application version.
+     * </pre>
+     *
      * <code>string version = 2;</code>
      * @return The bytes for version.
      */
@@ -159,7 +184,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
     public int getServicesCount() {
         return internalGetServices().getMap().size();
     }
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     @Override
@@ -169,6 +199,7 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         }
         return internalGetServices().getMap().containsKey(key);
     }
+
     /**
      * Use {@link #getServicesMap()} instead.
      */
@@ -177,14 +208,24 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
     public java.util.Map<String, ServiceInfoV2> getServices() {
         return getServicesMap();
     }
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     @Override
     public java.util.Map<String, ServiceInfoV2> getServicesMap() {
         return internalGetServices().getMap();
     }
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     @Override
@@ -198,7 +239,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         java.util.Map<String, ServiceInfoV2> map = internalGetServices().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
     }
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     @Override
@@ -218,8 +264,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
     @Override
     public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
-        if (isInitialized == 1) return true;
-        if (isInitialized == 0) return false;
+        if (isInitialized == 1) {
+            return true;
+        }
+        if (isInitialized == 0) {
+            return false;
+        }
 
         memoizedIsInitialized = 1;
         return true;
@@ -241,7 +291,9 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
     @Override
     public int getSerializedSize() {
         int size = memoizedSize;
-        if (size != -1) return size;
+        if (size != -1) {
+            return size;
+        }
 
         size = 0;
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(app_)) {
@@ -274,10 +326,18 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         }
         MetadataInfoV2 other = (MetadataInfoV2) obj;
 
-        if (!getApp().equals(other.getApp())) return false;
-        if (!getVersion().equals(other.getVersion())) return false;
-        if (!internalGetServices().equals(other.internalGetServices())) return false;
-        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+        if (!getApp().equals(other.getApp())) {
+            return false;
+        }
+        if (!getVersion().equals(other.getVersion())) {
+            return false;
+        }
+        if (!internalGetServices().equals(other.internalGetServices())) {
+            return false;
+        }
+        if (!getUnknownFields().equals(other.getUnknownFields())) {
+            return false;
+        }
         return true;
     }
 
@@ -385,7 +445,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         Builder builder = new Builder(parent);
         return builder;
     }
+
     /**
+     * <pre>
+     * Metadata information message.
+     * </pre>
+     *
      * Protobuf type {@code org.apache.dubbo.metadata.MetadataInfoV2}
      */
     public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
@@ -484,6 +549,37 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         }
 
         @Override
+        public Builder clone() {
+            return super.clone();
+        }
+
+        @Override
+        public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+            return super.setField(field, value);
+        }
+
+        @Override
+        public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+            return super.clearField(field);
+        }
+
+        @Override
+        public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+            return super.clearOneof(oneof);
+        }
+
+        @Override
+        public Builder setRepeatedField(
+                com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+            return super.setRepeatedField(field, index, value);
+        }
+
+        @Override
+        public Builder addRepeatedField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+            return super.addRepeatedField(field, value);
+        }
+
+        @Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
             if (other instanceof MetadataInfoV2) {
                 return mergeFrom((MetadataInfoV2) other);
@@ -494,7 +590,9 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         }
 
         public Builder mergeFrom(MetadataInfoV2 other) {
-            if (other == MetadataInfoV2.getDefaultInstance()) return this;
+            if (other == MetadataInfoV2.getDefaultInstance()) {
+                return this;
+            }
             if (!other.getApp().isEmpty()) {
                 app_ = other.app_;
                 bitField0_ |= 0x00000001;
@@ -570,7 +668,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         private int bitField0_;
 
         private Object app_ = "";
+
         /**
+         * <pre>
+         * The application name.
+         * </pre>
+         *
          * <code>string app = 1;</code>
          * @return The app.
          */
@@ -585,7 +688,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
                 return (String) ref;
             }
         }
+
         /**
+         * <pre>
+         * The application name.
+         * </pre>
+         *
          * <code>string app = 1;</code>
          * @return The bytes for app.
          */
@@ -599,7 +707,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
                 return (com.google.protobuf.ByteString) ref;
             }
         }
+
         /**
+         * <pre>
+         * The application name.
+         * </pre>
+         *
          * <code>string app = 1;</code>
          * @param value The app to set.
          * @return This builder for chaining.
@@ -613,7 +726,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             onChanged();
             return this;
         }
+
         /**
+         * <pre>
+         * The application name.
+         * </pre>
+         *
          * <code>string app = 1;</code>
          * @return This builder for chaining.
          */
@@ -623,7 +741,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             onChanged();
             return this;
         }
+
         /**
+         * <pre>
+         * The application name.
+         * </pre>
+         *
          * <code>string app = 1;</code>
          * @param value The bytes for app to set.
          * @return This builder for chaining.
@@ -640,7 +763,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         }
 
         private Object version_ = "";
+
         /**
+         * <pre>
+         * The application version.
+         * </pre>
+         *
          * <code>string version = 2;</code>
          * @return The version.
          */
@@ -655,7 +783,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
                 return (String) ref;
             }
         }
+
         /**
+         * <pre>
+         * The application version.
+         * </pre>
+         *
          * <code>string version = 2;</code>
          * @return The bytes for version.
          */
@@ -669,7 +802,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
                 return (com.google.protobuf.ByteString) ref;
             }
         }
+
         /**
+         * <pre>
+         * The application version.
+         * </pre>
+         *
          * <code>string version = 2;</code>
          * @param value The version to set.
          * @return This builder for chaining.
@@ -683,7 +821,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             onChanged();
             return this;
         }
+
         /**
+         * <pre>
+         * The application version.
+         * </pre>
+         *
          * <code>string version = 2;</code>
          * @return This builder for chaining.
          */
@@ -693,7 +836,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             onChanged();
             return this;
         }
+
         /**
+         * <pre>
+         * The application version.
+         * </pre>
+         *
          * <code>string version = 2;</code>
          * @param value The bytes for version to set.
          * @return This builder for chaining.
@@ -733,7 +881,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         public int getServicesCount() {
             return internalGetServices().getMap().size();
         }
+
         /**
+         * <pre>
+         * A map of service information.
+         * </pre>
+         *
          * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
          */
         @Override
@@ -743,6 +896,7 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             }
             return internalGetServices().getMap().containsKey(key);
         }
+
         /**
          * Use {@link #getServicesMap()} instead.
          */
@@ -751,14 +905,24 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
         public java.util.Map<String, ServiceInfoV2> getServices() {
             return getServicesMap();
         }
+
         /**
+         * <pre>
+         * A map of service information.
+         * </pre>
+         *
          * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
          */
         @Override
         public java.util.Map<String, ServiceInfoV2> getServicesMap() {
             return internalGetServices().getMap();
         }
+
         /**
+         * <pre>
+         * A map of service information.
+         * </pre>
+         *
          * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
          */
         @Override
@@ -772,7 +936,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             java.util.Map<String, ServiceInfoV2> map = internalGetServices().getMap();
             return map.containsKey(key) ? map.get(key) : defaultValue;
         }
+
         /**
+         * <pre>
+         * A map of service information.
+         * </pre>
+         *
          * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
          */
         @Override
@@ -792,7 +961,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             internalGetMutableServices().getMutableMap().clear();
             return this;
         }
+
         /**
+         * <pre>
+         * A map of service information.
+         * </pre>
+         *
          * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
          */
         public Builder removeServices(String key) {
@@ -802,6 +976,7 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             internalGetMutableServices().getMutableMap().remove(key);
             return this;
         }
+
         /**
          * Use alternate mutation accessors instead.
          */
@@ -810,7 +985,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             bitField0_ |= 0x00000004;
             return internalGetMutableServices().getMutableMap();
         }
+
         /**
+         * <pre>
+         * A map of service information.
+         * </pre>
+         *
          * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
          */
         public Builder putServices(String key, ServiceInfoV2 value) {
@@ -824,7 +1004,12 @@ public final class MetadataInfoV2 extends com.google.protobuf.GeneratedMessageV3
             bitField0_ |= 0x00000004;
             return this;
         }
+
         /**
+         * <pre>
+         * A map of service information.
+         * </pre>
+         *
          * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
          */
         public Builder putAllServices(java.util.Map<String, ServiceInfoV2> values) {

@@ -883,7 +883,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     /**
      * Return if ReferenceConfig has been initialized
-     * Note: Cannot use `isInitilized` as it may be treated as a Java Bean property
+     * Note: Cannot use `isInitialized` as it may be treated as a Java Bean property
      *
      * @return initialized
      */

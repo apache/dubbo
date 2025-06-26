@@ -73,6 +73,25 @@ public class ApiConsumer {
         System.out.println("Call sayHelloServerStream");
         greeterService.sayHelloServerStream(buildRequest("triple"), responseObserver);
 
+        StreamObserver<HelloReply> sayHelloServerStreamNoParameterResponseObserver = new StreamObserver<HelloReply>() {
+            @Override
+            public void onNext(HelloReply reply) {
+                System.out.println("sayHelloServerStreamNoParameter onNext: " + reply.getMessage());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("sayHelloServerStreamNoParameter onError: " + t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("sayHelloServerStreamNoParameter onCompleted");
+            }
+        };
+
+        greeterService.sayHelloServerStreamNoParameter(sayHelloServerStreamNoParameterResponseObserver);
+
         StreamObserver<HelloReply> biResponseObserver = new StreamObserver<HelloReply>() {
             @Override
             public void onNext(HelloReply reply) {

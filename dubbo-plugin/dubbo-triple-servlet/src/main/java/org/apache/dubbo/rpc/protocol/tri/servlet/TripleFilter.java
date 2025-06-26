@@ -59,6 +59,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.UPGRADE_HEADER_KEY;
+
 public class TripleFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleFilter.class);
@@ -70,7 +72,7 @@ public class TripleFilter implements Filter {
     public void init(FilterConfig config) {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
-        mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
+        mappingRegistry = frameworkModel.getOrRegisterBean(DefaultRequestMappingRegistry.class);
     }
 
     @Override
@@ -86,7 +88,7 @@ public class TripleFilter implements Filter {
                 return;
             }
         } else {
-            if (mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
+            if (notUpgradeRequest(request) && mappingRegistry.exists(request.getRequestURI(), request.getMethod())) {
                 handleHttp1(request, response);
                 return;
             }
@@ -153,6 +155,10 @@ public class TripleFilter implements Filter {
         String group = request.getHeader(TripleHeaderEnum.SERVICE_GROUP.getName());
         String version = request.getHeader(TripleHeaderEnum.SERVICE_VERSION.getName());
         return pathResolver.resolve(path.getPath(), group, version) != null;
+    }
+
+    private boolean notUpgradeRequest(HttpServletRequest request) {
+        return request.getHeader(UPGRADE_HEADER_KEY) == null;
     }
 
     private Http2ServerTransportListenerFactory determineHttp2ServerTransportListenerFactory(String contentType) {

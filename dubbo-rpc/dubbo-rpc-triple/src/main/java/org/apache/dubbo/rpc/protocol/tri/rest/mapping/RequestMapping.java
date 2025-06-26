@@ -208,6 +208,10 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return name;
     }
 
+    public String getSig() {
+        return sig;
+    }
+
     public PathCondition getPathCondition() {
         return pathCondition;
     }
@@ -216,8 +220,24 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return methodsCondition;
     }
 
+    public ParamsCondition getParamsCondition() {
+        return paramsCondition;
+    }
+
+    public HeadersCondition getHeadersCondition() {
+        return headersCondition;
+    }
+
+    public ConsumesCondition getConsumesCondition() {
+        return consumesCondition;
+    }
+
     public ProducesCondition getProducesCondition() {
         return producesCondition;
+    }
+
+    public ConditionWrapper getCustomCondition() {
+        return customCondition;
     }
 
     public CorsMeta getCors() {

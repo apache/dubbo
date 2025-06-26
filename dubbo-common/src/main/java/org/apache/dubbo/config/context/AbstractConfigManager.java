@@ -25,6 +25,7 @@ import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -73,9 +74,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             LoggerFactory.getErrorTypeAwareLogger(AbstractConfigManager.class);
     private static final Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
 
-    final Map<String, Map<String, AbstractConfig>> configsCache = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<String, Map<String, AbstractConfig>> configsCache = new ConcurrentHashMap<>();
 
-    private final Map<String, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
 
     protected Set<AbstractConfig> duplicatedConfigs = new ConcurrentHashSet<>();
 
@@ -161,8 +162,10 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             config.setScopeModel(scopeModel);
         }
 
-        Map<String, AbstractConfig> configsMap =
-                configsCache.computeIfAbsent(getTagName(config.getClass()), type -> new ConcurrentHashMap<>());
+        Class<? extends AbstractConfig> targetConfigType = getTargetConfigType(config.getClass());
+
+        Map<String, AbstractConfig> configsMap = ConcurrentHashMapUtils.computeIfAbsent(
+                configsCache, getTagName(targetConfigType), type -> new ConcurrentHashMap<>());
 
         // fast check duplicated equivalent config before write lock
         if (!(config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase)) {
@@ -175,17 +178,21 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         // lock by config type
         synchronized (configsMap) {
-            return (T) addIfAbsent(config, configsMap);
+            return (T) addIfAbsent(config, configsMap, targetConfigType);
         }
     }
 
     protected boolean isSupportConfigType(Class<? extends AbstractConfig> type) {
+        return getTargetConfigType(type) != null;
+    }
+
+    protected Class<? extends AbstractConfig> getTargetConfigType(Class<? extends AbstractConfig> type) {
         for (Class<? extends AbstractConfig> supportedConfigType : supportedConfigTypes) {
             if (supportedConfigType.isAssignableFrom(type)) {
-                return true;
+                return supportedConfigType;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -196,7 +203,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
      * @return the existing equivalent config or the new adding config
      * @throws IllegalStateException
      */
-    private <C extends AbstractConfig> C addIfAbsent(C config, Map<String, C> configsMap) throws IllegalStateException {
+    private <C extends AbstractConfig> C addIfAbsent(
+            C config, Map<String, C> configsMap, Class<? extends AbstractConfig> targetConfigType)
+            throws IllegalStateException {
 
         if (config == null || configsMap == null) {
             return config;
@@ -218,7 +227,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         C existedConfig = configsMap.get(key);
         if (existedConfig != null && !isEquals(existedConfig, config)) {
-            String type = config.getClass().getSimpleName();
+            String type = targetConfigType.getSimpleName();
             logger.warn(
                     COMMON_UNEXPECTED_EXCEPTION,
                     "",
@@ -400,8 +409,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     protected <C extends AbstractConfig> String generateConfigId(C config) {
         String tagName = getTagName(config.getClass());
-        int idx = configIdIndexes
-                .computeIfAbsent(tagName, clazz -> new AtomicInteger(0))
+        int idx = ConcurrentHashMapUtils.computeIfAbsent(configIdIndexes, tagName, clazz -> new AtomicInteger(0))
                 .incrementAndGet();
         return tagName + "#" + idx;
     }

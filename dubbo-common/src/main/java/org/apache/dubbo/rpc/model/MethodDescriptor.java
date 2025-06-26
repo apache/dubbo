@@ -51,6 +51,10 @@ public interface MethodDescriptor {
 
     Object getAttribute(String key);
 
+    Class<?>[] getActualRequestTypes();
+
+    Class<?> getActualResponseType();
+
     enum RpcType {
         UNARY,
         CLIENT_STREAM,

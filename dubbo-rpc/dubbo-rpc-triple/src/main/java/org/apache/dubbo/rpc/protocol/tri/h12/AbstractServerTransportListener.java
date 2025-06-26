@@ -62,7 +62,6 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     private final HttpChannel httpChannel;
     private final RequestRouter requestRouter;
     private final ExceptionCustomizerWrapper exceptionCustomizerWrapper;
-    private final List<HeaderFilter> headerFilters;
 
     private Executor executor;
     private HEADER httpMetadata;
@@ -73,11 +72,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
-        requestRouter = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestRouter.class);
+        requestRouter = frameworkModel.getOrRegisterBean(DefaultRequestRouter.class);
         exceptionCustomizerWrapper = new ExceptionCustomizerWrapper(frameworkModel);
-        headerFilters = frameworkModel
-                .getExtensionLoader(HeaderFilter.class)
-                .getActivateExtension(url, CommonConstants.HEADER_FILTER_KEY);
     }
 
     @Override
@@ -283,6 +279,9 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         // customizer RpcInvocation
         HeaderFilter[] headerFilters =
                 UrlUtils.computeServiceAttribute(invoker.getUrl(), HEADER_FILTERS_CACHE, this::loadHeaderFilters);
+        if (headerFilters == null) {
+            headerFilters = this.loadHeaderFilters(invoker.getUrl());
+        }
         for (HeaderFilter headerFilter : headerFilters) {
             headerFilter.invoke(invoker, inv);
         }

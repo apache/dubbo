@@ -210,7 +210,7 @@ public class ServiceInstanceMetadataUtils {
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         // register service instance
         if (CollectionUtils.isNotEmpty(registryManager.getServiceDiscoveries())) {
-            LOGGER.info("Start registering instance address to registry.");
+            LOGGER.info("[METADATA_REGISTER] Start registering instance address to registry.");
             List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
             for (ServiceDiscovery serviceDiscovery : serviceDiscoveries) {
                 MetricsEventBus.post(
@@ -218,7 +218,7 @@ public class ServiceInstanceMetadataUtils {
                                 applicationModel, Collections.singletonList(getServiceDiscoveryName(serviceDiscovery))),
                         () -> {
                             // register service instance
-                            serviceDiscoveries.forEach(ServiceDiscovery::register);
+                            serviceDiscovery.register();
                             return null;
                         });
             }

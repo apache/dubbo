@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -96,7 +97,14 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             doOnNext(data);
         } catch (Throwable t) {
             LOGGER.warn(INTERNAL_ERROR, "", "", "Error while doOnNext", t);
-            onError(t);
+            Throwable throwable = t;
+            try {
+                doOnError(throwable);
+            } catch (Throwable t1) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error while doOnError, original error: " + throwable, t1);
+                throwable = t1;
+            }
+            onCompleted(throwable);
         }
     }
 
@@ -105,7 +113,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (closed) {
             return;
         }
-
         try {
             throwable = customizeError(throwable);
             if (throwable == null) {
@@ -122,7 +129,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             LOGGER.warn(INTERNAL_ERROR, "", "", "Error while doOnError, original error: " + throwable, t);
             throwable = t;
         }
-
         onCompleted(throwable);
     }
 
@@ -160,13 +166,13 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (message != null) {
             headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), responseEncoder.contentType());
         }
+        customizeHeaders(headers, throwable, message);
         if (data instanceof HttpResult) {
             HttpResult<?> result = (HttpResult<?>) data;
             if (result.getHeaders() != null) {
-                headers.add(result.getHeaders());
+                headers.set(result.getHeaders());
             }
         }
-        customizeHeaders(headers, throwable, message);
         return metadata;
     }
 
@@ -182,6 +188,9 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     }
 
     protected final void sendMetadata(HttpMetadata metadata) {
+        if (headerSent) {
+            return;
+        }
         getHttpChannel().writeHeader(metadata);
         headerSent = true;
         if (LOGGER.isDebugEnabled()) {
@@ -189,7 +198,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
     }
 
-    protected final HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
+    protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
         if (statusCode < 200 || statusCode == 204 || statusCode == 304) {
             return null;
         }
@@ -202,7 +211,13 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
         if (LOGGER.isDebugEnabled()) {
             try {
-                LOGGER.debug("Http response body sent: '{}' by [{}]", JsonUtils.toJson(data), httpChannel);
+                String text;
+                if (data instanceof byte[]) {
+                    text = new String((byte[]) data, StandardCharsets.UTF_8);
+                } else {
+                    text = JsonUtils.toJson(data);
+                }
+                LOGGER.debug("Http response body sent: '{}' by [{}]", text, httpChannel);
             } catch (Throwable ignored) {
             }
         }
@@ -313,6 +328,10 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected String getContentType() {
         return responseEncoder.contentType();
+    }
+
+    protected boolean isHeaderSent() {
+        return headerSent;
     }
 
     protected void customizeTrailers(HttpHeaders headers, Throwable throwable) {

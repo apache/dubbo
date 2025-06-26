@@ -19,6 +19,7 @@ package org.apache.dubbo.common.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ class UnsafeByteArrayOutputStreamTest {
     @Test
     void testToStringWithCharset() throws IOException {
         UnsafeByteArrayOutputStream outputStream = new UnsafeByteArrayOutputStream();
-        outputStream.write("Hòa Bình".getBytes());
+        outputStream.write("Hòa Bình".getBytes(StandardCharsets.UTF_8));
 
         assertThat(outputStream.toString("UTF-8"), is("Hòa Bình"));
     }

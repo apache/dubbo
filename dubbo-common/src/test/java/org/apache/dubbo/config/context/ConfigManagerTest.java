@@ -252,6 +252,21 @@ class ConfigManagerTest {
     }
 
     @Test
+    void testAddCustomConfig() {
+        configManager.addConfig(new CustomRegistryConfig("CustomConfigManagerTest"));
+
+        assertTrue(configManager.getRegistry("CustomConfigManagerTest").isPresent());
+    }
+
+    static class CustomRegistryConfig extends RegistryConfig {
+
+        CustomRegistryConfig(String id) {
+            super();
+            this.setId(id);
+        }
+    }
+
+    @Test
     void testRefreshAll() {
         configManager.refreshAll();
         moduleConfigManager.refreshAll();

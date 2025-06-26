@@ -62,16 +62,7 @@ public final class CompositeExceptionHandler implements ExceptionHandler<Throwab
             }
         }
 
-        if (throwable instanceof HttpStatusException) {
-            int httpStatusCode = ((HttpStatusException) throwable).getStatusCode();
-            if (httpStatusCode < HttpStatus.BAD_REQUEST.getCode()) {
-                return TripleProtocol.VERBOSE_ENABLED ? Level.INFO : Level.DEBUG;
-            }
-            if (httpStatusCode < HttpStatus.INTERNAL_SERVER_ERROR.getCode()) {
-                return Level.INFO;
-            }
-        }
-        return Level.ERROR;
+        return ExceptionUtils.resolveLogLevel(throwable);
     }
 
     @Override

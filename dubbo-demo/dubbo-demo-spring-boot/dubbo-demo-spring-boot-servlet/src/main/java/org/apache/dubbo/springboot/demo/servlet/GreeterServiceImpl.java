@@ -18,7 +18,9 @@ package org.apache.dubbo.springboot.demo.servlet;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.dubbo.remoting.http12.message.ServerSentEvent;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
@@ -49,6 +51,37 @@ public class GreeterServiceImpl implements GreeterService {
             responseObserver.onNext(toReply("Hello " + request.getName() + ' ' + i + " times"));
         }
         LOGGER.info("sayHelloServerStream onCompleted");
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void sayHelloServerStreamNoParameter(StreamObserver<HelloReply> responseObserver) {
+        LOGGER.info("Received sayHelloServerStreamNoParameter request");
+        for (int i = 1; i < 6; i++) {
+            LOGGER.info("sayHelloServerStreamNoParameter onNext:  {} times", i);
+            responseObserver.onNext(toReply("Hello " + ' ' + i + " times"));
+        }
+        LOGGER.info("sayHelloServerStreamNoParameter onCompleted");
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void sayHelloServerStreamSSE(StreamObserver<ServerSentEvent<HelloReply>> responseObserver) {
+        LOGGER.info("Received sayHelloServerStreamSSE request");
+        responseObserver.onNext(ServerSentEvent.<HelloReply>builder()
+                .retry(Duration.ofSeconds(20))
+                .build());
+        responseObserver.onNext(ServerSentEvent.<HelloReply>builder()
+                .event("say")
+                .comment("hello world")
+                .build());
+        for (int i = 1; i < 6; i++) {
+            LOGGER.info("sayHelloServerStreamSSE onNext:  {} times", i);
+            responseObserver.onNext(ServerSentEvent.<HelloReply>builder()
+                    .data(toReply("Hello " + ' ' + i + " times"))
+                    .build());
+        }
+        LOGGER.info("sayHelloServerStreamSSE onCompleted");
         responseObserver.onCompleted();
     }
 

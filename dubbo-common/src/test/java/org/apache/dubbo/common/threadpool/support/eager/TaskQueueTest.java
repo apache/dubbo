@@ -20,6 +20,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -28,6 +29,16 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 class TaskQueueTest {
+
+    private TaskQueue<Runnable> queue;
+    private EagerThreadPoolExecutor executor;
+
+    @BeforeEach
+    void setup() {
+        queue = new TaskQueue<Runnable>(1);
+        executor = mock(EagerThreadPoolExecutor.class);
+        queue.setExecutor(executor);
+    }
 
     @Test
     void testOffer1() throws Exception {
@@ -39,53 +50,38 @@ class TaskQueueTest {
 
     @Test
     void testOffer2() throws Exception {
-        TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
-        EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
         Mockito.when(executor.getPoolSize()).thenReturn(2);
         Mockito.when(executor.getActiveCount()).thenReturn(1);
-        queue.setExecutor(executor);
         assertThat(queue.offer(mock(Runnable.class)), is(true));
     }
 
     @Test
     void testOffer3() throws Exception {
-        TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
-        EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
         Mockito.when(executor.getPoolSize()).thenReturn(2);
         Mockito.when(executor.getActiveCount()).thenReturn(2);
         Mockito.when(executor.getMaximumPoolSize()).thenReturn(4);
-        queue.setExecutor(executor);
         assertThat(queue.offer(mock(Runnable.class)), is(false));
     }
 
     @Test
     void testOffer4() throws Exception {
-        TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
-        EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
         Mockito.when(executor.getPoolSize()).thenReturn(4);
         Mockito.when(executor.getActiveCount()).thenReturn(4);
         Mockito.when(executor.getMaximumPoolSize()).thenReturn(4);
-        queue.setExecutor(executor);
         assertThat(queue.offer(mock(Runnable.class)), is(true));
     }
 
     @Test
     void testRetryOffer1() throws Exception {
         Assertions.assertThrows(RejectedExecutionException.class, () -> {
-            TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
-            EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
             Mockito.when(executor.isShutdown()).thenReturn(true);
-            queue.setExecutor(executor);
             queue.retryOffer(mock(Runnable.class), 1000, TimeUnit.MILLISECONDS);
         });
     }
 
     @Test
     void testRetryOffer2() throws Exception {
-        TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
-        EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
         Mockito.when(executor.isShutdown()).thenReturn(false);
-        queue.setExecutor(executor);
         assertThat(queue.retryOffer(mock(Runnable.class), 1000, TimeUnit.MILLISECONDS), is(true));
     }
 }

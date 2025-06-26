@@ -17,6 +17,10 @@
 package org.apache.dubbo.metadata;
 
 /**
+ * <pre>
+ * Metadata request message.
+ * </pre>
+ *
  * Protobuf type {@code org.apache.dubbo.metadata.MetadataRequest}
  */
 public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV3
@@ -24,6 +28,7 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
         // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.MetadataRequest)
         MetadataRequestOrBuilder {
     private static final long serialVersionUID = 0L;
+
     // Use MetadataRequest.newBuilder() to construct.
     private MetadataRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
@@ -53,7 +58,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
 
     @SuppressWarnings("serial")
     private volatile Object revision_ = "";
+
     /**
+     * <pre>
+     * The revision of the metadata.
+     * </pre>
+     *
      * <code>string revision = 1;</code>
      * @return The revision.
      */
@@ -69,7 +79,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
             return s;
         }
     }
+
     /**
+     * <pre>
+     * The revision of the metadata.
+     * </pre>
+     *
      * <code>string revision = 1;</code>
      * @return The bytes for revision.
      */
@@ -90,8 +105,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
     @Override
     public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
-        if (isInitialized == 1) return true;
-        if (isInitialized == 0) return false;
+        if (isInitialized == 1) {
+            return true;
+        }
+        if (isInitialized == 0) {
+            return false;
+        }
 
         memoizedIsInitialized = 1;
         return true;
@@ -108,7 +127,9 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
     @Override
     public int getSerializedSize() {
         int size = memoizedSize;
-        if (size != -1) return size;
+        if (size != -1) {
+            return size;
+        }
 
         size = 0;
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(revision_)) {
@@ -129,8 +150,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
         }
         MetadataRequest other = (MetadataRequest) obj;
 
-        if (!getRevision().equals(other.getRevision())) return false;
-        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+        if (!getRevision().equals(other.getRevision())) {
+            return false;
+        }
+        if (!getUnknownFields().equals(other.getUnknownFields())) {
+            return false;
+        }
         return true;
     }
 
@@ -232,7 +257,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
         Builder builder = new Builder(parent);
         return builder;
     }
+
     /**
+     * <pre>
+     * Metadata request message.
+     * </pre>
+     *
      * Protobuf type {@code org.apache.dubbo.metadata.MetadataRequest}
      */
     public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
@@ -302,6 +332,37 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
         }
 
         @Override
+        public Builder clone() {
+            return super.clone();
+        }
+
+        @Override
+        public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+            return super.setField(field, value);
+        }
+
+        @Override
+        public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+            return super.clearField(field);
+        }
+
+        @Override
+        public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+            return super.clearOneof(oneof);
+        }
+
+        @Override
+        public Builder setRepeatedField(
+                com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
+            return super.setRepeatedField(field, index, value);
+        }
+
+        @Override
+        public Builder addRepeatedField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
+            return super.addRepeatedField(field, value);
+        }
+
+        @Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
             if (other instanceof MetadataRequest) {
                 return mergeFrom((MetadataRequest) other);
@@ -312,7 +373,9 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
         }
 
         public Builder mergeFrom(MetadataRequest other) {
-            if (other == MetadataRequest.getDefaultInstance()) return this;
+            if (other == MetadataRequest.getDefaultInstance()) {
+                return this;
+            }
             if (!other.getRevision().isEmpty()) {
                 revision_ = other.revision_;
                 bitField0_ |= 0x00000001;
@@ -367,7 +430,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
         private int bitField0_;
 
         private Object revision_ = "";
+
         /**
+         * <pre>
+         * The revision of the metadata.
+         * </pre>
+         *
          * <code>string revision = 1;</code>
          * @return The revision.
          */
@@ -382,7 +450,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
                 return (String) ref;
             }
         }
+
         /**
+         * <pre>
+         * The revision of the metadata.
+         * </pre>
+         *
          * <code>string revision = 1;</code>
          * @return The bytes for revision.
          */
@@ -396,7 +469,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
                 return (com.google.protobuf.ByteString) ref;
             }
         }
+
         /**
+         * <pre>
+         * The revision of the metadata.
+         * </pre>
+         *
          * <code>string revision = 1;</code>
          * @param value The revision to set.
          * @return This builder for chaining.
@@ -410,7 +488,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
             onChanged();
             return this;
         }
+
         /**
+         * <pre>
+         * The revision of the metadata.
+         * </pre>
+         *
          * <code>string revision = 1;</code>
          * @return This builder for chaining.
          */
@@ -420,7 +503,12 @@ public final class MetadataRequest extends com.google.protobuf.GeneratedMessageV
             onChanged();
             return this;
         }
+
         /**
+         * <pre>
+         * The revision of the metadata.
+         * </pre>
+         *
          * <code>string revision = 1;</code>
          * @param value The bytes for revision to set.
          * @return This builder for chaining.

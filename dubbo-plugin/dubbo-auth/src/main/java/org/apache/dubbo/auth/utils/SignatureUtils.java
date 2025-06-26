@@ -64,7 +64,7 @@ public class SignatureUtils {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Failed to generate HMAC: no such algorithm exception " + HMAC_SHA256_ALGORITHM);
         }
-        SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA256_ALGORITHM);
+        SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), HMAC_SHA256_ALGORITHM);
         try {
             mac.init(signingKey);
         } catch (InvalidKeyException e) {

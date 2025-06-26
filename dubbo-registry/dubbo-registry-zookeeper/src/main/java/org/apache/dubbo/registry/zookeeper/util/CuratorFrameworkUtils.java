@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ import org.apache.zookeeper.data.ACL;
 
 import static org.apache.curator.x.discovery.ServiceInstance.builder;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ZOOKEEPER_ENSEMBLE_TRACKER_KEY;
 import static org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery.DEFAULT_GROUP;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.BASE_SLEEP_TIME;
@@ -62,6 +64,8 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
  */
 public abstract class CuratorFrameworkUtils {
 
+    protected static int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
+
     public static ServiceDiscovery<ZookeeperInstance> buildServiceDiscovery(
             CuratorFramework curatorFramework, String basePath) {
         return ServiceDiscoveryBuilder.builder(ZookeeperInstance.class)
@@ -72,8 +76,10 @@ public abstract class CuratorFrameworkUtils {
 
     public static CuratorFramework buildCuratorFramework(URL connectionURL, ZookeeperServiceDiscovery serviceDiscovery)
             throws Exception {
+        int sessionTimeoutMs = connectionURL.getParameter(SESSION_KEY, DEFAULT_SESSION_TIMEOUT_MS);
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(connectionURL.getBackupAddress())
+                .sessionTimeoutMs(sessionTimeoutMs)
                 .retryPolicy(buildRetryPolicy(connectionURL));
         try {
             // use reflect to check method exist to compatibility with curator4, can remove in dubbo3.3 and direct call
@@ -87,7 +93,7 @@ public abstract class CuratorFrameworkUtils {
 
         String userInformation = connectionURL.getUserInformation();
         if (StringUtils.isNotEmpty(userInformation)) {
-            builder = builder.authorization("digest", userInformation.getBytes());
+            builder = builder.authorization("digest", userInformation.getBytes(StandardCharsets.UTF_8));
             builder.aclProvider(new ACLProvider() {
                 @Override
                 public List<ACL> getDefaultAcl() {

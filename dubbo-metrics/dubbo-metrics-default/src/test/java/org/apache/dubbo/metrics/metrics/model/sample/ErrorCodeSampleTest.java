@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 public class ErrorCodeSampleTest {
@@ -69,5 +70,10 @@ public class ErrorCodeSampleTest {
                 ((AtomicLong) ((CounterMetricSample<?>) metricSample).getValue()).get() == 2L, "Sample count error."));
 
         System.out.println(samples);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        FrameworkModel.defaultModel().destroy();
     }
 }

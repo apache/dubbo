@@ -57,7 +57,7 @@ public class SpringResponseRestFilter implements RestFilter, Listener {
     private final Map<Key, Optional<MethodMeta>> cache = CollectionUtils.newConcurrentHashMap();
 
     public SpringResponseRestFilter(FrameworkModel frameworkModel) {
-        argumentResolver = frameworkModel.getBeanFactory().getOrRegisterBean(CompositeArgumentResolver.class);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class SpringResponseRestFilter implements RestFilter, Listener {
             ResponseEntity<?> entity = (ResponseEntity<?>) value;
             result.setValue(HttpResult.builder()
                     .body(entity.getBody())
-                    .status(entity.getStatusCode().value())
+                    .status(Helper.getStatusCode(entity))
                     .headers(entity.getHeaders())
                     .build());
             return;
@@ -181,7 +181,7 @@ public class SpringResponseRestFilter implements RestFilter, Listener {
         }
 
         @Override
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass", "EqualsDoesntCheckParameterClass"})
         public boolean equals(Object obj) {
             Key other = (Key) obj;
             return method.equals(other.method) && type.equals(other.type);

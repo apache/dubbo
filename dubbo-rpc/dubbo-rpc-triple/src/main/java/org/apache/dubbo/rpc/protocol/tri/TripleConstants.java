@@ -40,5 +40,7 @@ public final class TripleConstants {
     public static final String TRIPLE_HANDLER_TYPE_REST = "rest";
     public static final String TRIPLE_HANDLER_TYPE_GRPC = "grpc";
 
+    public static final String UPGRADE_HEADER_KEY = "Upgrade";
+
     private TripleConstants() {}
 }

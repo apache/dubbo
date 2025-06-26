@@ -1,1 +1,1 @@
-curator5Zookeeper=org.apache.dubbo.remoting.zookeeper.aot.Curator5ZookeeperReflectionTypeDescriberRegistrar
+curator5Zookeeper=org.apache.dubbo.remoting.zookeeper.curator5.aot.Curator5ZookeeperReflectionTypeDescriberRegistrar

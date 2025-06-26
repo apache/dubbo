@@ -23,9 +23,17 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.DubboMetadataServiceV2Triple.MetadataServiceV2ImplBase;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataRequest;
+import org.apache.dubbo.metadata.OpenAPIFormat;
+import org.apache.dubbo.metadata.OpenAPIInfo;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIRequest;
+import org.apache.dubbo.remoting.http12.rest.OpenAPIService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.metadata.util.MetadataServiceVersionUtils.toV2;
@@ -34,8 +42,7 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
 
     ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    private final ApplicationModel applicationModel;
-
+    private final FrameworkModel frameworkModel;
     private final RegistryManager registryManager;
 
     private URL metadataUrl;
@@ -43,14 +50,14 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
     public static final String VERSION = "2.0.0";
 
     public MetadataServiceDelegationV2(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-        this.registryManager = RegistryManager.getInstance(applicationModel);
+        frameworkModel = applicationModel.getFrameworkModel();
+        registryManager = RegistryManager.getInstance(applicationModel);
     }
 
     @Override
     public org.apache.dubbo.metadata.MetadataInfoV2 getMetadataInfo(MetadataRequest metadataRequestV2) {
         String revision = metadataRequestV2.getRevision();
-        MetadataInfo info = null;
+        MetadataInfo info;
         if (StringUtils.isEmpty(revision)) {
             return null;
         }
@@ -68,6 +75,32 @@ public class MetadataServiceDelegationV2 extends MetadataServiceV2ImplBase {
                     REGISTRY_FAILED_LOAD_METADATA, "", "", "metadataV2 not found for revision: " + metadataRequestV2);
         }
         return null;
+    }
+
+    @Override
+    public OpenAPIInfo getOpenAPIInfo(org.apache.dubbo.metadata.OpenAPIRequest request) {
+        if (TripleProtocol.OPENAPI_ENABLED) {
+            OpenAPIService openAPIService = frameworkModel.getBean(OpenAPIService.class);
+            if (openAPIService != null) {
+                OpenAPIRequest oRequest = new OpenAPIRequest();
+                oRequest.setGroup(request.getGroup());
+                oRequest.setVersion(request.getVersion());
+                oRequest.setTag(request.getTagList().toArray(StringUtils.EMPTY_STRING_ARRAY));
+                oRequest.setService(request.getServiceList().toArray(StringUtils.EMPTY_STRING_ARRAY));
+                oRequest.setOpenapi(request.getOpenapi());
+                OpenAPIFormat format = request.getFormat();
+                if (request.hasFormat()) {
+                    oRequest.setFormat(format.name());
+                }
+                if (request.hasPretty()) {
+                    oRequest.setPretty(request.getPretty());
+                }
+                String document = openAPIService.getDocument(oRequest);
+                return OpenAPIInfo.newBuilder().setDefinition(document).build();
+            }
+        }
+
+        throw new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "OpenAPI is not available");
     }
 
     public URL getMetadataUrl() {

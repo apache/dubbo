@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -227,7 +227,8 @@ public class FastJson2SerializationTest {
         {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
-            objectOutput.writeObject(new Date());
+            // fastjson2 could not read byte from the serialization of LocalDate by now. 2025/04/02
+            objectOutput.writeObject(LocalDate.now());
             objectOutput.flushBuffer();
 
             byte[] bytes = outputStream.toByteArray();

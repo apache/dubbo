@@ -17,19 +17,25 @@
 package org.apache.dubbo.remoting.zookeeper.curator5.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstructionWithAnswer;
+import static org.mockito.Mockito.when;
 
 /**
  * ZookeeperManagerTest
@@ -37,18 +43,20 @@ import static org.hamcrest.core.IsNull.nullValue;
 class ZookeeperClientManagerTest {
     private ZookeeperClient zookeeperClient;
     private ZookeeperClientManager zookeeperClientManager;
-
-    private static int zookeeperServerPort1, zookeeperServerPort2;
-    private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;
+    private static Curator5ZookeeperClient mockedCurator5ZookeeperClient;
+    private static MockedConstruction<Curator5ZookeeperClient> mockedCurator5ZookeeperClientConstruction;
+    private static int zookeeperServerPort1 = 2181;
+    private static int zookeeperServerPort2 = 2182;
+    private static String zookeeperConnectionAddress1 = "zookeeper://127.0.0.1:2181";
+    private static String zookeeperConnectionAddress2 = "zookeeper://127.0.0.1:2182";
 
     @BeforeAll
     public static void beforeAll() {
-        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
-        zookeeperConnectionAddress2 = System.getProperty("zookeeper.connection.address.2");
-        zookeeperServerPort1 = Integer.parseInt(
-                zookeeperConnectionAddress1.substring(zookeeperConnectionAddress1.lastIndexOf(":") + 1));
-        zookeeperServerPort2 = Integer.parseInt(
-                zookeeperConnectionAddress2.substring(zookeeperConnectionAddress2.lastIndexOf(":") + 1));
+        mockedCurator5ZookeeperClient = mock(Curator5ZookeeperClient.class);
+        mockedCurator5ZookeeperClientConstruction =
+                mockConstructionWithAnswer(Curator5ZookeeperClient.class, invocationOnMock -> invocationOnMock
+                        .getMethod()
+                        .invoke(mockedCurator5ZookeeperClient, invocationOnMock.getArguments()));
     }
 
     @BeforeEach
@@ -130,6 +138,7 @@ class ZookeeperClientManagerTest {
         Assertions.assertEquals(
                 zookeeperClientManager.getZookeeperClientMap().get("127.0.0.1:" + zookeeperServerPort1),
                 newZookeeperClient);
+        when(mockedCurator5ZookeeperClient.isConnected()).thenReturn(true);
         Assertions.assertTrue(newZookeeperClient.isConnected());
 
         ZookeeperClient newZookeeperClient2 = zookeeperClientManager.connect(url2);
@@ -179,6 +188,7 @@ class ZookeeperClientManagerTest {
                 zookeeperConnectionAddress1 + "/org.apache.dubbo.metadata.store.MetadataReport?backup=127.0.0.1:"
                         + zookeeperServerPort2
                         + "&address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
+        when(mockedCurator5ZookeeperClient.isConnected()).thenReturn(true);
         ZookeeperClient newZookeeperClient = zookeeperClientManager.connect(url);
         // just for connected
         newZookeeperClient.getContent("/dubbo/test");
@@ -232,5 +242,10 @@ class ZookeeperClientManagerTest {
         ZookeeperClient client1 = zookeeperClientManager.connect(url1);
         ZookeeperClient client2 = zookeeperClientManager.connect(url2);
         assertThat(client1, not(client2));
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        mockedCurator5ZookeeperClientConstruction.close();
     }
 }

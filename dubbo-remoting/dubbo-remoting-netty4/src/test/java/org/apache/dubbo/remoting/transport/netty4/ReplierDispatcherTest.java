@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ReplierDispatcher;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.io.Serializable;
@@ -61,6 +62,7 @@ class ReplierDispatcherTest {
 
     @BeforeEach
     public void startServer() throws RemotingException {
+        FrameworkModel.destroyAll();
         port = NetUtils.getAvailablePort();
         ReplierDispatcher dispatcher = new ReplierDispatcher();
         dispatcher.addReplier(RpcMessage.class, new RpcMessageHandler());

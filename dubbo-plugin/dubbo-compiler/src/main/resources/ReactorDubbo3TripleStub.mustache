@@ -51,10 +51,10 @@ public final class {{className}} {
 
     public static final String SERVICE_NAME = {{interfaceClassName}}.SERVICE_NAME;
 
-    private static final StubServiceDescriptor serviceDescriptor = new StubServiceDescriptor(SERVICE_NAME,{{interfaceClassName}}.class);
+    private static final StubServiceDescriptor serviceDescriptor = new StubServiceDescriptor(SERVICE_NAME, {{interfaceClassName}}.class);
 
     static {
-        org.apache.dubbo.rpc.protocol.tri.service.SchemaDescriptorRegistry.addSchemaDescriptor(SERVICE_NAME,{{outerClassName}}.getDescriptor());
+        org.apache.dubbo.rpc.protocol.tri.service.SchemaDescriptorRegistry.addSchemaDescriptor(SERVICE_NAME, {{outerClassName}}.getDescriptor());
         StubSuppliers.addSupplier(SERVICE_NAME, {{className}}::newStub);
         StubSuppliers.addSupplier({{interfaceClassName}}.JAVA_SERVICE_NAME,  {{className}}::newStub);
         StubSuppliers.addDescriptor(SERVICE_NAME, serviceDescriptor);
@@ -149,7 +149,7 @@ public final class {{className}} {
             PathResolver pathResolver = url.getOrDefaultFrameworkModel()
             .getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
-            Map<String,StubMethodHandler<?, ?>> handlers = new HashMap<>();
+            Map<String, StubMethodHandler<?, ?>> handlers = new HashMap<>();
 
             {{#methods}}
                 pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}");

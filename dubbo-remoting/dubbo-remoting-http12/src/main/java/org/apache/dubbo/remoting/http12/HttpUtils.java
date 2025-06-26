@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
@@ -81,6 +82,27 @@ public final class HttpUtils {
         return cookies;
     }
 
+    public static String parseCharset(String contentType) {
+        String charset = null;
+        if (contentType == null) {
+            charset = StringUtils.EMPTY_STRING;
+        } else {
+            int index = contentType.lastIndexOf(CHARSET_PREFIX);
+            if (index == -1) {
+                charset = StringUtils.EMPTY_STRING;
+            } else {
+                charset = contentType.substring(index + CHARSET_PREFIX.length()).trim();
+                int splits = charset.indexOf(CommonConstants.SEMICOLON_SEPARATOR);
+                if (splits == -1) {
+                    return charset;
+                } else {
+                    return charset.substring(0, splits).trim();
+                }
+            }
+        }
+        return charset;
+    }
+
     public static String encodeCookie(HttpCookie cookie) {
         DefaultCookie c = new DefaultCookie(cookie.name(), cookie.value());
         c.setPath(cookie.path());
@@ -94,7 +116,7 @@ public final class HttpUtils {
 
     public static List<String> parseAccept(String header) {
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         List<Item<String>> mediaTypes = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
@@ -124,10 +146,10 @@ public final class HttpUtils {
     }
 
     public static List<Locale> parseAcceptLanguage(String header) {
-        List<Item<Locale>> locales = new ArrayList<>();
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
+        List<Item<Locale>> locales = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
             locales.add(new Item<>(parseLocale(pair[0]), pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F));
@@ -136,10 +158,10 @@ public final class HttpUtils {
     }
 
     public static List<Locale> parseContentLanguage(String header) {
-        List<Locale> locales = new ArrayList<>();
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
+        List<Locale> locales = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             locales.add(parseLocale(item));
         }
@@ -268,6 +290,9 @@ public final class HttpUtils {
 
         public static <T> List<T> sortAndGet(List<Item<T>> items) {
             int size = items.size();
+            if (size == 0) {
+                return Collections.emptyList();
+            }
             if (size == 1) {
                 return Collections.singletonList(items.get(0).value);
             }

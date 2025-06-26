@@ -31,7 +31,7 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * The test-case for https://github.com/apache/dubbo/issues/6000
- * Autowired a ReferenceBean failed in some situation in Spring enviroment
+ * Autowired a ReferenceBean failed in some situation in Spring environment
  */
 @Configuration
 @EnableDubbo

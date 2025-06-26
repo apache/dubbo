@@ -46,6 +46,10 @@ public final class RequestUtils {
 
     private RequestUtils() {}
 
+    public static boolean isRestRequest(HttpRequest request) {
+        return request != null && request.hasAttribute(RestConstants.PATH_ATTRIBUTE);
+    }
+
     public static boolean isMultiPart(HttpRequest request) {
         String contentType = request.contentType();
         return contentType != null && contentType.startsWith(MediaType.MULTIPART_FORM_DATA.getName());
@@ -120,6 +124,19 @@ public final class RequestUtils {
             }
         }
         return params;
+    }
+
+    public static String getPathVariable(HttpRequest request, String name) {
+        Map<String, String> variableMap = request.attribute(RestConstants.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+        if (variableMap == null) {
+            return null;
+        }
+        String value = variableMap.get(name);
+        if (value == null) {
+            return null;
+        }
+        int index = value.indexOf(';');
+        return decodeURL(index == -1 ? value : value.substring(0, index));
     }
 
     public static Map<String, List<String>> parseMatrixVariables(String matrixVariables) {

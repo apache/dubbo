@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -45,8 +46,8 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         super(applicationModel);
     }
 
-    private final Map<MetricsKeyWrapper, Map<ServiceKeyMetric, AtomicLong>> serviceWrapperNumStats =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<MetricsKeyWrapper, ConcurrentHashMap<ServiceKeyMetric, AtomicLong>>
+            serviceWrapperNumStats = new ConcurrentHashMap<>();
 
     public void initWrapper(List<MetricsKeyWrapper> metricsKeyWrappers) {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
@@ -71,10 +72,10 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        Map<ServiceKeyMetric, AtomicLong> map = serviceWrapperNumStats.get(wrapper);
+        ConcurrentHashMap<ServiceKeyMetric, AtomicLong> map = serviceWrapperNumStats.get(wrapper);
         AtomicLong metrics = map.get(serviceKeyMetric);
         if (metrics == null) {
-            metrics = map.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
+            metrics = ConcurrentHashMapUtils.computeIfAbsent(map, serviceKeyMetric, k -> new AtomicLong(0L));
             samplesChanged.set(true);
         }
         metrics.getAndAdd(size);
@@ -93,10 +94,10 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         if (extra != null) {
             serviceKeyMetric.setExtraInfo(extra);
         }
-        Map<ServiceKeyMetric, AtomicLong> stats = serviceWrapperNumStats.get(wrapper);
+        ConcurrentHashMap<ServiceKeyMetric, AtomicLong> stats = serviceWrapperNumStats.get(wrapper);
         AtomicLong metrics = stats.get(serviceKeyMetric);
         if (metrics == null) {
-            metrics = stats.computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L));
+            metrics = ConcurrentHashMapUtils.computeIfAbsent(stats, serviceKeyMetric, k -> new AtomicLong(0L));
             samplesChanged.set(true);
         }
         metrics.set(num);

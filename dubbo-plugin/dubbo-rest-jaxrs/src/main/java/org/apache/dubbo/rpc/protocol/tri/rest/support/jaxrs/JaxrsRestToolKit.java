@@ -32,7 +32,7 @@ final class JaxrsRestToolKit extends AbstractRestToolKit {
 
     public JaxrsRestToolKit(FrameworkModel frameworkModel) {
         super(frameworkModel);
-        binder = new BeanArgumentBinder(frameworkModel);
+        binder = new BeanArgumentBinder(argumentResolver);
         paramConverterFactory = new ParamConverterFactory();
     }
 

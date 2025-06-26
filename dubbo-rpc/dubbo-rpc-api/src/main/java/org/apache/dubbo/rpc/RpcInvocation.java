@@ -501,6 +501,10 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    public Object remove(Object key) {
+        return attributes.remove(key);
+    }
+
     @Override
     public Object put(Object key, Object value) {
         return attributes.put(key, value);

@@ -29,6 +29,7 @@ import org.apache.dubbo.qos.command.impl.EnableSimpleProfiler;
 import org.apache.dubbo.qos.command.impl.GetAddress;
 import org.apache.dubbo.qos.command.impl.GetConfig;
 import org.apache.dubbo.qos.command.impl.GetEnabledRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.GetOpenAPI;
 import org.apache.dubbo.qos.command.impl.GetRecentRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.GetRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.GracefulShutdown;
@@ -127,6 +128,7 @@ class CommandHelperTest {
         expectedClasses.add(GetAddress.class);
         expectedClasses.add(GracefulShutdown.class);
         expectedClasses.add(DefaultMetricsReporterCmd.class);
+        expectedClasses.add(GetOpenAPI.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 

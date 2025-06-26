@@ -50,7 +50,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_IGNORE_1_0_0_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_OPENAPI_ENABLED;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_REST_ENABLED;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_SUPPORT_NO_LOWER_HEADER_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_VERBOSE_ENABLED;
 
@@ -65,12 +67,14 @@ public class TripleProtocol extends AbstractProtocol {
     public static boolean IGNORE_1_0_0_VERSION = false;
     public static boolean RESOLVE_FALLBACK_TO_DEFAULT = true;
     public static boolean VERBOSE_ENABLED = false;
+    public static boolean REST_ENABLED = true;
+    public static boolean OPENAPI_ENABLED = false;
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         triBuiltinService = new TriBuiltinService(frameworkModel);
         pathResolver = frameworkModel.getDefaultExtension(PathResolver.class);
-        mappingRegistry = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultRequestMappingRegistry.class);
+        mappingRegistry = frameworkModel.getOrRegisterBean(DefaultRequestMappingRegistry.class);
         acceptEncodings = String.join(",", frameworkModel.getSupportedExtensions(DeCompressor.class));
 
         // init env settings
@@ -82,6 +86,9 @@ public class TripleProtocol extends AbstractProtocol {
         // init global settings
         Configuration globalConf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
         VERBOSE_ENABLED = globalConf.getBoolean(H2_SETTINGS_VERBOSE_ENABLED, false);
+        REST_ENABLED = globalConf.getBoolean(H2_SETTINGS_REST_ENABLED, true);
+        OPENAPI_ENABLED = globalConf.getBoolean(H2_SETTINGS_OPENAPI_ENABLED, false);
+
         ServletExchanger.init(globalConf);
         Http3Exchanger.init(globalConf);
     }
@@ -104,7 +111,9 @@ public class TripleProtocol extends AbstractProtocol {
                 pathResolver.unregister(invoker);
 
                 // unregister rest request mapping
-                mappingRegistry.unregister(invoker);
+                if (REST_ENABLED) {
+                    mappingRegistry.unregister(invoker);
+                }
 
                 // set service status to NOT_SERVING
                 setServiceStatus(url, false);
@@ -121,7 +130,9 @@ public class TripleProtocol extends AbstractProtocol {
         pathResolver.register(invoker);
 
         // register rest request mapping
-        mappingRegistry.register(invoker);
+        if (REST_ENABLED) {
+            mappingRegistry.register(invoker);
+        }
 
         // set service status to SERVING
         setServiceStatus(url, true);
@@ -205,7 +216,9 @@ public class TripleProtocol extends AbstractProtocol {
         PortUnificationExchanger.close();
         Http3Exchanger.close();
         pathResolver.destroy();
-        mappingRegistry.destroy();
+        if (REST_ENABLED) {
+            mappingRegistry.destroy();
+        }
         super.destroy();
     }
 }

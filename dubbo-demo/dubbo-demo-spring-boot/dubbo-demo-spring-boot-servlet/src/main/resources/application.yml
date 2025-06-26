@@ -24,8 +24,12 @@ dubbo:
     qos-enable: false
   protocol:
     name: tri
-    port: ${server.port}
+    port: 8082
     triple:
+      rest:
+        openapi:
+          enabled: true
+          cache: false
       servlet:
         enabled: true
   registry:

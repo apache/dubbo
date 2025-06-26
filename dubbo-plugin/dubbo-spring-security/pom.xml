@@ -19,9 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-plugin</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>dubbo-spring-security</artifactId>
@@ -29,6 +29,7 @@
 
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
+    <spring.oauth2.server>1.5.1</spring.oauth2.server>
   </properties>
 
   <dependencies>
@@ -60,11 +61,24 @@
 
     <dependency>
       <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-oauth2-core</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-oauth2-client</artifactId>
       <scope>test</scope>
       <optional>true</optional>
     </dependency>
 
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-oauth2-authorization-server</artifactId>
+      <version>${spring.oauth2.server}</version>
+      <scope>test</scope>
+      <optional>true</optional>
+    </dependency>
     <!-- spring security -->
 
     <!-- jackson -->
@@ -83,6 +97,12 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <!-- jackson -->
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 

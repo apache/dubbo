@@ -53,6 +53,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +184,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     // as proto3 only accept one protobuf parameter
                     if (args.length == 1 && args[0] instanceof String) {
                         try (UnsafeByteArrayInputStream is =
-                                new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
+                                new UnsafeByteArrayInputStream(((String) args[0]).getBytes(StandardCharsets.UTF_8))) {
                             args[0] = applicationModel
                                     .getExtensionLoader(Serialization.class)
                                     .getExtension(GENERIC_SERIALIZATION_PROTOBUF)

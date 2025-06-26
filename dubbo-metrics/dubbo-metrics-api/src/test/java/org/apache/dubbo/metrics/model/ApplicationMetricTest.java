@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -101,4 +102,10 @@ class ApplicationMetricTest {
 
     @Test
     void testHashCode() {}
+
+    @AfterEach
+    public void destroy() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        applicationModel.destroy();
+    }
 }

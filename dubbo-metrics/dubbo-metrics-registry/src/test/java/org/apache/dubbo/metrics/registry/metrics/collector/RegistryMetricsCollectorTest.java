@@ -30,6 +30,7 @@ import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,8 +75,9 @@ class RegistryMetricsCollectorTest {
 
     @Test
     void testRegisterMetrics() {
-
-        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
+        List<String> registryClusterNames = new ArrayList<>();
+        registryClusterNames.add("reg1");
+        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel, registryClusterNames);
         MetricsEventBus.post(registryEvent, () -> {
             List<MetricSample> metricSamples = collector.collect();
             // push success +1 -> other default 0 = APP_LEVEL_KEYS.size()
@@ -94,7 +95,7 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_KEYS.size() + 5, metricSamples.size());
         long c1 = registryEvent.getTimePair().calc();
 
-        registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
+        registryEvent = RegistryEvent.toRegisterEvent(applicationModel, registryClusterNames);
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(
                 registryEvent,
@@ -145,7 +146,8 @@ class RegistryMetricsCollectorTest {
     void testServicePushMetrics() {
 
         String serviceName = "demo.gameService";
-        List<String> rcNames = Lists.newArrayList("demo1");
+        List<String> rcNames = new ArrayList<>();
+        rcNames.add("demo1");
 
         RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2, rcNames);
         MetricsEventBus.post(registryEvent, () -> {

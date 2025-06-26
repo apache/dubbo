@@ -24,6 +24,7 @@ import java.io.File;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.spi.ExtendedLogger;
 
 public class Log4j2LoggerAdapter implements LoggerAdapter {
     public static final String NAME = "log4j2";
@@ -85,12 +86,22 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
 
     @Override
     public Logger getLogger(Class<?> key) {
-        return new Log4j2Logger(LogManager.getLogger(key));
+        return new Log4j2Logger((ExtendedLogger) LogManager.getLogger(key));
     }
 
     @Override
     public Logger getLogger(String key) {
-        return new Log4j2Logger(LogManager.getLogger(key));
+        return new Log4j2Logger((ExtendedLogger) LogManager.getLogger(key));
+    }
+
+    @Override
+    public Logger getLogger(String fqcn, Class<?> key) {
+        return new Log4j2Logger(fqcn, (ExtendedLogger) LogManager.getLogger(key));
+    }
+
+    @Override
+    public Logger getLogger(String fqcn, String key) {
+        return new Log4j2Logger(fqcn, (ExtendedLogger) LogManager.getLogger(key));
     }
 
     @Override

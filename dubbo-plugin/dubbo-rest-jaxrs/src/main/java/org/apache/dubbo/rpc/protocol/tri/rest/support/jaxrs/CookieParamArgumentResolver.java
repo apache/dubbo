@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpCookie;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
+import org.apache.dubbo.remoting.http12.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 
 import java.lang.annotation.Annotation;
@@ -36,6 +37,11 @@ public class CookieParamArgumentResolver extends AbstractJaxrsArgumentResolver {
     @Override
     public Class<Annotation> accept() {
         return Annotations.CookieParam.type();
+    }
+
+    @Override
+    protected ParamType getParamType(NamedValueMeta meta) {
+        return ParamType.Cookie;
     }
 
     @Override

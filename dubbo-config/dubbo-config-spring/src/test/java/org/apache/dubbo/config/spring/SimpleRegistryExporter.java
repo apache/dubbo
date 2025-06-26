@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
@@ -45,7 +46,13 @@ public class SimpleRegistryExporter {
 
     public static synchronized Exporter<RegistryService> exportIfAbsent(int port) {
         try {
-            new ServerSocket(port).close();
+            ServerSocket serverSocket = new ServerSocket();
+            if (NetUtils.isReuseAddressSupported()) {
+                // SO_REUSEADDR should be enabled before bind.
+                serverSocket.setReuseAddress(true);
+            }
+            serverSocket.bind(new InetSocketAddress(port));
+            serverSocket.close();
             return export(port);
         } catch (IOException e) {
             return null;

@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping;
 
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
@@ -31,18 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.config.nested.RestConfig.DEFAULT_FORMAT_PARAMETER_NAME;
-
 public class ContentNegotiator {
 
-    private final FrameworkModel frameworkModel;
     private final CodecUtils codecUtils;
     private Map<String, MediaType> extensionMapping;
     private String parameterName;
 
     public ContentNegotiator(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
-        codecUtils = frameworkModel.getBeanFactory().getOrRegisterBean(CodecUtils.class);
+        codecUtils = frameworkModel.getOrRegisterBean(CodecUtils.class);
     }
 
     public String negotiate(HttpRequest request, HandlerMeta meta) {
@@ -141,11 +137,11 @@ public class ContentNegotiator {
     }
 
     public String getParameterName() {
-        String parameterName = this.parameterName;
         if (parameterName == null) {
-            Configuration conf = ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication());
-            parameterName = conf.getString(RestConstants.FORMAT_PARAMETER_NAME_KEY, DEFAULT_FORMAT_PARAMETER_NAME);
-            this.parameterName = parameterName;
+            parameterName = ConfigManager.getProtocolOrDefault(CommonConstants.TRIPLE)
+                    .getTripleOrDefault()
+                    .getRestOrDefault()
+                    .getFormatParameterNameOrDefault();
         }
         return parameterName;
     }
@@ -171,10 +167,22 @@ public class ContentNegotiator {
             extensionMapping.put("xhtml", MediaType.TEXT_HTML);
             extensionMapping.put("html", MediaType.TEXT_HTML);
             extensionMapping.put("htm", MediaType.TEXT_HTML);
+            extensionMapping.put("proto", new MediaType(MediaType.TEXT, "proto"));
             for (String ext : new String[] {"txt", "md", "csv", "log", "properties"}) {
                 extensionMapping.put(ext, MediaType.TEXT_PLAIN);
             }
-
+            for (String ext : new String[] {"jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "tiff", "ico"}) {
+                extensionMapping.put(ext, new MediaType("image", ext));
+            }
+            for (String ext : new String[] {"zip", "gz", "7z", "tar", "rar"}) {
+                extensionMapping.put(ext, MediaType.APPLICATION_OCTET_STREAM);
+            }
+            for (String ext : new String[] {"xls", "xlsx", "doc", "docx", "ppt", "pptx", "pdf"}) {
+                extensionMapping.put(ext, MediaType.APPLICATION_OCTET_STREAM);
+            }
+            for (String ext : new String[] {"mp3", "m4a", "mp4", "avi", "flv"}) {
+                extensionMapping.put(ext, MediaType.APPLICATION_OCTET_STREAM);
+            }
             this.extensionMapping = extensionMapping;
         }
         MediaType mediaType = extensionMapping.get(extension);

@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.http12.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoderFactory;
@@ -24,7 +25,7 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageEncoderFactory;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Activate(order = -100, onClass = "com.google.protobuf.Message")
+@Activate(order = -100, onClass = CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME)
 public final class JsonPbCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
     @Override

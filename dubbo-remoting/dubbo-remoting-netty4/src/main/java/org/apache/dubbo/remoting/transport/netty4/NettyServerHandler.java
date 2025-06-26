@@ -17,11 +17,14 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
+
+import javax.net.ssl.SSLSession;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,19 +32,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 /**
  * NettyServerHandler.
  */
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyServerHandler extends ChannelDuplexHandler {
-    private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyServerHandler.class);
     /**
      * the cache for alive worker channel.
      * <ip:port, dubbo channel>
      */
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
+
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
 
     private final URL url;
 
@@ -75,8 +84,8 @@ public class NettyServerHandler extends ChannelDuplexHandler {
             logger.info(
                     "The connection {} of {} -> {} is established.",
                     ch,
-                    AddressUtils.getRemoteAddressKey(ch),
-                    AddressUtils.getLocalAddressKey(ch));
+                    channel.getRemoteAddressKey(),
+                    channel.getLocalAddressKey());
         }
     }
 
@@ -95,8 +104,8 @@ public class NettyServerHandler extends ChannelDuplexHandler {
             logger.info(
                     "The connection {} of {} -> {} is disconnected.",
                     ch,
-                    AddressUtils.getRemoteAddressKey(ch),
-                    AddressUtils.getLocalAddressKey(ch));
+                    channel.getRemoteAddressKey(),
+                    channel.getLocalAddressKey());
         }
     }
 
@@ -128,15 +137,38 @@ public class NettyServerHandler extends ChannelDuplexHandler {
             }
         }
         super.userEventTriggered(ctx, evt);
+        if (evt instanceof SslHandshakeCompletionEvent) {
+            SslHandshakeCompletionEvent handshakeEvent = (SslHandshakeCompletionEvent) evt;
+            if (handshakeEvent.isSuccess()) {
+                NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+                channel.setAttribute(
+                        Constants.SSL_SESSION_KEY,
+                        ctx.channel().attr(SSL_SESSION_KEY).get());
+            }
+        }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        io.netty.channel.Channel ch = ctx.channel();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
         try {
             handler.caught(channel, cause);
         } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            NettyChannel.removeChannelIfDisconnected(ch);
+        }
+
+        if (logger.isWarnEnabled()) {
+            logger.warn(
+                    TRANSPORT_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    channel == null
+                            ? String.format("The connection %s has exception.", ch)
+                            : String.format(
+                                    "The connection %s of %s -> %s has exception.",
+                                    ch, channel.getRemoteAddressKey(), channel.getLocalAddressKey()),
+                    cause);
         }
     }
 }

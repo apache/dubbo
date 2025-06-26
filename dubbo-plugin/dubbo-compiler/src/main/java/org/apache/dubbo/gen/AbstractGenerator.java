@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import com.google.api.AnnotationsProto;
+import com.google.api.HttpRule;
+import com.google.api.HttpRule.PatternCase;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -42,6 +45,7 @@ import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.compiler.PluginProtos;
 
 public abstract class AbstractGenerator {
@@ -67,22 +71,38 @@ public abstract class AbstractGenerator {
     }
 
     private String getServiceJavaDocPrefix() {
-        return "    ";
+        return "";
     }
 
     private String getMethodJavaDocPrefix() {
-        return "        ";
+        return "    ";
     }
 
     public List<PluginProtos.CodeGeneratorResponse.File> generateFiles(PluginProtos.CodeGeneratorRequest request) {
-        final ProtoTypeMap typeMap = ProtoTypeMap.of(request.getProtoFileList());
+        // 1. build ExtensionRegistry and registry
+        ExtensionRegistry registry = ExtensionRegistry.newInstance();
+        AnnotationsProto.registerAllExtensions(registry);
 
+        // 2. compile proto file
         List<FileDescriptorProto> protosToGenerate = request.getProtoFileList().stream()
                 .filter(protoFile -> request.getFileToGenerateList().contains(protoFile.getName()))
+                .map(protoFile -> parseWithExtensions(protoFile, registry))
                 .collect(Collectors.toList());
 
+        // 3. use compiled proto file build ProtoTypeMap
+        final ProtoTypeMap typeMap = ProtoTypeMap.of(protosToGenerate);
+
+        // 4. find and generate serviceContext
         List<ServiceContext> services = findServices(protosToGenerate, typeMap);
         return generateFiles(services);
+    }
+
+    private FileDescriptorProto parseWithExtensions(FileDescriptorProto protoFile, ExtensionRegistry registry) {
+        try {
+            return FileDescriptorProto.parseFrom(protoFile.toByteString(), registry);
+        } catch (Exception e) {
+            return protoFile;
+        }
     }
 
     private List<ServiceContext> findServices(List<FileDescriptorProto> protos, ProtoTypeMap typeMap) {
@@ -171,6 +191,40 @@ public abstract class AbstractGenerator {
         methodContext.isManyOutput = methodProto.getServerStreaming();
         methodContext.methodNumber = methodNumber;
 
+        // compile google.api.http option
+        HttpRule httpRule = parseHttpRule(methodProto);
+        if (httpRule != null) {
+            PatternCase patternCase = httpRule.getPatternCase();
+            String path;
+            switch (patternCase) {
+                case GET:
+                    path = httpRule.getGet();
+                    break;
+                case PUT:
+                    path = httpRule.getPut();
+                    break;
+                case POST:
+                    path = httpRule.getPost();
+                    break;
+                case DELETE:
+                    path = httpRule.getDelete();
+                    break;
+                case PATCH:
+                    path = httpRule.getPatch();
+                    break;
+                default:
+                    path = "";
+                    break;
+            }
+            if (!path.isEmpty()) {
+                methodContext.httpMethod = patternCase.name();
+                methodContext.path = path;
+                methodContext.body = httpRule.getBody();
+                methodContext.hasMapping = true;
+                methodContext.needRequestAnnotation = !methodContext.body.isEmpty() || path.contains("{");
+            }
+        }
+
         Location methodLocation = locations.stream()
                 .filter(location -> location.getPathCount() == METHOD_NUMBER_OF_PATHS
                         && location.getPath(METHOD_NUMBER_OF_PATHS - 1) == methodNumber)
@@ -195,6 +249,17 @@ public abstract class AbstractGenerator {
             methodContext.grpcCallsMethodName = "asyncBidiStreamingCall";
         }
         return methodContext;
+    }
+
+    private HttpRule parseHttpRule(MethodDescriptorProto methodProto) {
+        HttpRule rule = null;
+        // check methodProto have options
+        if (methodProto.hasOptions()) {
+            if (methodProto.getOptions().hasExtension(AnnotationsProto.http)) {
+                rule = methodProto.getOptions().getExtension(AnnotationsProto.http);
+            }
+        }
+        return rule;
     }
 
     private String lowerCaseFirst(String s) {
@@ -360,6 +425,26 @@ public abstract class AbstractGenerator {
         public String grpcCallsMethodName;
         public int methodNumber;
         public String javaDoc;
+        /**
+         * The HTTP request method
+         */
+        public String httpMethod;
+        /**
+         * The HTTP request path
+         */
+        public String path;
+        /**
+         * The message field that the HTTP request body mapping to
+         */
+        public String body;
+        /**
+         * Whether the method has HTTP mapping
+         */
+        public boolean hasMapping;
+        /**
+         * Whether the request body parameter need @GRequest annotation
+         */
+        public boolean needRequestAnnotation;
 
         // This method mimics the upper-casing method ogf gRPC to ensure compatibility
         // See https://github.com/grpc/grpc-java/blob/v1.8.0/compiler/src/java_plugin/cpp/java_generator.cpp#L58
