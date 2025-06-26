@@ -99,6 +99,7 @@
     <module>dubbo-plugin/dubbo-reactive</module>
     <module>dubbo-plugin/dubbo-security</module>
     <module>dubbo-plugin/dubbo-spring-security</module>
+    <module>dubbo-plugin/dubbo-spring6-security</module>
     <module>dubbo-plugin/dubbo-qos-api</module>
     <module>dubbo-plugin/dubbo-native</module>
     <module>dubbo-plugin/dubbo-compiler</module>
@@ -165,6 +166,7 @@
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.8</spring-6.version>
+    <spring-security-6.version>6.5.1</spring-security-6.version>
     <spring-boot-3.version>3.5.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>

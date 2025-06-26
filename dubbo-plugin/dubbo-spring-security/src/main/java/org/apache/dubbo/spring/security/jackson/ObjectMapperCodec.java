@@ -21,19 +21,16 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.spring.security.oauth2.OAuth2SecurityModule;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.security.jackson2.CoreJackson2Module;
-import org.springframework.security.jackson2.SecurityJackson2Modules;
 
 public class ObjectMapperCodec {
 
@@ -104,10 +101,6 @@ public class ObjectMapperCodec {
     private void registerDefaultModule() {
         mapper.registerModule(new CoreJackson2Module());
         mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(new OAuth2SecurityModule());
-        List<Module> securityModules =
-                SecurityJackson2Modules.getModules(this.getClass().getClassLoader());
-        mapper.registerModules(securityModules);
 
         List<String> jacksonModuleClassNameList = new ArrayList<>();
         jacksonModuleClassNameList.add(

@@ -29,7 +29,6 @@
 
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <spring.oauth2.server>1.5.1</spring.oauth2.server>
   </properties>
 
   <dependencies>
@@ -61,21 +60,7 @@
 
     <dependency>
       <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-oauth2-core</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-oauth2-client</artifactId>
-      <scope>test</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-oauth2-authorization-server</artifactId>
-      <version>${spring.oauth2.server}</version>
       <scope>test</scope>
       <optional>true</optional>
     </dependency>

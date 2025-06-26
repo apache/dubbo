@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @JsonAutoDetect(
@@ -36,11 +38,6 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 @JsonIgnoreProperties(ignoreUnknown = true)
 abstract class RegisteredClientMixin {
 
-    /**
-     * declare clientSettings and tokenSettings as Object type to avoid COMPILATION ERROR when compile it with jdk8
-     * or jdk11, both ClientSettings and TokenSettings class file version are 61.0 which is higher than the version
-     * which jdk8 (class file version: 52.0) or jdk11 (class file version: 55.0) could support.
-     */
     @JsonCreator
     public RegisteredClientMixin(
             @JsonProperty("id") String id,
@@ -54,6 +51,6 @@ abstract class RegisteredClientMixin {
             @JsonProperty("redirectUris") Set<String> redirectUris,
             @JsonProperty("postLogoutRedirectUris") Set<String> postLogoutRedirectUris,
             @JsonProperty("scopes") Set<String> scopes,
-            @JsonProperty("clientSettings") Object clientSettings,
-            @JsonProperty("tokenSettings") Object tokenSettings) {}
+            @JsonProperty("clientSettings") ClientSettings clientSettings,
+            @JsonProperty("tokenSettings") TokenSettings tokenSettings) {}
 }
