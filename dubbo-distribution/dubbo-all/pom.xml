@@ -512,6 +512,7 @@
                   <include>org.apache.dubbo:dubbo-security</include>
                   <include>org.apache.dubbo:dubbo-reactive</include>
                   <include>org.apache.dubbo:dubbo-spring-security</include>
+                  <include>org.apache.dubbo:dubbo-spring6-security</include>
                   <include>org.apache.dubbo:dubbo-registry-api</include>
                   <include>org.apache.dubbo:dubbo-registry-multicast</include>
                   <include>org.apache.dubbo:dubbo-registry-multiple</include>
@@ -975,6 +976,21 @@
 
   <profiles>
     <profile>
+      <id>spring6-security</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-spring6-security</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>loom</id>
       <activation>
         <jdk>[21,)</jdk>
@@ -992,6 +1008,13 @@
     <profile>
       <id>release</id>
       <dependencies>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-spring6-security</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+          <optional>true</optional>
+        </dependency>
         <dependency>
           <groupId>org.apache.dubbo</groupId>
           <artifactId>dubbo-plugin-loom</artifactId>

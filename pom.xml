@@ -99,7 +99,6 @@
     <module>dubbo-plugin/dubbo-reactive</module>
     <module>dubbo-plugin/dubbo-security</module>
     <module>dubbo-plugin/dubbo-spring-security</module>
-    <module>dubbo-plugin/dubbo-spring6-security</module>
     <module>dubbo-plugin/dubbo-qos-api</module>
     <module>dubbo-plugin/dubbo-native</module>
     <module>dubbo-plugin/dubbo-compiler</module>
@@ -497,6 +496,7 @@
       </activation>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-spring6-security</module>
       </modules>
     </profile>
     <!-- jacoco: mvn validate -Pjacoco  -->
@@ -646,6 +646,7 @@
       <id>release</id>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-plugin-loom</module>
         <module>dubbo-distribution/dubbo-all</module>
         <module>dubbo-distribution/dubbo-all-shaded</module>
