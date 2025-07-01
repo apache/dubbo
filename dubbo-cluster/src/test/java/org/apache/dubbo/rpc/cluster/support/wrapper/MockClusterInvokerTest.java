@@ -851,7 +851,7 @@ class MockClusterInvokerTest {
         }
 
         public void sayHello() {
-            System.out.println("hello prety");
+            System.out.println("hello pretty");
         }
     }
 
@@ -902,7 +902,7 @@ class MockClusterInvokerTest {
         }
 
         public void sayHello() {
-            System.out.println("hello prety");
+            System.out.println("hello pretty");
         }
     }
 
