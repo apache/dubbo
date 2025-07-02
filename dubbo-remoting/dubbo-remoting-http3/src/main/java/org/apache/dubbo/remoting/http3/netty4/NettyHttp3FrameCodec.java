@@ -31,6 +31,7 @@ import java.net.SocketAddress;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandler;
@@ -95,7 +96,11 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
                     new DefaultHttp3HeadersFrame(((NettyHttpHeaders<Http3Headers>) headers.headers()).getHeaders()),
                     promise);
             if (headers.isEndStream()) {
-                ctx.close();
+                if (promise.isDone()) {
+                    ctx.close();
+                } else {
+                    promise.addListener((ChannelFutureListener) future -> ctx.close());
+                }
             }
         } else if (msg instanceof Http2OutputMessage) {
             Http2OutputMessage message = (Http2OutputMessage) msg;
@@ -113,7 +118,11 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
                 }
             } finally {
                 if (message.isEndStream()) {
-                    ctx.close();
+                    if (promise.isDone()) {
+                        ctx.close();
+                    } else {
+                        promise.addListener((ChannelFutureListener) future -> ctx.close());
+                    }
                 }
             }
             throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
