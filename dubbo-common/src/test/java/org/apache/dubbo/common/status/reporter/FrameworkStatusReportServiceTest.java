@@ -72,11 +72,6 @@ class FrameworkStatusReportServiceTest {
         MockFrameworkStatusReporter statusReporter =
                 (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
 
-        // "migrationStepStatus" ->
-        // "{"originStep":"FORCE_INTERFACE","application":"APP","service":"Test","success":"true","newStep":"FORCE_APPLICATION","type":"migrationStepStatus","version":"0.0.0","group":"Group"}"
-        // "registration" -> "{"application":"APP","status":"instance"}"
-        // "consumption" ->
-        // "{"application":"APP","service":"Test","type":"consumption","version":"0.0.0","group":"Group","status":"status"}"
         Map<String, Object> reportContent = statusReporter.getReportContent();
         Assertions.assertEquals(reportContent.size(), 3);
 
