@@ -133,7 +133,7 @@ jobs:
         run: rm -rf ~/.m2/repository/org/apache/dubbo
       - name: "Build Dubbo with maven"
         run: |
-          ./mvnw -T 2C ${{ env.MAVEN_ARGS }} clean install -Psources,skip-spotless,checkstyle -Dmaven.test.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+          ./mvnw -T 4C ${{ env.MAVEN_ARGS }} clean install -Psources,skip-spotless,checkstyle -Dmaven.test.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Save dubbo cache"
         uses: actions/cache/save@v4
         with:
@@ -247,7 +247,7 @@ jobs:
         timeout-minutes: 90
         run: |
           set -o pipefail
-          ./mvnw -T 2C ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge-add-open',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dtest.forkCount=${{ env.FORK_COUNT }} -Dtest.threadCount=4 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
+          ./mvnw -T 4C ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge-add-open',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dtest.forkCount=${{ env.FORK_COUNT }} -Dtest.threadCount=4 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
       - name: "Print test error log"
         if: failure()
         run: cat test_errors.log

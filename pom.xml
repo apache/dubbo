@@ -147,6 +147,9 @@
 
     <!-- Test execution configuration -->
     <test.forkCount>1</test.forkCount>
+    <test.parallel>methods</test.parallel>
+    <test.threadCount>4</test.threadCount>
+    <test.forkedProcessTimeoutInSeconds>1200</test.forkedProcessTimeoutInSeconds>
 
     <!-- Maven plugins -->
     <maven_jar_version>3.4.2</maven_jar_version>
@@ -351,7 +354,26 @@
           <useSystemClassLoader>true</useSystemClassLoader>
           <!-- Use system property if available, otherwise default value -->
           <forkCount>${test.forkCount}</forkCount>
-
+          <parallel>${test.parallel}</parallel>
+          <threadCount>${test.threadCount}</threadCount>
+          <perCoreThreadCount>true</perCoreThreadCount>
+          <reuseForks>true</reuseForks>
+          <forkedProcessTimeoutInSeconds>${test.forkedProcessTimeoutInSeconds}</forkedProcessTimeoutInSeconds>
+          
+          <!-- Improve test isolation and stability -->
+          <runOrder>balanced</runOrder>
+          <trimStackTrace>false</trimStackTrace>
+          <rerunFailingTestsCount>1</rerunFailingTestsCount>
+          
+          <!-- System properties for better test isolation -->
+          <systemPropertyVariables>
+            <file.encoding>UTF-8</file.encoding>
+            <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+            <java.awt.headless>true</java.awt.headless>
+            <!-- Reduce network timeouts for faster test feedback -->
+            <sun.net.useExclusiveBind>false</sun.net.useExclusiveBind>
+          </systemPropertyVariables>
+          
           <systemProperties>
             <!-- common shared -->
           </systemProperties>
