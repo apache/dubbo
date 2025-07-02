@@ -359,12 +359,12 @@
           <perCoreThreadCount>true</perCoreThreadCount>
           <reuseForks>true</reuseForks>
           <forkedProcessTimeoutInSeconds>${test.forkedProcessTimeoutInSeconds}</forkedProcessTimeoutInSeconds>
-          
+
           <!-- Improve test isolation and stability -->
           <runOrder>balanced</runOrder>
           <trimStackTrace>false</trimStackTrace>
           <rerunFailingTestsCount>1</rerunFailingTestsCount>
-          
+
           <!-- System properties for better test isolation -->
           <systemPropertyVariables>
             <file.encoding>UTF-8</file.encoding>
@@ -373,7 +373,7 @@
             <!-- Reduce network timeouts for faster test feedback -->
             <sun.net.useExclusiveBind>false</sun.net.useExclusiveBind>
           </systemPropertyVariables>
-          
+
           <systemProperties>
             <!-- common shared -->
           </systemProperties>
