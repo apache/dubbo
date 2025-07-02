@@ -145,6 +145,10 @@
     <jacoco.skip>true</jacoco.skip>
     <spotless.action>check</spotless.action>
 
+    <!-- Test execution configuration -->
+    <test.forkCount>1</test.forkCount>
+    <test.threadCount>4</test.threadCount>
+
     <!-- Maven plugins -->
     <maven_jar_version>3.4.2</maven_jar_version>
     <maven_surefire_version>3.5.3</maven_surefire_version>
@@ -346,7 +350,11 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <useSystemClassLoader>true</useSystemClassLoader>
-          <forkCount>1</forkCount>
+          <!-- Use system property if available, otherwise default value -->
+          <forkCount>${test.forkCount}</forkCount>
+          <!-- Enable parallel execution at method level when using multiple forks -->
+          <parallel>methods</parallel>
+          <threadCount>${test.threadCount}</threadCount>
           <systemProperties>
             <!-- common shared -->
           </systemProperties>
