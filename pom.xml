@@ -147,7 +147,6 @@
 
     <!-- Test execution configuration -->
     <test.forkCount>1</test.forkCount>
-    <test.threadCount>4</test.threadCount>
 
     <!-- Maven plugins -->
     <maven_jar_version>3.4.2</maven_jar_version>
@@ -352,26 +351,8 @@
           <useSystemClassLoader>true</useSystemClassLoader>
           <!-- Use system property if available, otherwise default value -->
           <forkCount>${test.forkCount}</forkCount>
-          <!-- Enable parallel execution at method level when using multiple forks -->
-          <threadCount>${test.threadCount}</threadCount>
+
           <systemProperties>
-            <!-- JUnit 5 parallel execution configuration -->
-            <property>
-              <name>junit.jupiter.execution.parallel.enabled</name>
-              <value>true</value>
-            </property>
-            <property>
-              <name>junit.jupiter.execution.parallel.mode.default</name>
-              <value>concurrent</value>
-            </property>
-            <property>
-              <name>junit.jupiter.execution.parallel.mode.classes.default</name>
-              <value>concurrent</value>
-            </property>
-            <property>
-              <name>junit.jupiter.execution.parallel.config.strategy</name>
-              <value>dynamic</value>
-            </property>
             <!-- common shared -->
           </systemProperties>
           <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
