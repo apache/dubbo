@@ -93,7 +93,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
-              <!-- Inherit forkCount from parent for parallel execution -->
+              <forkCount>1</forkCount>
               <systemProperties>
                 <!-- common shared -->
               </systemProperties>

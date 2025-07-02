@@ -353,7 +353,6 @@
           <!-- Use system property if available, otherwise default value -->
           <forkCount>${test.forkCount}</forkCount>
           <!-- Enable parallel execution at method level when using multiple forks -->
-          <parallel>methods</parallel>
           <threadCount>${test.threadCount}</threadCount>
           <systemProperties>
             <!-- JUnit 5 parallel execution configuration -->
