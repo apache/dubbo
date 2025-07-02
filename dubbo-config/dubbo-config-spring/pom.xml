@@ -243,7 +243,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkCount>1</forkCount>
+          <!-- Inherit forkCount from parent configuration for parallel execution -->
         </configuration>
       </plugin>
     </plugins>

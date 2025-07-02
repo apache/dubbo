@@ -356,6 +356,23 @@
           <parallel>methods</parallel>
           <threadCount>${test.threadCount}</threadCount>
           <systemProperties>
+            <!-- JUnit 5 parallel execution configuration -->
+            <property>
+              <name>junit.jupiter.execution.parallel.enabled</name>
+              <value>true</value>
+            </property>
+            <property>
+              <name>junit.jupiter.execution.parallel.mode.default</name>
+              <value>concurrent</value>
+            </property>
+            <property>
+              <name>junit.jupiter.execution.parallel.mode.classes.default</name>
+              <value>concurrent</value>
+            </property>
+            <property>
+              <name>junit.jupiter.execution.parallel.config.strategy</name>
+              <value>dynamic</value>
+            </property>
             <!-- common shared -->
           </systemProperties>
           <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
@@ -803,7 +820,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <useSystemClassLoader>true</useSystemClassLoader>
-              <forkCount>1</forkCount>
+              <!-- Inherit forkCount from main configuration for parallel execution -->
               <systemProperties>
                 <!-- common shared -->
               </systemProperties>
