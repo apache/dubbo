@@ -31,6 +31,7 @@ import java.net.SocketAddress;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -68,8 +69,12 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
         Http3Headers pongHeader = new DefaultHttp3Headers(false);
         pongHeader.set(TRI_PING, "0");
         pongHeader.set(PseudoHeaderName.STATUS.value(), HttpStatus.OK.getStatusString());
-        ctx.write(new DefaultHttp3HeadersFrame(pongHeader));
-        ctx.close();
+        ChannelFuture future = ctx.write(new DefaultHttp3HeadersFrame(pongHeader), ctx.newPromise());
+        if (future.isDone()) {
+            ctx.close();
+        } else {
+            future.addListener((ChannelFutureListener) f -> ctx.close());
+        }
     }
 
     @Override
