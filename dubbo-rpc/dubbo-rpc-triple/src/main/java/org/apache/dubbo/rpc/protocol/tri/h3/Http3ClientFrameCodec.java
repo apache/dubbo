@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -99,9 +101,15 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             Http2HeadersFrame frame = (Http2HeadersFrame) msg;
-            ctx.write(new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), promise);
+            ChannelFuture future =
+                    ctx.write(new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), promise);
             if (frame.isEndStream()) {
-                ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                if (future.isDone()) {
+                    ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                } else {
+                    future.addListener(
+                            (ChannelFutureListener) f -> ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise));
+                }
             }
         } else if (msg instanceof Http2DataFrame) {
             Http2DataFrame frame = (Http2DataFrame) msg;

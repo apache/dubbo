@@ -97,36 +97,37 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Http2Header) {
             Http2Header headers = (Http2Header) msg;
-            ctx.write(
+            ChannelFuture future = ctx.write(
                     new DefaultHttp3HeadersFrame(((NettyHttpHeaders<Http3Headers>) headers.headers()).getHeaders()),
                     promise);
             if (headers.isEndStream()) {
-                if (promise.isDone()) {
+                if (future.isDone()) {
                     ctx.close();
                 } else {
-                    promise.addListener((ChannelFutureListener) future -> ctx.close());
+                    future.addListener((ChannelFutureListener) f -> ctx.close());
                 }
             }
         } else if (msg instanceof Http2OutputMessage) {
             Http2OutputMessage message = (Http2OutputMessage) msg;
+            ChannelFuture future = null;
             try {
                 OutputStream body = message.getBody();
                 if (body == null) {
                     Http3DataFrame frame = new DefaultHttp3DataFrame(Unpooled.EMPTY_BUFFER);
-                    ctx.write(frame, promise);
+                    future = ctx.write(frame, promise);
                     return;
                 }
                 if (body instanceof ByteBufOutputStream) {
                     Http3DataFrame frame = new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer());
-                    ctx.write(frame, promise);
+                    future = ctx.write(frame, promise);
                     return;
                 }
             } finally {
                 if (message.isEndStream()) {
-                    if (promise.isDone()) {
+                    if (future == null || future.isDone()) {
                         ctx.close();
                     } else {
-                        promise.addListener((ChannelFutureListener) future -> ctx.close());
+                        future.addListener((ChannelFutureListener) f -> ctx.close());
                     }
                 }
             }

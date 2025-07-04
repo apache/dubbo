@@ -408,7 +408,7 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                     cancel(INTERNAL_ERROR, cause);
                 }
                 if (monitor.isOverFlowControl()) {
-                    // Let client continue receiving the pending bytes.
+                    // Let receiver continue receiving the pending bytes.
                     logger.warn("TotalPendingBytes size overflow for stream: " + this.stream().id());
                 }
             }
