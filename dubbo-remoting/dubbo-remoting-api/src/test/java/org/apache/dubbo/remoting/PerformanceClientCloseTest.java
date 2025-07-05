@@ -36,7 +36,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEF
  * The test class will report abnormal thread pool, because the judgment on the thread pool concurrency problems produced in DefaultChannelHandler (connected event has been executed asynchronously, judgment, then closed the thread pool, thread pool and execution error, this problem can be specified through the Constants.CHANNEL_HANDLER_KEY=connection.)
  */
 class PerformanceClientCloseTest {
-    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(PerformanceClientCloseTest.class);
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(PerformanceClientCloseTest.class);
