@@ -35,6 +35,6 @@ class TLadderTest {
                 + System.lineSeparator() + "      `-4"
                 + System.lineSeparator();
         assertThat(result, equalTo(expected));
-        System.out.println(result);
+//        System.out.println(result);
     }
 }

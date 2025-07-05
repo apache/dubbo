@@ -40,7 +40,7 @@ class DestinationRuleTest {
                 this.getClass().getClassLoader().getResourceAsStream("DestinationRuleTest.yaml"),
                 DestinationRule.class);
 
-        System.out.println(destinationRule);
+//        System.out.println(destinationRule);
 
         //        apiVersion: service.dubbo.apache.org/v1alpha1
         //        kind: DestinationRule
@@ -102,11 +102,11 @@ class DestinationRuleTest {
             Map resultMap = (Map) result;
             if (resultMap.get("kind").equals(DESTINATION_RULE_KEY)) {
                 DestinationRule destinationRule = yaml2.loadAs(yaml2.dump(result), DestinationRule.class);
-                System.out.println(destinationRule);
+//                System.out.println(destinationRule);
                 assertNotNull(destinationRule);
             } else if (resultMap.get(KIND_KEY).equals(VIRTUAL_SERVICE_KEY)) {
                 VirtualServiceRule virtualServiceRule = yaml2.loadAs(yaml2.dump(result), VirtualServiceRule.class);
-                System.out.println(virtualServiceRule);
+//                System.out.println(virtualServiceRule);
                 assertNotNull(virtualServiceRule);
             }
         }

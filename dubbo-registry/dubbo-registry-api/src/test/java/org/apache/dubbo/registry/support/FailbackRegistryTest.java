@@ -109,7 +109,7 @@ class FailbackRegistryTest {
         registry.setBad(false);
 
         for (int i = 0; i < tryTimes; i++) {
-            System.out.println("failback registry retry ,times:" + i);
+//            System.out.println("failback registry retry ,times:" + i);
             if (latch.getCount() == 0) break;
             Thread.sleep(sleepTime);
         }
@@ -137,7 +137,7 @@ class FailbackRegistryTest {
         registry.setBad(false);
 
         for (int i = 0; i < tryTimes; i++) {
-            System.out.println("failback registry retry ,times:" + i);
+//            System.out.println("failback registry retry ,times:" + i);
             if (latch.getCount() == 0) break;
             Thread.sleep(sleepTime);
         }

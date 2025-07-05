@@ -57,7 +57,7 @@ class SerializingExecutorTest {
             final int index = i;
             serializingExecutor.execute(() -> {
                 if (!semaphore.tryAcquire()) {
-                    System.out.println("Concurrency");
+//                    System.out.println("Concurrency");
                     failed.set(true);
                 }
                 try {
@@ -68,7 +68,7 @@ class SerializingExecutorTest {
                 int num = map.get("val");
                 map.put("val", num + 1);
                 if (num != index) {
-                    System.out.println("Index error. Excepted :" + index + " but actual: " + num);
+//                    System.out.println("Index error. Excepted :" + index + " but actual: " + num);
                     failed.set(true);
                 }
                 semaphore.release();

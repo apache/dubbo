@@ -82,7 +82,7 @@ class HeartbeatHandlerTest {
         serverURL = serverURL.setScopeModel(applicationModel);
         TestHeartbeatHandler handler = new TestHeartbeatHandler(connect, disconnect);
         server = Exchangers.bind(serverURL, handler);
-        System.out.println("Server bind successfully");
+//        System.out.println("Server bind successfully");
 
         FakeChannelHandlers.setTestingChannelHandlers();
         serverURL = serverURL.removeParameter(Constants.HEARTBEAT_KEY);
@@ -95,7 +95,7 @@ class HeartbeatHandlerTest {
         client = Exchangers.connect(serverURL);
         disconnect.await();
         Assertions.assertTrue(handler.disconnectCount > 0);
-        System.out.println("disconnect count " + handler.disconnectCount);
+//        System.out.println("disconnect count " + handler.disconnectCount);
     }
 
     @Test
@@ -114,12 +114,12 @@ class HeartbeatHandlerTest {
         CountDownLatch disconnect = new CountDownLatch(1);
         TestHeartbeatHandler handler = new TestHeartbeatHandler(connect, disconnect);
         server = Exchangers.bind(serverURL, handler);
-        System.out.println("Server bind successfully");
+//        System.out.println("Server bind successfully");
 
         client = Exchangers.connect(serverURL);
         connect.await();
-        System.err.println("++++++++++++++ disconnect count " + handler.disconnectCount);
-        System.err.println("++++++++++++++ connect count " + handler.connectCount);
+//        System.err.println("++++++++++++++ disconnect count " + handler.disconnectCount);
+//        System.err.println("++++++++++++++ connect count " + handler.connectCount);
         Assertions.assertEquals(0, handler.disconnectCount);
         Assertions.assertEquals(1, handler.connectCount);
     }
@@ -147,7 +147,7 @@ class HeartbeatHandlerTest {
         client = Exchangers.connect(serverURL);
         connect.await();
         Assertions.assertTrue(handler.connectCount > 0);
-        System.out.println("connect count " + handler.connectCount);
+//        System.out.println("connect count " + handler.connectCount);
     }
 
     class TestHeartbeatHandler implements ExchangeHandler {

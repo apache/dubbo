@@ -20,6 +20,8 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 
@@ -31,6 +33,7 @@ import org.springframework.context.annotation.PropertySource;
 @EnableDubboConfig
 @PropertySource("classpath:/META-INF/service-introspection/zookeeper-dubbb-consumer.properties")
 public class ZookeeperDubboSpringConsumerBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperDubboSpringConsumerBootstrap.class);
 
     @DubboReference(services = "${dubbo.provider.name},${dubbo.provider.name1},${dubbo.provider.name2}")
     private DemoService demoService;
@@ -42,7 +45,7 @@ public class ZookeeperDubboSpringConsumerBootstrap {
         ZookeeperDubboSpringConsumerBootstrap bootstrap = context.getBean(ZookeeperDubboSpringConsumerBootstrap.class);
 
         for (int i = 0; i < 100; i++) {
-            System.out.println(bootstrap.demoService.sayName("Hello"));
+            logger.info(bootstrap.demoService.sayName("Hello"));
             Thread.sleep(1000L);
         }
 

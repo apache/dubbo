@@ -130,7 +130,7 @@ class TripleHttp3ProtocolTest {
         protocol.destroy();
         // resource recycle.
         serviceRepository.destroy();
-        System.out.println("serviceRepository destroyed");
+//        System.out.println("serviceRepository destroyed");
     }
 
     private static String getAbsolutePath(String resourcePath) throws Exception {

@@ -37,11 +37,14 @@ import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class ZKTools {
+    private static final Logger logger = LoggerFactory.getLogger(ZKTools.class);
     private static CuratorFramework client;
     private static ExecutorService executor =
             Executors.newFixedThreadPool(1, new NamedThreadFactory("ZKTools-test", true));
@@ -56,8 +59,8 @@ public class ZKTools {
                         new CuratorListener() {
                             @Override
                             public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
-                                System.out.println("event notification: " + event.getPath());
-                                System.out.println(event);
+                                logger.info("event notification: {}", event.getPath());
+                                logger.info(String.valueOf(event));
                             }
                         },
                         executor);
@@ -244,11 +247,11 @@ public class ZKTools {
                 .getListenable()
                 .addListener(
                         (zkClient, event) -> {
-                            System.out.println(event.getData().getPath());
+                            logger.info(event.getData().getPath());
                         },
                         Executors.newFixedThreadPool(1));
         List<ChildData> dataList = pathChildrenCache.getCurrentData();
-        dataList.stream().map(ChildData::getPath).forEach(System.out::println);
+        dataList.stream().map(ChildData::getPath).forEach(logger::info);
     }
 
     public static void testTreeCache() throws Exception {
@@ -272,7 +275,7 @@ public class ZKTools {
                     latch.countDown();
                 }
 
-                System.out.println(data.getPath() + "\n");
+                logger.info("{}\n", data.getPath());
 
                 if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
@@ -287,17 +290,17 @@ public class ZKTools {
                         case NODE_ADDED:
                             added = new HashMap<>(1);
                             added.put(pathToKey(data.getPath()), stringValue);
-                            added.forEach((k, v) -> System.out.println(k + "  " + v));
+                            added.forEach((k, v) -> logger.info("{}  {}", k, v));
                             break;
                         case NODE_REMOVED:
                             deleted = new HashMap<>(1);
                             deleted.put(pathToKey(data.getPath()), stringValue);
-                            deleted.forEach((k, v) -> System.out.println(k + "  " + v));
+                            deleted.forEach((k, v) -> logger.info("{}  {}", k, v));
                             break;
                         case NODE_UPDATED:
                             changed = new HashMap<>(1);
                             changed.put(pathToKey(data.getPath()), stringValue);
-                            changed.forEach((k, v) -> System.out.println(k + "  " + v));
+                            changed.forEach((k, v) -> logger.info("{}  {}", k, v));
                     }
                 }
             }
@@ -327,7 +330,7 @@ public class ZKTools {
         client.start();
 
         List<String> children = client.getChildren().forPath("/dubbo/config");
-        children.forEach(System.out::println);
+        children.forEach(logger::info);
         /*
 
                 client.getCuratorListenable().addListener(new CuratorListener() {

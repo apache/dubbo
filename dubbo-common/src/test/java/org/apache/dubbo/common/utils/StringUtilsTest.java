@@ -247,8 +247,6 @@ class StringUtilsTest {
         assertEquals(0, StringUtils.split("", 'a').length);
         assertEquals(0, StringUtils.split(null, 'a').length);
 
-        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", ':')));
-        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", 'o')));
     }
 
     @Test

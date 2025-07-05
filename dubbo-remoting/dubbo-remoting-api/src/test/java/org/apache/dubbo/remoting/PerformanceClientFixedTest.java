@@ -66,29 +66,29 @@ class PerformanceClientFixedTest {
         String messageBlock = null;
         int s = 0;
         int f = 0;
-        System.out.println("initialize arrays " + url);
+        logger.info("initialize arrays " + url);
         while (s < connectionCount) {
             ExchangeClient client = null;
             try {
-                System.out.println("open connection " + s + " " + url + arrays.size());
+                logger.info("open connection " + s + " " + url + arrays.size());
 
                 client = Exchangers.connect(url);
 
-                System.out.println("run after open");
+                logger.info("run after open");
 
                 if (client.isConnected()) {
                     arrays.add(client);
                     s++;
-                    System.out.println("open client success " + s);
+                    logger.info("open client success " + s);
                 } else {
-                    System.out.println("open client failed, try again.");
+                    logger.info("open client failed, try again.");
                 }
             } catch (Throwable t) {
                 t.printStackTrace();
             } finally {
                 if (client != null && !client.isConnected()) {
                     f++;
-                    System.out.println("open client failed, try again " + f);
+                    logger.info("open client failed, try again " + f);
                     client.close();
                 }
             }
@@ -122,7 +122,7 @@ class PerformanceClientFixedTest {
                     }
                     messageBlock = sb.toString();
 
-                    System.out.println("set messageBlock to " + messageBlock);
+                    logger.info("set messageBlock to " + messageBlock);
                 }
                 int index = rd.nextInt(connectionCount);
                 ExchangeClient client = arrays.get(index);
@@ -130,10 +130,10 @@ class PerformanceClientFixedTest {
                 String output = (String) client.request(messageBlock).get();
 
                 if (output.lastIndexOf(messageBlock) < 0) {
-                    System.out.println("send messageBlock;get " + output);
+                    logger.info("send messageBlock;get " + output);
                     throw new Throwable("return results invalid");
                 } else {
-                    if (j % 100 == 0) System.out.println("OK: " + j);
+                    if (j % 100 == 0) logger.info("OK: " + j);
                 }
             } catch (Throwable t) {
                 t.printStackTrace();

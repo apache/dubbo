@@ -42,8 +42,10 @@ import static org.apache.dubbo.rpc.Constants.INVOCATION_KEY;
  *  {@code
  *   Public class AsyncRpcResult implements CompletionStage<AppResponse> {
  *       ......
+ *   }
  *  }
- * </pre>
+ *  </pre>
+ * </p>
  * AsyncRpcResult is a future representing an unfinished RPC call, while AppResponse is the actual return type of this call.
  * In theory, AppResponse doesn't have to implement the {@link Result} interface, this is done mainly for compatibility purpose.
  *

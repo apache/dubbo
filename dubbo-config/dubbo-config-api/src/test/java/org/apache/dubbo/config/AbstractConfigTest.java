@@ -925,7 +925,7 @@ class AbstractConfigTest {
                     metaData.size(),
                     "Expect empty metadata for new instance but found: " + metaData + " of "
                             + configClass.getSimpleName());
-            System.out.println(configClass.getSimpleName() + " metadata is checked.");
+//            System.out.println(configClass.getSimpleName() + " metadata is checked.");
         }
     }
 

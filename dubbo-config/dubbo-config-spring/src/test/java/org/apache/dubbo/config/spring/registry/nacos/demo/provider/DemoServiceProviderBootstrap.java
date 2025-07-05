@@ -34,7 +34,7 @@ public class DemoServiceProviderBootstrap {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(DemoServiceProviderBootstrap.class);
         context.refresh();
-        System.out.println("DemoService provider is starting...");
+//        System.out.println("DemoService provider is starting...");
         System.in.read();
     }
 }

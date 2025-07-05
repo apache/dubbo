@@ -39,6 +39,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.SystemProperty.SYSTEM_OS_NAME;
@@ -47,6 +49,8 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AbortPolicyWithReportTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbortPolicyWithReportTest.class);
     @BeforeEach
     public void setUp() {
         AbortPolicyWithReport.lastPrintTime = 0;
@@ -68,7 +72,7 @@ class AbortPolicyWithReportTest {
         AbortPolicyWithReport.lastPrintTime = 0;
         Assertions.assertThrows(RejectedExecutionException.class, () -> {
             abortPolicyWithReport.rejectedExecution(
-                    () -> System.out.println("hello"), (ThreadPoolExecutor) executorService);
+                    () -> logger.debug("hello"), (ThreadPoolExecutor) executorService);
         });
 
         await().until(() -> AbortPolicyWithReport.guard.availablePermits() == 1);
@@ -123,8 +127,8 @@ class AbortPolicyWithReportTest {
             }
         });
 
-        System.out.printf(
-                "jStackCount: %d, finishedCount: %d, failureCount: %d, timeoutCount: %d %n",
+        logger.info(
+                "jStackCount: {}, finishedCount: {}, failureCount: {}, timeoutCount: {}",
                 jStackCount.get(), finishedCount.get(), failureCount.get(), timeoutCount.get());
         Assertions.assertEquals(
                 runTimes, finishedCount.get() + failureCount.get(), "all the test thread should be run completely");

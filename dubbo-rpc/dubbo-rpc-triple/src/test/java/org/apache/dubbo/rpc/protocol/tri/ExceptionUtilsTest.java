@@ -136,6 +136,6 @@ class ExceptionUtilsTest {
         protocol.destroy();
         // resource recycle.
         serviceRepository.destroy();
-        System.out.println("serviceRepository destroyed");
+//        System.out.println("serviceRepository destroyed");
     }
 }

@@ -34,7 +34,7 @@ class TTableTest {
                 + System.lineSeparator() + "+-+---+---+----+"
                 + System.lineSeparator();
         assertThat(result, equalTo(expected));
-        System.out.println(result);
+//        System.out.println(result);
     }
 
     @Test
@@ -50,6 +50,6 @@ class TTableTest {
                 + System.lineSeparator() + "+-+----------+----------+"
                 + System.lineSeparator();
         assertThat(result, equalTo(expected));
-        System.out.println(result);
+//        System.out.println(result);
     }
 }

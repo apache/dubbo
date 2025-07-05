@@ -19,6 +19,9 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.apache.dubbo.common.constants.CommonConstants.COMPOSITE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
@@ -29,6 +32,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGIST
  * @since 2.7.5
  */
 public class ZookeeperDubboServiceConsumerBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperDubboServiceConsumerBootstrap.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -50,8 +54,8 @@ public class ZookeeperDubboServiceConsumerBootstrap {
 
         for (int i = 0; i < 5; i++) {
             Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
-            System.out.println(userService.getUser(i * 1L));
+            logger.info(echoService.echo("Hello,World"));
+            logger.info(String.valueOf(userService.getUser(i * 1L)));
         }
 
         bootstrap.stop();

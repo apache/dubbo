@@ -113,12 +113,12 @@ class ChannelHandlerTest {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
-            System.out.println("connected event,channel;" + channel);
+            logger.info("connected event,channel;" + channel);
         }
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
-            System.out.println("disconnected event,channel;" + channel);
+            logger.info("disconnected event,channel;" + channel);
             initClient(url);
         }
 

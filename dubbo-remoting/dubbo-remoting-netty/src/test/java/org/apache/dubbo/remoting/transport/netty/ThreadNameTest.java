@@ -32,10 +32,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
 class ThreadNameTest {
+    private static final Logger logger = LoggerFactory.getLogger(ThreadNameTest.class);
 
     private NettyServer server;
     private NettyClient client;
@@ -119,8 +122,7 @@ class ThreadNameTest {
         }
 
         private void output(String method) {
-            System.out.println(
-                    Thread.currentThread().getName() + " " + (client ? "client " + method : "server " + method));
+            logger.info("{} {}", Thread.currentThread().getName(), client ? "client " + method : "server " + method);
         }
 
         @Override

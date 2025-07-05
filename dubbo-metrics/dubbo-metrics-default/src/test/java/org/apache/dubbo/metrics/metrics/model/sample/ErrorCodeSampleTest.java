@@ -69,7 +69,7 @@ public class ErrorCodeSampleTest {
         samples.forEach(metricSample -> Assert.assertTrue(
                 ((AtomicLong) ((CounterMetricSample<?>) metricSample).getValue()).get() == 2L, "Sample count error."));
 
-        System.out.println(samples);
+//        System.out.println(samples);
     }
 
     @AfterEach

@@ -113,7 +113,7 @@ public class ConditionStateRouterTestV31 {
         Assertions.assertEquals(rule.getConditions().size(), 2);
         Assertions.assertEquals(rule.getConditions().get(0).getTo().size(), 3);
         Assertions.assertEquals(rule.getConditions().get(1).getTo().size(), 1);
-        System.out.println("rule.getConditions() = " + rule.getConditions());
+//        System.out.println("rule.getConditions() = " + rule.getConditions());
     }
 
     @Test
@@ -451,7 +451,7 @@ public class ConditionStateRouterTestV31 {
 
             actualDistribution.put(result.size(), actualDistribution.getOrDefault(result.size(), 0) + 1);
         }
-        System.out.println("actualDistribution = " + actualDistribution);
+//        System.out.println("actualDistribution = " + actualDistribution);
         int sum = 0;
         for (Map.Entry<Integer, Integer> entry : actualDistribution.entrySet()) {
             sum += entry.getValue();
