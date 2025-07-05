@@ -905,7 +905,7 @@ class MockClusterInvokerTest {
         }
 
         public void sayHello() {
-            logger.info("hello prety");
+            logger.info("hello prety");      
         }
     }
 
