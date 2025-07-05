@@ -35,9 +35,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MultiThreadTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(MultiThreadTest.class);
     private Protocol protocol =
             ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy =
@@ -77,7 +80,7 @@ class MultiThreadTest {
             exec.execute(new Runnable() {
                 public void run() {
                     for (int i = 0; i < 30; i++) {
-                        System.out.println(fi + ":" + counter.getAndIncrement());
+                        logger.info("{}:{}", fi, counter.getAndIncrement());
                         Assertions.assertEquals(service.echo(sb.toString()), sb.toString());
                     }
                 }

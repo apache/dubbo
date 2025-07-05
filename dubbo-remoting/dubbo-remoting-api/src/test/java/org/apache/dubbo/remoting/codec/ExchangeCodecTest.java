@@ -250,7 +250,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Response obj = (Response) decode(request);
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
-        System.out.println(obj);
 
         future.cancel();
     }
@@ -281,7 +280,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertTrue(obj.isEvent());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
         System.clearProperty("deserialization.event.size");
     }
 
@@ -299,7 +297,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertTrue(obj.isEvent());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
     }
 
     @Test
@@ -314,7 +311,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertTrue(obj.isHeartbeat());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
     }
 
     @Test
@@ -333,7 +329,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertFalse(obj.isHeartbeat());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
         System.clearProperty("deserialization.event.size");
     }
 
@@ -366,7 +361,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Response obj = (Response) decode(request);
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
-        System.out.println(obj);
 
         future.cancel();
     }
@@ -383,7 +377,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Response obj = (Response) decode(request);
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
-        System.out.println(obj);
 
         future.cancel();
     }

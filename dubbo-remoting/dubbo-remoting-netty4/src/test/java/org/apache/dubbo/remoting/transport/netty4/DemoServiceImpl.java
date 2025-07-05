@@ -16,12 +16,17 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * <code>TestServiceImpl</code>
  */
 public class DemoServiceImpl implements DemoService {
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+
     public void sayHello(String name) {
-        System.out.println("hello " + name);
+        logger.info("hello {}", name);
     }
 
     public int plus(int a, int b) {

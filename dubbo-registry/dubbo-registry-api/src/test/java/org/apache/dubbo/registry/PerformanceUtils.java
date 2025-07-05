@@ -82,7 +82,6 @@ public class PerformanceUtils {
         for (int i = 0; i < WIDTH; i++) {
             pad.append('-');
         }
-        System.out.println("+" + pad + "+");
     }
 
     public static void printBorder() {
@@ -90,7 +89,6 @@ public class PerformanceUtils {
         for (int i = 0; i < WIDTH; i++) {
             pad.append('=');
         }
-        System.out.println("+" + pad + "+");
     }
 
     public static void printBody(String msg) {
@@ -101,7 +99,6 @@ public class PerformanceUtils {
                 pad.append(' ');
             }
         }
-        System.out.println("| " + msg + pad + "|");
     }
 
     public static void printHeader(String msg) {
@@ -113,7 +110,6 @@ public class PerformanceUtils {
                 pad.append(' ');
             }
         }
-        System.out.println("|" + pad + msg + pad + ((len % 2 == 0) ? "" : " ") + "|");
     }
 
     public static NetworkInterface getNetworkInterface() {

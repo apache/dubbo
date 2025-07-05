@@ -34,6 +34,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // FIXME: waiting for embedded Nacos suport, then we can open the switch.
 @Disabled("https://github.com/alibaba/nacos/issues/1188")
 class NacosDynamicConfigurationTest {
+    private static final Logger logger = LoggerFactory.getLogger(NacosDynamicConfigurationTest.class);
     private static final String SESSION_TIMEOUT_KEY = "session";
 
     private static NacosDynamicConfiguration config;
@@ -126,7 +129,7 @@ class NacosDynamicConfigurationTest {
         try {
             nacosClient.publishConfig(key, group, value);
         } catch (Exception e) {
-            System.out.println("Error put value to nacos.");
+            logger.error("Error put value to nacos.");
         }
     }
 
@@ -168,7 +171,7 @@ class NacosDynamicConfigurationTest {
 
         @Override
         public void process(ConfigChangedEvent event) {
-            System.out.println(this + ": " + event);
+            logger.info("{}: {}", this, event);
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> 0);
             countMap.put(event.getKey(), ++count);
             value = event.getContent();

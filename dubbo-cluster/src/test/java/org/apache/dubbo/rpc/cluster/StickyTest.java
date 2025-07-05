@@ -71,7 +71,6 @@ class StickyTest {
     @Test
     void testStickyNoCheck() {
         int count = testSticky("t1", false);
-        System.out.println(count);
         Assertions.assertTrue(count > 0 && count <= runs);
     }
 
@@ -84,7 +83,6 @@ class StickyTest {
     @Test
     void testMethodStickyNoCheck() {
         int count = testSticky("method1", false);
-        System.out.println(count);
         Assertions.assertTrue(count > 0 && count <= runs);
     }
 

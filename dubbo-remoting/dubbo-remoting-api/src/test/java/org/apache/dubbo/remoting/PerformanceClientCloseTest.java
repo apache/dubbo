@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -35,6 +36,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEF
  * The test class will report abnormal thread pool, because the judgment on the thread pool concurrency problems produced in DefaultChannelHandler (connected event has been executed asynchronously, judgment, then closed the thread pool, thread pool and execution error, this problem can be specified through the Constants.CHANNEL_HANDLER_KEY=connection.)
  */
 class PerformanceClientCloseTest {
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(PerformanceClientCloseTest.class);
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(PerformanceClientCloseTest.class);
@@ -72,12 +74,12 @@ class PerformanceClientCloseTest {
                                     client = Exchangers.connect(url);
                                     int c = count.incrementAndGet();
                                     if (c % 100 == 0) {
-                                        System.out.println("count: " + count.get() + ", error: " + error.get());
+                                        logger.info("count: {}, error: {}", count.get(), error.get());
                                     }
                                 } catch (Exception e) {
                                     error.incrementAndGet();
                                     e.printStackTrace();
-                                    System.out.println("count: " + count.get() + ", error: " + error.get());
+                                    logger.info("count: {}, error: {}", count.get(), error.get());
                                     if ("exit".equals(onerror)) {
                                         System.exit(-1);
                                     } else if ("break".equals(onerror)) {

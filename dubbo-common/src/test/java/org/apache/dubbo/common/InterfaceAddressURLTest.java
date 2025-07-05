@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class InterfaceAddressURLTest {
@@ -108,12 +109,12 @@ class InterfaceAddressURLTest {
     @Test
     void testToString() {
         URL url1 = URL.valueOf(rawURL);
-        System.out.println(url1.toString());
+        assertNotNull(url1.toString());
         ServiceAddressURL withConsumer =
                 new DubboServiceAddressURL(url1.getUrlAddress(), url1.getUrlParam(), consumerURL, null);
-        System.out.println(withConsumer.toString());
+        assertNotNull(withConsumer.toString());
         ServiceAddressURL withOverride2 = new DubboServiceAddressURL(
                 url1.getUrlAddress(), url1.getUrlParam(), consumerURL, (ServiceConfigURL) overrideURL);
-        System.out.println(withOverride2.toString());
+        assertNotNull(withOverride2.toString());
     }
 }

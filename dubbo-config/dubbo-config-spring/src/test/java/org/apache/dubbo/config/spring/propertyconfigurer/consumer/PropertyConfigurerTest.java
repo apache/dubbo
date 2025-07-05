@@ -61,7 +61,6 @@ class PropertyConfigurerTest {
 
             HelloService service = (HelloService) context.getBean("demoService");
             String result = service.sayHello("world");
-            System.out.println("result: " + result);
             Assertions.assertEquals(
                     "Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0),
                     result);

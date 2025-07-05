@@ -41,11 +41,14 @@ import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 class MockClusterInvokerTest {
+    private static final Logger logger = LoggerFactory.getLogger(MockClusterInvokerTest.class);
 
     List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();
 
@@ -646,7 +649,6 @@ class MockClusterInvokerTest {
         invocation.setMethodName("getUsers");
         Result ret = cluster.invoke(invocation);
         List<User> rl = (List<User>) ret.getValue();
-        System.out.println(rl);
         Assertions.assertEquals(2, rl.size());
         Assertions.assertEquals("hi1", rl.get(0).getName());
     }
@@ -851,7 +853,7 @@ class MockClusterInvokerTest {
         }
 
         public void sayHello() {
-            System.out.println("hello pretty");
+            logger.info("hello prety");
         }
     }
 
@@ -902,7 +904,7 @@ class MockClusterInvokerTest {
         }
 
         public void sayHello() {
-            System.out.println("hello pretty");
+            logger.info("hello prety");
         }
     }
 
