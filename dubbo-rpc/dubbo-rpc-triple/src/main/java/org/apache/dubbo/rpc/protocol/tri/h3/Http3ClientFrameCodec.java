@@ -101,16 +101,18 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             Http2HeadersFrame frame = (Http2HeadersFrame) msg;
-            ChannelFuture future =
-                    ctx.write(new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), promise);
             if (frame.isEndStream()) {
+                ChannelFuture future = ctx.write(
+                        new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), ctx.newPromise());
                 if (future.isDone()) {
                     ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
                 } else {
                     future.addListener(
                             (ChannelFutureListener) f -> ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise));
                 }
+                return;
             }
+            ctx.write(new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), promise);
         } else if (msg instanceof Http2DataFrame) {
             Http2DataFrame frame = (Http2DataFrame) msg;
             if (frame.isEndStream()) {
