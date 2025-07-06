@@ -30,7 +30,6 @@ import java.net.SocketAddress;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -97,41 +96,43 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Http2Header) {
             Http2Header headers = (Http2Header) msg;
-            ChannelFuture future = ctx.write(
+            if (headers.isEndStream()) {
+                ChannelFuture future = ctx.write(
+                        new DefaultHttp3HeadersFrame(((NettyHttpHeaders<Http3Headers>) headers.headers()).getHeaders()),
+                        ctx.newPromise());
+                if (future.isDone()) {
+                    ctx.close(promise);
+                } else {
+                    future.addListener((ChannelFutureListener) f -> ctx.close(promise));
+                }
+                return;
+            }
+            ctx.write(
                     new DefaultHttp3HeadersFrame(((NettyHttpHeaders<Http3Headers>) headers.headers()).getHeaders()),
                     promise);
-            if (headers.isEndStream()) {
-                if (future.isDone()) {
-                    ctx.close();
-                } else {
-                    future.addListener((ChannelFutureListener) f -> ctx.close());
-                }
-            }
         } else if (msg instanceof Http2OutputMessage) {
             Http2OutputMessage message = (Http2OutputMessage) msg;
-            ChannelFuture future = null;
-            try {
-                OutputStream body = message.getBody();
+            OutputStream body = message.getBody();
+            assert body instanceof ByteBufOutputStream || body == null;
+            if (message.isEndStream()) {
                 if (body == null) {
-                    Http3DataFrame frame = new DefaultHttp3DataFrame(Unpooled.EMPTY_BUFFER);
-                    future = ctx.write(frame, promise);
+                    ctx.close(promise);
                     return;
                 }
-                if (body instanceof ByteBufOutputStream) {
-                    Http3DataFrame frame = new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer());
-                    future = ctx.write(frame, promise);
-                    return;
+                ChannelFuture future =
+                        ctx.write(new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer()), ctx.newPromise());
+                if (future.isDone()) {
+                    ctx.close(promise);
+                } else {
+                    future.addListener((ChannelFutureListener) f -> ctx.close(promise));
                 }
-            } finally {
-                if (message.isEndStream()) {
-                    if (future == null || future.isDone()) {
-                        ctx.close();
-                    } else {
-                        future.addListener((ChannelFutureListener) f -> ctx.close());
-                    }
-                }
+                return;
             }
-            throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
+            if (body == null) {
+                promise.trySuccess();
+                return;
+            }
+            ctx.write(new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer()), promise);
         } else {
             ctx.write(msg, promise);
         }

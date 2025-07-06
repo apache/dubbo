@@ -116,7 +116,21 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
         } else if (msg instanceof Http2DataFrame) {
             Http2DataFrame frame = (Http2DataFrame) msg;
             if (frame.isEndStream()) {
-                ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                if (Unpooled.EMPTY_BUFFER.equals(frame.content())) {
+                    ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                    return;
+                }
+                ChannelFuture future = ctx.write(new DefaultHttp3DataFrame(frame.content()), ctx.newPromise());
+                if (future.isDone()) {
+                    ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                } else {
+                    future.addListener(
+                            (ChannelFutureListener) f -> ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise));
+                }
+                return;
+            }
+            if (Unpooled.EMPTY_BUFFER.equals(frame.content())) {
+                promise.trySuccess();
                 return;
             }
             ctx.write(new DefaultHttp3DataFrame(frame.content()), promise);
