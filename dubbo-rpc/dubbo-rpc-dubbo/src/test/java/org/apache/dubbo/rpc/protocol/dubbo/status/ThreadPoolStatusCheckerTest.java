@@ -35,8 +35,11 @@ class ThreadPoolStatusCheckerTest {
 
     @Test
     void test() {
-        DataStore dataStore =
-                ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+
+        // Clear any existing executors to avoid interference from other tests
+        dataStore.get(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY).clear();
+
         ExecutorService executorService1 = Executors.newFixedThreadPool(1);
         ExecutorService executorService2 = Executors.newFixedThreadPool(10);
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888", executorService1);
@@ -45,10 +48,21 @@ class ThreadPoolStatusCheckerTest {
         ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker(ApplicationModel.defaultModel());
         Status status = threadPoolStatusChecker.check();
         Assertions.assertEquals(status.getLevel(), Status.Level.WARN);
-        Assertions.assertEquals(
-                status.getMessage(),
-                "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888;"
-                        + "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889");
+
+        // Check that the status message contains the expected pool information
+        // Since Map iteration order is not guaranteed, we check for both possible orders
+        String message = status.getMessage();
+        String expectedPool8888 = "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888";
+        String expectedPool8889 = "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889";
+
+        Assertions.assertTrue(message.contains(expectedPool8888),
+                "Status message should contain pool 8888 info: " + message);
+        Assertions.assertTrue(message.contains(expectedPool8889),
+                "Status message should contain pool 8889 info: " + message);
+
+        // Verify the message contains exactly 2 pools (no interference from other tests)
+        long poolCount = message.chars().filter(ch -> ch == ';').count() + 1;
+        Assertions.assertEquals(2, poolCount, "Should have exactly 2 pools, but got: " + message);
 
         // reset
         executorService1.shutdown();
