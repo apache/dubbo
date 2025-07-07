@@ -158,8 +158,13 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
                         header.set(PseudoHeaderName.SCHEME.value(), HttpConstants.HTTPS);
                         header.set(Constants.TRI_PING, "0");
 
-                        streamChannel.write(new DefaultHttp3HeadersFrame(header));
-                        streamChannel.shutdownOutput();
+                        ChannelFuture pingSentFuture =
+                                streamChannel.write(new DefaultHttp3HeadersFrame(header), streamChannel.newPromise());
+                        if (pingSentFuture.isDone()) {
+                            streamChannel.shutdownOutput();
+                        } else {
+                            pingSentFuture.addListener((ChannelFutureListener) f -> streamChannel.shutdownOutput());
+                        }
                     } else {
                         LOGGER.warn(TRANSPORT_FAILED_RECONNECT, "Failed to send ping frame", future.cause());
                     }
