@@ -35,7 +35,8 @@ class ThreadPoolStatusCheckerTest {
 
     @Test
     void test() {
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore =
+                ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
 
         // Clear any existing executors to avoid interference from other tests
         dataStore.get(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY).clear();
@@ -55,10 +56,10 @@ class ThreadPoolStatusCheckerTest {
         String expectedPool8888 = "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888";
         String expectedPool8889 = "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889";
 
-        Assertions.assertTrue(message.contains(expectedPool8888),
-                "Status message should contain pool 8888 info: " + message);
-        Assertions.assertTrue(message.contains(expectedPool8889),
-                "Status message should contain pool 8889 info: " + message);
+        Assertions.assertTrue(
+                message.contains(expectedPool8888), "Status message should contain pool 8888 info: " + message);
+        Assertions.assertTrue(
+                message.contains(expectedPool8889), "Status message should contain pool 8889 info: " + message);
 
         // Verify the message contains exactly 2 pools (no interference from other tests)
         long poolCount = message.chars().filter(ch -> ch == ';').count() + 1;
