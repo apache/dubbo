@@ -22,10 +22,13 @@ import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,13 +36,33 @@ import org.junit.jupiter.api.Test;
  */
 class ThreadPoolStatusCheckerTest {
 
+    private DataStore dataStore;
+
+    @BeforeEach
+    void setUp() {
+        dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        clearExecutors();
+    }
+
+    @AfterEach
+    void tearDown() {
+        clearExecutors();
+    }
+
+    private void clearExecutors() {
+        // Clear any existing executors to avoid interference from other tests
+        Map<String, Object> executorMap = dataStore.get(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        // Shutdown any existing executors before clearing
+        for (Object executor : executorMap.values()) {
+            if (executor instanceof ExecutorService) {
+                ((ExecutorService) executor).shutdown();
+            }
+        }
+        executorMap.clear();
+    }
+
     @Test
     void test() {
-        DataStore dataStore =
-                ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-
-        // Clear any existing executors to avoid interference from other tests
-        dataStore.get(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY).clear();
 
         ExecutorService executorService1 = Executors.newFixedThreadPool(1);
         ExecutorService executorService2 = Executors.newFixedThreadPool(10);
@@ -65,10 +88,8 @@ class ThreadPoolStatusCheckerTest {
         long poolCount = message.chars().filter(ch -> ch == ';').count() + 1;
         Assertions.assertEquals(2, poolCount, "Should have exactly 2 pools, but got: " + message);
 
-        // reset
+        // Shutdown the test executors (tearDown will handle cleanup)
         executorService1.shutdown();
         executorService2.shutdown();
-        dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888");
-        dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889");
     }
 }
