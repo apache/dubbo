@@ -25,24 +25,31 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Sets;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * MultipleServiceDiscoveryTest
@@ -50,33 +57,53 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 public class MultipleServiceDiscoveryTest {
 
     private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;
+    private static ZookeeperConfig zookeeperConfig;
+
+    @BeforeAll
+    public static void setUp() {
+        // Initialize ZookeeperConfig which sets up system properties automatically
+        zookeeperConfig = new ZookeeperConfig();
+        zookeeperConnectionAddress1 = zookeeperConfig.getConnectionAddress1();
+        zookeeperConnectionAddress2 = zookeeperConfig.getConnectionAddress2();
+    }
 
     @Test
     public void testOnEvent() {
-        try {
+        try (MockedStatic<ServiceDiscoveryFactory> mockedFactory = mockStatic(ServiceDiscoveryFactory.class)) {
             String metadata_111 = "{\"app\":\"app1\",\"revision\":\"111\",\"services\":{"
                     + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app1\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
                     + "}}";
             MetadataInfo metadataInfo = JsonUtils.toJavaObject(metadata_111, MetadataInfo.class);
             ApplicationModel applicationModel = ApplicationModel.defaultModel();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("app2"));
-            zookeeperConnectionAddress1 =
-                    "multiple://127.0.0.1:2181?reference-registry=127.0.0.1:2181?enableEmptyProtection=false&child.a1=zookeeper://127.0.0.1:2181";
+
+            // Mock ServiceDiscoveryFactory to return mock ServiceDiscovery
+            ServiceDiscoveryFactory mockFactory = mock(ServiceDiscoveryFactory.class);
+            ServiceDiscovery mockServiceDiscovery = mock(ServiceDiscovery.class);
+            when(mockFactory.getServiceDiscovery(any(URL.class))).thenReturn(mockServiceDiscovery);
+            mockedFactory
+                    .when(() -> ServiceDiscoveryFactory.getExtension(any(URL.class)))
+                    .thenReturn(mockFactory);
+
+            // Use dynamic ZooKeeper address instead of hardcoded one
+            String multipleRegistryUrl = "multiple://127.0.0.1:2181?reference-registry="
+                    + zookeeperConnectionAddress1.replace("zookeeper://", "")
+                    + "?enableEmptyProtection=false&child.a1="
+                    + zookeeperConnectionAddress1;
+
             List<Object> urlsSameRevision = new ArrayList<>();
             urlsSameRevision.add("127.0.0.1:20880?revision=111");
             urlsSameRevision.add("127.0.0.2:20880?revision=111");
             urlsSameRevision.add("127.0.0.3:20880?revision=111");
-            URL url = URL.valueOf(zookeeperConnectionAddress1);
+
+            URL url = URL.valueOf(multipleRegistryUrl);
             url.setScopeModel(applicationModel);
             MultipleServiceDiscovery multipleServiceDiscovery = new MultipleServiceDiscovery(url);
-            Class<MultipleServiceDiscovery> multipleServiceDiscoveryClass = MultipleServiceDiscovery.class;
-            Field serviceDiscoveries = multipleServiceDiscoveryClass.getDeclaredField("serviceDiscoveries");
-            serviceDiscoveries.setAccessible(true);
-            ServiceDiscovery serviceDiscoveryMock = Mockito.mock(ServiceDiscovery.class);
-            Mockito.when(serviceDiscoveryMock.getRemoteMetadata(Mockito.anyString(), Mockito.anyList()))
+
+            // Mock the service discovery behavior
+            when(mockServiceDiscovery.getRemoteMetadata(Mockito.anyString(), Mockito.anyList()))
                     .thenReturn(metadataInfo);
-            serviceDiscoveries.set(
-                    multipleServiceDiscovery, Collections.singletonMap("child.a1", serviceDiscoveryMock));
+
             MultipleServiceDiscovery.MultiServiceInstancesChangedListener listener =
                     (MultipleServiceDiscovery.MultiServiceInstancesChangedListener)
                             multipleServiceDiscovery.createListener(Sets.newHashSet("app1"));
@@ -87,17 +114,17 @@ public class MultipleServiceDiscoveryTest {
                     singleServiceInstancesChangedListener, "singleServiceInstancesChangedListener can not be null");
             singleServiceInstancesChangedListener.onEvent(
                     new ServiceInstancesChangedEvent("app1", buildInstances(urlsSameRevision)));
-            Mockito.verify(serviceDiscoveryMock, Mockito.times(1))
+
+            Mockito.verify(mockServiceDiscovery, Mockito.times(1))
                     .getRemoteMetadata(Mockito.anyString(), Mockito.anyList());
+
             Field serviceUrlsField = ServiceInstancesChangedListener.class.getDeclaredField("serviceUrls");
             serviceUrlsField.setAccessible(true);
             Map<String, List<ServiceInstancesChangedListener.ProtocolServiceKeyWithUrls>> map =
                     (Map<String, List<ServiceInstancesChangedListener.ProtocolServiceKeyWithUrls>>)
                             serviceUrlsField.get(listener);
             Assert.assertTrue(!CollectionUtils.isEmptyMap(map), "url can not be empty");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
