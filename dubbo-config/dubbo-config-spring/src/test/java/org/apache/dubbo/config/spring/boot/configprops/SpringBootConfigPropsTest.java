@@ -51,7 +51,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         properties = {
             "dubbo.application.NAME = dubbo-demo-application",
             "dubbo.module.name = dubbo-demo-module",
-            "dubbo.registry.address = zookeeper://192.168.99.100:32770",
+            "dubbo.registry.address = ${zookeeper.connection.address}",
             "dubbo.protocol.name=dubbo",
             "dubbo.protocol.port=20880",
             "dubbo.metrics.protocol=prometheus",
@@ -63,7 +63,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
             "dubbo.metrics.aggregation.bucket-num=5",
             "dubbo.metrics.aggregation.time-window-seconds=120",
             "dubbo.metrics.histogram.enabled=true",
-            "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
+            "dubbo.monitor.address=${zookeeper.connection.address}",
             "dubbo.Config-center.address=${zookeeper.connection.address.1}",
             "dubbo.config-Center.group=group1",
             "dubbo.metadata-report.address=${zookeeper.connection.address.2}",
@@ -100,7 +100,7 @@ class SpringBootConfigPropsTest {
         Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
         MonitorConfig monitorConfig = configManager.getMonitor().get();
-        Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress(), monitorConfig.getAddress());
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
@@ -122,7 +122,7 @@ class SpringBootConfigPropsTest {
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         Assertions.assertEquals(1, defaultRegistries.size());
         RegistryConfig registryConfig = defaultRegistries.get(0);
-        Assertions.assertEquals("zookeeper://192.168.99.100:32770", registryConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress(), registryConfig.getAddress());
 
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());

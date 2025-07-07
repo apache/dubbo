@@ -16,27 +16,14 @@
  */
 package org.apache.dubbo.test.check.registrycenter.config;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.test.check.registrycenter.Config;
 
 /**
  * The zookeeper config in registry center.
+ * Uses dynamic port allocation to avoid conflicts in parallel testing.
  */
 public class ZookeeperConfig implements Config {
-
-    /**
-     * The system properties config key with zookeeper port.
-     */
-    private static final String ZOOKEEPER_PORT_KEY = "zookeeper.port";
-
-    /**
-     * The system properties config key with first zookeeper port.
-     */
-    private static final String ZOOKEEPER_PORT_1_KEY = "zookeeper.port.1";
-
-    /**
-     * The system properties config key with second zookeeper port.
-     */
-    private static final String ZOOKEEPER_PORT_2_KEY = "zookeeper.port.2";
 
     /**
      * The system properties config key with zookeeper connection address.
@@ -54,19 +41,9 @@ public class ZookeeperConfig implements Config {
     private static final String ZOOKEEPER_CONNECTION_ADDRESS_2_KEY = "zookeeper.connection.address.2";
 
     /**
-     * The default first client port of zookeeper.
+     * The connection address format for zookeeper.
      */
-    public static final int DEFAULT_CLIENT_PORT_1 = 2181;
-
-    /**
-     * The default second client port of zookeeper.
-     */
-    public static final int DEFAULT_CLIENT_PORT_2 = 2182;
-
-    /**
-     * The default client ports of zookeeper.
-     */
-    private static final int[] CLIENT_PORTS = new int[2];
+    private static final String CONNECTION_ADDRESS_FORMAT = "zookeeper://127.0.0.1:%d";
 
     /**
      * The default admin server ports of zookeeper.
@@ -79,56 +56,29 @@ public class ZookeeperConfig implements Config {
     private static final String DEFAULT_ZOOKEEPER_VERSION = "3.6.0";
 
     /**
-     * The format for zookeeper connection address.
+     * The default client ports of zookeeper.
+     * Uses dynamic port allocation to avoid conflicts in parallel testing.
      */
-    private static final String CONNECTION_ADDRESS_FORMAT = "zookeeper://127.0.0.1:%d";
+    private static final int[] CLIENT_PORTS = initializePorts();
 
-    // initialize the client ports of zookeeper.
-    static {
-        // There are two client ports
-
-        // The priority of the one is that get it from system properties config
-        // with the key of {@link #ZOOKEEPER_PORT_1_KEY} first, and then {@link #ZOOKEEPER_PORT_KEY},
-        // finally use {@link #DEFAULT_CLIENT_PORT_1} as default port
-
-        // The priority of the other is that get it from system properties config with the key of {@link
-        // #ZOOKEEPER_PORT_2_KEY} first,
-        // and then use {@link #DEFAULT_CLIENT_PORT_2} as default port
-
-        int port1 = DEFAULT_CLIENT_PORT_1;
-        int port2 = DEFAULT_CLIENT_PORT_2;
-        String portConfig1 = System.getProperty(ZOOKEEPER_PORT_1_KEY, System.getProperty(ZOOKEEPER_PORT_KEY));
-        if (portConfig1 != null) {
-            try {
-                port1 = Integer.parseInt(portConfig1);
-            } catch (NumberFormatException e) {
-                port1 = DEFAULT_CLIENT_PORT_1;
-            }
+    /**
+     * Initialize two different available ports for ZooKeeper instances.
+     * This is the core solution for port conflicts in parallel testing.
+     */
+    private static int[] initializePorts() {
+        int port1 = NetUtils.getAvailablePort();
+        int port2 = NetUtils.getAvailablePort();
+        // Ensure two different ports
+        while (port1 == port2) {
+            port2 = NetUtils.getAvailablePort();
         }
 
-        String portConfig2 = System.getProperty(ZOOKEEPER_PORT_2_KEY);
-        if (portConfig2 != null) {
-            try {
-                port2 = Integer.parseInt(portConfig2);
-            } catch (NumberFormatException e) {
-                port2 = DEFAULT_CLIENT_PORT_2;
-            }
-        }
+        // Set system properties for tests that rely on them
+        System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_KEY, String.format(CONNECTION_ADDRESS_FORMAT, port1));
+        System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_1_KEY, String.format(CONNECTION_ADDRESS_FORMAT, port1));
+        System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_2_KEY, String.format(CONNECTION_ADDRESS_FORMAT, port2));
 
-        if (port1 == port2) {
-            throw new IllegalArgumentException(
-                    String.format("The client ports %d and %d of zookeeper cannot be same!", port1, port2));
-        }
-
-        CLIENT_PORTS[0] = port1;
-        CLIENT_PORTS[1] = port2;
-
-        // set system properties config
-        System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[0]));
-        System.setProperty(
-                ZOOKEEPER_CONNECTION_ADDRESS_1_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[0]));
-        System.setProperty(
-                ZOOKEEPER_CONNECTION_ADDRESS_2_KEY, String.format(CONNECTION_ADDRESS_FORMAT, CLIENT_PORTS[1]));
+        return new int[] {port1, port2};
     }
 
     @Override
