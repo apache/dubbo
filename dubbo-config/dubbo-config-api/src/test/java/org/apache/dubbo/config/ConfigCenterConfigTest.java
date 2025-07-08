@@ -38,11 +38,13 @@ class ConfigCenterConfigTest {
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+        SysProps.clear(); // Clear before each test to avoid conflicts
     }
 
     @AfterEach
     public void afterEach() {
         SysProps.clear();
+        DubboBootstrap.reset(); // Additional cleanup
     }
 
     @Test

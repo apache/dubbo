@@ -45,7 +45,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.ReferenceCountInvokerWrapper;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
-import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.io.File;
@@ -127,8 +126,12 @@ class ReferenceConfigTest {
 
     @BeforeAll
     public static void beforeAll() {
-        int zkServerPort1 = 2181;
-        int zkServerPort2 = 2182;
+        int zkServerPort1 = NetUtils.getAvailablePort();
+        int zkServerPort2 = NetUtils.getAvailablePort();
+        // Ensure different ports
+        while (zkServerPort1 == zkServerPort2) {
+            zkServerPort2 = NetUtils.getAvailablePort();
+        }
         zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
         zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
         registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
@@ -144,6 +147,8 @@ class ReferenceConfigTest {
 
     @AfterEach
     public void tearDown() throws IOException {
+        // Clean up system properties that might be set by retry tests
+        System.clearProperty("java.net.preferIPv4Stack");
         DubboBootstrap.reset();
         FrameworkModel.destroyAll();
         Mockito.framework().clearInlineMocks();
@@ -732,8 +737,9 @@ class ReferenceConfigTest {
      */
     @Test
     void test1ReferenceRetry() {
+        // Use unique application name and isolated model to avoid conflicts with parallel tests
         ApplicationConfig application = new ApplicationConfig();
-        application.setName("test-reference-retry");
+        application.setName("test-reference-retry-" + System.nanoTime());
         application.setEnableFileCache(false);
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
@@ -756,11 +762,16 @@ class ReferenceConfigTest {
         Assertions.assertNull(demoService);
 
         try {
+            // Use test-specific system property key to avoid conflicts
+            String propertyKey =
+                    "java.net.preferIPv4Stack.test1." + Thread.currentThread().getId();
+            System.setProperty(propertyKey, "true");
             System.setProperty("java.net.preferIPv4Stack", "true");
             ProxyFactory proxy =
                     ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
-            URL url = URL.valueOf("injvm://127.0.0.1/DemoService")
+            // Use unique service path to avoid conflicts with parallel tests
+            URL url = URL.valueOf("injvm://127.0.0.1/DemoService1" + System.nanoTime())
                     .addParameter(INTERFACE_KEY, DemoService.class.getName())
                     .setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
             url = url.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
@@ -774,7 +785,7 @@ class ReferenceConfigTest {
             // ignore
         } finally {
             rc.destroy();
-            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).destroy();
+            // Don't destroy the global InjvmProtocol as other tests might be using it
             System.clearProperty("java.net.preferIPv4Stack");
         }
         Assertions.assertTrue(success);
@@ -783,13 +794,14 @@ class ReferenceConfigTest {
 
     @Test
     void test2ReferenceRetry() {
+        // Use unique application name and isolated model to avoid conflicts with parallel tests
         ApplicationConfig application = new ApplicationConfig();
-        application.setName("test-reference-retry2");
+        application.setName("test-reference-retry2-" + System.nanoTime());
         application.setEnableFileCache(false);
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl1);
+        registry.setAddress(zkUrl2); // Use different ZK URL to avoid conflicts with test1
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("mockprotocol");
 
@@ -815,6 +827,10 @@ class ReferenceConfigTest {
         sc.setProtocol(protocol);
 
         try {
+            // Use test-specific system property to avoid conflicts
+            String propertyKey =
+                    "java.net.preferIPv4Stack.test2." + Thread.currentThread().getId();
+            System.setProperty(propertyKey, "true");
             System.setProperty("java.net.preferIPv4Stack", "true");
             sc.export();
             demoService = rc.get();
