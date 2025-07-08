@@ -18,6 +18,7 @@ package org.apache.dubbo.config.integration.multiple.servicediscoveryregistry;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -66,7 +67,7 @@ class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements I
     /**
      * Define the protocol's port.
      */
-    private static int PROTOCOL_PORT = 20880;
+    private static int PROTOCOL_PORT = NetUtils.getAvailablePort();
 
     /**
      * Define the {@link ServiceConfig} instance.
