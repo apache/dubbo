@@ -103,14 +103,15 @@ class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements I
         parameters1.put("registry.listeners", MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
         registryConfig1.updateParameters(parameters1);
         DubboBootstrap.getInstance().registry(registryConfig1);
-        ports.add(ZookeeperConfig.DEFAULT_CLIENT_PORT_1);
+        ZookeeperConfig zookeeperConfig = new ZookeeperConfig();
+        ports.add(zookeeperConfig.getClientPorts()[0]);
 
         RegistryConfig registryConfig2 = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2());
         Map<String, String> parameters2 = new HashMap<>();
         parameters2.put("registry.listeners", MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
         registryConfig2.updateParameters(parameters2);
         DubboBootstrap.getInstance().registry(registryConfig2);
-        ports.add(ZookeeperConfig.DEFAULT_CLIENT_PORT_2);
+        ports.add(zookeeperConfig.getClientPorts()[1]);
 
         DubboBootstrap.getInstance()
                 .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
