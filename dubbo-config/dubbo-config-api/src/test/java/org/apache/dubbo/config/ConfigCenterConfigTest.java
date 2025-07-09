@@ -315,7 +315,13 @@ class ConfigCenterConfigTest {
 
         Assertions.assertEquals(address, cc.getAddress());
         Assertions.assertEquals("zookeeper", cc.getProtocol());
-        Assertions.assertEquals(2181, cc.getPort());
+
+        // Extract the port from the dynamic address instead of hardcoding 2181
+        // Expected format: zookeeper://127.0.0.1:PORT
+        String expectedPortStr = address.substring(address.lastIndexOf(':') + 1);
+        int expectedPort = Integer.parseInt(expectedPortStr);
+        Assertions.assertEquals(expectedPort, cc.getPort());
+
         Assertions.assertEquals("user123", cc.getUsername());
         Assertions.assertEquals("pass123", cc.getPassword());
     }
