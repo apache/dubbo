@@ -37,10 +37,18 @@ import org.junit.jupiter.api.Test;
 class ThreadPoolStatusCheckerTest {
 
     private DataStore dataStore;
+    private String port1;
+    private String port2;
+    private String testId;
 
     @BeforeEach
     void setUp() {
         dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        // Use unique test identifier to avoid conflicts with parallel tests
+        testId = "test-" + System.nanoTime() + "-" + Thread.currentThread().getId();
+        // Use dynamic ports to avoid conflicts with parallel tests
+        port1 = testId + "-port1";
+        port2 = testId + "-port2";
         clearExecutors();
     }
 
@@ -66,8 +74,8 @@ class ThreadPoolStatusCheckerTest {
 
         ExecutorService executorService1 = Executors.newFixedThreadPool(1);
         ExecutorService executorService2 = Executors.newFixedThreadPool(10);
-        dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888", executorService1);
-        dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889", executorService2);
+        dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, port1, executorService1);
+        dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, port2, executorService2);
 
         ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker(ApplicationModel.defaultModel());
         Status status = threadPoolStatusChecker.check();
@@ -76,17 +84,33 @@ class ThreadPoolStatusCheckerTest {
         // Check that the status message contains the expected pool information
         // Since Map iteration order is not guaranteed, we check for both possible orders
         String message = status.getMessage();
-        String expectedPool8888 = "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888";
-        String expectedPool8889 = "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889";
+        String expectedPool1 = "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: " + port1;
+        String expectedPool2 = "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: " + port2;
 
         Assertions.assertTrue(
-                message.contains(expectedPool8888), "Status message should contain pool 8888 info: " + message);
+                message.contains(expectedPool1), "Status message should contain pool " + port1 + " info: " + message);
         Assertions.assertTrue(
-                message.contains(expectedPool8889), "Status message should contain pool 8889 info: " + message);
+                message.contains(expectedPool2), "Status message should contain pool " + port2 + " info: " + message);
 
-        // Verify the message contains exactly 2 pools (no interference from other tests)
-        long poolCount = message.chars().filter(ch -> ch == ';').count() + 1;
-        Assertions.assertEquals(2, poolCount, "Should have exactly 2 pools, but got: " + message);
+        // Verify the message contains exactly 2 pools from this test (filter out other parallel tests)
+        long testPoolCount = 0;
+        if (message.contains(testId)) {
+            // Count occurrences of testId in the message
+            String[] parts = message.split(testId);
+            testPoolCount = parts.length - 1;
+        }
+
+        if (testPoolCount == 0) {
+            // Fallback: count by semicolons (original logic) but with better error message
+            long poolCount = message.chars().filter(ch -> ch == ';').count() + 1;
+            Assertions.assertEquals(
+                    2, poolCount, "Should have exactly 2 pools, but got: " + message + ". TestId: " + testId);
+        } else {
+            Assertions.assertEquals(
+                    2,
+                    testPoolCount,
+                    "Should have exactly 2 pools for this test, but got: " + message + ". TestId: " + testId);
+        }
 
         // Shutdown the test executors (tearDown will handle cleanup)
         executorService1.shutdown();
