@@ -97,6 +97,7 @@
     <module>dubbo-plugin/dubbo-qos</module>
     <module>dubbo-plugin/dubbo-auth</module>
     <module>dubbo-plugin/dubbo-reactive</module>
+    <module>dubbo-plugin/dubbo-mutiny</module>
     <module>dubbo-plugin/dubbo-security</module>
     <module>dubbo-plugin/dubbo-spring-security</module>
     <module>dubbo-plugin/dubbo-qos-api</module>
