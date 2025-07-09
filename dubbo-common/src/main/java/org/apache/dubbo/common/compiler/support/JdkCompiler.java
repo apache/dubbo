@@ -289,4 +289,17 @@ public class JdkCompiler extends AbstractCompiler {
     }
 
 
+    private void test(String testName) {
+        // 测试代码
+        String sourceCode = "public class " + testName + " { public static void main(String[] args) { System.out.println(\"Hello, World!\"); } }";
+        try {
+            Class<?> clazz = doCompile(testName, sourceCode);
+            System.out.println("Compilation successful. Class: " + clazz);
+            1 / 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
