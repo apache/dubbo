@@ -743,7 +743,7 @@ class ReferenceConfigTest {
         application.setEnableFileCache(false);
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
-        // Use mock registry that doesn't require external dependencies  
+        // Use mock registry that doesn't require external dependencies
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("N/A");
         registry.setProtocol("injvm");
@@ -781,7 +781,7 @@ class ReferenceConfigTest {
                     .getExtensionLoader(Protocol.class)
                     .getAdaptiveExtension();
             protocolSPI.export(proxy.getInvoker(service, DemoService.class, url));
-            
+
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
@@ -838,7 +838,7 @@ class ReferenceConfigTest {
             System.setProperty(propertyKey, "true");
             System.setProperty("java.net.preferIPv4Stack", "true");
             sc.export();
-            
+
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
