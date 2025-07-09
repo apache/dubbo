@@ -49,7 +49,8 @@ public class ServerTripleMutinySubscriber<T> extends AbstractTripleMutinySubscri
     @Override
     public void subscribe(CallStreamObserver<T> downstream) {
         super.subscribe(downstream);
-        if (downstream instanceof CancelableStreamObserver<?> observer) {
+        if (downstream instanceof CancelableStreamObserver<?>) {
+            final CancelableStreamObserver<?> observer = (CancelableStreamObserver<?>) downstream;
             final CancellationContext context;
             if (observer.getCancellationContext() == null) {
                 context = new CancellationContext();
