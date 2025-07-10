@@ -99,6 +99,7 @@ public abstract class AbstractTripleMutinyPublisher<T> extends CancelableStreamO
         }
     }
 
+    @Override
     public void startRequest() {
         synchronized (this) {
             if (!canRequest) {
