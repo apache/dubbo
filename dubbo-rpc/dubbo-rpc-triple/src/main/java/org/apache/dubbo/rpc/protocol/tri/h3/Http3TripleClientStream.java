@@ -31,8 +31,8 @@ import java.util.concurrent.Executor;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.incubator.codec.http3.Http3RequestStreamInitializer;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.handler.codec.http3.Http3RequestStreamInitializer;
+import io.netty.handler.codec.quic.QuicStreamChannel;
 
 public final class Http3TripleClientStream extends AbstractTripleClientStream {
 

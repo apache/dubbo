@@ -40,9 +40,9 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.quic.InsecureQuicTokenHandler;
-import io.netty.incubator.codec.quic.QuicChannel;
+import io.netty.handler.codec.http3.Http3;
+import io.netty.handler.codec.quic.InsecureQuicTokenHandler;
+import io.netty.handler.codec.quic.QuicChannel;
 import io.netty.util.concurrent.Future;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;

@@ -301,11 +301,6 @@
         <version>${netty4_version}</version>
       </dependency>
       <dependency>
-        <groupId>io.netty.incubator</groupId>
-        <artifactId>netty-incubator-codec-http3</artifactId>
-        <version>${netty_http3_version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.javassist</groupId>
         <artifactId>javassist</artifactId>
         <version>${javassist_version}</version>

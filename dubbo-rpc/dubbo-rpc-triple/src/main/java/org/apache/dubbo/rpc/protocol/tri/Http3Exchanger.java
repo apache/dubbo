@@ -46,17 +46,17 @@ import java.util.function.Consumer;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http3.Http3ServerConnectionHandler;
+import io.netty.handler.codec.quic.QuicStreamChannel;
 import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
 
 import static org.apache.dubbo.remoting.http3.netty4.Constants.PIPELINE_CONFIGURATOR_KEY;
 
 public final class Http3Exchanger {
 
     private static final FluentLogger LOGGER = FluentLogger.of(Http3Exchanger.class);
-    private static final boolean HAS_NETTY_HTTP3 = ClassUtils.isPresent("io.netty.incubator.codec.http3.Http3");
+    private static final boolean HAS_NETTY_HTTP3 = ClassUtils.isPresent("io.netty.handler.codec.http3.Http3");
     private static final ConcurrentHashMap<String, RemotingServer> SERVERS = new ConcurrentHashMap<>();
     private static final Map<String, AbstractConnectionClient> CLIENTS = new ConcurrentHashMap<>(16);
     private static final ChannelHandler HANDLER = new ChannelHandlerAdapter();

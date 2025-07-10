@@ -43,8 +43,8 @@
     </dependency>
 
     <dependency>
-      <groupId>io.netty.incubator</groupId>
-      <artifactId>netty-incubator-codec-http3</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-http3</artifactId>
     </dependency>
 
     <dependency>
