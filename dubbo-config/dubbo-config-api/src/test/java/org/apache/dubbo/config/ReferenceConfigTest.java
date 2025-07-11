@@ -127,12 +127,12 @@ class ReferenceConfigTest {
 
     @BeforeAll
     public static void beforeAll() {
-        int zkServerPort1 = NetUtils.getAvailablePort();
-        int zkServerPort2 = NetUtils.getAvailablePort();
-        // Ensure different ports
-        while (zkServerPort1 == zkServerPort2) {
-            zkServerPort2 = NetUtils.getAvailablePort();
-        }
+        // Use port reservation mechanism to avoid conflicts in parallel testing
+        String identifier = "ReferenceConfigTest_" + System.currentTimeMillis();
+        int[] ports = NetUtils.getReservedPortsForTest(identifier, 2);
+        int zkServerPort1 = ports[0];
+        int zkServerPort2 = ports[1];
+
         zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
         zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
         registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";

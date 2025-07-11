@@ -41,7 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -104,6 +106,11 @@ public final class NetUtils {
      * the set used only on the synchronized method.
      */
     private static BitSet USED_PORT = new BitSet(65536);
+
+    // Port reservation mechanism for parallel testing
+    private static final ConcurrentHashMap<String, AtomicInteger> PORT_RANGES = new ConcurrentHashMap<>();
+    private static final int TEST_PORT_BASE = 20000; // Base port for testing
+    private static final int TEST_PORT_RANGE = 1000; // Port range per process/thread
 
     private static boolean reuseAddressSupported;
 
@@ -172,6 +179,48 @@ public final class NetUtils {
             // continue
         }
         return true;
+    }
+
+    /**
+     * Get a reserved port for testing to avoid conflicts in parallel execution.
+     * This method reserves a port range for each unique identifier (e.g., test class/thread).
+     *
+     * @param identifier unique identifier (e.g., test class name or thread ID)
+     * @return a reserved port from the dedicated range
+     */
+    public static synchronized int getReservedPortForTest(String identifier) {
+        AtomicInteger portCounter = PORT_RANGES.computeIfAbsent(
+                identifier, k -> new AtomicInteger(TEST_PORT_BASE + (Math.abs(k.hashCode()) % 40) * TEST_PORT_RANGE));
+
+        int basePort = portCounter.get();
+        int maxPort = basePort + TEST_PORT_RANGE;
+
+        // Try to find an available port in the reserved range
+        for (int port = basePort; port < maxPort; port++) {
+            if (!USED_PORT.get(port) && !isPortInUsed(port)) {
+                USED_PORT.set(port);
+                portCounter.set(port + 1); // Move to next port for next call
+                return port;
+            }
+        }
+
+        // If no port available in range, fall back to regular allocation
+        return getAvailablePort();
+    }
+
+    /**
+     * Get multiple reserved ports for testing to avoid conflicts.
+     *
+     * @param identifier unique identifier
+     * @param count number of ports needed
+     * @return array of reserved ports
+     */
+    public static synchronized int[] getReservedPortsForTest(String identifier, int count) {
+        int[] ports = new int[count];
+        for (int i = 0; i < count; i++) {
+            ports[i] = getReservedPortForTest(identifier + "_" + i);
+        }
+        return ports;
     }
 
     /**

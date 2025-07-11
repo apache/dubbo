@@ -71,8 +71,10 @@ class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTe
     private static String PROTOCOL_NAME = CommonConstants.DUBBO;
     /**
      * Define the protocol's port.
+     * Uses port reservation mechanism to avoid conflicts in parallel testing.
      */
-    private static int PROTOCOL_PORT = NetUtils.getAvailablePort();
+    private static int PROTOCOL_PORT = NetUtils.getReservedPortForTest(
+            "SingleRegistryCenterExportProviderIntegrationTest_" + System.currentTimeMillis());
 
     /**
      * Define the {@link ServiceConfig} instance.

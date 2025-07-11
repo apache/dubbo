@@ -62,16 +62,16 @@ public class ZookeeperConfig implements Config {
     private static final int[] CLIENT_PORTS = initializePorts();
 
     /**
-     * Initialize two different available ports for ZooKeeper instances.
-     * This is the core solution for port conflicts in parallel testing.
+     * Initialize two different reserved ports for ZooKeeper instances.
+     * Uses port reservation mechanism to avoid conflicts in parallel testing.
      */
     private static int[] initializePorts() {
-        int port1 = NetUtils.getAvailablePort();
-        int port2 = NetUtils.getAvailablePort();
-        // Ensure two different ports
-        while (port1 == port2) {
-            port2 = NetUtils.getAvailablePort();
-        }
+        String identifier = "ZookeeperConfig_" + System.currentTimeMillis() + "_"
+                + Thread.currentThread().getId();
+        int[] ports = NetUtils.getReservedPortsForTest(identifier, 2);
+
+        int port1 = ports[0];
+        int port2 = ports[1];
 
         // Set system properties for tests that rely on them
         System.setProperty(ZOOKEEPER_CONNECTION_ADDRESS_KEY, String.format(CONNECTION_ADDRESS_FORMAT, port1));

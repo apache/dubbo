@@ -147,8 +147,8 @@
 
     <!-- Test execution configuration -->
     <test.forkCount>1</test.forkCount>
-    <test.parallel>methods</test.parallel>
-    <test.threadCount>4</test.threadCount>
+    <test.parallel>classes</test.parallel>
+    <test.threadCount>2</test.threadCount>
     <test.forkedProcessTimeoutInSeconds>1200</test.forkedProcessTimeoutInSeconds>
 
     <!-- Maven plugins -->
