@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
@@ -25,6 +27,8 @@ import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -40,6 +44,18 @@ import io.netty.handler.codec.http2.Http2HeadersFrame;
 
 public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(NettyHttp2FrameCodec.class);
+
+    private final List<CachedMsg> cachedMsgList = new LinkedList<>();
+
+    private boolean settingsFrameArrived;
+
+    public NettyHttp2FrameCodec(NettyHttp2SettingsHandler nettyHttp2SettingsHandler) {
+        if (!nettyHttp2SettingsHandler.subscribeSettingsFrameArrival(this)) {
+            settingsFrameArrived = true;
+        }
+    }
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
@@ -53,13 +69,51 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof Http2Header) {
-            super.write(ctx, encodeHttp2HeadersFrame((Http2Header) msg), promise);
-        } else if (msg instanceof Http2OutputMessage) {
-            super.write(ctx, encodeHttp2DataFrame((Http2OutputMessage) msg), promise);
-        } else {
-            super.write(ctx, msg, promise);
+        if (settingsFrameArrived) {
+            if (msg instanceof Http2Header) {
+                super.write(ctx, encodeHttp2HeadersFrame((Http2Header) msg), promise);
+            } else if (msg instanceof Http2OutputMessage) {
+                super.write(ctx, encodeHttp2DataFrame((Http2OutputMessage) msg), promise);
+            } else {
+                super.write(ctx, msg, promise);
+            }
+            return;
         }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Cache writing msg before client connection preface arrival: {}", msg);
+        }
+        cachedMsgList.add(new CachedMsg(ctx, msg, promise));
+    }
+
+    public void notifySettingsFrameArrival() throws Exception {
+        if (settingsFrameArrived) {
+            return;
+        }
+        settingsFrameArrived = true;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Begin cached channel msg writing when client connection preface arrived.");
+        }
+
+        for (CachedMsg cached : cachedMsgList) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Cached channel msg writing, ctx: {} msg: {}", cached.ctx, cached.msg);
+            }
+            if (cached.msg instanceof Http2Header) {
+                super.write(cached.ctx, encodeHttp2HeadersFrame(((Http2Header) cached.msg)), cached.promise);
+            } else if (cached.msg instanceof Http2OutputMessage) {
+                super.write(cached.ctx, encodeHttp2DataFrame(((Http2OutputMessage) cached.msg)), cached.promise);
+            } else {
+                super.write(cached.ctx, cached.msg, cached.promise);
+            }
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("End cached channel msg writing.");
+        }
+
+        cachedMsgList.clear();
     }
 
     private Http2Header onHttp2HeadersFrame(Http2HeadersFrame headersFrame) {
@@ -88,5 +142,17 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
             return new DefaultHttp2DataFrame(buffer, outputMessage.isEndStream());
         }
         throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
+    }
+
+    private static class CachedMsg {
+        private final ChannelHandlerContext ctx;
+        private final Object msg;
+        private final ChannelPromise promise;
+
+        public CachedMsg(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+            this.ctx = ctx;
+            this.msg = msg;
+            this.promise = promise;
+        }
     }
 }
