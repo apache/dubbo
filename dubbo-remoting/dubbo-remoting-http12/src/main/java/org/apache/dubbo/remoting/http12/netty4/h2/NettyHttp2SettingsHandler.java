@@ -71,4 +71,8 @@ public class NettyHttp2SettingsHandler extends SimpleChannelInboundHandler<Http2
         }
         return false;
     }
+
+    public void unsubscribeSettingsFrameArrival(NettyHttp2FrameCodec nettyHttp2FrameCodec) {
+        settingsFrameArrivalSubscribers.remove(nettyHttp2FrameCodec);
+    }
 }
