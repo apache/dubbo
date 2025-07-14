@@ -265,7 +265,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
-          flags: unit-tests
+          flags: unit-tests-jdk${{ matrix.jdk }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: "Upload surefire reports"
