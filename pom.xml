@@ -169,7 +169,8 @@
     <spring-boot-3.version>3.5.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
-    <grpc_version>1.54.0</grpc_version>
+    <!-- grpc_version should be same as grpc.version at dubbo-dependencies-bom -->
+    <grpc_version>1.73.0</grpc_version>
     <spotless-maven-plugin.version>2.44.5</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
