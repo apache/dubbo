@@ -207,12 +207,12 @@ jobs:
 
   unit-test:
     needs: [check-format, unit-test-prepare]
-    name: "Unit Test On ubuntu-latest Java: ${{ matrix.jdk }}"
+    name: "Unit Test On ubuntu-latest Java: ${{ matrix.java }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        java: [ 8, 11, 17, 21 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       CURRENT_ROLE: ${{ matrix.case-role }}
@@ -222,11 +222,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: "Set up JDK ${{ matrix.jdk }}"
+      - name: "Set up JDK ${{ matrix.java }}"
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: ${{ matrix.jdk }}
+          java-version: ${{ matrix.java }}
       - name: "Set current date as env variable"
         run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
       - name: "Cache local maven repository"
@@ -247,13 +247,13 @@ jobs:
             zookeeper-${{ runner.os }}-
       - name: "Test with maven on Java: 8"
         timeout-minutes: 90
-        if: ${{ matrix.jdk == '8' }}
+        if: ${{ matrix.java == '8' }}
         run: |
           set -o pipefail
           ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,'!jdk15ge-add-open',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
-      - name: "Test with maven on Java: ${{ matrix.jdk }}"
+      - name: "Test with maven on Java: ${{ matrix.java }}"
         timeout-minutes: 90
-        if: ${{ matrix.jdk != '8' }}
+        if: ${{ matrix.java != '8' }}
         run: |
           set -o pipefail
           ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge-add-open',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
@@ -265,13 +265,13 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
-          flags: unit-tests-jdk${{ matrix.jdk }}
+          flags: unit-tests-java${{ matrix.java }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: "Upload surefire reports"
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports-jdk${{ matrix.jdk }}
+          name: surefire-reports-java${{ matrix.java }}
           path: "**/target/surefire-reports/**"
 
   samples-test-prepare:
