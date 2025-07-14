@@ -409,6 +409,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("endStream: {} HEADERS: {}", endStream, headers);
+            }
             executor.execute(() -> {
                 if (endStream) {
                     if (!halfClosed) {
@@ -428,6 +431,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("endStream: {} DATA: {}", endStream, data.toString(StandardCharsets.UTF_8));
+            }
             try {
                 executor.execute(() -> doOnData(data, endStream));
             } catch (Throwable t) {

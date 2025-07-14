@@ -24,7 +24,12 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.model.*;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter2;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter2Impl;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterException;
@@ -136,6 +141,5 @@ class ExceptionUtilsTest {
         protocol.destroy();
         // resource recycle.
         serviceRepository.destroy();
-        System.out.println("serviceRepository destroyed");
     }
 }

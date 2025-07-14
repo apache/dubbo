@@ -26,7 +26,11 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ApiConsumer {
+    private static final Logger logger = LoggerFactory.getLogger(ApiConsumer.class);
 
     public static void main(String[] args) throws InterruptedException {
         ReferenceConfig<GreeterService> referenceConfig = new ReferenceConfig<>();
@@ -45,48 +49,48 @@ public class ApiConsumer {
                 .start();
 
         GreeterService greeterService = referenceConfig.get();
-        System.out.println("dubbo referenceConfig started");
-        System.out.println("Call sayHello");
+        logger.info("dubbo referenceConfig started");
+        logger.info("Call sayHello");
         HelloReply reply = greeterService.sayHello(buildRequest("triple"));
-        System.out.println("sayHello reply: " + reply.getMessage());
+        logger.info("sayHello reply: {}", reply.getMessage());
 
-        System.out.println("Call sayHelloAsync");
+        logger.info("Call sayHelloAsync");
         CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
-        sayHelloAsync.thenAccept(value -> System.out.println("sayHelloAsync reply: " + value));
+        sayHelloAsync.thenAccept(value -> logger.info("sayHelloAsync reply: {}", value));
 
         StreamObserver<HelloReply> responseObserver = new StreamObserver<HelloReply>() {
             @Override
             public void onNext(HelloReply reply) {
-                System.out.println("sayHelloServerStream onNext: " + reply.getMessage());
+                logger.info("sayHelloServerStream onNext: {}", reply.getMessage());
             }
 
             @Override
             public void onError(Throwable t) {
-                System.out.println("sayHelloServerStream onError: " + t.getMessage());
+                logger.info("sayHelloServerStream onError: {}", t.getMessage());
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("sayHelloServerStream onCompleted");
+                logger.info("sayHelloServerStream onCompleted");
             }
         };
-        System.out.println("Call sayHelloServerStream");
+        logger.info("Call sayHelloServerStream");
         greeterService.sayHelloServerStream(buildRequest("triple"), responseObserver);
 
         StreamObserver<HelloReply> sayHelloServerStreamNoParameterResponseObserver = new StreamObserver<HelloReply>() {
             @Override
             public void onNext(HelloReply reply) {
-                System.out.println("sayHelloServerStreamNoParameter onNext: " + reply.getMessage());
+                logger.info("sayHelloServerStreamNoParameter onNext: {}", reply.getMessage());
             }
 
             @Override
             public void onError(Throwable t) {
-                System.out.println("sayHelloServerStreamNoParameter onError: " + t.getMessage());
+                logger.info("sayHelloServerStreamNoParameter onError: {}", t.getMessage());
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("sayHelloServerStreamNoParameter onCompleted");
+                logger.info("sayHelloServerStreamNoParameter onCompleted");
             }
         };
 
@@ -95,20 +99,20 @@ public class ApiConsumer {
         StreamObserver<HelloReply> biResponseObserver = new StreamObserver<HelloReply>() {
             @Override
             public void onNext(HelloReply reply) {
-                System.out.println("biRequestObserver onNext: " + reply.getMessage());
+                logger.info("biRequestObserver onNext: {}", reply.getMessage());
             }
 
             @Override
             public void onError(Throwable t) {
-                System.out.println("biResponseObserver onError: " + t.getMessage());
+                logger.info("biResponseObserver onError: {}", t.getMessage());
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("biResponseObserver onCompleted");
+                logger.info("biResponseObserver onCompleted");
             }
         };
-        System.out.println("Call biRequestObserver");
+        logger.info("Call biRequestObserver");
         StreamObserver<HelloRequest> biRequestObserver = greeterService.sayHelloBiStream(biResponseObserver);
         for (int i = 0; i < 5; i++) {
             biRequestObserver.onNext(buildRequest("triple" + i));

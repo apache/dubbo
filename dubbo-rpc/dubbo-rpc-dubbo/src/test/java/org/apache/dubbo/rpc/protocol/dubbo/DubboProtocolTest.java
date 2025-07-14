@@ -50,6 +50,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -57,6 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <code>ProxiesTest</code>
  */
 class DubboProtocolTest {
+    private static final Logger logger = LoggerFactory.getLogger(DubboProtocolTest.class);
     private Protocol protocol =
             ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy =
@@ -123,7 +126,6 @@ class DubboProtocolTest {
         // test netty client
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < 1024 * 32 + 32; i++) buf.append('A');
-        System.out.println(service.stringLength(buf.toString()));
 
         // cast to EchoService
         EchoService echo = proxy.getProxy(protocol.refer(
@@ -228,7 +230,7 @@ class DubboProtocolTest {
                         .addParameter("timeout", 3000L)));
         long start = System.currentTimeMillis();
         for (int i = 0; i < 100; i++) service.getSize(new String[] {"", "", ""});
-        System.out.println("take:" + (System.currentTimeMillis() - start));
+        logger.info("take:{}", System.currentTimeMillis() - start);
     }
 
     @Test

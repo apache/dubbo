@@ -168,7 +168,6 @@ class RpcContextTest {
         });
 
         rpcFuture.whenComplete((rpcResult, throwable) -> {
-            System.out.println(throwable.toString());
             Assertions.assertNull(rpcResult);
             Assertions.assertTrue(throwable instanceof RpcException);
             Assertions.assertTrue(throwable.getCause() instanceof NullPointerException);
@@ -211,7 +210,7 @@ class RpcContextTest {
         final String value = "attachment-value";
         RpcContext.getServerContext().setObjectAttachment(key, value);
         final String returned = (String) RpcContext.getServerContext().getObjectAttachment(key);
-        System.out.println(returned);
+        Assertions.assertEquals(value, returned);
         RpcContext.getServerContext().remove(key);
     }
 

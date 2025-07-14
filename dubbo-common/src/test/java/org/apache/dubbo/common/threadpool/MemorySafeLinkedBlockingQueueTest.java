@@ -26,12 +26,17 @@ import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MemorySafeLinkedBlockingQueueTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(MemorySafeLinkedBlockingQueueTest.class);
+
     @Test
     void test() {
         ByteBuddyAgent.install();
@@ -70,8 +75,8 @@ class MemorySafeLinkedBlockingQueueTest {
         long spent2 = spend(newMemorySafeLinkedBlockingQueue(), length, times);
         System.gc();
 
-        System.out.println(String.format(
-                "LinkedBlockingQueue spent %s millis, MemorySafeLinkedBlockingQueue spent %s millis", spent1, spent2));
+        logger.info(
+                "LinkedBlockingQueue spent {} millis, MemorySafeLinkedBlockingQueue spent {} millis", spent1, spent2);
         // efficiency between LinkedBlockingQueue and MemorySafeLinkedBlockingQueue is very nearly the same
         Assertions.assertTrue(spent1 - spent2 <= 1);
     }

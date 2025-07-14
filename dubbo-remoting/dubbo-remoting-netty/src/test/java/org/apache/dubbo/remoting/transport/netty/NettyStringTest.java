@@ -43,7 +43,6 @@ class NettyStringTest {
         // int port = (int) (1000 * Math.random() + 10000);
         // int port = 10001;
         int port = NetUtils.getAvailablePort();
-        System.out.println(port);
         URL serverURL = URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3&codec=telnet");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
