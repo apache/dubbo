@@ -302,7 +302,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 17 ]
+        java: [ 8, 21 ]
         job_id: [1,2,3]
     steps:
       - uses: actions/checkout@v4
@@ -374,7 +374,7 @@ jobs:
       JAVA_VER: ${{matrix.java}}
     strategy:
       matrix:
-        java: [ 8, 17 ]
+        java: [ 8, 21 ]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -417,7 +417,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 17 ]
+        java: [ 8, 21 ]
         job_id: [1,2,3]
     steps:
       - uses: actions/checkout@v4
@@ -489,7 +489,7 @@ jobs:
       JAVA_VER: ${{matrix.java}}
     strategy:
       matrix:
-        java: [ 8, 17 ]
+        java: [ 8, 21 ]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -510,7 +510,7 @@ jobs:
     needs: [check-format, samples-test-result]
     strategy:
       matrix:
-        java: [ 8, 17 ]
+        java: [ 8, 21 ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -560,7 +560,7 @@ jobs:
     needs: [check-format, integration-test-result, samples-test-result]
     strategy:
       matrix:
-        java: [ 8, 17 ]
+        java: [ 8, 21 ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
