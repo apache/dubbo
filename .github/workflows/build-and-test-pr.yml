@@ -251,7 +251,7 @@ jobs:
         run: |
           set -o pipefail
           ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,'!jdk15ge-add-open',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
-      - name: "Test with maven on JDK 11+"
+      - name: "Test with maven on JDK ${{ matrix.jdk }}"
         timeout-minutes: 90
         if: ${{ matrix.jdk != '8' }}
         run: |
