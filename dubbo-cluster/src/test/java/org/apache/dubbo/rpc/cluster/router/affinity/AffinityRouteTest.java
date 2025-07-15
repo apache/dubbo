@@ -33,10 +33,13 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AffinityRouteTest {
+    private static final Logger logger = LoggerFactory.getLogger(AffinityRouteTest.class);
 
     private static BitList<Invoker<String>> invokers;
 
@@ -127,7 +130,7 @@ public class AffinityRouteTest {
         List<String> filtered = filtrate(new ArrayList<String>(providerUrls), "region=beijing");
 
         assertEquals(filtered.size(), res.size());
-        System.out.println("The affinity routing condition is met and the result is routed");
+        logger.info("The affinity routing condition is met and the result is routed");
     }
 
     @Test
@@ -158,7 +161,7 @@ public class AffinityRouteTest {
         List<String> filtered = filtrate(new ArrayList<String>(providerUrls), "region=beijing");
 
         assertEquals(invokers.size(), res.size());
-        System.out.println("The affinity routing condition was not met and the result was not routed");
+        logger.info("The affinity routing condition was not met and the result was not routed");
     }
 
     @Test
@@ -189,7 +192,7 @@ public class AffinityRouteTest {
         List<String> filtered = filtrate(new ArrayList<String>(providerUrls), "region=beijing");
 
         assertEquals(filtered.size(), res.size());
-        System.out.println("The affinity routing condition is met and the result is routed");
+        logger.info("The affinity routing condition is met and the result is routed");
     }
 
     @Test
@@ -220,6 +223,6 @@ public class AffinityRouteTest {
         List<String> filtered = filtrate(new ArrayList<String>(providerUrls), "region=beijing");
 
         assertEquals(invokers.size(), res.size());
-        System.out.println("The affinity routing condition was not met and the result was not routed");
+        logger.info("The affinity routing condition was not met and the result was not routed");
     }
 }

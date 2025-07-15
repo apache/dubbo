@@ -408,7 +408,6 @@ class MultiInstanceTest {
     private void checkUnclosedThreadsOfApp(
             Map<Thread, StackTraceElement[]> stackTraces1, String msg, String[] ignoredThreadPrefixes) {
         int waitTimeMs = 5000;
-        System.out.println("Wait " + waitTimeMs + "ms to check threads of app ...");
         try {
             Thread.sleep(waitTimeMs);
         } catch (InterruptedException e) {
@@ -879,7 +878,6 @@ class MultiInstanceTest {
     private void testConsumer(DubboBootstrap dubboBootstrap) {
         DemoService demoService = dubboBootstrap.getCache().get(DemoService.class);
         String result = demoService.sayName("dubbo");
-        System.out.println("result: " + result);
         Assertions.assertEquals("say:dubbo", result);
     }
 

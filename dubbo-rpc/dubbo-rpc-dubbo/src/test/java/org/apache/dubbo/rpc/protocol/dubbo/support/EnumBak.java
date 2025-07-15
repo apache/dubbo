@@ -31,9 +31,12 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EnumBak {
 
+    private static final Logger logger = LoggerFactory.getLogger(EnumBak.class);
     private Protocol protocol =
             ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy =
@@ -58,11 +61,8 @@ public class EnumBak {
         URL consumerurl = serviceurl;
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
-        //        System.out.println(demoProxy.getThreadName());
-        System.out.println(demoProxy.getInt(Integer.MIN_VALUE));
         Assertions.assertEquals(Integer.MIN_VALUE, demoProxy.getInt(Integer.MIN_VALUE));
 
-        //        invoker.destroy();
         reference.destroy();
     }
 
@@ -106,7 +106,6 @@ public class EnumBak {
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
         Type type = demoProxy.enumlength(Type.High);
-        System.out.println(type);
         Assertions.assertEquals(Type.High, type);
 
         invoker.destroy();
@@ -128,7 +127,6 @@ public class EnumBak {
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
         Type type = demoProxy.enumlength(Type.High);
-        System.out.println(type);
         Assertions.assertEquals(Type.High, type);
         reference.destroy();
     }
@@ -144,7 +142,7 @@ public class EnumBak {
         GenericService demoProxy = (GenericService) proxy.getProxy(reference);
         Object obj = demoProxy.$invoke(
                 "enumlength", new String[] {Type[].class.getName()}, new Object[] {new Type[] {Type.High, Type.High}});
-        System.out.println("obj---------->" + obj);
+        logger.info("obj----------> {}", obj);
         reference.destroy();
     }
 
@@ -163,7 +161,7 @@ public class EnumBak {
         arg.put("name", "hi");
 
         Object obj = demoProxy.$invoke("get", new String[] {"org.apache.dubbo.rpc.CustomArgument"}, new Object[] {arg});
-        System.out.println("obj---------->" + obj);
+        logger.info("obj----------> {}", obj);
         reference.destroy();
     }
 
@@ -197,7 +195,7 @@ public class EnumBak {
         GenericService demoProxy = (GenericService) proxy.getProxy(reference);
         Object obj = demoProxy.$invoke(
                 "enumlength", new String[] {Type[].class.getName()}, new Object[] {new Type[] {Type.High, Type.High}});
-        System.out.println("obj---------->" + obj);
+        logger.info("obj----------> {}", obj);
 
         invoker.destroy();
         reference.destroy();

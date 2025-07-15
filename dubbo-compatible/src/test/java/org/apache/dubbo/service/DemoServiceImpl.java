@@ -20,10 +20,15 @@ import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * DemoServiceImpl
  */
 public class DemoServiceImpl implements DemoService {
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+
     public DemoServiceImpl() {
         super();
     }
@@ -51,8 +56,9 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()="
-                + RpcContext.getServiceContext().getRemoteHost());
+        logger.info(
+                "RpcContext.getServerAttachment().getRemoteHost()={}",
+                RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 

@@ -68,9 +68,6 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         }
 
         // 1 : 9 : 6
-        System.out.println(sumInvoker1);
-        System.out.println(sumInvoker2);
-        System.out.println(sumInvoker3);
         Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker3, loop, "select failed!");
     }
 

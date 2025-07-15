@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -39,19 +41,19 @@ import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
-import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
-import io.netty.incubator.codec.http3.DefaultHttp3Headers;
-import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
-import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.http3.Http3DataFrame;
-import io.netty.incubator.codec.http3.Http3ErrorCode;
-import io.netty.incubator.codec.http3.Http3Exception;
-import io.netty.incubator.codec.http3.Http3GoAwayFrame;
-import io.netty.incubator.codec.http3.Http3Headers;
-import io.netty.incubator.codec.http3.Http3HeadersFrame;
-import io.netty.incubator.codec.http3.Http3RequestStreamInitializer;
-import io.netty.incubator.codec.quic.QuicChannel;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.handler.codec.http3.DefaultHttp3DataFrame;
+import io.netty.handler.codec.http3.DefaultHttp3Headers;
+import io.netty.handler.codec.http3.DefaultHttp3HeadersFrame;
+import io.netty.handler.codec.http3.Http3;
+import io.netty.handler.codec.http3.Http3DataFrame;
+import io.netty.handler.codec.http3.Http3ErrorCode;
+import io.netty.handler.codec.http3.Http3Exception;
+import io.netty.handler.codec.http3.Http3GoAwayFrame;
+import io.netty.handler.codec.http3.Http3Headers;
+import io.netty.handler.codec.http3.Http3HeadersFrame;
+import io.netty.handler.codec.http3.Http3RequestStreamInitializer;
+import io.netty.handler.codec.quic.QuicChannel;
+import io.netty.handler.codec.quic.QuicStreamChannel;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
 
@@ -99,14 +101,36 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             Http2HeadersFrame frame = (Http2HeadersFrame) msg;
-            ctx.write(new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), promise);
             if (frame.isEndStream()) {
-                ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                ChannelFuture future = ctx.write(
+                        new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), ctx.newPromise());
+                if (future.isDone()) {
+                    ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                } else {
+                    future.addListener(
+                            (ChannelFutureListener) f -> ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise));
+                }
+                return;
             }
+            ctx.write(new DefaultHttp3HeadersFrame(new Http3HeadersAdapter(frame.headers())), promise);
         } else if (msg instanceof Http2DataFrame) {
             Http2DataFrame frame = (Http2DataFrame) msg;
             if (frame.isEndStream()) {
-                ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                if (Unpooled.EMPTY_BUFFER.equals(frame.content())) {
+                    ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                    return;
+                }
+                ChannelFuture future = ctx.write(new DefaultHttp3DataFrame(frame.content()), ctx.newPromise());
+                if (future.isDone()) {
+                    ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise);
+                } else {
+                    future.addListener(
+                            (ChannelFutureListener) f -> ((QuicStreamChannel) ctx.channel()).shutdownOutput(promise));
+                }
+                return;
+            }
+            if (Unpooled.EMPTY_BUFFER.equals(frame.content())) {
+                promise.trySuccess();
                 return;
             }
             ctx.write(new DefaultHttp3DataFrame(frame.content()), promise);
@@ -134,8 +158,13 @@ public class Http3ClientFrameCodec extends ChannelDuplexHandler {
                         header.set(PseudoHeaderName.SCHEME.value(), HttpConstants.HTTPS);
                         header.set(Constants.TRI_PING, "0");
 
-                        streamChannel.write(new DefaultHttp3HeadersFrame(header));
-                        streamChannel.shutdownOutput();
+                        ChannelFuture pingSentFuture =
+                                streamChannel.write(new DefaultHttp3HeadersFrame(header), streamChannel.newPromise());
+                        if (pingSentFuture.isDone()) {
+                            streamChannel.shutdownOutput();
+                        } else {
+                            pingSentFuture.addListener((ChannelFutureListener) f -> streamChannel.shutdownOutput());
+                        }
                     } else {
                         LOGGER.warn(TRANSPORT_FAILED_RECONNECT, "Failed to send ping frame", future.cause());
                     }

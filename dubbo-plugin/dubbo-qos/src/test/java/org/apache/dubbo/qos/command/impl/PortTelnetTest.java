@@ -32,6 +32,8 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +42,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
 class PortTelnetTest {
+    private static final Logger logger = LoggerFactory.getLogger(PortTelnetTest.class);
     private BaseCommand port;
 
     private Invoker<DemoService> mockInvoker;
@@ -81,9 +84,9 @@ class PortTelnetTest {
         String result = port.execute(mockCommandContext, new String[] {"-l", availablePort + ""});
         String client1Addr = client1.getLocalAddress().toString();
         String client2Addr = client2.getLocalAddress().toString();
-        System.out.printf("Result: %s %n", result);
-        System.out.printf("Client 1 Address %s %n", client1Addr);
-        System.out.printf("Client 2 Address %s %n", client2Addr);
+        logger.info("Result: {}}", result);
+        logger.info("Client 1 Address {}", client1Addr);
+        logger.info("Client 2 Address {}", client2Addr);
         assertTrue(result.contains(String.valueOf(client1.getLocalAddress().getPort())));
         assertTrue(result.contains(String.valueOf(client2.getLocalAddress().getPort())));
     }

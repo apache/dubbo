@@ -20,23 +20,25 @@ import org.apache.dubbo.config.spring.registry.nacos.demo.service.DemoService;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * {@link DemoService} consumer demo XML bootstrap
  */
 public class DemoServiceConsumerXmlBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceConsumerXmlBootstrap.class);
 
     public static void main(String[] args) throws IOException {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
         context.setConfigLocation("/META-INF/spring/dubbo-nacos-consumer-context.xml");
         context.refresh();
-        System.out.println("DemoService consumer (XML) is starting...");
 
         for (int i = 1; i <= 5; i++) {
             DemoService demoService = context.getBean("demoService" + i, DemoService.class);
             for (int j = 0; j < 10; j++) {
-                System.out.println(demoService.sayName("小马哥（mercyblitz）"));
+                logger.info(demoService.sayName("小马哥（mercyblitz）"));
             }
         }
 

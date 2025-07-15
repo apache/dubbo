@@ -20,6 +20,8 @@ import org.apache.dubbo.common.utils.ClassUtils;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class WrapperTest {
+    private static final Logger logger = LoggerFactory.getLogger(WrapperTest.class);
+
     @Test
     void testMain() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
@@ -256,7 +260,7 @@ class WrapperTest {
         }
 
         public void hello(String name) {
-            System.out.println("hello " + name);
+            logger.info("hello {}", name);
         }
 
         public int showInt(int v) {

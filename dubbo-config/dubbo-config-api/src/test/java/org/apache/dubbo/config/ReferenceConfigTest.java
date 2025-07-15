@@ -83,6 +83,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
@@ -121,6 +123,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
 class ReferenceConfigTest {
+    private static final Logger logger = LoggerFactory.getLogger(ReferenceConfigTest.class);
     private static String zkUrl1;
     private static String zkUrl2;
     private static String registryUrl1;
@@ -901,7 +904,7 @@ class ReferenceConfigTest {
             referenceConfig.getPrefixes();
         }
         long end = System.currentTimeMillis();
-        System.out.println("ReferenceConfig get prefixes cost: " + (end - start));
+        logger.info("ReferenceConfig get prefixes cost: {}", end - start);
     }
 
     @Test
@@ -950,8 +953,7 @@ class ReferenceConfigTest {
                 end = amount;
             }
             int finalEnd = end;
-            System.out.println(
-                    String.format("start thread %s: range: %s - %s, count: %s", i, start, end, (end - start)));
+            logger.info("start thread {}: range: {} - {}, count: {}", i, start, end, (end - start));
             executorService.submit(() -> {
                 testInitReferences(start, finalEnd, applicationConfig, metadataReportConfig, configCenterConfig);
             });
@@ -961,7 +963,7 @@ class ReferenceConfigTest {
 
         long t2 = System.currentTimeMillis();
         long cost = t2 - t1;
-        System.out.println("Init large references cost: " + cost + "ms");
+        logger.info("Init large references cost: {}ms", cost);
         Assertions.assertEquals(amount, configManager.getReferences().size());
         Assertions.assertTrue(cost < 1000, "Init large references too slowly: " + cost);
 
@@ -981,7 +983,7 @@ class ReferenceConfigTest {
                 .collect(Collectors.toList());
         long t2 = System.currentTimeMillis();
         long cost = t2 - t1;
-        System.out.println("Search large references cost: " + cost + "ms");
+        logger.info("Search large references cost: {}ms", cost);
         Assertions.assertEquals(1, results.size());
         Assertions.assertTrue(cost < 1000, "Search large references too slowly: " + cost);
     }

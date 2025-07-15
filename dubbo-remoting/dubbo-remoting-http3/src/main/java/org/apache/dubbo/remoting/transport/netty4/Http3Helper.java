@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.Http3Config;
 
-import io.netty.incubator.codec.quic.QuicCodecBuilder;
-import io.netty.incubator.codec.quic.QuicCongestionControlAlgorithm;
+import io.netty.handler.codec.quic.QuicCodecBuilder;
+import io.netty.handler.codec.quic.QuicCongestionControlAlgorithm;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 

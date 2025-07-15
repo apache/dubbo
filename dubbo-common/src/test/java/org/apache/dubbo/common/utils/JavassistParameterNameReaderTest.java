@@ -36,7 +36,6 @@ class JavassistParameterNameReaderTest {
         Class<?> clazz = URL.class;
         for (Constructor<?> ctor : clazz.getConstructors()) {
             String[] names = reader.readParameterNames(ctor);
-            // System.out.println(ctor + " -> " + Arrays.toString(names));
             if (names.length == 7) {
                 assertThat(names[0], equalTo("protocol"));
             }
@@ -48,7 +47,6 @@ class JavassistParameterNameReaderTest {
         Class<?> clazz = URL.class;
         for (Method method : clazz.getMethods()) {
             String[] names = reader.readParameterNames(method);
-            // System.out.println(method + " -> " + Arrays.toString(names));
             switch (method.getName()) {
                 case "getAddress":
                     assertThat(names, emptyArray());
