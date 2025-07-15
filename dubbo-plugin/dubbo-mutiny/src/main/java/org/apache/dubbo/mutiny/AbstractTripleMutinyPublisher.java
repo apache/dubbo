@@ -35,7 +35,7 @@ public abstract class AbstractTripleMutinyPublisher<T> extends CancelableStreamO
 
     private long requested;
 
-    // weather publisher has been subscribed
+    // whether publisher has been subscribed
     private final AtomicBoolean subscribed = new AtomicBoolean();
 
     private volatile Flow.Subscriber<? super T> downstream;
