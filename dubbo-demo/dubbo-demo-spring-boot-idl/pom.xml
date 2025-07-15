@@ -90,6 +90,7 @@
   <build>
     <plugins>
       <plugin>
+        <!-- add os-maven-plugin to plugins just for Eclipse m2e, not for `mvn install` -->
         <groupId>kr.motd.maven</groupId>
         <artifactId>os-maven-plugin</artifactId>
         <version>${maven_os_plugin_version}</version>
@@ -112,5 +113,13 @@
         </configuration>
       </plugin>
     </plugins>
+    <extensions>
+      <!-- add os-maven-plugin to extensions for `mvn install` -->
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>${maven_os_plugin_version}</version>
+      </extension>
+    </extensions>
   </build>
 </project>

@@ -37,14 +37,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
-import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
-import io.netty.incubator.codec.http3.DefaultHttp3Headers;
-import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
-import io.netty.incubator.codec.http3.Http3DataFrame;
-import io.netty.incubator.codec.http3.Http3Headers;
-import io.netty.incubator.codec.http3.Http3HeadersFrame;
-import io.netty.incubator.codec.http3.Http3RequestStreamInboundHandler;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.handler.codec.http3.DefaultHttp3DataFrame;
+import io.netty.handler.codec.http3.DefaultHttp3Headers;
+import io.netty.handler.codec.http3.DefaultHttp3HeadersFrame;
+import io.netty.handler.codec.http3.Http3DataFrame;
+import io.netty.handler.codec.http3.Http3Headers;
+import io.netty.handler.codec.http3.Http3HeadersFrame;
+import io.netty.handler.codec.http3.Http3RequestStreamInboundHandler;
+import io.netty.handler.codec.quic.QuicStreamChannel;
 
 import static org.apache.dubbo.remoting.http3.netty4.Constants.TRI_PING;
 

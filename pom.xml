@@ -158,7 +158,7 @@
     <build_helper_maven_plugin_version>3.6.0</build_helper_maven_plugin_version>
     <maven_jacoco_version>0.8.13</maven_jacoco_version>
     <maven_flatten_version>1.7.0</maven_flatten_version>
-    <maven_enforce_version>3.5.0</maven_enforce_version>
+    <maven_enforce_version>3.6.0</maven_enforce_version>
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
@@ -170,7 +170,8 @@
     <spring-boot-3.version>3.5.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
-    <grpc_version>1.54.0</grpc_version>
+    <!-- grpc_version should be same as grpc.version at dubbo-dependencies-bom -->
+    <grpc_version>1.73.0</grpc_version>
     <spotless-maven-plugin.version>2.44.5</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>

@@ -31,14 +31,14 @@ import java.io.InputStream;
 import java.util.List;
 
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http3.Http3;
+import io.netty.handler.codec.quic.QuicSslContext;
+import io.netty.handler.codec.quic.QuicSslContextBuilder;
 import io.netty.handler.ssl.ApplicationProtocolNegotiator;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 
 public final class Http3SslContexts extends SslContext {
 
