@@ -160,7 +160,7 @@ public class PojoUtils {
         }
 
         if (pojo instanceof LocalDate || pojo instanceof LocalDateTime || pojo instanceof LocalTime) {
-            return pojo.toString();
+            return pojo;
         }
 
         if (pojo instanceof Class) {
