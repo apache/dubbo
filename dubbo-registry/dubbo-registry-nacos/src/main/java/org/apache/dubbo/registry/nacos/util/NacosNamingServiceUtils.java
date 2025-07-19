@@ -111,7 +111,7 @@ public class NacosNamingServiceUtils {
      * @since 2.7.5
      */
     public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
-        boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
+        boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, false);
         int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 10);
         NacosConnectionManager nacosConnectionManager =
