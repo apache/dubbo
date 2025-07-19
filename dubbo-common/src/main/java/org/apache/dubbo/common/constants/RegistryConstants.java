@@ -149,4 +149,9 @@ public interface RegistryConstants {
      * for compatible, we should export noting suffix servicename, eg: ${interface}:${version}
      */
     String NACOE_REGISTER_COMPATIBLE = "nacos.register-compatible";
+
+    /**
+     * protocol of admin
+     */
+    String ADMIN_PROTOCOL = "admin";
 }

@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -31,8 +32,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ADMIN_PROTOCOL;
 
 public abstract class ServiceAddressURL extends URL {
+
     protected final transient URL consumerURL;
 
     // cache
@@ -68,6 +71,9 @@ public abstract class ServiceAddressURL extends URL {
 
     @Override
     public String getServiceInterface() {
+        if (ADMIN_PROTOCOL.equals(consumerURL.getProtocol())) {
+            return super.getServiceInterface();
+        }
         return consumerURL.getServiceInterface();
     }
 
