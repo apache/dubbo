@@ -20,7 +20,7 @@ import org.apache.dubbo.common.convert.Converter;
 import org.apache.dubbo.common.convert.StringToDoubleConverter;
 
 /**
- * A {@link Converter} implementation of {@linkg String} to {@link Double}
+ * A {@link Converter} implementation of {@link String} to {@link Double}
  *
  * @since 2.7.7
  */
