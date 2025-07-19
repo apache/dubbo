@@ -492,6 +492,15 @@
       </properties>
     </profile>
     <profile>
+      <id>jdk-version-ge-9</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-plugin/dubbo-mutiny</module>
+      </modules>
+    </profile>
+    <profile>
       <id>jdk-version-ge-17</id>
       <activation>
         <jdk>[17,)</jdk>
