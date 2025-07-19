@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
