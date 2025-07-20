@@ -88,7 +88,7 @@ class MeshAppRuleListenerTest {
             + "      name: testing\n"
             + "  trafficPolicy:\n"
             + "    loadBalancer: { simple: ROUND_ROBIN }\n";
-    private static final String rule4 = "apiVersionservice.dubbo.apache.org/v1alpha1\n";
+    private static final String rule4 = "apiVersion: service.dubbo.apache.org/v1alpha1\n";
     private static final String rule5 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" + "kind: DestinationRule\n"
             + "metadata: { name: demo-route.Type1 }\n"
             + "spec:\n"
