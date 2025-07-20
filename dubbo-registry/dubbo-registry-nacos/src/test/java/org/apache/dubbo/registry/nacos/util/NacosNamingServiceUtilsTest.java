@@ -57,7 +57,7 @@ class NacosNamingServiceUtilsTest {
 
     @Test
     void testToServiceInstance() {
-        URL registryUrl = URL.valueOf("test://test:8080/test");
+        URL registryUrl = URL.valueOf("nacos://127.0.0.1:8080/test");
         Instance instance = new Instance();
         instance.setServiceName("serviceName");
         instance.setIp("1.1.1.1");
@@ -78,7 +78,7 @@ class NacosNamingServiceUtilsTest {
 
     @Test
     void testCreateNamingService() {
-        URL url = URL.valueOf("test://test:8080/test?backup=backup&nacos.check=false");
+        URL url = URL.valueOf("nacos://127.0.0.1:8080/test?backup=127.0.0.1&nacos.check=false");
         NacosNamingServiceWrapper namingService = NacosNamingServiceUtils.createNamingService(url);
         Assertions.assertNotNull(namingService);
     }
