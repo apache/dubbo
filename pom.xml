@@ -492,15 +492,6 @@
       </properties>
     </profile>
     <profile>
-      <id>jdk-version-ge-9</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
-      <modules>
-        <module>dubbo-plugin/dubbo-mutiny</module>
-      </modules>
-    </profile>
-    <profile>
       <id>jdk-version-ge-17</id>
       <activation>
         <jdk>[17,)</jdk>
@@ -508,6 +499,7 @@
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
         <module>dubbo-plugin/dubbo-spring6-security</module>
+        <module>dubbo-plugin/dubbo-mutiny</module>
       </modules>
     </profile>
     <!-- jacoco: mvn validate -Pjacoco  -->
