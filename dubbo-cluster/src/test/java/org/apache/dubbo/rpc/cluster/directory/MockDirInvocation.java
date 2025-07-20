@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
- * MockInvocation.java
+ * MockDirInvocation
  */
 class MockDirInvocation implements Invocation {
 
