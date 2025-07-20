@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
 /**
- * StaticDirectory Test
+ * StaticDirectoryTest
  */
 class StaticDirectoryTest {
     private URL SCRIPT_URL = URL.valueOf("condition://0.0.0.0/com.foo.BarService");

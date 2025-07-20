@@ -20,7 +20,7 @@ import org.apache.dubbo.common.convert.Converter;
 import org.apache.dubbo.common.convert.StringToBooleanConverter;
 
 /**
- * A {@link Converter} implementation of {@linkg String} to {@link Boolean}
+ * A {@link Converter} implementation of {@link String} to {@link Boolean}
  *
  * @since 2.7.7
  */
