@@ -38,7 +38,7 @@ import java.util.List;
 import com.alibaba.dubbo.common.Constants;
 
 /**
- * ResourceServlet
+ * ResourceFilter
  */
 public class ResourceFilter implements Filter {
 
