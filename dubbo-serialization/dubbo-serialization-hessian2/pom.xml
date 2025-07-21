@@ -29,16 +29,54 @@ limitations under the License.
   <description>The hessian2 serialization module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
+    <org.apache.dubbo_dubbo-serialization-api_version>3.3.3</org.apache.dubbo_dubbo-serialization-api_version>
+    <org.apache.dubbo_hessian-lite_version>4.0.3</org.apache.dubbo_hessian-lite_version>
+    <org.apache.dubbo_dubbo-native_version>3.3.3</org.apache.dubbo_dubbo-native_version>
+    <org.apache.dubbo_dubbo-common_version>3.3.3</org.apache.dubbo_dubbo-common_version>
+    <com.alibaba.fastjson2_fastjson2_version>2.0.53.android8</com.alibaba.fastjson2_fastjson2_version>
+    <commons-io_commons-io_version>2.18.0</commons-io_commons-io_version>
+    <javax.annotation_javax.annotation-api_version>1.3.2</javax.annotation_javax.annotation-api_version>
+    <org.javassist_javassist_version>3.30.2-GA</org.javassist_javassist_version>
   </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-common</artifactId>
+        <version>${org.apache.dubbo_dubbo-common_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.alibaba.fastjson2</groupId>
+        <artifactId>fastjson2</artifactId>
+        <version>${com.alibaba.fastjson2_fastjson2_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io_commons-io_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>${javax.annotation_javax.annotation-api_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.javassist</groupId>
+        <artifactId>javassist</artifactId>
+        <version>${org.javassist_javassist_version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-serialization-api</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${org.apache.dubbo_dubbo-serialization-api_version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>hessian-lite</artifactId>
+      <version>${org.apache.dubbo_hessian-lite_version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -48,8 +86,7 @@ limitations under the License.
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-native</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${org.apache.dubbo_dubbo-native_version}</version>
     </dependency>
-
   </dependencies>
 </project>
