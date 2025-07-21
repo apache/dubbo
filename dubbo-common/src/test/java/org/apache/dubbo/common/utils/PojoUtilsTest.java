@@ -772,15 +772,15 @@ class PojoUtilsTest {
 
         Object localDateTimeGen = PojoUtils.generalize(LocalDateTime.now());
         Object localDateTime = PojoUtils.realize(localDateTimeGen, LocalDateTime.class);
-        assertEquals(localDateTimeGen, localDateTime);
+        assertEquals(localDateTimeGen, localDateTime.toString());
 
         Object localDateGen = PojoUtils.generalize(LocalDate.now());
         Object localDate = PojoUtils.realize(localDateGen, LocalDate.class);
-        assertEquals(localDateGen, localDate);
+        assertEquals(localDateGen, localDate.toString());
 
         Object localTimeGen = PojoUtils.generalize(LocalTime.now());
         Object localTime = PojoUtils.realize(localTimeGen, LocalTime.class);
-        assertEquals(localTimeGen, localTime);
+        assertEquals(localTimeGen, localTime.toString());
     }
 
     @Test
