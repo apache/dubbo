@@ -39,8 +39,8 @@ public class Http2ClientSettingsHandler extends SimpleChannelInboundHandler<Http
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Http2SettingsFrame msg) throws Exception {
         if (logger.isDebugEnabled()) {
-            logger.debug("Receive Http2 Settings frame of " + ctx.channel().localAddress() + " -> "
-                    + ctx.channel().remoteAddress());
+            logger.debug("Receive server Http2 Settings frame of "
+                    + ctx.channel().localAddress() + " -> " + ctx.channel().remoteAddress());
         }
         // connectionPrefaceReceivedPromise will be set null after first used.
         Promise<Void> connectionPrefaceReceivedPromise = connectionPrefaceReceivedPromiseRef.get();
@@ -49,6 +49,7 @@ public class Http2ClientSettingsHandler extends SimpleChannelInboundHandler<Http
         } else {
             // Notify the connection preface is received when first inbound http2 settings frame is arrived.
             connectionPrefaceReceivedPromise.trySuccess(null);
+            ctx.pipeline().remove(this);
         }
     }
 }

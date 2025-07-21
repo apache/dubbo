@@ -38,7 +38,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**
- *
+ * ConfigParserTest
  */
 class ConfigParserTest {
 
