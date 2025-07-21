@@ -40,7 +40,6 @@
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>mutiny</artifactId>
-      <version>2.9.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
