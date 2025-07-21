@@ -73,7 +73,7 @@ class PojoUtilsTest {
         bigPerson.setLoginName("name1");
         bigPerson.setStatus(PersonStatus.ENABLED);
         bigPerson.setEmail("abc@123.com");
-        bigPerson.setPenName("pname");
+        bigPerson.setPersonName("pname");
 
         ArrayList<Phone> phones = new ArrayList<Phone>();
         Phone phone1 = new Phone("86", "0571", "11223344", "001");
