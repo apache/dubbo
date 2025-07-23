@@ -78,9 +78,6 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                     ((RpcInvocation) invocation).addObjectAttachments(selected);
                 }
             }
-        } else {
-            ((RpcInvocation) invocation)
-                    .addObjectAttachments(RpcContext.getServerAttachment().getObjectAttachments());
         }
         Map<String, Object> contextAttachments =
                 RpcContext.getClientAttachment().getObjectAttachments();
