@@ -25,13 +25,16 @@ import javax.ws.rs.container.ContainerResponseFilter;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Priority(Priorities.USER)
 public class TraceFilter implements ContainerRequestFilter, ContainerResponseFilter {
+    private static final Logger logger = LoggerFactory.getLogger(TraceFilter.class);
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        System.out.println(
-                "Request filter invoked: " + requestContext.getUriInfo().getAbsolutePath());
+        logger.info("Request filter invoked: {}", requestContext.getUriInfo().getAbsolutePath());
     }
 
     @Override
@@ -39,6 +42,6 @@ public class TraceFilter implements ContainerRequestFilter, ContainerResponseFil
             ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext)
             throws IOException {
         containerResponseContext.setEntity("response-filter");
-        System.out.println("Response filter invoked.");
+        logger.info("Response filter invoked.");
     }
 }

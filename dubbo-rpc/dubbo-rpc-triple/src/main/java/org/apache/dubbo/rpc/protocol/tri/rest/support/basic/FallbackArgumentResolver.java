@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.AbstractArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.AnnotationMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodMeta.StreamParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
@@ -60,6 +61,9 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 }
             }
             paramCount = methodMeta.getMethodDescriptor().getRpcType() != RpcType.UNARY ? 1 : paramMetas.length;
+        } else if (param instanceof StreamParameterMeta) {
+            paramCount = 1;
+            noBodyParam = false;
         }
         return new FallbackNamedValueMeta(param.isAnnotated(Annotations.Nonnull), noBodyParam, paramCount);
     }
@@ -82,7 +86,11 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 try {
                     Object body = RequestUtils.decodeBody(request, meta.genericType());
                     if (body != null) {
-                        return body;
+                        if (body != RequestUtils.EMPTY_BODY) {
+                            return body;
+                        }
+                        Object value = single ? request.parameter(meta.name()) : request.parameterValues(meta.name());
+                        return value == null ? body : value;
                     }
                 } catch (DecodeException ignored) {
                 }
@@ -92,7 +100,7 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
                 if (body instanceof List) {
                     List<?> list = (List<?>) body;
                     if (list.size() == fm.paramCount) {
-                        return list.get(meta.parameterMeta().getIndex());
+                        return list.get(meta.parameter().getIndex());
                     }
                 } else if (body instanceof Map) {
                     Object value = ((Map<?, ?>) body).get(meta.name());
@@ -103,12 +111,19 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
             }
         }
 
+        if (meta.parameter().isStream()) {
+            return null;
+        }
+
         if (single) {
+            if (Map.class.isAssignableFrom(meta.type())) {
+                return RequestUtils.getParametersMap(request);
+            }
             String value = request.parameter(meta.name());
-            if (meta.parameterMeta().isSimple() || RestUtils.isMaybeJSONObject(value)) {
+            if (meta.parameter().isSimple() || RestUtils.isMaybeJSONObject(value)) {
                 return value;
             }
-            return meta.parameterMeta().bind(request, response);
+            return meta.parameter().bind(request, response);
         }
 
         return request.parameterValues(meta.name());
@@ -119,13 +134,13 @@ public class FallbackArgumentResolver extends AbstractArgumentResolver {
         return resolveValue(meta, request, response);
     }
 
-    private static class FallbackNamedValueMeta extends NamedValueMeta {
+    private static final class FallbackNamedValueMeta extends NamedValueMeta {
 
         private final boolean noBodyParam;
         private final int paramCount;
 
         FallbackNamedValueMeta(boolean required, boolean noBodyParam, int paramCount) {
-            super(required, null);
+            super(null, required);
             this.noBodyParam = noBodyParam;
             this.paramCount = paramCount;
         }

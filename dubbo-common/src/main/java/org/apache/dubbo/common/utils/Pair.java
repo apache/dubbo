@@ -32,8 +32,8 @@ public final class Pair<L, R> implements Map.Entry<L, R>, Comparable<Pair<L, R>>
     @SuppressWarnings("rawtypes")
     private static final Pair NULL = new Pair<>(null, null);
 
-    public final L left;
-    public final R right;
+    private final L left;
+    private final R right;
 
     public static <L, R> Pair<L, R> of(L left, R right) {
         return left == null && right == null ? nullPair() : new Pair<>(left, right);

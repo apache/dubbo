@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,11 @@ class MethodMetricTest {
         invocation.setAttachment(VERSION_KEY, version);
         RpcContext.getServiceContext()
                 .setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=consumer"));
+    }
+
+    @AfterAll
+    public static void destroy() {
+        ApplicationModel.defaultModel().destroy();
     }
 
     @Test

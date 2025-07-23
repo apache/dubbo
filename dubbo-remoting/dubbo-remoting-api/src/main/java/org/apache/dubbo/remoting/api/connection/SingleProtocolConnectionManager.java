@@ -17,6 +17,8 @@
 package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -26,6 +28,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 public class SingleProtocolConnectionManager implements ConnectionManager {
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(SingleProtocolConnectionManager.class);
+
     public static final String NAME = "single";
 
     private final ConcurrentMap<String, AbstractConnectionClient> connections = new ConcurrentHashMap<>(16);
@@ -42,19 +47,32 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
             throw new IllegalArgumentException("url == null");
         }
         return connections.compute(url.getAddress(), (address, conn) -> {
+            String transport = url.getParameter(Constants.TRANSPORTER_KEY, "netty4");
             if (conn == null) {
-                String transport = url.getParameter(Constants.TRANSPORTER_KEY, "netty4");
-                ConnectionManager manager = frameworkModel
-                        .getExtensionLoader(ConnectionManager.class)
-                        .getExtension(transport);
-                final AbstractConnectionClient connectionClient = manager.connect(url, handler);
-                connectionClient.addCloseListener(() -> connections.remove(address, connectionClient));
-                return connectionClient;
+                return createAbstractConnectionClient(url, handler, address, transport);
             } else {
-                conn.retain();
+                boolean shouldReuse = conn.retain();
+                if (!shouldReuse) {
+                    logger.info("Trying to create a new connection for {}.", address);
+                    return createAbstractConnectionClient(url, handler, address, transport);
+                }
                 return conn;
             }
         });
+    }
+
+    private AbstractConnectionClient createAbstractConnectionClient(
+            URL url, ChannelHandler handler, String address, String transport) {
+        ConnectionManager manager =
+                frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension(transport);
+        final AbstractConnectionClient connectionClient = manager.connect(url, handler);
+        connectionClient.addCloseListener(() -> {
+            logger.info(
+                    "Remove closed connection (with reference count==0) for address {}, a new one will be created for upcoming RPC requests routing to this address.",
+                    address);
+            connections.remove(address, connectionClient);
+        });
+        return connectionClient;
     }
 
     @Override

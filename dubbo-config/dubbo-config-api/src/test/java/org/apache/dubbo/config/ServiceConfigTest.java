@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
@@ -86,6 +87,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
 
 class ServiceConfigTest {
+
     private Protocol protocolDelegate = Mockito.mock(Protocol.class);
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
@@ -169,24 +171,28 @@ class ServiceConfigTest {
     void testExport() throws Exception {
         service.export();
 
-        assertThat(service.getExportedUrls(), hasSize(1));
-        URL url = service.toUrl();
-        assertThat(url.getProtocol(), equalTo("mockprotocol2"));
-        assertThat(url.getPath(), equalTo(DemoService.class.getName()));
-        assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
-        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
-        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
-        assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
-        assertThat(url.getParameters(), hasKey(METHODS_KEY));
-        assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
-        assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        // export DemoService in "mockprotocol2" protocol.
-        Mockito.verify(protocolDelegate, times(1)).export(Mockito.any(Invoker.class));
-        // MetadataService will be exported on either dubbo or triple (the only two default acceptable protocol)
+        try {
+            assertThat(service.getExportedUrls(), hasSize(1));
+            URL url = service.toUrl();
+            assertThat(url.getProtocol(), equalTo("mockprotocol2"));
+            assertThat(url.getPath(), equalTo(DemoService.class.getName()));
+            assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
+            assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
+            assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
+            assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
+            assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
+            assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
+            assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
+            assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
+            assertThat(url.getParameters(), hasKey(METHODS_KEY));
+            assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
+            assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
+            // export DemoService in "mockprotocol2" protocol.
+            Mockito.verify(protocolDelegate, times(1)).export(Mockito.any(Invoker.class));
+            // MetadataService will be exported on either dubbo or triple (the only two default acceptable protocol)
+        } finally {
+            service.unexport();
+        }
     }
 
     @Test
@@ -196,23 +202,31 @@ class ServiceConfigTest {
         service.getProvider().setGroup("groupA");
         service.export();
 
-        String serviceVersion = service.getVersion();
-        String serviceVersion2 = service.toUrl().getVersion();
+        try {
+            String serviceVersion = service.getVersion();
+            String serviceVersion2 = service.toUrl().getVersion();
 
-        String group = service.getGroup();
-        String group2 = service.toUrl().getGroup();
+            String group = service.getGroup();
+            String group2 = service.toUrl().getGroup();
 
-        assertEquals(serviceVersion2, serviceVersion);
-        assertEquals(group, group2);
+            assertEquals(serviceVersion2, serviceVersion);
+            assertEquals(group, group2);
+        } finally {
+            service.unexport();
+        }
     }
 
     @Test
     void testProxy() throws Exception {
         service2.export();
 
-        assertThat(service2.getExportedUrls(), hasSize(1));
-        assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
-        TestProxyFactory.count = 0;
+        try {
+            assertThat(service2.getExportedUrls(), hasSize(1));
+            assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
+            TestProxyFactory.count = 0;
+        } finally {
+            service2.unexport();
+        }
     }
 
     @Test
@@ -230,8 +244,12 @@ class ServiceConfigTest {
             public void unexported(ServiceConfig sc) {}
         });
         delayService.export();
-        assertTrue(delayService.getExportedUrls().isEmpty());
-        latch.await();
+        try {
+            assertTrue(delayService.getExportedUrls().isEmpty());
+            latch.await();
+        } finally {
+            delayService.unexport();
+        }
     }
 
     @Test
@@ -261,7 +279,9 @@ class ServiceConfigTest {
     @Test
     void testInterface1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
+            ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.TRIPLE);
             ServiceConfig<DemoService> service = new ServiceConfig<>();
+            service.setProtocol(protocolConfig);
             service.setInterface(DemoServiceImpl.class);
         });
     }
@@ -271,6 +291,16 @@ class ServiceConfigTest {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         assertThat(service.getInterface(), equalTo(DemoService.class.getName()));
+    }
+
+    @Test
+    void testNoInterfaceSupport() throws Exception {
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.TRIPLE);
+        protocolConfig.setNoInterfaceSupport(true);
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
+        service.setProtocol(protocolConfig);
+        service.setInterface(DemoServiceImpl.class);
+        assertThat(service.getInterface(), equalTo(DemoServiceImpl.class.getName()));
     }
 
     @Test
@@ -303,8 +333,12 @@ class ServiceConfigTest {
     @Test
     void testApplicationInUrl() {
         service.export();
-        assertNotNull(service.toUrl().getApplication());
-        Assertions.assertEquals("app", service.toUrl().getApplication());
+        try {
+            assertNotNull(service.toUrl().getApplication());
+            Assertions.assertEquals("app", service.toUrl().getApplication());
+        } finally {
+            service.unexport();
+        }
     }
 
     @Test
@@ -331,24 +365,28 @@ class ServiceConfigTest {
     void testExportWithoutRegistryConfig() {
         serviceWithoutRegistryConfig.export();
 
-        assertThat(serviceWithoutRegistryConfig.getExportedUrls(), hasSize(1));
-        URL url = serviceWithoutRegistryConfig.toUrl();
-        assertThat(url.getProtocol(), equalTo("mockprotocol2"));
-        assertThat(url.getPath(), equalTo(DemoService.class.getName()));
-        assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
-        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
-        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
-        assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
-        assertThat(url.getParameters(), hasKey(METHODS_KEY));
-        assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
-        assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        // export DemoService in "mockprotocol2" protocol (MetadataService will be not exported if no registry
-        // specified)
-        Mockito.verify(protocolDelegate, times(1)).export(Mockito.any(Invoker.class));
+        try {
+            assertThat(serviceWithoutRegistryConfig.getExportedUrls(), hasSize(1));
+            URL url = serviceWithoutRegistryConfig.toUrl();
+            assertThat(url.getProtocol(), equalTo("mockprotocol2"));
+            assertThat(url.getPath(), equalTo(DemoService.class.getName()));
+            assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
+            assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
+            assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
+            assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
+            assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
+            assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
+            assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
+            assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
+            assertThat(url.getParameters(), hasKey(METHODS_KEY));
+            assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
+            assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
+            // export DemoService in "mockprotocol2" protocol (MetadataService will be not exported if no registry
+            // specified)
+            Mockito.verify(protocolDelegate, times(1)).export(Mockito.any(Invoker.class));
+        } finally {
+            serviceWithoutRegistryConfig.unexport();
+        }
     }
 
     @Test
@@ -360,10 +398,14 @@ class ServiceConfigTest {
 
         service.export();
 
-        Map<String, ServiceConfig> exportedServices = mockServiceListener.getExportedServices();
-        assertEquals(1, exportedServices.size());
-        ServiceConfig serviceConfig = exportedServices.get(service.getUniqueServiceName());
-        assertSame(service, serviceConfig);
+        try {
+            Map<String, ServiceConfig> exportedServices = mockServiceListener.getExportedServices();
+            assertEquals(1, exportedServices.size());
+            ServiceConfig serviceConfig = exportedServices.get(service.getUniqueServiceName());
+            assertSame(service, serviceConfig);
+        } finally {
+            service.unexport();
+        }
     }
 
     @Test
@@ -390,6 +432,7 @@ class ServiceConfigTest {
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
+            service.unexport();
         });
     }
 
@@ -419,8 +462,13 @@ class ServiceConfigTest {
 
         service.export();
 
-        assertFalse(service.getExportedUrls().isEmpty());
-        assertEquals("false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+        try {
+            assertFalse(service.getExportedUrls().isEmpty());
+            assertEquals(
+                    "false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+        } finally {
+            service.unexport();
+        }
     }
 
     @Test
@@ -448,8 +496,13 @@ class ServiceConfigTest {
 
         service.export();
 
-        assertFalse(service.getExportedUrls().isEmpty());
-        assertEquals("false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+        try {
+            assertFalse(service.getExportedUrls().isEmpty());
+            assertEquals(
+                    "false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+        } finally {
+            service.unexport();
+        }
     }
 
     @Test
@@ -477,8 +530,13 @@ class ServiceConfigTest {
 
         service.export();
 
-        assertFalse(service.getExportedUrls().isEmpty());
-        assertEquals("false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+        try {
+            assertFalse(service.getExportedUrls().isEmpty());
+            assertEquals(
+                    "false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+        } finally {
+            service.unexport();
+        }
     }
 
     @Test
@@ -506,6 +564,7 @@ class ServiceConfigTest {
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
+            service.unexport();
         });
     }
 
@@ -534,6 +593,7 @@ class ServiceConfigTest {
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
+            service.unexport();
         });
     }
 
@@ -562,6 +622,7 @@ class ServiceConfigTest {
             service.setMethods(Lists.newArrayList(methodConfig));
 
             service.export();
+            service.unexport();
         });
     }
 

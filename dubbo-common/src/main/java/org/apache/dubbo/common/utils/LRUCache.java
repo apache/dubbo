@@ -112,6 +112,16 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     }
 
     @Override
+    public V putIfAbsent(K key, V value) {
+        lock.lock();
+        try {
+            return super.putIfAbsent(key, value);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
     public V computeIfAbsent(K key, Function<? super K, ? extends V> fn) {
         V value = get(key);
         if (value == null) {

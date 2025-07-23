@@ -22,6 +22,7 @@ notifications:
   issues:       notifications@dubbo.apache.org
   pullrequests: notifications@dubbo.apache.org
   jira_options: link label link label
+  discussions: notifications@dubbo.apache.org
 
 github:
   homepage: https://dubbo.apache.org/
@@ -33,16 +34,54 @@ github:
     issues: true
     # Enable projects for project management boards
     projects: true
+    # Enable GitHub Discussions for community discussions
+    discussions: true
   protected_branches:
-    master:
-      # only disable force push
-      foo: bar
-    3.0:
-      # only disable force push
-      foo: bar
-    3.1:
-      # only disable force push
-      foo: bar
+    master: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    2.5.x: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    2.6.x: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    2.7.x: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    3.0: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    3.1: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    3.2: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    3.3: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+    3.4: 
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
   labels:
     - java
     - rpc
@@ -55,5 +94,3 @@ github:
     - http
     - grpc
     - web
-  collaborators:
-    - oxsean

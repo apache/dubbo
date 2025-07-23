@@ -55,6 +55,5 @@ public class NettyHttp1ConnectionHandler extends SimpleChannelInboundHandler<Htt
                 new NettyHttp1Channel(ctx.channel(), tripleConfig), url, frameworkModel);
         http1TransportListener.onMetadata(http1Request);
         http1TransportListener.onData(http1Request);
-        ctx.channel().closeFuture().addListener(future -> http1TransportListener.close());
     }
 }

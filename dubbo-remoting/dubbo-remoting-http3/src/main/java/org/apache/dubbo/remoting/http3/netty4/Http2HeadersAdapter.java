@@ -19,14 +19,13 @@ package org.apache.dubbo.remoting.http3.netty4;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
 import io.netty.handler.codec.Headers;
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.incubator.codec.http3.Http3Headers;
+import io.netty.handler.codec.http3.Http3Headers;
 
 public final class Http2HeadersAdapter implements Http2Headers {
 
@@ -612,7 +611,7 @@ public final class Http2HeadersAdapter implements Http2Headers {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(headers);
+        return headers.hashCode();
     }
 
     @Override
@@ -622,6 +621,6 @@ public final class Http2HeadersAdapter implements Http2Headers {
 
     @Override
     public String toString() {
-        return headers.toString();
+        return "Http2HeadersAdapter{headers=" + headers + '}';
     }
 }

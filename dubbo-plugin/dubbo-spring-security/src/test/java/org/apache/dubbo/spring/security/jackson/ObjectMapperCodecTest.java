@@ -29,7 +29,7 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 
 public class ObjectMapperCodecTest {
 
-    private ObjectMapperCodec mapper = new ObjectMapperCodec();
+    private final ObjectMapperCodec mapper = new ObjectMapperCodec();
 
     @Test
     public void testOAuth2AuthorizedClientCodec() {

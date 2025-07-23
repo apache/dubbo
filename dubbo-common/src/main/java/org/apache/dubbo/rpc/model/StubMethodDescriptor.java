@@ -120,6 +120,16 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     }
 
     @Override
+    public Class<?>[] getActualRequestTypes() {
+        return this.parameterClasses;
+    }
+
+    @Override
+    public Class<?> getActualResponseType() {
+        return this.returnClass;
+    }
+
+    @Override
     public Pack getRequestPack() {
         return requestPack;
     }
@@ -137,5 +147,12 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     @Override
     public UnPack getRequestUnpack() {
         return requestUnpack;
+    }
+
+    @Override
+    public String toString() {
+        return "StubMethodDescriptor{" + "method=" + methodName + '('
+                + (parameterClasses.length > 0 ? parameterClasses[0].getSimpleName() : "") + "), rpcType='" + rpcType
+                + "'}";
     }
 }

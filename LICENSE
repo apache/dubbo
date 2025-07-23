@@ -287,3 +287,11 @@ This product contains a modified portion of 'Istio', an open platform to connect
  under a "Apache License 2.0" license, see https://github.com/istio/api/blob/master/LICENSE:
 
  * security/v1alpha1/ca.proto
+
+For the file dubbo-plugin/dubbo-rest-openapi/src/main/resources/META-INF/resources/swagger-ui/index.html:
+
+Under a "Apache License 2.0" license, see https://github.com/swagger-api/swagger-ui/blob/master/LICENSE
+
+For the file dubbo-plugin/dubbo-rest-openapi/src/main/resources/META-INF/resources/redoc/index.html:
+
+Under a "MIT License" license, see https://github.com/Redocly/redoc/blob/main/LICENSE

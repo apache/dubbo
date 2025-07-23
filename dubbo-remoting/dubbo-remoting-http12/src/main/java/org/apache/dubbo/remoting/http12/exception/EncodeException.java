@@ -18,6 +18,8 @@ package org.apache.dubbo.remoting.http12.exception;
 
 public class EncodeException extends HttpStatusException {
 
+    private static final long serialVersionUID = 1L;
+
     public EncodeException(String message) {
         super(500, message);
     }

@@ -78,7 +78,7 @@ public class NettyMetricsCollector extends CombMetricsCollector<NettyEvent> {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableNetty()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(true);
+        return Optional.ofNullable(collectEnabled).orElse(false);
     }
 
     @Override

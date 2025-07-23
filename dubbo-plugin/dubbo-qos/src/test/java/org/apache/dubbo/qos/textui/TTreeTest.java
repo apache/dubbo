@@ -36,6 +36,5 @@ class TTreeTest {
                 + "    |   `---2\n"
                 + "    `---three\n";
         assertThat(result, equalTo(expected));
-        System.out.println(result);
     }
 }

@@ -19,9 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-distribution</artifactId>
+    <artifactId>dubbo-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>dubbo-apache-release</artifactId>
   <packaging>pom</packaging>

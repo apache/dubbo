@@ -37,6 +37,7 @@ import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -49,6 +50,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.Transient;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -323,6 +325,23 @@ public abstract class AbstractConfig implements Serializable {
                 && Modifier.isPublic(method.getModifiers())
                 && method.getParameterTypes().length == 0
                 && method.getReturnType() == Map.class);
+    }
+
+    private static boolean isPropertySetter(Method method) {
+        String name = method.getName();
+        if (name.startsWith("set")
+                && name.length() > 3
+                && Modifier.isPublic(method.getModifiers())
+                && method.getParameterCount() == 1) {
+            Class<?> paramType = method.getParameterTypes()[0];
+            if (paramType.isArray()) {
+                Class<?> componentType = paramType.getComponentType();
+                return componentType.isPrimitive() || isSimpleType(componentType);
+            } else {
+                return paramType.isPrimitive() || isSimpleType(paramType);
+            }
+        }
+        return false;
     }
 
     private static boolean isParametersSetter(Method method) {
@@ -770,11 +789,19 @@ public abstract class AbstractConfig implements Serializable {
         // even if old one (this) contains non-null value, do override
         boolean overrideAll = configMode == ConfigMode.OVERRIDE_ALL;
 
+        FrameworkModel frameworkModel = ScopeModelUtil.getFrameworkModel(getScopeModel());
+
         // loop methods, get override value and set the new value back to method
         List<Method> methods =
                 MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
         for (Method method : methods) {
-            if (MethodUtils.isSetter(method)) {
+            // filter non attribute
+            Parameter parameter = method.getAnnotation(Parameter.class);
+            if (parameter != null && !parameter.attribute()) {
+                continue;
+            }
+
+            if (isPropertySetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
 
                 // if config mode is OVERRIDE_IF_ABSENT and property has set, skip
@@ -787,17 +814,55 @@ public abstract class AbstractConfig implements Serializable {
 
                 try {
                     String value = StringUtils.trim(configuration.getString(kebabPropertyName));
+
+                    Class<?> paramType = method.getParameterTypes()[0];
+                    if (paramType.isArray()) {
+                        if (isIgnoredAttribute(obj.getClass(), propertyName)) {
+                            continue;
+                        }
+
+                        Class<?> itemType = paramType.getComponentType();
+                        List<Object> items = new ArrayList<>();
+                        if (StringUtils.hasText(value)) {
+                            value = environment.resolvePlaceholders(value);
+                            if (StringUtils.hasText(value)) {
+                                for (String item : StringUtils.tokenize(value, ',')) {
+                                    items.add(ClassUtils.convertPrimitive(frameworkModel, itemType, item));
+                                }
+                            }
+                        } else {
+                            for (int i = 0; ; i++) {
+                                value = StringUtils.trim(configuration.getString(kebabPropertyName + '[' + i + ']'));
+                                if (value == null) {
+                                    break;
+                                }
+                                if (StringUtils.hasText(value)) {
+                                    value = environment.resolvePlaceholders(value);
+                                    if (StringUtils.hasText(value)) {
+                                        items.add(ClassUtils.convertPrimitive(frameworkModel, itemType, value));
+                                    }
+                                }
+                            }
+                        }
+                        int len = items.size();
+                        if (len > 0) {
+                            Object array = Array.newInstance(itemType, len);
+                            for (int i = 0; i < len; i++) {
+                                Array.set(array, i, items.get(i));
+                            }
+                            method.invoke(obj, array);
+                        }
+                        continue;
+                    }
+
                     // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two
                     // 'setGeneric' methods in ReferenceConfig.
                     if (StringUtils.hasText(value)
-                            && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)
+                            && ClassUtils.isTypeMatch(paramType, value)
                             && !isIgnoredAttribute(obj.getClass(), propertyName)) {
                         value = environment.resolvePlaceholders(value);
                         if (StringUtils.hasText(value)) {
-                            Object arg = ClassUtils.convertPrimitive(
-                                    ScopeModelUtil.getFrameworkModel(getScopeModel()),
-                                    method.getParameterTypes()[0],
-                                    value);
+                            Object arg = ClassUtils.convertPrimitive(frameworkModel, paramType, value);
                             if (arg != null) {
                                 method.invoke(obj, arg);
                             }

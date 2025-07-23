@@ -73,19 +73,9 @@ public class ReflectionPackableMethod implements PackableMethod {
         switch (method.getRpcType()) {
             case CLIENT_STREAM:
             case BI_STREAM:
-                actualRequestTypes = new Class<?>[] {
-                    obtainActualTypeInStreamObserver(
-                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0])
-                };
-                actualResponseType = obtainActualTypeInStreamObserver(
-                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
-                                .getActualTypeArguments()[0]);
-                break;
             case SERVER_STREAM:
-                actualRequestTypes = method.getMethod().getParameterTypes();
-                actualResponseType = obtainActualTypeInStreamObserver(
-                        ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
-                                .getActualTypeArguments()[0]);
+                actualRequestTypes = method.getActualRequestTypes();
+                actualResponseType = method.getActualResponseType();
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
@@ -125,7 +115,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         return new ReflectionPackableMethod(methodDescriptor, url, serializeName, allSerialize);
     }
 
-    static boolean isStreamType(Class<?> type) {
+    public static boolean isStreamType(Class<?> type) {
         return StreamObserver.class.isAssignableFrom(type) || GRPC_STREAM_CLASS.equalsIgnoreCase(type.getName());
     }
 
@@ -271,8 +261,8 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     private static String convertHessianFromWrapper(String serializeType) {
-        if (TripleConstant.HESSIAN4.equals(serializeType)) {
-            return TripleConstant.HESSIAN2;
+        if (TripleConstants.HESSIAN4.equals(serializeType)) {
+            return TripleConstants.HESSIAN2;
         }
         return serializeType;
     }
@@ -328,7 +318,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             multipleSerialization.serialize(url, requestSerialize, actualResponseType, obj, bos);
-            return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
+            return TripleCustomerProtocolWrapper.TripleResponseWrapper.Builder.newBuilder()
                     .setSerializeType(requestSerialize)
                     .setType(actualResponseType.getName())
                     .setData(bos.toByteArray())
@@ -359,8 +349,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
-            TripleCustomerProtocolWapper.TripleResponseWrapper wrapper =
-                    TripleCustomerProtocolWapper.TripleResponseWrapper.parseFrom(data);
+            TripleCustomerProtocolWrapper.TripleResponseWrapper wrapper =
+                    TripleCustomerProtocolWrapper.TripleResponseWrapper.parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
 
             CodecSupport.checkSerialization(serializeType, allSerialize);
@@ -405,11 +395,14 @@ public class ReflectionPackableMethod implements PackableMethod {
             } else {
                 arguments = (Object[]) obj;
             }
-            final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder =
-                    TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
+            TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder builder =
+                    TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder.newBuilder();
             builder.setSerializeType(serialize);
             for (String type : argumentsType) {
                 builder.addArgTypes(type);
+            }
+            if (actualRequestTypes == null || actualRequestTypes.length == 0) {
+                return builder.build().toByteArray();
             }
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             for (int i = 0; i < arguments.length; i++) {
@@ -429,8 +422,8 @@ public class ReflectionPackableMethod implements PackableMethod {
          * @return hessian4 if the param is hessian2, otherwise return the param
          */
         private String convertHessianToWrapper(String serializeType) {
-            if (TripleConstant.HESSIAN2.equals(serializeType)) {
-                return TripleConstant.HESSIAN4;
+            if (TripleConstants.HESSIAN2.equals(serializeType)) {
+                return TripleConstants.HESSIAN4;
             }
             return serializeType;
         }
@@ -457,8 +450,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
-            TripleCustomerProtocolWapper.TripleRequestWrapper wrapper =
-                    TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
+            TripleCustomerProtocolWrapper.TripleRequestWrapper wrapper =
+                    TripleCustomerProtocolWrapper.TripleRequestWrapper.parseFrom(data);
 
             String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             CodecSupport.checkSerialization(wrapperSerializeType, allSerialize);

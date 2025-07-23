@@ -33,6 +33,8 @@ public final class PathSegment implements Comparable<PathSegment> {
     private List<String> variables;
     private Pattern pattern;
 
+    private KeyString keyValue;
+
     public PathSegment(Type type, String value) {
         this.type = type;
         this.value = value;
@@ -110,21 +112,24 @@ public final class PathSegment implements Comparable<PathSegment> {
         switch (type) {
             case SLASH:
             case LITERAL:
-                return path.regionMatches(start, value, 0, value.length());
+                if (keyValue == null) {
+                    keyValue = new KeyString(value);
+                }
+                return path.regionMatches(start, keyValue);
             case WILDCARD_TAIL:
                 if (variables != null) {
-                    variableMap.put(getVariable(), path.substring(start));
+                    variableMap.put(getVariable(), path.toString(start));
                 }
                 return true;
             case VARIABLE:
                 if (variables != null) {
-                    variableMap.put(getVariable(), path.substring(start, end));
+                    variableMap.put(getVariable(), path.toString(start, end));
                 }
                 return true;
             case PATTERN:
-                return matchPattern(path.substring(start, end), variableMap);
+                return matchPattern(path.toString(start, end), variableMap);
             case PATTERN_MULTI:
-                return matchPattern(path.substring(start), variableMap);
+                return matchPattern(path.toString(start), variableMap);
             default:
                 return false;
         }
@@ -188,9 +193,9 @@ public final class PathSegment implements Comparable<PathSegment> {
                 return comparison;
             }
         }
-        int size = variables == null ? 0 : variables.size();
-        int otherSize = other.variables == null ? 0 : other.variables.size();
-        return otherSize - size;
+        int size = variables == null ? 99 : variables.size();
+        int otherSize = other.variables == null ? 99 : other.variables.size();
+        return size - otherSize;
     }
 
     public enum Type {
@@ -207,18 +212,18 @@ public final class PathSegment implements Comparable<PathSegment> {
         LITERAL(1),
         /**
          * A wildcard segment.
-         * E.g.: 't?st*uv' and '/foo/&ast;/bar'
+         * E.g.: 't?st*uv'
          */
         WILDCARD,
         /**
          * A wildcard matching suffix.
          * Transient type used for parsing, will not be present in the PathExpression
-         * E.g.: '/foo/**' and '/**' and '/{*bar}'
+         * E.g.: '/foo/**' or '/**' or '/{*bar}'
          */
         WILDCARD_TAIL,
         /**
          * A template variable segment.
-         * E.g.: '{foo}'
+         * E.g.: '{foo}' or '/foo/&ast;/bar'
          */
         VARIABLE(10),
         /**

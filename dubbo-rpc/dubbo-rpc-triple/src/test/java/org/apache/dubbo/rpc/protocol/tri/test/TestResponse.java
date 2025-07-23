@@ -18,15 +18,19 @@ package org.apache.dubbo.rpc.protocol.tri.test;
 
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
-import org.apache.dubbo.remoting.http12.h2.Http2Headers;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
-import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("unchecked")
 public class TestResponse {
@@ -52,7 +56,7 @@ public class TestResponse {
     }
 
     public int getStatus() {
-        return Integer.parseInt(headers.getFirst(Http2Headers.STATUS.getName()));
+        return Integer.parseInt(headers.getFirst(PseudoHeaderName.STATUS.value()));
     }
 
     public boolean isOk() {
@@ -60,7 +64,7 @@ public class TestResponse {
     }
 
     public String getContentType() {
-        return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        return headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getKey());
     }
 
     public <T> T getBody(Class<T> type) {
@@ -69,7 +73,7 @@ public class TestResponse {
             if (status >= 400) {
                 List<String> bodies = getBodies(String.class);
                 String message = bodies.isEmpty() ? null : bodies.get(0);
-                throw new RestException(status, "status: " + status + ", body: " + message);
+                throw new HttpStatusException(status, "body=" + message);
             }
         }
         List<T> bodies = getBodies(type);
@@ -80,8 +84,17 @@ public class TestResponse {
         List<T> bodies = (List<T>) this.bodies;
         if (bodies == null) {
             bodies = new ArrayList<>(oss.size());
-            for (OutputStream os : oss) {
-                ByteArrayOutputStream bos = (ByteArrayOutputStream) os;
+            boolean isTextEvent = MediaType.TEXT_EVENT_STREAM.getName().equals(getContentType());
+            for (int i = 0, size = oss.size(); i < size; i++) {
+                ByteArrayOutputStream bos = (ByteArrayOutputStream) oss.get(i);
+                if (isTextEvent) {
+                    String data = new String(bos.toByteArray(), UTF_8);
+                    if (data.startsWith("data:")) {
+                        String body = data.substring(5, data.length() - 2);
+                        bodies.add((T) decoder.decode(new ByteArrayInputStream(body.getBytes(UTF_8)), type));
+                    }
+                    continue;
+                }
                 if (bos.size() == 0) {
                     bodies.add(null);
                 } else {

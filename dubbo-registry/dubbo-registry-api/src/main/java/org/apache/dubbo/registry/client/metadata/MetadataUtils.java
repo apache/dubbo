@@ -18,16 +18,17 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.aot.NativeDetector;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataRequest;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceV2;
 import org.apache.dubbo.metadata.MetadataServiceV2Detector;
-import org.apache.dubbo.metadata.Revision;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
@@ -38,9 +39,11 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
@@ -50,10 +53,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.NATIVE_STUB;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
@@ -62,6 +68,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUST
 import static org.apache.dubbo.metadata.util.MetadataServiceVersionUtils.V2;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_VERSION_NAME;
+import static org.apache.dubbo.rpc.Constants.AUTH_KEY;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 
 public class MetadataUtils {
@@ -70,9 +77,8 @@ public class MetadataUtils {
     public static void publishServiceDefinition(
             URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).isEmpty()) {
-            String msg =
-                    "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
-            logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", msg);
+            logger.info("[METADATA_REGISTER] Remote Metadata Report Server is not provided or unavailable, "
+                    + "will stop registering service definition to remote center!");
             return;
         }
 
@@ -163,17 +169,34 @@ public class MetadataUtils {
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
 
         url = url.setServiceModel(consumerModel);
+        if (url.getParameter(AUTH_KEY, false)) {
+            url = url.addParameter(FILTER_KEY, "-default,consumersign");
+        }
 
         RemoteMetadataService remoteMetadataService;
         ProxyFactory proxyFactory =
                 applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        if (useV2) {
+        if (useV2 && !inNativeImage) {
             Invoker<MetadataServiceV2> invoker = protocol.refer(MetadataServiceV2.class, url);
+
+            if (url.getParameter(AUTH_KEY, false)) {
+                FilterChainBuilder filterChainBuilder = ScopeModelUtil.getExtensionLoader(
+                                FilterChainBuilder.class, url.getScopeModel())
+                        .getDefaultExtension();
+                invoker = filterChainBuilder.buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+            }
 
             remoteMetadataService =
                     new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);
         } else {
             Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
+
+            if (url.getParameter(AUTH_KEY, false)) {
+                FilterChainBuilder filterChainBuilder = ScopeModelUtil.getExtensionLoader(
+                                FilterChainBuilder.class, url.getScopeModel())
+                        .getDefaultExtension();
+                invoker = filterChainBuilder.buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+            }
 
             remoteMetadataService =
                     new RemoteMetadataService(consumerModel, proxyFactory.getProxy(invoker), internalModel);
@@ -211,6 +234,7 @@ public class MetadataUtils {
 
         String version = metadata.get(METADATA_SERVICE_VERSION_NAME);
         url = url.putAttribute(METADATA_SERVICE_VERSION_NAME, version);
+        url = url.addParameter(CHECK_KEY, false);
 
         return url;
     }
@@ -343,8 +367,9 @@ public class MetadataUtils {
                 return ((MetadataService) existProxy).getMetadataInfo(revision);
             } else {
                 return MetadataServiceVersionUtils.toV1(((MetadataServiceV2) existProxy)
-                        .getMetadataInfo(
-                                Revision.newBuilder().setValue(revision).build()));
+                        .getMetadataInfo(MetadataRequest.newBuilder()
+                                .setRevision(revision)
+                                .build()));
             }
         }
     }

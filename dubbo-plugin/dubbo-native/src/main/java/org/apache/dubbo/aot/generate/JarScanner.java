@@ -77,8 +77,9 @@ public class JarScanner {
                 if ("file".equals(protocol)) {
                     scanFile(resource.getPath());
                 } else if ("jar".equals(protocol)) {
-                    JarFile jar = ((JarURLConnection) resource.openConnection()).getJarFile();
-                    scanJar(jar);
+                    try (JarFile jar = ((JarURLConnection) resource.openConnection()).getJarFile()) {
+                        scanJar(jar);
+                    }
                 }
             }
         } catch (Throwable ex) {

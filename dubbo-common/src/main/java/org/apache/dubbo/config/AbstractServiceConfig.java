@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.beans.Transient;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -281,7 +281,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        setProtocols(new ArrayList<>(Arrays.asList(protocol)));
+        setProtocols(new ArrayList<>(Collections.singletonList(protocol)));
     }
 
     @Parameter(excluded = true)

@@ -18,6 +18,7 @@ package org.apache.dubbo.common.extension;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Uniform accessor for extension
@@ -60,5 +61,10 @@ public interface ExtensionAccessor {
             throw new IllegalArgumentException("No activate extensions for [" + type + "] found");
         }
         return extensions.get(0);
+    }
+
+    default Set<String> getSupportedExtensions(Class<?> type) {
+        ExtensionLoader<?> extensionLoader = getExtensionLoader(type);
+        return extensionLoader != null ? extensionLoader.getSupportedExtensions() : Collections.emptySet();
     }
 }

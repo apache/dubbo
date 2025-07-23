@@ -53,7 +53,7 @@ public final class MethodsCondition implements Condition<MethodsCondition, HttpR
     public MethodsCondition match(HttpRequest request) {
         String method = request.method();
 
-        if (OPTIONS.name().equals(method)) {
+        if (OPTIONS.is(method)) {
             if (request.hasHeader("origin") && request.hasHeader("access-control-request-method")) {
                 return new MethodsCondition(OPTIONS.name());
             } else {
@@ -65,7 +65,7 @@ public final class MethodsCondition implements Condition<MethodsCondition, HttpR
             return new MethodsCondition(method);
         }
 
-        if (HEAD.name().equals(method) && methods.contains(GET.name())) {
+        if (HEAD.is(method) && methods.contains(GET.name())) {
             return new MethodsCondition(GET.name());
         }
 

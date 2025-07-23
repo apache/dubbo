@@ -16,45 +16,57 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import java.util.Objects;
+
 public final class MediaType {
 
     public static final String WILDCARD = "*";
 
+    public static final String APPLICATION = "application";
+
+    public static final String TEXT = "text";
+
+    public static final String JSON = "json";
+
+    public static final String XML = "xml";
+
+    public static final String YAML = "yaml";
+
     public static final MediaType ALL = new MediaType(WILDCARD, WILDCARD);
 
-    public static final MediaType APPLICATION_JSON = new MediaType("application", "json");
+    public static final MediaType APPLICATION_JSON = new MediaType(APPLICATION, JSON);
 
-    public static final MediaType APPLICATION_XML = new MediaType("application", "xml");
+    public static final MediaType APPLICATION_XML = new MediaType(APPLICATION, XML);
 
-    public static final MediaType APPLICATION_YAML = new MediaType("application", "yaml");
+    public static final MediaType APPLICATION_YAML = new MediaType(APPLICATION, YAML);
 
-    public static final MediaType APPLICATION_JAVASCRIPT = new MediaType("application", "javascript");
+    public static final MediaType APPLICATION_JAVASCRIPT = new MediaType(APPLICATION, "javascript");
 
-    public static final MediaType APPLICATION_OCTET_STREAM = new MediaType("application", "octet-stream");
+    public static final MediaType APPLICATION_OCTET_STREAM = new MediaType(APPLICATION, "octet-stream");
 
-    public static final MediaType APPLICATION_GRPC = new MediaType("application", "grpc");
+    public static final MediaType APPLICATION_GRPC = new MediaType(APPLICATION, "grpc");
 
-    public static final MediaType APPLICATION_GRPC_PROTO = new MediaType("application", "grpc+proto");
+    public static final MediaType APPLICATION_GRPC_PROTO = new MediaType(APPLICATION, "grpc+proto");
 
-    public static final MediaType APPLICATION_FROM_URLENCODED = new MediaType("application", "x-www-form-urlencoded");
+    public static final MediaType APPLICATION_FROM_URLENCODED = new MediaType(APPLICATION, "x-www-form-urlencoded");
 
     public static final MediaType MULTIPART_FORM_DATA = new MediaType("multipart", "form-data");
 
-    public static final MediaType TEXT_JSON = new MediaType("text", "json");
+    public static final MediaType TEXT_JSON = new MediaType(TEXT, JSON);
 
-    public static final MediaType TEXT_XML = new MediaType("text", "xml");
+    public static final MediaType TEXT_XML = new MediaType(TEXT, XML);
 
-    public static final MediaType TEXT_YAML = new MediaType("text", "yaml");
+    public static final MediaType TEXT_YAML = new MediaType(TEXT, YAML);
 
-    public static final MediaType TEXT_CSS = new MediaType("text", "css");
+    public static final MediaType TEXT_CSS = new MediaType(TEXT, "css");
 
-    public static final MediaType TEXT_JAVASCRIPT = new MediaType("text", "javascript");
+    public static final MediaType TEXT_JAVASCRIPT = new MediaType(TEXT, "javascript");
 
-    public static final MediaType TEXT_HTML = new MediaType("text", "html");
+    public static final MediaType TEXT_HTML = new MediaType(TEXT, "html");
 
-    public static final MediaType TEXT_PLAIN = new MediaType("text", "plain");
+    public static final MediaType TEXT_PLAIN = new MediaType(TEXT, "plain");
 
-    public static final MediaType TEXT_EVENT_STREAM = new MediaType("text", "event-stream");
+    public static final MediaType TEXT_EVENT_STREAM = new MediaType(TEXT, "event-stream");
 
     private final String name;
 
@@ -81,6 +93,24 @@ public final class MediaType {
     }
 
     public boolean isPureText() {
-        return this == TEXT_HTML || this == TEXT_PLAIN;
+        return TEXT.equals(type);
+    }
+
+    public static MediaType of(String name) {
+        Objects.requireNonNull(name);
+        if (APPLICATION_JSON.name.equals(name)) {
+            return APPLICATION_JSON;
+        }
+        if (APPLICATION_YAML.name.equals(name)) {
+            return APPLICATION_YAML;
+        }
+        if (APPLICATION_FROM_URLENCODED.name.equals(name)) {
+            return APPLICATION_FROM_URLENCODED;
+        }
+        int index = name.indexOf('/');
+        if (index > 0) {
+            return new MediaType(name.substring(0, index), name.substring(index + 1));
+        }
+        throw new IllegalArgumentException("Invalid media type: '" + name + "'");
     }
 }

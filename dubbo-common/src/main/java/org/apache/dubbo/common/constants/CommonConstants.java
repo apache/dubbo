@@ -629,11 +629,15 @@ public interface CommonConstants {
 
     String EXT_PROTOCOL = "ext.protocol";
 
+    String PREFERRED_PROTOCOL = "preferred.protocol";
+
     String IS_EXTRA = "isExtra";
 
     String ZOOKEEPER_ENSEMBLE_TRACKER_KEY = "zookeeper.ensemble.tracker";
 
     String DUBBO_VERSIONS_KEY = "META-INF/dubbo-versions";
+
+    String TRIPLE_PREFIX = "triple.";
 
     /**
      * System-related VM properties
@@ -733,6 +737,15 @@ public interface CommonConstants {
          * @since 2.7.6
          */
         String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
+
+        /**
+         * The property name for {@link NetworkInterface#isPointToPoint() return whether a network interface is a point
+         * to point interface} that the Dubbo application will determine whether to ignore the point-to-point network
+         * interface
+         *
+         * @since 3.3
+         */
+        String DUBBO_NETWORK_INTERFACE_POINT_TO_POINT_IGNORED = "dubbo.network.interface.point-to-point.ignored";
 
         String DUBBO_CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
         String DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";

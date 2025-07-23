@@ -38,7 +38,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     /**
      * extension name -> activate WireProtocol
      */
-    private final Map<String, WireProtocol> protocols;
+    private volatile Map<String, WireProtocol> protocols;
 
     /*
     protocol name --> URL object
@@ -55,22 +55,30 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        ExtensionLoader<WireProtocol> loader = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
-        Map<String, WireProtocol> protocols = loader.getActivateExtension(url, new String[0]).stream()
+    }
+
+    public Map<String, WireProtocol> getProtocols() {
+        return protocols;
+    }
+
+    @Override
+    protected final void doOpen() {
+        ExtensionLoader<WireProtocol> loader =
+                getUrl().getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
+        Map<String, WireProtocol> protocols = loader.getActivateExtension(getUrl(), new String[0]).stream()
                 .collect(Collectors.toConcurrentMap(loader::getExtensionName, Function.identity()));
         // load extra protocols
-        String extraProtocols = url.getParameter(EXT_PROTOCOL);
+        String extraProtocols = getUrl().getParameter(EXT_PROTOCOL);
         if (StringUtils.isNotEmpty(extraProtocols)) {
             Arrays.stream(extraProtocols.split(COMMA_SEPARATOR)).forEach(p -> {
                 protocols.put(p, loader.getExtension(p));
             });
         }
         this.protocols = protocols;
+        doOpen0();
     }
 
-    public Map<String, WireProtocol> getProtocols() {
-        return protocols;
-    }
+    protected abstract void doOpen0();
 
     /*
     This method registers URL object and corresponding channel handler to pu server.

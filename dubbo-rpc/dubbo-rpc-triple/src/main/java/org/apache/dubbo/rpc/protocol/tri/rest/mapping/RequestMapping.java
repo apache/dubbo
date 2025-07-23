@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ParamsCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ProducesCondition;
-import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceVersionCondition;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.ServiceGroupVersionCondition;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.CorsMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ResponseMeta;
 
@@ -62,7 +62,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
             HeadersCondition headersCondition,
             ConsumesCondition consumesCondition,
             ProducesCondition producesCondition,
-            Condition<?, HttpRequest> customCondition,
+            ConditionWrapper customCondition,
             CorsMeta cors,
             ResponseMeta response) {
         this.name = name;
@@ -73,7 +73,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         this.headersCondition = headersCondition;
         this.consumesCondition = consumesCondition;
         this.producesCondition = producesCondition;
-        this.customCondition = customCondition == null ? null : new ConditionWrapper(customCondition);
+        this.customCondition = customCondition;
         this.cors = cors;
         this.response = response;
     }
@@ -117,6 +117,18 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
     public boolean matchMethod(String method) {
         return methodsCondition == null || methodsCondition.getMethods().contains(method);
+    }
+
+    public boolean matchParams(HttpRequest request) {
+        return paramsCondition == null || paramsCondition.match(request) != null;
+    }
+
+    public boolean matchConsumes(HttpRequest request) {
+        return consumesCondition == null || consumesCondition.match(request) != null;
+    }
+
+    public boolean matchProduces(HttpRequest request) {
+        return producesCondition == null || producesCondition.match(request) != null;
     }
 
     @Override
@@ -208,8 +220,24 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
         return methodsCondition;
     }
 
+    public ParamsCondition getParamsCondition() {
+        return paramsCondition;
+    }
+
+    public HeadersCondition getHeadersCondition() {
+        return headersCondition;
+    }
+
+    public ConsumesCondition getConsumesCondition() {
+        return consumesCondition;
+    }
+
     public ProducesCondition getProducesCondition() {
         return producesCondition;
+    }
+
+    public ConditionWrapper getCustomCondition() {
+        return customCondition;
     }
 
     public CorsMeta getCors() {
@@ -327,27 +355,26 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
     public String toString() {
         StringBuilder sb = new StringBuilder("RequestMapping{name='");
         sb.append(name).append('\'');
-        sb.append('\'');
         if (pathCondition != null) {
-            sb.append(", pathCondition=").append(pathCondition);
+            sb.append(", path=").append(pathCondition);
         }
         if (methodsCondition != null) {
-            sb.append(", methodsCondition=").append(methodsCondition);
+            sb.append(", methods=").append(methodsCondition);
         }
         if (paramsCondition != null) {
-            sb.append(", paramsCondition=").append(paramsCondition);
+            sb.append(", params=").append(paramsCondition);
         }
         if (headersCondition != null) {
-            sb.append(", headersCondition=").append(headersCondition);
+            sb.append(", headers=").append(headersCondition);
         }
         if (consumesCondition != null) {
-            sb.append(", consumesCondition=").append(consumesCondition);
+            sb.append(", consumes=").append(consumesCondition);
         }
         if (producesCondition != null) {
-            sb.append(", producesCondition=").append(producesCondition);
+            sb.append(", produces=").append(producesCondition);
         }
         if (customCondition != null) {
-            sb.append(", customCondition=").append(customCondition);
+            sb.append(", custom=").append(customCondition);
         }
         if (response != null) {
             sb.append(", response=").append(response);
@@ -427,7 +454,7 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
 
         public Builder service(String ServiceGroup, String ServiceVersion) {
             if (ServiceGroup != null || ServiceVersion != null) {
-                customCondition = new ServiceVersionCondition(ServiceGroup, ServiceVersion);
+                customCondition = new ServiceGroupVersionCondition(ServiceGroup, ServiceVersion);
             }
             return this;
         }
@@ -457,8 +484,8 @@ public final class RequestMapping implements Condition<RequestMapping, HttpReque
                     isEmpty(headers) ? null : new HeadersCondition(headers),
                     isEmpty(consumes) ? null : new ConsumesCondition(consumes),
                     isEmpty(produces) ? null : new ProducesCondition(produces),
-                    customCondition,
-                    cors == null ? null : cors,
+                    customCondition == null ? null : ConditionWrapper.wrap(customCondition),
+                    cors == null || cors.isEmpty() ? null : cors,
                     responseStatus == null ? null : new ResponseMeta(responseStatus, responseReason));
         }
     }

@@ -84,7 +84,7 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadata()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(true);
+        return Optional.ofNullable(collectEnabled).orElse(false);
     }
 
     @Override

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.lang.annotation.Annotation;
 
@@ -29,7 +29,7 @@ public interface AnnotationEnum {
 
     default Class<Annotation> loadType() {
         try {
-            return (Class) TypeUtils.loadClass(className());
+            return (Class) ClassUtils.loadClass(className());
         } catch (Throwable t) {
             return (Class) NotFound.class;
         }

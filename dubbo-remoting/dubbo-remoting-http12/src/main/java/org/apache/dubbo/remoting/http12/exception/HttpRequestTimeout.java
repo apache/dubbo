@@ -20,6 +20,8 @@ import org.apache.dubbo.remoting.http12.HttpStatus;
 
 public class HttpRequestTimeout extends HttpStatusException {
 
+    private static final long serialVersionUID = 1L;
+
     private final String side;
 
     private HttpRequestTimeout(String side) {

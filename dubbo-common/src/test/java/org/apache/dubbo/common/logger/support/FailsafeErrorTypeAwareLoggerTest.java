@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for FailsafeErrorTypeAwareLogger to test whether it 'ignores' exceptions thrown by logger or not.
@@ -64,6 +65,8 @@ class FailsafeErrorTypeAwareLoggerTest {
     @Test
     void testSuccessLogger() {
         Logger successLogger = mock(Logger.class);
+        when(successLogger.isErrorEnabled()).thenReturn(true);
+        when(successLogger.isWarnEnabled()).thenReturn(true);
         FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(successLogger);
 
         failsafeLogger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error");

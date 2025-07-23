@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
@@ -77,7 +78,7 @@ public class ServiceInstancesChangedListener {
 
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
-    protected Map<String, Set<NotifyListenerWithKey>> listeners;
+    protected ConcurrentHashMap<String, Set<NotifyListenerWithKey>> listeners;
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -182,28 +183,8 @@ public class ServiceInstancesChangedListener {
         }
 
         int emptyNum = hasEmptyMetadata(revisionToInstances);
-        if (emptyNum != 0) { // retry every 10 seconds
+        if (emptyNum != 0) {
             hasEmptyMetadata = true;
-            if (retryPermission.tryAcquire()) {
-                if (retryFuture != null && !retryFuture.isDone()) {
-                    // cancel last retryFuture because only one retryFuture will be canceled at destroy().
-                    retryFuture.cancel(true);
-                }
-                try {
-                    retryFuture = scheduler.schedule(
-                            new AddressRefreshRetryTask(retryPermission, event.getServiceName()),
-                            10_000L,
-                            TimeUnit.MILLISECONDS);
-                } catch (Exception e) {
-                    logger.error(
-                            INTERNAL_ERROR,
-                            "unknown error in registry module",
-                            "",
-                            "Error submitting async retry task.");
-                }
-                logger.warn(
-                        INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
-            }
 
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
@@ -214,10 +195,12 @@ public class ServiceInstancesChangedListener {
                         "",
                         "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
 
+                submitRetryTask(event);
                 return;
             }
+        } else {
+            hasEmptyMetadata = false;
         }
-        hasEmptyMetadata = false;
 
         Map<String, Map<Integer, Map<Set<String>, Object>>> protocolRevisionsToUrls = new HashMap<>();
         Map<String, List<ProtocolServiceKeyWithUrls>> newServiceUrls = new HashMap<>();
@@ -241,6 +224,30 @@ public class ServiceInstancesChangedListener {
 
         this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
+
+        if (hasEmptyMetadata) {
+            submitRetryTask(event);
+        }
+    }
+
+    private void submitRetryTask(ServiceInstancesChangedEvent event) {
+        // retry every 10 seconds
+        if (retryPermission.tryAcquire()) {
+            if (retryFuture != null && !retryFuture.isDone()) {
+                // cancel last retryFuture because only one retryFuture will be canceled at destroy().
+                retryFuture.cancel(true);
+            }
+            try {
+                retryFuture = scheduler.schedule(
+                        new AddressRefreshRetryTask(retryPermission, event.getServiceName()),
+                        10_000L,
+                        TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                logger.error(
+                        INTERNAL_ERROR, "unknown error in registry module", "", "Error submitting async retry task.");
+            }
+            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
+        }
     }
 
     public synchronized void addListenerAndNotify(URL url, NotifyListener listener) {
@@ -248,8 +255,8 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
-        Set<NotifyListenerWithKey> notifyListeners =
-                this.listeners.computeIfAbsent(url.getServiceKey(), _k -> new ConcurrentHashSet<>());
+        Set<NotifyListenerWithKey> notifyListeners = ConcurrentHashMapUtils.computeIfAbsent(
+                this.listeners, url.getServiceKey(), _k -> new ConcurrentHashSet<>());
         String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY, url.getProtocol());
         ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(
                 url.getServiceInterface(),

@@ -65,6 +65,16 @@ public interface ProtocolDetector {
         public static Result needMoreData() {
             return new Result(Flag.NEED_MORE_DATA);
         }
+
+        @Override
+        public int hashCode() {
+            return flag.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Result && flag == ((Result) obj).flag;
+        }
     }
 
     enum Flag {

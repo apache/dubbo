@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 /**
@@ -56,7 +57,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && metricsService == null) {
             String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
-            if (PROTOCOL_PROMETHEUS.equals(protocol)) {
+            if (PROTOCOL_DEFAULT.equals(protocol) || PROTOCOL_PROMETHEUS.equals(protocol)) {
                 this.metricsService = applicationModel
                         .getExtensionLoader(MetricsService.class)
                         .getDefaultExtension();

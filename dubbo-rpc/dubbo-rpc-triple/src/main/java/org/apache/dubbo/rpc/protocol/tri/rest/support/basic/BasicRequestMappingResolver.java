@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.basic;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
@@ -36,12 +37,11 @@ import java.lang.reflect.Method;
 @Activate
 public class BasicRequestMappingResolver implements RequestMappingResolver {
 
-    private final FrameworkModel frameworkModel;
     private final RestToolKit toolKit;
+    private RestConfig restConfig;
     private CorsMeta globalCorsMeta;
 
     public BasicRequestMappingResolver(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
         toolKit = new BasicRestToolKit(frameworkModel);
     }
 
@@ -51,9 +51,14 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
     }
 
     @Override
+    public void setRestConfig(RestConfig restConfig) {
+        this.restConfig = restConfig;
+    }
+
+    @Override
     public boolean accept(MethodMeta methodMeta) {
         AnnotationMeta<Mapping> mapping = methodMeta.findAnnotation(Mapping.class);
-        return mapping != null ? !mapping.getAnnotation().disabled() : methodMeta.getMethodDescriptor() != null;
+        return mapping != null ? mapping.getAnnotation().enabled() : methodMeta.getMethodDescriptor() != null;
     }
 
     @Override
@@ -61,7 +66,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
         AnnotationMeta<Mapping> mapping = serviceMeta.findAnnotation(Mapping.class);
         Builder builder = builder(mapping);
 
-        String[] paths = getPaths(mapping);
+        String[] paths = resolvePaths(mapping);
         if (paths.length == 0) {
             builder.path(serviceMeta.getServiceInterface());
         } else {
@@ -77,13 +82,20 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
     public RequestMapping resolve(MethodMeta methodMeta) {
         Method method = methodMeta.getMethod();
         AnnotationMeta<Mapping> mapping = methodMeta.findAnnotation(Mapping.class);
-        if (mapping != null && mapping.getAnnotation().disabled()) {
-            return null;
+        if (mapping != null) {
+            if (!mapping.getAnnotation().enabled()) {
+                return null;
+            }
+        } else {
+            Boolean enabled = restConfig.getEnableDefaultMapping();
+            if (enabled != null && !enabled) {
+                return null;
+            }
         }
 
         Builder builder = builder(mapping);
 
-        String[] paths = getPaths(mapping);
+        String[] paths = resolvePaths(mapping);
         if (paths.length == 0) {
             builder.path('/' + method.getName()).sig(TypeUtils.buildSig(method));
         } else {
@@ -92,7 +104,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
 
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
         if (globalCorsMeta == null) {
-            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+            globalCorsMeta = CorsUtils.getGlobalCorsMeta(restConfig);
         }
         return builder.name(method.getName())
                 .service(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion())
@@ -113,7 +125,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
         return builder;
     }
 
-    private static String[] getPaths(AnnotationMeta<?> mapping) {
+    private static String[] resolvePaths(AnnotationMeta<?> mapping) {
         if (mapping == null) {
             return StringUtils.EMPTY_STRING_ARRAY;
         }

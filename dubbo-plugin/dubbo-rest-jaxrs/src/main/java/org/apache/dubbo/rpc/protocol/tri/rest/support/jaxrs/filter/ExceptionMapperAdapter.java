@@ -30,6 +30,8 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
+import java.util.Objects;
+
 @Activate(onClass = "javax.ws.rs.ext.ExceptionMapper")
 public final class ExceptionMapperAdapter implements RestExtensionAdapter<ExceptionMapper<Throwable>> {
 
@@ -49,7 +51,7 @@ public final class ExceptionMapperAdapter implements RestExtensionAdapter<Except
 
         public Filter(ExceptionMapper<Throwable> extension) {
             super(extension);
-            exceptionType = TypeUtils.getSuperGenericType(extension.getClass());
+            exceptionType = Objects.requireNonNull(TypeUtils.getSuperGenericType(extension.getClass()));
         }
 
         @Override

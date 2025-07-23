@@ -28,10 +28,12 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -239,5 +241,11 @@ class MonitorFilterTest {
 
         Throwable rpcException = new RpcException();
         monitorFilter.onError(rpcException, serviceInvoker, invocation);
+    }
+
+    @AfterEach
+    public void destroy() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        applicationModel.destroy();
     }
 }

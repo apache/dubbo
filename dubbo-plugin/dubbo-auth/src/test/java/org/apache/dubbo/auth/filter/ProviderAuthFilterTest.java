@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,9 +46,9 @@ class ProviderAuthFilterTest {
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
         when(invoker.getUrl()).thenReturn(url);
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(FrameworkModel.defaultModel());
         providerAuthFilter.invoke(invoker, invocation);
-        verify(url, never()).getParameter(eq(Constants.AUTHENTICATOR), eq(Constants.DEFAULT_AUTHENTICATOR));
+        verify(url, never()).getParameter(eq(Constants.AUTHENTICATOR_KEY), eq(Constants.DEFAULT_AUTHENTICATOR));
     }
 
     @Test
@@ -57,11 +57,12 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
-                .addParameter(Constants.SERVICE_AUTH, true);
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
+                .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
         when(invoker.getUrl()).thenReturn(url);
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(FrameworkModel.defaultModel());
         providerAuthFilter.invoke(invoker, invocation);
         verify(invocation, atLeastOnce()).getAttachment(anyString());
     }
@@ -72,13 +73,14 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
-                .addParameter(Constants.SERVICE_AUTH, true);
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
+                .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(null);
         when(invoker.getUrl()).thenReturn(url);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(FrameworkModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
     }
@@ -89,13 +91,14 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
-                .addParameter(Constants.SERVICE_AUTH, true);
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
+                .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(null);
         when(invoker.getUrl()).thenReturn(url);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(FrameworkModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
     }
@@ -104,7 +107,8 @@ class ProviderAuthFilterTest {
     void testAuthFailedWhenNoAccessKeyPair() {
         URL url = URL.valueOf("dubbo://10.10.10.10:2181")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
-                .addParameter(Constants.SERVICE_AUTH, true);
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
+                .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn("dubbo");
@@ -113,7 +117,7 @@ class ProviderAuthFilterTest {
         when(invocation.getObjectAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(System.currentTimeMillis());
         when(invoker.getUrl()).thenReturn(url);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(FrameworkModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
         assertTrue(result.getException() instanceof RpcAuthenticationException);
@@ -131,7 +135,8 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
                 .addParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, true)
-                .addParameter(Constants.SERVICE_AUTH, true);
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
+                .addParameter(Constants.AUTH_KEY, true);
 
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
@@ -152,7 +157,7 @@ class ProviderAuthFilterTest {
         String sign = SignatureUtils.sign(originalParams, requestString, "sk");
         when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(FrameworkModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
         assertTrue(result.getException() instanceof RpcAuthenticationException);
@@ -168,7 +173,8 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
-                .addParameter(Constants.SERVICE_AUTH, true);
+                .addParameter(Constants.AUTHENTICATOR_KEY, "accesskey")
+                .addParameter(Constants.AUTH_KEY, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getAttachment(Constants.AK_KEY)).thenReturn("ak");
@@ -186,7 +192,7 @@ class ProviderAuthFilterTest {
         String sign = SignatureUtils.sign(requestString, "sk");
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(FrameworkModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertNull(result);
     }

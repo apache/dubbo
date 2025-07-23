@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -493,6 +494,50 @@ public class ClassUtils {
     }
 
     /**
+     * Test the specified class name is present, array class is not supported
+     */
+    public static boolean isPresent(String className) {
+        try {
+            loadClass(className);
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    /**
+     * Load the {@link Class} by the specified name, array class is not supported
+     */
+    public static Class<?> loadClass(String className) throws ClassNotFoundException {
+        ClassLoader cl = null;
+        if (!className.startsWith("org.apache.dubbo")) {
+            try {
+                cl = Thread.currentThread().getContextClassLoader();
+            } catch (Throwable ignored) {
+            }
+        }
+        if (cl == null) {
+            cl = ClassUtils.class.getClassLoader();
+        }
+        return cl.loadClass(className);
+    }
+
+    public static void runWith(ClassLoader classLoader, Runnable runnable) {
+        Thread thread = Thread.currentThread();
+        ClassLoader tccl = thread.getContextClassLoader();
+        if (classLoader == null || classLoader.equals(tccl)) {
+            runnable.run();
+            return;
+        }
+        thread.setContextClassLoader(classLoader);
+        try {
+            runnable.run();
+        } finally {
+            thread.setContextClassLoader(tccl);
+        }
+    }
+
+    /**
      * Resolve the {@link Class} by the specified name and {@link ClassLoader}
      *
      * @param className   the name of {@link Class}
@@ -625,5 +670,9 @@ public class ClassUtils {
         }
         dmns.sort(Comparator.naturalOrder());
         return dmns.toArray(new String[0]);
+    }
+
+    public static boolean hasProtobuf() {
+        return isPresent(CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME);
     }
 }

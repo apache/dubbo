@@ -30,7 +30,6 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
-import org.apache.dubbo.remoting.http12.message.codec.UrlEncodeFormCodec;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -40,7 +39,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestHttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder.TProvider;
@@ -93,7 +92,7 @@ final class TestRunnerImpl implements TestRunner {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "resource"})
+    @SuppressWarnings("unchecked")
     public TestResponse run(TestRequest request) {
         MockH2StreamChannel channel = new MockH2StreamChannel();
         URL url = new URL(TestProtocol.NAME, TestProtocol.HOST, TestProtocol.PORT, request.getProviderParams());
@@ -172,7 +171,7 @@ final class TestRunnerImpl implements TestRunner {
             HttpMessageEncoder encoder;
             Object coder;
             if (isForm) {
-                encoder = new UrlEncodeFormCodec(null);
+                encoder = UrlEncodeFormEncoder.INSTANCE;
                 coder = context.getHttpMessageDecoder();
             } else {
                 encoder = context.getHttpMessageEncoder();
@@ -185,7 +184,7 @@ final class TestRunnerImpl implements TestRunner {
                 }
             }
 
-            HttpRequest hRequest = (HttpRequest) context.getAttributes().get(TripleConstant.HTTP_REQUEST_KEY);
+            HttpRequest hRequest = (HttpRequest) context.getAttributes().get(TripleConstants.HTTP_REQUEST_KEY);
             if (CollectionUtils.isEmpty(request.getBodies())) {
                 if (HttpMethods.supportBody(hRequest.method())) {
                     listener.onData(END);
@@ -200,7 +199,7 @@ final class TestRunnerImpl implements TestRunner {
                         encoder.encode(bos, body);
                         bytes = bos.toByteArray();
                     }
-                    listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(bytes)));
+                    listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(bytes), false));
                 }
                 listener.onData(END);
             }

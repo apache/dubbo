@@ -173,7 +173,7 @@ public class UrlTestBase {
         servConf.setProvider(provConf);
 
         servConf.setRef(demoService);
-        servConf.setInterfaceClass(DemoService.class);
+        servConf.setInterface(DemoService.class);
 
         methodConfForService.setName("sayName");
         regConfForService.setAddress("127.0.0.1:9090");

@@ -91,6 +91,11 @@ public class TripleBuilder {
     private Integer initialWindowSize;
 
     /**
+     * Connection initial window size.
+     */
+    private Integer connectionInitialWindowSize;
+
+    /**
      * Maximum frame size.
      */
     private Integer maxFrameSize;
@@ -154,6 +159,11 @@ public class TripleBuilder {
         return getThis();
     }
 
+    public TripleBuilder connectionInitialWindowSize(Integer connectionInitialWindowSize) {
+        this.connectionInitialWindowSize = connectionInitialWindowSize;
+        return getThis();
+    }
+
     public TripleBuilder maxFrameSize(Integer maxFrameSize) {
         this.maxFrameSize = maxFrameSize;
         return getThis();
@@ -200,6 +210,9 @@ public class TripleBuilder {
         }
         if (initialWindowSize != null) {
             triple.setInitialWindowSize(initialWindowSize);
+        }
+        if (connectionInitialWindowSize != null) {
+            triple.setConnectionInitialWindowSize(connectionInitialWindowSize);
         }
         if (maxFrameSize != null) {
             triple.setMaxFrameSize(maxFrameSize);

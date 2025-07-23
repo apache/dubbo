@@ -29,7 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
@@ -79,6 +82,16 @@ public class ServletHttpResponseAdapter extends DefaultHttpResponse implements H
     @Override
     public void addDateHeader(String name, long date) {
         addHeader(name, new Date(date));
+    }
+
+    @Override
+    public void setHeader(String name, String value) {
+        super.setHeader(name, value);
+    }
+
+    @Override
+    public void addHeader(String name, String value) {
+        super.addHeader(name, value);
     }
 
     @Override
@@ -137,7 +150,9 @@ public class ServletHttpResponseAdapter extends DefaultHttpResponse implements H
     @Override
     public PrintWriter getWriter() {
         if (writer == null) {
-            writer = new PrintWriter(getOutputStream());
+            String ce = getCharacterEncoding();
+            Charset charset = ce == null ? StandardCharsets.UTF_8 : Charset.forName(ce);
+            writer = new PrintWriter(new OutputStreamWriter(outputStream(), charset), true);
         }
         return writer;
     }

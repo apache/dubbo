@@ -22,45 +22,83 @@ public interface MetadataInfoV2OrBuilder
         com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <pre>
+     * The application name.
+     * </pre>
+     *
      * <code>string app = 1;</code>
      * @return The app.
      */
     String getApp();
+
     /**
+     * <pre>
+     * The application name.
+     * </pre>
+     *
      * <code>string app = 1;</code>
      * @return The bytes for app.
      */
     com.google.protobuf.ByteString getAppBytes();
 
     /**
+     * <pre>
+     * The application version.
+     * </pre>
+     *
      * <code>string version = 2;</code>
      * @return The version.
      */
     String getVersion();
+
     /**
+     * <pre>
+     * The application version.
+     * </pre>
+     *
      * <code>string version = 2;</code>
      * @return The bytes for version.
      */
     com.google.protobuf.ByteString getVersionBytes();
 
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     int getServicesCount();
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     boolean containsServices(String key);
+
     /**
      * Use {@link #getServicesMap()} instead.
      */
     @Deprecated
     java.util.Map<String, ServiceInfoV2> getServices();
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     java.util.Map<String, ServiceInfoV2> getServicesMap();
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     /* nullable */
@@ -68,7 +106,12 @@ public interface MetadataInfoV2OrBuilder
             String key,
             /* nullable */
             ServiceInfoV2 defaultValue);
+
     /**
+     * <pre>
+     * A map of service information.
+     * </pre>
+     *
      * <code>map&lt;string, .org.apache.dubbo.metadata.ServiceInfoV2&gt; services = 3;</code>
      */
     ServiceInfoV2 getServicesOrThrow(String key);

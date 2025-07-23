@@ -22,6 +22,7 @@ import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -33,7 +34,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,7 +75,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     /**
      * The Key is watched Zookeeper path, the value is an instance of {@link CuratorWatcher}
      */
-    private final Map<String, ZookeeperServiceDiscoveryChangeWatcher> watcherCaches = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ZookeeperServiceDiscoveryChangeWatcher> watcherCaches =
+            new ConcurrentHashMap<>();
 
     public ZookeeperServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         super(applicationModel, registryURL);
@@ -210,21 +211,22 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.computeIfAbsent(serviceName, name -> {
-            ServiceCache<ZookeeperInstance> serviceCache =
-                    serviceDiscovery.serviceCacheBuilder().name(name).build();
-            ZookeeperServiceDiscoveryChangeWatcher newer =
-                    new ZookeeperServiceDiscoveryChangeWatcher(this, serviceCache, name, latch);
-            serviceCache.addListener(newer);
+        ZookeeperServiceDiscoveryChangeWatcher watcher =
+                ConcurrentHashMapUtils.computeIfAbsent(watcherCaches, serviceName, name -> {
+                    ServiceCache<ZookeeperInstance> serviceCache =
+                            serviceDiscovery.serviceCacheBuilder().name(name).build();
+                    ZookeeperServiceDiscoveryChangeWatcher newer =
+                            new ZookeeperServiceDiscoveryChangeWatcher(this, serviceCache, name, latch);
+                    serviceCache.addListener(newer);
 
-            try {
-                serviceCache.start();
-            } catch (Exception e) {
-                throw new RpcException(REGISTRY_EXCEPTION, "Failed subscribe service: " + name, e);
-            }
+                    try {
+                        serviceCache.start();
+                    } catch (Exception e) {
+                        throw new RpcException(REGISTRY_EXCEPTION, "Failed subscribe service: " + name, e);
+                    }
 
-            return newer;
-        });
+                    return newer;
+                });
 
         watcher.addListener(listener);
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, this.getInstances(serviceName)));

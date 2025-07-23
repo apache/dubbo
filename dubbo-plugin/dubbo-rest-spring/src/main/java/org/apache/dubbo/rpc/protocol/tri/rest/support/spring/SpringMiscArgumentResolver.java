@@ -58,10 +58,12 @@ public class SpringMiscArgumentResolver implements ArgumentResolver {
             return new ServletWebRequest((HttpServletRequest) request);
         }
         if (type == HttpEntity.class) {
-            return new HttpEntity<>(CollectionUtils.toMultiValueMap(request.headers()));
+            return new HttpEntity<>(
+                    CollectionUtils.toMultiValueMap(request.headers().asMap()));
         }
         if (type == HttpHeaders.class) {
-            return new HttpHeaders(CollectionUtils.toMultiValueMap(request.headers()));
+            return new HttpHeaders(
+                    CollectionUtils.toMultiValueMap(request.headers().asMap()));
         }
         return null;
     }

@@ -34,17 +34,10 @@
     <module>dubbo-remoting-netty4</module>
     <module>dubbo-remoting-http12</module>
     <module>dubbo-remoting-http3</module>
+    <module>dubbo-remoting-websocket</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-test-check</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 </project>

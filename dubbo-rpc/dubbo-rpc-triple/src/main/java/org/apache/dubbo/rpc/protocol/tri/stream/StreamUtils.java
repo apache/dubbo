@@ -23,7 +23,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRU2Cache;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import java.nio.charset.StandardCharsets;
@@ -31,7 +31,6 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -95,7 +94,7 @@ public final class StreamUtils {
     }
 
     private static void putHeaders(
-            Map<String, Object> attachments, boolean needConvertHeaderKey, BiConsumer<String, String> consumer) {
+            Map<String, Object> attachments, boolean needConvertHeaderKey, BiConsumer<CharSequence, String> consumer) {
         if (CollectionUtils.isEmptyMap(attachments)) {
             return;
         }
@@ -105,7 +104,6 @@ public final class StreamUtils {
             if (value == null) {
                 continue;
             }
-
             String key = entry.getKey();
             String lowerCaseKey = lruHeaderMap.computeIfAbsent(key, k -> k.toLowerCase(Locale.ROOT));
             if (TripleHeaderEnum.containsExcludeAttachments(lowerCaseKey)) {
@@ -120,7 +118,7 @@ public final class StreamUtils {
             return;
         }
         consumer.accept(
-                TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(),
+                TripleHeaderEnum.TRI_HEADER_CONVERT.getKey(),
                 TriRpcStatus.encodeMessage(JsonUtils.toJson(needConvertKeys)));
     }
 
@@ -131,7 +129,7 @@ public final class StreamUtils {
      * @param key      the key of the attachment
      * @param value    the value of the attachment (Only strings, dates, and byte arrays are allowed in the attachment value.)
      */
-    private static void putHeader(BiConsumer<String, String> consumer, String key, Object value) {
+    private static void putHeader(BiConsumer<CharSequence, String> consumer, String key, Object value) {
         try {
             if (value instanceof CharSequence || value instanceof Number || value instanceof Boolean) {
                 String str = value.toString();
@@ -140,7 +138,7 @@ public final class StreamUtils {
                 consumer.accept(key, DateFormatter.format((Date) value));
             } else if (value instanceof byte[]) {
                 String str = encodeBase64ASCII((byte[]) value);
-                consumer.accept(key + TripleConstant.HEADER_BIN_SUFFIX, str);
+                consumer.accept(key + TripleConstants.HEADER_BIN_SUFFIX, str);
             } else {
                 LOGGER.warn(
                         PROTOCOL_UNSUPPORTED,
@@ -192,11 +190,11 @@ public final class StreamUtils {
         }
 
         Map<String, Object> attachments = CollectionUtils.newHashMap(headers.size());
-        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = CollectionUtils.first(entry.getValue());
-            int len = key.length() - TripleConstant.HEADER_BIN_SUFFIX.length();
-            if (len > 0 && TripleConstant.HEADER_BIN_SUFFIX.equals(key.substring(len))) {
+        for (Map.Entry<CharSequence, String> entry : headers) {
+            String key = entry.getKey().toString();
+            String value = entry.getValue();
+            int len = key.length() - TripleConstants.HEADER_BIN_SUFFIX.length();
+            if (len > 0 && TripleConstants.HEADER_BIN_SUFFIX.equals(key.substring(len))) {
                 try {
                     putAttachment(attachments, key.substring(0, len), value == null ? null : decodeASCIIByte(value));
                 } catch (Exception e) {
@@ -208,7 +206,7 @@ public final class StreamUtils {
         }
 
         // try converting upper key
-        String converted = headers.getFirst(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        String converted = headers.getFirst(TripleHeaderEnum.TRI_HEADER_CONVERT.getKey());
         if (converted == null) {
             return attachments;
         }

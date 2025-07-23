@@ -20,8 +20,9 @@ import org.apache.dubbo.remoting.http12.ErrorCodeHolder;
 
 public class CancelStreamException extends RuntimeException implements ErrorCodeHolder {
 
-    private final boolean cancelByRemote;
+    private static final long serialVersionUID = 1L;
 
+    private final boolean cancelByRemote;
     private final long errorCode;
 
     private CancelStreamException(boolean cancelByRemote, long errorCode) {

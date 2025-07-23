@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_F
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE_PREFIX;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
@@ -80,6 +81,8 @@ public class DefaultServiceURLCustomizer implements ServiceURLCustomizer {
         THREADS_KEY
     };
 
+    private static final String[] excludedPrefixes = new String[] {HIDE_KEY_PREFIX, TRIPLE_PREFIX};
+
     @Override
     public URL customize(URL serviceURL, ApplicationModel applicationModel) {
         boolean simplified = (boolean) serviceURL.getAttribute(SIMPLIFIED_KEY, false);
@@ -112,7 +115,14 @@ public class DefaultServiceURLCustomizer implements ServiceURLCustomizer {
         Map<String, String> params = url.getParameters();
         if (CollectionUtils.isNotEmptyMap(params)) {
             return params.keySet().stream()
-                    .filter(k -> k.startsWith(HIDE_KEY_PREFIX))
+                    .filter(k -> {
+                        for (String excludedPrefix : excludedPrefixes) {
+                            if (k.startsWith(excludedPrefix)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })
                     .toArray(String[]::new);
         }
         return new String[0];

@@ -47,7 +47,7 @@ class TriBuiltinServiceTest {
         Assertions.assertNotNull(triBuiltinService.getHealthStatusManager());
         PathResolver pathResolver =
                 frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        Assertions.assertNotNull(pathResolver.resolve(serviceName));
+        Assertions.assertNotNull(pathResolver.resolve(serviceName, null, null));
         ModuleServiceRepository repository =
                 frameworkModel.getInternalApplicationModel().getInternalModule().getServiceRepository();
         Assertions.assertFalse(repository.getAllServices().isEmpty());

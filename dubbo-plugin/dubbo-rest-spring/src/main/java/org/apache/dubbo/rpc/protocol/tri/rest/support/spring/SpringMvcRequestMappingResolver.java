@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.nested.RestConfig;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.cors.CorsUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.RequestMapping;
@@ -35,26 +36,21 @@ import org.springframework.http.HttpStatus;
 @Activate(onClass = "org.springframework.web.bind.annotation.RequestMapping")
 public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
-    private final FrameworkModel frameworkModel;
-    private volatile RestToolKit toolKit;
+    private final RestToolKit toolKit;
+    private RestConfig restConfig;
     private CorsMeta globalCorsMeta;
 
     public SpringMvcRequestMappingResolver(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+        toolKit = new SpringRestToolKit(frameworkModel);
+    }
+
+    @Override
+    public void setRestConfig(RestConfig restConfig) {
+        this.restConfig = restConfig;
     }
 
     @Override
     public RestToolKit getRestToolKit() {
-        RestToolKit toolKit = this.toolKit;
-        if (toolKit == null) {
-            synchronized (this) {
-                toolKit = this.toolKit;
-                if (toolKit == null) {
-                    toolKit = new SpringRestToolKit(frameworkModel);
-                    this.toolKit = toolKit;
-                }
-            }
-        }
         return toolKit;
     }
 
@@ -134,7 +130,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
 
     private CorsMeta buildCorsMeta(AnnotationMeta<?> crossOrigin, String[] methods) {
         if (globalCorsMeta == null) {
-            globalCorsMeta = CorsUtils.getGlobalCorsMeta(frameworkModel);
+            globalCorsMeta = CorsUtils.getGlobalCorsMeta(restConfig);
         }
         if (crossOrigin == null) {
             return globalCorsMeta;

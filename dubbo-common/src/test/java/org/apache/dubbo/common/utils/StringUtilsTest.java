@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -246,9 +245,6 @@ class StringUtilsTest {
 
         assertEquals(0, StringUtils.split("", 'a').length);
         assertEquals(0, StringUtils.split(null, 'a').length);
-
-        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", ':')));
-        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", 'o')));
     }
 
     @Test
@@ -474,6 +470,7 @@ class StringUtilsTest {
 
     /**
      * Test {@link StringUtils#toCommaDelimitedString(String, String...)}
+     *
      * @since 2.7.8
      */
     @Test
@@ -483,6 +480,9 @@ class StringUtilsTest {
 
         value = toCommaDelimitedString(null, null);
         assertNull(value);
+
+        value = toCommaDelimitedString("one", null);
+        assertEquals("one", value);
 
         value = toCommaDelimitedString("");
         assertEquals("", value);

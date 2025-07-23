@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.DefaultParameterNameReader;
+import org.apache.dubbo.common.utils.ParameterNameReader;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
@@ -27,15 +29,18 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.rest.Messages;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestConstants;
 import org.apache.dubbo.rpc.protocol.tri.rest.RestException;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.CompositeArgumentResolver;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.GeneralTypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.argument.TypeConverter;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.MethodParameterMeta;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.NamedValueMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
@@ -43,9 +48,7 @@ import java.util.Map;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -63,7 +66,8 @@ final class SpringRestToolKit implements RestToolKit {
     private final ConversionService conversionService;
     private final TypeConverter typeConverter;
     private final BeanArgumentBinder argumentBinder;
-    private final ParameterNameDiscoverer discoverer;
+    private final ParameterNameReader parameterNameReader;
+    private final CompositeArgumentResolver argumentResolver;
 
     public SpringRestToolKit(FrameworkModel frameworkModel) {
         ApplicationModel applicationModel = frameworkModel.defaultApplication();
@@ -79,13 +83,14 @@ final class SpringRestToolKit implements RestToolKit {
             configuration = new ConfigurationWrapper(applicationModel);
         }
         if (context != null && context.containsBean("mvcConversionService")) {
-            conversionService = context.getBean(ConversionService.class, "mvcConversionService");
+            conversionService = context.getBean("mvcConversionService", ConversionService.class);
         } else {
             conversionService = DefaultConversionService.getSharedInstance();
         }
-        typeConverter = frameworkModel.getBeanFactory().getOrRegisterBean(GeneralTypeConverter.class);
-        discoverer = new DefaultParameterNameDiscoverer();
-        argumentBinder = new BeanArgumentBinder(frameworkModel, conversionService);
+        typeConverter = frameworkModel.getOrRegisterBean(GeneralTypeConverter.class);
+        parameterNameReader = frameworkModel.getOrRegisterBean(DefaultParameterNameReader.class);
+        argumentResolver = frameworkModel.getOrRegisterBean(CompositeArgumentResolver.class);
+        argumentBinder = new BeanArgumentBinder(argumentResolver, conversionService);
     }
 
     @Override
@@ -150,8 +155,18 @@ final class SpringRestToolKit implements RestToolKit {
     }
 
     @Override
+    public NamedValueMeta getNamedValueMeta(ParameterMeta parameter) {
+        return argumentResolver.getNamedValueMeta(parameter);
+    }
+
+    @Override
     public String[] getParameterNames(Method method) {
-        return discoverer.getParameterNames(method);
+        return parameterNameReader.readParameterNames(method);
+    }
+
+    @Override
+    public String[] getParameterNames(Constructor<?> ctor) {
+        return parameterNameReader.readParameterNames(ctor);
     }
 
     @Override

@@ -32,9 +32,9 @@ public class CompositeInputStream extends InputStream {
     private int readIndex = 0;
 
     public void addInputStream(InputStream inputStream) {
-        this.inputStreams.offer(inputStream);
+        inputStreams.offer(inputStream);
         try {
-            this.totalAvailable += inputStream.available();
+            totalAvailable += inputStream.available();
         } catch (IOException e) {
             throw new DecodeException(e);
         }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.filter;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestUtils;
 
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public abstract class AbstractRestFilter<E> implements RestFilter {
             sb.append(", priority=").append(priority);
         }
         String[] patterns = getPatterns();
-        if (patterns != null) {
+        if (ArrayUtils.isNotEmpty(patterns)) {
             sb.append(", patterns=").append(Arrays.toString(patterns));
         }
         return sb.append('}').toString();

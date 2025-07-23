@@ -77,7 +77,7 @@ class AbstractConfigTest {
         protocolConfig.setName("dubbo");
         protocolConfig.setHost("host");
         protocolConfig.setSerialization("fastjson2");
-        protocolConfig.setPreferSerialization("hessian2,java,compactedjava,nativejava");
+        protocolConfig.setPreferSerialization("hessian2");
         ConfigValidationUtils.validateProtocolConfig(protocolConfig);
     }
 
@@ -925,7 +925,6 @@ class AbstractConfigTest {
                     metaData.size(),
                     "Expect empty metadata for new instance but found: " + metaData + " of "
                             + configClass.getSimpleName());
-            System.out.println(configClass.getSimpleName() + " metadata is checked.");
         }
     }
 

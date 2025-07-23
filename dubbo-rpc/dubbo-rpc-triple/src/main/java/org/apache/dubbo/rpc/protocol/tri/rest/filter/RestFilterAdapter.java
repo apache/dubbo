@@ -24,15 +24,15 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 
 public abstract class RestFilterAdapter implements Filter, BaseFilter.Listener {
 
     @Override
     public final Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (TripleConstant.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstant.HANDLER_TYPE_KEY))) {
-            HttpRequest request = (HttpRequest) invocation.get(TripleConstant.HTTP_REQUEST_KEY);
-            HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
+        if (TripleConstants.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstants.HANDLER_TYPE_KEY))) {
+            HttpRequest request = (HttpRequest) invocation.get(TripleConstants.HTTP_REQUEST_KEY);
+            HttpResponse response = (HttpResponse) invocation.get(TripleConstants.HTTP_RESPONSE_KEY);
             return invoke(invoker, invocation, request, response);
         }
         return invoker.invoke(invocation);
@@ -40,18 +40,18 @@ public abstract class RestFilterAdapter implements Filter, BaseFilter.Listener {
 
     @Override
     public final void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        if (TripleConstant.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstant.HANDLER_TYPE_KEY))) {
-            HttpRequest request = (HttpRequest) invocation.get(TripleConstant.HTTP_REQUEST_KEY);
-            HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
+        if (TripleConstants.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstants.HANDLER_TYPE_KEY))) {
+            HttpRequest request = (HttpRequest) invocation.get(TripleConstants.HTTP_REQUEST_KEY);
+            HttpResponse response = (HttpResponse) invocation.get(TripleConstants.HTTP_RESPONSE_KEY);
             onResponse(appResponse, invoker, invocation, request, response);
         }
     }
 
     @Override
     public final void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        if (TripleConstant.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstant.HANDLER_TYPE_KEY))) {
-            HttpRequest request = (HttpRequest) invocation.get(TripleConstant.HTTP_REQUEST_KEY);
-            HttpResponse response = (HttpResponse) invocation.get(TripleConstant.HTTP_RESPONSE_KEY);
+        if (TripleConstants.TRIPLE_HANDLER_TYPE_REST.equals(invocation.get(TripleConstants.HANDLER_TYPE_KEY))) {
+            HttpRequest request = (HttpRequest) invocation.get(TripleConstants.HTTP_REQUEST_KEY);
+            HttpResponse response = (HttpResponse) invocation.get(TripleConstants.HTTP_RESPONSE_KEY);
             onError(t, invoker, invocation, request, response);
         }
     }

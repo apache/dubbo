@@ -175,6 +175,8 @@ public class GetConfig implements BaseCommand {
             return;
         }
 
+        id = id == null ? "(empty)" : id;
+
         plainOutput
                 .append(type)
                 .append(": ")
@@ -193,6 +195,8 @@ public class GetConfig implements BaseCommand {
         if (!isMatch(type, id, args)) {
             return;
         }
+
+        id = id == null ? "(empty)" : id;
 
         plainOutput
                 .append(type)

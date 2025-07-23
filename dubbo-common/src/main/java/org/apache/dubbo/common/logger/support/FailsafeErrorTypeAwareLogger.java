@@ -98,6 +98,9 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements List
 
         try {
             onEvent(code, msg);
+            if (!getLogger().isWarnEnabled()) {
+                return;
+            }
             getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
             // ignored.
@@ -112,6 +115,9 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements List
 
         try {
             onEvent(code, msg);
+            if (!getLogger().isWarnEnabled()) {
+                return;
+            }
             getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
             // ignored.
@@ -126,6 +132,9 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements List
 
         try {
             onEvent(code, msg);
+            if (!getLogger().isErrorEnabled()) {
+                return;
+            }
             getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
             // ignored.
@@ -140,6 +149,9 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements List
 
         try {
             onEvent(code, msg);
+            if (!getLogger().isErrorEnabled()) {
+                return;
+            }
             getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
             // ignored.

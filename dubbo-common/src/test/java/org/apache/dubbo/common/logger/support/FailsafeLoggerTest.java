@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -67,6 +68,12 @@ class FailsafeLoggerTest {
     @Test
     void testSuccessLogger() {
         Logger successLogger = mock(Logger.class);
+        Mockito.when(successLogger.isErrorEnabled()).thenReturn(true);
+        Mockito.when(successLogger.isWarnEnabled()).thenReturn(true);
+        Mockito.when(successLogger.isInfoEnabled()).thenReturn(true);
+        Mockito.when(successLogger.isDebugEnabled()).thenReturn(true);
+        Mockito.when(successLogger.isTraceEnabled()).thenReturn(true);
+
         FailsafeLogger failsafeLogger = new FailsafeLogger(successLogger);
         failsafeLogger.error("error");
         failsafeLogger.warn("warn");

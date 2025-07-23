@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
@@ -29,11 +30,15 @@ import java.util.List;
 import java.util.Locale;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.CookieHeaderNames.SameSite;
@@ -49,10 +54,25 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 
 public final class HttpUtils {
 
+    public static final ByteBufAllocator HEAP_ALLOC = new UnpooledByteBufAllocator(false, false);
     public static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
     public static final String CHARSET_PREFIX = "charset=";
 
     private HttpUtils() {}
+
+    public static String getStatusMessage(int status) {
+        return HttpResponseStatus.valueOf(status).reasonPhrase();
+    }
+
+    public static String toStatusString(int statusCode) {
+        if (statusCode == 200) {
+            return HttpStatus.OK.getStatusString();
+        }
+        if (statusCode == 500) {
+            return HttpStatus.INTERNAL_SERVER_ERROR.getStatusString();
+        }
+        return Integer.toString(statusCode);
+    }
 
     public static List<HttpCookie> decodeCookies(String value) {
         List<HttpCookie> cookies = new ArrayList<>();
@@ -60,6 +80,27 @@ public final class HttpUtils {
             cookies.add(new HttpCookie(c.name(), c.value()));
         }
         return cookies;
+    }
+
+    public static String parseCharset(String contentType) {
+        String charset = null;
+        if (contentType == null) {
+            charset = StringUtils.EMPTY_STRING;
+        } else {
+            int index = contentType.lastIndexOf(CHARSET_PREFIX);
+            if (index == -1) {
+                charset = StringUtils.EMPTY_STRING;
+            } else {
+                charset = contentType.substring(index + CHARSET_PREFIX.length()).trim();
+                int splits = charset.indexOf(CommonConstants.SEMICOLON_SEPARATOR);
+                if (splits == -1) {
+                    return charset;
+                } else {
+                    return charset.substring(0, splits).trim();
+                }
+            }
+        }
+        return charset;
     }
 
     public static String encodeCookie(HttpCookie cookie) {
@@ -74,10 +115,10 @@ public final class HttpUtils {
     }
 
     public static List<String> parseAccept(String header) {
-        List<Item<String>> mediaTypes = new ArrayList<>();
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
+        List<Item<String>> mediaTypes = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             int index = item.indexOf(';');
             mediaTypes.add(new Item<>(StringUtils.substring(item, 0, index), parseQuality(item, index)));
@@ -105,10 +146,10 @@ public final class HttpUtils {
     }
 
     public static List<Locale> parseAcceptLanguage(String header) {
-        List<Item<Locale>> locales = new ArrayList<>();
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
+        List<Item<Locale>> locales = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             String[] pair = StringUtils.tokenize(item, ';');
             locales.add(new Item<>(parseLocale(pair[0]), pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F));
@@ -117,10 +158,10 @@ public final class HttpUtils {
     }
 
     public static List<Locale> parseContentLanguage(String header) {
-        List<Locale> locales = new ArrayList<>();
         if (header == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
+        List<Locale> locales = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
             locales.add(parseLocale(item));
         }
@@ -148,7 +189,13 @@ public final class HttpUtils {
             if (canMark) {
                 inputStream.mark(Integer.MAX_VALUE);
             }
-            data = Unpooled.wrappedBuffer(StreamUtils.readBytes(inputStream));
+            if (inputStream.available() == 0) {
+                return null;
+            } else {
+                data = HEAP_ALLOC.buffer();
+                ByteBufOutputStream os = new ByteBufOutputStream(data);
+                StreamUtils.copy(inputStream, os);
+            }
         } catch (IOException e) {
             throw new DecodeException("Error while reading post data: " + e.getMessage(), e);
         } finally {
@@ -168,7 +215,9 @@ public final class HttpUtils {
                 data,
                 new DefaultHttpHeaders(false),
                 new DefaultHttpHeaders(false));
-        request.headers().forEach(nRequest.headers()::set);
+        HttpHeaders headers = nRequest.headers();
+        request.headers().forEach(e -> headers.add(e.getKey(), e.getValue()));
+
         if (charset == null) {
             return new HttpPostRequestDecoder(DATA_FACTORY, nRequest);
         } else {
@@ -188,7 +237,7 @@ public final class HttpUtils {
         return new DefaultFileUploadAdapter((FileUpload) item);
     }
 
-    private static class DefaultFileUploadAdapter implements HttpRequest.FileUpload {
+    private static final class DefaultFileUploadAdapter implements HttpRequest.FileUpload {
         private final FileUpload fu;
         private InputStream inputStream;
 
@@ -241,6 +290,9 @@ public final class HttpUtils {
 
         public static <T> List<T> sortAndGet(List<Item<T>> items) {
             int size = items.size();
+            if (size == 0) {
+                return Collections.emptyList();
+            }
             if (size == 1) {
                 return Collections.singletonList(items.get(0).value);
             }

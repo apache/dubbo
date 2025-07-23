@@ -502,20 +502,21 @@ class DubboBootstrapTest {
                 .orElse(null);
 
         // check custom value
-        Assertions.assertEquals(50, tripleConfig.getMaxBodySize());
-        Assertions.assertEquals(100, tripleConfig.getMaxResponseBodySize());
+        Assertions.assertEquals(50, tripleConfig.getMaxBodySizeOrDefault());
+        Assertions.assertEquals(100, tripleConfig.getMaxResponseBodySizeOrDefault());
 
         // check default value
-        Assertions.assertEquals(1 << 23, tripleConfig.getMaxChunkSize());
-        Assertions.assertEquals(8192, tripleConfig.getMaxHeaderSize());
-        Assertions.assertEquals(4096, tripleConfig.getMaxInitialLineLength());
-        Assertions.assertEquals(16384, tripleConfig.getInitialBufferSize());
-        Assertions.assertEquals(4096, tripleConfig.getHeaderTableSize());
-        Assertions.assertFalse(tripleConfig.getEnablePush());
-        Assertions.assertEquals(Integer.MAX_VALUE, tripleConfig.getMaxConcurrentStreams());
-        Assertions.assertEquals(1 << 23, tripleConfig.getInitialWindowSize());
-        Assertions.assertEquals(1 << 23, tripleConfig.getMaxFrameSize());
-        Assertions.assertEquals(1 << 15, tripleConfig.getMaxHeaderListSize());
+        Assertions.assertEquals(1 << 23, tripleConfig.getMaxChunkSizeOrDefault());
+        Assertions.assertEquals(8192, tripleConfig.getMaxHeaderSizeOrDefault());
+        Assertions.assertEquals(4096, tripleConfig.getMaxInitialLineLengthOrDefault());
+        Assertions.assertEquals(16384, tripleConfig.getInitialBufferSizeOrDefault());
+        Assertions.assertEquals(4096, tripleConfig.getHeaderTableSizeOrDefault());
+        Assertions.assertFalse(tripleConfig.getEnablePushOrDefault());
+        Assertions.assertEquals(Integer.MAX_VALUE, tripleConfig.getMaxConcurrentStreamsOrDefault());
+        Assertions.assertEquals(1 << 23, tripleConfig.getInitialWindowSizeOrDefault());
+        Assertions.assertEquals(1 << 16, tripleConfig.getConnectionInitialWindowSizeOrDefault());
+        Assertions.assertEquals(1 << 23, tripleConfig.getMaxFrameSizeOrDefault());
+        Assertions.assertEquals(1 << 15, tripleConfig.getMaxHeaderListSizeOrDefault());
     }
 
     private ExporterDeployListener getListener(ApplicationModel model) {

@@ -22,15 +22,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.ArrayList;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -95,14 +92,14 @@ class AccessKeyAuthenticatorTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk");
         Invocation invocation = new RpcInvocation();
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(FrameworkModel.defaultModel());
         assertThrows(RpcAuthenticationException.class, () -> helper.authenticate(invocation, url));
     }
 
     @Test
     void testGetAccessKeyPairFailed() {
         URL url = URL.valueOf("dubbo://10.10.10.10:2181").addParameter(Constants.ACCESS_KEY_ID_KEY, "ak");
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(FrameworkModel.defaultModel());
         Invocation invocation = mock(Invocation.class);
         assertThrows(RuntimeException.class, () -> helper.getAccessKeyPair(invocation, url));
     }
@@ -112,26 +109,8 @@ class AccessKeyAuthenticatorTest {
         URL url = mock(URL.class);
         Invocation invocation = mock(Invocation.class);
         String secretKey = "123456";
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(FrameworkModel.defaultModel());
         String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
         assertNotNull(signature);
-    }
-
-    @Test
-    void testGetSignatureWithParameter() {
-        URL url = mock(URL.class);
-        when(url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false)).thenReturn(true);
-        Invocation invocation = mock(Invocation.class);
-        String secretKey = "123456";
-        Object[] params = {"dubbo", new ArrayList()};
-        when(invocation.getArguments()).thenReturn(params);
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
-        String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
-        assertNotNull(signature);
-
-        Object[] fakeParams = {"dubbo1", new ArrayList<>()};
-        when(invocation.getArguments()).thenReturn(fakeParams);
-        String signature1 = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
-        assertNotEquals(signature, signature1);
     }
 }

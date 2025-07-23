@@ -27,6 +27,7 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -90,12 +91,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MERGEABLE_CLUSTER_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNSUPPORTED_CATEGORY;
@@ -123,6 +126,8 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
 import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.rpc.Constants.AUTHENTICATOR_KEY;
+import static org.apache.dubbo.rpc.Constants.AUTH_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
@@ -139,10 +144,32 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
  */
 public class RegistryProtocol implements Protocol, ScopeModelAware {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
-        APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, PREFER_SERIALIZATION_KEY, CLUSTER_KEY,
-                CONNECTIONS_KEY, DEPRECATED_KEY,
-        GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-        WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY, IPV6_KEY, PACKABLE_METHOD_FACTORY_KEY
+        APPLICATION_KEY,
+        CODEC_KEY,
+        EXCHANGER_KEY,
+        SERIALIZATION_KEY,
+        PREFER_SERIALIZATION_KEY,
+        CLUSTER_KEY,
+        CONNECTIONS_KEY,
+        DEPRECATED_KEY,
+        GROUP_KEY,
+        LOADBALANCE_KEY,
+        MOCK_KEY,
+        PATH_KEY,
+        TIMEOUT_KEY,
+        TOKEN_KEY,
+        VERSION_KEY,
+        WARMUP_KEY,
+        WEIGHT_KEY,
+        DUBBO_VERSION_KEY,
+        RELEASE_KEY,
+        SIDE_KEY,
+        IPV6_KEY,
+        PACKABLE_METHOD_FACTORY_KEY,
+        AUTH_KEY,
+        AUTHENTICATOR_KEY,
+        USERNAME_KEY,
+        PASSWORD_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {
@@ -155,7 +182,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     // To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer
     // exposed.
     // provider url <--> registry url <--> exporter
-    private final Map<String, Map<String, ExporterChangeableWrapper<?>>> bounds = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, ExporterChangeableWrapper<?>>> bounds =
+            new ConcurrentHashMap<>();
     protected Protocol protocol;
     protected ProxyFactory proxyFactory;
 
@@ -252,10 +280,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
-        Map<URL, Set<NotifyListener>> overrideListeners =
+        ConcurrentHashMap<URL, Set<NotifyListener>> overrideListeners =
                 getProviderConfigurationListener(overrideSubscribeUrl).getOverrideListeners();
-        overrideListeners
-                .computeIfAbsent(overrideSubscribeUrl, k -> new ConcurrentHashSet<>())
+        ConcurrentHashMapUtils.computeIfAbsent(overrideListeners, overrideSubscribeUrl, k -> new ConcurrentHashSet<>())
                 .add(overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
@@ -326,10 +353,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         ReferenceCountExporter<?> exporter =
                 exporterFactory.createExporter(providerUrlKey, () -> protocol.export(invokerDelegate));
-        return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(providerUrlKey, k -> new ConcurrentHashMap<>())
-                .computeIfAbsent(
-                        registryUrlKey,
-                        s -> new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker));
+        return (ExporterChangeableWrapper<T>) ConcurrentHashMapUtils.computeIfAbsent(
+                ConcurrentHashMapUtils.computeIfAbsent(bounds, providerUrlKey, k -> new ConcurrentHashMap<>()),
+                registryUrlKey,
+                s -> new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker));
     }
 
     public <T> void reExport(Exporter<T> exporter, URL newInvokerUrl) {
@@ -946,7 +973,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
-        private final Map<URL, Set<NotifyListener>> overrideListeners = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<URL, Set<NotifyListener>> overrideListeners = new ConcurrentHashMap<>();
 
         private final ModuleModel moduleModel;
 
@@ -985,7 +1012,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
-        public Map<URL, Set<NotifyListener>> getOverrideListeners() {
+        public ConcurrentHashMap<URL, Set<NotifyListener>> getOverrideListeners() {
             return overrideListeners;
         }
     }
@@ -1051,8 +1078,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                         .getProtocol()
                                         .equals(getRegisterUrl().getProtocol()))
                         .forEach(u -> u.setRegistered(true));
-                logger.info("Registered dubbo service " + getRegisterUrl().getServiceKey() + " url " + getRegisterUrl()
-                        + " to registry " + registryUrl);
+                logger.info("[INSTANCE_REGISTER] Registered dubbo service "
+                        + getRegisterUrl().getServiceKey() + " url " + getRegisterUrl() + " to registry "
+                        + registryUrl);
             }
         }
 
@@ -1102,10 +1130,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                         .getConfiguration()
                                         .convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                                     for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-                                        if (!moduleModel
-                                                .getServiceRepository()
-                                                .getExportedServices()
-                                                .isEmpty()) {
+                                        if (null != moduleModel.getServiceRepository()
+                                                && !moduleModel
+                                                        .getServiceRepository()
+                                                        .getExportedServices()
+                                                        .isEmpty()) {
                                             moduleModel
                                                     .getExtensionLoader(GovernanceRuleRepository.class)
                                                     .getDefaultExtension()

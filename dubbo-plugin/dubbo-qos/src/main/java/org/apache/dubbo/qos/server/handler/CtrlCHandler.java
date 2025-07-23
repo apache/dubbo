@@ -23,6 +23,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 
 public class CtrlCHandler extends SimpleChannelInboundHandler<ByteBuf> {
     /**
@@ -40,6 +41,10 @@ public class CtrlCHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private byte[] CTRLC_BYTES_SEQUENCE = new byte[] {(byte) 0xff, (byte) 0xf4, (byte) 0xff, (byte) 0xfd, (byte) 0x06};
 
     private byte[] RESPONSE_SEQUENCE = new byte[] {(byte) 0xff, (byte) 0xfc, 0x06};
+
+    public CtrlCHandler() {
+        super(false);
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {
@@ -63,6 +68,7 @@ public class CtrlCHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 ctx.writeAndFlush(Unpooled.wrappedBuffer(
                         (QosConstants.BR_STR + QosProcessHandler.PROMPT).getBytes(CharsetUtil.UTF_8)));
 
+                ReferenceCountUtil.release(buffer);
                 return;
             }
         }

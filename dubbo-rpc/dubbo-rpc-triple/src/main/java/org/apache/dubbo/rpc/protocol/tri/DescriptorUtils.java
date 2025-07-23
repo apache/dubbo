@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper.TripleRequestWrapper;
+import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWrapper.TripleRequestWrapper;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 

@@ -16,46 +16,64 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import org.apache.dubbo.common.extension.Activate;
+
 import java.lang.reflect.Type;
 import java.util.List;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.util.TypeUtils;
 
+@Activate(order = 200, onClass = "com.alibaba.fastjson.JSON")
 public class FastJsonImpl extends AbstractJsonUtilImpl {
+
+    @Override
+    public String getName() {
+        return "fastjson";
+    }
 
     @Override
     public boolean isJson(String json) {
         try {
-            Object obj = com.alibaba.fastjson.JSON.parse(json);
-            return obj instanceof com.alibaba.fastjson.JSONObject || obj instanceof com.alibaba.fastjson.JSONArray;
-        } catch (com.alibaba.fastjson.JSONException e) {
+            Object obj = JSON.parse(json);
+            return obj instanceof JSONObject || obj instanceof JSONArray;
+        } catch (JSONException e) {
             return false;
         }
     }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {
-        return com.alibaba.fastjson.JSON.parseObject(json, type);
+        return JSON.parseObject(json, type);
     }
 
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
-        return com.alibaba.fastjson.JSON.parseArray(json, clazz);
+        return JSON.parseArray(json, clazz);
     }
 
     @Override
     public String toJson(Object obj) {
-        return com.alibaba.fastjson.JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
+        return JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
+    }
+
+    @Override
+    public String toPrettyJson(Object obj) {
+        return JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect, SerializerFeature.PrettyFormat);
     }
 
     @Override
     public Object convertObject(Object obj, Type type) {
-        return com.alibaba.fastjson.util.TypeUtils.cast(obj, type, ParserConfig.getGlobalInstance());
+        return TypeUtils.cast(obj, type, ParserConfig.getGlobalInstance());
     }
 
     @Override
     public Object convertObject(Object obj, Class<?> clazz) {
-        return com.alibaba.fastjson.util.TypeUtils.cast(obj, clazz, ParserConfig.getGlobalInstance());
+        return TypeUtils.cast(obj, clazz, ParserConfig.getGlobalInstance());
     }
 }

@@ -45,6 +45,13 @@
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-remoting-http3</artifactId>
       <version>${project.parent.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-remoting-websocket</artifactId>
+      <version>${project.parent.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -54,21 +61,34 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-cluster</artifactId>
+      <artifactId>dubbo-native</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec-http2</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
+      <artifactId>protobuf-java-util</artifactId>
+      <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+      <optional>true</optional>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-cluster</artifactId>
+      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -89,17 +109,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.reactivex.rxjava2</groupId>
       <artifactId>rxjava</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xerial.snappy</groupId>
-      <artifactId>snappy-java</artifactId>
     </dependency>
     <dependency>
       <groupId>io.projectreactor</groupId>
@@ -113,19 +125,14 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-native</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-compiler</artifactId>
       <version>${project.parent.version}</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
   <build>
     <plugins>
+      <!-- add os-maven-plugin to plugins just for Eclipse m2e, not for `mvn install` -->
       <plugin>
         <groupId>kr.motd.maven</groupId>
         <artifactId>os-maven-plugin</artifactId>
@@ -140,28 +147,8 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-        <version>${maven_protobuf_plugin_version}</version>
-        <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf-protoc_version}:exe:${os.detected.classifier}</protocArtifact>
-          <protocPlugins>
-            <protocPlugin>
-              <id>dubbo</id>
-              <groupId>org.apache.dubbo</groupId>
-              <artifactId>dubbo-compiler</artifactId>
-              <version>${project.parent.version}</version>
-              <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
-            </protocPlugin>
-          </protocPlugins>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-maven-plugin</artifactId>
       </plugin>
 
       <!-- Override the maven-javadoc-plugin configuration that depends on the pass -->
@@ -207,5 +194,13 @@
         </executions>
       </plugin>
     </plugins>
+    <extensions>
+      <!-- add os-maven-plugin to extensions for `mvn install` -->
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>${maven_os_plugin_version}</version>
+      </extension>
+    </extensions>
   </build>
 </project>

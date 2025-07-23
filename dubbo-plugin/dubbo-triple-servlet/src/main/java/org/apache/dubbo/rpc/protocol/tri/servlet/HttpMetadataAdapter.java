@@ -21,9 +21,9 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
+
+import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 
 public final class HttpMetadataAdapter implements Http2Header {
 
@@ -43,17 +43,19 @@ public final class HttpMetadataAdapter implements Http2Header {
     public HttpHeaders headers() {
         HttpHeaders headers = this.headers;
         if (headers == null) {
-            headers = new HttpHeaders();
+            headers = HttpHeaders.create();
             Enumeration<String> en = request.getHeaderNames();
             while (en.hasMoreElements()) {
                 String key = en.nextElement();
-                List<String> values = new ArrayList<>(1);
                 Enumeration<String> ven = request.getHeaders(key);
                 while (ven.hasMoreElements()) {
-                    values.add(ven.nextElement());
+                    headers.add(key, ven.nextElement());
                 }
-                headers.put(key, values);
             }
+            headers.add(PseudoHeaderName.METHOD.value(), method());
+            headers.add(PseudoHeaderName.SCHEME.value(), request.getScheme());
+            headers.add(PseudoHeaderName.AUTHORITY.value(), request.getServerName());
+            headers.add(PseudoHeaderName.PROTOCOL.value(), request.getProtocol());
             this.headers = headers;
         }
         return headers;
@@ -68,11 +70,6 @@ public final class HttpMetadataAdapter implements Http2Header {
     public String path() {
         String query = request.getQueryString();
         return query == null ? request.getRequestURI() : request.getRequestURI() + '?' + query;
-    }
-
-    @Override
-    public String status() {
-        return null;
     }
 
     @Override

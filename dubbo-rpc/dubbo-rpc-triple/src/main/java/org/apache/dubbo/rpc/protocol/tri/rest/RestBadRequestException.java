@@ -16,11 +16,21 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest;
 
-import org.apache.dubbo.remoting.http12.HttpStatus;
-
 public class RestBadRequestException extends RestException {
 
     private static final long serialVersionUID = 1L;
+
+    public RestBadRequestException(String message) {
+        super(Messages.BAD_REQUEST, message);
+    }
+
+    public RestBadRequestException(Throwable cause) {
+        super(cause, Messages.BAD_REQUEST);
+    }
+
+    public RestBadRequestException(String message, Throwable cause) {
+        super(cause, Messages.BAD_REQUEST, message);
+    }
 
     public RestBadRequestException(Messages message, Object... arguments) {
         super(message, arguments);
@@ -28,22 +38,5 @@ public class RestBadRequestException extends RestException {
 
     public RestBadRequestException(Throwable cause, Messages message, Object... arguments) {
         super(cause, message, arguments);
-    }
-
-    public RestBadRequestException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public RestBadRequestException(String message) {
-        super(message);
-    }
-
-    public RestBadRequestException(Throwable cause) {
-        super(cause);
-    }
-
-    @Override
-    public int getStatusCode() {
-        return HttpStatus.BAD_REQUEST.getCode();
     }
 }

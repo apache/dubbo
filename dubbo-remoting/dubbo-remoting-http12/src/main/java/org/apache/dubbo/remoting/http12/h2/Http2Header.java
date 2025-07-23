@@ -21,20 +21,6 @@ import org.apache.dubbo.remoting.http12.RequestMetadata;
 public interface Http2Header extends RequestMetadata, Http2StreamFrame {
 
     @Override
-    default String method() {
-        return headers().getFirst(Http2Headers.METHOD.getName());
-    }
-
-    @Override
-    default String path() {
-        return headers().getFirst(Http2Headers.PATH.getName());
-    }
-
-    default String status() {
-        return headers().getFirst(Http2Headers.STATUS.getName());
-    }
-
-    @Override
     default String name() {
         return "HEADER";
     }

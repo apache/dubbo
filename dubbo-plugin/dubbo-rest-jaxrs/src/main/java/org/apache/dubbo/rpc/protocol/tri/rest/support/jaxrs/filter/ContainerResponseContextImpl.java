@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.filter;
 
 import org.apache.dubbo.remoting.http12.HttpCookie;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
 import org.apache.dubbo.remoting.http12.HttpUtils;
@@ -146,13 +147,13 @@ final class ContainerResponseContextImpl implements ContainerResponseContext {
 
     @Override
     public Date getLastModified() {
-        String value = response.header("last-modified");
+        String value = response.header(HttpHeaderNames.LAST_MODIFIED.getKey());
         return value == null ? null : DateFormatter.parseHttpDate(value);
     }
 
     @Override
     public URI getLocation() {
-        String location = response.header("location");
+        String location = response.header(HttpHeaderNames.LOCATION.getKey());
         return location == null ? null : URI.create(location);
     }
 

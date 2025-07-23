@@ -34,4 +34,6 @@ public interface DataStore {
     void put(String componentName, String key, Object value);
 
     void remove(String componentName, String key);
+
+    default void addListener(DataStoreUpdateListener dataStoreUpdateListener) {}
 }

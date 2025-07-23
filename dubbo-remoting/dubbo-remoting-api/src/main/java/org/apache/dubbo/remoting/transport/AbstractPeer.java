@@ -48,6 +48,10 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         this.handler = handler;
     }
 
+    protected AbstractPeer() {
+        handler = null;
+    }
+
     @Override
     public void send(Object message) throws RemotingException {
         send(message, url.getParameter(Constants.SENT_KEY, false));

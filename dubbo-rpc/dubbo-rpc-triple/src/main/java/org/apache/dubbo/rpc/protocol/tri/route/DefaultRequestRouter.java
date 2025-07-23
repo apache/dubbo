@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.message.HttpMessageAdapterFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 
 import java.util.List;
 
@@ -51,9 +51,9 @@ public final class DefaultRequestRouter implements RequestRouter {
             if (handler == null) {
                 continue;
             }
-            handler.setAttribute(TripleConstant.HANDLER_TYPE_KEY, mapping.getType());
-            handler.setAttribute(TripleConstant.HTTP_REQUEST_KEY, request);
-            handler.setAttribute(TripleConstant.HTTP_RESPONSE_KEY, response);
+            handler.setAttribute(TripleConstants.HANDLER_TYPE_KEY, mapping.getType());
+            handler.setAttribute(TripleConstants.HTTP_REQUEST_KEY, request);
+            handler.setAttribute(TripleConstants.HTTP_RESPONSE_KEY, response);
             return handler;
         }
 

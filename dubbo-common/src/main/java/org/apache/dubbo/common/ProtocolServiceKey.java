@@ -90,7 +90,7 @@ public class ProtocolServiceKey extends ServiceKey {
             }
 
             // 4.match protocol
-            // 4.1. if rule group is *, match all
+            // 4.1. if rule protocol is *, match all
             if (!CommonConstants.ANY_VALUE.equals(rule.getProtocol())) {
                 // 4.2. if rule protocol is null, match all
                 if (StringUtils.isNotEmpty(rule.getProtocol())) {

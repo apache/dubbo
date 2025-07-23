@@ -19,6 +19,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpResponse;
@@ -65,8 +66,11 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     public static final String SEP = ", ";
 
     @Override
-    protected void invoke(Invoker<?> invoker, RpcInvocation invocation, HttpRequest request, HttpResponse response)
-            throws RpcException {
+    protected void invoke(
+            Invoker<?> invoker,
+            RpcInvocation invocation,
+            HttpRequest request,
+            HttpResponse response) throws RpcException {
         RequestMapping mapping = request.attribute(RestConstants.MAPPING_ATTRIBUTE);
         CorsMeta cors = mapping.getCors();
         String origin = request.header(ORIGIN);
@@ -110,8 +114,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
 
         boolean preFlight = isPreFlightRequest(request, origin);
 
-        List<String> allowMethods =
-                checkMethods(cors, preFlight ? request.header(ACCESS_CONTROL_REQUEST_METHOD) : request.method());
+        List<String> allowMethods = checkMethods(cors, preFlight ? request.header(ACCESS_CONTROL_REQUEST_METHOD) : request.method());
         if (allowMethods == null) {
             return false;
         }
@@ -176,8 +179,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         if (ArrayUtils.isNotEmpty(allowedOrigins)) {
             if (ArrayUtils.contains(allowedOrigins, ANY_VALUE)) {
                 if (Boolean.TRUE.equals(cors.getAllowCredentials())) {
-                    throw new IllegalArgumentException(
-                            "When allowCredentials is true, allowedOrigins cannot contain the special value \"*\"");
+                    throw new IllegalArgumentException("When allowCredentials is true, allowedOrigins cannot contain the special value \"*\"");
                 }
                 return ANY_VALUE;
             }
@@ -245,8 +247,7 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
         }
         try {
             URI uri = new URI(origin);
-            return request.scheme().equals(uri.getScheme())
-                    && request.serverName().equals(uri.getHost())
+            return request.scheme().equals(uri.getScheme()) && request.serverName().equals(uri.getHost())
                     && getPort(request.scheme(), request.serverPort()) == getPort(uri.getScheme(), uri.getPort());
         } catch (URISyntaxException e) {
             return false;
@@ -254,17 +255,17 @@ public class CorsHeaderFilter extends RestHeaderFilterAdapter {
     }
 
     private static boolean isPreFlightRequest(HttpRequest request, String origin) {
-        return request.method().equals(HttpMethods.OPTIONS.name())
+        return HttpMethods.OPTIONS.is(request.method())
                 && origin != null
                 && request.hasHeader(ACCESS_CONTROL_REQUEST_METHOD);
     }
 
     private static int getPort(String scheme, int port) {
         if (port == -1) {
-            if ("http".equals(scheme)) {
+            if (HttpConstants.HTTP.equals(scheme)) {
                 return 80;
             }
-            if ("https".equals(scheme)) {
+            if (HttpConstants.HTTPS.equals(scheme)) {
                 return 443;
             }
         }

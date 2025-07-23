@@ -16,16 +16,20 @@
  */
 package org.apache.dubbo.demo.consumer;
 
+import org.apache.dubbo.api.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Application {
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 
@@ -42,18 +46,18 @@ public class Application {
         bootstrap
                 .application(new ApplicationConfig("dubbo-demo-api-consumer"))
                 .registry(new RegistryConfig(REGISTRY_URL))
-                .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
                 .reference(reference)
                 .start();
 
         DemoService demoService = bootstrap.getCache().get(reference);
         String message = demoService.sayHello("dubbo");
-        System.out.println(message);
+        logger.info(message);
 
         // generic invoke
         GenericService genericService = (GenericService) demoService;
         Object genericInvokeResult = genericService.$invoke(
                 "sayHello", new String[] {String.class.getName()}, new Object[] {"dubbo generic invoke"});
-        System.out.println(genericInvokeResult.toString());
+        logger.info(genericInvokeResult.toString());
     }
 }

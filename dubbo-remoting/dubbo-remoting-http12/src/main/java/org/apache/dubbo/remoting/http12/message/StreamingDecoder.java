@@ -42,7 +42,7 @@ public interface StreamingDecoder {
         default void onClose() {}
     }
 
-    class DefaultFragmentListener implements FragmentListener {
+    final class DefaultFragmentListener implements FragmentListener {
 
         private final ListeningDecoder listeningDecoder;
 
@@ -57,7 +57,17 @@ public interface StreamingDecoder {
 
         @Override
         public void onClose() {
-            this.listeningDecoder.close();
+            listeningDecoder.close();
         }
+    }
+
+    final class NoopFragmentListener implements FragmentListener {
+
+        static final FragmentListener NOOP = new NoopFragmentListener();
+
+        private NoopFragmentListener() {}
+
+        @Override
+        public void onFragmentMessage(InputStream rawMessage) {}
     }
 }

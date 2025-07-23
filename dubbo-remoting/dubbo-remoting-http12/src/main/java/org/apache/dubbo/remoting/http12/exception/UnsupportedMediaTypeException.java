@@ -18,6 +18,8 @@ package org.apache.dubbo.remoting.http12.exception;
 
 public class UnsupportedMediaTypeException extends HttpStatusException {
 
+    private static final long serialVersionUID = 1L;
+
     private final String mediaType;
 
     public UnsupportedMediaTypeException(String mediaType) {

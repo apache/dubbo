@@ -16,12 +16,17 @@
  */
 package org.apache.dubbo.remoting.http12.exception;
 
+import org.apache.dubbo.remoting.http12.HttpUtils;
+
 public class HttpStatusException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
 
     private final int statusCode;
 
     public HttpStatusException(int statusCode) {
-        this(statusCode, "Unknown Error");
+        super(HttpUtils.getStatusMessage(statusCode));
+        this.statusCode = statusCode;
     }
 
     public HttpStatusException(int statusCode, String message) {
@@ -30,7 +35,7 @@ public class HttpStatusException extends RuntimeException {
     }
 
     public HttpStatusException(int statusCode, Throwable cause) {
-        super(cause);
+        super(HttpUtils.getStatusMessage(statusCode), cause);
         this.statusCode = statusCode;
     }
 
@@ -41,5 +46,14 @@ public class HttpStatusException extends RuntimeException {
 
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public String getDisplayMessage() {
+        return getMessage();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName() + ": status=" + statusCode + ", " + getMessage();
     }
 }

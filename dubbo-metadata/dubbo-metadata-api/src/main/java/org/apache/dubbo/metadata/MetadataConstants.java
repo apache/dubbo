@@ -19,7 +19,7 @@ package org.apache.dubbo.metadata;
 public interface MetadataConstants {
     String KEY_SEPARATOR = ":";
     String DEFAULT_PATH_TAG = "metadata";
-    String KEY_REVISON_PREFIX = "revision";
+    String KEY_REVISION_PREFIX = "revision";
     String META_DATA_STORE_TAG = ".metaData";
     String METADATA_PUBLISH_DELAY_KEY = "dubbo.application.metadata.publish.delay";
     int DEFAULT_METADATA_PUBLISH_DELAY = 1000;

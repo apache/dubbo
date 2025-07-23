@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.model;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -304,7 +306,7 @@ public class MetricsSupport {
     /**
      * Generate a complete indicator item for an interface/method
      */
-    public static <T> void fillZero(Map<?, Map<T, AtomicLong>> data) {
+    public static <T> void fillZero(ConcurrentHashMap<?, ConcurrentHashMap<T, AtomicLong>> data) {
         if (CollectionUtils.isEmptyMap(data)) {
             return;
         }
@@ -312,7 +314,7 @@ public class MetricsSupport {
                 data.values().stream().flatMap(map -> map.keySet().stream()).collect(Collectors.toSet());
         data.forEach((keyWrapper, mapVal) -> {
             for (T key : allKeyMetrics) {
-                mapVal.computeIfAbsent(key, k -> new AtomicLong(0));
+                ConcurrentHashMapUtils.computeIfAbsent(mapVal, key, k -> new AtomicLong(0));
             }
         });
     }

@@ -27,15 +27,20 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @Activate
 public final class BinaryCodecFactory implements HttpMessageEncoderFactory, HttpMessageDecoderFactory {
 
-    private final BinaryCodec instance = new BinaryCodec();
+    private static final BinaryCodec INSTANCE = new BinaryCodec();
 
     @Override
     public HttpMessageCodec createCodec(URL url, FrameworkModel frameworkModel, String mediaType) {
-        return instance;
+        return INSTANCE;
     }
 
     @Override
     public MediaType mediaType() {
         return MediaType.APPLICATION_OCTET_STREAM;
+    }
+
+    @Override
+    public boolean supports(String mediaType) {
+        return mediaType.startsWith(MediaType.APPLICATION_OCTET_STREAM.getName()) || mediaType.startsWith("image/");
     }
 }

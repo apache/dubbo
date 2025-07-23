@@ -25,13 +25,15 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import java.net.InetSocketAddress;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.REMOTE_ADDRESS_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstants.REMOTE_ADDRESS_KEY;
 
 public abstract class AbstractServerCallListener implements ServerCallListener {
 
@@ -56,19 +58,24 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
             RpcContext.restoreCancellationContext(
                     ((Http2CancelableStreamObserver<Object>) responseObserver).getCancellationContext());
         }
-        InetSocketAddress remoteAddress =
-                (InetSocketAddress) invocation.getAttributes().remove(REMOTE_ADDRESS_KEY);
-        RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
-        String remoteApp = (String) invocation.getAttributes().remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
-        if (null != remoteApp) {
-            RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
+
+        RpcServiceContext serviceContext = RpcContext.getServiceContext();
+        serviceContext.setRemoteAddress((InetSocketAddress) invocation.remove(REMOTE_ADDRESS_KEY));
+        String remoteApp = (String) invocation.remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
+        if (remoteApp != null) {
+            serviceContext.setRemoteApplicationName(remoteApp);
             invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
         }
+        if (serviceContext.getRequest() == null) {
+            serviceContext.setRequest(invocation.get(TripleConstants.HTTP_REQUEST_KEY));
+            serviceContext.setResponse(invocation.get(TripleConstants.HTTP_RESPONSE_KEY));
+        }
+
         try {
-            final long stInMillis = System.currentTimeMillis();
-            final Result response = invoker.invoke(invocation);
+            long stInMillis = System.currentTimeMillis();
+            Result response = invoker.invoke(invocation);
             if (response.hasException()) {
-                onResponseException(response.getException());
+                responseObserver.onError(response.getException());
                 return;
             }
             response.whenCompleteWithContext((r, t) -> {
@@ -80,10 +87,10 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                     return;
                 }
                 if (r.hasException()) {
-                    onResponseException(r.getException());
+                    responseObserver.onError(r.getException());
                     return;
                 }
-                final long cost = System.currentTimeMillis() - stInMillis;
+                long cost = System.currentTimeMillis() - stInMillis;
                 Long timeout = (Long) invocation.get("timeout");
                 if (timeout != null && timeout < cost) {
                     LOGGER.error(
@@ -105,10 +112,6 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();
         }
-    }
-
-    protected void onResponseException(Throwable t) {
-        responseObserver.onError(t);
     }
 
     public abstract void onReturn(Object value);

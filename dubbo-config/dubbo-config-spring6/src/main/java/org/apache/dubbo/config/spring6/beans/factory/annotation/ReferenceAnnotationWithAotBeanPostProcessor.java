@@ -29,6 +29,7 @@ import org.apache.dubbo.config.spring6.beans.factory.aot.ReferencedMethodArgumen
 import org.apache.dubbo.config.spring6.utils.AotUtils;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.service.EchoService;
+import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -237,19 +238,19 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends ReferenceAnnota
             CodeBlock.Builder code = CodeBlock.builder();
             if (!CollectionUtils.isEmpty(this.annotatedInjectionMetadata.getFieldElements())) {
                 for (AnnotatedInjectElement referenceElement : this.annotatedInjectionMetadata.getFieldElements()) {
-                    code.addStatement(generateMethodStatementForElement(targetClassName, referenceElement, hints));
+                    code.addStatement(generateStatementForElement(targetClassName, referenceElement, hints));
                 }
             }
             if (!CollectionUtils.isEmpty(this.annotatedInjectionMetadata.getMethodElements())) {
                 for (AnnotatedInjectElement referenceElement : this.annotatedInjectionMetadata.getMethodElements()) {
-                    code.addStatement(generateMethodStatementForElement(targetClassName, referenceElement, hints));
+                    code.addStatement(generateStatementForElement(targetClassName, referenceElement, hints));
                 }
             }
             code.addStatement("return $L", INSTANCE_PARAMETER);
             return code.build();
         }
 
-        private CodeBlock generateMethodStatementForElement(
+        private CodeBlock generateStatementForElement(
                 ClassName targetClassName, AnnotatedInjectElement referenceElement, RuntimeHints hints) {
 
             Member member = referenceElement.getMember();
@@ -260,11 +261,22 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends ReferenceAnnota
                 Class<?> c = referenceElement.getInjectedType();
                 AotUtils.registerSerializationForService(c, hints);
                 hints.reflection().registerType(TypeReference.of(c), MemberCategory.INVOKE_PUBLIC_METHODS);
+                // need to enumerate all interfaces by the proxy
                 hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class);
+                hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class, GenericService.class);
                 hints.proxies()
                         .registerJdkProxy(
                                 c,
                                 EchoService.class,
+                                Destroyable.class,
+                                SpringProxy.class,
+                                Advised.class,
+                                DecoratingProxy.class);
+                hints.proxies()
+                        .registerJdkProxy(
+                                c,
+                                EchoService.class,
+                                GenericService.class,
                                 Destroyable.class,
                                 SpringProxy.class,
                                 Advised.class,

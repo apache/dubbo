@@ -102,12 +102,14 @@ public class DubboAnnotationUtils {
             Class<?>[] allInterfaces = getAllInterfacesForClass(defaultInterfaceClass);
             if (allInterfaces.length > 0) {
                 interfaceClass = allInterfaces[0];
+            } else {
+                interfaceClass = defaultInterfaceClass;
             }
         }
 
         Assert.notNull(
                 interfaceClass, "@Service interfaceClass() or interfaceName() or interface class must be present!");
-        Assert.isTrue(interfaceClass.isInterface(), "The annotated type must be an interface!");
+        // Assert.isTrue(interfaceClass.isInterface(), "The annotated type must be an interface!");
         return interfaceClass.getName();
     }
 

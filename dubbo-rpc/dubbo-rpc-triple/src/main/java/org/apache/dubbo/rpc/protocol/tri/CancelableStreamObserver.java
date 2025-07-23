@@ -36,7 +36,7 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
         cancellationContext.cancel(throwable);
     }
 
-    public void beforeStart(final ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
+    public void beforeStart(ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
         // do nothing
     }
 

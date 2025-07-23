@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.http12.RequestMetadata;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class DefaultHttp1Request implements Http1Request {
+public final class DefaultHttp1Request implements Http1Request {
 
     private final RequestMetadata httpMetadata;
 
@@ -57,5 +57,11 @@ public class DefaultHttp1Request implements Http1Request {
     @Override
     public void close() throws IOException {
         httpInputMessage.close();
+    }
+
+    @Override
+    public String toString() {
+        return "Http1Request{method='" + method() + '\'' + ", path='" + path() + '\'' + ", contentType='"
+                + contentType() + "'}";
     }
 }

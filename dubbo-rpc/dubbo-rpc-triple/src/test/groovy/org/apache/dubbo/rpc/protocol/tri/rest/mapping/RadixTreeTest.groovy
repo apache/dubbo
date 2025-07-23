@@ -17,11 +17,13 @@
 
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping
 
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression
+
 import spock.lang.Specification
 
 class RadixTreeTest extends Specification {
 
-    def "Match"() {
+    def "match"() {
         given:
             def tree = new RadixTree<String>()
             tree.addPath('/a/*', 'abc')
@@ -33,7 +35,7 @@ class RadixTreeTest extends Specification {
             !match.empty
     }
 
-    def "Clear"() {
+    def "clear"() {
         given:
             def tree = new RadixTree<String>()
             tree.addPath('/a/*', 'abc')
@@ -43,5 +45,68 @@ class RadixTreeTest extends Specification {
             tree.remove(s -> s in ['abc', 'bcd'])
         then:
             tree.empty
+    }
+
+    def "test end match"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            tree.addPath('/a/*/*', true)
+        expect:
+            tree.match(path).size() == len
+        where:
+            path       | len
+            '/a'       | 0
+            '/a/b'     | 0
+            '/a/b/c'   | 1
+            '/a/b/c/d' | 0
+    }
+
+    def "test repeat add,no predicate function"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            Boolean val1 = tree.addPath('/a/*/*', false)
+            Boolean val2 = tree.addPath('/a/*/*', true)
+        expect:
+            val1 == null;
+            val2 == false;
+    }
+
+    def "test repeat add,use predicate function"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            Boolean val1 = tree.addPath(PathExpression.parse('/a/*/*'), false, { a, b -> a == b })
+            Boolean val2 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+            Boolean val3 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+
+        expect:
+            val1 == null;
+            val2 == null;
+        val3 == true;
+    }
+
+    def "test repeat add,use predicate function and Registration"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            Boolean val1 = tree.addPath(PathExpression.parse('/a/*/*'), false, { a, b -> a == b })
+            Boolean val2 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+            Boolean val3 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+
+        expect:
+            val1 == null;
+            val2 == null;
+            val3 == true;
+    }
+
+    def "test sub path match"() {
+        given:
+            def tree = new RadixTree<String>();
+            tree.addPath("/update/{ruleId}", "a")
+            tree.addPath("/update/{ruleId}/state", "b")
+        expect:
+            tree.match(path).get(0).value == result
+        where:
+            path                    | result
+            '/update/1222222'       | 'a'
+            '/update/1222222/state' | 'b'
     }
 }

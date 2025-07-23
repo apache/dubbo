@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.collector.sample;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.store.DataStoreUpdateListener;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.ThreadPoolMetric;
@@ -37,11 +38,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("all")
@@ -177,5 +180,33 @@ public class ThreadPoolMetricsSamplerTest {
 
         serverExecutor.shutdown();
         clientExecutor.shutdown();
+    }
+
+    @Test
+    void testDataSourceNotify() throws Exception {
+        ArgumentCaptor<DataStoreUpdateListener> captor = ArgumentCaptor.forClass(DataStoreUpdateListener.class);
+        when(scopeBeanFactory.getBean(FrameworkExecutorRepository.class)).thenReturn(frameworkExecutorRepository);
+        when(frameworkExecutorRepository.getSharedExecutor()).thenReturn(null);
+        sampler2.registryDefaultSampleThreadPoolExecutor();
+
+        Field f = ThreadPoolMetricsSampler.class.getDeclaredField("sampleThreadPoolExecutor");
+        f.setAccessible(true);
+        Map<String, ThreadPoolExecutor> executors = (Map<String, ThreadPoolExecutor>) f.get(sampler2);
+
+        Assertions.assertEquals(0, executors.size());
+
+        verify(dataStore).addListener(captor.capture());
+        Assertions.assertEquals(sampler2, captor.getValue());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        sampler2.onUpdate(EXECUTOR_SERVICE_COMPONENT_KEY, "20880", executorService);
+
+        executors = (Map<String, ThreadPoolExecutor>) f.get(sampler2);
+        Assertions.assertEquals(1, executors.size());
+        Assertions.assertTrue(executors.containsKey("DubboServerHandler-20880"));
+
+        sampler2.onUpdate(CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY, "client", executorService);
+        Assertions.assertEquals(2, executors.size());
+        Assertions.assertTrue(executors.containsKey("DubboClientHandler-client"));
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs;
 
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+
 import javax.ws.rs.core.AbstractMultivaluedMap;
 
 import java.util.List;
@@ -25,5 +27,10 @@ public final class MultivaluedMapWrapper<K, V> extends AbstractMultivaluedMap<K,
 
     public MultivaluedMapWrapper(Map<K, List<V>> store) {
         super(store);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public MultivaluedMapWrapper(HttpHeaders headers) {
+        super((Map) headers.asMap());
     }
 }

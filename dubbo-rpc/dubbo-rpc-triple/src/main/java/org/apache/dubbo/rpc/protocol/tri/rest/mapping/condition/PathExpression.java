@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class PathExpression implements Comparable<PathExpression> {
@@ -61,17 +62,21 @@ public final class PathExpression implements Comparable<PathExpression> {
         }
         Map<String, String> variableMap = new LinkedHashMap<>();
         int start, end = 0;
-        for (PathSegment segment : segments) {
+        for (int i = 0, len = segments.length; i < len; i++) {
+            PathSegment segment = segments[i];
             if (end != -1) {
                 start = end + 1;
                 end = path.indexOf('/', start);
                 if (segment.match(new KeyString(path), start, end, variableMap)) {
+                    if (i == len - 1 && segment.isTailMatching()) {
+                        return variableMap;
+                    }
                     continue;
                 }
             }
             return null;
         }
-        return variableMap;
+        return end == -1 ? variableMap : null;
     }
 
     public int compareTo(PathExpression other, String lookupPath) {
@@ -99,7 +104,7 @@ public final class PathExpression implements Comparable<PathExpression> {
                 return result;
             }
         }
-        return otherSize - size;
+        return size - otherSize;
     }
 
     @Override
@@ -123,18 +128,38 @@ public final class PathExpression implements Comparable<PathExpression> {
         if (isDirect()) {
             return path;
         }
-        StringBuilder sb = new StringBuilder(32);
+        StringBuilder sb = new StringBuilder(path.length());
+        int varIndex = 1;
         for (PathSegment segment : segments) {
             sb.append('/');
-            String value = segment.getValue();
-            if (segment.getType() == Type.VARIABLE) {
-                if (value.isEmpty()) {
-                    sb.append('*');
-                } else {
-                    sb.append('{').append(value).append('}');
-                }
-            } else {
-                sb.append(value);
+            switch (segment.getType()) {
+                case LITERAL:
+                    sb.append(segment.getValue());
+                    break;
+                case WILDCARD_TAIL:
+                    List<String> variables = segment.getVariables();
+                    if (variables == null) {
+                        sb.append("{path}");
+                    } else {
+                        sb.append('{').append(variables.get(0)).append('}');
+                    }
+                    break;
+                case VARIABLE:
+                    sb.append('{');
+                    String value = segment.getValue();
+                    if (value.isEmpty()) {
+                        sb.append("var").append(varIndex++);
+                    } else {
+                        sb.append(value);
+                    }
+                    sb.append('}');
+                    break;
+                case PATTERN:
+                case PATTERN_MULTI:
+                    sb.append('{').append("var").append(varIndex++).append('}');
+                    break;
+                default:
+                    break;
             }
         }
         return sb.toString();

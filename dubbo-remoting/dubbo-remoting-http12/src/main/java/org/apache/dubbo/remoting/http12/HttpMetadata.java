@@ -19,4 +19,17 @@ package org.apache.dubbo.remoting.http12;
 public interface HttpMetadata {
 
     HttpHeaders headers();
+
+    default String contentType() {
+        return header(HttpHeaderNames.CONTENT_TYPE.getKey());
+    }
+
+    default String header(CharSequence name) {
+        return headers().getFirst(name);
+    }
+
+    default HttpMetadata header(CharSequence name, String value) {
+        headers().set(name, value);
+        return this;
+    }
 }

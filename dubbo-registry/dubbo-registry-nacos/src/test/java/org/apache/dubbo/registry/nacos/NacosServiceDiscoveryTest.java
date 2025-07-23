@@ -130,6 +130,7 @@ class NacosServiceDiscoveryTest {
 
     @AfterEach
     public void destroy() throws Exception {
+        ApplicationModel.defaultModel().destroy();
         nacosServiceDiscovery.destroy();
     }
 

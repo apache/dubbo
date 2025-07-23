@@ -52,20 +52,21 @@ public interface ClientStream extends Stream {
         default void onComplete(
                 TriRpcStatus status,
                 Map<String, Object> attachments,
-                Map<String, String> reserved,
+                Map<CharSequence, String> reserved,
                 boolean isReturnTriException) {
             onComplete(status, attachments);
         }
+
+        void onClose();
     }
 
     /**
      * Send message to remote peer.
      *
      * @param message message to send to remote peer
-     * @param eos     whether this is the last message
      * @return future to callback when send message is done
      */
-    Future<?> sendMessage(byte[] message, int compressFlag, boolean eos);
+    Future<?> sendMessage(byte[] message, int compressFlag);
 
     /**
      * No more data will be sent, half close this stream to wait server response.

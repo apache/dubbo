@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,5 +49,10 @@ class NacosServiceDiscoveryFactoryTest {
         ServiceDiscovery discovery = nacosServiceDiscoveryFactory.createDiscovery(url);
 
         Assertions.assertTrue(discovery instanceof NacosServiceDiscovery);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ApplicationModel.defaultModel().destroy();
     }
 }

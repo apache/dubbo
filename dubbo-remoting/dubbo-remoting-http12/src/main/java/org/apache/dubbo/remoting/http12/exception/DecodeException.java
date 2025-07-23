@@ -18,6 +18,8 @@ package org.apache.dubbo.remoting.http12.exception;
 
 public class DecodeException extends HttpStatusException {
 
+    private static final long serialVersionUID = 1L;
+
     public DecodeException() {
         super(500);
     }

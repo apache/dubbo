@@ -20,8 +20,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 
-import java.lang.reflect.ParameterizedType;
-
 public class MethodMetadata {
 
     private final Class<?>[] actualRequestTypes;
@@ -63,19 +61,9 @@ public class MethodMetadata {
         switch (method.getRpcType()) {
             case CLIENT_STREAM:
             case BI_STREAM:
-                actualRequestTypes = new Class<?>[] {
-                    (Class<?>)
-                            ((ParameterizedType) method.getMethod().getGenericReturnType()).getActualTypeArguments()[0]
-                };
-                actualResponseType =
-                        (Class<?>) ((ParameterizedType) method.getMethod().getGenericParameterTypes()[0])
-                                .getActualTypeArguments()[0];
-                return new MethodMetadata(actualRequestTypes, actualResponseType);
             case SERVER_STREAM:
-                actualRequestTypes = new Class[] {method.getMethod().getParameterTypes()[0]};
-                actualResponseType =
-                        (Class<?>) ((ParameterizedType) method.getMethod().getGenericParameterTypes()[1])
-                                .getActualTypeArguments()[0];
+                actualRequestTypes = method.getActualRequestTypes();
+                actualResponseType = method.getActualResponseType();
                 return new MethodMetadata(actualRequestTypes, actualResponseType);
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();

@@ -105,7 +105,9 @@ public final class PathCondition implements Condition<PathCondition, HttpRequest
             }
         }
         if (matches != null) {
-            Collections.sort(matches);
+            if (matches.size() > 1) {
+                Collections.sort(matches);
+            }
             Set<String> result = CollectionUtils.newLinkedHashSet(matches.size());
             for (int i = 0, size = matches.size(); i < size; i++) {
                 result.add(matches.get(i).getPath());

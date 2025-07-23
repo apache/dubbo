@@ -53,7 +53,7 @@ public abstract class AbstractInterfaceBuilder<
     protected MonitorConfig monitor;
 
     /**
-     * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
+     * Strategies for generating dynamic agents，there are two strategies can be chosen: jdk and javassist
      */
     protected String proxy;
 

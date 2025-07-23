@@ -18,13 +18,19 @@ package org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition;
 
 import org.apache.dubbo.remoting.http12.HttpRequest;
 
+import java.util.Objects;
+
 @SuppressWarnings("unchecked")
 public final class ConditionWrapper implements Condition<ConditionWrapper, HttpRequest> {
 
     private final Condition<Object, HttpRequest> condition;
 
-    public ConditionWrapper(Condition<?, HttpRequest> condition) {
-        this.condition = (Condition<Object, HttpRequest>) condition;
+    private ConditionWrapper(Condition<?, HttpRequest> condition) {
+        this.condition = (Condition<Object, HttpRequest>) Objects.requireNonNull(condition);
+    }
+
+    public static ConditionWrapper wrap(Condition<?, HttpRequest> condition) {
+        return condition instanceof ConditionWrapper ? (ConditionWrapper) condition : new ConditionWrapper(condition);
     }
 
     @Override
@@ -40,6 +46,9 @@ public final class ConditionWrapper implements Condition<ConditionWrapper, HttpR
 
     @Override
     public int compareTo(ConditionWrapper other, HttpRequest request) {
+        if (other == null) {
+            return -1;
+        }
         return condition.compareTo(other.condition, request);
     }
 

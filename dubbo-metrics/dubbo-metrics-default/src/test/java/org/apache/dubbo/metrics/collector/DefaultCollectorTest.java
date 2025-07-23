@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -87,7 +88,11 @@ class DefaultCollectorTest {
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
 
+        MetricsConfig metricsConfig = new MetricsConfig();
+        metricsConfig.setEnableRpc(true);
+
         applicationModel.getApplicationConfigManager().setApplication(config);
+        applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
         metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         defaultCollector.setCollectEnabled(true);

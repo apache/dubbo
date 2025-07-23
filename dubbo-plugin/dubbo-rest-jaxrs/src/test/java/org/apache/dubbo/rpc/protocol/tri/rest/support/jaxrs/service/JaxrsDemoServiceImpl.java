@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.rest.support.jaxrs.service;
 
+import javax.ws.rs.core.MultivaluedMap;
+
 public class JaxrsDemoServiceImpl implements JaxrsDemoService {
 
     @Override
@@ -31,5 +33,10 @@ public class JaxrsDemoServiceImpl implements JaxrsDemoService {
     @Override
     public User convertTest(User user) {
         return user;
+    }
+
+    @Override
+    public MultivaluedMap<String, Integer> multiValueMapTest(MultivaluedMap<String, Integer> params) {
+        return params;
     }
 }

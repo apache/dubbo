@@ -24,6 +24,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -31,13 +33,14 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * The test-case for https://github.com/apache/dubbo/issues/6000
- * Autowired a ReferenceBean failed in some situation in Spring enviroment
+ * Autowired a ReferenceBean failed in some situation in Spring environment
  */
 @Configuration
 @EnableDubbo
 @ComponentScan
 @PropertySource("classpath:/META-INF/issues/issue6000/config.properties")
 class Issue6000Test {
+    private static final Logger logger = LoggerFactory.getLogger(Issue6000Test.class);
 
     @BeforeAll
     public static void beforeAll() {
@@ -56,7 +59,7 @@ class Issue6000Test {
 
             HelloDubbo helloDubbo = context.getBean(HelloDubbo.class);
             String result = helloDubbo.sayHello("dubbo");
-            System.out.println(result);
+            logger.info(result);
 
         } catch (Exception e) {
             String s = e.toString();
