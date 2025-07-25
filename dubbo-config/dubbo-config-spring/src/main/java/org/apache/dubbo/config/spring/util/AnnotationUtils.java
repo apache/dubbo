@@ -631,22 +631,30 @@ public abstract class AnnotationUtils {
 
         if (ClassUtils.isPresent(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader)) {
             Class<?> annotatedElementUtilsClass = resolveClassName(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, classLoader);
-            // getMergedAnnotation method appears in the Spring Framework 4.2
-            Method getMergedAnnotationMethod = findMethod(
-                    annotatedElementUtilsClass,
-                    "getMergedAnnotation",
-                    AnnotatedElement.class,
-                    Class.class,
-                    boolean.class,
-                    boolean.class);
+            // getMergedAnnotation method appears in the Spring Framework 5.x
+            Method getMergedAnnotationMethod =
+                    findMethod(annotatedElementUtilsClass, "getMergedAnnotation", AnnotatedElement.class, Class.class);
             if (getMergedAnnotationMethod != null) {
-                mergedAnnotation = (Annotation) invokeMethod(
-                        getMergedAnnotationMethod,
-                        null,
-                        annotatedElement,
-                        annotationType,
-                        classValuesAsString,
-                        nestedAnnotationsAsMap);
+                mergedAnnotation =
+                        (Annotation) invokeMethod(getMergedAnnotationMethod, null, annotatedElement, annotationType);
+            } else {
+                // getMergedAnnotation method appears in the Spring Framework 4.2
+                getMergedAnnotationMethod = findMethod(
+                        annotatedElementUtilsClass,
+                        "getMergedAnnotation",
+                        AnnotatedElement.class,
+                        Class.class,
+                        boolean.class,
+                        boolean.class);
+                if (getMergedAnnotationMethod != null) {
+                    mergedAnnotation = (Annotation) invokeMethod(
+                            getMergedAnnotationMethod,
+                            null,
+                            annotatedElement,
+                            annotationType,
+                            classValuesAsString,
+                            nestedAnnotationsAsMap);
+                }
             }
         }
 

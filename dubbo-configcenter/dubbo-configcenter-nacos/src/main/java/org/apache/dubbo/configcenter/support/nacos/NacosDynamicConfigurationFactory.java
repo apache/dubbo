@@ -39,7 +39,7 @@ public class NacosDynamicConfigurationFactory extends AbstractDynamicConfigurati
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
         URL nacosURL = url;
         if (CommonConstants.DUBBO.equals(url.getParameter(PropertyKeyConst.NAMESPACE))) {
-            // Nacos use empty string as default name space, replace default namespace "dubbo" to ""
+            // Nacos use empty string as default namespace, replace default namespace "dubbo" to ""
             nacosURL = url.removeParameter(PropertyKeyConst.NAMESPACE);
         }
         return new NacosDynamicConfiguration(nacosURL, applicationModel);
