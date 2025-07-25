@@ -20,12 +20,16 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Dubbo Provider Bootstrap
  *
  * @since 2.7.5
  */
 public class DubboServiceConsumerBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(DubboServiceConsumerBootstrap.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -47,7 +51,7 @@ public class DubboServiceConsumerBootstrap {
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
+            logger.info(echoService.echo("Hello,World"));
         }
     }
 }

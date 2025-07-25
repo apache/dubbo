@@ -18,6 +18,7 @@ package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
@@ -40,7 +41,8 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public class RegistryStatComposite extends AbstractMetricsExport {
 
-    private final Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<MetricsKey, ConcurrentHashMap<ApplicationMetric, AtomicLong>> appStats =
+            new ConcurrentHashMap<>();
 
     private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
@@ -81,17 +83,17 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
         applicationMetric.setExtraInfo(
                 Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
-        Map<ApplicationMetric, AtomicLong> stats = appStats.get(metricsKey);
+        ConcurrentHashMap<ApplicationMetric, AtomicLong> stats = appStats.get(metricsKey);
         AtomicLong metrics = stats.get(applicationMetric);
         if (metrics == null) {
-            metrics = stats.computeIfAbsent(applicationMetric, k -> new AtomicLong(0L));
+            metrics = ConcurrentHashMapUtils.computeIfAbsent(stats, applicationMetric, k -> new AtomicLong(0L));
             samplesChanged.set(true);
         }
         metrics.getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
     }
 
-    public Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> getAppStats() {
+    public ConcurrentHashMap<MetricsKey, ConcurrentHashMap<ApplicationMetric, AtomicLong>> getAppStats() {
         return appStats;
     }
 

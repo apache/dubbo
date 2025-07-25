@@ -35,11 +35,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.awaitility.Awaitility.await;
 
 class EagerThreadPoolExecutorTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(EagerThreadPoolExecutorTest.class);
     private static final URL URL = new ServiceConfigURL("dubbo", "localhost", 8080);
 
     /**
@@ -88,9 +91,11 @@ class EagerThreadPoolExecutorTest {
         for (int i = 0; i < 15; i++) {
             Thread.sleep(50);
             executor.execute(() -> {
-                System.out.println(
-                        "thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue："
-                                + executor.getQueue().size() + " executor size: " + executor.getPoolSize());
+                logger.info(
+                        "thread number in current pool：{},  task number in task queue：{} executor size: {}",
+                        executor.getPoolSize(),
+                        executor.getQueue().size(),
+                        executor.getPoolSize());
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {

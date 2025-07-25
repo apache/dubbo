@@ -17,113 +17,124 @@
 package org.apache.dubbo.common.logger.log4j2;
 
 import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.support.FailsafeLogger;
+
+import org.apache.logging.log4j.Level;
 
 public class Log4j2Logger implements Logger {
 
-    private final org.apache.logging.log4j.Logger logger;
+    private final String fqcn;
 
-    public Log4j2Logger(org.apache.logging.log4j.Logger logger) {
+    private final org.apache.logging.log4j.spi.ExtendedLogger logger;
+
+    public Log4j2Logger(org.apache.logging.log4j.spi.ExtendedLogger logger) {
+        this.fqcn = FailsafeLogger.class.getName();
+        this.logger = logger;
+    }
+
+    public Log4j2Logger(String fqcn, org.apache.logging.log4j.spi.ExtendedLogger logger) {
+        this.fqcn = fqcn;
         this.logger = logger;
     }
 
     @Override
     public void trace(String msg) {
-        logger.trace(msg);
+        logger.logIfEnabled(fqcn, Level.TRACE, null, msg);
     }
 
     @Override
     public void trace(String msg, Object... arguments) {
-        logger.trace(msg, arguments);
+        logger.logIfEnabled(fqcn, Level.TRACE, null, msg, arguments);
     }
 
     @Override
     public void trace(Throwable e) {
-        logger.trace(e == null ? null : e.getMessage(), e);
+        logger.logIfEnabled(fqcn, Level.TRACE, null, e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void trace(String msg, Throwable e) {
-        logger.trace(msg, e);
+        logger.logIfEnabled(fqcn, Level.TRACE, null, msg, e);
     }
 
     @Override
     public void debug(String msg) {
-        logger.debug(msg);
+        logger.logIfEnabled(fqcn, Level.DEBUG, null, msg);
     }
 
     @Override
     public void debug(String msg, Object... arguments) {
-        logger.debug(msg, arguments);
+        logger.logIfEnabled(fqcn, Level.DEBUG, null, msg, arguments);
     }
 
     @Override
     public void debug(Throwable e) {
-        logger.debug(e == null ? null : e.getMessage(), e);
+        logger.logIfEnabled(fqcn, Level.DEBUG, null, e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void debug(String msg, Throwable e) {
-        logger.debug(msg, e);
+        logger.logIfEnabled(fqcn, Level.DEBUG, null, msg, e);
     }
 
     @Override
     public void info(String msg) {
-        logger.info(msg);
+        logger.logIfEnabled(fqcn, Level.INFO, null, msg);
     }
 
     @Override
     public void info(String msg, Object... arguments) {
-        logger.info(msg, arguments);
+        logger.logIfEnabled(fqcn, Level.INFO, null, msg, arguments);
     }
 
     @Override
     public void info(Throwable e) {
-        logger.info(e == null ? null : e.getMessage(), e);
+        logger.logIfEnabled(fqcn, Level.INFO, null, e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void info(String msg, Throwable e) {
-        logger.info(msg, e);
+        logger.logIfEnabled(fqcn, Level.INFO, null, msg, e);
     }
 
     @Override
     public void warn(String msg) {
-        logger.warn(msg);
+        logger.logIfEnabled(fqcn, Level.WARN, null, msg);
     }
 
     @Override
     public void warn(String msg, Object... arguments) {
-        logger.warn(msg, arguments);
+        logger.logIfEnabled(fqcn, Level.WARN, null, msg, arguments);
     }
 
     @Override
     public void warn(Throwable e) {
-        logger.warn(e == null ? null : e.getMessage(), e);
+        logger.logIfEnabled(fqcn, Level.WARN, null, e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void warn(String msg, Throwable e) {
-        logger.warn(msg, e);
+        logger.logIfEnabled(fqcn, Level.WARN, null, msg, e);
     }
 
     @Override
     public void error(String msg) {
-        logger.error(msg);
+        logger.logIfEnabled(fqcn, Level.ERROR, null, msg);
     }
 
     @Override
     public void error(String msg, Object... arguments) {
-        logger.error(msg, arguments);
+        logger.logIfEnabled(fqcn, Level.ERROR, null, msg, arguments);
     }
 
     @Override
     public void error(Throwable e) {
-        logger.error(e == null ? null : e.getMessage(), e);
+        logger.logIfEnabled(fqcn, Level.ERROR, null, e == null ? null : e.getMessage(), e);
     }
 
     @Override
     public void error(String msg, Throwable e) {
-        logger.error(msg, e);
+        logger.logIfEnabled(fqcn, Level.ERROR, null, msg, e);
     }
 
     @Override

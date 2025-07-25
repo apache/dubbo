@@ -298,7 +298,6 @@ public class DubboTestChecker implements TestExecutionListener {
     private void log(String msg) {
         // logger.info(identifier + msg);
         String s = identifier + msg;
-        System.out.println(s);
         if (reportWriter != null) {
             reportWriter.println(s);
         }

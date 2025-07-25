@@ -60,8 +60,6 @@ public class WelcomeLogoApplicationListener implements ApplicationListener<Appli
 
         if (logger.isInfoEnabled()) {
             logger.info(bannerText);
-        } else {
-            System.out.print(bannerText);
         }
 
         // mark processed to be true

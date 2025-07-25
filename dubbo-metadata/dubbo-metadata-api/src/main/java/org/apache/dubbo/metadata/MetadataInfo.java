@@ -197,7 +197,7 @@ public class MetadataInfo implements Serializable {
             if (!StringUtils.isEquals(this.revision, tempRevision)) {
                 if (logger.isInfoEnabled()) {
                     logger.info(String.format(
-                            "metadata revision changed: %s -> %s, app: %s, services: %d",
+                            "[METADATA_REGISTER] metadata revision changed: %s -> %s, app: %s, services: %d",
                             this.revision, tempRevision, this.app, this.services.size()));
                 }
                 this.revision = tempRevision;

@@ -25,6 +25,7 @@ import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,7 +56,9 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
         Properties properties = new Properties();
         try {
             // use Files.newInputStream instead of new FileInputStream
-            properties.load(Files.newInputStream(zooSample.toPath()));
+            try (InputStream is = Files.newInputStream(zooSample.toPath())) {
+                properties.load(is);
+            }
             properties.setProperty("clientPort", String.valueOf(clientPort));
             properties.setProperty("admin.serverPort", String.valueOf(availableAdminServerPort));
             Path dataDir = Paths.get(zookeeperConf.getParent().toString(), "data");
@@ -93,7 +96,9 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
         File log4j = Paths.get(zookeeperConf.toString(), "log4j.properties").toFile();
         try {
             // use Files.newInputStream instead of new FileInputStream
-            properties.load(Files.newInputStream(log4j.toPath()));
+            try (InputStream is = Files.newInputStream(log4j.toPath())) {
+                properties.load(is);
+            }
             Path logDir = Paths.get(zookeeperConf.getParent().toString(), "logs");
             if (!Files.exists(logDir)) {
                 try {

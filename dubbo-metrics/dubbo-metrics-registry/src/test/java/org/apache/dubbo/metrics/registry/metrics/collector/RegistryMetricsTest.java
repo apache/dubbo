@@ -28,6 +28,7 @@ import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -37,7 +38,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -292,13 +292,16 @@ public class RegistryMetricsTest {
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
+        List<String> registryClusterNames = new ArrayList<>();
+        registryClusterNames.add("reg1");
+        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, registryClusterNames);
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent rsEvent() {
-        List<String> rcNames = Lists.newArrayList("demo1");
+        List<String> rcNames = new ArrayList<>();
+        rcNames.add("demo1");
         RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
         event.setAvailable(true);
         return event;

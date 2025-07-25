@@ -113,12 +113,12 @@ class ChannelHandlerTest {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
-            System.out.println("connected event,channel;" + channel);
+            logger.info("connected event,channel;" + channel);
         }
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
-            System.out.println("disconnected event,channel;" + channel);
+            logger.info("disconnected event,channel;" + channel);
             initClient(url);
         }
 
@@ -126,8 +126,6 @@ class ChannelHandlerTest {
          * @see org.apache.dubbo.remoting.transport.support.ChannelHandlerAdapter#caught(org.apache.dubbo.remoting.Channel, java.lang.Throwable)
          */
         @Override
-        public void caught(Channel channel, Throwable exception) throws RemotingException {
-            //            System.out.println("caught event:"+exception);
-        }
+        public void caught(Channel channel, Throwable exception) throws RemotingException {}
     }
 }

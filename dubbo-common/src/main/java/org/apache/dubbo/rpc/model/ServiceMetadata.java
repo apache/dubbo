@@ -41,7 +41,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
     /**
      * used locally
      */
-    private final Map<String, Object> attributeMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
     public ServiceMetadata(String serviceInterfaceName, String group, String version, Class<?> serviceType) {
         this.serviceInterfaceName = serviceInterfaceName;
@@ -63,7 +63,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
         return attachments;
     }
 
-    public Map<String, Object> getAttributeMap() {
+    public ConcurrentHashMap<String, Object> getAttributeMap() {
         return attributeMap;
     }
 

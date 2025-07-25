@@ -29,8 +29,6 @@
   <description>The zookeeper remoting module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <zookeeper_version>3.7.2</zookeeper_version>
-    <curator5_version>5.8.0</curator5_version>
   </properties>
   <dependencies>
     <dependency>
@@ -42,17 +40,14 @@
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-framework</artifactId>
-      <version>${curator5_version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-recipes</artifactId>
-      <version>${curator5_version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
-      <version>${zookeeper_version}</version>
     </dependency>
 
     <dependency>

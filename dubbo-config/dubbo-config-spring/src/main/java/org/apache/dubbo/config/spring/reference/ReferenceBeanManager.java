@@ -26,7 +26,6 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -47,7 +47,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     // reference key -> reference bean names
-    private ConcurrentMap<String, List<String>> referenceKeyMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, CopyOnWriteArrayList<String>> referenceKeyMap = new ConcurrentHashMap<>();
 
     // reference alias -> reference bean name
     private ConcurrentMap<String, String> referenceAliasMap = new ConcurrentHashMap<>();
@@ -102,8 +102,8 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     }
 
     private String getReferenceKeyByBeanName(String referenceBeanName) {
-        Set<Map.Entry<String, List<String>>> entries = referenceKeyMap.entrySet();
-        for (Map.Entry<String, List<String>> entry : entries) {
+        Set<Map.Entry<String, CopyOnWriteArrayList<String>>> entries = referenceKeyMap.entrySet();
+        for (Map.Entry<String, CopyOnWriteArrayList<String>> entry : entries) {
             if (entry.getValue().contains(referenceBeanName)) {
                 return entry.getKey();
             }
@@ -112,10 +112,9 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     }
 
     public void registerReferenceKeyAndBeanName(String referenceKey, String referenceBeanNameOrAlias) {
-        List<String> list =
-                ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, referenceKey, (key) -> new ArrayList<>());
-        if (!list.contains(referenceBeanNameOrAlias)) {
-            list.add(referenceBeanNameOrAlias);
+        CopyOnWriteArrayList<String> list = ConcurrentHashMapUtils.computeIfAbsent(
+                referenceKeyMap, referenceKey, (key) -> new CopyOnWriteArrayList<>());
+        if (list.addIfAbsent(referenceBeanNameOrAlias)) {
             // register bean name as alias
             referenceAliasMap.put(referenceBeanNameOrAlias, list.get(0));
         }
@@ -132,7 +131,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     }
 
     public List<String> getBeanNamesByKey(String key) {
-        return Collections.unmodifiableList(referenceKeyMap.getOrDefault(key, Collections.EMPTY_LIST));
+        return Collections.unmodifiableList(referenceKeyMap.getOrDefault(key, new CopyOnWriteArrayList<>()));
     }
 
     public Collection<ReferenceBean> getReferences() {

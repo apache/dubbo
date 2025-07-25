@@ -718,9 +718,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setRegistry(RegistryConfig registry) {
-        List<RegistryConfig> registries = new ArrayList<>(1);
-        registries.add(registry);
-        setRegistries(registries);
+        if (registry != null) {
+            List<RegistryConfig> registries = new ArrayList<>(1);
+            registries.add(registry);
+            setRegistries(registries);
+        } else {
+            this.registries = null;
+        }
     }
 
     public List<RegistryConfig> getRegistries() {

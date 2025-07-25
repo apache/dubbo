@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -36,6 +37,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -259,7 +261,7 @@ public class MulticastRegistry extends FailbackRegistry {
             logger.info("Send multicast message: " + msg + " to " + multicastAddress + ":" + multicastPort);
         }
         try {
-            byte[] data = (msg + "\n").getBytes();
+            byte[] data = (msg + "\n").getBytes(StandardCharsets.UTF_8);
             DatagramPacket hi = new DatagramPacket(data, data.length, multicastAddress, multicastPort);
             multicastSocket.send(hi);
         } catch (Exception e) {
@@ -272,7 +274,7 @@ public class MulticastRegistry extends FailbackRegistry {
             logger.info("Send unicast message: " + msg + " to " + host + ":" + multicastPort);
         }
         try {
-            byte[] data = (msg + "\n").getBytes();
+            byte[] data = (msg + "\n").getBytes(StandardCharsets.UTF_8);
             DatagramPacket hi = new DatagramPacket(data, data.length, InetAddress.getByName(host), multicastPort);
             multicastSocket.send(hi);
         } catch (Exception e) {
@@ -345,7 +347,7 @@ public class MulticastRegistry extends FailbackRegistry {
         for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
             URL key = entry.getKey();
             if (UrlUtils.isMatch(key, url)) {
-                Set<URL> urls = received.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
+                Set<URL> urls = ConcurrentHashMapUtils.computeIfAbsent(received, key, k -> new ConcurrentHashSet<>());
                 urls.add(url);
                 List<URL> list = toList(urls);
                 for (final NotifyListener listener : entry.getValue()) {

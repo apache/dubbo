@@ -30,7 +30,7 @@ import java.util.concurrent.Executor;
 
 import io.netty.channel.Channel;
 
-@Activate(order = -90, onClass = "io.netty.incubator.codec.quic.QuicChannel")
+@Activate(order = -90, onClass = "io.netty.handler.codec.quic.QuicChannel")
 public class AdaptiveClientStreamFactory implements ClientStreamFactory {
 
     @Override

@@ -22,12 +22,16 @@ import org.apache.dubbo.config.bootstrap.EchoService;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Dubbo Provider Bootstrap
  *
  * @since 2.7.5
  */
 public class DubboInterfaceConsumerBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(DubboInterfaceConsumerBootstrap.class);
 
     public static void main(String[] args) throws Exception {
         RegistryConfig interfaceRegistry = new RegistryConfig();
@@ -50,8 +54,8 @@ public class DubboInterfaceConsumerBootstrap {
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
-            System.out.println(userService.getUser(1L));
+            logger.info(echoService.echo("Hello,World"));
+            logger.info(String.valueOf(userService.getUser(1L)));
         }
     }
 }

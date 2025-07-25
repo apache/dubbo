@@ -20,6 +20,11 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.springboot.demo.DemoService;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -29,6 +34,7 @@ import org.springframework.stereotype.Service;
 @Service
 @EnableDubbo
 public class ConsumerApplication {
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerApplication.class);
 
     @DubboReference
     private DemoService demoService;
@@ -38,10 +44,24 @@ public class ConsumerApplication {
         ConfigurableApplicationContext context = SpringApplication.run(ConsumerApplication.class, args);
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
         String result = application.doSayHello("world");
-        System.out.println("result: " + result);
+        logger.info("result: {}", result);
+
+        CompletableFuture<String> future = application.doSayHelloAsync("world");
+        try {
+            logger.info("async call returned: {}", future.get());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String doSayHello(String name) {
         return demoService.sayHello(name);
+    }
+
+    public CompletableFuture<String> doSayHelloAsync(String name) {
+        CompletableFuture<String> sayHelloAsyncFuture = demoService.sayHelloAsync(name);
+        return sayHelloAsyncFuture;
     }
 }

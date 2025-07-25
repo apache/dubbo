@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metrics.data;
 
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -57,7 +58,7 @@ public class RtStatComposite extends AbstractMetricsExport {
         super(applicationModel);
     }
 
-    private final Map<String, List<LongContainer<? extends Number>>> rtStats = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, List<LongContainer<? extends Number>>> rtStats = new ConcurrentHashMap<>();
 
     public void init(MetricsPlaceValue... placeValues) {
         if (placeValues == null) {
@@ -66,7 +67,8 @@ public class RtStatComposite extends AbstractMetricsExport {
         for (MetricsPlaceValue placeValue : placeValues) {
             List<LongContainer<? extends Number>> containers = initStats(placeValue);
             for (LongContainer<? extends Number> container : containers) {
-                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>())
+                ConcurrentHashMapUtils.computeIfAbsent(
+                                rtStats, container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>())
                         .add(container);
             }
         }

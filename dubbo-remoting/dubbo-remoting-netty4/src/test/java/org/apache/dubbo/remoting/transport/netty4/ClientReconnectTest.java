@@ -36,6 +36,8 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
@@ -44,8 +46,10 @@ import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
  * Client reconnect test
  */
 class ClientReconnectTest {
+    private static final Logger logger = LoggerFactory.getLogger(ClientReconnectTest.class);
+
     public static void main(String[] args) {
-        System.out.println(3 % 1);
+        logger.info(String.valueOf(3 % 1));
     }
 
     @BeforeEach

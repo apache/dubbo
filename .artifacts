@@ -107,6 +107,7 @@ dubbo-zookeeper-curator5-spring-boot-starter
 dubbo-sentinel-spring-boot-starter
 dubbo-seata-spring-boot-starter
 dubbo-spring-security
+dubbo-spring6-security
 dubbo-tracing
 dubbo-xds
 dubbo-plugin-loom

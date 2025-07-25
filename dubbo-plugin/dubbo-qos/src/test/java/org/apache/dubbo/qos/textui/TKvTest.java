@@ -43,8 +43,6 @@ class TKvTest {
         String table = tTable.rendering();
         assertThat(table, containsString("|OPTIONS|"));
         assertThat(table, containsString("|KEY-3"));
-
-        System.out.println(table);
     }
 
     @Test
@@ -55,6 +53,5 @@ class TKvTest {
         tKv.add("KEY-3", "1234567890");
         String kv = tKv.rendering();
         assertThat(kv, containsString("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-        System.out.println(kv);
     }
 }

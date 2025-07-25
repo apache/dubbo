@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 
-import io.netty.incubator.codec.http3.DefaultHttp3Headers;
+import io.netty.handler.codec.http3.DefaultHttp3Headers;
 
 public final class Helper {
 

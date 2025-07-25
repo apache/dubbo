@@ -34,12 +34,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 class TraceFilterTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(TraceFilterTest.class);
     private MockChannel mockChannel;
     private static final String TRACE_MAX = "trace.max";
     private static final String TRACE_COUNT = "trace.count";
@@ -108,7 +111,7 @@ class TraceFilterTest {
         filter.invoke(mockInvoker, mockInvocation);
         String message = listToString(mockChannel.getReceivedObjects());
         String expectMessage = "org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.sayHello([]) -> \"result\"";
-        System.out.println("actual message: " + message);
+        logger.info("actual message: {}", message);
         Assertions.assertTrue(message.contains(expectMessage));
         Assertions.assertTrue(message.contains("elapsed:"));
         AtomicInteger traceCount = (AtomicInteger) mockChannel.getAttribute(TRACE_COUNT);

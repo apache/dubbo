@@ -44,10 +44,10 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         Map<Invoker, AtomicLong> genericInvokeCounter = getGenericInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
         Map<Invoker, AtomicLong> invokeCounter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
 
-        Invoker genericHitted = findHitted(genericInvokeCounter);
-        Invoker hitted = findHitted(invokeCounter);
+        Invoker genericHit = findHit(genericInvokeCounter);
+        Invoker hit = findHit(invokeCounter);
 
-        Assertions.assertEquals(hitted, genericHitted, "hitted should equals to genericHitted");
+        Assertions.assertEquals(hit, genericHit, "hit should equals to genericHit");
     }
 
     @Test
@@ -78,7 +78,7 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         }
     }
 
-    private Invoker findHitted(Map<Invoker, AtomicLong> invokerCounter) {
+    private Invoker findHit(Map<Invoker, AtomicLong> invokerCounter) {
         Invoker invoker = null;
 
         for (Map.Entry<Invoker, AtomicLong> entry : invokerCounter.entrySet()) {
@@ -96,26 +96,26 @@ class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
     @Test
     void testConsistentHashLoadBalance() {
         int runs = 10000;
-        long unHitedInvokerCount = 0;
-        Map<Invoker, Long> hitedInvokers = new HashMap<>();
+        long unHitInvokerCount = 0;
+        Map<Invoker, Long> hitInvokers = new HashMap<>();
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
 
             if (count == 0) {
-                unHitedInvokerCount++;
+                unHitInvokerCount++;
             } else {
-                hitedInvokers.put(minvoker, count);
+                hitInvokers.put(minvoker, count);
             }
         }
 
         Assertions.assertEquals(
-                counter.size() - 1, unHitedInvokerCount, "the number of unHitedInvoker should be counter.size() - 1");
-        Assertions.assertEquals(1, hitedInvokers.size(), "the number of hitedInvoker should be 1");
+                counter.size() - 1, unHitInvokerCount, "the number of unHitInvoker should be counter.size() - 1");
+        Assertions.assertEquals(1, hitInvokers.size(), "the number of hitInvoker should be 1");
         Assertions.assertEquals(
                 runs,
-                hitedInvokers.values().iterator().next().intValue(),
-                "the number of hited count should be the number of runs");
+                hitInvokers.values().iterator().next().intValue(),
+                "the number of hit count should be the number of runs");
     }
 
     // https://github.com/apache/dubbo/issues/5429

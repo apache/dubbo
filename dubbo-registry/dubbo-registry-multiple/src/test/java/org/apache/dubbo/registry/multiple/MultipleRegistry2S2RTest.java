@@ -130,13 +130,11 @@ class MultipleRegistry2S2RTest {
         String path = "/dubbo/" + SERVICE_NAME + "/providers";
         List<String> providerList = zookeeperClient.getChildren(path);
         Assertions.assertTrue(!providerList.isEmpty());
-        System.out.println(providerList.get(0));
 
         final List<URL> list = new ArrayList<URL>();
         multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
-                System.out.println("invoke notify: " + urls);
                 list.clear();
                 list.addAll(urls);
             }
@@ -168,7 +166,6 @@ class MultipleRegistry2S2RTest {
         multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
-                System.out.println("invoke notify: " + urls);
                 list.clear();
                 list.addAll(urls);
             }

@@ -50,7 +50,6 @@ class ProxyTest {
     @Test
     void testCglibProxy() throws Exception {
         ITest test = (ITest) Proxy.getProxy(ITest.class).newInstance((proxy, method, args) -> {
-            System.out.println(method.getName());
             return null;
         });
 

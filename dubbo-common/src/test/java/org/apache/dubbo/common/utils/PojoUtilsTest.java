@@ -73,7 +73,7 @@ class PojoUtilsTest {
         bigPerson.setLoginName("name1");
         bigPerson.setStatus(PersonStatus.ENABLED);
         bigPerson.setEmail("abc@123.com");
-        bigPerson.setPenName("pname");
+        bigPerson.setPersonName("pname");
 
         ArrayList<Phone> phones = new ArrayList<Phone>();
         Phone phone1 = new Phone("86", "0571", "11223344", "001");
@@ -422,12 +422,9 @@ class PojoUtilsTest {
         map.put("k", "v");
         map.put("m", map);
         assertSame(map, map.get("m"));
-        System.out.println(map);
         Object generalize = PojoUtils.generalize(map);
-        System.out.println(generalize);
         @SuppressWarnings("unchecked")
         Map<String, Object> ret = (Map<String, Object>) PojoUtils.realize(generalize, Map.class);
-        System.out.println(ret);
 
         assertEquals("v", ret.get("k"));
         assertSame(ret, ret.get("m"));

@@ -125,8 +125,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         Properties versionMatrix = new Properties();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        InputStream stream = loader.getResourceAsStream("version-matrix.properties");
-        try {
+        try (InputStream stream = loader.getResourceAsStream("version-matrix.properties")) {
             versionMatrix.load(stream);
         } catch (IOException e) {
             getLog().warn("Unable to load default version matrix", e);
@@ -174,9 +173,8 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
                     "protoc did not exit cleanly. Review output for more information.");
             } else if (StringUtils.isNotBlank(getError())) {
                 getLog().warn("PROTOC: " + getError());
-            } else {
-                linkProtoFilesToMaven();
             }
+            linkProtoFilesToMaven();
         } catch (CommandLineException e) {
             throw new MojoExecutionException(e);
         }
@@ -534,6 +532,7 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
     }
 
     private static String fixUnicodeOutput(final String message) {
+        // TODO default charset is not UTF-8 ?
         return new String(message.getBytes(), StandardCharsets.UTF_8);
     }
 }

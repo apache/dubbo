@@ -21,10 +21,13 @@ import java.util.concurrent.Future;
 
 import com.alibaba.dubbo.rpc.RpcContext;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RpcContextTest {
+    private static final Logger logger = LoggerFactory.getLogger(RpcContextTest.class);
 
     @Test
     void testSetFuture() {
@@ -42,6 +45,6 @@ class RpcContextTest {
 
         Future future = RpcContext.getContext().getFuture();
 
-        System.out.println(future);
+        logger.info(String.valueOf(future));
     }
 }

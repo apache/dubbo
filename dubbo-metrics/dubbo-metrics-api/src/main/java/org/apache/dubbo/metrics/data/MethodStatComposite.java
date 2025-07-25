@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -48,7 +49,8 @@ public class MethodStatComposite extends AbstractMetricsExport {
         super(applicationModel);
     }
 
-    private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<MetricsKeyWrapper, ConcurrentHashMap<MethodMetric, AtomicLong>> methodNumStats =
+            new ConcurrentHashMap<>();
 
     public void initWrapper(List<MetricsKeyWrapper> metricsKeyWrappers) {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
@@ -65,11 +67,10 @@ public class MethodStatComposite extends AbstractMetricsExport {
             return;
         }
 
-        methodNumStats
-                .get(wrapper)
-                .computeIfAbsent(
-                        new MethodMetric(getApplicationModel(), invocation, getServiceLevel()),
-                        k -> new AtomicLong(0L));
+        ConcurrentHashMapUtils.computeIfAbsent(
+                methodNumStats.get(wrapper),
+                new MethodMetric(getApplicationModel(), invocation, getServiceLevel()),
+                k -> new AtomicLong(0L));
         samplesChanged.set(true);
     }
 
@@ -79,7 +80,8 @@ public class MethodStatComposite extends AbstractMetricsExport {
         }
         AtomicLong stat = methodNumStats.get(wrapper).get(methodMetric);
         if (stat == null) {
-            methodNumStats.get(wrapper).computeIfAbsent(methodMetric, (k) -> new AtomicLong(0L));
+            ConcurrentHashMapUtils.computeIfAbsent(
+                    methodNumStats.get(wrapper), methodMetric, (k) -> new AtomicLong(0L));
             samplesChanged.set(true);
             stat = methodNumStats.get(wrapper).get(methodMetric);
         }

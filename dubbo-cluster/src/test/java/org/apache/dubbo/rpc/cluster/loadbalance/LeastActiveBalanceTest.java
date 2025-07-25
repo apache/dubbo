@@ -33,7 +33,6 @@ class LeastActiveBalanceTest extends LoadBalanceBaseTest {
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
             Long count = entry.getValue().get();
-            //            System.out.println(count);
             Assertions.assertTrue(
                     Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()),
                     "abs diff should < avg");
@@ -63,8 +62,6 @@ class LeastActiveBalanceTest extends LoadBalanceBaseTest {
         }
 
         // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9
-        System.out.println(sumInvoker1);
-        System.out.println(sumInvoker2);
 
         Assertions.assertEquals(sumInvoker1 + sumInvoker2, loop, "select failed!");
     }

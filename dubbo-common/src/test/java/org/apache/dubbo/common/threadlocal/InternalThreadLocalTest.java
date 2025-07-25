@@ -26,6 +26,8 @@ import java.util.concurrent.locks.LockSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -36,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InternalThreadLocalTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(InternalThreadLocalTest.class);
     private static final int THREADS = 10;
 
     private static final int PERFORMANCE_THREAD_COUNT = 1000;
@@ -56,7 +59,6 @@ class InternalThreadLocalTest {
             @Override
             protected Integer initialValue() {
                 Integer v = index.getAndIncrement();
-                System.out.println("thread : " + Thread.currentThread().getName() + " init value : " + v);
                 return v;
             }
         };
@@ -186,7 +188,7 @@ class InternalThreadLocalTest {
                     }
                 }
                 long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) + "]ms");
+                logger.info("take[{}]ms", TimeUnit.NANOSECONDS.toMillis(end - start));
                 LockSupport.unpark(mainThread);
             }
         });
@@ -220,7 +222,7 @@ class InternalThreadLocalTest {
                     }
                 }
                 long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) + "]ms");
+                logger.info("take[{}]ms", TimeUnit.NANOSECONDS.toMillis(end - start));
                 LockSupport.unpark(mainThread);
             }
         });

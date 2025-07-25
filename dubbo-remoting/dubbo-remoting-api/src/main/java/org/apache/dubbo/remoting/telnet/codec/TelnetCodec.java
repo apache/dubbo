@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.transport.codec.TransportCodec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -273,7 +274,7 @@ public class TelnetCodec extends TransportCodec {
         if (CollectionUtils.isNotEmpty(history) && index != null && index >= 0 && index < history.size()) {
             String value = history.get(index);
             if (value != null) {
-                byte[] b1 = value.getBytes();
+                byte[] b1 = value.getBytes(StandardCharsets.UTF_8);
                 byte[] b2 = new byte[b1.length + message.length];
                 System.arraycopy(b1, 0, b2, 0, b1.length);
                 System.arraycopy(message, 0, b2, b1.length, message.length);

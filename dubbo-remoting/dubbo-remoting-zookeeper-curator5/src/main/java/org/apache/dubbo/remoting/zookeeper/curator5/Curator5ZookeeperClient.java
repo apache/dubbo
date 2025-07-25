@@ -79,7 +79,7 @@ public class Curator5ZookeeperClient
                     .sessionTimeoutMs(sessionExpireMs);
             String userInformation = url.getUserInformation();
             if (userInformation != null && userInformation.length() > 0) {
-                builder = builder.authorization("digest", userInformation.getBytes());
+                builder = builder.authorization("digest", userInformation.getBytes(StandardCharsets.UTF_8));
                 builder.aclProvider(new ACLProvider() {
                     @Override
                     public List<ACL> getDefaultAcl() {

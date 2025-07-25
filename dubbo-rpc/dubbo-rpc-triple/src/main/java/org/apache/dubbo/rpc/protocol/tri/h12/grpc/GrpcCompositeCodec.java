@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
@@ -64,9 +65,11 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
             return;
         }
 
-        packableMethod = UrlUtils.computeServiceAttribute(
-                        url, PACKABLE_METHOD_CACHE, k -> new ConcurrentHashMap<MethodDescriptor, PackableMethod>())
-                .computeIfAbsent(methodDescriptor, md -> frameworkModel
+        packableMethod = ConcurrentHashMapUtils.computeIfAbsent(
+                UrlUtils.computeServiceAttribute(
+                        url, PACKABLE_METHOD_CACHE, k -> new ConcurrentHashMap<MethodDescriptor, PackableMethod>()),
+                methodDescriptor,
+                md -> frameworkModel
                         .getExtensionLoader(PackableMethodFactory.class)
                         .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel())
                                 .getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))

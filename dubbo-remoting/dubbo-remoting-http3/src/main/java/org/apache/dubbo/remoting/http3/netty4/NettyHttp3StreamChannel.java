@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.handler.codec.quic.QuicStreamChannel;
 
 public class NettyHttp3StreamChannel implements H2StreamChannel {
 

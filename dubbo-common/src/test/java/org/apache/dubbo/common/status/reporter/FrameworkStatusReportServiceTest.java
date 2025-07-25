@@ -67,13 +67,13 @@ class FrameworkStatusReportServiceTest {
                 consumerURL.getGroup(),
                 "FORCE_INTERFACE",
                 "FORCE_APPLICATION",
-                "ture"));
+                "true"));
 
         MockFrameworkStatusReporter statusReporter =
                 (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
 
         // "migrationStepStatus" ->
-        // "{"originStep":"FORCE_INTERFACE","application":"APP","service":"Test","success":"ture","newStep":"FORCE_APPLICATION","type":"migrationStepStatus","version":"0.0.0","group":"Group"}"
+        // "{"originStep":"FORCE_INTERFACE","application":"APP","service":"Test","success":"true","newStep":"FORCE_APPLICATION","type":"migrationStepStatus","version":"0.0.0","group":"Group"}"
         // "registration" -> "{"application":"APP","status":"instance"}"
         // "consumption" ->
         // "{"application":"APP","service":"Test","type":"consumption","version":"0.0.0","group":"Group","status":"status"}"
@@ -104,7 +104,7 @@ class FrameworkStatusReportServiceTest {
         Assertions.assertEquals(migrationStepStatusMap.get("originStep"), "FORCE_INTERFACE");
         Assertions.assertEquals(migrationStepStatusMap.get("application"), "APP");
         Assertions.assertEquals(migrationStepStatusMap.get("service"), "Test");
-        Assertions.assertEquals(migrationStepStatusMap.get("success"), "ture");
+        Assertions.assertEquals(migrationStepStatusMap.get("success"), "true");
         Assertions.assertEquals(migrationStepStatusMap.get("newStep"), "FORCE_APPLICATION");
         Assertions.assertEquals(migrationStepStatusMap.get("type"), "migrationStepStatus");
         Assertions.assertEquals(migrationStepStatusMap.get("version"), "0.0.0");

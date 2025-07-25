@@ -625,7 +625,7 @@ public class RpcServiceContext extends RpcContext {
         this.needPrintRouterSnapshot = needPrintRouterSnapshot;
     }
 
-    public RpcServiceContext setLocalInvoke(boolean localInvoke) {
+    public RpcServiceContext setLocalInvoke(Boolean localInvoke) {
         this.localInvoke = localInvoke;
         return this;
     }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -60,8 +61,8 @@ public class QosProcessHandler extends ByteToMessageDecoder {
                         () -> {
                             final String welcome = qosConfiguration.getWelcome();
                             if (welcome != null) {
-                                ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
-                                ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
+                                ctx.write(Unpooled.wrappedBuffer(welcome.getBytes(StandardCharsets.UTF_8)));
+                                ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes(StandardCharsets.UTF_8)));
                             }
                         },
                         500,

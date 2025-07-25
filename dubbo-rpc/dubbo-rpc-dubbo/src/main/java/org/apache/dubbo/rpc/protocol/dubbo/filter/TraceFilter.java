@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -60,7 +61,7 @@ public class TraceFilter implements Filter {
         channel.setAttribute(TRACE_MAX, max);
         channel.setAttribute(TRACE_COUNT, new AtomicInteger());
         String key = StringUtils.isNotEmpty(method) ? type.getName() + "." + method : type.getName();
-        Set<Channel> channels = TRACERS.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
+        Set<Channel> channels = ConcurrentHashMapUtils.computeIfAbsent(TRACERS, key, k -> new ConcurrentHashSet<>());
         channels.add(channel);
     }
 

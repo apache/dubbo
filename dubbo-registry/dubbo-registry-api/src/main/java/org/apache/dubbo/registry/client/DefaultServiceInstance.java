@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -73,7 +74,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private transient List<Endpoint> endpoints;
     private transient ApplicationModel applicationModel;
-    private transient Map<String, InstanceAddressURL> instanceAddressURL = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, InstanceAddressURL> instanceAddressURL = new ConcurrentHashMap<>();
 
     public DefaultServiceInstance() {}
 
@@ -291,8 +292,8 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public InstanceAddressURL toURL(String protocol) {
-        return instanceAddressURL.computeIfAbsent(
-                protocol, key -> new InstanceAddressURL(this, serviceMetadata, protocol));
+        return ConcurrentHashMapUtils.computeIfAbsent(
+                instanceAddressURL, protocol, key -> new InstanceAddressURL(this, serviceMetadata, protocol));
     }
 
     @Override

@@ -31,7 +31,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 /**
@@ -63,13 +65,25 @@ public final class RadixTree<T> {
         this(true, '/');
     }
 
+    /**
+     * This is a default implementation that does not check for equality.
+     */
     public T addPath(PathExpression path, T value) {
+        return addPath(path, value, (t, t2) -> Boolean.TRUE);
+    }
+
+    /**
+     * When the path is the same, the predicate is used to determine whether the values are considered equal.
+     * If the predicate returns true, the existing value is returned directly.
+     */
+    public T addPath(PathExpression path, T value, BiFunction<T, T, Boolean> predicate) {
+        Objects.requireNonNull(predicate);
         if (path.isDirect()) {
             KeyString key = new KeyString(path.getPath(), caseSensitive);
             List<Match<T>> matches = directPathMap.computeIfAbsent(key, k -> new ArrayList<>());
             for (int i = 0, size = matches.size(); i < size; i++) {
                 Match<T> match = matches.get(i);
-                if (match.getValue().equals(value)) {
+                if (predicate.apply(match.getValue(), value)) {
                     return match.getValue();
                 }
             }
@@ -85,7 +99,9 @@ public final class RadixTree<T> {
                 List<Pair<PathExpression, T>> values = child.values;
                 for (int j = 0, size = values.size(); j < size; j++) {
                     if (values.get(j).getLeft().equals(path)) {
-                        return values.get(j).getRight();
+                        if (predicate.apply(values.get(j).getRight(), value)) {
+                            return values.get(j).getRight();
+                        }
                     }
                 }
                 values.add(Pair.of(path, value));

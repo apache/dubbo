@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.springboot.idl.demo.provider;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.demo.hello.GreeterService;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,22 @@ public class GreeterServiceImpl implements GreeterService {
         HelloReply.newBuilder().setMessage("Hello " + request.getName());
         return CompletableFuture.supplyAsync(() ->
                 HelloReply.newBuilder().setMessage("Hello " + request.getName()).build());
+    }
+
+    @Override
+    public void sayHelloStream(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
+        LOGGER.info("Received sayHelloStream request: {}", request.getName());
+        for (int i = 0; i < 5; i++) {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                responseObserver.onError(e);
+            }
+            responseObserver.onNext(HelloReply.newBuilder()
+                    .setMessage(i + "# Hello " + request.getName())
+                    .build());
+        }
+        responseObserver.onCompleted();
     }
 
     private static HelloReply toReply(String message) {

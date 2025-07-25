@@ -199,11 +199,11 @@ class ClassGeneratorTest {
         Class<?> cl = cg.toClass(Bean.class);
         cl.getField("FNAME").set(null, fname);
 
-        System.out.println(cl.getName());
+        Assertions.assertTrue(cl.getName().startsWith(Bean.class.getName() + "$Builder"));
         Builder<String> builder = (Builder<String>) cl.getDeclaredConstructor().newInstance();
-        System.out.println(b.getName());
+        Assertions.assertEquals("qianlei", b.getName());
         builder.setName(b, "ok");
-        System.out.println(b.getName());
+        Assertions.assertEquals("ok", b.getName());
     }
 
     @Test
@@ -226,11 +226,11 @@ class ClassGeneratorTest {
         Class<?> cl = cg.toClass(Bean.class);
         cl.getField("FNAME").set(null, fname);
 
-        System.out.println(cl.getName());
+        Assertions.assertTrue(cl.getName().startsWith(Bean.class.getName() + "$Builder2"));
         Builder<String> builder = (Builder<String>) cl.getDeclaredConstructor().newInstance();
-        System.out.println(b.getName());
+        Assertions.assertEquals("qianlei", b.getName());
         builder.setName(b, "ok");
-        System.out.println(b.getName());
+        Assertions.assertEquals("ok", b.getName());
     }
 
     @Test
@@ -246,7 +246,6 @@ class ClassGeneratorTest {
                             ClassPool classPool = ClassGenerator.getClassPool(loader);
                             int currentHashCode = classPool.hashCode();
                             hashCodeList.add(currentHashCode);
-                            System.out.println(currentHashCode);
                             LATCH.countDown();
                         }
                     })

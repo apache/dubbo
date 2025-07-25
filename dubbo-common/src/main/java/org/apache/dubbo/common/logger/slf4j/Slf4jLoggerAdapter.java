@@ -48,6 +48,16 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
     }
 
     @Override
+    public Logger getLogger(String fqcn, Class<?> key) {
+        return new Slf4jLogger(fqcn, org.slf4j.LoggerFactory.getLogger(key));
+    }
+
+    @Override
+    public Logger getLogger(String fqcn, String key) {
+        return new Slf4jLogger(fqcn, org.slf4j.LoggerFactory.getLogger(key));
+    }
+
+    @Override
     public Level getLevel() {
         return level;
     }

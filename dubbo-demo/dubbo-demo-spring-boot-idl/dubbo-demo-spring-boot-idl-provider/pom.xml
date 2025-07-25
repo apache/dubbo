@@ -26,7 +26,6 @@
   <artifactId>dubbo-demo-spring-boot-idl-provider</artifactId>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skip_maven_deploy>true</skip_maven_deploy>
   </properties>
 
