@@ -31,6 +31,7 @@ import java.util.List;
 
 /**
  * ListenerProtocol
+ * 用于给Invoker增加过滤链
  */
 public class ProtocolFilterWrapper implements Protocol {
 
@@ -43,11 +44,21 @@ public class ProtocolFilterWrapper implements Protocol {
         this.protocol = protocol;
     }
 
+    /**
+     * 创建带有Filter链的Invoker对象
+     * @param invoker Invoker对象
+     * @param key   获取URL参数名：该参数用于获得ServiceConfig或ReferenceConfig配置的自定义过滤器
+     * @param group 分组：在暴露服务时，group=provider；在引用服务时，group=consumer
+     * @return
+     * @param <T> Invoker对象
+     */
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
+        //获取过滤器数组
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
+                //倒序循环Filter，创建带Filter链的Invoker对象
                 final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
                 last = new Invoker<T>() {
@@ -87,17 +98,25 @@ public class ProtocolFilterWrapper implements Protocol {
     }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        //注册中心 -> 远程暴露
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));
+        //建立带有 Filter 过滤链的 Invoker ，再暴露服务。
+        return protocol.export(
+            buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER)//创建带有Filter过滤链的Invoker对象
+        );
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        //注册中心：无需创建Filter链
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
+        //引用服务，返回Invoker对象
+        Invoker<T> refer = protocol.refer(type, url);
+        //将Invoker包装成带有Filter链的Invoker
+        return buildInvokerChain(refer, Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 
     public void destroy() {

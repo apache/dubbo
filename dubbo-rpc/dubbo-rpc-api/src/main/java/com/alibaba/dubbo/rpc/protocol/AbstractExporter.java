@@ -28,8 +28,10 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    //Invoker对象
     private final Invoker<T> invoker;
 
+    //是否取消暴露服务
     private volatile boolean unexported = false;
 
     public AbstractExporter(Invoker<T> invoker) {
@@ -42,10 +44,12 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
         this.invoker = invoker;
     }
 
+    //获得Invoker对象
     public Invoker<T> getInvoker() {
         return invoker;
     }
 
+    //需要暴露服务
     public void unexport() {
         if (unexported) {
             return;

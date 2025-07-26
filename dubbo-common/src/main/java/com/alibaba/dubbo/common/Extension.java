@@ -61,6 +61,7 @@ public @interface Extension {
 
     /**
      * @deprecated
+     * 指定扩展名称
      */
     @Deprecated
     String value() default "";

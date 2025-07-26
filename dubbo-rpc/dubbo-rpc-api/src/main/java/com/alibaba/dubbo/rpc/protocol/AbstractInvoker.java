@@ -39,19 +39,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * AbstractInvoker.
+ * 主要提供Invoker的通用属性和invoke()方法的通用实现
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    //接口类型
     private final Class<T> type;
 
+    //服务url
     private final URL url;
 
+    //公用的隐式参数
     private final Map<String, String> attachment;
 
+    //是否可用
     private volatile boolean available = true;
 
+    //是否销毁
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public AbstractInvoker(Class<T> type, URL url) {

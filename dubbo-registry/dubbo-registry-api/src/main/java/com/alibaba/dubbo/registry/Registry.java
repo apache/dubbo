@@ -24,6 +24,9 @@ import com.alibaba.dubbo.common.URL;
  *
  * @see com.alibaba.dubbo.registry.RegistryFactory#getRegistry(URL)
  * @see com.alibaba.dubbo.registry.support.AbstractRegistry
+ * 注册中心接口
+ * 继承RegistryService：拥有注册，订阅，查询方法
+ * 继承Node：拥有节点相关方法
  */
 public interface Registry extends Node, RegistryService {
 }

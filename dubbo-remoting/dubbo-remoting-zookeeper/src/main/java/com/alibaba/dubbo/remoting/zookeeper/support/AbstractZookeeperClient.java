@@ -29,16 +29,27 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+/**
+ * 实现通用逻辑
+ * @param <TargetChildListener>
+ */
 public abstract class AbstractZookeeperClient<TargetChildListener> implements ZookeeperClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
 
+    //注册中心URL
     private final URL url;
 
+    //状态监听器列表，状态变更时，使用stateChanged()进行回调
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
+    /**
+     * ChildListener
+     * Map<节点路径,<ChildListener,监听器具体对象>>
+     */
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
 
+    //是否关闭
     private volatile boolean closed = false;
 
     public AbstractZookeeperClient(URL url) {
@@ -50,6 +61,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     }
 
     public void create(String path, boolean ephemeral) {
+        //循环创建父路径
         int i = path.lastIndexOf('/');
         if (i > 0) {
             String parentPath = path.substring(0, i);
@@ -57,8 +69,10 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
                 create(parentPath, false);
             }
         }
+        //创建临时节点
         if (ephemeral) {
             createEphemeral(path);
+        //创建持久节点
         } else {
             createPersistent(path);
         }
@@ -77,16 +91,20 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     }
 
     public List<String> addChildListener(String path, final ChildListener listener) {
+        //获得路径下的监听器数组
         ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
         if (listeners == null) {
             childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, TargetChildListener>());
             listeners = childListeners.get(path);
         }
+        //获得监听器数组中的该监听器
         TargetChildListener targetListener = listeners.get(listener);
+        //监听器不存在，进行创建
         if (targetListener == null) {
             listeners.putIfAbsent(listener, createTargetChildListener(path, listener));
             targetListener = listeners.get(listener);
         }
+        //向zk，真正发起订阅
         return addTargetChildListener(path, targetListener);
     }
 
@@ -95,11 +113,16 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         if (listeners != null) {
             TargetChildListener targetListener = listeners.remove(listener);
             if (targetListener != null) {
+                //向zk，真正发起取消订阅
                 removeTargetChildListener(path, targetListener);
             }
         }
     }
 
+    /**
+     * 回调StateListener
+     * @param state 状态
+     */
     protected void stateChanged(int state) {
         for (StateListener sessionListener : getSessionListeners()) {
             sessionListener.stateChanged(state);
@@ -118,18 +141,25 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         }
     }
 
+    //关闭zk
     protected abstract void doClose();
 
+    //创建持久节点
     protected abstract void createPersistent(String path);
 
+    //创建临时节点
     protected abstract void createEphemeral(String path);
 
+    //节点是否存在
     protected abstract boolean checkExists(String path);
 
+    //创建目标ChildListener
     protected abstract TargetChildListener createTargetChildListener(String path, ChildListener listener);
 
+    //向zk发起订阅
     protected abstract List<String> addTargetChildListener(String path, TargetChildListener listener);
 
+    //向zk发起取消订阅
     protected abstract void removeTargetChildListener(String path, TargetChildListener listener);
 
 }

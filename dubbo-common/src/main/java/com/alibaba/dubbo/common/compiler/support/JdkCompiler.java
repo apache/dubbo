@@ -95,19 +95,19 @@ public class JdkCompiler extends AbstractCompiler {
     }
 
     @Override
-    public Class<?> doCompile(String name, String sourceCode) throws Throwable {
-        int i = name.lastIndexOf('.');
-        String packageName = i < 0 ? "" : name.substring(0, i);
-        String className = i < 0 ? name : name.substring(i + 1);
+    public Class<?> doCompile(String fullClassName, String sourceCode) throws Throwable {
+        int i = fullClassName.lastIndexOf('.');
+        String packageName = i < 0 ? "" : fullClassName.substring(0, i);
+        String className = i < 0 ? fullClassName : fullClassName.substring(i + 1);
         JavaFileObjectImpl javaFileObject = new JavaFileObjectImpl(className, sourceCode);
         javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
                 className + ClassUtils.JAVA_EXTENSION, javaFileObject);
         Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
                 null, Arrays.asList(javaFileObject)).call();
         if (result == null || !result) {
-            throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector);
+            throw new IllegalStateException("Compilation failed. class: " + fullClassName + ", diagnostics: " + diagnosticCollector);
         }
-        return classLoader.loadClass(name);
+        return classLoader.loadClass(fullClassName);
     }
 
     private static final class JavaFileObjectImpl extends SimpleJavaFileObject {

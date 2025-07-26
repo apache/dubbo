@@ -27,14 +27,17 @@ import java.util.Map;
  */
 class InjvmExporter<T> extends AbstractExporter<T> {
 
+    //服务键
     private final String key;
 
+    //Exporter集合，该值是AbstractProtocol#exporterMap
     private final Map<String, Exporter<?>> exporterMap;
 
     InjvmExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
         super(invoker);
         this.key = key;
         this.exporterMap = exporterMap;
+        //添加到exporterMap
         exporterMap.put(key, this);
     }
 

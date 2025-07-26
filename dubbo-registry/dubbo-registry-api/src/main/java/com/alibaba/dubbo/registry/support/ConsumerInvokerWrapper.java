@@ -24,13 +24,17 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
 /**
- * @date 2017/11/23
+ *
  */
 public class ConsumerInvokerWrapper<T> implements Invoker {
     private Invoker<T> invoker;
     private URL originUrl;
+
+    //注册中心url
     private URL registryUrl;
     private URL consumerUrl;
+
+    //注册中心Directory，运维命令需要的属性
     private RegistryDirectory registryDirectory;
 
     public ConsumerInvokerWrapper(Invoker<T> invoker, URL registryUrl, URL consumerUrl, RegistryDirectory registryDirectory) {

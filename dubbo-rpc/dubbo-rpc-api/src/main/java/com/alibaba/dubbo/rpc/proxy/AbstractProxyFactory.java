@@ -42,9 +42,14 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 }
             }
         }
+        /**
+         * EchoService：用于回声测试，能够测试整个调用是否通常，可用于监控
+         * 所有服务自动实现EchoService接口，只需将任意引用服务强制转换成EchoService就可以使用
+         */
         if (interfaces == null) {
             interfaces = new Class<?>[]{invoker.getInterface(), EchoService.class};
         }
+        //获得proxy对象
         return getProxy(invoker, interfaces);
     }
 

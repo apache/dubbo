@@ -24,23 +24,15 @@ import com.alibaba.dubbo.common.extension.SPI;
  * RegistryFactory. (SPI, Singleton, ThreadSafe)
  *
  * @see com.alibaba.dubbo.registry.support.AbstractRegistryFactory
+ * 注册中心工厂接口
  */
 @SPI("dubbo")
 public interface RegistryFactory {
 
     /**
-     * Connect to the registry
-     * <p>
-     * Connecting the registry needs to support the contract: <br>
-     * 1. When the check=false is set, the connection is not checked, otherwise the exception is thrown when disconnection <br>
-     * 2. Support username:password authority authentication on URL.<br>
-     * 3. Support the backup=10.20.153.10 candidate registry cluster address.<br>
-     * 4. Support file=registry.cache local disk file cache.<br>
-     * 5. Support the timeout=1000 request timeout setting.<br>
-     * 6. Support session=60000 session timeout or expiration settings.<br>
-     *
-     * @param url Registry address, is not allowed to be empty
-     * @return Registry reference, never return empty value
+     * 获得注册中心Registry对象
+     * @param url 注册中心地址，非空
+     * @return 注册中心引用
      */
     @Adaptive({"protocol"})
     Registry getRegistry(URL url);

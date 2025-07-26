@@ -29,6 +29,8 @@ import java.lang.annotation.Target;
  *
  * @see ExtensionLoader
  * @see URL
+ * 自适应扩展信息的标记
+ * 一个扩展接口有且只有一个Adaptive扩展实现类
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -54,6 +56,7 @@ public @interface Adaptive {
      * <code>String[] {"yyy.invoker.wrapper"}</code>. This name will be used to search for parameter from URL.
      *
      * @return parameter key names in URL
+     * 参数key
      */
     String[] value() default {};
 

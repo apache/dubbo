@@ -32,8 +32,11 @@ import java.util.Map;
  */
 class InjvmInvoker<T> extends AbstractInvoker<T> {
 
+    //服务健
     private final String key;
 
+    //Exporter集合
+    //实际就是com.alibaba.dubbo.rpc.protocol.AbstractProtocol#exporterMap
     private final Map<String, Exporter<?>> exporterMap;
 
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
@@ -42,8 +45,10 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         this.exporterMap = exporterMap;
     }
 
+    //开启启动检查时，调用该方法，判断该Invoker对象，是否有对应的Exporter。若不存在，说明依赖服务不存在，检查不通过
     @Override
     public boolean isAvailable() {
+        //判断是否有InjvmExporter对象
         InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
         if (exporter == null) {
             return false;

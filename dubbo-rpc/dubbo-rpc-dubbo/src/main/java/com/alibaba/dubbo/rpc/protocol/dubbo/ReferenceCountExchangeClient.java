@@ -31,20 +31,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * dubbo protocol support class.
+ * 实现ExchangeClient，支持指向计数的信息交换客户端实现类
  */
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final URL url;
+
+    //指向数量
     private final AtomicInteger refenceCount = new AtomicInteger(0);
 
-    //    private final ExchangeHandler handler;
+    //幽灵客户端集合 -> Protocol.ghostClientMap
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
+
+    //客户端
     private ExchangeClient client;
 
 
     public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
         this.client = client;
+        //指向加1
         refenceCount.incrementAndGet();
         this.url = client.getUrl();
         if (ghostClientMap == null) {
@@ -129,12 +135,15 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     public void close(int timeout) {
+        //指向减一
         if (refenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
+                //关闭client
                 client.close();
             } else {
                 client.close(timeout);
             }
+            //替换client为LazyConnectExchangeClient
             client = replaceWithLazyClient();
         }
     }
@@ -147,7 +156,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private LazyConnectExchangeClient replaceWithLazyClient() {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
-                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
+                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)//不重连
                 .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
                 .addParameter("warning", Boolean.TRUE.toString())
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)

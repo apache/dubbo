@@ -71,8 +71,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 3033787999037024738L;
 
+    //自适应Protocol实现对象
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
+    //自适应ProxyFactory实现对象
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
@@ -80,9 +82,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     //延迟暴露执行器
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
     private final List<URL> urls = new ArrayList<URL>();
+
+    //服务暴露的Exporter
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
     //服务提供者的接口名
     private String interfaceName;
+    //service接口
     private Class<?> interfaceClass;
     //提供服务的本地对象
     private T ref;
@@ -386,12 +391,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        //加载注册中心URL数组
         List<URL> registryURLs = loadRegistries(true);
+        //向所有注册中心分组暴露服务
         for (ProtocolConfig protocolConfig : protocols) {
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
 
+    //基于单个协议暴露服务
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         //协议名
         String name = protocolConfig.getName();
@@ -532,30 +540,39 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
+                //本地暴露
                 exportLocal(url);
             }
-            // export to remote if the config is not local (export to local only when config is local)
+            //远程暴露
             if (!Constants.SCOPE_LOCAL.toString().equalsIgnoreCase(scope)) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
                 if (registryURLs != null && !registryURLs.isEmpty()) {
                     for (URL registryURL : registryURLs) {
+                        //"dynamic":服务是否动态注册，如果设置为false，注册后将显示disable状态，并且服务提供者停止时，也不会自动取消掉，需人工禁用
                         url = url.addParameterIfAbsent("dynamic", registryURL.getParameter("dynamic"));
+                        //获取监控中心URL
                         URL monitorUrl = loadMonitor(registryURL);
                         if (monitorUrl != null) {
                             url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
                         }
-                        if (logger.isInfoEnabled()) {
-                            logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
-                        }
+                        //使用ProxyFactory创建Invoker对象
+                        //该Invoker对象，执行invoke()方法时，内部会调用Service对象(ref)对应的调用方法。
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        //在Invoker对象的基础上，增加了当前服务提供者ServiceConfig对象
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
-                        Exporter<?> exporter = protocol.export(wrapperInvoker);
+                        //使用Protocol暴露Invoker对象
+                        //protocol是自适应扩展对象，可以自动根据URL(DelegateProviderMetaDataInvoker.getUrl())参数，获得对应的扩展实现。
+                        //自适应扩展对象中标注了@Adaptive的方法，会寻找方法参数URL，若无直接URL参数，会检查其参数是否包含返回URL的方法。
+                        //从@Adaptive.value()指明了参数key，若未指定key，使用接口名的点分割形式(Protocol接口就是protocol)
+                        //若URL中存在指定key(如protocol=dubbo)，则使用该值作为扩展名。否则使用@SPI("默认值")中的默认值作为扩展名。无默认值且URL无参数，则抛出异常
+                        Exporter<?> exporter =protocol.export(wrapperInvoker);
+                        //添加到exporters
                         exporters.add(exporter);
                     }
-                } else {
+                } else {//
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
@@ -567,16 +584,22 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.urls.add(url);
     }
 
+    //本地暴露服务
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+            //创建本地Dubbo URL
             URL local = URL.valueOf(url.toFullString())
                     .setProtocol(Constants.LOCAL_PROTOCOL)
-                    .setHost(LOCALHOST)
+                    .setHost(LOCALHOST)//本地
                     .setPort(0);
+            //添加服务的真实Class
             ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
+            // 使用 ProxyFactory 创建 Invoker 对象
+            // 使用 Protocol 暴露 Invoker 对象
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
+            //添加到exporters
             exporters.add(exporter);
             logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry");
         }

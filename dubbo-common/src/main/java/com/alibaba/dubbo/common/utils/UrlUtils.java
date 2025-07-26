@@ -27,15 +27,24 @@ import java.util.Set;
 
 public class UrlUtils {
 
+    /**
+     * 解析单个 URL ，将 `defaults` 里的参数，合并到 `address` 中。
+     *
+     * 我们可以把 `address` 认为是 url ；`defaults` 认为是 defaultURL 。
+     * 若 url 有不存在的属性时，从 defaultURL 获得对应的属性，设置到 url 中。
+     * @param address
+     * @param defaults
+     * @return
+     */
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;
         }
         String url;
-        if (address.indexOf("://") >= 0) {
+        if (address.indexOf("://") >= 0) {//第一种
             url = address;
-        } else {
-            String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(address);
+        } else {//第二种
+            String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(address);//按照逗号进行拆分
             url = addresses[0];
             if (addresses.length > 1) {
                 StringBuilder backup = new StringBuilder();
@@ -48,6 +57,8 @@ public class UrlUtils {
                 url += "?" + Constants.BACKUP_KEY + "=" + backup.toString();
             }
         }
+        // 从 `defaults` 中，获得 "protocol" "username" "password" "host" "port" "path" 到 `defaultXXX` 属性种。
+        // 因为，在 Dubbo URL 中，这几个是独立的属性，不在 `Dubbo.parameters` 属性中。
         String defaultProtocol = defaults == null ? null : defaults.get("protocol");
         if (defaultProtocol == null || defaultProtocol.length() == 0) {
             defaultProtocol = "dubbo";
@@ -57,7 +68,7 @@ public class UrlUtils {
         int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get("port"));
         String defaultPath = defaults == null ? null : defaults.get("path");
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
-        if (defaultParameters != null) {
+        if (defaultParameters != null) {//这几个是独立属性，需要移除
             defaultParameters.remove("protocol");
             defaultParameters.remove("username");
             defaultParameters.remove("password");
@@ -65,6 +76,7 @@ public class UrlUtils {
             defaultParameters.remove("port");
             defaultParameters.remove("path");
         }
+        //创建Dubbo URL
         URL u = URL.valueOf(url);
         boolean changed = false;
         String protocol = u.getProtocol();
@@ -74,6 +86,7 @@ public class UrlUtils {
         int port = u.getPort();
         String path = u.getPath();
         Map<String, String> parameters = new HashMap<String, String>(u.getParameters());
+        //url没有的属性，但是defaultProtocol有，就使用默认的
         if ((protocol == null || protocol.length() == 0) && defaultProtocol != null && defaultProtocol.length() > 0) {
             changed = true;
             protocol = defaultProtocol;
@@ -124,16 +137,24 @@ public class UrlUtils {
         return u;
     }
 
+    /**
+     * 解析多个URL，将defaults里的参数，合并到address中
+     * @param address
+     * @param defaults
+     * @return
+     */
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;
         }
+        //按逗号汇总分号拆分注册中心地址
         String[] addresses = Constants.REGISTRY_SPLIT_PATTERN.split(address);
         if (addresses == null || addresses.length == 0) {
             return null; //here won't be empty
         }
         List<URL> registries = new ArrayList<URL>();
         for (String addr : addresses) {
+            //解析 URL ，将 `defaults` 里的参数，合并到 `addr` 中。
             registries.add(parseURL(addr, defaults));
         }
         return registries;
@@ -418,6 +439,7 @@ public class UrlUtils {
         }
     }
 
+    //判断服务键是否匹配
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
         return pattern.getParameter(Constants.INTERFACE_KEY).equals(
                 value.getParameter(Constants.INTERFACE_KEY))

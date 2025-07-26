@@ -27,6 +27,7 @@ import java.util.Comparator;
  */
 public class ActivateComparator implements Comparator<Object> {
 
+    //单例
     public static final Comparator<Object> COMPARATOR = new ActivateComparator();
 
     public int compare(Object o1, Object o2) {
@@ -44,11 +45,14 @@ public class ActivateComparator implements Comparator<Object> {
         }
         Activate a1 = o1.getClass().getAnnotation(Activate.class);
         Activate a2 = o2.getClass().getAnnotation(Activate.class);
+        //使用注解属性before和after排序
         if ((a1.before().length > 0 || a1.after().length > 0
                 || a2.before().length > 0 || a2.after().length > 0)
                 && o1.getClass().getInterfaces().length > 0
                 && o1.getClass().getInterfaces()[0].isAnnotationPresent(SPI.class)) {
+            //获取扩展加载器
             ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(o1.getClass().getInterfaces()[0]);
+            //以a1的视角进行比较
             if (a1.before().length > 0 || a1.after().length > 0) {
                 String n2 = extensionLoader.getExtensionName(o2.getClass());
                 for (String before : a1.before()) {
@@ -62,6 +66,7 @@ public class ActivateComparator implements Comparator<Object> {
                     }
                 }
             }
+            //以a2的视角进行比较
             if (a2.before().length > 0 || a2.after().length > 0) {
                 String n1 = extensionLoader.getExtensionName(o1.getClass());
                 for (String before : a2.before()) {
@@ -76,6 +81,7 @@ public class ActivateComparator implements Comparator<Object> {
                 }
             }
         }
+        //使用order属性进行比较
         int n1 = a1 == null ? 0 : a1.order();
         int n2 = a2 == null ? 0 : a2.order();
         // never return 0 even if n1 equals n2, otherwise, o1 and o2 will override each other in collection like HashSet

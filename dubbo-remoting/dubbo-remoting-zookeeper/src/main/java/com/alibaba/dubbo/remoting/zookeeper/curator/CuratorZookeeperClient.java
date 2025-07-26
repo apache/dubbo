@@ -36,13 +36,16 @@ import org.apache.zookeeper.WatchedEvent;
 import java.util.Collections;
 import java.util.List;
 
+//基于Curator的ZK客户端实现
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
 
+    //client对象
     private final CuratorFramework client;
 
     public CuratorZookeeperClient(URL url) {
         super(url);
         try {
+            //创建client对象
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
                     .retryPolicy(new RetryNTimes(1, 1000))
@@ -52,8 +55,11 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                 builder = builder.authorization("digest", authority.getBytes());
             }
             client = builder.build();
+
+            //添加连接监听器
             client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
                 public void stateChanged(CuratorFramework client, ConnectionState state) {
+                    //当状态发生变化时，调用stateChanged(state)进行StateListener回调
                     if (state == ConnectionState.LOST) {
                         CuratorZookeeperClient.this.stateChanged(StateListener.DISCONNECTED);
                     } else if (state == ConnectionState.CONNECTED) {
@@ -63,6 +69,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                     }
                 }
             });
+
+            //启动client
             client.start();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -71,6 +79,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
     public void createPersistent(String path) {
         try {
+            //直接调用CuratorFramework进行创建
             client.create().forPath(path);
         } catch (NodeExistsException e) {
         } catch (Exception e) {
@@ -80,6 +89,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
     public void createEphemeral(String path) {
         try {
+            //直接调用CuratorFramework的EPHEMERAL模式进行创建
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (NodeExistsException e) {
         } catch (Exception e) {
@@ -108,6 +118,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
     public boolean checkExists(String path) {
         try {
+            //直接调用CuratorFramework进行check
             if (client.checkExists().forPath(path) != null) {
                 return true;
             }
@@ -120,6 +131,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     }
 
     public void doClose() {
+        //直接调用CuratorFramework进行关闭
         client.close();
     }
 
@@ -161,7 +173,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                         // if client connect or disconnect to server, zookeeper will queue
                         // watched event(Watcher.Event.EventType.None, .., path = null).
                         StringUtils.isNotEmpty(path)
-                                ? client.getChildren().usingWatcher(this).forPath(path)
+                                ? client.getChildren().usingWatcher(this).forPath(path)//重新发起连接
                                 : Collections.<String>emptyList());
             }
         }

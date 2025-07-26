@@ -42,14 +42,20 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
+    /**
+     * 远程通信客户端数组
+     */
     private final ExchangeClient[] clients;
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
+    //版本
     private final String version;
 
+    //销毁锁
     private final ReentrantLock destroyLock = new ReentrantLock();
 
+    //Invoker集合，从DubboProtocol#invokers获取
     private final Set<Invoker<?>> invokers;
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {

@@ -23,12 +23,18 @@ import com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 /**
  * ZookeeperRegistryFactory.
- *
+ * Zookeeper Registry工厂
  */
 public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
 
+    //zk工厂
     private ZookeeperTransporter zookeeperTransporter;
 
+    /**
+     * 设置zookeeper工厂
+     * 通过Dubbo SPI注入
+     * @param zookeeperTransporter
+     */
     public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
         this.zookeeperTransporter = zookeeperTransporter;
     }

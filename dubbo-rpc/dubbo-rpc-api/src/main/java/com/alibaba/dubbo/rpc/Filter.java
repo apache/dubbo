@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * Filter. (SPI, Singleton, ThreadSafe)
+ * 过滤器接口
  */
 @SPI
 public interface Filter {
@@ -39,6 +40,7 @@ public interface Filter {
      * @return invoke result.
      * @throws RpcException
      * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
+     * 执行Invoker的过滤逻辑
      */
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 

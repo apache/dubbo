@@ -30,9 +30,11 @@ import com.alibaba.dubbo.rpc.listener.ListenerInvokerWrapper;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * ListenerProtocol
+ * Protocol的Wrapper拓展实现类，用于给Exporter增加ExporterListener，监听Exporter暴露完成和取消暴露完成
  */
 public class ProtocolListenerWrapper implements Protocol {
 
@@ -50,22 +52,31 @@ public class ProtocolListenerWrapper implements Protocol {
     }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        //注册中心
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        return new ListenerExporterWrapper<T>(protocol.export(invoker),
-                Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
-                        .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY)));
+        //暴露服务，创建Exporter对象
+        Exporter<T> export = protocol.export(invoker);
+        //获得ExporterListener数组
+        List<ExporterListener> exporterListeners = Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
+            .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY));
+        //创建带 ExporterListener 的 Exporter 对象
+        return new ListenerExporterWrapper<T>(export, exporterListeners);
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        //注册中心协议
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return new ListenerInvokerWrapper<T>(protocol.refer(type, url),
-                Collections.unmodifiableList(
-                        ExtensionLoader.getExtensionLoader(InvokerListener.class)
-                                .getActivateExtension(url, Constants.INVOKER_LISTENER_KEY)));
+        //引用服务
+        Invoker<T> refer = protocol.refer(type, url);
+        //获得InvokerListener(监听器)数组
+        List<InvokerListener> invokerListeners = Collections.unmodifiableList(
+            ExtensionLoader.getExtensionLoader(InvokerListener.class).getActivateExtension(url, Constants.INVOKER_LISTENER_KEY));
+        //创建带有InvokerListener的ListenerInvokerWrapper对象
+        return new ListenerInvokerWrapper<T>(refer, invokerListeners);
     }
 
     public void destroy() {

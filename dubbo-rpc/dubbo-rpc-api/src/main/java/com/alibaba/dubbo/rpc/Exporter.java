@@ -22,6 +22,7 @@ package com.alibaba.dubbo.rpc;
  * @see com.alibaba.dubbo.rpc.Protocol#export(Invoker)
  * @see com.alibaba.dubbo.rpc.ExporterListener
  * @see com.alibaba.dubbo.rpc.protocol.AbstractExporter
+ * Invoker暴露服务在Protocol上的对象。
  */
 public interface Exporter<T> {
 
@@ -29,6 +30,7 @@ public interface Exporter<T> {
      * get invoker.
      *
      * @return invoker
+     * 获得对应的Invoker
      */
     Invoker<T> getInvoker();
 
@@ -38,6 +40,7 @@ public interface Exporter<T> {
      * <code>
      * getInvoker().destroy();
      * </code>
+     * 取消暴露
      */
     void unexport();
 

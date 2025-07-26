@@ -45,18 +45,40 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * ClassGenerator
+ * 类生成器，基于Javassist实现
  */
 public final class ClassGenerator {
     private static final AtomicLong CLASS_NAME_COUNTER = new AtomicLong(0);
     private static final String SIMPLE_NAME_TAG = "<init>";
     private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<ClassLoader, ClassPool>(); //ClassLoader - ClassPool
+
+    //CtClass集合，key：类名
     private ClassPool mPool;
+
+    //CtClass 对象
     private CtClass mCtc;
-    private String mClassName, mSuperClass;
+
+    //生成类的类名
+    private String mClassName;
+
+    //生成类的父类
+    private String mSuperClass;
+
+    //生成类的接口集合
     private Set<String> mInterfaces;
-    private List<String> mFields, mConstructors, mMethods;
+
+    //生成类的属性结合
+    private List<String> mFields;
+
+    //生成类的非空构造方法代码集合
+    private List<String> mConstructors;
+
+    //生成类的方法代码集合
+    private List<String> mMethods;
     private Map<String, Method> mCopyMethods; // <method desc,method instance>
     private Map<String, Constructor<?>> mCopyConstructors; // <constructor desc,constructor instance>
+
+    //默认空构造方法
     private boolean mDefaultConstructor = false;
 
     private ClassGenerator() {
@@ -256,22 +278,38 @@ public final class ClassGenerator {
     }
 
     public Class<?> toClass(ClassLoader loader, ProtectionDomain pd) {
+        //CtClass非空时，进行是释放，下面会创建CtClass
         if (mCtc != null)
             mCtc.detach();
+
+        //获得id
         long id = CLASS_NAME_COUNTER.getAndIncrement();
         try {
             CtClass ctcs = mSuperClass == null ? null : mPool.get(mSuperClass);
+            //类名
             if (mClassName == null)
                 mClassName = (mSuperClass == null || javassist.Modifier.isPublic(ctcs.getModifiers())
                         ? ClassGenerator.class.getName() : mSuperClass + "$sc") + id;
+            //创建CtClass
             mCtc = mPool.makeClass(mClassName);
+            //父类
             if (mSuperClass != null)
                 mCtc.setSuperclass(ctcs);
+
+            //增加DC接口，用于标记类是通过ClassGenerator生成的
             mCtc.addInterface(mPool.get(DC.class.getName())); // add dynamic class tag.
+
+            //实现的接口
             if (mInterfaces != null)
-                for (String cl : mInterfaces) mCtc.addInterface(mPool.get(cl));
+                for (String cl : mInterfaces)
+                    mCtc.addInterface(mPool.get(cl));
+
+            //属性集合
             if (mFields != null)
-                for (String code : mFields) mCtc.addField(CtField.make(code, mCtc));
+                for (String code : mFields)
+                    mCtc.addField(CtField.make(code, mCtc));
+
+            //方法集合
             if (mMethods != null) {
                 for (String code : mMethods) {
                     if (code.charAt(0) == ':')
@@ -280,8 +318,11 @@ public final class ClassGenerator {
                         mCtc.addMethod(CtNewMethod.make(code, mCtc));
                 }
             }
+            //空参构造方法
             if (mDefaultConstructor)
                 mCtc.addConstructor(CtNewConstructor.defaultConstructor(mCtc));
+
+            //带参数构造方法
             if (mConstructors != null) {
                 for (String code : mConstructors) {
                     if (code.charAt(0) == ':') {
@@ -292,6 +333,7 @@ public final class ClassGenerator {
                     }
                 }
             }
+            //生成
             return mCtc.toClass(loader, pd);
         } catch (RuntimeException e) {
             throw e;
@@ -302,6 +344,7 @@ public final class ClassGenerator {
         }
     }
 
+    //释放
     public void release() {
         if (mCtc != null) mCtc.detach();
         if (mInterfaces != null) mInterfaces.clear();
@@ -324,6 +367,9 @@ public final class ClassGenerator {
         return getCtClass(c.getDeclaringClass()).getConstructor(ReflectUtils.getDesc(c));
     }
 
-    public static interface DC {
+    /**
+     * 动态编译接口，用于标记类是通过 {@link #ClassGenerator} 生成的
+     */
+    public interface DC {
     } // dynamic class tag interface.
 }

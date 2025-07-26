@@ -35,8 +35,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Proxy.
+ * 用与创建Proxy和proxy对象
  */
-
 public abstract class Proxy {
     public static final InvocationHandler RETURN_NULL_INVOKER = new InvocationHandler() {
         public Object invoke(Object proxy, Method method, Object[] args) {
@@ -48,8 +48,19 @@ public abstract class Proxy {
             throw new UnsupportedOperationException("Method [" + ReflectUtils.getName(method) + "] unimplemented.");
         }
     };
+
+    //Proxy Class计数，用于生成Proxy类名自增
     private static final AtomicLong PROXY_CLASS_COUNTER = new AtomicLong(0);
+
+    //包名
     private static final String PACKAGE_NAME = Proxy.class.getPackage().getName();
+
+    /**
+     * Proxy对象缓存
+     * key ：ClassLoader
+     * value.key ：Proxy 标识。使用 Proxy 实现接口名拼接
+     * value.value ：Proxy 对象
+     */
     private static final Map<ClassLoader, Map<String, Object>> ProxyCacheMap = new WeakHashMap<ClassLoader, Map<String, Object>>();
 
     private static final Object PendingGenerationMarker = new Object();
@@ -71,25 +82,27 @@ public abstract class Proxy {
      * Get proxy.
      *
      * @param cl  class loader.
-     * @param ics interface class array.
+     * @param ics interface class array. 接口列表
      * @return Proxy instance.
      */
     public static Proxy getProxy(ClassLoader cl, Class<?>... ics) {
+        //检验接口数量上线
         if (ics.length > 65535)
             throw new IllegalArgumentException("interface limit exceeded");
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < ics.length; i++) {
             String itf = ics[i].getName();
+            //校验是否为接口
             if (!ics[i].isInterface())
                 throw new RuntimeException(itf + " is not a interface.");
-
+            //加载接口类
             Class<?> tmp = null;
             try {
                 tmp = Class.forName(itf, false, cl);
             } catch (ClassNotFoundException e) {
             }
-
+            //加载接口类失败
             if (tmp != ics[i])
                 throw new IllegalArgumentException(ics[i] + " is not visible from class loader");
 
@@ -109,16 +122,18 @@ public abstract class Proxy {
             }
         }
 
+        //获得Proxy
         Proxy proxy = null;
         synchronized (cache) {
             do {
+                //从缓存中获取Proxy
                 Object value = cache.get(key);
                 if (value instanceof Reference<?>) {
                     proxy = (Proxy) ((Reference<?>) value).get();
                     if (proxy != null)
                         return proxy;
                 }
-
+                //缓存中不存在，设置生成 Proxy 代码标记。创建中时，其他创建请求等待，避免并发。
                 if (value == PendingGenerationMarker) {
                     try {
                         cache.wait();
@@ -133,32 +148,43 @@ public abstract class Proxy {
         }
 
         long id = PROXY_CLASS_COUNTER.getAndIncrement();
+        //包路径
         String pkg = null;
         ClassGenerator ccp = null, ccm = null;
         try {
+            //创建proxy代码生成器
             ccp = ClassGenerator.newInstance(cl);
 
+            //已处理方法签名集合
             Set<String> worked = new HashSet<String>();
+            //已处理方法集合
             List<Method> methods = new ArrayList<Method>();
 
+            //处理接口
             for (int i = 0; i < ics.length; i++) {
+                //不是public接口
                 if (!Modifier.isPublic(ics[i].getModifiers())) {
                     String npkg = ics[i].getPackage().getName();
                     if (pkg == null) {
                         pkg = npkg;
                     } else {
+                        //实现了两个非非public接口
                         if (!pkg.equals(npkg))
                             throw new IllegalArgumentException("non-public interfaces from different packages");
                     }
                 }
+                //添加接口
                 ccp.addInterface(ics[i]);
 
+                //处理接口方法
                 for (Method method : ics[i].getMethods()) {
+                    //添加方法签名到已处理方法签名集合
                     String desc = ReflectUtils.getDesc(method);
                     if (worked.contains(desc))
                         continue;
                     worked.add(desc);
 
+                    //生成接口方法实现代码
                     int ix = methods.size();
                     Class<?> rt = method.getReturnType();
                     Class<?>[] pts = method.getParameterTypes();
@@ -171,31 +197,48 @@ public abstract class Proxy {
                         code.append(" return ").append(asArgument(rt, "ret")).append(";");
 
                     methods.add(method);
+                    //添加方法
                     ccp.addMethod(method.getName(), method.getModifiers(), rt, pts, method.getExceptionTypes(), code.toString());
                 }
             }
 
+            //设置包路径
             if (pkg == null)
                 pkg = PACKAGE_NAME;
 
+            //===== 设置 proxy 代码生成的属性 =====
             // create ProxyInstance class.
             String pcn = pkg + ".proxy" + id;
+            //设置类名
             ccp.setClassName(pcn);
+            //添加静态属性methods
             ccp.addField("public static java.lang.reflect.Method[] methods;");
+            //添加属性handler
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
+            //添加构造方法，参数handler
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");
+            //添加参数为空的构造方法
             ccp.addDefaultConstructor();
+            //生成类
             Class<?> clazz = ccp.toClass();
+            //设置静态属性methods
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
 
             // create Proxy class.
+            //创建Proxy代码生成器
             String fcn = Proxy.class.getName() + id;
             ccm = ClassGenerator.newInstance(cl);
+            //设置类名
             ccm.setClassName(fcn);
+            //添加参数为空的构造方法
             ccm.addDefaultConstructor();
+            //设置父类为Proxy
             ccm.setSuperClass(Proxy.class);
+            //添加方法 #newInstance(handler)
             ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
+            //生成类
             Class<?> pc = ccm.toClass();
+            //创建Proxy对象
             proxy = (Proxy) pc.newInstance();
         } catch (RuntimeException e) {
             throw e;
@@ -207,6 +250,7 @@ public abstract class Proxy {
                 ccp.release();
             if (ccm != null)
                 ccm.release();
+            //唤醒缓存wait
             synchronized (cache) {
                 if (proxy == null)
                     cache.remove(key);

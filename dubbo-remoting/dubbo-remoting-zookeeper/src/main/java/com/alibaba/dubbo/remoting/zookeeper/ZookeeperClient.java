@@ -20,26 +20,68 @@ import com.alibaba.dubbo.common.URL;
 
 import java.util.List;
 
+/**
+ * zk客户端接口
+ */
 public interface ZookeeperClient {
 
+    /**
+     * 创建节点
+     * @param path 节点路径
+     * @param ephemeral 是否临时节点
+     */
     void create(String path, boolean ephemeral);
 
+    /**
+     * 删除节点
+     * @param path 节点路径
+     */
     void delete(String path);
 
     List<String> getChildren(String path);
 
+    /**
+     * 给指定路径(path)添加ChildListener
+     * @param path 节点路径
+     * @param listener 监听器
+     * @return 子节点列表
+     */
     List<String> addChildListener(String path, ChildListener listener);
 
+    /**
+     * 移除ChildListener
+     * @param path 节点路径
+     * @param listener 监听器
+     */
     void removeChildListener(String path, ChildListener listener);
 
+    /**
+     * 添加StateListener
+     * @param listener 监听器
+     */
     void addStateListener(StateListener listener);
 
+    /**
+     * 移除StateListener
+     * @param listener 监听器
+     */
     void removeStateListener(StateListener listener);
 
+    /**
+     * 是否连接
+     * @return
+     */
     boolean isConnected();
 
+    /**
+     * 关闭
+     */
     void close();
 
+    /**
+     * 获得注册中心URL
+     * @return
+     */
     URL getUrl();
 
 }

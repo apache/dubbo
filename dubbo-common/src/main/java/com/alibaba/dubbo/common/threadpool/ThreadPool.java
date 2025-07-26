@@ -25,16 +25,12 @@ import java.util.concurrent.Executor;
 
 /**
  * ThreadPool
+ * 线程池接口
  */
-@SPI("fixed")
+@SPI("fixed")//默认扩展点使用SPI
 public interface ThreadPool {
 
-    /**
-     * Thread pool
-     *
-     * @param url URL contains thread parameter
-     * @return thread pool
-     */
+    //根据URL的threadpool属性选择扩展类
     @Adaptive({Constants.THREADPOOL_KEY})
     Executor getExecutor(URL url);
 

@@ -27,6 +27,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 @Adaptive
 public class AdaptiveCompiler implements Compiler {
 
+    //编辑器的扩展名
     private static volatile String DEFAULT_COMPILER;
 
     public static void setDefaultCompiler(String compiler) {
@@ -35,13 +36,17 @@ public class AdaptiveCompiler implements Compiler {
 
     public Class<?> compile(String code, ClassLoader classLoader) {
         Compiler compiler;
+        //获得Compiler的ExtensionLoader对象
         ExtensionLoader<Compiler> loader = ExtensionLoader.getExtensionLoader(Compiler.class);
         String name = DEFAULT_COMPILER; // copy reference
         if (name != null && name.length() > 0) {
+            //使用设置的扩展名，获得Compiler扩展对象
             compiler = loader.getExtension(name);
         } else {
+            //获得默认的Compiler扩展对象
             compiler = loader.getDefaultExtension();
         }
+        //调用真正的Compiler对象，动态编译代码
         return compiler.compile(code, classLoader);
     }
 
