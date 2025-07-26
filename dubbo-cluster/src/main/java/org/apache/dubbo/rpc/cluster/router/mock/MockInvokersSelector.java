@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterGroupingState;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +41,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
  */
 public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
 
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MockInvokersSelector.class);
+    
     public static final String NAME = "MOCK_ROUTER";
 
     private volatile BitList<Invoker<T>> normalInvokers = BitList.emptyList();
@@ -57,6 +61,28 @@ public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
+        
+        logger.info("[MOCK-SELECTOR] doRoute called with {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
+        
+        // 记录输入的invokers
+        for (int i = 0; i < invokers.size(); i++) {
+            Invoker<T> invoker = invokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            String protocol = invoker.getUrl().getProtocol();
+            logger.info("[MOCK-SELECTOR] Input invoker[{}]: {} (clusterID: {}, protocol: {}) [Thread: {}]", i, address, clusterID, protocol, Thread.currentThread().getName());
+        }
+        
+        // 记录normalInvokers缓存
+        logger.info("[MOCK-SELECTOR] normalInvokers cache size: {} [Thread: {}]", normalInvokers.size(), Thread.currentThread().getName());
+        for (int i = 0; i < normalInvokers.size(); i++) {
+            Invoker<T> invoker = normalInvokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            String protocol = invoker.getUrl().getProtocol();
+            logger.info("[MOCK-SELECTOR] Cached normal invoker[{}]: {} (clusterID: {}, protocol: {}) [Thread: {}]", i, address, clusterID, protocol, Thread.currentThread().getName());
+        }
+        
         if (CollectionUtils.isEmpty(invokers)) {
             if (needToPrintMessage) {
                 messageHolder.set("Empty invokers. Directly return.");
@@ -64,35 +90,78 @@ public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
             return invokers;
         }
 
+        BitList<Invoker<T>> result;
         if (invocation.getObjectAttachments() == null) {
             if (needToPrintMessage) {
                 messageHolder.set("ObjectAttachments from invocation are null. Return normal Invokers.");
             }
-            return invokers.and(normalInvokers);
+            result = invokers.and(normalInvokers);
         } else {
             String value = (String) invocation.getObjectAttachmentWithoutConvert(INVOCATION_NEED_MOCK);
             if (value == null) {
                 if (needToPrintMessage) {
                     messageHolder.set("invocation.need.mock not set. Return normal Invokers.");
                 }
-                return invokers.and(normalInvokers);
+                result = invokers.and(normalInvokers);
             } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                 if (needToPrintMessage) {
                     messageHolder.set("invocation.need.mock is true. Return mocked Invokers.");
                 }
-                return invokers.and(mockedInvokers);
+                result = invokers.and(mockedInvokers);
+            } else {
+                if (needToPrintMessage) {
+                    messageHolder.set("Directly Return. Reason: invocation.need.mock is set but not match true");
+                }
+                result = invokers;
             }
         }
-        if (needToPrintMessage) {
-            messageHolder.set("Directly Return. Reason: invocation.need.mock is set but not match true");
+        
+        // 记录and操作的结果
+        logger.info("[MOCK-SELECTOR] After and() operation, result size: {} [Thread: {}]", result.size(), Thread.currentThread().getName());
+        for (int i = 0; i < result.size(); i++) {
+            Invoker<T> invoker = result.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            String protocol = invoker.getUrl().getProtocol();
+            logger.info("[MOCK-SELECTOR] Result invoker[{}]: {} (clusterID: {}, protocol: {}) [Thread: {}]", i, address, clusterID, protocol, Thread.currentThread().getName());
         }
-        return invokers;
+        
+        return result;
     }
 
     @Override
     public void notify(BitList<Invoker<T>> invokers) {
+        logger.info("[MOCK-SELECTOR] notify called with {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
+        
+        // 记录notify的输入invokers
+        for (int i = 0; i < invokers.size(); i++) {
+            Invoker<T> invoker = invokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            String protocol = invoker.getUrl().getProtocol();
+            logger.info("[MOCK-SELECTOR] Notify invoker[{}]: {} (clusterID: {}, protocol: {}) [Thread: {}]", i, address, clusterID, protocol, Thread.currentThread().getName());
+        }
+        
+        // 记录缓存更新前的状态
+        logger.info("[MOCK-SELECTOR] Before cache update: normalInvokers={}, mockedInvokers={} [Thread: {}]", normalInvokers.size(), mockedInvokers.size(), Thread.currentThread().getName());
+        for (int i = 0; i < normalInvokers.size(); i++) {
+            Invoker<T> invoker = normalInvokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            logger.info("[MOCK-SELECTOR] Before update - normal invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+        }
+        
         cacheMockedInvokers(invokers);
         cacheNormalInvokers(invokers);
+        
+        // 记录缓存更新后的状态
+        logger.info("[MOCK-SELECTOR] After cache update: normalInvokers={}, mockedInvokers={} [Thread: {}]", normalInvokers.size(), mockedInvokers.size(), Thread.currentThread().getName());
+        for (int i = 0; i < normalInvokers.size(); i++) {
+            Invoker<T> invoker = normalInvokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            logger.info("[MOCK-SELECTOR] After update - normal invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+        }
     }
 
     private void cacheMockedInvokers(BitList<Invoker<T>> invokers) {

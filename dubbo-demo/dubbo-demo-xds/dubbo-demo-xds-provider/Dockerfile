@@ -14,8 +14,15 @@
 # limitations under the License.
 
 FROM openjdk:21-jdk
-ADD ./target/dubbo-demo-xds-provider-3.3.4-SNAPSHOT.jar app.jar
-CMD java -jar /app.jar
-EXPOSE 50051
-EXPOSE 31001
 
+WORKDIR /app
+
+ARG ARTIFACT
+COPY ${ARTIFACT} /app/app.jar
+COPY src/main/resources/bootstrap.json /app/bootstrap.json
+
+ENV GRPC_XDS_BOOTSTRAP=/app/bootstrap.json
+
+EXPOSE 50051 31001
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

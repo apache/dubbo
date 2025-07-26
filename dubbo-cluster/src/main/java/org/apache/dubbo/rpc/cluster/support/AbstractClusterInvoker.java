@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
@@ -42,6 +43,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -346,27 +348,29 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         checkWhetherDestroyed();
 
         // binding attachments into invocation.
-        //        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
-        //        if (contextAttachments != null && contextAttachments.size() != 0) {
-        //            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
-        //        }
+        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+        if (contextAttachments != null && contextAttachments.size() != 0) {
+            ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
+        }
 
-        InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Router route.");
+        logger.info("[CLUSTER-INVOKER] AbstractClusterInvoker.invoke called for method: {} [Thread: {}]", invocation.getMethodName(), Thread.currentThread().getName());
+        
         List<Invoker<T>> invokers = list(invocation);
-        InvocationProfilerUtils.releaseDetailProfiler(invocation);
-
-        checkInvokers(invokers, invocation);
-
+        
+        logger.info("[CLUSTER-INVOKER] list(invocation) returned {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
+        for (int i = 0; i < invokers.size(); i++) {
+            Invoker<T> invoker = invokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            logger.info("[CLUSTER-INVOKER] Invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+        }
+        
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
-
-        InvocationProfilerUtils.enterDetailProfiler(
-                invocation, () -> "Cluster " + this.getClass().getName() + " invoke.");
-        try {
-            return doInvoke(invocation, invokers, loadbalance);
-        } finally {
-            InvocationProfilerUtils.releaseDetailProfiler(invocation);
-        }
+        
+        logger.info("[CLUSTER-INVOKER] About to call doInvoke with {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
+        
+        return doInvoke(invocation, invokers, loadbalance);
     }
 
     protected void checkWhetherDestroyed() {

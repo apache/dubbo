@@ -19,8 +19,17 @@ package org.apache.dubbo.xds.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.xds.XdsResourceFactory;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 public class XdsRegistryFactory extends AbstractRegistryFactory {
+    
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsRegistryFactory.class);
+
+    public XdsRegistryFactory() {
+        logger.info("[XDS] XdsRegistryFactory constructor called.");
+    }
 
     @Override
     protected String createRegistryCacheKey(URL url) {

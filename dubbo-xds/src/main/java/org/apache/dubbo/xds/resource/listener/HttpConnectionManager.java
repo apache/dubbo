@@ -118,7 +118,7 @@ public class HttpConnectionManager {
         return create(httpMaxStreamDurationNano, null, virtualHosts, httpFilterConfigs);
     }
 
-    private static HttpConnectionManager create(
+    public static HttpConnectionManager create(
             long httpMaxStreamDurationNano,
             @Nullable String rdsName,
             @Nullable List<VirtualHost> virtualHosts,

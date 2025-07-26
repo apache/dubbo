@@ -17,10 +17,20 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.common.utils.Holder;
 
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.STANDARD_ROUTER_KEY;
 
 public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
+
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(StandardMeshRuleRouter.class);
 
     public StandardMeshRuleRouter(URL url) {
         super(url);
@@ -30,4 +40,6 @@ public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
     public String ruleSuffix() {
         return STANDARD_ROUTER_KEY;
     }
+
+
 }

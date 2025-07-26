@@ -21,7 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
-@Activate(order = 100)
+@Activate(order = 300)
 public class XdsRouterFactory implements StateRouterFactory {
 
     @Override

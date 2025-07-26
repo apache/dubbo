@@ -22,10 +22,26 @@ dubbo:
   application:
     name: ${spring.application.name}
     qos-enable: false
+    logger: slf4j
   protocol:
     name: tri
     port: 50050
   registry:
-    address: xds://47.251.12.148:15010?use-agent=true # istio://istiod.istio-system.svc:15012
+    address: xds://istiod.istio-system.svc:15012
+    parameters:
+      use-agent: "true"
+      debug: "true"
+      check: "false"
+
+logging:
+  level:
+    root: INFO
+    org.apache.dubbo: DEBUG
+    org.apache.dubbo.xds: TRACE
+    org.apache.dubbo.registry: TRACE
+    org.apache.dubbo.registry.xds: TRACE
+    org.apache.dubbo.xds.registry: TRACE
+    io.grpc: DEBUG
+    io.netty: INFO
 
 

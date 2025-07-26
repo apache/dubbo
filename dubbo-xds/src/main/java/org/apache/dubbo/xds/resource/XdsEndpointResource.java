@@ -57,7 +57,7 @@ public class XdsEndpointResource extends XdsResourceType<EdsUpdate> {
     }
 
     @Override
-    String typeName() {
+    public String typeName() {
         return "EDS";
     }
 

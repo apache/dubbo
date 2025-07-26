@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM openjdk:8-jdk
+FROM openjdk:21-jdk
 ARG ARTIFACT
-ADD ./target/$ARTIFACT app.jar
+ADD $ARTIFACT app.jar
 ADD ./src/main/resources/bootstrap.json bootstrap.json
-CMD java -jar /app.jar
+# Enable remote debugging on port 31000
+ENV JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:31000"
+CMD java -jar app.jar
 EXPOSE 50050
 EXPOSE 31000

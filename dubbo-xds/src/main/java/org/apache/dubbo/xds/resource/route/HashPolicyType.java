@@ -18,5 +18,9 @@ package org.apache.dubbo.xds.resource.route;
 
 enum HashPolicyType {
     HEADER,
-    CHANNEL_ID
+    CHANNEL_ID,
+    COOKIE,
+    QUERY_PARAMETER,
+    CONNECTION_PROPERTIES,
+    FILTER_STATE
 }

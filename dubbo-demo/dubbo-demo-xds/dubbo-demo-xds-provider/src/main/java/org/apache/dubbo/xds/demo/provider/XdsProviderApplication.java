@@ -20,6 +20,8 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.dubbo.xds.istio.IstioConstant;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -27,7 +29,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @EnableDubbo(scanBasePackages = {"org.apache.dubbo.xds.demo.provider"})
 public class XdsProviderApplication {
     public static void main(String[] args) throws InterruptedException {
-        // System.setProperty(IstioConstant.PILOT_CERT_PROVIDER_KEY, "istiod");
+        // The GRPC_XDS_BOOTSTRAP path is now provided by an environment variable.
+        // This is set in the Dockerfile for deployment, and should be set in your IDE's run configuration for local testing.
         SpringApplication.run(XdsProviderApplication.class, args);
         System.out.println("dubbo service started");
         new CountDownLatch(1).await();

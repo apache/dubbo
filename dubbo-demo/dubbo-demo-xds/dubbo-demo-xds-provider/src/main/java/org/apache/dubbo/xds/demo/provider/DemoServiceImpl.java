@@ -30,8 +30,19 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String sayHello(String name) {
+        // 获取版本信息，如果没有设置则默认为v1
+        String version = System.getProperty("service.version", "v1");
+        String podName = System.getenv("POD_NAME");
+        
         logger.info("Hello " + name + ", request from consumer: "
-                + RpcContext.getContext().getRemoteAddress());
-        return "hello" + name;
+                + RpcContext.getContext().getRemoteAddress() + ", version: " + version);
+        
+        // 在响应中包含版本信息
+        String response = "hello" + name + " from " + version;
+        if (podName != null) {
+            response += " (pod: " + podName + ")";
+        }
+        
+        return response;
     }
 }

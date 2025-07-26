@@ -34,9 +34,25 @@ public class NodeBuilder {
 
     public static Node build() {
         BootstrapInfo bootstrapInfo = Bootstrapper.getInstance().bootstrap();
+
+        String podName = System.getenv("POD_NAME");
+        String podIp = System.getenv("POD_IP");
+        String namespace = System.getenv("SERVICE_NAMESPACE");
+
+        String nodeId;
+        // Check if running in a Kubernetes environment with the necessary Downward API vars
+        if (StringUtils.isNoneEmpty(podName, podIp, namespace)) {
+            // Construct the Istio-compliant node ID
+            // Format: sidecar~<ip-address>~<pod-name>.<namespace>~<namespace>.svc.cluster.local
+            nodeId = "sidecar~" + podIp + "~" + podName + "." + namespace + "~" + namespace + ".svc.cluster.local";
+        } else {
+            // Fallback to the ID from bootstrap file for non-Kubernetes or misconfigured environments
+            nodeId = bootstrapInfo.getNode().getId();
+        }
+
         Builder builder = Node.newBuilder()
                 .setMetadata(mapToStruct(bootstrapInfo.getNode().getMetadata()))
-                .setId(bootstrapInfo.getNode().getId());
+                .setId(nodeId);
         if (StringUtils.isNoneEmpty(bootstrapInfo.getNode().getCluster())) {
             builder.setCluster(bootstrapInfo.getNode().getCluster());
         }

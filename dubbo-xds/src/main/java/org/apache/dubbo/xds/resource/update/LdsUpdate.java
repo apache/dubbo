@@ -27,10 +27,17 @@ public class LdsUpdate implements ResourceUpdate {
     private HttpConnectionManager httpConnectionManager;
     private Listener listener;
     private io.envoyproxy.envoy.config.listener.v3.Listener rawListener;
+    private int port = -1;
 
     public LdsUpdate(HttpConnectionManager httpConnectionManager, Listener listener) {
         this.httpConnectionManager = httpConnectionManager;
         this.listener = listener;
+    }
+
+    public LdsUpdate(HttpConnectionManager httpConnectionManager, Listener listener, int port) {
+        this.httpConnectionManager = httpConnectionManager;
+        this.listener = listener;
+        this.port = port;
     }
 
     public HttpConnectionManager getHttpConnectionManager() {
@@ -57,10 +64,22 @@ public class LdsUpdate implements ResourceUpdate {
         this.rawListener = rawListener;
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public boolean isContainPort(int port) {
+        return this.port == port;
+    }
+
     @Override
     public String toString() {
         return "XdsListenerResourceLdsUpdate{" + "httpConnectionManager=" + httpConnectionManager + ", " + "listener="
-                + listener + "}";
+                + listener + ", port=" + port + "}";
     }
 
     @Override
@@ -72,13 +91,14 @@ public class LdsUpdate implements ResourceUpdate {
             return false;
         }
         LdsUpdate that = (LdsUpdate) o;
-        return Objects.equals(httpConnectionManager, that.httpConnectionManager)
-                && Objects.equals(listener, that.listener);
+        return port == that.port &&
+                Objects.equals(httpConnectionManager, that.httpConnectionManager) &&
+                Objects.equals(listener, that.listener);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(httpConnectionManager, listener);
+        return Objects.hash(httpConnectionManager, listener, port);
     }
 
     public static LdsUpdate forApiListener(HttpConnectionManager httpConnectionManager) {
@@ -86,8 +106,18 @@ public class LdsUpdate implements ResourceUpdate {
         return new LdsUpdate(httpConnectionManager, null);
     }
 
+    public static LdsUpdate forApiListener(HttpConnectionManager httpConnectionManager, int port) {
+        Assert.notNull(httpConnectionManager, "httpConnectionManager must not be null");
+        return new LdsUpdate(httpConnectionManager, null, port);
+    }
+
     public static LdsUpdate forTcpListener(Listener listener) {
         Assert.notNull(listener, "listener must not be null");
         return new LdsUpdate(null, listener);
+    }
+
+    public static LdsUpdate forTcpListener(Listener listener, int port) {
+        Assert.notNull(listener, "listener must not be null");
+        return new LdsUpdate(null, listener, port);
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.xds.resource.matcher;
 
+import org.apache.dubbo.xds.resource.common.FractionalPercent;
+
 public final class FractionMatcher {
 
     private final int numerator;
@@ -37,6 +39,19 @@ public final class FractionMatcher {
 
     public int getDenominator() {
         return denominator;
+    }
+
+    public FractionalPercent getFractionalPercent() {
+        if (denominator == 100) {
+            return FractionalPercent.perHundred(numerator);
+        } else if (denominator == 10000) {
+            return FractionalPercent.perTenThousand(numerator);
+        } else if (denominator == 1000000) {
+            return FractionalPercent.perMillion(numerator);
+        } else {
+            // Default to per million
+            return FractionalPercent.perMillion((int) ((long) numerator * 1000000 / denominator));
+        }
     }
 
     @Override

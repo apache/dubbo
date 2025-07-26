@@ -66,7 +66,19 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
             Holder<RouterSnapshotNode<T>> routerSnapshotNodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
+        
+        logger.info("[SCRIPT-ROUTER] AppScriptStateRouter.doRoute called with {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
+        
+        // 记录输入的invokers信息
+        for (int i = 0; i < invokers.size(); i++) {
+            Invoker<T> invoker = invokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            logger.info("[SCRIPT-ROUTER] Input invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+        }
+        
         if (scriptRouter == null || !scriptRule.isValid() || !scriptRule.isEnabled()) {
+            logger.info("[SCRIPT-ROUTER] Script router disabled or invalid, returning all invokers [Thread: {}]", Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set(
                         "Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: "
@@ -75,7 +87,9 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
             return invokers;
         }
 
+        logger.info("[SCRIPT-ROUTER] Executing script router [Thread: {}]", Thread.currentThread().getName());
         invokers = scriptRouter.route(invokers, url, invocation, needToPrintMessage, routerSnapshotNodeHolder);
+        logger.info("[SCRIPT-ROUTER] Script router result: {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
 
         if (needToPrintMessage) {
             messageHolder.set(messageHolder.get());

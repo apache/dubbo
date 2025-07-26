@@ -141,14 +141,28 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
+        
+        logger.info("[SCRIPT-ROUTER] ScriptStateRouter.doRoute called with {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
+        
+        // 记录输入的invokers信息
+        for (int i = 0; i < invokers.size(); i++) {
+            Invoker<T> invoker = invokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            logger.info("[SCRIPT-ROUTER] Input invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+        }
+        
         if (engine == null || function == null) {
+            logger.info("[SCRIPT-ROUTER] Engine or function is null, returning all invokers [Thread: {}]", Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("Directly Return. Reason: engine or function is null");
             }
             return invokers;
         }
+        
+        logger.info("[SCRIPT-ROUTER] Executing script evaluation [Thread: {}]", Thread.currentThread().getName());
         Bindings bindings = createBindings(invokers, invocation);
-        return getRoutedInvokers(
+        BitList<Invoker<T>> result = getRoutedInvokers(
                 invokers,
                 AccessController.doPrivileged(
                         (PrivilegedAction<Object>) () -> {
@@ -167,6 +181,9 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
                             }
                         },
                         accessControlContext));
+        
+        logger.info("[SCRIPT-ROUTER] Script evaluation result: {} invokers [Thread: {}]", result.size(), Thread.currentThread().getName());
+        return result;
     }
 
     /**

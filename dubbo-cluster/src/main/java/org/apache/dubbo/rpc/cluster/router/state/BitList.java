@@ -114,18 +114,15 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     /**
-     * And operation between two bitList. Return a new cloned list.
-     * TailList in source bitList will be totally saved even if it is not appeared in the target bitList.
-     *
-     * @param target target bitList
-     * @return this bitList only contains those elements contain in both two list and source bitList's tailList
+     * returns the list that is the intersection of this list and the given list.
      */
     public synchronized BitList<E> and(BitList<E> target) {
-        rootSet.and(target.rootSet);
+        BitList<E> clonedList = this.clone();
+        clonedList.rootSet.and(target.rootSet);
         if (target.getTailList() != null) {
-            target.getTailList().forEach(this::addToTailList);
+            target.getTailList().forEach(clonedList::addToTailList);
         }
-        return this;
+        return clonedList;
     }
 
     public synchronized BitList<E> or(BitList<E> target) {

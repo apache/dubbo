@@ -74,11 +74,14 @@ public class XdsRawResourceProtocol<T extends ResourceUpdate> {
             return;
         }
 
+        logger.info("[XDS] Subscribing to resource: {} of type: {}", resourceName, resourceType.typeName());
         XdsResourceListener<T> existingListener = resourceListeners.putIfAbsent(resourceName, listener);
         if (existingListener == null) {
             // update resource subscription
+            logger.info("[XDS] New resource subscription, updating ADS observer for: {}", resourceName);
             adsObserver.adjustResourceSubscription(resourceType);
         } else {
+            logger.info("[XDS] Resource already subscribed, sending existing update for: {}", resourceName);
             listener.onResourceUpdate(resourceUpdate);
         }
     }

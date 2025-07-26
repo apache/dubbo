@@ -67,7 +67,7 @@ import io.envoyproxy.envoy.type.v3.FractionalPercent;
 import io.grpc.Status;
 
 public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
-    static final String ADS_TYPE_URL_RDS = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
+    private static final String ADS_TYPE_URL_RDS = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
     private static final String TYPE_URL_FILTER_CONFIG = "type.googleapis.com/envoy.config.route.v3.FilterConfig";
     // TODO(zdapeng): need to discuss how to handle unsupported values.
     private static final Set<Status.Code> SUPPORTED_RETRYABLE_CODES = Collections.unmodifiableSet(EnumSet.of(
@@ -95,7 +95,7 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
     }
 
     @Override
-    String typeName() {
+    public String typeName() {
         return "RDS";
     }
 
@@ -432,11 +432,13 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                 hashPolicies.add(policy);
             }
         }
-
+        
+        boolean autoHostRewrite = proto.getAutoHostRewrite().getValue();
+        
         switch (proto.getClusterSpecifierCase()) {
             case CLUSTER:
                 return StructOrError.fromStruct(
-                        RouteAction.forCluster(proto.getCluster(), hashPolicies, timeoutNano, retryPolicy));
+                        RouteAction.forCluster(proto.getCluster(), hashPolicies, timeoutNano, retryPolicy, autoHostRewrite));
             case CLUSTER_HEADER:
                 return null;
             case WEIGHTED_CLUSTERS:
@@ -467,7 +469,7 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                             UNSIGNED_INTEGER_MAX_VALUE, clusterWeightSum));
                 }
                 return StructOrError.fromStruct(
-                        RouteAction.forWeightedClusters(weightedClusters, hashPolicies, timeoutNano, retryPolicy));
+                        RouteAction.forWeightedClusters(weightedClusters, hashPolicies, timeoutNano, retryPolicy, autoHostRewrite));
             case CLUSTER_SPECIFIER_PLUGIN:
                 if (enableRouteLookup) {
                     String pluginName = proto.getClusterSpecifierPlugin();
@@ -481,7 +483,7 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                     }
                     NamedPluginConfig namedPluginConfig = NamedPluginConfig.create(pluginName, pluginConfig);
                     return StructOrError.fromStruct(RouteAction.forClusterSpecifierPlugin(
-                            namedPluginConfig, hashPolicies, timeoutNano, retryPolicy));
+                            namedPluginConfig, hashPolicies, timeoutNano, retryPolicy, autoHostRewrite));
                 } else {
                     return null;
                 }

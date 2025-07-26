@@ -47,6 +47,7 @@ import io.envoyproxy.envoy.service.discovery.v3.Resource;
 import io.grpc.LoadBalancerRegistry;
 
 public abstract class XdsResourceType<T extends ResourceUpdate> {
+    
     static final String TYPE_URL_RESOURCE = "type.googleapis.com/envoy.service.discovery.v3.Resource";
     static final String TRANSPORT_SOCKET_NAME_TLS = "envoy.transport_sockets.tls";
     static final String AGGREGATE_CLUSTER_TYPE_NAME = "envoy.clusters.aggregate";
@@ -54,14 +55,11 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
     static boolean enableRouteLookup = getFlag("GRPC_EXPERIMENTAL_XDS_RLS_LB", true);
     static boolean enableLeastRequest = !StringUtils.isBlank(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST"))
             ? Boolean.parseBoolean(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST"))
-            : Boolean.parseBoolean(System.getProperty("io.grpc.xds.experimentalEnableLeastRequest"));
+            : Boolean.parseBoolean(System.getProperty("io.grpc.xds.experimentalEnableLeastRequest", "true")); // 默认启用LEAST_REQUEST
 
     static boolean enableWrr = getFlag("GRPC_EXPERIMENTAL_XDS_WRR_LB", true);
-
     static boolean enablePickFirst = getFlag("GRPC_EXPERIMENTAL_PICKFIRST_LB_CONFIG", true);
-
-    static final String TYPE_URL_CLUSTER_CONFIG =
-            "type.googleapis.com/envoy.extensions.clusters.aggregate.v3" + ".ClusterConfig";
+    static final String TYPE_URL_CLUSTER_CONFIG = "type.googleapis.com/envoy.extensions.clusters.aggregate.v3" + ".ClusterConfig";
     static final String TYPE_URL_TYPED_STRUCT_UDPA = "type.googleapis.com/udpa.type.v1.TypedStruct";
     static final String TYPE_URL_TYPED_STRUCT = "type.googleapis.com/xds.type.v3.TypedStruct";
 
@@ -70,7 +68,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
 
     abstract Class<? extends Message> unpackedClassName();
 
-    abstract String typeName();
+    public abstract String typeName();
 
     public abstract String typeUrl();
 
@@ -137,11 +135,13 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
                         typeName(), i, unpackedClassName().getSimpleName(), e.getMessage()));
                 continue;
             }
+
             String name = extractResourceName(unpackedMessage);
             if (name == null || !isResourceNameValid(name, resource.getTypeUrl())) {
                 errors.add("Unsupported resource name: " + name + " for type: " + typeName());
                 continue;
             }
+
             String cname = canonifyResourceName(name);
             if (args.subscribedResources != null && !args.subscribedResources.contains(name)) {
                 continue;

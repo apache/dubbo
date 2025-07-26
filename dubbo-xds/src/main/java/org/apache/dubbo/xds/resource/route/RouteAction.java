@@ -25,33 +25,40 @@ import java.util.Collections;
 import java.util.List;
 
 public class RouteAction {
-
+    
     private final List<HashPolicy> hashPolicies;
-
     @Nullable
     private final Long timeoutNano;
-
     @Nullable
     private final String cluster;
-
     @Nullable
     private final List<ClusterWeight> weightedClusters;
-
     @Nullable
     private final NamedPluginConfig namedClusterSpecifierPluginConfig;
-
     @Nullable
     private final RetryPolicy retryPolicy;
-
+    @Nullable
+    private final boolean autoHostRewrite;
+    
     public static RouteAction forCluster(
             String cluster,
             List<HashPolicy> hashPolicies,
             @Nullable Long timeoutNano,
             @Nullable RetryPolicy retryPolicy) {
         Assert.notNull(cluster, "cluster must not be null");
-        return create(hashPolicies, timeoutNano, cluster, null, null, retryPolicy);
+        return create(hashPolicies, timeoutNano, cluster, null, null, retryPolicy, false);
     }
-
+    
+    public static RouteAction forCluster(
+            String cluster,
+            List<HashPolicy> hashPolicies,
+            @Nullable Long timeoutNano,
+            @Nullable RetryPolicy retryPolicy,
+            boolean autoHostRewrite) {
+        Assert.notNull(cluster, "cluster must not be null");
+        return create(hashPolicies, timeoutNano, cluster, null, null, retryPolicy, autoHostRewrite);
+    }
+    
     public static RouteAction forWeightedClusters(
             List<ClusterWeight> weightedClusters,
             List<HashPolicy> hashPolicies,
@@ -59,34 +66,57 @@ public class RouteAction {
             @Nullable RetryPolicy retryPolicy) {
         Assert.notNull(weightedClusters, "weightedClusters must not be null");
         Assert.assertTrue(!weightedClusters.isEmpty(), "empty cluster list");
-        return create(hashPolicies, timeoutNano, null, weightedClusters, null, retryPolicy);
+        return create(hashPolicies, timeoutNano, null, weightedClusters, null, retryPolicy, false);
     }
-
+    
+    public static RouteAction forWeightedClusters(
+            List<ClusterWeight> weightedClusters,
+            List<HashPolicy> hashPolicies,
+            @Nullable Long timeoutNano,
+            @Nullable RetryPolicy retryPolicy,
+            boolean autoHostRewrite) {
+        Assert.notNull(weightedClusters, "weightedClusters must not be null");
+        Assert.assertTrue(!weightedClusters.isEmpty(), "empty cluster list");
+        return create(hashPolicies, timeoutNano, null, weightedClusters, null, retryPolicy, autoHostRewrite);
+    }
+    
     public static RouteAction forClusterSpecifierPlugin(
             NamedPluginConfig namedConfig,
             List<HashPolicy> hashPolicies,
             @Nullable Long timeoutNano,
             @Nullable RetryPolicy retryPolicy) {
         Assert.notNull(namedConfig, "namedConfig must not be null");
-        return create(hashPolicies, timeoutNano, null, null, namedConfig, retryPolicy);
+        return create(hashPolicies, timeoutNano, null, null, namedConfig, retryPolicy, false);
     }
-
+    
+    public static RouteAction forClusterSpecifierPlugin(
+            NamedPluginConfig namedConfig,
+            List<HashPolicy> hashPolicies,
+            @Nullable Long timeoutNano,
+            @Nullable RetryPolicy retryPolicy,
+            boolean autoHostRewrite) {
+        Assert.notNull(namedConfig, "namedConfig must not be null");
+        return create(hashPolicies, timeoutNano, null, null, namedConfig, retryPolicy, autoHostRewrite);
+    }
+    
     private static RouteAction create(
             List<HashPolicy> hashPolicies,
             @Nullable Long timeoutNano,
             @Nullable String cluster,
             @Nullable List<ClusterWeight> weightedClusters,
             @Nullable NamedPluginConfig namedConfig,
-            @Nullable RetryPolicy retryPolicy) {
+            @Nullable RetryPolicy retryPolicy,
+            boolean autoHostRewrite) {
         return new RouteAction(
                 Collections.unmodifiableList(new ArrayList<>(hashPolicies)),
                 timeoutNano,
                 cluster,
                 weightedClusters == null ? null : Collections.unmodifiableList(new ArrayList<>(weightedClusters)),
                 namedConfig,
-                retryPolicy);
+                retryPolicy,
+                autoHostRewrite);
     }
-
+    
     RouteAction(
             List<HashPolicy> hashPolicies,
             @Nullable Long timeoutNano,
@@ -103,43 +133,69 @@ public class RouteAction {
         this.weightedClusters = weightedClusters;
         this.namedClusterSpecifierPluginConfig = namedClusterSpecifierPluginConfig;
         this.retryPolicy = retryPolicy;
+        this.autoHostRewrite = false;
     }
-
+    
+    RouteAction(
+            List<HashPolicy> hashPolicies,
+            @Nullable Long timeoutNano,
+            @Nullable String cluster,
+            @Nullable List<ClusterWeight> weightedClusters,
+            @Nullable NamedPluginConfig namedClusterSpecifierPluginConfig,
+            @Nullable RetryPolicy retryPolicy,
+            boolean autoHostRewrite) {
+        if (hashPolicies == null) {
+            throw new NullPointerException("Null hashPolicies");
+        }
+        this.hashPolicies = hashPolicies;
+        this.timeoutNano = timeoutNano;
+        this.cluster = cluster;
+        this.weightedClusters = weightedClusters;
+        this.namedClusterSpecifierPluginConfig = namedClusterSpecifierPluginConfig;
+        this.retryPolicy = retryPolicy;
+        this.autoHostRewrite = autoHostRewrite;
+    }
+    
     public List<HashPolicy> getHashPolicies() {
         return hashPolicies;
     }
-
+    
     @Nullable
     public Long getTimeoutNano() {
         return timeoutNano;
     }
-
+    
     @Nullable
     public String getCluster() {
         return cluster;
     }
-
+    
     @Nullable
     public List<ClusterWeight> getWeightedClusters() {
         return weightedClusters;
     }
-
+    
     @Nullable
     public NamedPluginConfig getNamedClusterSpecifierPluginConfig() {
         return namedClusterSpecifierPluginConfig;
     }
-
+    
     @Nullable
     public RetryPolicy getRetryPolicy() {
         return retryPolicy;
     }
-
+    
+    public boolean isAutoHostRewrite() {
+        return autoHostRewrite;
+    }
+    
     public String toString() {
         return "RouteAction{" + "hashPolicies=" + hashPolicies + ", " + "timeoutNano=" + timeoutNano + ", " + "cluster="
                 + cluster + ", " + "weightedClusters=" + weightedClusters + ", " + "namedClusterSpecifierPluginConfig="
-                + namedClusterSpecifierPluginConfig + ", " + "retryPolicy=" + retryPolicy + "}";
+                + namedClusterSpecifierPluginConfig + ", " + "retryPolicy=" + retryPolicy + ", " + "autoHostRewrite="
+                + autoHostRewrite + "}";
     }
-
+    
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -148,23 +204,24 @@ public class RouteAction {
             RouteAction that = (RouteAction) o;
             return this.hashPolicies.equals(that.getHashPolicies())
                     && (this.timeoutNano == null
-                            ? that.getTimeoutNano() == null
-                            : this.timeoutNano.equals(that.getTimeoutNano()))
+                    ? that.getTimeoutNano() == null
+                    : this.timeoutNano.equals(that.getTimeoutNano()))
                     && (this.cluster == null ? that.getCluster() == null : this.cluster.equals(that.getCluster()))
                     && (this.weightedClusters == null
-                            ? that.getWeightedClusters() == null
-                            : this.weightedClusters.equals(that.getWeightedClusters()))
+                    ? that.getWeightedClusters() == null
+                    : this.weightedClusters.equals(that.getWeightedClusters()))
                     && (this.namedClusterSpecifierPluginConfig == null
-                            ? that.getNamedClusterSpecifierPluginConfig() == null
-                            : this.namedClusterSpecifierPluginConfig.equals(
-                                    that.getNamedClusterSpecifierPluginConfig()))
+                    ? that.getNamedClusterSpecifierPluginConfig() == null
+                    : this.namedClusterSpecifierPluginConfig.equals(
+                            that.getNamedClusterSpecifierPluginConfig()))
                     && (this.retryPolicy == null
-                            ? that.getRetryPolicy() == null
-                            : this.retryPolicy.equals(that.getRetryPolicy()));
+                    ? that.getRetryPolicy() == null
+                    : this.retryPolicy.equals(that.getRetryPolicy()))
+                    && this.autoHostRewrite == that.isAutoHostRewrite();
         }
         return false;
     }
-
+    
     public int hashCode() {
         int h$ = 1;
         h$ *= 1000003;
@@ -179,6 +236,9 @@ public class RouteAction {
         h$ ^= (namedClusterSpecifierPluginConfig == null) ? 0 : namedClusterSpecifierPluginConfig.hashCode();
         h$ *= 1000003;
         h$ ^= (retryPolicy == null) ? 0 : retryPolicy.hashCode();
+        h$ *= 1000003;
+        h$ ^= Boolean.hashCode(autoHostRewrite);
         return h$;
     }
 }
+

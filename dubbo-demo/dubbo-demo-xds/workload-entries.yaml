@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: dubbo-demo-xds-provider-v1
+  namespace: dubbo-proxyless
+spec:
+  address: 10.244.1.8
+  ports:
+    grpc: 50051
+  labels:
+    app: dubbo-demo-xds-provider
+    version: v1
+---
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: dubbo-demo-xds-provider-v2
+  namespace: dubbo-proxyless
+spec:
+  address: 10.244.1.6
+  ports:
+    grpc: 50051
+  labels:
+    app: dubbo-demo-xds-provider
+    version: v2 

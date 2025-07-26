@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dubbo-demo-xds-consumer
+  namespace: dubbo-proxyless
+  labels:
+    app: dubbo-demo-xds-consumer
+    version: v1
+    service: dubbo-demo-xds-consumer
+spec:
+  ports:
+    - port: 50050
+      targetPort: 50050
+      name: grpc
+    - port: 31000
+      targetPort: 31000
+      name: debug
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: dubbo-demo-xds-consumer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-demo-xds-consumer
+  namespace: dubbo-proxyless
+  labels:
+    app: dubbo-demo-xds-consumer
+    version: v1
+    service: dubbo-demo-xds-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dubbo-demo-xds-consumer
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: dubbo-demo-xds-consumer
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      imagePullSecrets:
+        - name: aliyun-acr-secret
+      initContainers:
+        - name: bootstrap-generator
+          image: busybox:1.35
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cat > /app/bootstrap.json << EOF
+              {
+                "xds_servers": [
+                  {
+                    "server_uri": "istiod.istio-system.svc:15010",
+                    "channel_creds": [
+                      {
+                        "type": "insecure"
+                      }
+                    ],
+                    "server_features": [
+                      "xds_v3"
+                    ]
+                  }
+                ],
+                "node": {
+                  "id": "sidecar~${INSTANCE_IP}~${POD_NAME}~${SERVICE_NAMESPACE}",
+                  "cluster": "dubbo-demo-xds-consumer",
+                  "metadata": {
+                    "CLUSTER_ID": "dubbo-demo-xds-consumer",
+                    "NAMESPACE": "dubbo-proxyless",
+                    "SERVICE_NAME": "dubbo-demo-xds-consumer",
+                    "SERVICE_VERSION": "v1",
+                    "SERVICE_NAMESPACE": "dubbo-proxyless"
+                  }
+                }
+              }
+              EOF
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: bootstrap-config
+              mountPath: /app
+      containers:
+        - name: dubbo-demo-xds-consumer
+          image: crpi-ta376u07gp1439ff.cn-beijing.personal.cr.aliyuncs.com/test_xds/test_dubbo_consumer:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50050
+              name: grpc
+            - containerPort: 8080
+              name: http
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Ddubbo.application.logger=slf4j -Dlogging.level.root=INFO -Dlogging.level.org.apache.dubbo=DEBUG -Dlogging.level.org.apache.dubbo.xds=TRACE -Dlogging.level.org.apache.dubbo.registry=TRACE -Dlogging.level.org.apache.dubbo.registry.xds=TRACE -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=31000"
+            - name: DUBBO_IP_TO_REGISTRY
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: GRPC_XDS_BOOTSTRAP
+              value: "/app/bootstrap.json"
+          volumeMounts:
+            - name: bootstrap-config
+              mountPath: /app/bootstrap.json
+              subPath: bootstrap.json
+      volumes:
+        - name: bootstrap-config
+          emptyDir: {}
+
+---
+# Istio DestinationRule
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: dubbo-demo-xds-consumer-dr
+  namespace: dubbo-proxyless
+spec:
+  host: dubbo-demo-xds-consumer.dubbo-proxyless.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE

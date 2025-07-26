@@ -17,5 +17,6 @@
 package org.apache.dubbo.xds;
 
 public interface XdsResourceListener<T> {
+
     void onResourceUpdate(T resource);
 }

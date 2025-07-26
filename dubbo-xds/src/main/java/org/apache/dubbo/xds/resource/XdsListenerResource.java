@@ -16,7 +16,12 @@
  */
 package org.apache.dubbo.xds.resource;
 
+import com.google.re2j.Pattern;
+
 import org.apache.dubbo.common.lang.Nullable;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.resource.common.CidrRange;
 import org.apache.dubbo.xds.resource.common.ConfigOrError;
 import org.apache.dubbo.xds.resource.exception.ResourceInvalidException;
@@ -36,8 +41,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.github.udpa.udpa.type.v1.TypedStruct;
@@ -57,17 +64,18 @@ import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.DownstreamTlsCont
 import static org.apache.dubbo.xds.resource.XdsClusterResource.validateCommonTlsContext;
 
 public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
-    static final String ADS_TYPE_URL_LDS = "type.googleapis.com/envoy.config.listener.v3.Listener";
-    static final String TYPE_URL_HTTP_CONNECTION_MANAGER =
-            "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3"
-                    + ".HttpConnectionManager";
+    
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsListenerResource.class);
+    private static final String ADS_TYPE_URL_LDS = "type.googleapis.com/envoy.config.listener.v3.Listener";
+    private static final String TYPE_URL_HTTP_CONNECTION_MANAGER =
+            "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager";
     private static final String TRANSPORT_SOCKET_NAME_TLS = "envoy.transport_sockets.tls";
     private static final XdsListenerResource instance = new XdsListenerResource();
 
     public static XdsListenerResource getInstance() {
         return instance;
     }
-
+    
     @Override
     @Nullable
     String extractResourceName(Message unpackedResource) {
@@ -78,7 +86,7 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     }
 
     @Override
-    String typeName() {
+    public String typeName() {
         return "LDS";
     }
 
@@ -100,33 +108,104 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
     @Override
     LdsUpdate doParse(Args args, Message unpackedMessage) throws ResourceInvalidException {
         if (!(unpackedMessage instanceof Listener)) {
-            throw new ResourceInvalidException("Invalid message type: " + unpackedMessage.getClass());
+            throw new ResourceInvalidException("Invalid message type " + unpackedMessage.getClass());
         }
         Listener listener = (Listener) unpackedMessage;
 
+        // Get the listener's port from its address
+        int listenerPort = -1;
+        if (listener.hasAddress() && listener.getAddress().hasSocketAddress()) {
+            listenerPort = listener.getAddress().getSocketAddress().getPortValue();
+        }
+
+        // 不再硬编码检查端口号，而是记录日志并继续处理
+        if (listenerPort > 0) {
+            logger.info("Processing listener " + listener.getName() + " with port " + listenerPort);
+        } else {
+            logger.info("Processing listener " + listener.getName() + " without valid port");
+        }
+
         LdsUpdate ldsUpdate;
-        if (listener.hasApiListener()) {
+        // Based on analysis of Istio's LDS response, the reliable way to distinguish a client-side listener
+        // is by the presence of filter_chains, as ApiListener is absent and TrafficDirection is not explicitly OUTBOUND.
+        if (listener.getFilterChainsCount() > 0) {
             ldsUpdate = processClientSideListener(listener, args);
         } else {
+            // Listeners without filter_chains, such as the inbound listener for the provider, are processed here.
+            // This branch also handles the legacy ApiListener case for backward compatibility.
             ldsUpdate = processServerSideListener(listener, args);
         }
-        ldsUpdate.setRawListener(listener); // TODO temp solution for compatibility
+        
+        if (ldsUpdate == null) {
+            logger.warn("Failed to process listener " + listener.getName());
+            return null;
+        }
+
+        // 保存原始Listener
+        ldsUpdate.setRawListener(listener);
+
+        // 提取端口号并设置
+        if (listenerPort > 0) {
+            ldsUpdate.setPort(listenerPort);
+        }
+
         return ldsUpdate;
     }
 
     private LdsUpdate processClientSideListener(Listener listener, Args args) throws ResourceInvalidException {
-        // Unpack HttpConnectionManager from the Listener.
-        HttpConnectionManager hcm;
-        try {
-            hcm = unpackCompatibleType(
-                    listener.getApiListener().getApiListener(),
-                    HttpConnectionManager.class,
-                    TYPE_URL_HTTP_CONNECTION_MANAGER,
-                    null);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ResourceInvalidException("Could not parse HttpConnectionManager config from ApiListener", e);
+
+        // For client-side listeners (ApiListener), we need to be flexible with traffic direction
+        // In proxyless mode, Istio may send various traffic directions
+        TrafficDirection trafficDirection = listener.getTrafficDirection();
+        if (trafficDirection == TrafficDirection.UNRECOGNIZED) {
+            throw new ResourceInvalidException("Client-side Listener " + listener.getName() + " with unrecognized traffic direction: " + trafficDirection);
         }
-        return LdsUpdate.forApiListener(parseHttpConnectionManager(hcm, args.filterRegistry, true /* isForClient */));
+
+        // Unpack HttpConnectionManager from the Listener.
+        // Try to parse from filter_chains first, then fallback to api_listener for compatibility.
+        HttpConnectionManager hcm = null;
+
+        for (io.envoyproxy.envoy.config.listener.v3.FilterChain filterChain : listener.getFilterChainsList()) {
+            if (filterChain.getFiltersCount() > 0) {
+                for (io.envoyproxy.envoy.config.listener.v3.Filter filter : filterChain.getFiltersList()) {
+                    if (filter.getName().equals("envoy.filters.network.http_connection_manager")) {
+                        try {
+                            hcm = unpackCompatibleType(filter.getTypedConfig(), HttpConnectionManager.class,
+                                TYPE_URL_HTTP_CONNECTION_MANAGER, null);
+                            if (hcm != null) {
+                                break; // Found HCM, exit inner loop
+                            }
+                        } catch (InvalidProtocolBufferException e) {
+                            // Log and continue, maybe another filter has the correct config
+                            logger.warn("Could not parse HttpConnectionManager from FilterChain", e);
+                        }
+                    }
+                }
+            }
+            if (hcm != null) {
+                break; // Found HCM, exit outer loop
+            }
+        }
+        
+
+        // Fallback for ApiListener-style listeners
+        if (hcm == null && listener.hasApiListener()) {
+             try {
+                hcm = unpackCompatibleType(
+                        listener.getApiListener().getApiListener(),
+                        HttpConnectionManager.class,
+                        TYPE_URL_HTTP_CONNECTION_MANAGER,
+                        null);
+            } catch (InvalidProtocolBufferException e) {
+                throw new ResourceInvalidException("Could not parse HttpConnectionManager config from ApiListener", e);
+            }
+        }
+
+        if (hcm == null) {
+            throw new ResourceInvalidException("HttpConnectionManager not found in listener " + listener.getName());
+        }
+        
+        return new LdsUpdate(parseHttpConnectionManager(hcm, args.filterRegistry, true), null);
     }
 
     private LdsUpdate processServerSideListener(Listener proto, Args args) throws ResourceInvalidException {
@@ -144,13 +223,30 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
             FilterRegistry filterRegistry,
             Set<String> certProviderInstances)
             throws ResourceInvalidException {
-        if (!proto.getTrafficDirection().equals(TrafficDirection.INBOUND)
-                && !proto.getTrafficDirection().equals(TrafficDirection.UNSPECIFIED)) {
+        // In proxyless mode, we need to be more flexible with traffic direction validation
+        // Istio may send listeners with various traffic directions that we need to accept
+        // Only reject completely invalid traffic directions
+        TrafficDirection trafficDirection = proto.getTrafficDirection();
+        if (trafficDirection == TrafficDirection.UNRECOGNIZED) {
             throw new ResourceInvalidException(
-                    "Listener " + proto.getName() + " with invalid traffic direction: " + proto.getTrafficDirection());
+                    "Server-side Listener " + proto.getName() + " with unrecognized traffic direction: " + trafficDirection);
         }
+        // In proxyless mode, Istio may send listeners with listener_filters for HTTP inspection and stats
+        // We need to allow these special listeners
         if (!proto.getListenerFiltersList().isEmpty()) {
-            throw new ResourceInvalidException("Listener " + proto.getName() + " cannot have listener_filters");
+            // Check if this is a special Istio listener that we should allow
+            boolean isSpecialIstioListener = false;
+            for (io.envoyproxy.envoy.config.listener.v3.ListenerFilter filter : proto.getListenerFiltersList()) {
+                if (filter.getName().equals("envoy.filters.listener.http_inspector") ||
+                    filter.getName().equals("envoy.filters.listener.tls_inspector") ||
+                    filter.getName().equals("istio.metadata_exchange")) {
+                    isSpecialIstioListener = true;
+                    break;
+                }
+            }
+            if (!isSpecialIstioListener) {
+                throw new ResourceInvalidException("Listener " + proto.getName() + " cannot have listener_filters");
+            }
         }
         if (proto.hasUseOriginalDst()) {
             throw new ResourceInvalidException(
@@ -195,32 +291,40 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
             Set<FilterChainMatch> uniqueSet,
             Set<String> certProviderInstances)
             throws ResourceInvalidException {
-        if (proto.getFiltersCount() != 1) {
-            throw new ResourceInvalidException(
-                    "FilterChain " + proto.getName() + " should contain exact one HttpConnectionManager filter");
+        // In proxyless mode, Istio may send FilterChains with multiple filters or special filters
+        // We need to find an HttpConnectionManager filter if present, or create a default one
+        org.apache.dubbo.xds.resource.listener.HttpConnectionManager httpConnectionManager = null;
+
+        // Try to find an HttpConnectionManager filter
+        for (io.envoyproxy.envoy.config.listener.v3.Filter filter : proto.getFiltersList()) {
+            if (!filter.hasTypedConfig()) {
+                continue; // Skip filters without typed_config
+            }
+
+            Any any = filter.getTypedConfig();
+            if (any.getTypeUrl().equals(TYPE_URL_HTTP_CONNECTION_MANAGER)) {
+                // Found an HttpConnectionManager filter
+                try {
+                    HttpConnectionManager hcmProto = any.unpack(HttpConnectionManager.class);
+                    httpConnectionManager = parseHttpConnectionManager(hcmProto, filterRegistry, false /* isForClient */);
+                    break; // We found what we needed
+                } catch (InvalidProtocolBufferException e) {
+                    // Just log and continue, we might find another valid filter
+                    logger.warn("Failed to unpack HttpConnectionManager from filter " + filter.getName() +
+                               " in FilterChain " + proto.getName() + ": " + e.getMessage());
+                }
+            }
         }
-        io.envoyproxy.envoy.config.listener.v3.Filter filter =
-                proto.getFiltersList().get(0);
-        if (!filter.hasTypedConfig()) {
-            throw new ResourceInvalidException("FilterChain " + proto.getName() + " contains filter " + filter.getName()
-                    + " without typed_config");
+
+        // If no HttpConnectionManager filter was found, create a default one
+        if (httpConnectionManager == null) {
+            // Create a minimal HttpConnectionManager for compatibility
+            httpConnectionManager = org.apache.dubbo.xds.resource.listener.HttpConnectionManager.create(
+                    0, // maxStreamDuration
+                    null, // rdsName
+                    Collections.emptyList(), // virtualHosts
+                    Collections.emptyList()); // httpFilterConfigs
         }
-        Any any = filter.getTypedConfig();
-        // HttpConnectionManager is the only supported network filter at the moment.
-        if (!any.getTypeUrl().equals(TYPE_URL_HTTP_CONNECTION_MANAGER)) {
-            throw new ResourceInvalidException("FilterChain " + proto.getName() + " contains filter " + filter.getName()
-                    + " with unsupported typed_config type " + any.getTypeUrl());
-        }
-        HttpConnectionManager hcmProto;
-        try {
-            hcmProto = any.unpack(HttpConnectionManager.class);
-        } catch (InvalidProtocolBufferException e) {
-            throw new ResourceInvalidException(
-                    "FilterChain " + proto.getName() + " with filter " + filter.getName() + " failed to unpack message",
-                    e);
-        }
-        org.apache.dubbo.xds.resource.listener.HttpConnectionManager httpConnectionManager =
-                parseHttpConnectionManager(hcmProto, filterRegistry, false /* isForClient */);
 
         org.apache.dubbo.xds.resource.listener.security.DownstreamTlsContext downstreamTlsContext = null;
         if (proto.hasTransportSocket()) {
@@ -512,7 +616,283 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
 
     static List<VirtualHost> extractVirtualHosts(RouteConfiguration routeConfig, FilterRegistry filterRegistry)
             throws ResourceInvalidException {
-        return null;
+        List<VirtualHost> virtualHosts = new ArrayList<>();
+        for (io.envoyproxy.envoy.config.route.v3.VirtualHost virtualHostProto : routeConfig.getVirtualHostsList()) {
+            List<org.apache.dubbo.xds.resource.route.Route> routes = new ArrayList<>();
+            for (io.envoyproxy.envoy.config.route.v3.Route routeProto : virtualHostProto.getRoutesList()) {
+                org.apache.dubbo.xds.resource.route.RouteMatch routeMatch =
+                    parseRouteMatch(routeProto.getMatch());
+                if (routeMatch == null) {
+                    continue;
+                }
+                org.apache.dubbo.xds.resource.route.RouteAction routeAction =
+                    parseRouteAction(routeProto.getRoute());
+                if (routeAction != null) {
+                    routes.add(org.apache.dubbo.xds.resource.route.Route.create(
+                        routeMatch, routeAction, parseTypedPerFilterConfig(routeProto.getTypedPerFilterConfigMap(), filterRegistry)));
+                }
+            }
+            virtualHosts.add(org.apache.dubbo.xds.resource.route.VirtualHost.create(
+                virtualHostProto.getName(),
+                new ArrayList<>(virtualHostProto.getDomainsList()),
+                routes,
+                parseTypedPerFilterConfig(virtualHostProto.getTypedPerFilterConfigMap(), filterRegistry)));
+        }
+        return virtualHosts;
+    }
+
+    private static Map<String, FilterConfig> parseTypedPerFilterConfig(
+            Map<String, Any> typedPerFilterConfigMap, FilterRegistry filterRegistry) {
+        Map<String, FilterConfig> configs = new HashMap<>();
+        for (Map.Entry<String, Any> entry : typedPerFilterConfigMap.entrySet()) {
+            String filterName = entry.getKey();
+            Any any = entry.getValue();
+            String typeUrl = any.getTypeUrl();
+            boolean isOptional = false;
+
+            // 处理FilterConfig包装
+            if (typeUrl.equals("type.googleapis.com/envoy.config.route.v3.FilterConfig")) {
+                try {
+                    io.envoyproxy.envoy.config.route.v3.FilterConfig filterConfig =
+                        any.unpack(io.envoyproxy.envoy.config.route.v3.FilterConfig.class);
+                    isOptional = filterConfig.getIsOptional();
+                    any = filterConfig.getConfig();
+                    typeUrl = any.getTypeUrl();
+                } catch (InvalidProtocolBufferException e) {
+                    logger.warn("Failed to unpack FilterConfig for filter: " + filterName + ", error: " + e.getMessage());
+                    continue;
+                }
+            }
+
+            try {
+                // 解析TypedStruct
+                Message rawConfig = any;
+                if (typeUrl.equals("type.googleapis.com/udpa.type.v1.TypedStruct")) {
+                    try {
+                        TypedStruct typedStruct = any.unpack(TypedStruct.class);
+                        typeUrl = typedStruct.getTypeUrl();
+                        rawConfig = typedStruct.getValue();
+                    } catch (InvalidProtocolBufferException e) {
+                        logger.warn("Failed to unpack TypedStruct for filter: " + filterName + ", error: " + e.getMessage());
+                        continue;
+                    }
+                } else if (typeUrl.equals("type.googleapis.com/xds.type.v3.TypedStruct")) {
+                    try {
+                        com.github.xds.type.v3.TypedStruct newTypedStruct =
+                            any.unpack(com.github.xds.type.v3.TypedStruct.class);
+                        typeUrl = newTypedStruct.getTypeUrl();
+                        rawConfig = newTypedStruct.getValue();
+                    } catch (InvalidProtocolBufferException e) {
+                        logger.warn("Failed to unpack new TypedStruct for filter: " + filterName + ", error: " + e.getMessage());
+                        continue;
+                    }
+                }
+
+                // 在解析TypedStruct后重新获取filter
+                Filter filter = filterRegistry.get(typeUrl);
+                if (filter == null) {
+                    // Treat unknown filters as optional in proxyless mode, just log and skip.
+                    logger.warn("HttpFilter [" + filterName + "](" + typeUrl
+                        + ") is not supported in Dubbo, skipping.");
+                    continue;
+                }
+
+                ConfigOrError<? extends FilterConfig> filterConfig = filter.parseFilterConfig(rawConfig);
+                if (filterConfig.errorDetail == null) {
+                    configs.put(filterName, filterConfig.config);
+                } else {
+                    logger.warn("Failed to parse filter config for filter: " + filterName + ", error: " + filterConfig.errorDetail);
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to parse filter config for filter: " + filterName + ", error: " + e.getMessage());
+            }
+        }
+        return configs;
+    }
+
+    private static org.apache.dubbo.xds.resource.route.RouteMatch parseRouteMatch(
+            io.envoyproxy.envoy.config.route.v3.RouteMatch routeMatchProto) {
+        // 暂时不支持查询参数匹配
+        if (routeMatchProto.getQueryParametersCount() != 0) {
+            return null;
+        }
+
+        org.apache.dubbo.xds.resource.matcher.PathMatcher pathMatcher;
+        boolean caseSensitive = routeMatchProto.getCaseSensitive().getValue();
+
+        // 解析路径匹配器
+        switch (routeMatchProto.getPathSpecifierCase()) {
+            case PATH:
+                pathMatcher = org.apache.dubbo.xds.resource.matcher.PathMatcher.fromPath(routeMatchProto.getPath(), caseSensitive);
+                break;
+            case PREFIX:
+                pathMatcher = org.apache.dubbo.xds.resource.matcher.PathMatcher.fromPrefix(routeMatchProto.getPrefix(), caseSensitive);
+                break;
+            case SAFE_REGEX:
+                try {
+                    Pattern safeRegEx = com.google.re2j.Pattern.compile(routeMatchProto.getSafeRegex().getRegex());
+                    pathMatcher = org.apache.dubbo.xds.resource.matcher.PathMatcher.fromRegEx(safeRegEx);
+                } catch (Exception e) {
+                    // 如果正则表达式无效，返回null
+                    logger.warn("Invalid regex pattern: " + e.getMessage());
+                    return null;
+                }
+                break;
+            case PATHSPECIFIER_NOT_SET:
+            default:
+                // 未知的路径匹配类型，返回null
+                return null;
+        }
+
+        // 解析头部匹配器
+        List<org.apache.dubbo.xds.resource.matcher.HeaderMatcher> headerMatchers = new ArrayList<>();
+        for (io.envoyproxy.envoy.config.route.v3.HeaderMatcher hmProto : routeMatchProto.getHeadersList()) {
+            try {
+                org.apache.dubbo.xds.resource.matcher.HeaderMatcher headerMatcher =
+                    org.apache.dubbo.xds.resource.matcher.MatcherParser.parseHeaderMatcher(hmProto);
+                headerMatchers.add(headerMatcher);
+            } catch (Exception e) {
+                // 如果头部匹配器解析失败，记录警告但继续处理
+                logger.warn("Failed to parse header matcher: " + e.getMessage());
+            }
+        }
+
+        // 解析分数匹配器（如果存在）
+        org.apache.dubbo.xds.resource.matcher.FractionMatcher fractionMatcher = null;
+        if (routeMatchProto.hasRuntimeFraction()) {
+            io.envoyproxy.envoy.config.core.v3.RuntimeFractionalPercent runtimeFraction =
+                routeMatchProto.getRuntimeFraction();
+            if (runtimeFraction.hasDefaultValue()) {
+                io.envoyproxy.envoy.type.v3.FractionalPercent percent = runtimeFraction.getDefaultValue();
+                int numerator = percent.getNumerator();
+                int denominator;
+                switch (percent.getDenominator()) {
+                    case HUNDRED:
+                        denominator = 100;
+                        break;
+                    case TEN_THOUSAND:
+                        denominator = 10_000;
+                        break;
+                    case MILLION:
+                        denominator = 1_000_000;
+                        break;
+                    case UNRECOGNIZED:
+                    default:
+                        // 不支持的分数类型，返回null
+                        return null;
+                }
+                fractionMatcher = org.apache.dubbo.xds.resource.matcher.FractionMatcher.create(numerator, denominator);
+            }
+        }
+
+        // 创建RouteMatch对象
+        return new org.apache.dubbo.xds.resource.route.RouteMatch(pathMatcher, headerMatchers, fractionMatcher);
+    }
+
+    private static org.apache.dubbo.xds.resource.route.RouteAction parseRouteAction(
+            io.envoyproxy.envoy.config.route.v3.RouteAction routeActionProto) {
+        // 解析超时设置
+        Long timeoutNano = null;
+        if (routeActionProto.hasMaxStreamDuration()) {
+            io.envoyproxy.envoy.config.route.v3.RouteAction.MaxStreamDuration maxStreamDuration =
+                routeActionProto.getMaxStreamDuration();
+            if (maxStreamDuration.hasGrpcTimeoutHeaderMax()) {
+                timeoutNano = com.google.protobuf.util.Durations.toNanos(maxStreamDuration.getGrpcTimeoutHeaderMax());
+            } else if (maxStreamDuration.hasMaxStreamDuration()) {
+                timeoutNano = com.google.protobuf.util.Durations.toNanos(maxStreamDuration.getMaxStreamDuration());
+            }
+        }
+
+        // 解析哈希策略
+        List<org.apache.dubbo.xds.resource.route.HashPolicy> hashPolicies = new ArrayList<>();
+        for (io.envoyproxy.envoy.config.route.v3.RouteAction.HashPolicy config : routeActionProto.getHashPolicyList()) {
+            try {
+                org.apache.dubbo.xds.resource.route.HashPolicy policy = null;
+                boolean terminal = config.getTerminal();
+                switch (config.getPolicySpecifierCase()) {
+                    case HEADER:
+                        io.envoyproxy.envoy.config.route.v3.RouteAction.HashPolicy.Header headerCfg = config.getHeader();
+                        Pattern regEx = null;
+                        String regExSubstitute = null;
+                        if (headerCfg.hasRegexRewrite() && headerCfg.getRegexRewrite().hasPattern()
+                            && headerCfg.getRegexRewrite().getPattern().hasGoogleRe2()) {
+                            try {
+                                regEx = Pattern.compile(headerCfg.getRegexRewrite().getPattern().getRegex());
+                                regExSubstitute = headerCfg.getRegexRewrite().getSubstitution();
+                            } catch (Exception e) {
+                                logger.warn("Failed to compile regex pattern: " + e.getMessage());
+                                return null;
+                            }
+                        }
+                        policy = org.apache.dubbo.xds.resource.route.HashPolicy.forHeader(
+                            terminal, headerCfg.getHeaderName(), regEx, regExSubstitute);
+                        break;
+                    case FILTER_STATE:
+                        if (config.getFilterState().getKey().equals("io.grpc.channel_id")) {
+                            policy = org.apache.dubbo.xds.resource.route.HashPolicy.forChannelId(terminal);
+                        }
+                        break;
+                    default:
+                        // 忽略其他类型的哈希策略
+                        break;
+                }
+                if (policy != null) {
+                    hashPolicies.add(policy);
+                }
+            } catch (Exception e) {
+                // 如果哈希策略解析失败，记录警告但继续处理
+                logger.warn("Failed to parse hash policy: " + e.getMessage());
+            }
+        }
+
+        // 解析重试策略
+        org.apache.dubbo.xds.resource.route.RetryPolicy retryPolicy = null;
+        if (routeActionProto.hasRetryPolicy()) {
+            // 简单实现，实际应该解析完整的重试策略
+            // 暂时跳过重试策略解析，避免构造函数参数不匹配的问题
+            retryPolicy = null;
+        }
+
+        // 根据集群类型创建不同的RouteAction
+        switch (routeActionProto.getClusterSpecifierCase()) {
+            case CLUSTER:
+                return org.apache.dubbo.xds.resource.route.RouteAction.forCluster(
+                    routeActionProto.getCluster(), hashPolicies, timeoutNano, retryPolicy);
+            case CLUSTER_HEADER:
+                // 暂时忽略CLUSTER_HEADER类型
+                return null;
+            case WEIGHTED_CLUSTERS:
+                List<io.envoyproxy.envoy.config.route.v3.WeightedCluster.ClusterWeight> clusterWeights =
+                    routeActionProto.getWeightedClusters().getClustersList();
+                if (clusterWeights.isEmpty()) {
+                    logger.warn("No cluster found in weighted cluster list");
+                    return null;
+                }
+                List<org.apache.dubbo.xds.resource.route.ClusterWeight> weightedClusters = new ArrayList<>();
+                long clusterWeightSum = 0;
+                for (io.envoyproxy.envoy.config.route.v3.WeightedCluster.ClusterWeight clusterWeight : clusterWeights) {
+                    int weight = clusterWeight.getWeight().getValue();
+                    clusterWeightSum += weight;
+                    weightedClusters.add(new org.apache.dubbo.xds.resource.route.ClusterWeight(
+                        clusterWeight.getName(), weight, new HashMap<>()));
+                }
+                if (clusterWeightSum <= 0) {
+                    logger.warn("Sum of cluster weights should be above 0");
+                    return null;
+                }
+                if (clusterWeightSum > 0xFFFFFFFFL) {
+                    logger.warn("Sum of cluster weights should be less than the maximum unsigned integer");
+                    return null;
+                }
+                return org.apache.dubbo.xds.resource.route.RouteAction.forWeightedClusters(
+                    weightedClusters, hashPolicies, timeoutNano, retryPolicy);
+            case CLUSTER_SPECIFIER_PLUGIN:
+                // 暂时忽略CLUSTER_SPECIFIER_PLUGIN类型
+                return null;
+            case CLUSTERSPECIFIER_NOT_SET:
+            default:
+                return null;
+        }
     }
 
     // hard-coded: currently router config is the only terminal filter.
@@ -553,6 +933,13 @@ public class XdsListenerResource extends XdsResourceType<LdsUpdate> {
             return StructOrError.fromError("HttpFilter [" + filterName + "] contains invalid proto: " + e);
         }
         Filter filter = filterRegistry.get(typeUrl);
+        if (filter == null) {
+            // Treat unknown filters as optional in proxyless mode, just log and skip.
+            logger.warn("HttpFilter [" + filterName + "](" + typeUrl
+                + ") is not supported in Dubbo, skipping.");
+            return null;
+        }
+
         // if ((isForClient && !(filter instanceof ClientFilter)) || (!isForClient && !(filter instanceof
         // ServerFilter))) {
         //    if (isOptional) {

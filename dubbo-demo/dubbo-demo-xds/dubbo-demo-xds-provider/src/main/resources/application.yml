@@ -26,4 +26,13 @@ dubbo:
     name: tri
     port: 50051
   registry:
-    address: xds://47.251.12.148:15010?use-agent=true # istio://istiod.istio-system.svc:15012
+    address: xds://istiod.istio-system.svc:15012
+    parameters:
+      use-agent: "true"
+      debug: "true"
+
+logging:
+  level:
+    org.apache.dubbo: DEBUG
+    io.grpc: DEBUG
+    io.netty: DEBUG

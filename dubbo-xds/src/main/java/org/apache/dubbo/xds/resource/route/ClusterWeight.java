@@ -82,4 +82,12 @@ public class ClusterWeight {
         h$ ^= filterConfigOverrides.hashCode();
         return h$;
     }
+
+    public static ClusterWeight create(String name, int weight) {
+        return new ClusterWeight(name, weight, new HashMap<>());
+    }
+
+    public static ClusterWeight create(String name, int weight, Map<String, FilterConfig> filterConfigOverrides) {
+        return new ClusterWeight(name, weight, filterConfigOverrides);
+    }
 }

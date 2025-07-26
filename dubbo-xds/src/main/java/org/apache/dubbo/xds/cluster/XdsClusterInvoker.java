@@ -26,10 +26,14 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.List;
 
 public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
+
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsClusterInvoker.class);
 
     public XdsClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -38,11 +42,29 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
             throws RpcException {
+        logger.info("[XDS-CLUSTER] XdsClusterInvoker.doInvoke called with {} invokers", invokers.size());
+        
+        // 记录所有可用的invoker信息
+        for (int i = 0; i < invokers.size(); i++) {
+            Invoker<T> invoker = invokers.get(i);
+            String clusterID = invoker.getUrl().getParameter("clusterID");
+            String address = invoker.getUrl().getAddress();
+            logger.info("[XDS-CLUSTER] Available invoker[{}]: {} (clusterID: {})", i, address, clusterID);
+        }
+
         while (true) {
             Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
+            String selectedAddress = invoker.getUrl().getAddress();
+            String selectedClusterID = invoker.getUrl().getParameter("clusterID");
+            logger.info("[XDS-CLUSTER] LoadBalance selected invoker: {} (clusterID: {})", selectedAddress, selectedClusterID);
+            
             try {
-                return invokeWithContext(invoker, invocation);
+                logger.info("[XDS-CLUSTER] Attempting to invoke: {} with clusterID: {}", selectedAddress, selectedClusterID);
+                Result result = invokeWithContext(invoker, invocation);
+                logger.info("[XDS-CLUSTER] Invoke SUCCESS: {} returned result", selectedAddress);
+                return result;
             } catch (Throwable e) {
+                logger.error("[XDS-CLUSTER] Invoke FAILED: {} with error: {}", selectedAddress, e.getMessage());
                 if (e instanceof RpcException && ((RpcException) e).isBiz()) { // biz exception.
                     throw (RpcException) e;
                 }

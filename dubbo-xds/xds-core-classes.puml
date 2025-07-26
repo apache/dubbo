@@ -1,0 +1,160 @@
+@startuml
+' Dubbo xDS 模块核心类关系图
+
+' 定义皮肤参数
+skinparam class {
+    ' 类背景色
+    BackgroundColor white
+    ' 边框颜色
+    BorderColor black
+    ' 字体大小
+    FontSize 12
+}
+
+' 定义各个核心类
+class XdsRegistry {
+    - xdsResourceFactory : XdsResourceFactory
+    + doSubscribe(URL url, NotifyListener listener)
+    + doUnsubscribe(URL url, NotifyListener listener)
+}
+
+class XdsRegistryFactory {
+    # createRegistry(URL url) : Registry
+}
+
+class XdsResourceFactory {
+    - edsListeners : Map<String, List<EdsListener>>
+    - xdsVirtualHostMap : Map<String, VirtualHost>
+    - xdsClusterMap : Map<String, CdsUpdate>
+    - xdsEdsMap : Map<String, EdsUpdate>
+    - ldsWatchers : Map<String, LdsUpdateWatcher>
+    - rdsWatchers : Map<String, RdsUpdateWatcher>
+    - pilotExchanger : PilotExchanger
+    + subscribeApp(String appName, EdsListener listener)
+    + getAllCluster() : Set<String>
+}
+
+class PilotExchanger {
+    - xdsChannel : XdsChannel
+    + subscribeXdsResource(String resourceName, XdsResourceType type, XdsResourceListener listener)
+}
+
+class XdsChannel {
+    - channel : ManagedChannel
+    + sendDiscoveryRequest(DiscoveryRequest request)
+    + handleDiscoveryResponse(DiscoveryResponse response)
+}
+
+interface XdsResourceType<T> {
+    + typeUrl() : String
+    + typeName() : String
+    + doParse(Args args, Message unpackedMessage) : T
+    + extractResourceName(Message unpackedResource) : String
+}
+
+class XdsListenerResource {
+    + doParse(Args args, Message unpackedMessage) : LdsUpdate
+}
+
+class XdsRouteConfigureResource {
+    + doParse(Args args, Message unpackedMessage) : RdsUpdate
+}
+
+class XdsClusterResource {
+    + doParse(Args args, Message unpackedMessage) : CdsUpdate
+}
+
+class XdsEndpointResource {
+    + doParse(Args args, Message unpackedMessage) : EdsUpdate
+}
+
+class LdsUpdateWatcher {
+    + onResourceUpdate(LdsUpdate update)
+}
+
+class RdsUpdateWatcher {
+    + onResourceUpdate(RdsUpdate update)
+}
+
+class XdsRouter {
+    - xdsResourceFactory : XdsResourceFactory
+    + doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation) : BitList<Invoker<T>>
+}
+
+class VirtualHost {
+    - name : String
+    - domains : List<String>
+    - routes : List<Route>
+}
+
+class Route {
+    - routeMatch : RouteMatch
+    - routeAction : RouteAction
+}
+
+class RouteAction {
+    - cluster : String
+    - weightedClusters : List<ClusterWeight>
+    - timeoutNano : Long
+    - retryPolicy : RetryPolicy
+}
+
+interface EdsListener {
+    + onEdsUpdated(List<URLAddress> addresses)
+}
+
+' 定义类之间的关系
+XdsRegistry --> XdsResourceFactory : 使用
+XdsRegistryFactory --> XdsRegistry : 创建
+XdsResourceFactory --> PilotExchanger : 使用
+PilotExchanger --> XdsChannel : 使用
+
+XdsResourceFactory ..> XdsListenerResource : 订阅
+XdsResourceFactory ..> XdsRouteConfigureResource : 订阅
+XdsResourceFactory ..> XdsClusterResource : 订阅
+XdsResourceFactory ..> XdsEndpointResource : 订阅
+
+XdsListenerResource --|> XdsResourceType
+XdsRouteConfigureResource --|> XdsResourceType
+XdsClusterResource --|> XdsResourceType
+XdsEndpointResource --|> XdsResourceType
+
+XdsResourceFactory --> LdsUpdateWatcher : 创建
+XdsResourceFactory --> RdsUpdateWatcher : 创建
+
+LdsUpdateWatcher ..> XdsRouteConfigureResource : 可能触发
+RdsUpdateWatcher ..> XdsClusterResource : 可能触发
+
+XdsResourceFactory ..> VirtualHost : 存储
+XdsResourceFactory ..> RouteAction : 存储
+
+VirtualHost --> Route : 包含
+Route --> RouteAction : 包含
+
+XdsRouter --> XdsResourceFactory : 使用
+
+XdsResourceFactory ..> EdsListener : 通知
+
+note top of XdsResourceFactory
+  核心协调器，负责:
+  1. 管理所有xDS资源订阅
+  2. 协调LDS/RDS/CDS/EDS资源
+  3. 维护资源缓存
+  4. 通知监听器
+end note
+
+note right of PilotExchanger
+  负责与Istio控制平面通信:
+  1. 建立gRPC连接
+  2. 发送请求和处理响应
+  3. 资源订阅管理
+end note
+
+note right of XdsRouter
+  基于xDS规则的路由实现:
+  1. 根据VirtualHost匹配
+  2. 根据Route规则选择集群
+  3. 支持权重路由
+end note
+
+@enduml

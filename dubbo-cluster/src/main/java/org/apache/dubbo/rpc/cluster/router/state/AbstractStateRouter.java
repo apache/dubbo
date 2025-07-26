@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 /***
  * The abstract class of StateRoute.
@@ -44,6 +46,8 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
     private final boolean shouldFailFast;
 
     protected ModuleModel moduleModel;
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractStateRouter.class);
 
     public AbstractStateRouter(URL url) {
         moduleModel = url.getOrDefaultModuleModel();
@@ -111,7 +115,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
             parentNode = nodeHolder.get();
             currentNode = new RouterSnapshotNode<>(this.getClass().getSimpleName(), invokers.clone());
             parentNode.appendNode(currentNode);
-
+        
             // set parent node's output size in the first child invoke
             // initial node output size is zero, first child will override it
             if (parentNode.getNodeOutputSize() < invokers.size()) {
@@ -121,12 +125,42 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
             messageHolder = new Holder<>();
             nodeHolder.set(currentNode);
         }
+        
         BitList<Invoker<T>> routeResult;
 
         routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
+        
         if (routeResult != invokers) {
+            // 关键验证：记录and操作前后的状态变化
+            logger.info("[STATE-ROUTER] {} BEFORE and(): routeResult has {} invokers [Thread: {}]", 
+                this.getClass().getSimpleName(), routeResult.size(), Thread.currentThread().getName());
+            
+            // 记录doRoute返回的第一个invoker信息
+            if (routeResult.size() > 0) {
+                Invoker<T> firstInvoker = routeResult.get(0);
+                String clusterID = firstInvoker.getUrl().getParameter("clusterID");
+                String address = firstInvoker.getUrl().getAddress();
+                logger.info("[STATE-ROUTER] {} BEFORE and(): first invoker {} (clusterID: {}) [Thread: {}]", 
+                    this.getClass().getSimpleName(), address, clusterID, Thread.currentThread().getName());
+            }
+            
+            // 执行and操作
             routeResult = invokers.and(routeResult);
+            
+            // 记录and操作后的状态
+            logger.info("[STATE-ROUTER] {} AFTER and(): routeResult has {} invokers [Thread: {}]", 
+                this.getClass().getSimpleName(), routeResult.size(), Thread.currentThread().getName());
+            
+            // 记录and操作后的第一个invoker信息
+            if (routeResult.size() > 0) {
+                Invoker<T> firstInvoker = routeResult.get(0);
+                String clusterID = firstInvoker.getUrl().getParameter("clusterID");
+                String address = firstInvoker.getUrl().getAddress();
+                logger.info("[STATE-ROUTER] {} AFTER and(): first invoker {} (clusterID: {}) [Thread: {}]", 
+                    this.getClass().getSimpleName(), address, clusterID, Thread.currentThread().getName());
+            }
         }
+        
         // check if router support call continue route by itself
         if (!supportContinueRoute()) {
             // use current node's result as next node's parameter
@@ -134,7 +168,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
                 routeResult = continueRoute(routeResult, url, invocation, needToPrintMessage, nodeHolder);
             }
         }
-
+        
         // post-build current node
         if (needToPrintMessage) {
             currentNode.setRouterMessage(messageHolder.get());
@@ -145,6 +179,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
             currentNode.setChainOutputInvokers(routeResult.clone());
             nodeHolder.set(parentNode);
         }
+        
         return routeResult;
     }
 

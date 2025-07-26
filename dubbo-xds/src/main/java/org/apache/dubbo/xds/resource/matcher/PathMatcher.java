@@ -87,8 +87,10 @@ public class PathMatcher {
             return isCaseSensitive()
                     ? input.startsWith(getPrefix())
                     : input.toLowerCase().startsWith(getPrefix());
+        } else if (getRegEx() != null) {
+            return getRegEx().matches(input);
         }
-        return regEx.matches(input);
+        return false;
     }
 
     public String toString() {
