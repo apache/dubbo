@@ -318,7 +318,7 @@ class FailoverClusterInvokerTest {
     public static class MockInvoker<T> extends AbstractInvoker<T> {
         URL url;
         boolean available = true;
-        boolean destoryed = false;
+        boolean destroyed = false;
         Result result;
         RpcException exception;
         Callable<?> callable;
