@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DESTROY_ZOOKEEPER;
 
@@ -85,8 +86,17 @@ public class ZookeeperClientManager {
                 logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;
             }
+            boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
 
-            zookeeperClient = new Curator5ZookeeperClient(url);
+            try {
+                zookeeperClient = new Curator5ZookeeperClient(url);
+            } catch (IllegalStateException e) {
+                if (check) {
+                    throw e;
+                }
+                zookeeperClient =
+                        new Curator5ZookeeperClient(url.addParameter(ZookeeperClient.ZOOKEEPER_CHECK_KEY, false));
+            }
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
             writeToClientMap(addressList, zookeeperClient);
         }

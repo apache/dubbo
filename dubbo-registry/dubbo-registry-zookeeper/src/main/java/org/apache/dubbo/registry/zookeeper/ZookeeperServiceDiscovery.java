@@ -23,11 +23,13 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -80,8 +82,19 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     public ZookeeperServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         super(applicationModel, registryURL);
+        boolean check = RegistryFactory.isCheck(registryURL);
+        CuratorFramework curatorFramework;
         try {
-            this.curatorFramework = buildCuratorFramework(registryURL, this);
+            try {
+                curatorFramework = buildCuratorFramework(registryURL, this);
+            } catch (IllegalStateException e) {
+                if (check) {
+                    throw e;
+                }
+                curatorFramework = buildCuratorFramework(
+                        registryURL.addParameter(ZookeeperClient.ZOOKEEPER_CHECK_KEY, false), this);
+            }
+            this.curatorFramework = curatorFramework;
             this.rootPath = getRootPath(registryURL);
             this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
             this.serviceDiscovery.start();

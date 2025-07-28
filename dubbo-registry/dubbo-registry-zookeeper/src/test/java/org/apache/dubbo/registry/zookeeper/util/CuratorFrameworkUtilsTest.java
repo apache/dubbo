@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
+import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
@@ -107,6 +108,25 @@ class CuratorFrameworkUtilsTest {
                 CuratorFrameworkUtils.buildServiceDiscovery(curatorFramework, ROOT_PATH.getParameterValue(registryUrl));
         Assertions.assertNotNull(discovery);
         curatorFramework.getZookeeperClient().close();
+    }
+
+    @Test
+    void testBuildCuratorFrameworkCheckConnectDefault() {
+        when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
+            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
+            curatorFramework.getZookeeperClient().close();
+        });
+    }
+
+    @Test
+    void testBuildCuratorFrameworkNotCheckConnect() {
+        when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
+        URL url = registryUrl.addParameter(ZookeeperClient.ZOOKEEPER_CHECK_KEY, false);
+        Assertions.assertDoesNotThrow(() -> {
+            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(url, null);
+            curatorFramework.getZookeeperClient().close();
+        });
     }
 
     @Test

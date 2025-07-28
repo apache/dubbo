@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
  * Common abstraction of Zookeeper client.
  */
 public interface ZookeeperClient {
+    String ZOOKEEPER_CHECK_KEY = "zookeeper.check";
 
     /**
      * Create ZNode in Zookeeper.

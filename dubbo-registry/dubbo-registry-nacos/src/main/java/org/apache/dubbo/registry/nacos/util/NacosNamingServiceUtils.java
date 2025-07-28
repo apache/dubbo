@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.nacos.util;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.nacos.NacosConnectionManager;
@@ -114,8 +115,17 @@ public class NacosNamingServiceUtils {
         boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
         int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 10);
-        NacosConnectionManager nacosConnectionManager =
-                new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
+        NacosConnectionManager nacosConnectionManager;
+        try {
+            nacosConnectionManager =
+                    new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
+        } catch (IllegalStateException e) {
+            if (RegistryFactory.isCheck(connectionURL)) {
+                throw e;
+            }
+            nacosConnectionManager =
+                    new NacosConnectionManager(connectionURL, false, retryTimes, sleepMsBetweenRetries);
+        }
         return new NacosNamingServiceWrapper(nacosConnectionManager, retryTimes, sleepMsBetweenRetries);
     }
 }

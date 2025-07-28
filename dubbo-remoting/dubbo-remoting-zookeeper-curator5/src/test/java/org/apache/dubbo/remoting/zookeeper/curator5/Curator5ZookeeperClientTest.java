@@ -217,6 +217,18 @@ class Curator5ZookeeperClientTest {
     }
 
     @Test
+    void testWithInvalidServerWithoutCheck() throws InterruptedException {
+        when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(false);
+        // with params `?zookeeper.check=false` connection fail will not throw exception
+        URL url =
+                URL.valueOf("zookeeper://127.0.0.1:1/service").addParameter(ZookeeperClient.ZOOKEEPER_CHECK_KEY, false);
+        Assertions.assertDoesNotThrow(() -> {
+            curatorClient = new Curator5ZookeeperClient(url);
+            curatorClient.create("/testPath", true, true);
+        });
+    }
+
+    @Test
     void testRemoveChildrenListener() throws Exception {
         ChildListener childListener = mock(ChildListener.class);
         when(mockGetChildrenBuilder.usingWatcher(any(CuratorWatcher.class))).thenReturn(mockGetChildrenBuilder);
