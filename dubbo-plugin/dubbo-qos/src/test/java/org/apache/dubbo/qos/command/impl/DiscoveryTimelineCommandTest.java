@@ -27,14 +27,14 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -119,9 +119,10 @@ public class DiscoveryTimelineCommandTest {
         metadata.put("timestamp", String.valueOf(ts));
         Mockito.when(serviceInstance.getMetadata()).thenReturn(metadata);
 
-        String output = command.execute(new CommandContext("discovery-timeline"), new String[]{"limit=5", "page=2"});
+        String output = command.execute(new CommandContext("discovery-timeline"), new String[] {"limit=5", "page=2"});
         System.out.println("testExecuteWithPagination Output:\n" + output);
-        System.out.println("Providers mocked: " + providers.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
+        System.out.println("Providers mocked: "
+                + providers.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
         // Debug output character-by-character
         System.out.println("Output characters:");
         for (int i = 0; i < output.length(); i++) {
@@ -140,7 +141,7 @@ public class DiscoveryTimelineCommandTest {
         Mockito.when(serviceRepository.allProviderModels()).thenReturn(Collections.singletonList(providerModel));
         Mockito.when(serviceInstance.getMetadata()).thenReturn(new HashMap<>());
 
-        String output = command.execute(new CommandContext("discovery-timeline"), new String[]{"service=MyService"});
+        String output = command.execute(new CommandContext("discovery-timeline"), new String[] {"service=MyService"});
         System.out.println("testExecuteWithServiceFilter Output:\n" + output);
 
         assertTrue(output.contains("Discovered: org.apache.dubbo.MyService"));
@@ -153,7 +154,7 @@ public class DiscoveryTimelineCommandTest {
         Mockito.when(serviceRepository.allProviderModels()).thenReturn(Collections.singletonList(providerModel));
         Mockito.when(serviceInstance.getMetadata()).thenReturn(new HashMap<>());
 
-        String output = command.execute(new CommandContext("discovery-timeline"), new String[]{"registry=nacos"});
+        String output = command.execute(new CommandContext("discovery-timeline"), new String[] {"registry=nacos"});
         System.out.println("testExecuteWithRegistryFilterMismatch Output:\n" + output);
 
         assertTrue(output.contains("Error: No services discovered."));

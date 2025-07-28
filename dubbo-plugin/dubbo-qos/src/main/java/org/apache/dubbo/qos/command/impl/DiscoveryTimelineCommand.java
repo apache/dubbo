@@ -44,11 +44,11 @@ import java.util.stream.Collectors;
         name = "discovery-timeline",
         summary = "Show service discovery timeline",
         example = {
-                "discovery-timeline",
-                "discovery-timeline service=com.example.Service",
-                "discovery-timeline registry=zookeeper://localhost:2181",
-                "discovery-timeline page=2",
-                "discovery-timeline limit=5"
+            "discovery-timeline",
+            "discovery-timeline service=com.example.Service",
+            "discovery-timeline registry=zookeeper://localhost:2181",
+            "discovery-timeline page=2",
+            "discovery-timeline limit=5"
         })
 public class DiscoveryTimelineCommand implements BaseCommand {
 
@@ -122,7 +122,8 @@ public class DiscoveryTimelineCommand implements BaseCommand {
             List<ProviderModel> providerModels = uniqueProviderModels.stream()
                     .filter(model -> {
                         String serviceName = model.getServiceKey();
-                        return serviceName != null && (finalFilterServiceName == null || serviceName.contains(finalFilterServiceName));
+                        return serviceName != null
+                                && (finalFilterServiceName == null || serviceName.contains(finalFilterServiceName));
                     })
                     .sorted((m1, m2) -> {
                         String key1 = m1.getServiceKey();
@@ -142,13 +143,15 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                         }
                     })
                     .collect(Collectors.toList());
-            logger.debug("Filtered and sorted provider models: {}", providerModels.stream()
-                    .map(ProviderModel::getServiceKey)
-                    .collect(Collectors.toList()));
+            logger.debug(
+                    "Filtered and sorted provider models: {}",
+                    providerModels.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
 
             boolean hasServices = false;
             for (ServiceDiscovery serviceDiscovery : serviceDiscoveries) {
-                if (filterRegistry != null && (serviceDiscovery.getUrl() == null || !serviceDiscovery.getUrl().getAddress().contains(filterRegistry))) {
+                if (filterRegistry != null
+                        && (serviceDiscovery.getUrl() == null
+                                || !serviceDiscovery.getUrl().getAddress().contains(filterRegistry))) {
                     continue;
                 }
 
@@ -170,20 +173,25 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                     if (serviceName != null) {
                         serviceNames.add(serviceName);
                         if (!providerRegistrationTimes.containsKey(serviceName)) {
-                            String timestampStr = metadata.getOrDefault(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+                            String timestampStr =
+                                    metadata.getOrDefault(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
                             try {
                                 providerRegistrationTimes.put(serviceName, Long.parseLong(timestampStr));
                                 logger.debug("Set timestamp for {}: {}", serviceName, timestampStr);
                             } catch (NumberFormatException e) {
-                                logger.warn("Invalid timestamp format for service: {}, timestamp: {}", serviceName, timestampStr, e);
+                                logger.warn(
+                                        "Invalid timestamp format for service: {}, timestamp: {}",
+                                        serviceName,
+                                        timestampStr,
+                                        e);
                                 providerRegistrationTimes.put(serviceName, System.currentTimeMillis());
                             }
                         }
                     }
                 }
                 registryServices.put(serviceDiscovery, serviceNames);
-                CustomServiceInstancesChangedListener listener =
-                        new CustomServiceInstancesChangedListener(serviceNames, serviceDiscovery, providerRegistrationTimes);
+                CustomServiceInstancesChangedListener listener = new CustomServiceInstancesChangedListener(
+                        serviceNames, serviceDiscovery, providerRegistrationTimes);
                 serviceDiscovery.addServiceInstancesChangedListener(listener);
                 listeners.put(serviceDiscovery, listener);
                 hasServices = true;
@@ -204,18 +212,26 @@ public class DiscoveryTimelineCommand implements BaseCommand {
             timeline.append("------------------------------------------------------------\n");
 
             for (ServiceDiscovery sd : serviceDiscoveries) {
-                if (filterRegistry != null && (sd.getUrl() == null || !sd.getUrl().getAddress().contains(filterRegistry))) {
+                if (filterRegistry != null
+                        && (sd.getUrl() == null || !sd.getUrl().getAddress().contains(filterRegistry))) {
                     continue;
                 }
                 String refreshTimeStr = "Unknown";
                 ServiceInstance instance = sd.getLocalInstance();
-                if (instance != null && instance.getMetadata() != null && instance.getMetadata().containsKey(TIMESTAMP_KEY)) {
-                    String timestampStr = instance.getMetadata().getOrDefault(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+                if (instance != null
+                        && instance.getMetadata() != null
+                        && instance.getMetadata().containsKey(TIMESTAMP_KEY)) {
+                    String timestampStr = instance.getMetadata()
+                            .getOrDefault(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
                     try {
                         long registryTimestamp = Long.parseLong(timestampStr);
                         refreshTimeStr = new Date(registryTimestamp).toString();
                     } catch (NumberFormatException e) {
-                        logger.warn("Invalid timestamp format for registry: {}, timestamp: {}", sd.getUrl().getAddress(), timestampStr, e);
+                        logger.warn(
+                                "Invalid timestamp format for registry: {}, timestamp: {}",
+                                sd.getUrl().getAddress(),
+                                timestampStr,
+                                e);
                         refreshTimeStr = new Date(System.currentTimeMillis()).toString();
                     }
                 }
@@ -228,20 +244,26 @@ public class DiscoveryTimelineCommand implements BaseCommand {
             // Apply pagination
             int providerStart = (page - 1) * limit;
             int providerEnd = Math.min(providerStart + limit, providerModels.size());
-            logger.debug("Pagination: page={}, limit={}, start={}, end={}, total providers={}",
-                    page, limit, providerStart, providerEnd, providerModels.size());
+            logger.debug(
+                    "Pagination: page={}, limit={}, start={}, end={}, total providers={}",
+                    page,
+                    limit,
+                    providerStart,
+                    providerEnd,
+                    providerModels.size());
             List<ProviderModel> paginatedProviders = providerModels.subList(
-                    Math.min(providerStart, providerModels.size()),
-                    Math.min(providerEnd, providerModels.size())
-            );
-            logger.debug("Paginated providers: {}", paginatedProviders.stream()
-                    .map(ProviderModel::getServiceKey)
-                    .collect(Collectors.toList()));
+                    Math.min(providerStart, providerModels.size()), Math.min(providerEnd, providerModels.size()));
+            logger.debug(
+                    "Paginated providers: {}",
+                    paginatedProviders.stream()
+                            .map(ProviderModel::getServiceKey)
+                            .collect(Collectors.toList()));
 
             for (ProviderModel providerModel : paginatedProviders) {
                 String serviceName = providerModel.getServiceKey();
                 Long lastRegistrationTime = providerRegistrationTimes.get(serviceName);
-                String refreshTimeStr = lastRegistrationTime != null ? new Date(lastRegistrationTime).toString() : "Unknown";
+                String refreshTimeStr =
+                        lastRegistrationTime != null ? new Date(lastRegistrationTime).toString() : "Unknown";
                 timeline.append(String.format("%-30s|%-30s%n", "Discovered: " + serviceName, refreshTimeStr));
             }
 
@@ -262,7 +284,9 @@ public class DiscoveryTimelineCommand implements BaseCommand {
         private Set<String> previousInstances = new HashSet<>();
 
         public CustomServiceInstancesChangedListener(
-                Set<String> serviceNames, ServiceDiscovery serviceDiscovery, Map<String, Long> serviceRegistrationTimes) {
+                Set<String> serviceNames,
+                ServiceDiscovery serviceDiscovery,
+                Map<String, Long> serviceRegistrationTimes) {
             super(serviceNames, serviceDiscovery);
             this.serviceNames = serviceNames;
             this.serviceRegistrationTimes = serviceRegistrationTimes;
@@ -274,7 +298,8 @@ public class DiscoveryTimelineCommand implements BaseCommand {
             for (String serviceName : serviceNames) {
                 if (!serviceRegistrationTimes.containsKey(serviceName)) {
                     serviceRegistrationTimes.put(serviceName, currentTime);
-                    logger.debug("Initialized registration time for {}: {}", serviceName, new Date(currentTime).toString());
+                    logger.debug(
+                            "Initialized registration time for {}: {}", serviceName, new Date(currentTime).toString());
                 }
             }
         }
@@ -291,23 +316,34 @@ public class DiscoveryTimelineCommand implements BaseCommand {
             if (previousInstances.isEmpty() || !previousInstances.equals(currentInstances)) {
                 serviceNames.add(serviceName);
                 for (ServiceInstance instance : event.getServiceInstances()) {
-                    String timestampStr = instance.getMetadata() != null ?
-                            instance.getMetadata().getOrDefault(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis())) :
-                            String.valueOf(System.currentTimeMillis());
+                    String timestampStr = instance.getMetadata() != null
+                            ? instance.getMetadata()
+                                    .getOrDefault(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()))
+                            : String.valueOf(System.currentTimeMillis());
                     if (!serviceRegistrationTimes.containsKey(serviceName)) {
                         try {
                             serviceRegistrationTimes.put(serviceName, Long.parseLong(timestampStr));
-                            logger.debug("Updated timestamp for {}: {}", serviceName, new Date(Long.parseLong(timestampStr)).toString());
+                            logger.debug(
+                                    "Updated timestamp for {}: {}",
+                                    serviceName,
+                                    new Date(Long.parseLong(timestampStr)).toString());
                         } catch (NumberFormatException e) {
-                            logger.warn("Invalid timestamp format for service: {}, timestamp: {}", serviceName, timestampStr, e);
+                            logger.warn(
+                                    "Invalid timestamp format for service: {}, timestamp: {}",
+                                    serviceName,
+                                    timestampStr,
+                                    e);
                             serviceRegistrationTimes.put(serviceName, System.currentTimeMillis());
                         }
                     }
                 }
                 previousInstances = new HashSet<>(currentInstances);
             }
-            logger.debug("Event received for service: {}, current instances: {}, registration times: {}",
-                    serviceName, currentInstances, serviceRegistrationTimes);
+            logger.debug(
+                    "Event received for service: {}, current instances: {}, registration times: {}",
+                    serviceName,
+                    currentInstances,
+                    serviceRegistrationTimes);
         }
     }
 }
