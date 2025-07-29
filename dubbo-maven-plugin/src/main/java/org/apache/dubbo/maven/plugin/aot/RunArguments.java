@@ -25,8 +25,6 @@ import java.util.Objects;
 
 /**
  * Parse and expose arguments specified in a single string.
- *
- * @author Stephane Nicoll
  */
 class RunArguments {
 

@@ -324,7 +324,7 @@ public class ServiceAnnotationPostProcessor
      * {@link Service} Annotation.
      *
      * @param scanner       {@link ClassPathBeanDefinitionScanner}
-     * @param packageToScan pachage to scan
+     * @param packageToScan package to scan
      * @param registry      {@link BeanDefinitionRegistry}
      * @return non-null
      * @since 2.5.8
@@ -516,7 +516,7 @@ public class ServiceAnnotationPostProcessor
             builder.addPropertyValue("protocolIds", StringUtils.join(protocolConfigIds, ','));
         }
 
-        // TODO Could we ignore these attributes: applicatin/monitor/module ? Use global config
+        // TODO Could we ignore these attributes: application/monitor/module ? Use global config
         // monitor reference
         String monitorConfigId = (String) serviceAnnotationAttributes.get("monitor");
         if (StringUtils.hasText(monitorConfigId)) {

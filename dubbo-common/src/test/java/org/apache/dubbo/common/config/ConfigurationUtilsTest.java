@@ -28,9 +28,6 @@ import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 
-/**
- *
- */
 class ConfigurationUtilsTest {
     @Test
     void testCachedProperties() {
