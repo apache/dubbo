@@ -43,9 +43,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
-/**
- * TraceFilter
- */
 @Activate(group = CommonConstants.PROVIDER)
 public class TraceFilter implements Filter {
 

@@ -23,9 +23,6 @@ import org.apache.dubbo.config.api.User;
 
 import java.util.List;
 
-/**
- * DemoServiceImpl
- */
 public class DemoServiceImpl implements DemoService {
 
     public String sayName(String name) {

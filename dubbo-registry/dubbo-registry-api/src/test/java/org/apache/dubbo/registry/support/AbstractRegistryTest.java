@@ -37,9 +37,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
-/**
- * AbstractRegistryTest
- */
 class AbstractRegistryTest {
 
     private URL testUrl;

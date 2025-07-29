@@ -46,9 +46,6 @@ import org.junit.jupiter.api.Test;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 
-/**
- * GenericServiceTest
- */
 @Disabled("Keeps failing on Travis, but can not be reproduced locally.")
 class GenericServiceTest {
 

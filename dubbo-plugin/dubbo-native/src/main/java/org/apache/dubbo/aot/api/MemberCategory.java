@@ -22,10 +22,6 @@ import java.lang.reflect.Method;
 
 /**
  * Represent predefined {@linkplain Member members} groups.
- *
- * @author Andy Clement
- * @author Sebastien Deleuze
- * @author Stephane Nicoll
  */
 public enum MemberCategory {
 

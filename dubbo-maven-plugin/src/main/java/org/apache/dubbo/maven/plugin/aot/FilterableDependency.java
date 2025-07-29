@@ -19,9 +19,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 /**
  * A model for a dependency to include or exclude.
- *
- * @author Stephane Nicoll
- * @author David Turanski
  */
 abstract class FilterableDependency {
 

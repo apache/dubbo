@@ -43,9 +43,6 @@ import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
-/**
- * ClassGenerator
- */
 public final class ClassGenerator {
 
     private static final AtomicLong CLASS_NAME_COUNTER = new AtomicLong(0);

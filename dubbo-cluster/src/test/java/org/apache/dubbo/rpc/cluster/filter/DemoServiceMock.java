@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.filter;
 
-/**
- * DemoServiceMock
- */
 class DemoServiceMock implements DemoService {
     public String sayHello(String name) {
         return name;

@@ -33,9 +33,6 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_TIMES;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_TIMES_KEY;
 
-/**
- * AbstractRetryTask
- */
 public abstract class AbstractRetryTask implements TimerTask {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());

@@ -30,8 +30,6 @@ import org.springframework.util.MultiValueMap;
  * Groups {@link ObservationHandler ObservationHandlers} by type.
  * copy from {@link org.springframework.boot.actuate.autoconfigure.observation.ObservationHandlerGrouping}
  * this class is available starting from Boot 3.0. It's not available if you're using Boot < 3.0
- *
- * @author Andy Wilkinson
  */
 class ObservationHandlerGrouping {
 

@@ -40,9 +40,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
-/**
- * MultipleRegistry
- */
 public class MultipleRegistry extends AbstractRegistry {
     public static final Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
 

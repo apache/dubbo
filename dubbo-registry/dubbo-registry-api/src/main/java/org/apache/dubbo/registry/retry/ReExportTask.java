@@ -20,9 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
-/**
- * ReExportTask
- */
 public class ReExportTask extends AbstractRetryTask {
 
     private static final String NAME = "retry re-export";

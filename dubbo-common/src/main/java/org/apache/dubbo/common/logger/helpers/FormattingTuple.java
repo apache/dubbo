@@ -27,8 +27,6 @@ package org.apache.dubbo.common.logger.helpers;
 /**
  * Holds the results of formatting done by {@link MessageFormatter}.
  * This is a copy of org.slf4j.helpers.FormattingTuple from slf4j-api.
- *
- * @author Joern Huxhorn
  */
 public class FormattingTuple {
 

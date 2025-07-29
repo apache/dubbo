@@ -23,9 +23,6 @@ import org.apache.dubbo.remoting.RemotingException;
 
 import java.net.InetSocketAddress;
 
-/**
- * ChannelDelegate
- */
 public class ChannelDelegate implements Channel {
 
     private transient Channel channel;
