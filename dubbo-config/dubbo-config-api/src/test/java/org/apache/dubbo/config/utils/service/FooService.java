@@ -16,7 +16,4 @@
  */
 package org.apache.dubbo.config.utils.service;
 
-/**
- *
- */
 public interface FooService {}

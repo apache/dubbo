@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.test.common.api;
 
-/**
- *
- */
 public interface GreetingService {
     String hello();
 }

@@ -68,7 +68,7 @@ public class ConditionRuleParser {
                     "Ignore this configuration. Only " + RULE_VERSION_V31 + " and below are supported in this release");
             rule = null;
         } else {
-            //            for under v3.1
+            // for under v3.1
             rule = ConditionRouterRule.parseFromMap(map);
             if (CollectionUtils.isEmpty(((ConditionRouterRule) rule).getConditions())) {
                 rule.setValid(false);

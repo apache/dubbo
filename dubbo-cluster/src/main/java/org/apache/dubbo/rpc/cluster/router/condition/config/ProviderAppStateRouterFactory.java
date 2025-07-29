@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
- * Tag router factory
+ * ProviderAppStateRouterFactory
  */
 @Activate(order = 145)
 public class ProviderAppStateRouterFactory extends CacheableStateRouterFactory {

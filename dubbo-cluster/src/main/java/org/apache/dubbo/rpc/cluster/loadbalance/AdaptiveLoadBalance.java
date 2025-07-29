@@ -35,7 +35,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 
 /**
  * AdaptiveLoadBalance
- * </p>
  */
 public class AdaptiveLoadBalance extends AbstractLoadBalance {
 
