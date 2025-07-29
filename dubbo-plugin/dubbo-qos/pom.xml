@@ -86,5 +86,10 @@
       <artifactId>dubbo-metrics-default</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
