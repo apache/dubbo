@@ -24,8 +24,6 @@ import java.util.Arrays;
 
 /**
  * Provides access to the Maven Java Compiler plugin configuration.
- *
- * @author Scott Frederick
  */
 class JavaCompilerPluginConfiguration {
 

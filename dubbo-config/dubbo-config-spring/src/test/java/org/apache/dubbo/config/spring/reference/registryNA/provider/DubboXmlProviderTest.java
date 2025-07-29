@@ -23,9 +23,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-/**
- * @author <a href = "mailto:kamtohung@gmail.com">KamTo Hung</a>
- */
 public class DubboXmlProviderTest {
 
     @Test
