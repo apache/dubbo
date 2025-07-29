@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.api.BaseCommand;
@@ -40,6 +40,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_FETCH_INSTANCE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
+
 @Cmd(
         name = "discovery-timeline",
         summary = "Show service discovery timeline",
@@ -52,7 +57,8 @@ import java.util.stream.Collectors;
         })
 public class DiscoveryTimelineCommand implements BaseCommand {
 
-    private static final Logger logger = LoggerFactory.getLogger(DiscoveryTimelineCommand.class);
+    private static final ErrorTypeAwareLogger logger =
+            LoggerFactory.getErrorTypeAwareLogger(DiscoveryTimelineCommand.class);
     private final FrameworkModel frameworkModel;
     private static final int DEFAULT_LIMIT = 10;
     private static final Map<String, Long> globalProviderRegistrationTimes = new HashMap<>();
@@ -74,13 +80,13 @@ public class DiscoveryTimelineCommand implements BaseCommand {
 
             RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
             if (registryManager == null) {
-                logger.warn("RegistryManager not available");
+                logger.warn(REGISTRY_FAILED_FETCH_INSTANCE, "", "", "RegistryManager not available");
                 return "Error: RegistryManager not available. Check configuration.";
             }
 
             List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
             if (serviceDiscoveries == null || serviceDiscoveries.isEmpty()) {
-                logger.warn("No ServiceDiscovery found");
+                logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", "No ServiceDiscovery found");
                 return "Error: No ServiceDiscovery instances found.";
             }
 
@@ -99,13 +105,13 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                         try {
                             page = Math.max(1, Integer.parseInt(arg.substring("page=".length())));
                         } catch (NumberFormatException e) {
-                            logger.warn("Invalid page number: {}", arg, e);
+                            logger.warn(CONFIG_PARAMETER_FORMAT_ERROR, "", "", "Invalid page number: " + arg, e);
                         }
                     } else if (arg.startsWith("limit=")) {
                         try {
                             limit = Math.max(1, Integer.parseInt(arg.substring("limit=".length())));
                         } catch (NumberFormatException e) {
-                            logger.warn("Invalid limit number: {}", arg, e);
+                            logger.warn(CONFIG_PARAMETER_FORMAT_ERROR, "", "", "Invalid limit number: " + arg, e);
                         }
                     }
                 }
@@ -138,7 +144,12 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                             int num2 = Integer.parseInt(numStr2);
                             return Integer.compare(num1, num2);
                         } catch (NumberFormatException e) {
-                            logger.warn("Failed to parse numbers for sorting: {} vs {}", numStr1, numStr2, e);
+                            logger.warn(
+                                    CONFIG_PARAMETER_FORMAT_ERROR,
+                                    "",
+                                    "",
+                                    "Failed to parse numbers for sorting: " + numStr1 + " vs " + numStr2,
+                                    e);
                             return key1.compareTo(key2);
                         }
                     })
@@ -158,13 +169,21 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                 Set<String> serviceNames = new HashSet<>();
                 ServiceInstance instance = serviceDiscovery.getLocalInstance();
                 if (instance == null) {
-                    logger.warn("No local instance found for registry: {}", serviceDiscovery.getUrl());
+                    logger.warn(
+                            REGISTRY_FAILED_FETCH_INSTANCE,
+                            "",
+                            "",
+                            "No local instance found for registry: " + serviceDiscovery.getUrl());
                     continue;
                 }
 
                 Map<String, String> metadata = instance.getMetadata();
                 if (metadata == null || metadata.isEmpty()) {
-                    logger.warn("No metadata found for instance in registry: {}", serviceDiscovery.getUrl());
+                    logger.warn(
+                            REGISTRY_FAILED_LOAD_METADATA,
+                            "",
+                            "",
+                            "No metadata found for instance in registry: " + serviceDiscovery.getUrl());
                     metadata = new HashMap<>();
                 }
 
@@ -180,9 +199,11 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                                 logger.debug("Set timestamp for {}: {}", serviceName, timestampStr);
                             } catch (NumberFormatException e) {
                                 logger.warn(
-                                        "Invalid timestamp format for service: {}, timestamp: {}",
-                                        serviceName,
-                                        timestampStr,
+                                        CONFIG_PARAMETER_FORMAT_ERROR,
+                                        "",
+                                        "",
+                                        "Invalid timestamp format for service: " + serviceName + ", timestamp: "
+                                                + timestampStr,
                                         e);
                                 providerRegistrationTimes.put(serviceName, System.currentTimeMillis());
                             }
@@ -228,9 +249,11 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                         refreshTimeStr = new Date(registryTimestamp).toString();
                     } catch (NumberFormatException e) {
                         logger.warn(
-                                "Invalid timestamp format for registry: {}, timestamp: {}",
-                                sd.getUrl().getAddress(),
-                                timestampStr,
+                                CONFIG_PARAMETER_FORMAT_ERROR,
+                                "",
+                                "",
+                                "Invalid timestamp format for registry: "
+                                        + sd.getUrl().getAddress() + ", timestamp: " + timestampStr,
                                 e);
                         refreshTimeStr = new Date(System.currentTimeMillis()).toString();
                     }
@@ -241,7 +264,6 @@ public class DiscoveryTimelineCommand implements BaseCommand {
             timeline.append("------------------------------------------------------------\n");
             timeline.append("Provider Services\n");
 
-            // Apply pagination
             int providerStart = (page - 1) * limit;
             int providerEnd = Math.min(providerStart + limit, providerModels.size());
             logger.debug(
@@ -273,7 +295,7 @@ public class DiscoveryTimelineCommand implements BaseCommand {
             return result;
 
         } catch (Exception e) {
-            logger.error("Failed to generate discovery timeline", e);
+            logger.error(INTERNAL_ERROR, "", "", "Failed to generate discovery timeline", e);
             return "Error: " + e.getMessage();
         }
     }
@@ -329,9 +351,11 @@ public class DiscoveryTimelineCommand implements BaseCommand {
                                     new Date(Long.parseLong(timestampStr)).toString());
                         } catch (NumberFormatException e) {
                             logger.warn(
-                                    "Invalid timestamp format for service: {}, timestamp: {}",
-                                    serviceName,
-                                    timestampStr,
+                                    CONFIG_PARAMETER_FORMAT_ERROR,
+                                    "",
+                                    "",
+                                    "Invalid timestamp format for service: " + serviceName + ", timestamp: "
+                                            + timestampStr,
                                     e);
                             serviceRegistrationTimes.put(serviceName, System.currentTimeMillis());
                         }

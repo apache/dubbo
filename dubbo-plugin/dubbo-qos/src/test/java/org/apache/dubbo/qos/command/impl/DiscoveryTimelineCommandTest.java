@@ -123,7 +123,6 @@ public class DiscoveryTimelineCommandTest {
         System.out.println("testExecuteWithPagination Output:\n" + output);
         System.out.println("Providers mocked: "
                 + providers.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
-        // Debug output character-by-character
         System.out.println("Output characters:");
         for (int i = 0; i < output.length(); i++) {
             System.out.printf("Index %d: %c (ASCII %d)%n", i, output.charAt(i), (int) output.charAt(i));
