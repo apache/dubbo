@@ -23,9 +23,6 @@ import org.apache.dubbo.remoting.RemotingException;
 
 import java.net.InetSocketAddress;
 
-/**
- * ClientDelegate
- */
 public class ClientDelegate implements Client {
 
     private transient Client client;

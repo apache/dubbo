@@ -26,9 +26,6 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
 
-/**
- * ClusterUtils
- */
 public class ClusterUtils implements ScopeModelAware {
 
     private ApplicationModel applicationModel;

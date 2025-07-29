@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-/**
- * PerformanceClientMain
- */
 public class PerformanceClientMain {
 
     public static void main(String[] args) throws Throwable {

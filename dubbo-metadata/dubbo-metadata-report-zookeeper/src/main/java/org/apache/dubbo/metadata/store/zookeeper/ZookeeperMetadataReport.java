@@ -53,9 +53,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOO
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
 
-/**
- * ZookeeperMetadataReport
- */
 public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private static final ErrorTypeAwareLogger logger =

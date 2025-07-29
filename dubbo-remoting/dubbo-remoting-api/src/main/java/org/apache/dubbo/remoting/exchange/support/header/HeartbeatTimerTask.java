@@ -26,9 +26,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 
-/**
- * HeartbeatTimerTask
- */
 public class HeartbeatTimerTask extends AbstractTimerTask {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(HeartbeatTimerTask.class);

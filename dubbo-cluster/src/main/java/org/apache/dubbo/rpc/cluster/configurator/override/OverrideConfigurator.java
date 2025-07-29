@@ -21,9 +21,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
 
-/**
- * OverrideConfigurator
- */
 public class OverrideConfigurator extends AbstractConfigurator {
     public static final Logger logger = LoggerFactory.getLogger(OverrideConfigurator.class);
 

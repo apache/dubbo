@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.filter;
 
-/**
- * DemoServiceLocal
- */
 class DemoServiceLocal implements DemoService {
 
     public DemoServiceLocal(DemoService demoService) {}

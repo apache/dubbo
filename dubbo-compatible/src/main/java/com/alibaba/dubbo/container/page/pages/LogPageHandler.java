@@ -36,9 +36,6 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 
-/**
- * LogPageHandler
- */
 @Menu(name = "Log", desc = "Show system log.", order = Integer.MAX_VALUE - 11000)
 public class LogPageHandler implements PageHandler {
 

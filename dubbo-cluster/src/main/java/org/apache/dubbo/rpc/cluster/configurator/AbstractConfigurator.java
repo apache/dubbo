@@ -48,9 +48,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
 import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
-/**
- * AbstractConfigurator
- */
 public abstract class AbstractConfigurator implements Configurator {
     private static final Logger logger = LoggerFactory.getLogger(AbstractConfigurator.class);
     private static final String TILDE = "~";

@@ -32,9 +32,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
-/**
- * NettyClientHandler
- */
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyClientHandler extends ChannelDuplexHandler {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyClientHandler.class);
