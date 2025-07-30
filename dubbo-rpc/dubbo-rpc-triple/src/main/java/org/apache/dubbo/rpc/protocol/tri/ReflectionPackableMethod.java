@@ -23,6 +23,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.remoting.utils.UrlUtils;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
@@ -39,6 +40,10 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.google.protobuf.Message;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.utils.ProtobufUtils.isProtobufClass;
@@ -50,7 +55,33 @@ public class ReflectionPackableMethod implements PackableMethod {
     private static final String REACTOR_RETURN_CLASS = "reactor.core.publisher.Mono";
     private static final String RX_RETURN_CLASS = "io.reactivex.Single";
     private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
-    private static final Pack PB_PACK = o -> ((Message) o).toByteArray();
+    private static final Pack PB_PACK = new Pack() {
+        @Override
+        public ByteBuf pack(Object obj, ByteBufAllocator allocator) throws Exception {
+            Message message = (Message) obj;
+            ByteBuf buffer = allocator.buffer(message.getSerializedSize());
+            try (ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer)) {
+                message.writeTo(outputStream);
+                return buffer;
+            } catch (Exception e) {
+                buffer.release();
+                throw new IOException("Failed to serialize protobuf message", e);
+            }
+        }
+
+        @Override
+        @Deprecated
+        public byte[] pack(Object obj) throws Exception {
+            ByteBuf buffer = pack(obj, Unpooled.buffer().alloc());
+            try {
+                byte[] result = new byte[buffer.readableBytes()];
+                buffer.readBytes(result);
+                return result;
+            } finally {
+                buffer.release();
+            }
+        }
+    };
 
     private final Pack requestPack;
     private final Pack responsePack;
@@ -107,6 +138,11 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.requestUnpack = new WrapRequestUnpack(serialization, url, allSerialize, actualRequestTypes);
         }
         this.allSerialize = allSerialize;
+    }
+
+    @Override
+    public Pack pack(Object[] arguments) {
+        return getRequestPack();
     }
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
@@ -317,13 +353,25 @@ public class ReflectionPackableMethod implements PackableMethod {
         @Override
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, requestSerialize, actualResponseType, obj, bos);
-            return TripleCustomerProtocolWrapper.TripleResponseWrapper.Builder.newBuilder()
-                    .setSerializeType(requestSerialize)
-                    .setType(actualResponseType.getName())
-                    .setData(bos.toByteArray())
-                    .build()
-                    .toByteArray();
+            String serType = requestSerialize;
+            if (obj instanceof Throwable) {
+                serType = TriRpcStatus.getStatus((Throwable) obj, "pack request failed").description;
+            }
+            multipleSerialization.serialize(url, serType, actualResponseType, obj, bos);
+            return bos.toByteArray();
+        }
+
+        @Override
+        public ByteBuf pack(Object obj, ByteBufAllocator allocator) throws IOException {
+            String serType = requestSerialize;
+            if (obj instanceof Throwable) {
+                serType = TriRpcStatus.getStatus((Throwable) obj, "pack request failed").description;
+            }
+            final ByteBuf buffer = allocator.buffer();
+            try (final ByteBufOutputStream bos = new ByteBufOutputStream(buffer)) {
+                multipleSerialization.serialize(url, serType, actualResponseType, obj, bos);
+            }
+            return buffer;
         }
     }
 
@@ -344,13 +392,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
-            return unpack(data, false);
-        }
-
-        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+        public Object unpack(ByteBuf data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+            byte[] dataBytes = new byte[data.readableBytes()];
+            data.readBytes(dataBytes);
             TripleCustomerProtocolWrapper.TripleResponseWrapper wrapper =
-                    TripleCustomerProtocolWrapper.TripleResponseWrapper.parseFrom(data);
+                    TripleCustomerProtocolWrapper.TripleResponseWrapper.parseFrom(dataBytes);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
 
             CodecSupport.checkSerialization(serializeType, allSerialize);
@@ -360,6 +406,17 @@ public class ReflectionPackableMethod implements PackableMethod {
                 return serialization.deserialize(url, serializeType, Exception.class, bais);
             }
             return serialization.deserialize(url, serializeType, returnClass, bais);
+        }
+
+        @Override
+        @Deprecated
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+            ByteBuf buffer = Unpooled.wrappedBuffer(data);
+            try {
+                return unpack(buffer, isReturnTriException);
+            } finally {
+                buffer.release();
+            }
         }
     }
 
@@ -389,29 +446,49 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         @Override
         public byte[] pack(Object obj) throws IOException {
-            Object[] arguments;
+            // Use zero-copy version and convert result to byte array
+            ByteBuf buffer = pack(obj, io.netty.buffer.ByteBufAllocator.DEFAULT);
+            try {
+                byte[] result = new byte[buffer.readableBytes()];
+                buffer.getBytes(buffer.readerIndex(), result);
+                return result;
+            } finally {
+                buffer.release();
+            }
+        }
+
+        @Override
+        public ByteBuf pack(Object obj, ByteBufAllocator allocator) throws IOException {
+            final Object[] args;
             if (singleArgument) {
-                arguments = new Object[] {obj};
+                args = new Object[] {obj};
             } else {
-                arguments = (Object[]) obj;
+                args = (Object[]) obj;
             }
-            TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder builder =
-                    TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder.newBuilder();
-            builder.setSerializeType(serialize);
-            for (String type : argumentsType) {
-                builder.addArgTypes(type);
+            final ByteBuf buffer = allocator.buffer();
+            try (final ByteBufOutputStream bos = new ByteBufOutputStream(buffer)) {
+                // Create a simple wrapper structure instead of using WrapRequest
+                TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder builder =
+                        TripleCustomerProtocolWrapper.TripleRequestWrapper.Builder.newBuilder();
+                builder.setSerializeType(serialize);
+                for (int i = 0; i < args.length; i++) {
+                    Object arg = args[i];
+                    // Use ByteBuf for zero-copy arg serialization
+                    ByteBuf argBuffer = allocator.buffer();
+                    try (ByteBufOutputStream argBos = new ByteBufOutputStream(argBuffer)) {
+                        multipleSerialization.serialize(url, serialize, actualRequestTypes[i], arg, argBos);
+                        byte[] argData = new byte[argBuffer.readableBytes()];
+                        argBuffer.getBytes(argBuffer.readerIndex(), argData);
+                        builder.addArgs(argData);
+                        builder.addArgTypes(actualRequestTypes[i].getName());
+                    } finally {
+                        argBuffer.release();
+                    }
+                }
+                byte[] data = builder.build().toByteArray();
+                bos.write(data);
             }
-            if (actualRequestTypes == null || actualRequestTypes.length == 0) {
-                return builder.build().toByteArray();
-            }
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            for (int i = 0; i < arguments.length; i++) {
-                Object argument = arguments[i];
-                multipleSerialization.serialize(url, serialize, actualRequestTypes[i], argument, bos);
-                builder.addArgs(bos.toByteArray());
-                bos.reset();
-            }
-            return builder.build().toByteArray();
+            return buffer;
         }
 
         /**
@@ -422,8 +499,8 @@ public class ReflectionPackableMethod implements PackableMethod {
          * @return hessian4 if the param is hessian2, otherwise return the param
          */
         private String convertHessianToWrapper(String serializeType) {
-            if (TripleConstants.HESSIAN2.equals(serializeType)) {
-                return TripleConstants.HESSIAN4;
+            if ("hessian2".equals(serializeType)) {
+                return "hessian4";
             }
             return serializeType;
         }
@@ -449,9 +526,12 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.allSerialize = allSerialize;
         }
 
-        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+        @Override
+        public Object unpack(ByteBuf data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+            byte[] dataBytes = new byte[data.readableBytes()];
+            data.readBytes(dataBytes);
             TripleCustomerProtocolWrapper.TripleRequestWrapper wrapper =
-                    TripleCustomerProtocolWrapper.TripleRequestWrapper.parseFrom(data);
+                    TripleCustomerProtocolWrapper.TripleRequestWrapper.parseFrom(dataBytes);
 
             String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             CodecSupport.checkSerialization(wrapperSerializeType, allSerialize);
@@ -461,9 +541,20 @@ public class ReflectionPackableMethod implements PackableMethod {
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
                 ByteArrayInputStream bais =
                         new ByteArrayInputStream(wrapper.getArgs().get(i));
-                ret[i] = serialization.deserialize(url, wrapper.getSerializeType(), actualRequestTypes[i], bais);
+                ret[i] = serialization.deserialize(url, wrapperSerializeType, actualRequestTypes[i], bais);
             }
             return ret;
+        }
+
+        @Override
+        @Deprecated
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+            ByteBuf buffer = Unpooled.wrappedBuffer(data);
+            try {
+                return unpack(buffer, isReturnTriException);
+            } finally {
+                buffer.release();
+            }
         }
     }
 }

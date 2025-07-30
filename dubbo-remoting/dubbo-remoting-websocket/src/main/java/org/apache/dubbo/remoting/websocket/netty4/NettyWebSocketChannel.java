@@ -19,15 +19,15 @@ package org.apache.dubbo.remoting.websocket.netty4;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-import org.apache.dubbo.remoting.http12.LimitedByteBufOutputStream;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
-import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessageFrame;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 
 public class NettyWebSocketChannel implements H2StreamChannel {
@@ -49,11 +49,13 @@ public class NettyWebSocketChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        return new Http2OutputMessageFrame(
-                new LimitedByteBufOutputStream(
-                        channel.alloc().buffer(), tripleConfig.getMaxResponseBodySizeOrDefault()),
-                endStream);
+    public HttpOutputMessage newOutputMessage() {
+        return new Http2OutputMessageFrame(channel.alloc().buffer(), false);
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage(ByteBuf body) {
+        return new Http2OutputMessageFrame(body, false);
     }
 
     @Override
@@ -71,6 +73,14 @@ public class NettyWebSocketChannel implements H2StreamChannel {
     }
 
     @Override
+    public CompletableFuture<Void> sendMessage(Object message, boolean endStream) {
+        if (message instanceof ByteBuf) {
+            return writeMessage(new Http2OutputMessageFrame((ByteBuf) message, endStream));
+        }
+        return writeMessage((HttpOutputMessage) message);
+    }
+
+    @Override
     public SocketAddress remoteAddress() {
         return channel.remoteAddress();
     }
@@ -78,6 +88,11 @@ public class NettyWebSocketChannel implements H2StreamChannel {
     @Override
     public SocketAddress localAddress() {
         return channel.localAddress();
+    }
+
+    @Override
+    public ByteBufAllocator alloc() {
+        return channel.alloc();
     }
 
     @Override

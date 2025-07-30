@@ -18,8 +18,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.model.UnPack;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.Unpooled;
 
 public class PbUnpack<T> implements UnPack {
 
@@ -30,8 +33,19 @@ public class PbUnpack<T> implements UnPack {
     }
 
     @Override
+    public Object unpack(ByteBuf data) throws IOException {
+        // Zero-copy: use ByteBuf input stream directly
+        return SingleProtobufUtils.deserialize(new ByteBufInputStream(data), clz);
+    }
+
+    @Override
+    @Deprecated
     public Object unpack(byte[] data) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return SingleProtobufUtils.deserialize(bais, clz);
+        ByteBuf buffer = Unpooled.wrappedBuffer(data);
+        try {
+            return unpack(buffer);
+        } finally {
+            buffer.release();
+        }
     }
 }

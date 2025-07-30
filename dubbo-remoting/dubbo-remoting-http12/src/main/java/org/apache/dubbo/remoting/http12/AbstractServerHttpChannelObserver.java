@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import io.netty.buffer.ByteBuf;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger;
 
@@ -142,10 +144,12 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected void doOnNext(Object data) throws Throwable {
         int statusCode = resolveStatusCode(data);
+        HttpOutputMessage message = buildMessage(statusCode, data);
         if (!headerSent) {
-            sendMetadata(buildMetadata(statusCode, data, null, HttpOutputMessage.EMPTY_MESSAGE));
+            sendMetadata(buildMetadata(statusCode, data, null, message));
         }
-        sendMessage(buildMessage(statusCode, data));
+        getHttpChannel().sendMessage(message, true);
+        postOutputMessage(message);
     }
 
     protected final int resolveStatusCode(Object data) {
@@ -221,10 +225,10 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             } catch (Throwable ignored) {
             }
         }
-        HttpOutputMessage message = encodeHttpOutputMessage(data);
+        ByteBuf byteBuf = responseEncoder.encode(data, getHttpChannel().alloc());
+        HttpOutputMessage message = encodeHttpOutputMessage(byteBuf);
         try {
             preOutputMessage(message);
-            responseEncoder.encode(message.getBody(), data);
         } catch (Throwable t) {
             message.close();
             throw t;
@@ -232,16 +236,12 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         return message;
     }
 
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
-        return getHttpChannel().newOutputMessage();
+    protected HttpOutputMessage encodeHttpOutputMessage(ByteBuf body) {
+        return getHttpChannel().newOutputMessage(body);
     }
 
-    protected final void sendMessage(HttpOutputMessage message) throws Throwable {
-        if (message == null) {
-            return;
-        }
-        getHttpChannel().writeMessage(message);
-        postOutputMessage(message);
+    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
+        return getHttpChannel().newOutputMessage();
     }
 
     protected void preOutputMessage(HttpOutputMessage message) throws Throwable {}
@@ -265,11 +265,15 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected void doOnError(Throwable throwable) throws Throwable {
         int statusCode = resolveErrorStatusCode(throwable);
-        Object data = buildErrorResponse(statusCode, throwable);
+        ErrorResponse errorResponse = buildErrorResponse(statusCode, throwable);
         if (!headerSent) {
-            sendMetadata(buildMetadata(statusCode, data, throwable, HttpOutputMessage.EMPTY_MESSAGE));
+            HttpOutputMessage message = encodeHttpOutputMessage(errorResponse);
+            HttpMetadata metadata = buildMetadata(statusCode, null, throwable, message);
+            sendMetadata(metadata);
+            getHttpChannel().sendMessage(message, true);
+            return;
         }
-        sendMessage(buildMessage(statusCode, data));
+        getHttpChannel().sendMessage(null, true);
     }
 
     protected final int resolveErrorStatusCode(Throwable throwable) {

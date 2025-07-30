@@ -23,11 +23,10 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -36,14 +35,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TestResponse {
 
     private final HttpHeaders headers;
-    private final List<OutputStream> oss;
+    private final List<ByteBuf> byteBufs;
     private final HttpMessageDecoder decoder;
 
     private List<Object> bodies;
 
-    public TestResponse(HttpHeaders headers, List<OutputStream> oss, HttpMessageDecoder decoder) {
+    public TestResponse(HttpHeaders headers, List<ByteBuf> byteBufs, HttpMessageDecoder decoder) {
         this.headers = headers;
-        this.oss = oss;
+        this.byteBufs = byteBufs;
         this.decoder = decoder;
     }
 
@@ -83,22 +82,26 @@ public class TestResponse {
     public <T> List<T> getBodies(Class<T> type) {
         List<T> bodies = (List<T>) this.bodies;
         if (bodies == null) {
-            bodies = new ArrayList<>(oss.size());
+            bodies = new ArrayList<>(byteBufs.size());
             boolean isTextEvent = MediaType.TEXT_EVENT_STREAM.getName().equals(getContentType());
-            for (int i = 0, size = oss.size(); i < size; i++) {
-                ByteArrayOutputStream bos = (ByteArrayOutputStream) oss.get(i);
+            for (int i = 0, size = byteBufs.size(); i < size; i++) {
+                ByteBuf byteBuf = byteBufs.get(i);
                 if (isTextEvent) {
-                    String data = new String(bos.toByteArray(), UTF_8);
-                    if (data.startsWith("data:")) {
-                        String body = data.substring(5, data.length() - 2);
+                    byte[] data = new byte[byteBuf.readableBytes()];
+                    byteBuf.getBytes(byteBuf.readerIndex(), data);
+                    String dataStr = new String(data, UTF_8);
+                    if (dataStr.startsWith("data:")) {
+                        String body = dataStr.substring(5, dataStr.length() - 2);
                         bodies.add((T) decoder.decode(new ByteArrayInputStream(body.getBytes(UTF_8)), type));
                     }
                     continue;
                 }
-                if (bos.size() == 0) {
+                if (byteBuf.readableBytes() == 0) {
                     bodies.add(null);
                 } else {
-                    bodies.add((T) decoder.decode(new ByteArrayInputStream(bos.toByteArray()), type));
+                    byte[] data = new byte[byteBuf.readableBytes()];
+                    byteBuf.getBytes(byteBuf.readerIndex(), data);
+                    bodies.add((T) decoder.decode(new ByteArrayInputStream(data), type));
                 }
             }
             this.bodies = (List<Object>) bodies;

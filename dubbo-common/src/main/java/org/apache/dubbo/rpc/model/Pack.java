@@ -16,12 +16,35 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
+/**
+ * Zero-copy pack interface using ByteBuf
+ */
 public interface Pack {
 
     /**
-     * @param obj instance
-     * @return byte array
+     * Zero-copy pack object to ByteBuf
+     * @param obj instance to pack
+     * @param allocator ByteBuf allocator
+     * @return ByteBuf containing packed data
      * @throws Exception when error occurs
      */
-    byte[] pack(Object obj) throws Exception;
+    ByteBuf pack(Object obj, ByteBufAllocator allocator) throws Exception;
+
+    /**
+     * @deprecated Use {@link #pack(Object, ByteBufAllocator)} for zero-copy processing
+     */
+    @Deprecated
+    default byte[] pack(Object obj) throws Exception {
+        ByteBuf buf = pack(obj, ByteBufAllocator.DEFAULT);
+        try {
+            byte[] result = new byte[buf.readableBytes()];
+            buf.readBytes(result);
+            return result;
+        } finally {
+            buf.release();
+        }
+    }
 }

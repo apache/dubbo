@@ -16,12 +16,31 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import io.netty.buffer.ByteBuf;
+
+/**
+ * Zero-copy unpack interface using ByteBuf
+ */
 public interface UnPack {
 
     /**
-     * @param data byte array
+     * Zero-copy unpack ByteBuf to object
+     * @param data ByteBuf containing packed data
      * @return object instance
-     * @throws Exception            exception
+     * @throws Exception exception
      */
-    Object unpack(byte[] data) throws Exception;
+    Object unpack(ByteBuf data) throws Exception;
+
+    /**
+     * @deprecated Use {@link #unpack(ByteBuf)} for zero-copy processing
+     */
+    @Deprecated
+    default Object unpack(byte[] data) throws Exception {
+        ByteBuf buf = io.netty.buffer.Unpooled.wrappedBuffer(data);
+        try {
+            return unpack(buf);
+        } finally {
+            buf.release();
+        }
+    }
 }

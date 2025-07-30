@@ -19,28 +19,39 @@ package org.apache.dubbo.remoting.http12.h1;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
-import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 public final class Http1OutputMessage implements HttpOutputMessage {
 
-    private final OutputStream outputStream;
+    private final ByteBuf body;
+    private final ByteBufAllocator allocator;
 
-    public Http1OutputMessage(OutputStream outputStream) {
-        this.outputStream = outputStream;
+    public Http1OutputMessage(ByteBuf body) {
+        this.body = body;
+        this.allocator = body.alloc();
+    }
+
+    public Http1OutputMessage(ByteBufAllocator allocator) {
+        this.allocator = allocator;
+        this.body = allocator.buffer();
     }
 
     @Override
-    public OutputStream getBody() {
-        return outputStream;
+    public ByteBuf getBody() {
+        return body;
+    }
+
+    @Override
+    public ByteBufAllocator getAllocator() {
+        return allocator;
     }
 
     @Override
     public void close() throws IOException {
-        if (outputStream instanceof ByteBufOutputStream) {
-            ((ByteBufOutputStream) outputStream).buffer().release();
+        if (body != null && body.refCnt() > 0) {
+            body.release();
         }
-        outputStream.close();
     }
 }

@@ -40,6 +40,8 @@ import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.stub.UnaryStubMethodHandler;
 
 import com.google.protobuf.Message;
+import org.apache.dubbo.rpc.protocol.tri.PbArrayPacker;
+import org.apache.dubbo.rpc.protocol.tri.PbUnpack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,39 +70,39 @@ public final class {{className}} {
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-    {{outputType}}::parseFrom);
+    new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true), new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+    new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{inputType}}.class), new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{outputType}}.class));
 
     private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, java.util.concurrent.CompletableFuture.class, MethodDescriptor.RpcType.UNARY,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-    {{outputType}}::parseFrom);
+    new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true), new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+    new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{inputType}}.class), new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{outputType}}.class));
 
     private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}Async",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-    {{outputType}}::parseFrom);
+    new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true), new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+    new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{inputType}}.class), new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{outputType}}.class));
 {{/unaryMethods}}
 {{#serverStreamingMethods}}
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-    {{outputType}}::parseFrom);
+    new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true), new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+    new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{inputType}}.class), new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{outputType}}.class));
 {{/serverStreamingMethods}}
 {{#clientStreamingMethods}}
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-    {{outputType}}::parseFrom);
+    new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true), new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+    new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{inputType}}.class), new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{outputType}}.class));
 {{/clientStreamingMethods}}
 {{#biStreamingWithoutClientStreamMethods}}
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
-    {{outputType}}::parseFrom);
+    new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true), new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+    new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{inputType}}.class), new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>({{outputType}}.class));
 {{/biStreamingWithoutClientStreamMethods}}
 
     static{

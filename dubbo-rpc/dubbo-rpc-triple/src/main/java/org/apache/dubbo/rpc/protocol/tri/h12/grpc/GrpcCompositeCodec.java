@@ -38,6 +38,11 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
 
@@ -77,15 +82,15 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     }
 
     @Override
+    @Deprecated
     public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
         // protobuf
         // TODO int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 :
         // 1;
         try {
-            int compressed = 0;
-            outputStream.write(compressed);
-            byte[] bytes = packableMethod.packResponse(data);
-            writeLength(outputStream, bytes.length);
+            ByteBuf byteBuf = encode(data, null);
+            byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
             outputStream.write(bytes);
         } catch (HttpStatusException e) {
             throw e;
@@ -94,7 +99,39 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         }
     }
 
+    public ByteBuf encode(Object data, ByteBufAllocator allocator) throws EncodeException {
+        if (allocator == null) {
+            allocator = UnpooledByteBufAllocator.DEFAULT;
+        }
+        try {
+            ByteBuf body = packableMethod.packResponse(data, allocator);
+            ByteBuf header = allocator.buffer(5);
+            int compressed = 0;
+            header.writeByte(compressed);
+            header.writeInt(body.readableBytes());
+            CompositeByteBuf compositeByteBuf = allocator.compositeBuffer(2);
+            compositeByteBuf.addComponents(true, header, body);
+            return compositeByteBuf;
+        } catch (Exception e) {
+            throw new EncodeException(e);
+        }
+    }
+
+    /**
+     * Zero-copy decode using ByteBuf
+     */
+    public Object decode(ByteBuf inputBuffer, Class<?> targetType) throws DecodeException {
+        try {
+            return packableMethod.parseRequest(inputBuffer);
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DecodeException(e);
+        }
+    }
+
     @Override
+    @Deprecated
     public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
         try {
             byte[] data = StreamUtils.readBytes(inputStream);

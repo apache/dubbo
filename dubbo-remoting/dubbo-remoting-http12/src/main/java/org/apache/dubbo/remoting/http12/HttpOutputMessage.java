@@ -16,26 +16,48 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 
 public interface HttpOutputMessage extends AutoCloseable {
 
     HttpOutputMessage EMPTY_MESSAGE = new HttpOutputMessage() {
 
-        private final OutputStream INPUT_STREAM = new ByteArrayOutputStream(0);
+        private final ByteBuf EMPTY_BUFFER = Unpooled.EMPTY_BUFFER;
 
         @Override
-        public OutputStream getBody() {
-            return INPUT_STREAM;
+        public ByteBuf getBody() {
+            return EMPTY_BUFFER;
+        }
+
+        @Override
+        public void close() throws IOException {
+            // Empty buffer doesn't need releasing
         }
     };
 
-    OutputStream getBody();
+    /**
+     * Zero-copy get message body as ByteBuf
+     * @return ByteBuf containing message body
+     */
+    ByteBuf getBody();
+
+    /**
+     * Get ByteBuf allocator for creating new buffers
+     * @return ByteBuf allocator
+     */
+    default ByteBufAllocator getAllocator() {
+        return ByteBufAllocator.DEFAULT;
+    }
 
     @Override
     default void close() throws IOException {
-        getBody().close();
+        ByteBuf body = getBody();
+        if (body != null && body.refCnt() > 0) {
+            body.release();
+        }
     }
 }

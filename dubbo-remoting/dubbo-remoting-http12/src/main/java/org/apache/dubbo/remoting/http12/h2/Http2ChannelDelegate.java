@@ -22,6 +22,9 @@ import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
 public class Http2ChannelDelegate implements H2StreamChannel {
 
     private final H2StreamChannel h2StreamChannel;
@@ -45,6 +48,21 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     }
 
     @Override
+    public CompletableFuture<Void> sendMessage(Object message, boolean endStream) {
+        return h2StreamChannel.sendMessage(message, endStream);
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage() {
+        return h2StreamChannel.newOutputMessage();
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage(ByteBuf body) {
+        return h2StreamChannel.newOutputMessage(body);
+    }
+
+    @Override
     public SocketAddress remoteAddress() {
         return h2StreamChannel.remoteAddress();
     }
@@ -55,6 +73,11 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     }
 
     @Override
+    public ByteBufAllocator alloc() {
+        return h2StreamChannel.alloc();
+    }
+
+    @Override
     public void flush() {
         h2StreamChannel.flush();
     }
@@ -62,11 +85,6 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     @Override
     public CompletableFuture<Void> writeResetFrame(long errorCode) {
         return h2StreamChannel.writeResetFrame(errorCode);
-    }
-
-    @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        return h2StreamChannel.newOutputMessage(endStream);
     }
 
     @Override

@@ -20,13 +20,14 @@ import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-import org.apache.dubbo.remoting.http12.LimitedByteBufOutputStream;
 import org.apache.dubbo.remoting.http12.h1.Http1OutputMessage;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 
 public class NettyHttp1Channel implements HttpChannel {
@@ -55,9 +56,21 @@ public class NettyHttp1Channel implements HttpChannel {
     }
 
     @Override
+    public CompletableFuture<Void> sendMessage(Object message, boolean endStream) {
+        if (message instanceof ByteBuf) {
+            return writeMessage(newOutputMessage((ByteBuf) message));
+        }
+        return writeMessage((HttpOutputMessage) message);
+    }
+
+    @Override
     public HttpOutputMessage newOutputMessage() {
-        return new Http1OutputMessage(new LimitedByteBufOutputStream(
-                channel.alloc().buffer(), tripleConfig.getMaxResponseBodySizeOrDefault()));
+        return new Http1OutputMessage(channel.alloc().buffer());
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage(ByteBuf body) {
+        return new Http1OutputMessage(body);
     }
 
     @Override
@@ -68,6 +81,11 @@ public class NettyHttp1Channel implements HttpChannel {
     @Override
     public SocketAddress localAddress() {
         return channel.localAddress();
+    }
+
+    @Override
+    public ByteBufAllocator alloc() {
+        return channel.alloc();
     }
 
     @Override

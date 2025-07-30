@@ -39,8 +39,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
-import com.google.protobuf.Message;
-
 public final class DubboMetadataServiceV2Triple {
 
     public static final String SERVICE_NAME = MetadataServiceV2.SERVICE_NAME;
@@ -67,60 +65,60 @@ public final class DubboMetadataServiceV2Triple {
             MetadataRequest.class,
             MetadataInfoV2.class,
             MethodDescriptor.RpcType.UNARY,
-            obj -> ((Message) obj).toByteArray(),
-            obj -> ((Message) obj).toByteArray(),
-            MetadataRequest::parseFrom,
-            MetadataInfoV2::parseFrom);
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(MetadataRequest.class),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(MetadataInfoV2.class));
 
     private static final StubMethodDescriptor getMetadataInfoAsyncMethod = new StubMethodDescriptor(
             "GetMetadataInfo",
             MetadataRequest.class,
             CompletableFuture.class,
             MethodDescriptor.RpcType.UNARY,
-            obj -> ((Message) obj).toByteArray(),
-            obj -> ((Message) obj).toByteArray(),
-            MetadataRequest::parseFrom,
-            MetadataInfoV2::parseFrom);
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(MetadataRequest.class),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(MetadataInfoV2.class));
 
     private static final StubMethodDescriptor getMetadataInfoProxyAsyncMethod = new StubMethodDescriptor(
             "GetMetadataInfoAsync",
             MetadataRequest.class,
             MetadataInfoV2.class,
             MethodDescriptor.RpcType.UNARY,
-            obj -> ((Message) obj).toByteArray(),
-            obj -> ((Message) obj).toByteArray(),
-            MetadataRequest::parseFrom,
-            MetadataInfoV2::parseFrom);
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(MetadataRequest.class),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(MetadataInfoV2.class));
 
     private static final StubMethodDescriptor getOpenAPIInfoMethod = new StubMethodDescriptor(
             "GetOpenAPIInfo",
             OpenAPIRequest.class,
             OpenAPIInfo.class,
             MethodDescriptor.RpcType.UNARY,
-            obj -> ((Message) obj).toByteArray(),
-            obj -> ((Message) obj).toByteArray(),
-            OpenAPIRequest::parseFrom,
-            OpenAPIInfo::parseFrom);
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(OpenAPIRequest.class),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(OpenAPIInfo.class));
 
     private static final StubMethodDescriptor getOpenAPIInfoAsyncMethod = new StubMethodDescriptor(
             "GetOpenAPIInfo",
             OpenAPIRequest.class,
             CompletableFuture.class,
             MethodDescriptor.RpcType.UNARY,
-            obj -> ((Message) obj).toByteArray(),
-            obj -> ((Message) obj).toByteArray(),
-            OpenAPIRequest::parseFrom,
-            OpenAPIInfo::parseFrom);
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(OpenAPIRequest.class),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(OpenAPIInfo.class));
 
     private static final StubMethodDescriptor getOpenAPIInfoProxyAsyncMethod = new StubMethodDescriptor(
             "GetOpenAPIInfoAsync",
             OpenAPIRequest.class,
             OpenAPIInfo.class,
             MethodDescriptor.RpcType.UNARY,
-            obj -> ((Message) obj).toByteArray(),
-            obj -> ((Message) obj).toByteArray(),
-            OpenAPIRequest::parseFrom,
-            OpenAPIInfo::parseFrom);
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbArrayPacker(true),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(OpenAPIRequest.class),
+            new org.apache.dubbo.rpc.protocol.tri.PbUnpack<>(OpenAPIInfo.class));
 
     static {
         serviceDescriptor.addMethod(getMetadataInfoMethod);

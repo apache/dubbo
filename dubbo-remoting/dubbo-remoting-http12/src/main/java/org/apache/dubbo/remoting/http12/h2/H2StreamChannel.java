@@ -23,11 +23,4 @@ import java.util.concurrent.CompletableFuture;
 public interface H2StreamChannel extends HttpChannel {
 
     CompletableFuture<Void> writeResetFrame(long errorCode);
-
-    @Override
-    default Http2OutputMessage newOutputMessage() {
-        return this.newOutputMessage(false);
-    }
-
-    Http2OutputMessage newOutputMessage(boolean endStream);
 }

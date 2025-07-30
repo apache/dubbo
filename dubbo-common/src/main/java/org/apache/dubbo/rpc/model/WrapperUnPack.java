@@ -16,11 +16,40 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import io.netty.buffer.ByteBuf;
+
 public interface WrapperUnPack extends UnPack {
 
+    /**
+     * Zero-copy unpack ByteBuf with exception handling
+     */
+    default Object unpack(ByteBuf data) throws Exception {
+        return unpack(data, false);
+    }
+
+    /**
+     * Zero-copy unpack ByteBuf with exception handling option
+     */
+    Object unpack(ByteBuf data, boolean isReturnTriException) throws Exception;
+
+    /**
+     * @deprecated Use {@link #unpack(ByteBuf)} for zero-copy processing
+     */
+    @Deprecated
     default Object unpack(byte[] data) throws Exception {
         return unpack(data, false);
     }
 
-    Object unpack(byte[] data, boolean isReturnTriException) throws Exception;
+    /**
+     * @deprecated Use {@link #unpack(ByteBuf, boolean)} for zero-copy processing
+     */
+    @Deprecated
+    default Object unpack(byte[] data, boolean isReturnTriException) throws Exception {
+        ByteBuf buf = io.netty.buffer.Unpooled.wrappedBuffer(data);
+        try {
+            return unpack(buf, isReturnTriException);
+        } finally {
+            buf.release();
+        }
+    }
 }

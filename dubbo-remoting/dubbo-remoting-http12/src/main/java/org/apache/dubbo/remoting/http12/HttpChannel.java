@@ -19,17 +19,33 @@ package org.apache.dubbo.remoting.http12;
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
+
 public interface HttpChannel {
 
     CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata);
 
     CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage);
 
+    default CompletableFuture<Void> sendMessage(Object message, boolean endStream) {
+        throw new UnsupportedOperationException();
+    }
+
     HttpOutputMessage newOutputMessage();
+
+    default HttpOutputMessage newOutputMessage(ByteBuf body) {
+        throw new UnsupportedOperationException();
+    }
 
     SocketAddress remoteAddress();
 
     SocketAddress localAddress();
+
+    default ByteBufAllocator alloc() {
+        return UnpooledByteBufAllocator.DEFAULT;
+    }
 
     void flush();
 }

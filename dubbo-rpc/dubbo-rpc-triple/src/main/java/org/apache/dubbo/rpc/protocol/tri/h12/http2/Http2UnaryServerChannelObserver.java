@@ -44,7 +44,7 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
         HttpMetadata metadata = buildMetadata(statusCode, data, null, message);
         customizeTrailers(metadata.headers(), null);
         sendMetadata(metadata);
-        sendMessage(message);
+        getHttpChannel().writeMessage(message);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
         HttpMetadata metadata = buildMetadata(statusCode, data, throwable, message);
         customizeTrailers(metadata.headers(), throwable);
         sendMetadata(metadata);
-        sendMessage(message);
+        getHttpChannel().writeMessage(message);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
 
     @Override
     protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
-        return getHttpChannel().newOutputMessage(true);
+        return super.encodeHttpOutputMessage(data);
     }
 
     @Override

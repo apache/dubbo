@@ -25,11 +25,17 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
+
+import com.alibaba.fastjson2.JSON;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufOutputStream;
 
 public class JsonCodec implements HttpMessageCodec {
 
@@ -53,6 +59,18 @@ public class JsonCodec implements HttpMessageCodec {
         } catch (Throwable t) {
             throw new EncodeException("Error encoding json", t);
         }
+    }
+
+    @Override
+    public ByteBuf encode(Object data, ByteBufAllocator allocator) throws EncodeException {
+        ByteBuf buffer = allocator.buffer();
+        try (OutputStream os = new ByteBufOutputStream(buffer)) {
+            JSON.writeTo(os, data);
+        } catch (IOException e) {
+            buffer.release();
+            throw new EncodeException(e);
+        }
+        return buffer;
     }
 
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {

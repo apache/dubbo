@@ -19,10 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.rpc.model.Pack;
 
 import com.google.protobuf.Message;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 
 public class PbArrayPacker implements Pack {
-
-    private static final Pack PB_PACK = o -> ((Message) o).toByteArray();
 
     private final boolean singleArgument;
 
@@ -31,10 +33,33 @@ public class PbArrayPacker implements Pack {
     }
 
     @Override
-    public byte[] pack(Object obj) throws Exception {
+    public ByteBuf pack(Object obj, ByteBufAllocator allocator) throws Exception {
         if (!singleArgument) {
             obj = ((Object[]) obj)[0];
         }
-        return PB_PACK.pack(obj);
+        Message message = (Message) obj;
+
+        // Zero-copy: serialize directly to ByteBuf
+        ByteBuf buffer = allocator.buffer(message.getSerializedSize());
+        try (ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer)) {
+            message.writeTo(outputStream);
+            return buffer;
+        } catch (Exception e) {
+            buffer.release();
+            throw e;
+        }
+    }
+
+    @Override
+    @Deprecated
+    public byte[] pack(Object obj) throws Exception {
+        ByteBuf buffer = pack(obj, Unpooled.buffer().alloc());
+        try {
+            byte[] result = new byte[buffer.readableBytes()];
+            buffer.readBytes(result);
+            return result;
+        } finally {
+            buffer.release();
+        }
     }
 }

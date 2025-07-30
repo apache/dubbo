@@ -26,14 +26,12 @@ import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 
-import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -168,15 +166,11 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
     }
 
     private Http2DataFrame encodeHttp2DataFrame(Http2OutputMessage outputMessage) {
-        OutputStream body = outputMessage.getBody();
-        if (body == null) {
-            return new DefaultHttp2DataFrame(outputMessage.isEndStream());
+        ByteBuf bodyBuffer = outputMessage.getBody();
+        if (bodyBuffer != null) {
+            return new DefaultHttp2DataFrame(bodyBuffer, outputMessage.isEndStream());
         }
-        if (body instanceof ByteBufOutputStream) {
-            ByteBuf buffer = ((ByteBufOutputStream) body).buffer();
-            return new DefaultHttp2DataFrame(buffer, outputMessage.isEndStream());
-        }
-        throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
+        return new DefaultHttp2DataFrame(outputMessage.isEndStream());
     }
 
     private static class CachedMsg {

@@ -16,21 +16,33 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
 /**
  * A packable method is used to customize serialization for methods. It can provide a common wrapper
  * for RESP / Protobuf.
  */
 public interface PackableMethod {
 
-    default Object parseRequest(byte[] data) throws Exception {
+    /**
+     * Zero-copy parse ByteBuf to request object
+     */
+    default Object parseRequest(ByteBuf data) throws Exception {
         return getRequestUnpack().unpack(data);
     }
 
-    default Object parseResponse(byte[] data) throws Exception {
+    /**
+     * Zero-copy parse ByteBuf to response object
+     */
+    default Object parseResponse(ByteBuf data) throws Exception {
         return parseResponse(data, false);
     }
 
-    default Object parseResponse(byte[] data, boolean isReturnTriException) throws Exception {
+    /**
+     * Zero-copy parse ByteBuf to response object with exception handling
+     */
+    default Object parseResponse(ByteBuf data, boolean isReturnTriException) throws Exception {
         UnPack unPack = getResponseUnpack();
         if (unPack instanceof WrapperUnPack) {
             return ((WrapperUnPack) unPack).unpack(data, isReturnTriException);
@@ -38,13 +50,89 @@ public interface PackableMethod {
         return unPack.unpack(data);
     }
 
-    default byte[] packRequest(Object request) throws Exception {
-        return getRequestPack().pack(request);
+    /**
+     * Zero-copy pack request to ByteBuf
+     */
+    default ByteBuf packRequest(Object request, ByteBufAllocator allocator) throws Exception {
+        return getRequestPack().pack(request, allocator);
     }
 
-    default byte[] packResponse(Object response) throws Exception {
-        return getResponsePack().pack(response);
+    /**
+     * Zero-copy pack response to ByteBuf
+     */
+    default ByteBuf packResponse(Object response, ByteBufAllocator allocator) throws Exception {
+        return getResponsePack().pack(response, allocator);
     }
+
+    /**
+     * @deprecated Use {@link #parseRequest(ByteBuf)} for zero-copy processing
+     */
+    @Deprecated
+    default Object parseRequest(byte[] data) throws Exception {
+        ByteBuf buf = io.netty.buffer.Unpooled.wrappedBuffer(data);
+        try {
+            return parseRequest(buf);
+        } finally {
+            buf.release();
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #parseResponse(ByteBuf)} for zero-copy processing
+     */
+    @Deprecated
+    default Object parseResponse(byte[] data) throws Exception {
+        return parseResponse(data, false);
+    }
+
+    /**
+     * @deprecated Use {@link #parseResponse(ByteBuf, boolean)} for zero-copy processing
+     */
+    @Deprecated
+    default Object parseResponse(byte[] data, boolean isReturnTriException) throws Exception {
+        ByteBuf buf = io.netty.buffer.Unpooled.wrappedBuffer(data);
+        try {
+            return parseResponse(buf, isReturnTriException);
+        } finally {
+            buf.release();
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #packRequest(Object, ByteBufAllocator)} for zero-copy processing
+     */
+    @Deprecated
+    default byte[] packRequest(Object request) throws Exception {
+        ByteBuf buf = packRequest(request, ByteBufAllocator.DEFAULT);
+        try {
+            byte[] result = new byte[buf.readableBytes()];
+            buf.readBytes(result);
+            return result;
+        } finally {
+            buf.release();
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #packResponse(Object, ByteBufAllocator)} for zero-copy processing
+     */
+    @Deprecated
+    default byte[] packResponse(Object response) throws Exception {
+        ByteBuf buf = packResponse(response, ByteBufAllocator.DEFAULT);
+        try {
+            byte[] result = new byte[buf.readableBytes()];
+            buf.readBytes(result);
+            return result;
+        } finally {
+            buf.release();
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #packRequest(Object, ByteBufAllocator)} instead
+     */
+    @Deprecated
+    Pack pack(Object[] arguments);
 
     default boolean needWrapper() {
         return false;

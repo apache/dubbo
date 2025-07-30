@@ -22,20 +22,54 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufOutputStream;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public interface HttpMessageEncoder extends CodecMediaType {
 
+    default ByteBuf encode(Object data, ByteBufAllocator allocator) throws EncodeException {
+        ByteBuf buffer = allocator.buffer();
+        try (ByteBufOutputStream os = new ByteBufOutputStream(buffer)) {
+            encode(os, data);
+        } catch (Exception e) {
+            buffer.release();
+            if (e instanceof EncodeException) {
+                throw (EncodeException) e;
+            }
+            throw new EncodeException(e);
+        }
+        return buffer;
+    }
+
+    /**
+     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
+     */
+    @Deprecated
     void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException;
 
+    /**
+     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
+     */
+    @Deprecated
     default void encode(OutputStream outputStream, Object[] data, Charset charset) throws EncodeException {
         encode(outputStream, ArrayUtils.first(data), charset);
     }
 
+    /**
+     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
+     */
+    @Deprecated
     default void encode(OutputStream outputStream, Object data) throws EncodeException {
         encode(outputStream, data, UTF_8);
     }
 
+    /**
+     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
+     */
+    @Deprecated
     default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
         encode(outputStream, ArrayUtils.first(data), UTF_8);
     }

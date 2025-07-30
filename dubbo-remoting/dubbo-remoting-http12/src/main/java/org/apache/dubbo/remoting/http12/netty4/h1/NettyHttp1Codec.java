@@ -24,12 +24,10 @@ import org.apache.dubbo.remoting.http12.h1.DefaultHttp1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1InputMessage;
 import org.apache.dubbo.remoting.http12.h1.Http1RequestMetadata;
 
-import java.io.OutputStream;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -104,12 +102,11 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
             }
             return;
         }
-        OutputStream body = msg.getBody();
-        if (body instanceof ByteBufOutputStream) {
-            ByteBuf buffer = ((ByteBufOutputStream) body).buffer();
-            ctx.writeAndFlush(buffer, promise);
+        ByteBuf body = msg.getBody();
+        if (body != null) {
+            ctx.writeAndFlush(body, promise);
             return;
         }
-        throw new IllegalArgumentException("HttpOutputMessage body must be 'io.netty.buffer.ByteBufOutputStream'");
+        throw new IllegalArgumentException("HttpOutputMessage body must not be null");
     }
 }
