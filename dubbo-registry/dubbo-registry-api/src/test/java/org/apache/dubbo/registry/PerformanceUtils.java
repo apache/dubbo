@@ -26,9 +26,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-/**
- * PerformanceUtils
- */
 public class PerformanceUtils {
 
     private static final int WIDTH = 64;

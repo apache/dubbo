@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.filter;
 
-/**
- * DemoServiceStub
- */
 class DemoServiceStub implements DemoService {
 
     public DemoServiceStub(DemoService demoService) {}

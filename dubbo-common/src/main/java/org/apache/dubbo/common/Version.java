@@ -37,9 +37,6 @@ import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
-/**
- * Version
- */
 public final class Version {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Version.class);
 

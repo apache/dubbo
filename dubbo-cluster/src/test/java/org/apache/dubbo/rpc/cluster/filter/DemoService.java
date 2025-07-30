@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.filter;
 
-/**
- * DemoService
- */
 public interface DemoService {
     String sayHello(String name);
 

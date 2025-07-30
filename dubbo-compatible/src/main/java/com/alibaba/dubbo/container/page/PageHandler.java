@@ -20,9 +20,6 @@ import org.apache.dubbo.common.extension.SPI;
 
 import com.alibaba.dubbo.common.URL;
 
-/**
- * PageHandler
- */
 @SPI
 public interface PageHandler {
 

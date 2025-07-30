@@ -56,9 +56,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
-/**
- * ReflectUtils
- */
 public final class ReflectUtils {
 
     /**

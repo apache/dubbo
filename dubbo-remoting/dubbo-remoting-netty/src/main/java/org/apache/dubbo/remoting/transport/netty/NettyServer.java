@@ -50,9 +50,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
-/**
- * NettyServer
- */
 public class NettyServer extends AbstractServer implements RemotingServer {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyServer.class);

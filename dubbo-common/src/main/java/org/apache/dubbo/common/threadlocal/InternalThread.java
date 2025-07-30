@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.threadlocal;
 
-/**
- * InternalThread
- */
 public class InternalThread extends Thread {
 
     private InternalThreadLocalMap threadLocalMap;

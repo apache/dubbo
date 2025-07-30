@@ -28,9 +28,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- * ExchangeHandlerDispatcher
- */
 public class ExchangeHandlerDispatcher implements ExchangeHandler {
 
     private final ReplierDispatcher replierDispatcher;

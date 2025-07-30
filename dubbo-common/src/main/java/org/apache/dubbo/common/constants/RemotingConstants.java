@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.constants;
 
-/**
- * RemotingConstants
- */
 public interface RemotingConstants {
 
     String BACKUP_KEY = "backup";
