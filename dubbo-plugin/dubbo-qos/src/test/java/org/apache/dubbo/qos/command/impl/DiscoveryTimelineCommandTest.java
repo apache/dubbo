@@ -18,6 +18,8 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -40,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DiscoveryTimelineCommandTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(DiscoveryTimelineCommandTest.class);
     private DiscoveryTimelineCommand command;
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
@@ -82,7 +85,7 @@ public class DiscoveryTimelineCommandTest {
         Mockito.when(serviceInstance.getMetadata()).thenReturn(metadata);
 
         String output = command.execute(new CommandContext("discovery-timeline"), null);
-        System.out.println("testExecuteWithTimestamps Output:\n" + output);
+        logger.info("testExecuteWithTimestamps Output:\n{}", output);
 
         assertTrue(output.contains("Discovery Timeline"));
         assertTrue(output.contains("127.0.0.1:2181"));
@@ -98,7 +101,7 @@ public class DiscoveryTimelineCommandTest {
         Mockito.when(serviceInstance.getMetadata()).thenReturn(null);
 
         String output = command.execute(new CommandContext("discovery-timeline"), null);
-        System.out.println("testExecuteWithoutMetadata Output:\n" + output);
+        logger.info("testExecuteWithoutMetadata Output:\n{}", output);
 
         assertTrue(output.contains("Unknown"));
         assertTrue(output.contains("Discovered: org.apache.dubbo.demo.DemoService"));
@@ -120,13 +123,13 @@ public class DiscoveryTimelineCommandTest {
         Mockito.when(serviceInstance.getMetadata()).thenReturn(metadata);
 
         String output = command.execute(new CommandContext("discovery-timeline"), new String[] {"limit=5", "page=2"});
-        System.out.println("testExecuteWithPagination Output:\n" + output);
-        System.out.println("Providers mocked: "
-                + providers.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
-        System.out.println("Output characters:");
+        logger.info("testExecuteWithPagination Output:\n{}", output);
+        logger.info("Providers mocked: {}", providers.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
+        StringBuilder charLog = new StringBuilder("Output characters:\n");
         for (int i = 0; i < output.length(); i++) {
-            System.out.printf("Index %d: %c (ASCII %d)%n", i, output.charAt(i), (int) output.charAt(i));
+            charLog.append(String.format("Index %d: %c (ASCII %d)%n", i, output.charAt(i), (int) output.charAt(i)));
         }
+        logger.info("{}", charLog.toString());
 
         assertTrue(output.contains("Discovery Timeline"));
         assertTrue(output.contains("Discovered: Service6"));
@@ -141,7 +144,7 @@ public class DiscoveryTimelineCommandTest {
         Mockito.when(serviceInstance.getMetadata()).thenReturn(new HashMap<>());
 
         String output = command.execute(new CommandContext("discovery-timeline"), new String[] {"service=MyService"});
-        System.out.println("testExecuteWithServiceFilter Output:\n" + output);
+        logger.info("testExecuteWithServiceFilter Output:\n{}", output);
 
         assertTrue(output.contains("Discovered: org.apache.dubbo.MyService"));
     }
@@ -154,7 +157,7 @@ public class DiscoveryTimelineCommandTest {
         Mockito.when(serviceInstance.getMetadata()).thenReturn(new HashMap<>());
 
         String output = command.execute(new CommandContext("discovery-timeline"), new String[] {"registry=nacos"});
-        System.out.println("testExecuteWithRegistryFilterMismatch Output:\n" + output);
+        logger.info("testExecuteWithRegistryFilterMismatch Output:\n{}", output);
 
         assertTrue(output.contains("Error: No services discovered."));
     }
