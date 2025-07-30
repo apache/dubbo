@@ -124,7 +124,9 @@ public class DiscoveryTimelineCommandTest {
 
         String output = command.execute(new CommandContext("discovery-timeline"), new String[] {"limit=5", "page=2"});
         logger.info("testExecuteWithPagination Output:\n{}", output);
-        logger.info("Providers mocked: {}", providers.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
+        logger.info(
+                "Providers mocked: {}",
+                providers.stream().map(ProviderModel::getServiceKey).collect(Collectors.toList()));
         StringBuilder charLog = new StringBuilder("Output characters:\n");
         for (int i = 0; i < output.length(); i++) {
             charLog.append(String.format("Index %d: %c (ASCII %d)%n", i, output.charAt(i), (int) output.charAt(i)));
