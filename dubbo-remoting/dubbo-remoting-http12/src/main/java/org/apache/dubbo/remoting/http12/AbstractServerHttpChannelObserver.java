@@ -227,11 +227,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             }
         }
 
-        // Use streaming approach instead of ByteBuf allocation
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        responseEncoder.encode(bos, data);
-        ByteBuf byteBuf = getHttpChannel().alloc().buffer(bos.size());
-        byteBuf.writeBytes(bos.toByteArray());
+        ByteBuf byteBuf = responseEncoder.encode(data, getHttpChannel().alloc());
 
         HttpOutputMessage message = encodeHttpOutputMessage(byteBuf);
         try {
@@ -248,12 +244,18 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     }
 
     protected HttpOutputMessage encodeHttpOutputMessage(Object data) throws Throwable {
-        // Use streaming approach to encode the object data
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        responseEncoder.encode(bos, data);
-        ByteBuf byteBuf = getHttpChannel().alloc().buffer(bos.size());
-        byteBuf.writeBytes(bos.toByteArray());
-        return getHttpChannel().newOutputMessage(byteBuf);
+        ByteBuf byteBuf = responseEncoder.encode(data, getHttpChannel().alloc());
+        
+        HttpOutputMessage message = null;
+        try {
+            message = getHttpChannel().newOutputMessage(byteBuf);
+            return message;
+        } catch (Throwable t) {
+            if (message == null && byteBuf.refCnt() > 0) {
+                byteBuf.release();
+            }
+            throw t;
+        }
     }
 
     protected void preOutputMessage(HttpOutputMessage message) throws Throwable {}

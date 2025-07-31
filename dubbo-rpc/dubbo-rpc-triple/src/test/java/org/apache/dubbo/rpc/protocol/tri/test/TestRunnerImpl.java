@@ -204,12 +204,22 @@ final class TestRunnerImpl implements TestRunner {
                 listener.onData(END);
             }
         }
-        return new TestResponse(channel.getHttpMetadata().headers(), channel.getBodies(), decoder);
+        return new TestResponse(channel.getHttpMetadata().headers(), channel.getBodies(), decoder) {
+            @Override
+            public void close() {
+                super.close();
+            }
+        };
     }
 
     @Override
     public <T> T run(TestRequest request, Class<T> type) {
-        return run(request).getBody(type);
+        TestResponse response = run(request);
+        try {
+            return response.getBody(type);
+        } finally {
+            response.close();
+        }
     }
 
     @Override
@@ -229,7 +239,12 @@ final class TestRunnerImpl implements TestRunner {
 
     @Override
     public <T> List<T> gets(String path, Class<T> type) {
-        return run(new TestRequest(path).setMethod(HttpMethods.GET.name())).getBodies(type);
+        TestResponse response = run(new TestRequest(path).setMethod(HttpMethods.GET.name()));
+        try {
+            return response.getBodies(type);
+        } finally {
+            response.close();
+        }
     }
 
     @Override
@@ -249,7 +264,12 @@ final class TestRunnerImpl implements TestRunner {
 
     @Override
     public String post(TestRequest request) {
-        return post(request, String.class);
+        TestResponse response = run(request.setMethod(HttpMethods.POST.name()));
+        try {
+            return response.getBody(String.class);
+        } finally {
+            response.close();
+        }
     }
 
     @Override
@@ -259,8 +279,13 @@ final class TestRunnerImpl implements TestRunner {
 
     @Override
     public <T> List<T> posts(String path, Object body, Class<T> type) {
-        return run(new TestRequest(path).setMethod(HttpMethods.POST.name()).setBody(body))
-                .getBodies(type);
+        TestResponse response =
+                run(new TestRequest(path).setMethod(HttpMethods.POST.name()).setBody(body));
+        try {
+            return response.getBodies(type);
+        } finally {
+            response.close();
+        }
     }
 
     @Override

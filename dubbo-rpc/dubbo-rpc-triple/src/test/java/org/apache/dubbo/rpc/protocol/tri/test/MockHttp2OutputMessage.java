@@ -45,4 +45,11 @@ public class MockHttp2OutputMessage implements Http2OutputMessage {
     public boolean isEndStream() {
         return endStream;
     }
+
+    @Override
+    public void close() {
+        if (bodyBuffer != null && bodyBuffer.refCnt() > 0) {
+            bodyBuffer.release();
+        }
+    }
 }
