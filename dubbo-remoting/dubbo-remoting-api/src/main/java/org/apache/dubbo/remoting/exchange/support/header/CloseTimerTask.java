@@ -37,6 +37,7 @@ public class CloseTimerTask extends AbstractTimerTask {
             ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long tick, int closeTimeout) {
         super(channelProvider, hashedWheelTimer, tick);
         this.closeTimeout = closeTimeout;
+        start();
     }
 
     @Override
