@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -225,7 +226,13 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             } catch (Throwable ignored) {
             }
         }
-        ByteBuf byteBuf = responseEncoder.encode(data, getHttpChannel().alloc());
+
+        // Use streaming approach instead of ByteBuf allocation
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        responseEncoder.encode(bos, data);
+        ByteBuf byteBuf = getHttpChannel().alloc().buffer(bos.size());
+        byteBuf.writeBytes(bos.toByteArray());
+
         HttpOutputMessage message = encodeHttpOutputMessage(byteBuf);
         try {
             preOutputMessage(message);
@@ -240,8 +247,13 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         return getHttpChannel().newOutputMessage(body);
     }
 
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
-        return getHttpChannel().newOutputMessage();
+    protected HttpOutputMessage encodeHttpOutputMessage(Object data) throws Throwable {
+        // Use streaming approach to encode the object data
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        responseEncoder.encode(bos, data);
+        ByteBuf byteBuf = getHttpChannel().alloc().buffer(bos.size());
+        byteBuf.writeBytes(bos.toByteArray());
+        return getHttpChannel().newOutputMessage(byteBuf);
     }
 
     protected void preOutputMessage(HttpOutputMessage message) throws Throwable {}

@@ -31,6 +31,11 @@ public class MockHttp2OutputMessage implements Http2OutputMessage {
         this.endStream = endStream;
     }
 
+    public MockHttp2OutputMessage(ByteBuf body, boolean endStream) {
+        bodyBuffer = body;
+        this.endStream = endStream;
+    }
+
     @Override
     public ByteBuf getBody() {
         return bodyBuffer;

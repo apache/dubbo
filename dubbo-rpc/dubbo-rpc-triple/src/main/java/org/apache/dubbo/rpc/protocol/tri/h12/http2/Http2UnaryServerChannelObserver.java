@@ -74,7 +74,7 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
     protected void doOnCompleted(Throwable throwable) {}
 
     @Override
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
+    protected HttpOutputMessage encodeHttpOutputMessage(Object data) throws Throwable {
         return super.encodeHttpOutputMessage(data);
     }
 

@@ -81,7 +81,7 @@ public class MockH2StreamChannel implements H2StreamChannel {
 
     @Override
     public HttpOutputMessage newOutputMessage(ByteBuf body) {
-        return new MockHttp2OutputMessage(false);
+        return new MockHttp2OutputMessage(body, false);
     }
 
     @Override
