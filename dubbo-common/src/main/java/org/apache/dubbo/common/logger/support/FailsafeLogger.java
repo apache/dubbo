@@ -18,7 +18,6 @@ package org.apache.dubbo.common.logger.support;
 
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.utils.NetUtils;
 
 public class FailsafeLogger implements Logger {
 
