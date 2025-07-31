@@ -104,7 +104,9 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
             allocator = UnpooledByteBufAllocator.DEFAULT;
         }
         try {
-            ByteBuf body = packableMethod.packResponse(data, allocator);
+            byte[] bodyBytes = packableMethod.packResponse(data);
+            ByteBuf body = allocator.buffer(bodyBytes.length);
+            body.writeBytes(bodyBytes);
             ByteBuf header = allocator.buffer(5);
             int compressed = 0;
             header.writeByte(compressed);
@@ -122,7 +124,9 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
      */
     public Object decode(ByteBuf inputBuffer, Class<?> targetType) throws DecodeException {
         try {
-            return packableMethod.parseRequest(inputBuffer);
+            byte[] dataBytes = new byte[inputBuffer.readableBytes()];
+            inputBuffer.readBytes(dataBytes);
+            return packableMethod.parseRequest(dataBytes);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Exception e) {

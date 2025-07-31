@@ -30,10 +30,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public interface HttpMessageEncoder extends CodecMediaType {
 
+    void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException;
+
+    @Deprecated
     default ByteBuf encode(Object data, ByteBufAllocator allocator) throws EncodeException {
         ByteBuf buffer = allocator.buffer();
         try (ByteBufOutputStream os = new ByteBufOutputStream(buffer)) {
-            encode(os, data);
+            encode(os, data, UTF_8);
         } catch (Exception e) {
             buffer.release();
             if (e instanceof EncodeException) {
@@ -45,31 +48,22 @@ public interface HttpMessageEncoder extends CodecMediaType {
     }
 
     /**
-     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
+     * Zero-copy streaming encode for multiple objects
      */
-    @Deprecated
-    void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException;
-
-    /**
-     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
-     */
-    @Deprecated
     default void encode(OutputStream outputStream, Object[] data, Charset charset) throws EncodeException {
         encode(outputStream, ArrayUtils.first(data), charset);
     }
 
     /**
-     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
+     * Zero-copy streaming encode with UTF-8 charset
      */
-    @Deprecated
     default void encode(OutputStream outputStream, Object data) throws EncodeException {
         encode(outputStream, data, UTF_8);
     }
 
     /**
-     * @deprecated use {@link #encode(Object, ByteBufAllocator)} instead
+     * Zero-copy streaming encode for multiple objects with UTF-8 charset
      */
-    @Deprecated
     default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
         encode(outputStream, ArrayUtils.first(data), UTF_8);
     }

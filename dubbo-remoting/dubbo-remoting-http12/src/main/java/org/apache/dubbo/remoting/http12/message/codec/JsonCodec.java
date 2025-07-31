@@ -53,7 +53,7 @@ public class JsonCodec implements HttpMessageCodec {
 
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try {
-            os.write(httpJsonUtils.toJson(data).getBytes(charset));
+            JSON.writeTo(os, data);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
@@ -75,7 +75,7 @@ public class JsonCodec implements HttpMessageCodec {
 
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
         try {
-            os.write(httpJsonUtils.toJson(data).getBytes(charset));
+            JSON.writeTo(os, data);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {

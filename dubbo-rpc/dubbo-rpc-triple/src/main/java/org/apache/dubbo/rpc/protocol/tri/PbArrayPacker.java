@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.model.Pack;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 import com.google.protobuf.Message;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
 
 public class PbArrayPacker implements Pack {
 
@@ -33,33 +33,21 @@ public class PbArrayPacker implements Pack {
     }
 
     @Override
-    public ByteBuf pack(Object obj, ByteBufAllocator allocator) throws Exception {
+    public void pack(Object obj, OutputStream output) throws IOException {
         if (!singleArgument) {
             obj = ((Object[]) obj)[0];
         }
         Message message = (Message) obj;
 
-        // Zero-copy: serialize directly to ByteBuf
-        ByteBuf buffer = allocator.buffer(message.getSerializedSize());
-        try (ByteBufOutputStream outputStream = new ByteBufOutputStream(buffer)) {
-            message.writeTo(outputStream);
-            return buffer;
-        } catch (Exception e) {
-            buffer.release();
-            throw e;
-        }
+        // Stream-based: serialize directly to OutputStream for zero-copy
+        message.writeTo(output);
     }
 
     @Override
     @Deprecated
-    public byte[] pack(Object obj) throws Exception {
-        ByteBuf buffer = pack(obj, Unpooled.buffer().alloc());
-        try {
-            byte[] result = new byte[buffer.readableBytes()];
-            buffer.readBytes(result);
-            return result;
-        } finally {
-            buffer.release();
-        }
+    public byte[] pack(Object obj) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        pack(obj, baos);
+        return baos.toByteArray();
     }
 }

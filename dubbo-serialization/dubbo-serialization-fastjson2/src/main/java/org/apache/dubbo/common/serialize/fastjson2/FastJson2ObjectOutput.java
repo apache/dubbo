@@ -102,6 +102,46 @@ public class FastJson2ObjectOutput implements ObjectOutput {
     @Override
     public void writeObject(Object obj) throws IOException {
         updateClassLoaderIfNeed();
+
+        try {
+            if (fastjson2SecurityManager.getSecurityFilter().isCheckSerializable()) {
+                tryDirectStreamWrite(
+                        obj,
+                        JSONWriter.Feature.WriteClassName,
+                        JSONWriter.Feature.FieldBased,
+                        JSONWriter.Feature.ErrorOnNoneSerializable,
+                        JSONWriter.Feature.ReferenceDetection,
+                        JSONWriter.Feature.WriteNulls,
+                        JSONWriter.Feature.NotWriteDefaultValue,
+                        JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+                        JSONWriter.Feature.WriteNameAsSymbol);
+            } else {
+                tryDirectStreamWrite(
+                        obj,
+                        JSONWriter.Feature.WriteClassName,
+                        JSONWriter.Feature.FieldBased,
+                        JSONWriter.Feature.ReferenceDetection,
+                        JSONWriter.Feature.WriteNulls,
+                        JSONWriter.Feature.NotWriteDefaultValue,
+                        JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+                        JSONWriter.Feature.WriteNameAsSymbol);
+            }
+        } catch (Exception e) {
+            writeObjectFallback(obj);
+        }
+        os.flush();
+    }
+
+    private void tryDirectStreamWrite(Object obj, JSONWriter.Feature... features) throws IOException {
+        try (java.io.ByteArrayOutputStream lengthBuffer = new java.io.ByteArrayOutputStream(8192)) {
+            com.alibaba.fastjson2.JSONB.writeTo(lengthBuffer, obj, features);
+
+            writeLength(lengthBuffer.size());
+            lengthBuffer.writeTo(os);
+        }
+    }
+
+    private void writeObjectFallback(Object obj) throws IOException {
         byte[] bytes;
         if (fastjson2SecurityManager.getSecurityFilter().isCheckSerializable()) {
             bytes = JSONB.toBytes(
@@ -127,7 +167,6 @@ public class FastJson2ObjectOutput implements ObjectOutput {
         }
         writeLength(bytes.length);
         os.write(bytes);
-        os.flush();
     }
 
     private void updateClassLoaderIfNeed() {

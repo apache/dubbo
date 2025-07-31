@@ -16,40 +16,38 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import io.netty.buffer.ByteBuf;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public interface WrapperUnPack extends UnPack {
 
     /**
-     * Zero-copy unpack ByteBuf with exception handling
+     * Stream-based unpack InputStream with exception handling
      */
-    default Object unpack(ByteBuf data) throws Exception {
+    @Override
+    default Object unpack(InputStream input) throws IOException {
+        return unpack(input, false);
+    }
+
+    /**
+     * Stream-based unpack InputStream with exception handling option
+     */
+    Object unpack(InputStream input, boolean isReturnTriException) throws IOException;
+
+    /**
+     * @deprecated Use {@link #unpack(InputStream)} for stream-based processing
+     */
+    @Deprecated
+    default Object unpack(byte[] data) throws IOException {
         return unpack(data, false);
     }
 
     /**
-     * Zero-copy unpack ByteBuf with exception handling option
-     */
-    Object unpack(ByteBuf data, boolean isReturnTriException) throws Exception;
-
-    /**
-     * @deprecated Use {@link #unpack(ByteBuf)} for zero-copy processing
+     * @deprecated Use {@link #unpack(InputStream, boolean)} for stream-based processing
      */
     @Deprecated
-    default Object unpack(byte[] data) throws Exception {
-        return unpack(data, false);
-    }
-
-    /**
-     * @deprecated Use {@link #unpack(ByteBuf, boolean)} for zero-copy processing
-     */
-    @Deprecated
-    default Object unpack(byte[] data, boolean isReturnTriException) throws Exception {
-        ByteBuf buf = io.netty.buffer.Unpooled.wrappedBuffer(data);
-        try {
-            return unpack(buf, isReturnTriException);
-        } finally {
-            buf.release();
-        }
+    default Object unpack(byte[] data, boolean isReturnTriException) throws IOException {
+        return unpack(new ByteArrayInputStream(data), isReturnTriException);
     }
 }

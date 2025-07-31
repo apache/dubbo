@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * A packable method is used to customize serialization for methods. It can provide a common wrapper
@@ -26,110 +29,90 @@ import io.netty.buffer.ByteBufAllocator;
 public interface PackableMethod {
 
     /**
-     * Zero-copy parse ByteBuf to request object
+     * Stream-based parse InputStream to request object
      */
-    default Object parseRequest(ByteBuf data) throws Exception {
-        return getRequestUnpack().unpack(data);
+    default Object parseRequest(InputStream input) throws IOException {
+        return getRequestUnpack().unpack(input);
     }
 
     /**
-     * Zero-copy parse ByteBuf to response object
+     * Stream-based parse InputStream to response object
      */
-    default Object parseResponse(ByteBuf data) throws Exception {
-        return parseResponse(data, false);
+    default Object parseResponse(InputStream input) throws IOException {
+        return parseResponse(input, false);
     }
 
     /**
-     * Zero-copy parse ByteBuf to response object with exception handling
+     * Stream-based parse InputStream to response object with exception handling
      */
-    default Object parseResponse(ByteBuf data, boolean isReturnTriException) throws Exception {
+    default Object parseResponse(InputStream input, boolean isReturnTriException) throws IOException {
         UnPack unPack = getResponseUnpack();
         if (unPack instanceof WrapperUnPack) {
-            return ((WrapperUnPack) unPack).unpack(data, isReturnTriException);
+            return ((WrapperUnPack) unPack).unpack(input, isReturnTriException);
         }
-        return unPack.unpack(data);
+        return unPack.unpack(input);
     }
 
     /**
-     * Zero-copy pack request to ByteBuf
+     * Stream-based pack request to OutputStream
      */
-    default ByteBuf packRequest(Object request, ByteBufAllocator allocator) throws Exception {
-        return getRequestPack().pack(request, allocator);
+    default void packRequest(Object request, OutputStream output) throws IOException {
+        getRequestPack().pack(request, output);
     }
 
     /**
-     * Zero-copy pack response to ByteBuf
+     * Stream-based pack response to OutputStream
      */
-    default ByteBuf packResponse(Object response, ByteBufAllocator allocator) throws Exception {
-        return getResponsePack().pack(response, allocator);
+    default void packResponse(Object response, OutputStream output) throws IOException {
+        getResponsePack().pack(response, output);
     }
 
     /**
-     * @deprecated Use {@link #parseRequest(ByteBuf)} for zero-copy processing
+     * @deprecated Use {@link #parseRequest(InputStream)} for stream-based processing
      */
     @Deprecated
-    default Object parseRequest(byte[] data) throws Exception {
-        ByteBuf buf = io.netty.buffer.Unpooled.wrappedBuffer(data);
-        try {
-            return parseRequest(buf);
-        } finally {
-            buf.release();
-        }
+    default Object parseRequest(byte[] data) throws IOException {
+        return parseRequest(new ByteArrayInputStream(data));
     }
 
     /**
-     * @deprecated Use {@link #parseResponse(ByteBuf)} for zero-copy processing
+     * @deprecated Use {@link #parseResponse(InputStream)} for stream-based processing
      */
     @Deprecated
-    default Object parseResponse(byte[] data) throws Exception {
+    default Object parseResponse(byte[] data) throws IOException {
         return parseResponse(data, false);
     }
 
     /**
-     * @deprecated Use {@link #parseResponse(ByteBuf, boolean)} for zero-copy processing
+     * @deprecated Use {@link #parseResponse(InputStream, boolean)} for stream-based processing
      */
     @Deprecated
-    default Object parseResponse(byte[] data, boolean isReturnTriException) throws Exception {
-        ByteBuf buf = io.netty.buffer.Unpooled.wrappedBuffer(data);
-        try {
-            return parseResponse(buf, isReturnTriException);
-        } finally {
-            buf.release();
-        }
+    default Object parseResponse(byte[] data, boolean isReturnTriException) throws IOException {
+        return parseResponse(new ByteArrayInputStream(data), isReturnTriException);
     }
 
     /**
-     * @deprecated Use {@link #packRequest(Object, ByteBufAllocator)} for zero-copy processing
+     * @deprecated Use {@link #packRequest(Object, OutputStream)} for stream-based processing
      */
     @Deprecated
-    default byte[] packRequest(Object request) throws Exception {
-        ByteBuf buf = packRequest(request, ByteBufAllocator.DEFAULT);
-        try {
-            byte[] result = new byte[buf.readableBytes()];
-            buf.readBytes(result);
-            return result;
-        } finally {
-            buf.release();
-        }
+    default byte[] packRequest(Object request) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        packRequest(request, baos);
+        return baos.toByteArray();
     }
 
     /**
-     * @deprecated Use {@link #packResponse(Object, ByteBufAllocator)} for zero-copy processing
+     * @deprecated Use {@link #packResponse(Object, OutputStream)} for stream-based processing
      */
     @Deprecated
-    default byte[] packResponse(Object response) throws Exception {
-        ByteBuf buf = packResponse(response, ByteBufAllocator.DEFAULT);
-        try {
-            byte[] result = new byte[buf.readableBytes()];
-            buf.readBytes(result);
-            return result;
-        } finally {
-            buf.release();
-        }
+    default byte[] packResponse(Object response) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        packResponse(response, baos);
+        return baos.toByteArray();
     }
 
     /**
-     * @deprecated Use {@link #packRequest(Object, ByteBufAllocator)} instead
+     * @deprecated Use {@link #packRequest(Object, OutputStream)} instead
      */
     @Deprecated
     Pack pack(Object[] arguments);

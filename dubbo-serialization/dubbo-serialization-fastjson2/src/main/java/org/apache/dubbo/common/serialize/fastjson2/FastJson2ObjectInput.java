@@ -110,16 +110,59 @@ public class FastJson2ObjectInput implements ObjectInput {
     public <T> T readObject(Class<T> cls) throws IOException {
         updateClassLoaderIfNeed();
         int length = readLength();
+
+        T result = tryStreamingRead(cls, length);
+
+        if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
+            throw new IllegalArgumentException(
+                    "deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
+        }
+        return result;
+    }
+
+    private <T> T tryStreamingRead(Class<T> cls, int length) throws IOException {
+        if (length > 64 * 1024) {
+            return readLargeObject(cls, length);
+        } else {
+            return readSmallObject(cls, length);
+        }
+    }
+
+    private <T> T readSmallObject(Class<T> cls, int length) throws IOException {
         byte[] bytes = new byte[length];
         int read = is.read(bytes, 0, length);
         if (read != length) {
             throw new IllegalArgumentException(
                     "deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
+        return parseObjectFromBytes(bytes, cls);
+    }
+
+    private <T> T readLargeObject(Class<T> cls, int length) throws IOException {
+        try (java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream(length)) {
+            byte[] chunk = new byte[8192];
+            int remaining = length;
+
+            while (remaining > 0) {
+                int toRead = Math.min(chunk.length, remaining);
+                int read = is.read(chunk, 0, toRead);
+                if (read != toRead) {
+                    throw new IllegalArgumentException(
+                            "deserialize failed. expected read length: " + toRead + " but actual read: " + read);
+                }
+                buffer.write(chunk, 0, read);
+                remaining -= read;
+            }
+
+            return parseObjectFromBytes(buffer.toByteArray(), cls);
+        }
+    }
+
+    private <T> T parseObjectFromBytes(byte[] bytes, Class<T> cls) {
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
-        T result;
+
         if (securityFilter.isCheckSerializable()) {
-            result = JSONB.parseObject(
+            return JSONB.parseObject(
                     bytes,
                     cls,
                     securityFilter,
@@ -129,7 +172,7 @@ public class FastJson2ObjectInput implements ObjectInput {
                     JSONReader.Feature.UseNativeObject,
                     JSONReader.Feature.FieldBased);
         } else {
-            result = JSONB.parseObject(
+            return JSONB.parseObject(
                     bytes,
                     cls,
                     securityFilter,
@@ -138,11 +181,6 @@ public class FastJson2ObjectInput implements ObjectInput {
                     JSONReader.Feature.IgnoreAutoTypeNotMatch,
                     JSONReader.Feature.FieldBased);
         }
-        if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
-            throw new IllegalArgumentException(
-                    "deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
-        }
-        return result;
     }
 
     @Override

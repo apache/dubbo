@@ -16,35 +16,30 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
- * Zero-copy pack interface using ByteBuf
+ * Zero-copy pack interface using pure Java Stream API
  */
 public interface Pack {
 
     /**
-     * Zero-copy pack object to ByteBuf
+     * Stream-based pack object to OutputStream for zero-copy processing
      * @param obj instance to pack
-     * @param allocator ByteBuf allocator
-     * @return ByteBuf containing packed data
-     * @throws Exception when error occurs
+     * @param output OutputStream to write packed data
+     * @throws IOException when I/O error occurs
      */
-    ByteBuf pack(Object obj, ByteBufAllocator allocator) throws Exception;
+    void pack(Object obj, OutputStream output) throws IOException;
 
     /**
-     * @deprecated Use {@link #pack(Object, ByteBufAllocator)} for zero-copy processing
+     * @deprecated Use {@link #pack(Object, OutputStream)} for stream-based processing
      */
     @Deprecated
-    default byte[] pack(Object obj) throws Exception {
-        ByteBuf buf = pack(obj, ByteBufAllocator.DEFAULT);
-        try {
-            byte[] result = new byte[buf.readableBytes()];
-            buf.readBytes(result);
-            return result;
-        } finally {
-            buf.release();
-        }
+    default byte[] pack(Object obj) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        pack(obj, baos);
+        return baos.toByteArray();
     }
 }
