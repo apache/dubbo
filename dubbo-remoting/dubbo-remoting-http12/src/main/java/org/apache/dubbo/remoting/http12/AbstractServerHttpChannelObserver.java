@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -226,7 +227,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             }
         }
 
-        ByteBuf byteBuf = responseEncoder.encode(data, getHttpChannel().alloc());
+        ByteBuf byteBuf = encodeDataToByteBuf(data);
 
         HttpOutputMessage message = encodeHttpOutputMessage(byteBuf);
         try {
@@ -242,8 +243,21 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         return getHttpChannel().newOutputMessage(body);
     }
 
+    /**
+     * Encode data to ByteBuf for zero-copy implementation
+     */
+    protected ByteBuf encodeDataToByteBuf(Object data) throws Throwable {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            responseEncoder.encode(outputStream, data, StandardCharsets.UTF_8);
+            byte[] bytes = outputStream.toByteArray();
+            ByteBuf byteBuf = getHttpChannel().alloc().buffer(bytes.length);
+            byteBuf.writeBytes(bytes);
+            return byteBuf;
+        }
+    }
+
     protected HttpOutputMessage encodeHttpOutputMessage(Object data) throws Throwable {
-        ByteBuf byteBuf = responseEncoder.encode(data, getHttpChannel().alloc());
+        ByteBuf byteBuf = encodeDataToByteBuf(data);
 
         HttpOutputMessage message = null;
         try {
