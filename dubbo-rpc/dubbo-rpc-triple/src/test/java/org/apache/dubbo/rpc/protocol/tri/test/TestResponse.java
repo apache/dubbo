@@ -132,7 +132,7 @@ public class TestResponse {
     public List<Long> getLongValues() {
         return getBodies(Long.class);
     }
-    
+
     public void close() {
         if (byteBufs != null) {
             for (ByteBuf byteBuf : byteBufs) {

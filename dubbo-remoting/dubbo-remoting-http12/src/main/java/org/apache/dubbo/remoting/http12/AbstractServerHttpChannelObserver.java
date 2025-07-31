@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -245,7 +244,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected HttpOutputMessage encodeHttpOutputMessage(Object data) throws Throwable {
         ByteBuf byteBuf = responseEncoder.encode(data, getHttpChannel().alloc());
-        
+
         HttpOutputMessage message = null;
         try {
             message = getHttpChannel().newOutputMessage(byteBuf);
