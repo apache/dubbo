@@ -44,14 +44,14 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     protocol name --> URL object
     wire protocol will get url object to config server pipeline for channel
      */
-    private Map<String, URL> supportedUrls = new ConcurrentHashMap<>();
+    private Map<String, URL> supportedUrls;
 
     /*
     protocol name --> ChannelHandler object
     wire protocol will get handler to config server pipeline for channel
     (for triple protocol, it's a default handler that do nothing)
      */
-    private Map<String, ChannelHandler> supportedHandlers = new ConcurrentHashMap<>();
+    private Map<String, ChannelHandler> supportedHandlers;
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
