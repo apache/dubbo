@@ -48,9 +48,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.UNDERLINE_SEPARA
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION;
 
-/**
- * StringUtils
- */
 public final class StringUtils {
 
     public static final String EMPTY_STRING = "";

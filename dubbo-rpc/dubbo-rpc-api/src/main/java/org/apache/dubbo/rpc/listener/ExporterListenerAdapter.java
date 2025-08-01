@@ -20,9 +20,6 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.RpcException;
 
-/**
- * ExporterListenerAdapter
- */
 public abstract class ExporterListenerAdapter implements ExporterListener {
 
     @Override
