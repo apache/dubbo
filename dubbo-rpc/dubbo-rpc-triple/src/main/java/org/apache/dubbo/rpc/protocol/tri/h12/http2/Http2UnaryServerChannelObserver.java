@@ -27,6 +27,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
+import java.io.ByteArrayOutputStream;
+
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
 public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObserver {
@@ -56,7 +59,7 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
             message = buildMessage(statusCode, data);
         } catch (Throwable t) {
             LOGGER.internalError("Failed to build message", t);
-            message = encodeHttpOutputMessage(data);
+            message = encodeHttpOutputMessageFromObject(data);
         }
         HttpMetadata metadata = buildMetadata(statusCode, data, throwable, message);
         customizeTrailers(metadata.headers(), throwable);
@@ -73,9 +76,14 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
     @Override
     protected void doOnCompleted(Throwable throwable) {}
 
-    @Override
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) throws Throwable {
-        return super.encodeHttpOutputMessage(data);
+    protected HttpOutputMessage encodeHttpOutputMessageFromObject(Object data) throws Throwable {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            getResponseEncoder().encode(outputStream, data);
+            byte[] bytes = outputStream.toByteArray();
+            ByteBuf byteBuf = getHttpChannel().alloc().buffer(bytes.length);
+            byteBuf.writeBytes(bytes);
+            return super.encodeHttpOutputMessage(byteBuf);
+        }
     }
 
     @Override
