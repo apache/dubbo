@@ -60,7 +60,7 @@ public abstract class AbstractTimerTask implements TimerTask {
         return System.currentTimeMillis();
     }
 
-    public void start() {
+    protected void start() {
         this.timeout = hashedWheelTimer.newTimeout(this, tick, TimeUnit.MILLISECONDS);
     }
 
