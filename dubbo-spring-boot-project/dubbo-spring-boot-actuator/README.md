@@ -100,7 +100,7 @@ Suppose a Spring Boot Web application did not specify `management.server.port`, 
 ```
 
 
- `memory`, `load`,  `threadpool` and `server` are Dubbo's build-in `StatusChecker`s in above example. 
+ `memory`, `load`,  `threadpool` and `server` are Dubbo's built-in `StatusChecker`s in above example. 
  Dubbo allows the application to extend `StatusChecker`'s SPI. 
 
 Default , `memory` and `load` will be added into Dubbo's `HealthIndicator` , it could be overridden by 
@@ -118,11 +118,11 @@ externalized configuration [`StatusChecker`'s defaults](#statuschecker-defaults)
 
 
 
-### Build-in `StatusChecker`s
+### Built-in `StatusChecker`s
 
 
 
- `META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker` declares Build-in `StatusChecker`s as follow :
+ `META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker` declares built-in `StatusChecker`s as follow :
 
 ```properties
 registry=org.apache.dubbo.registry.status.RegistryStatusChecker

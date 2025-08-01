@@ -26,8 +26,6 @@ import org.apache.maven.shared.artifact.filter.collection.AbstractArtifactFeatur
  * Preferred over the
  * {@link org.apache.maven.shared.artifact.filter.collection.GroupIdFilter} due to that
  * classes use of {@link String#startsWith} to match on prefix.
- *
- * @author Mark Ingram
  */
 public class MatchingGroupIdFilter extends AbstractArtifactFeatureFilter {
 

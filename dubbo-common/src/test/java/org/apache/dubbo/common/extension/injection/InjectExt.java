@@ -18,9 +18,6 @@ package org.apache.dubbo.common.extension.injection;
 
 import org.apache.dubbo.common.extension.SPI;
 
-/**
- *
- */
 @SPI("injection")
 public interface InjectExt {
     String echo(String msg);

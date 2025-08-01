@@ -28,9 +28,6 @@ import org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
 
 import java.lang.reflect.Method;
 
-/**
- * TraceTelnetHandler
- */
 @Activate
 @Help(parameter = "[service] [method] [times]", summary = "Trace the service.", detail = "Trace the service.")
 public class TraceTelnetHandler implements TelnetHandler {

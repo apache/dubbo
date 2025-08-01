@@ -48,9 +48,6 @@ import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION;
 import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
-/**
- * AbstractClient
- */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
 
     private final Lock connectLock = new ReentrantLock();

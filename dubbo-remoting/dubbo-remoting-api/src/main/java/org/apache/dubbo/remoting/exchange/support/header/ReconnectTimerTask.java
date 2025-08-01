@@ -25,9 +25,6 @@ import org.apache.dubbo.remoting.Client;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
 
-/**
- * ReconnectTimerTask
- */
 public class ReconnectTimerTask extends AbstractTimerTask {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReconnectTimerTask.class);

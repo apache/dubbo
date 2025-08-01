@@ -52,10 +52,7 @@ import static org.springframework.util.StringUtils.trimWhitespace;
 
 /**
  * {@link Annotation} Utilities
- *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see Annotation
- * @since 2017.01.13
  */
 @SuppressWarnings("unchecked")
 public abstract class AnnotationUtils {

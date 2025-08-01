@@ -25,9 +25,6 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.util.List;
 
-/**
- * ServerStatusChecker
- */
 @Activate
 public class ServerStatusChecker implements StatusChecker {
 

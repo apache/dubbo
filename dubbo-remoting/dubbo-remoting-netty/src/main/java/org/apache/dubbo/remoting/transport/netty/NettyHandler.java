@@ -36,9 +36,6 @@ import org.jboss.netty.channel.SimpleChannelHandler;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
-/**
- * NettyHandler
- */
 @Sharable
 public class NettyHandler extends SimpleChannelHandler {
 
