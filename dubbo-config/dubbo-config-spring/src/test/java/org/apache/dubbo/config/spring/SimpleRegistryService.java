@@ -33,9 +33,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * SimpleRegistryService
- */
 public class SimpleRegistryService extends AbstractRegistryService {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);

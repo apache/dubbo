@@ -18,9 +18,6 @@ package org.apache.dubbo.metadata.tools;
 
 import java.io.Serializable;
 
-/**
- * Ancestor
- */
 public class Ancestor implements Serializable {
 
     private boolean z;

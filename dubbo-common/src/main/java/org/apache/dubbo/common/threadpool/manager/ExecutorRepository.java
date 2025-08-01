@@ -32,9 +32,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 
-/**
- *
- */
 @SPI(value = "isolation", scope = ExtensionScope.APPLICATION)
 public interface ExecutorRepository {
 

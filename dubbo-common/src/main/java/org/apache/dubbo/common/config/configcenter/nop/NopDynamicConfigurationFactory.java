@@ -20,9 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
-/**
- *
- */
 @Deprecated
 public class NopDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 

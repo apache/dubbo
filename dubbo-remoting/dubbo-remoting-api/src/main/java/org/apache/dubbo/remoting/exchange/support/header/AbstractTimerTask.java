@@ -24,9 +24,6 @@ import org.apache.dubbo.remoting.Channel;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-/**
- * AbstractTimerTask
- */
 public abstract class AbstractTimerTask implements TimerTask {
 
     private final ChannelProvider channelProvider;

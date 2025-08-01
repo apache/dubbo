@@ -37,9 +37,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
-/**
- * ConfigParserTest
- */
 class ConfigParserTest {
 
     private String streamToString(InputStream stream) throws IOException {

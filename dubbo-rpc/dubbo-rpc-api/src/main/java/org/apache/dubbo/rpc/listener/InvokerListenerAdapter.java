@@ -20,9 +20,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.RpcException;
 
-/**
- * InvokerListenerAdapter
- */
 public abstract class InvokerListenerAdapter implements InvokerListener {
 
     @Override

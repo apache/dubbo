@@ -22,9 +22,6 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 
-/**
- * ClearTelnetHandler
- */
 @Activate
 @Help(parameter = "[lines]", summary = "Clear screen.", detail = "Clear screen.")
 public class ClearTelnetHandler implements TelnetHandler {

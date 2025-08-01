@@ -18,9 +18,6 @@ package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
-/**
- * TelnetServer
- */
 public class TelnetServer {
 
     public static void main(String[] args) throws Exception {

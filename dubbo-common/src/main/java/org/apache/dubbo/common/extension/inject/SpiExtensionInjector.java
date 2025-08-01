@@ -21,9 +21,6 @@ import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 
-/**
- * SpiExtensionInjector
- */
 public class SpiExtensionInjector implements ExtensionInjector {
 
     private ExtensionAccessor extensionAccessor;
