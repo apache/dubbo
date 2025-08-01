@@ -47,13 +47,15 @@ public class DubboNetInterfaceConfigApplicationListenerTest {
     @Test
     public void testOnApplicationEvent() {
 
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(DubboNetInterfaceConfigApplicationListenerTest.class);
+        SpringApplicationBuilder builder =
+                new SpringApplicationBuilder(DubboNetInterfaceConfigApplicationListenerTest.class);
         builder.listeners(new NetworkInterfaceApplicationListener());
         builder.web(WebApplicationType.NONE);
         SpringApplication application = builder.build();
         application.run();
 
-        String preferredNetworkInterface = SystemPropertyConfigUtils.getSystemProperty(DUBBO_PREFERRED_NETWORK_INTERFACE);
+        String preferredNetworkInterface =
+                SystemPropertyConfigUtils.getSystemProperty(DUBBO_PREFERRED_NETWORK_INTERFACE);
         String ignoredNetworkInterface = SystemPropertyConfigUtils.getSystemProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
         assertEquals(USE_NETWORK_INTERFACE_NAME, preferredNetworkInterface);
         assertEquals(IGNORED_NETWORK_INTERFACE_NAME, ignoredNetworkInterface);
