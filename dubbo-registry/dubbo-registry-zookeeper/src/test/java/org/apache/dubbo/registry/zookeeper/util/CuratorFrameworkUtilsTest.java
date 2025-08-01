@@ -21,7 +21,6 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
-import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_STORAGE_TYPE_PROPERTY_NAME;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
@@ -122,7 +122,7 @@ class CuratorFrameworkUtilsTest {
     @Test
     void testBuildCuratorFrameworkNotCheckConnect() {
         when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
-        URL url = registryUrl.addParameter(ZookeeperClient.ZOOKEEPER_CHECK_KEY, false);
+        URL url = registryUrl.addParameter(CHECK_KEY, false);
         Assertions.assertDoesNotThrow(() -> {
             CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(url, null);
             curatorFramework.getZookeeperClient().close();

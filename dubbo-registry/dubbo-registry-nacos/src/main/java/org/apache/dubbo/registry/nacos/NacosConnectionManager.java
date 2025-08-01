@@ -120,7 +120,6 @@ public class NacosConnectionManager {
      * @return {@link NamingService}
      */
     protected NamingService createNamingService() {
-        // Properties nacosProperties = buildNacosProperties(this.connectionURL);
         NamingService namingService = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {

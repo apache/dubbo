@@ -115,17 +115,11 @@ public class NacosNamingServiceUtils {
         boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
         int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 10);
-        NacosConnectionManager nacosConnectionManager;
-        try {
-            nacosConnectionManager =
-                    new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
-        } catch (IllegalStateException e) {
-            if (RegistryFactory.isCheck(connectionURL)) {
-                throw e;
-            }
-            nacosConnectionManager =
-                    new NacosConnectionManager(connectionURL, false, retryTimes, sleepMsBetweenRetries);
+        if (check && !RegistryFactory.isCheck(connectionURL)) {
+            check = false;
         }
+        NacosConnectionManager nacosConnectionManager =
+                new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
         return new NacosNamingServiceWrapper(nacosConnectionManager, retryTimes, sleepMsBetweenRetries);
     }
 }
