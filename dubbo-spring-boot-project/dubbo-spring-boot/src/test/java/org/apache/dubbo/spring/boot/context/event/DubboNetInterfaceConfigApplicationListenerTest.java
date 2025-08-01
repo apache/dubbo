@@ -16,18 +16,11 @@
  */
 package org.apache.dubbo.spring.boot.context.event;
 
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 
-import java.lang.reflect.Method;
-import java.net.NetworkInterface;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -47,49 +40,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class DubboNetInterfaceConfigApplicationListenerTest {
 
-    private static String useNetworkInterfaceName = "eth0";
+    private static final String USE_NETWORK_INTERFACE_NAME = "eth0";
 
-    private static String ignoredNetworkInterfaceName = "eth1";
-
-    private static final String EMPTY_INTERFACE_NAME = "empty";
-
-    @SuppressWarnings("unchecked")
-    @BeforeEach
-    public void beforeFindRandomInterface() throws Exception {
-        Method getValidNetworkInterfaces = NetUtils.class.getDeclaredMethod("getValidNetworkInterfaces");
-        getValidNetworkInterfaces.setAccessible(true);
-        List<NetworkInterface> networkInterfaceList = (List<NetworkInterface>) getValidNetworkInterfaces.invoke(null);
-        if (networkInterfaceList == null || networkInterfaceList.isEmpty()) {
-            useNetworkInterfaceName = EMPTY_INTERFACE_NAME;
-            return;
-        }
-        int size = networkInterfaceList.size();
-        Random random = new Random();
-        NetworkInterface networkInterface = networkInterfaceList.get(random.nextInt(size));
-        useNetworkInterfaceName = networkInterface.getDisplayName();
-
-        networkInterface = networkInterfaceList.get(random.nextInt(size));
-        ignoredNetworkInterfaceName = networkInterface.getDisplayName();
-    }
+    private static final String IGNORED_NETWORK_INTERFACE_NAME = "eth1";
 
     @Test
     public void testOnApplicationEvent() {
 
-        SpringApplicationBuilder builder =
-                new SpringApplicationBuilder(DubboNetInterfaceConfigApplicationListenerTest.class);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(DubboNetInterfaceConfigApplicationListenerTest.class);
         builder.listeners(new NetworkInterfaceApplicationListener());
         builder.web(WebApplicationType.NONE);
         SpringApplication application = builder.build();
         application.run();
-        String preferredNetworkInterface;
-        if (Objects.equals(useNetworkInterfaceName, EMPTY_INTERFACE_NAME)) {
-            preferredNetworkInterface = SystemPropertyConfigUtils.getSystemProperty(DUBBO_PREFERRED_NETWORK_INTERFACE);
-        } else {
-            preferredNetworkInterface = NetUtils.findNetworkInterface().getDisplayName();
-        }
+
+        String preferredNetworkInterface = SystemPropertyConfigUtils.getSystemProperty(DUBBO_PREFERRED_NETWORK_INTERFACE);
         String ignoredNetworkInterface = SystemPropertyConfigUtils.getSystemProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
-        assertEquals(useNetworkInterfaceName, preferredNetworkInterface);
-        assertEquals(ignoredNetworkInterfaceName, ignoredNetworkInterface);
+        assertEquals(USE_NETWORK_INTERFACE_NAME, preferredNetworkInterface);
+        assertEquals(IGNORED_NETWORK_INTERFACE_NAME, ignoredNetworkInterface);
     }
 
     static class NetworkInterfaceApplicationListener
@@ -101,8 +68,8 @@ public class DubboNetInterfaceConfigApplicationListenerTest {
             MutablePropertySources propertySources = environment.getPropertySources();
 
             Map<String, Object> map = new HashMap<>();
-            map.put(DUBBO_PREFERRED_NETWORK_INTERFACE, useNetworkInterfaceName);
-            map.put(DUBBO_NETWORK_IGNORED_INTERFACE, ignoredNetworkInterfaceName);
+            map.put(DUBBO_PREFERRED_NETWORK_INTERFACE, USE_NETWORK_INTERFACE_NAME);
+            map.put(DUBBO_NETWORK_IGNORED_INTERFACE, IGNORED_NETWORK_INTERFACE_NAME);
             propertySources.addLast(new MapPropertySource("networkInterfaceConfig", map));
         }
     }
