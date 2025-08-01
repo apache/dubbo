@@ -47,7 +47,15 @@ public class JsonCodec implements HttpMessageCodec {
 
     public void encode(OutputStream os, Object data, Charset charset) throws EncodeException {
         try {
-            JSON.writeTo(os, data);
+            // FastJSON2's JSON.writeTo uses UTF-8 by default, which is the standard for JSON
+            // According to RFC 7159, JSON text exchanged between systems MUST be encoded using UTF-8
+            // If a different charset is explicitly required, convert the bytes
+            if (charset != null && !charset.equals(java.nio.charset.StandardCharsets.UTF_8)) {
+                String jsonString = JSON.toJSONString(data);
+                os.write(jsonString.getBytes(charset));
+            } else {
+                JSON.writeTo(os, data);
+            }
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
@@ -57,7 +65,15 @@ public class JsonCodec implements HttpMessageCodec {
 
     public void encode(OutputStream os, Object[] data, Charset charset) throws EncodeException {
         try {
-            JSON.writeTo(os, data);
+            // FastJSON2's JSON.writeTo uses UTF-8 by default, which is the standard for JSON
+            // According to RFC 7159, JSON text exchanged between systems MUST be encoded using UTF-8
+            // If a different charset is explicitly required, convert the bytes
+            if (charset != null && !charset.equals(java.nio.charset.StandardCharsets.UTF_8)) {
+                String jsonString = JSON.toJSONString(data);
+                os.write(jsonString.getBytes(charset));
+            } else {
+                JSON.writeTo(os, data);
+            }
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {

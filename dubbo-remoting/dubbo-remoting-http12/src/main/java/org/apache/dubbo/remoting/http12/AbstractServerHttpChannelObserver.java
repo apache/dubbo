@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -198,9 +197,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
         getHttpChannel().writeHeader(metadata);
         headerSent = true;
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Http response headers sent: " + metadata.headers());
-        }
     }
 
     protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
@@ -212,19 +208,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
         if (data == null && statusCode != 200) {
             return null;
-        }
-
-        if (LOGGER.isDebugEnabled()) {
-            try {
-                String text;
-                if (data instanceof byte[]) {
-                    text = new String((byte[]) data, StandardCharsets.UTF_8);
-                } else {
-                    text = JsonUtils.toJson(data);
-                }
-                LOGGER.debug("Http response body sent: '{}' by [{}]", text, httpChannel);
-            } catch (Throwable ignored) {
-            }
         }
 
         ByteBuf byteBuf = encodeDataToByteBuf(data);
@@ -247,13 +230,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
      * Encode data to ByteBuf for zero-copy implementation
      */
     protected ByteBuf encodeDataToByteBuf(Object data) throws Throwable {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            responseEncoder.encode(outputStream, data);
-            byte[] bytes = outputStream.toByteArray();
-            ByteBuf byteBuf = getHttpChannel().alloc().buffer(bytes.length);
-            byteBuf.writeBytes(bytes);
-            return byteBuf;
-        }
+        return responseEncoder.encode(data, getHttpChannel().alloc());
     }
 
     protected void preOutputMessage(HttpOutputMessage message) throws Throwable {}
@@ -333,9 +310,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
         customizeTrailers(headers, throwable);
         getHttpChannel().writeHeader(trailerMetadata);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Http response trailers sent: " + headers);
-        }
     }
 
     protected HttpMetadata encodeTrailers(Throwable throwable) {

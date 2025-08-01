@@ -479,8 +479,8 @@ public class ReflectionPackableMethod implements PackableMethod {
          * @return hessian4 if the param is hessian2, otherwise return the param
          */
         private String convertHessianToWrapper(String serializeType) {
-            if ("hessian2".equals(serializeType)) {
-                return "hessian4";
+            if (TripleConstants.HESSIAN2.equals(serializeType)) {
+                return TripleConstants.HESSIAN4;
             }
             return serializeType;
         }

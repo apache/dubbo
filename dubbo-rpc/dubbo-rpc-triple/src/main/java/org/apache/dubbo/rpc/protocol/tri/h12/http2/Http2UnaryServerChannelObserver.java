@@ -77,12 +77,20 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
     protected void doOnCompleted(Throwable throwable) {}
 
     protected HttpOutputMessage encodeHttpOutputMessageFromObject(Object data) throws Throwable {
+        ByteBuf byteBuf = null;
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             getResponseEncoder().encode(outputStream, data);
             byte[] bytes = outputStream.toByteArray();
-            ByteBuf byteBuf = getHttpChannel().alloc().buffer(bytes.length);
+            byteBuf = getHttpChannel().alloc().buffer(bytes.length);
             byteBuf.writeBytes(bytes);
-            return super.encodeHttpOutputMessage(byteBuf);
+            HttpOutputMessage result = super.encodeHttpOutputMessage(byteBuf);
+            byteBuf = null; // Transfer ownership to result
+            return result;
+        } catch (Throwable t) {
+            if (byteBuf != null && byteBuf.refCnt() > 0) {
+                byteBuf.release();
+            }
+            throw t;
         }
     }
 

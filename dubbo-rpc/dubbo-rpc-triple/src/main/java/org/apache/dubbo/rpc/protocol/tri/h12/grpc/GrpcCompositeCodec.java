@@ -87,11 +87,20 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         // protobuf
         // TODO int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 :
         // 1;
+
+        // TODO: Remove this deprecated method - it defeats zero-copy optimization
+        // This method converts ByteBuf back to byte array which is anti-pattern for zero-copy
         try {
             ByteBuf byteBuf = encode(data, null);
-            byte[] bytes = new byte[byteBuf.readableBytes()];
-            byteBuf.readBytes(bytes);
-            outputStream.write(bytes);
+            try {
+                byte[] bytes = new byte[byteBuf.readableBytes()];
+                byteBuf.readBytes(bytes);
+                outputStream.write(bytes);
+            } finally {
+                if (byteBuf.refCnt() > 0) {
+                    byteBuf.release();
+                }
+            }
         } catch (HttpStatusException e) {
             throw e;
         } catch (Exception e) {

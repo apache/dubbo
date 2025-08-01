@@ -133,12 +133,8 @@ public class FastJson2ObjectOutput implements ObjectOutput {
     }
 
     private void tryDirectStreamWrite(Object obj, JSONWriter.Feature... features) throws IOException {
-        try (java.io.ByteArrayOutputStream lengthBuffer = new java.io.ByteArrayOutputStream(8192)) {
-            com.alibaba.fastjson2.JSONB.writeTo(lengthBuffer, obj, features);
-
-            writeLength(lengthBuffer.size());
-            lengthBuffer.writeTo(os);
-        }
+        // Temporarily revert to original buffered approach to test if this is causing connection issues
+        throw new IOException("Direct stream write temporarily disabled for debugging");
     }
 
     private void writeObjectFallback(Object obj) throws IOException {
