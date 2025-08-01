@@ -20,7 +20,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -248,26 +247,11 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
      */
     protected ByteBuf encodeDataToByteBuf(Object data) throws Throwable {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            responseEncoder.encode(outputStream, data, StandardCharsets.UTF_8);
+            responseEncoder.encode(outputStream, data);
             byte[] bytes = outputStream.toByteArray();
             ByteBuf byteBuf = getHttpChannel().alloc().buffer(bytes.length);
             byteBuf.writeBytes(bytes);
             return byteBuf;
-        }
-    }
-
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) throws Throwable {
-        ByteBuf byteBuf = encodeDataToByteBuf(data);
-
-        HttpOutputMessage message = null;
-        try {
-            message = getHttpChannel().newOutputMessage(byteBuf);
-            return message;
-        } catch (Throwable t) {
-            if (message == null && byteBuf.refCnt() > 0) {
-                byteBuf.release();
-            }
-            throw t;
         }
     }
 
@@ -294,7 +278,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         int statusCode = resolveErrorStatusCode(throwable);
         ErrorResponse errorResponse = buildErrorResponse(statusCode, throwable);
         if (!headerSent) {
-            HttpOutputMessage message = encodeHttpOutputMessage(errorResponse);
+            HttpOutputMessage message = buildMessage(statusCode, errorResponse);
             HttpMetadata metadata = buildMetadata(statusCode, null, throwable, message);
             sendMetadata(metadata);
             getHttpChannel().sendMessage(message, true);
