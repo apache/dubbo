@@ -93,6 +93,10 @@ public class ConfigurableMetadataServiceExporter {
         return this;
     }
 
+    /**
+     * Get exported urls which include v1 and v2 if existed
+     * @return exported urls
+     */
     public List<URL> getExportedUrls() {
         List<URL> urls = new ArrayList<>();
         if (serviceConfig != null) {
