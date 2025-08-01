@@ -19,9 +19,6 @@ package org.apache.dubbo.config.api;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * DemoService
- */
 public interface DemoService {
 
     String sayName(String name);

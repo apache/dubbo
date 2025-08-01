@@ -23,9 +23,6 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 
-/**
- *
- */
 public class NewRouter implements Router {
     @Override
     public URL getUrl() {

@@ -37,9 +37,6 @@ import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 
-/**
- * ResourceFilter
- */
 public class ResourceFilter implements Filter {
 
     private static final String CLASSPATH_PREFIX = "classpath:";

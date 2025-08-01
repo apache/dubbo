@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.constants;
 
-/**
- * QosConstants
- */
 public interface QosConstants {
 
     String QOS_ENABLE = "qos.enable";

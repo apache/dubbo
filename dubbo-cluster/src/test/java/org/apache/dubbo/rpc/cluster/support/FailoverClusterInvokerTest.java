@@ -48,9 +48,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-/**
- * FailoverClusterInvokerTest
- */
 @SuppressWarnings("unchecked")
 class FailoverClusterInvokerTest {
     private final int retries = 5;

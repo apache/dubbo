@@ -35,9 +35,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_NOTIFY_EVENT;
 
-/**
- * AbstractRegistryService
- */
 public abstract class AbstractRegistryService implements RegistryService {
 
     // logger
