@@ -204,7 +204,7 @@ final class TestRunnerImpl implements TestRunner {
                 listener.onData(END);
             }
         }
-       return new TestResponse(channel.getHttpMetadata().headers(), channel.getBodies(), decoder);
+        return new TestResponse(channel.getHttpMetadata().headers(), channel.getBodies(), decoder);
     }
 
     @Override
