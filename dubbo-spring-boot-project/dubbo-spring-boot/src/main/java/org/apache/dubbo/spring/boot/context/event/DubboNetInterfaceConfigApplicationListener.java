@@ -21,11 +21,14 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * @since 3.3
  */
+@Order(Ordered.HIGHEST_PRECEDENCE + 20) // After LoggingApplicationListener#DEFAULT_ORDER
 public class DubboNetInterfaceConfigApplicationListener
         implements ApplicationListener<ApplicationContextInitializedEvent> {
 
