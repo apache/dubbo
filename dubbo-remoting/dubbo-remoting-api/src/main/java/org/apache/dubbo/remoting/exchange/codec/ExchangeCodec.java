@@ -327,38 +327,39 @@ public class ExchangeCodec extends TelnetCodec {
             Bytes.long2bytes(res.getId(), header, 4);
 
             buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
-            ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
+            int len;
+            try (ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer)) {
 
-            // encode response data or error message.
-            if (status == Response.OK) {
-                if (res.isHeartbeat()) {
-                    // heartbeat response data is always null
-                    bos.write(CodecSupport.getNullBytesOf(serialization));
+                // encode response data or error message.
+                if (status == Response.OK) {
+                    if (res.isHeartbeat()) {
+                        // heartbeat response data is always null
+                        bos.write(CodecSupport.getNullBytesOf(serialization));
+                    } else {
+                        ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+                        if (res.isEvent()) {
+                            encodeEventData(channel, out, res.getResult());
+                        } else {
+                            encodeResponseData(channel, out, res.getResult(), res.getVersion());
+                        }
+                        out.flushBuffer();
+                        if (out instanceof Cleanable) {
+                            ((Cleanable) out).cleanup();
+                        }
+                    }
                 } else {
                     ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
-                    if (res.isEvent()) {
-                        encodeEventData(channel, out, res.getResult());
-                    } else {
-                        encodeResponseData(channel, out, res.getResult(), res.getVersion());
-                    }
+                    out.writeUTF(res.getErrorMessage());
                     out.flushBuffer();
                     if (out instanceof Cleanable) {
                         ((Cleanable) out).cleanup();
                     }
                 }
-            } else {
-                ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
-                out.writeUTF(res.getErrorMessage());
-                out.flushBuffer();
-                if (out instanceof Cleanable) {
-                    ((Cleanable) out).cleanup();
-                }
+
+                bos.flush();
+                len = bos.writtenBytes();
             }
 
-            bos.flush();
-            bos.close();
-
-            int len = bos.writtenBytes();
             checkPayload(channel, len);
             Bytes.int2bytes(len, header, 12);
             // write

@@ -149,32 +149,34 @@
 
     <!-- Maven plugins -->
     <maven_jar_version>3.4.2</maven_jar_version>
-    <maven_surefire_version>3.5.2</maven_surefire_version>
-    <maven_deploy_version>3.1.3</maven_deploy_version>
+    <maven_surefire_version>3.5.3</maven_surefire_version>
+    <maven_deploy_version>3.1.4</maven_deploy_version>
     <maven_shade_version>3.6.0</maven_shade_version>
     <maven_compiler_version>3.14.0</maven_compiler_version>
     <maven_source_version>3.3.1</maven_source_version>
     <maven_javadoc_version>3.11.2</maven_javadoc_version>
     <maven_checkstyle_version>3.6.0</maven_checkstyle_version>
     <build_helper_maven_plugin_version>3.6.0</build_helper_maven_plugin_version>
-    <maven_jacoco_version>0.8.12</maven_jacoco_version>
-    <maven_flatten_version>1.6.0</maven_flatten_version>
-    <maven_enforce_version>3.5.0</maven_enforce_version>
+    <maven_jacoco_version>0.8.13</maven_jacoco_version>
+    <maven_flatten_version>1.7.0</maven_flatten_version>
+    <maven_enforce_version>3.6.0</maven_enforce_version>
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
     <maven_gmavenplus_version>3.0.2</maven_gmavenplus_version>
 
     <!-- For unify spring boot 3 version -->
-    <spring-6.version>6.2.3</spring-6.version>
-    <spring-boot-3.version>3.4.3</spring-boot-3.version>
+    <spring-6.version>6.2.8</spring-6.version>
+    <spring-security-6.version>6.5.1</spring-security-6.version>
+    <spring-boot-3.version>3.5.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
-    <grpc_version>1.54.0</grpc_version>
-    <spotless-maven-plugin.version>2.44.3</spotless-maven-plugin.version>
+    <!-- grpc_version should be same as grpc.version at dubbo-dependencies-bom -->
+    <grpc_version>1.73.0</grpc_version>
+    <spotless-maven-plugin.version>2.44.5</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.3.4-SNAPSHOT</revision>
+    <revision>3.3.6-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -497,6 +499,7 @@
       </activation>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-spring6-security</module>
       </modules>
     </profile>
     <!-- jacoco: mvn validate -Pjacoco  -->
@@ -646,6 +649,7 @@
       <id>release</id>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-plugin-loom</module>
         <module>dubbo-distribution/dubbo-all</module>
         <module>dubbo-distribution/dubbo-all-shaded</module>
@@ -766,12 +770,21 @@
       </build>
     </profile>
     <profile>
+      <id>jdk15lt</id>
+      <activation>
+        <jdk>[1.7,15)</jdk>
+      </activation>
+      <properties>
+        <argLine>${argline}</argLine>
+      </properties>
+    </profile>
+    <profile>
       <id>jdk15ge-add-open</id>
       <activation>
         <jdk>[15,</jdk>
       </activation>
       <properties>
-        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED
+        <argLine>${argline} --add-opens java.base/java.lang=ALL-UNNAMED
           --add-opens java.base/java.math=ALL-UNNAMED
           --add-opens java.base/java.util=ALL-UNNAMED</argLine>
       </properties>
@@ -1060,7 +1073,7 @@
     <profile>
       <id>spring-boot-3</id>
       <properties>
-        <tomcat.version>10.1.36</tomcat.version>
+        <tomcat.version>10.1.41</tomcat.version>
       </properties>
       <dependencyManagement>
         <dependencies>

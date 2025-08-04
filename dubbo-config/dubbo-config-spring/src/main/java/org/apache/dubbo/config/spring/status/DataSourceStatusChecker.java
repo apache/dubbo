@@ -36,9 +36,6 @@ import org.springframework.context.ApplicationContext;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_WARN_STATUS_CHECKER;
 
-/**
- * DataSourceStatusChecker
- */
 @Activate
 public class DataSourceStatusChecker implements StatusChecker {
 

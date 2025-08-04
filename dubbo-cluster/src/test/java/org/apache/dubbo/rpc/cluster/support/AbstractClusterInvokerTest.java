@@ -67,9 +67,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * AbstractClusterInvokerTest
- */
 @SuppressWarnings("rawtypes")
 class AbstractClusterInvokerTest {
     List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();
@@ -499,7 +496,6 @@ class AbstractClusterInvokerTest {
 
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
             Long count = entry.getValue().get();
-            //            System.out.println(count);
             if (entry.getKey().isAvailable())
                 Assertions.assertTrue(count > runs / invokers.size(), "count should > avg");
         }

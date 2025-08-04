@@ -32,13 +32,12 @@ import static org.mockito.Mockito.mockConstructionWithAnswer;
 
 class Curator5ZookeeperClientManagerTest {
     private ZookeeperClient zookeeperClient;
-    private ZookeeperClientManager zookeeperClientManager;
     private static MockedConstruction<Curator5ZookeeperClient> mockedCurator5ZookeeperClientConstruction;
     private static String zookeeperConnectionAddress1;
 
     @BeforeAll
     public static void beforeAll() {
-        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        zookeeperConnectionAddress1 = "zookeeper://127.0.0.1:2181";
         Curator5ZookeeperClient mockCurator5ZookeeperClient = mock(Curator5ZookeeperClient.class);
         mockedCurator5ZookeeperClientConstruction =
                 mockConstructionWithAnswer(Curator5ZookeeperClient.class, invocationOnMock -> invocationOnMock
@@ -49,7 +48,6 @@ class Curator5ZookeeperClientManagerTest {
     @BeforeEach
     public void setUp() {
         zookeeperClient = new ZookeeperClientManager().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
-        zookeeperClientManager = new ZookeeperClientManager();
     }
 
     @Test

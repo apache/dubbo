@@ -22,6 +22,7 @@ import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,11 @@ public class SimpleMetricsEventMulticasterTest {
         configManager.setApplication(applicationConfig);
         applicationModel.setConfigManager(configManager);
         requestEvent = new TimeCounterEvent(applicationModel, null) {};
+    }
+
+    @AfterEach
+    public void destroy() {
+        ApplicationModel.defaultModel().destroy();
     }
 
     @Test

@@ -71,7 +71,6 @@ class StreamUtilsTest {
         String jsonRaw =
                 headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getName()).toString();
         String json = TriRpcStatus.decodeMessage(jsonRaw);
-        System.out.println(jsonRaw + "---" + json);
         Map<String, String> upperMap = JsonUtils.toJavaObject(json, Map.class);
         Assertions.assertArrayEquals(
                 "Upper".getBytes(StandardCharsets.UTF_8), upperMap.get("upper").getBytes(StandardCharsets.UTF_8));

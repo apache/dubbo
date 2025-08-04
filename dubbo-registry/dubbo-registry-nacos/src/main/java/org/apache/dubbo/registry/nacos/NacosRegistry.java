@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -137,8 +138,9 @@ public class NacosRegistry extends FailbackRegistry {
     private final Map<URL, Map<NotifyListener, NacosAggregateListener>> originToAggregateListener =
             new ConcurrentHashMap<>();
 
-    private final Map<URL, Map<NacosAggregateListener, Map<String, EventListener>>> nacosListeners =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<
+                    URL, ConcurrentHashMap<NacosAggregateListener, ConcurrentHashMap<String, EventListener>>>
+            nacosListeners = new ConcurrentHashMap<>();
     private final boolean supportLegacyServiceName;
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
@@ -642,20 +644,22 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NacosAggregateListener listener)
             throws NacosException {
-        Map<NacosAggregateListener, Map<String, EventListener>> listeners =
-                nacosListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
+        ConcurrentHashMap<NacosAggregateListener, ConcurrentHashMap<String, EventListener>> listeners =
+                ConcurrentHashMapUtils.computeIfAbsent(nacosListeners, url, k -> new ConcurrentHashMap<>());
 
-        Map<String, EventListener> eventListeners = listeners.computeIfAbsent(listener, k -> new ConcurrentHashMap<>());
+        ConcurrentHashMap<String, EventListener> eventListeners =
+                ConcurrentHashMapUtils.computeIfAbsent(listeners, listener, k -> new ConcurrentHashMap<>());
 
-        EventListener eventListener = eventListeners.computeIfAbsent(
-                serviceName, k -> new RegistryChildListenerImpl(serviceName, url, listener));
+        EventListener eventListener = ConcurrentHashMapUtils.computeIfAbsent(
+                eventListeners, serviceName, k -> new RegistryChildListenerImpl(serviceName, url, listener));
 
         namingService.subscribe(serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP), eventListener);
     }
 
     private void unsubscribeEventListener(String serviceName, final URL url, final NacosAggregateListener listener)
             throws NacosException {
-        Map<NacosAggregateListener, Map<String, EventListener>> listenerToServiceEvent = nacosListeners.get(url);
+        ConcurrentHashMap<NacosAggregateListener, ConcurrentHashMap<String, EventListener>> listenerToServiceEvent =
+                nacosListeners.get(url);
         if (listenerToServiceEvent == null) {
             return;
         }

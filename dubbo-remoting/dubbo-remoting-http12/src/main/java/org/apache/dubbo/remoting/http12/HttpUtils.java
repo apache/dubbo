@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
@@ -81,7 +82,7 @@ public final class HttpUtils {
         return cookies;
     }
 
-    public static String getCharsetFromContentType(String contentType) {
+    public static String parseCharset(String contentType) {
         String charset = null;
         if (contentType == null) {
             charset = StringUtils.EMPTY_STRING;
@@ -91,7 +92,12 @@ public final class HttpUtils {
                 charset = StringUtils.EMPTY_STRING;
             } else {
                 charset = contentType.substring(index + CHARSET_PREFIX.length()).trim();
-                charset = charset.split(";")[0];
+                int splits = charset.indexOf(CommonConstants.SEMICOLON_SEPARATOR);
+                if (splits == -1) {
+                    return charset;
+                } else {
+                    return charset.substring(0, splits).trim();
+                }
             }
         }
         return charset;

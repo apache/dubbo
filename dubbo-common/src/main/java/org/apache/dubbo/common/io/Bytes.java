@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -823,7 +824,7 @@ public class Bytes {
      * @return MD5 byte array.
      */
     public static byte[] getMD5(String str) {
-        return getMD5(str.getBytes());
+        return getMD5(str.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

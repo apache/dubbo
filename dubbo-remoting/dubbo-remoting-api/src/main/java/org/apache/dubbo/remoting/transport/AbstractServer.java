@@ -39,9 +39,6 @@ import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
-/**
- * AbstractServer
- */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
 
     private Set<ExecutorService> executors = new ConcurrentHashSet<>();
@@ -66,8 +63,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
-                logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export "
-                        + getLocalAddress());
+                logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] Start "
+                        + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
             }
         } catch (Throwable t) {
             throw new RemotingException(

@@ -25,6 +25,8 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 
@@ -34,6 +36,7 @@ import org.springframework.context.annotation.PropertySource;
 @EnableDubbo
 @PropertySource(value = "classpath:/nacos-consumer-config.properties")
 public class DemoServiceConsumerBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceConsumerBootstrap.class);
 
     @Reference(version = "${demo.service.version}")
     private DemoService demoService;
@@ -41,7 +44,7 @@ public class DemoServiceConsumerBootstrap {
     @PostConstruct
     public void init() throws InterruptedException {
         for (int j = 0; j < 10; j++) {
-            System.out.println(demoService.sayName("小马哥（mercyblitz）"));
+            logger.info(demoService.sayName("小马哥（mercyblitz）"));
         }
         Thread.sleep(TimeUnit.SECONDS.toMillis(5));
     }

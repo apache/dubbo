@@ -48,9 +48,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-/**
- * FailoverClusterInvokerTest
- */
 @SuppressWarnings("unchecked")
 class FailoverClusterInvokerTest {
     private final int retries = 5;
@@ -318,7 +315,7 @@ class FailoverClusterInvokerTest {
     public static class MockInvoker<T> extends AbstractInvoker<T> {
         URL url;
         boolean available = true;
-        boolean destoryed = false;
+        boolean destroyed = false;
         Result result;
         RpcException exception;
         Callable<?> callable;

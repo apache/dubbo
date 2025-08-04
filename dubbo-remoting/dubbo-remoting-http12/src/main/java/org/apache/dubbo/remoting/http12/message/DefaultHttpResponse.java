@@ -166,7 +166,7 @@ public class DefaultHttpResponse implements HttpResponse {
         String charset = this.charset;
         if (charset == null) {
             String contentType = contentType();
-            charset = HttpUtils.getCharsetFromContentType(contentType);
+            charset = HttpUtils.parseCharset(contentType);
             this.charset = charset;
         }
         return charset.isEmpty() ? null : charset;

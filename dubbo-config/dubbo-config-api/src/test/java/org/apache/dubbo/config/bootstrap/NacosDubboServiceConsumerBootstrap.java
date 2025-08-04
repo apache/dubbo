@@ -19,6 +19,9 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 
 /**
@@ -27,6 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
  * @since 2.7.5
  */
 public class NacosDubboServiceConsumerBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(NacosDubboServiceConsumerBootstrap.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -51,8 +55,8 @@ public class NacosDubboServiceConsumerBootstrap {
 
         for (int i = 0; i < 5; i++) {
             Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
-            System.out.println(userService.getUser(i * 1L));
+            logger.info(echoService.echo("Hello,World"));
+            logger.info(String.valueOf(userService.getUser(i * 1L)));
         }
     }
 }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
@@ -32,7 +33,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,8 +42,10 @@ public final class CodecUtils {
     private final FrameworkModel frameworkModel;
     private final List<HttpMessageDecoderFactory> decoderFactories;
     private final List<HttpMessageEncoderFactory> encoderFactories;
-    private final Map<String, Optional<HttpMessageEncoderFactory>> encoderCache = new ConcurrentHashMap<>();
-    private final Map<String, Optional<HttpMessageDecoderFactory>> decoderCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Optional<HttpMessageEncoderFactory>> encoderCache =
+            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Optional<HttpMessageDecoderFactory>> decoderCache =
+            new ConcurrentHashMap<>();
     private Set<String> disallowedContentTypes = Collections.emptySet();
 
     public CodecUtils(FrameworkModel frameworkModel) {
@@ -80,7 +82,7 @@ public final class CodecUtils {
 
     public Optional<HttpMessageDecoderFactory> determineHttpMessageDecoderFactory(String mediaType) {
         Assert.notNull(mediaType, "mediaType must not be null");
-        return decoderCache.computeIfAbsent(mediaType, k -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(decoderCache, mediaType, k -> {
             for (HttpMessageDecoderFactory factory : decoderFactories) {
                 if (factory.supports(k)
                         && !disallowedContentTypes.contains(factory.mediaType().getName())) {
@@ -93,7 +95,7 @@ public final class CodecUtils {
 
     public Optional<HttpMessageEncoderFactory> determineHttpMessageEncoderFactory(String mediaType) {
         Assert.notNull(mediaType, "mediaType must not be null");
-        return encoderCache.computeIfAbsent(mediaType, k -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(encoderCache, mediaType, k -> {
             for (HttpMessageEncoderFactory factory : encoderFactories) {
                 if (factory.supports(k)
                         && !disallowedContentTypes.contains(factory.mediaType().getName())) {

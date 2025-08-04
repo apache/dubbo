@@ -30,6 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -49,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Some construction and filter cases are covered in InMemoryMetadataServiceTest
  */
 class MetadataInfoTest {
+    private static final Logger logger = LoggerFactory.getLogger(MetadataInfoTest.class);
     private static URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService2?"
             + "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2"
             + "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService2"
@@ -169,13 +172,13 @@ class MetadataInfoTest {
 
         // export normal url again
         metadataInfo.addService(url);
-        System.out.println(JsonUtils.toJson(metadataInfo));
+        logger.info(JsonUtils.toJson(metadataInfo));
 
         MetadataInfo metadataInfo2 = new MetadataInfo("demo");
         // export normal url again
         metadataInfo2.addService(url);
         metadataInfo2.addService(url2);
-        System.out.println(JsonUtils.toJson(metadataInfo2));
+        logger.info(JsonUtils.toJson(metadataInfo2));
     }
 
     @Test

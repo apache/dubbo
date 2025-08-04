@@ -16,22 +16,24 @@
  */
 package org.apache.dubbo.metrics.listener;
 
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractMetricsListener<E extends MetricsEvent> implements MetricsListener<E> {
 
-    private final Map<Class<?>, Boolean> eventMatchCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<?>, Boolean> eventMatchCache = new ConcurrentHashMap<>();
 
     /**
      * Whether to support the general determination of event points depends on the event type
      */
     public boolean isSupport(MetricsEvent event) {
-        Boolean eventMatch = eventMatchCache.computeIfAbsent(
-                event.getClass(), clazz -> ReflectionUtils.match(getClass(), AbstractMetricsListener.class, event));
+        Boolean eventMatch = ConcurrentHashMapUtils.computeIfAbsent(
+                eventMatchCache,
+                event.getClass(),
+                clazz -> ReflectionUtils.match(getClass(), AbstractMetricsListener.class, event));
         return event.isAvailable() && eventMatch;
     }
 

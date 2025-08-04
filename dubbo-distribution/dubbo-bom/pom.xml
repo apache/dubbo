@@ -293,6 +293,18 @@
 
       <dependency>
         <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-spring6-security</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-plugin-loom</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rest-jaxrs</artifactId>
         <version>${project.version}</version>
       </dependency>

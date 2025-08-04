@@ -20,7 +20,9 @@ import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfoV2;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceV2;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,7 +35,9 @@ public class MetadataReflectionTypeDescriberRegistrar implements ReflectionTypeD
     public List<TypeDescriber> getTypeDescribers() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
         typeDescribers.add(buildTypeDescriberWithPublicMethod(MetadataService.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(MetadataServiceV2.class));
         typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(MetadataInfo.class));
+        typeDescribers.add(buildTypeDescriberWithDeclaredConstructors(MetadataInfoV2.class));
         return typeDescribers;
     }
 

@@ -24,15 +24,14 @@ import org.junit.jupiter.api.Test;
 public class HttpUtilsTest {
 
     @Test
-    void testGetCharsetFromContentType() {
-        String charset = HttpUtils.getCharsetFromContentType("text/html;charset=utf-8");
+    void testParseCharset() {
+        String charset = HttpUtils.parseCharset("text/html;charset=utf-8");
         Assertions.assertEquals("utf-8", charset);
-        charset = HttpUtils.getCharsetFromContentType("text/html");
+        charset = HttpUtils.parseCharset("text/html");
         Assertions.assertEquals("", charset);
-        charset = HttpUtils.getCharsetFromContentType("application/json;charset=utf-8; boundary=__X_PAW_BOUNDARY__");
+        charset = HttpUtils.parseCharset("application/json;charset=utf-8; boundary=__X_PAW_BOUNDARY__");
         Assertions.assertEquals("utf-8", charset);
-        charset =
-                HttpUtils.getCharsetFromContentType("multipart/form-data; charset=utf-8; boundary=__X_PAW_BOUNDARY__");
+        charset = HttpUtils.parseCharset("multipart/form-data; charset=utf-8; boundary=__X_PAW_BOUNDARY__");
         Assertions.assertEquals("utf-8", charset);
     }
 }

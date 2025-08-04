@@ -17,12 +17,11 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.Metric;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -32,9 +31,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implements MetricsCountSampler<S, K, M> {
 
-    private final ConcurrentMap<M, AtomicLong> EMPTY_COUNT = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<M, AtomicLong> EMPTY_COUNT = new ConcurrentHashMap<>();
 
-    private final Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<K, ConcurrentHashMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
 
     @Override
     public void inc(S source, K metricName) {
@@ -42,7 +41,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implemen
     }
 
     @Override
-    public Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName) {
+    public Optional<ConcurrentHashMap<M, AtomicLong>> getCount(K metricName) {
         return Optional.ofNullable(metricCounter.get(metricName) == null ? EMPTY_COUNT : metricCounter.get(metricName));
     }
 
@@ -55,10 +54,11 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implemen
 
         this.countConfigure(sampleConfigure);
 
-        Map<M, AtomicLong> metricAtomic = metricCounter.get(metricsName);
+        ConcurrentHashMap<M, AtomicLong> metricAtomic = metricCounter.get(metricsName);
 
         if (metricAtomic == null) {
-            metricAtomic = metricCounter.computeIfAbsent(metricsName, k -> new ConcurrentHashMap<>());
+            metricAtomic =
+                    ConcurrentHashMapUtils.computeIfAbsent(metricCounter, metricsName, k -> new ConcurrentHashMap<>());
         }
 
         Assert.notNull(sampleConfigure.getMetric(), "metrics is null");
@@ -66,7 +66,8 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implemen
         AtomicLong atomicCounter = metricAtomic.get(sampleConfigure.getMetric());
 
         if (atomicCounter == null) {
-            atomicCounter = metricAtomic.computeIfAbsent(sampleConfigure.getMetric(), k -> new AtomicLong());
+            atomicCounter = ConcurrentHashMapUtils.computeIfAbsent(
+                    metricAtomic, sampleConfigure.getMetric(), k -> new AtomicLong());
         }
         return atomicCounter;
     }

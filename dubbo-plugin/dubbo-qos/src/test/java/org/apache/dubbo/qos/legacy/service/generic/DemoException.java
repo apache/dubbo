@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.qos.legacy.service.generic;
 
-/**
- * DemoException
- */
 public class DemoException extends Exception {
 
     private static final long serialVersionUID = -8213943026163641747L;

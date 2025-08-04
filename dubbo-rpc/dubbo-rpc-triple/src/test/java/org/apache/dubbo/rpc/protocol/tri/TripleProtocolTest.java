@@ -119,6 +119,5 @@ class TripleProtocolTest {
         protocol.destroy();
         // resource recycle.
         serviceRepository.destroy();
-        System.out.println("serviceRepository destroyed");
     }
 }

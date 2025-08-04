@@ -16,17 +16,21 @@
  */
 package org.apache.dubbo.config.spring.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class NotifyService {
+    private static final Logger logger = LoggerFactory.getLogger(NotifyService.class);
 
     public void onInvoke(Object[] params) {
-        System.out.println("invoke param-0: " + params[0]);
+        logger.info("invoke param-0: {}", params[0]);
     }
 
     public void onReturn(Object result, Object[] params) {
-        System.out.println("invoke param-0: " + params[0] + ", return: " + result);
+        logger.info("invoke param-0: {}, return: {}", params[0], result);
     }
 
     public void onThrow(Throwable t, Object[] params) {
-        System.out.println("invoke param-0: " + params[0] + ", throw: " + t.getMessage());
+        logger.info("invoke param-0: {}, throw: {}", params[0], t.getMessage());
     }
 }

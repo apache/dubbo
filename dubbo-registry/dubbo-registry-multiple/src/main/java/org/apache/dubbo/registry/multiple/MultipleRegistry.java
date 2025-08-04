@@ -40,9 +40,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
-/**
- * MultipleRegistry
- */
 public class MultipleRegistry extends AbstractRegistry {
     public static final Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
 
@@ -63,10 +60,6 @@ public class MultipleRegistry extends AbstractRegistry {
 
     public MultipleRegistry(URL url) {
         this(url, true, true);
-        this.registryFactory = url.getOrDefaultApplicationModel()
-                .getExtensionLoader(RegistryFactory.class)
-                .getAdaptiveExtension();
-
         boolean defaultRegistry = url.getParameter(CommonConstants.DEFAULT_KEY, true);
         if (defaultRegistry && effectServiceRegistryURLs.isEmpty() && effectReferenceRegistryURLs.isEmpty()) {
             throw new IllegalArgumentException("Illegal registry url. You need to configure parameter "

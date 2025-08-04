@@ -14,20 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.rpc.protocol.tri.h12.http1;
 
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-
-import java.io.IOException;
+import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.ServerSentEventEncoder;
 
 public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
 
+    private HttpMessageEncoder originalResponseEncoder;
+
     public Http1SseServerChannelObserver(HttpChannel httpChannel) {
         super(httpChannel);
+    }
+
+    @Override
+    public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
+        super.setResponseEncoder(new ServerSentEventEncoder(responseEncoder));
+        this.originalResponseEncoder = responseEncoder;
+    }
+
+    @Override
+    protected void doOnCompleted(Throwable throwable) {
+        if (!isHeaderSent()) {
+            sendMetadata(encodeHttpMetadata(true));
+        }
+        super.doOnCompleted(throwable);
     }
 
     @Override
@@ -38,16 +56,23 @@ public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
     }
 
     @Override
-    protected void preOutputMessage(HttpOutputMessage message) throws IOException {
-        HttpOutputMessage prefixMessage = getHttpChannel().newOutputMessage();
-        prefixMessage.getBody().write(HttpConstants.SERVER_SENT_EVENT_DATA_PREFIX_BYTES);
-        getHttpChannel().writeMessage(prefixMessage);
-    }
+    protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
+        if (data instanceof HttpResult) {
+            data = ((HttpResult<?>) data).getBody();
 
-    @Override
-    protected void postOutputMessage(HttpOutputMessage message) throws IOException {
-        HttpOutputMessage lfMessage = getHttpChannel().newOutputMessage();
-        lfMessage.getBody().write(HttpConstants.SERVER_SENT_EVENT_LF_BYTES);
-        getHttpChannel().writeMessage(lfMessage);
+            if (data == null && statusCode != 200) {
+                return null;
+            }
+
+            HttpOutputMessage message = encodeHttpOutputMessage(data);
+            try {
+                originalResponseEncoder.encode(message.getBody(), data);
+            } catch (Throwable t) {
+                message.close();
+                throw t;
+            }
+            return message;
+        }
+        return super.buildMessage(statusCode, data);
     }
 }

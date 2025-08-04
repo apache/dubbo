@@ -23,9 +23,13 @@ import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class GeneralTypeConverterTest {
+    private static final Logger logger = LoggerFactory.getLogger(GeneralTypeConverterTest.class);
 
     public List<? extends Number>[] items;
 
@@ -39,13 +43,13 @@ class GeneralTypeConverterTest {
     @Test
     void convert1() {
         Object convert = JsonUtils.toJavaObject("[1,\"aa\"]", List.class);
-        System.out.println(convert);
+        Assertions.assertEquals(2, ((List) convert).size());
     }
 
     @Test
     void convert2() throws NoSuchFieldException {
         Class<?> type = TypeUtils.getActualType(
                 GeneralTypeConverterTest.class.getField("items").getGenericType());
-        System.out.println(type);
+        logger.info(String.valueOf(type));
     }
 }

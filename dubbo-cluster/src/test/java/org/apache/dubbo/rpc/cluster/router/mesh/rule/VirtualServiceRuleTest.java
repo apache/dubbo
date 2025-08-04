@@ -38,7 +38,6 @@ class VirtualServiceRuleTest {
                 this.getClass().getClassLoader().getResourceAsStream("VirtualServiceTest.yaml"),
                 VirtualServiceRule.class);
 
-        System.out.println(virtualServiceRule);
         assertNotNull(virtualServiceRule);
 
         assertEquals("service.dubbo.apache.org/v1alpha1", virtualServiceRule.getApiVersion());

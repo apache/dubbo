@@ -50,14 +50,12 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
-/**
- * NettyServer
- */
 public class NettyServer extends AbstractServer implements RemotingServer {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyServer.class);
 
-    private Map<String, Channel> channels; // <ip:port, channel>
+    // <ip:port, channel>
+    private Map<String, Channel> channels;
 
     private ServerBootstrap bootstrap;
 
@@ -78,12 +76,14 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         bootstrap = new ServerBootstrap(channelFactory);
 
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
+        // set channels
         channels = nettyHandler.getChannels();
         // https://issues.jboss.org/browse/NETTY-365
         // https://issues.jboss.org/browse/NETTY-379
         // final Timer timer = new HashedWheelTimer(new NamedThreadFactory("NettyIdleTimer", true));
         bootstrap.setOption("child.tcpNoDelay", true);
         bootstrap.setOption("backlog", getUrl().getPositiveParameter(BACKLOG_KEY, Constants.DEFAULT_BACKLOG));
+        bootstrap.setOption("reuseAddress", true);
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() {

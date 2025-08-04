@@ -23,6 +23,8 @@ import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
 
 import javax.websocket.MessageHandler;
 
+import java.nio.charset.StandardCharsets;
+
 public class TripleTextMessageHandler implements MessageHandler.Partial<String> {
 
     private final WebSocketTransportListener webSocketTransportListener;
@@ -33,8 +35,8 @@ public class TripleTextMessageHandler implements MessageHandler.Partial<String> 
 
     @Override
     public void onMessage(String messagePart, boolean last) {
-        Http2InputMessage http2InputMessage =
-                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.getBytes(), last), false);
+        Http2InputMessage http2InputMessage = new Http2InputMessageFrame(
+                new FinalFragmentByteArrayInputStream(messagePart.getBytes(StandardCharsets.UTF_8), last), false);
         webSocketTransportListener.onData(http2InputMessage);
     }
 }

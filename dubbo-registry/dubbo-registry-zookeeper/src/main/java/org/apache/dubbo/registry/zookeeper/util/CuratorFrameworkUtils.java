@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,7 @@ public abstract class CuratorFrameworkUtils {
 
         String userInformation = connectionURL.getUserInformation();
         if (StringUtils.isNotEmpty(userInformation)) {
-            builder = builder.authorization("digest", userInformation.getBytes());
+            builder = builder.authorization("digest", userInformation.getBytes(StandardCharsets.UTF_8));
             builder.aclProvider(new ACLProvider() {
                 @Override
                 public List<ACL> getDefaultAcl() {

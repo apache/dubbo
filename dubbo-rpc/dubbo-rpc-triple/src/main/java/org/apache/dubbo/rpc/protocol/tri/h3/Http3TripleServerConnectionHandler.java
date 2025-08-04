@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.h3;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.incubator.codec.http3.Http3GoAwayFrame;
+import io.netty.handler.codec.http3.Http3GoAwayFrame;
 import io.netty.util.ReferenceCountUtil;
 
 public class Http3TripleServerConnectionHandler extends ChannelDuplexHandler {

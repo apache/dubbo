@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.config.collector;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
@@ -30,7 +31,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +48,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
     private final ApplicationModel applicationModel;
     private final AtomicBoolean samplesChanged = new AtomicBoolean(true);
 
-    private final Map<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
 
     public ConfigCenterMetricsCollector(ApplicationModel applicationModel) {
         super(null);
@@ -79,7 +79,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
                 new ConfigCenterMetric(applicationModel.getApplicationName(), key, group, protocol, changeTypeName);
         AtomicLong metrics = updatedMetrics.get(metric);
         if (metrics == null) {
-            metrics = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
+            metrics = ConcurrentHashMapUtils.computeIfAbsent(updatedMetrics, metric, k -> new AtomicLong(0L));
             samplesChanged.set(true);
         }
         metrics.addAndGet(size);

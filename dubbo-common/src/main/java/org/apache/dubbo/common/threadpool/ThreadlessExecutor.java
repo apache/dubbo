@@ -95,8 +95,9 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     public void execute(Runnable runnable) {
         RunnableWrapper run = new RunnableWrapper(runnable);
         queue.add(run);
-        if (waiter.get() != SHUTDOWN) {
-            LockSupport.unpark((Thread) waiter.get());
+        Object waiter = this.waiter.get();
+        if (waiter != SHUTDOWN) {
+            LockSupport.unpark((Thread) waiter);
         } else if (queue.remove(run)) {
             throw new RejectedExecutionException();
         }

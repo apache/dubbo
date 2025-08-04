@@ -36,12 +36,12 @@ final class FluentLoggerImpl implements FluentLogger {
     private Object[] args;
 
     FluentLoggerImpl(Class<?> key) {
-        delegate = LoggerFactory.getErrorTypeAwareLogger(key);
+        delegate = LoggerFactory.getErrorTypeAwareLogger(FluentLoggerImpl.class.getName(), key);
         root = this;
     }
 
     FluentLoggerImpl(String key) {
-        delegate = LoggerFactory.getErrorTypeAwareLogger(key);
+        delegate = LoggerFactory.getErrorTypeAwareLogger(FluentLoggerImpl.class.getName(), key);
         root = this;
     }
 
