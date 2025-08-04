@@ -42,7 +42,7 @@ public abstract class AbstractTimerTask implements TimerTask {
         this.channelProvider = channelProvider;
         this.hashedWheelTimer = hashedWheelTimer;
         this.tick = tick;
-        start();
+        // do not start here because inheritor should set additional timeout parameters before doing task.
     }
 
     static Long lastRead(Channel channel) {
@@ -57,7 +57,7 @@ public abstract class AbstractTimerTask implements TimerTask {
         return System.currentTimeMillis();
     }
 
-    private void start() {
+    protected void start() {
         this.timeout = hashedWheelTimer.newTimeout(this, tick, TimeUnit.MILLISECONDS);
     }
 

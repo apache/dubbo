@@ -32,7 +32,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -56,7 +55,8 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  */
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
-    private Map<String, Channel> dubboChannels = new ConcurrentHashMap<>(); // <ip:port, channel>
+    // <ip:port, channel>
+    private Map<String, Channel> dubboChannels;
 
     private ServerBootstrap bootstrap;
 
@@ -95,6 +95,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         bootstrap = new ServerBootstrap(channelFactory);
 
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
+        // set dubboChannels
         dubboChannels = nettyHandler.getChannels();
         // https://issues.jboss.org/browse/NETTY-365
         // https://issues.jboss.org/browse/NETTY-379

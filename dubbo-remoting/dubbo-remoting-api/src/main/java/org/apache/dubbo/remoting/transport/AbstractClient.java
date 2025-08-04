@@ -50,7 +50,7 @@ import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
 
-    private final Lock connectLock = new ReentrantLock();
+    private Lock connectLock;
 
     private final boolean needReconnect;
 
@@ -64,6 +64,10 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
+
+        // initialize connectLock before calling connect()
+        connectLock = new ReentrantLock();
+
         // set default needReconnect true when channel is not connected
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, true);
 
