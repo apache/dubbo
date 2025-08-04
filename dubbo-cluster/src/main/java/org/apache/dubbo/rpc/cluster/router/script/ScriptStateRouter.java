@@ -141,14 +141,12 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
-
         if (engine == null || function == null) {
             if (needToPrintMessage) {
                 messageHolder.set("Directly Return. Reason: engine or function is null");
             }
             return invokers;
         }
-
         Bindings bindings = createBindings(invokers, invocation);
 
         return  getRoutedInvokers(

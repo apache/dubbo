@@ -88,7 +88,6 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
-
         MeshRuleCache<T> ruleCache = this.meshRuleCache;
         if (!ruleCache.containsRule()) {
             if (needToPrintMessage) {

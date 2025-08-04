@@ -210,7 +210,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
-
         if (!enabled) {
             if (needToPrintMessage) {
                 messageHolder.set("Directly return. Reason: ConditionRouter disabled.");

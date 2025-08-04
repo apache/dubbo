@@ -66,7 +66,6 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
             Holder<RouterSnapshotNode<T>> routerSnapshotNodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
-
         if (scriptRouter == null || !scriptRule.isValid() || !scriptRule.isEnabled()) {
             if (needToPrintMessage) {
                 messageHolder.set(
