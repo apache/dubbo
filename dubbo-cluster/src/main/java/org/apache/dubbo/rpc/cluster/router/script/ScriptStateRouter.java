@@ -148,7 +148,6 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             return invokers;
         }
         Bindings bindings = createBindings(invokers, invocation);
-
         return  getRoutedInvokers(
                 invokers,
                 AccessController.doPrivileged(

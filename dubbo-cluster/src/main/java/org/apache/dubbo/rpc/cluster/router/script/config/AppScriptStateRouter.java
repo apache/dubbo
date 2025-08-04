@@ -72,6 +72,7 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
                         "Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: "
                                 + (scriptRule == null ? "null" : scriptRule.getRawRule()));
             }
+
             return invokers;
         }
 
