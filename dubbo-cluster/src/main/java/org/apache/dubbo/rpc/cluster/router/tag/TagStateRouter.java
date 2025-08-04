@@ -98,7 +98,6 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
-
         if (CollectionUtils.isEmpty(invokers)) {
             if (needToPrintMessage) {
                 messageHolder.set("Directly Return. Reason: Invokers from previous router is empty.");
@@ -108,7 +107,6 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
         // since the rule can be changed by config center, we should copy one to use.
         final TagRouterRule tagRouterRuleCopy = tagRouterRule;
-
         if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
             if (needToPrintMessage) {
                 messageHolder.set("Disable Tag Router. Reason: tagRouterRule is invalid or disabled");
@@ -202,22 +200,23 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
      * @return
      */
     private <T> BitList<Invoker<T>> filterUsingStaticTag(BitList<Invoker<T>> invokers, URL url, Invocation invocation) {
-        logger.info("[TAG-ROUTER-STATIC] Starting static tag filtering.");
         BitList<Invoker<T>> result;
         // Dynamic param
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY))
                 ? url.getParameter(TAG_KEY)
                 : invocation.getAttachment(TAG_KEY);
-
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
             result = filterInvoker(
                     invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
             if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation)) {
-                result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
+                result = filterInvoker(
+                        invokers,
+                        invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
             }
         } else {
-            result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
+            result = filterInvoker(
+                    invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
         }
         return result;
     }
