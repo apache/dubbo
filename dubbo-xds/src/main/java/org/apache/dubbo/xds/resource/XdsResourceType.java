@@ -47,19 +47,18 @@ import io.envoyproxy.envoy.service.discovery.v3.Resource;
 import io.grpc.LoadBalancerRegistry;
 
 public abstract class XdsResourceType<T extends ResourceUpdate> {
-    
+
     static final String TYPE_URL_RESOURCE = "type.googleapis.com/envoy.service.discovery.v3.Resource";
     static final String TRANSPORT_SOCKET_NAME_TLS = "envoy.transport_sockets.tls";
     static final String AGGREGATE_CLUSTER_TYPE_NAME = "envoy.clusters.aggregate";
     static final String HASH_POLICY_FILTER_STATE_KEY = "io.grpc.channel_id";
     static boolean enableRouteLookup = getFlag("GRPC_EXPERIMENTAL_XDS_RLS_LB", true);
-    static boolean enableLeastRequest = !StringUtils.isBlank(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST"))
-            ? Boolean.parseBoolean(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST"))
-            : Boolean.parseBoolean(System.getProperty("io.grpc.xds.experimentalEnableLeastRequest", "true")); // 默认启用LEAST_REQUEST
+    static boolean enableLeastRequest = !StringUtils.isBlank(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST")) ? Boolean.parseBoolean(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST")) : Boolean.parseBoolean(System.getProperty("io.grpc.xds.experimentalEnableLeastRequest", "true")); // 默认启用LEAST_REQUEST
 
     static boolean enableWrr = getFlag("GRPC_EXPERIMENTAL_XDS_WRR_LB", true);
     static boolean enablePickFirst = getFlag("GRPC_EXPERIMENTAL_PICKFIRST_LB_CONFIG", true);
-    static final String TYPE_URL_CLUSTER_CONFIG = "type.googleapis.com/envoy.extensions.clusters.aggregate.v3" + ".ClusterConfig";
+    static final String TYPE_URL_CLUSTER_CONFIG =
+            "type.googleapis.com/envoy.extensions.clusters.aggregate.v3" + ".ClusterConfig";
     static final String TYPE_URL_TYPED_STRUCT_UDPA = "type.googleapis.com/udpa.type.v1.TypedStruct";
     static final String TYPE_URL_TYPED_STRUCT = "type.googleapis.com/xds.type.v3.TypedStruct";
 
@@ -79,10 +78,10 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
     // the resources that need an update.
     abstract boolean isFullStateOfTheWorld();
 
-    public static final Args xdsResourceTypeArgs =
-            new Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null); // TODO
+    public static final Args xdsResourceTypeArgs = new Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null); // TODO
 
     public static class Args {
+
         final XdsServer serverInfo;
         final String versionInfo;
         final String nonce;
@@ -130,9 +129,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
                 resource = maybeUnwrapResources(resource);
                 unpackedMessage = unpackCompatibleType(resource, unpackedClassName(), typeUrl(), null);
             } catch (InvalidProtocolBufferException e) {
-                errors.add(String.format(
-                        "%s response Resource index %d - can't decode %s: %s",
-                        typeName(), i, unpackedClassName().getSimpleName(), e.getMessage()));
+                errors.add(String.format("%s response Resource index %d - can't decode %s: %s", typeName(), i, unpackedClassName().getSimpleName(), e.getMessage()));
                 continue;
             }
 
@@ -152,9 +149,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
             try {
                 resourceUpdate = doParse(args, unpackedMessage);
             } catch (ResourceInvalidException e) {
-                errors.add(String.format(
-                        "%s response %s '%s' validation error: %s",
-                        typeName(), unpackedClassName().getSimpleName(), cname, e.getMessage()));
+                errors.add(String.format("%s response %s '%s' validation error: %s", typeName(), unpackedClassName().getSimpleName(), cname, e.getMessage()));
                 invalidResources.add(cname);
                 continue;
             }
@@ -208,8 +203,9 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
         if (path == null) {
             return false;
         }
-        List<String> pathSegs =
-                Arrays.stream(path.split("/")).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        List<String> pathSegs = Arrays.stream(path.split("/"))
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toList());
         if (pathSegs.size() < 2) {
             return false;
         }
@@ -237,8 +233,11 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
      * @return Unpacked message
      * @throws InvalidProtocolBufferException if the message couldn't be unpacked
      */
-    static <T extends Message> T unpackCompatibleType(Any any, Class<T> clazz, String typeUrl, String compatibleTypeUrl)
-            throws InvalidProtocolBufferException {
+    static <T extends Message> T unpackCompatibleType(
+            Any any,
+            Class<T> clazz,
+            String typeUrl,
+            String compatibleTypeUrl) throws InvalidProtocolBufferException {
         if (any.getTypeUrl().equals(compatibleTypeUrl)) {
             any = any.toBuilder().setTypeUrl(typeUrl).build();
         }
@@ -247,8 +246,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
 
     private Any maybeUnwrapResources(Any resource) throws InvalidProtocolBufferException {
         if (resource.getTypeUrl().equals(TYPE_URL_RESOURCE)) {
-            return unpackCompatibleType(resource, Resource.class, TYPE_URL_RESOURCE, null)
-                    .getResource();
+            return unpackCompatibleType(resource, Resource.class, TYPE_URL_RESOURCE, null).getResource();
         } else {
             return resource;
         }

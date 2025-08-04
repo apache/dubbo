@@ -106,37 +106,26 @@ public class AdsObserver {
             logger.error(REGISTRY_ERROR_PARSING_XDS,
                     "Parse errors for {}: {}", resourceTypeInstance.typeName(), validatedResourceUpdate.getErrors());
         }
-
-        logger.info("[XDS] Converting parsed resources to concurrent map");
-        //获取到解析后的资源
+        
         ConcurrentMap<String, T> parsedResources = validatedResourceUpdate.getParsedResources().entrySet().stream()
                 .collect(Collectors.toConcurrentMap(Entry::getKey, e -> e.getValue().getResourceUpdate()));
-
-        logger.info("[XDS] Got {} parsed resources, processing listeners", parsedResources.size());
-
+        
         Map<String, XdsRawResourceProtocol<?>> resourceListenerMap = rawResourceListeners.getOrDefault(resourceTypeInstance, new ConcurrentHashMap<>());
-
-        logger.info("[XDS] Found {} listeners for resource type: {}", resourceListenerMap.size(), resourceTypeInstance.typeName());
-
         for (Map.Entry<String, XdsRawResourceProtocol<?>> entry : resourceListenerMap.entrySet()) {
             String resourceName = entry.getKey();
             XdsRawResourceProtocol<T> rawResourceListener = (XdsRawResourceProtocol<T>) entry.getValue();
-            logger.info("[XDS] Processing listener for resource: {}", resourceName);
 
             T resourceUpdate = null;
 
             if (parsedResources.containsKey(resourceName)) {
                 resourceUpdate = parsedResources.get(resourceName);
-            }
-            else if (resourceTypeInstance.typeName().equals("LDS") && resourceName.contains(":")) {
+            } else if (resourceTypeInstance.typeName().equals("LDS") && resourceName.contains(":")) {
                 int port = parsePort(resourceName);
-
                 for (T update : parsedResources.values()) {
                     if (update instanceof LdsUpdate) {
                         LdsUpdate ldsUpdate = (LdsUpdate) update;
                         if (ldsUpdate.isContainPort(port)) {
                             resourceUpdate = update;
-                            logger.info("[XDS] Found matching resource for {} by port {}", resourceName, port);
                             break;
                         }
                     }
@@ -144,16 +133,12 @@ public class AdsObserver {
             }
 
             if (resourceUpdate != null) {
-                logger.info("[XDS] Found parsed resource for {}, calling onResourceUpdate", resourceName);
                 rawResourceListener.onResourceUpdate(resourceUpdate);
-                logger.info("[XDS] Successfully called onResourceUpdate for {}", resourceName);
             } else {
                 logger.info("[XDS] No parsed resource found for {}", resourceName);
             }
         }
-
-        logger.info("[XDS] Successfully completed processing for resource type: {}", resourceTypeInstance.typeName());
-
+        
         return validatedResourceUpdate;
     }
 
@@ -167,7 +152,6 @@ public class AdsObserver {
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(XdsResourceType<?> resourceType, Set<String> resourceNames) {
-        logger.info("[XDS] Building DiscoveryRequest - Type: {}, ResourceNames: {}", resourceType.typeName(), resourceNames);
         return DiscoveryRequest.newBuilder()
                 .setNode(node)
                 .setTypeUrl(resourceType.typeUrl())
@@ -176,10 +160,6 @@ public class AdsObserver {
     }
 
     public void request(DiscoveryRequest discoveryRequest) {
-        logger.info("[XDS] Sending DiscoveryRequest - TypeUrl: {}, ResourceNames: {}, NodeId: {}",
-                   discoveryRequest.getTypeUrl(),
-                   discoveryRequest.getResourceNamesList(),
-                   discoveryRequest.getNode().getId());
         if (requestObserver == null) {
             requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(this, future));
         }
@@ -209,21 +189,15 @@ public class AdsObserver {
                 if (future != null) {
                     future.complete(null);
                 }
-
-                logger.info("[XDS] Getting resource type from TypeUrl: {}", discoveryResponse.getTypeUrl());
+                
                 XdsResourceType<?> resourceType = fromTypeUrl(discoveryResponse.getTypeUrl());
-                logger.info("[XDS] Resource type resolved: {}", resourceType != null ? resourceType.typeName() : "NULL");
 
                 if (resourceType == null) {
-                    logger.error("[XDS] Failed to resolve resource type for TypeUrl: {}", discoveryResponse.getTypeUrl());
                     return;
                 }
 
-                logger.info("[XDS] Processing resource type: {} with {} resources", resourceType.typeName(), discoveryResponse.getResourcesCount());
                 ValidatedResourceUpdate<?> validatedResourceUpdate = adsObserver.process(resourceType, discoveryResponse);
-                logger.info("[XDS] Successfully processed resource type: {}", resourceType.typeName());
 
-                logger.info("[XDS] Building ACK for resource type: {}", resourceType.typeName());
                 adsObserver.requestObserver.onNext(buildAck(resourceType, discoveryResponse));
                 logger.info("[XDS] Successfully sent ACK for resource type: {}", resourceType.typeName());
 

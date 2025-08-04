@@ -39,7 +39,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_STOP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
@@ -160,75 +159,42 @@ public class SingleRouterChain<T> {
         return snapshot.getChainOutputInvokers();
     }
 
-    private <T> List<Invoker<T>> simpleRoute(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
-        logger.info(String.format("[ROUTER-CHAIN] Simple route starting. Initial invokers count: %d. Thread: %s",
-            availableInvokers.size(), Thread.currentThread().getName()));
+    public List<Invoker<T>> simpleRoute(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
 
-        BitList<Invoker<T>> resultInvokers = availableInvokers;
-        if (CollectionUtils.isNotEmpty(stateRouters)) {
-            for (StateRouter router : stateRouters) {
-                logger.info(String.format("[ROUTER-CHAIN] >>> Before router: %s. Invokers count: %d.",
-                    router.getClass().getSimpleName(), resultInvokers.size()));
-                logInvokers(resultInvokers, "BEFORE", router.getClass().getSimpleName());
-
-                resultInvokers = router.route(resultInvokers, url, invocation, false, null);
-
-                logger.info(String.format("[ROUTER-CHAIN] <<< After router: %s. Invokers count: %d.",
-                    router.getClass().getSimpleName(), resultInvokers.size()));
-                logInvokers(resultInvokers, "AFTER", router.getClass().getSimpleName());
-            }
+        // 1. route state router
+        resultInvokers = headStateRouter.route(resultInvokers, url, invocation, false, null);
+        if (resultInvokers.isEmpty() && (shouldFailFast || routers.isEmpty())) {
+            printRouterSnapshot(url, availableInvokers, invocation);
+            return BitList.emptyList();
         }
 
+        if (routers.isEmpty()) {
+            return resultInvokers;
+        }
+        List<Invoker<T>> commonRouterResult = resultInvokers.cloneToArrayList();
         // 2. route common router
-        if (CollectionUtils.isNotEmpty(routers)) {
-            List<Invoker<T>> commonRouterResult = resultInvokers.cloneToArrayList();
-            for (Router router : routers) {
-                logger.info("[ROUTER-CHAIN] Calling common router: {} [Thread: {}]", 
-                    router.getClass().getSimpleName(), Thread.currentThread().getName());
-                commonRouterResult = router.route(commonRouterResult, url, invocation);
-                if (CollectionUtils.isEmpty(commonRouterResult)) {
-                    logger.warn("[ROUTER-CHAIN] Common router {} returned empty result [Thread: {}]", 
-                        router.getClass().getSimpleName(), Thread.currentThread().getName());
-                    break;
-                }
+        for (Router router : routers) {
+            // Copy resultInvokers to a arrayList. BitList not support
+            RouterResult<Invoker<T>> routeResult = router.route(commonRouterResult, url, invocation, false);
+            commonRouterResult = routeResult.getResult();
+            if (CollectionUtils.isEmpty(commonRouterResult) && shouldFailFast) {
+                printRouterSnapshot(url, availableInvokers, invocation);
+                return BitList.emptyList();
             }
-            
-            logger.info("[ROUTER-CHAIN] Final result: {} invokers [Thread: {}]", commonRouterResult.size(), Thread.currentThread().getName());
-            for (int i = 0; i < commonRouterResult.size(); i++) {
-                Invoker<T> invoker = commonRouterResult.get(i);
-                String clusterID = invoker.getUrl().getParameter("clusterID");
-                String address = invoker.getUrl().getAddress();
-                logger.info("[ROUTER-CHAIN] Final result invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+
+            // stop continue routing
+            if (!routeResult.isNeedContinueRoute()) {
+                return commonRouterResult;
             }
-            
-            return commonRouterResult;
         }
 
-        List<Invoker<T>> result = resultInvokers.cloneToArrayList();
-        
-        logger.info("[ROUTER-CHAIN] Final result: {} invokers [Thread: {}]", result.size(), Thread.currentThread().getName());
-        for (int i = 0; i < result.size(); i++) {
-            Invoker<T> invoker = result.get(i);
-            String clusterID = invoker.getUrl().getParameter("clusterID");
-            String address = invoker.getUrl().getAddress();
-            logger.info("[ROUTER-CHAIN] Final result invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+        if (commonRouterResult.isEmpty()) {
+            printRouterSnapshot(url, availableInvokers, invocation);
+            return BitList.emptyList();
         }
-        
-        return result;
-    }
 
-    private <T> void logInvokers(BitList<Invoker<T>> invokers, String stage, String routerName) {
-        if (invokers == null || invokers.isEmpty()) {
-            logger.info(String.format("[ROUTER-CHAIN-DETAIL] %s %s: invoker list is empty.", stage, routerName));
-            return;
-        }
-        for (int i = 0; i < invokers.size(); i++) {
-            Invoker<T> invoker = invokers.get(i);
-            String clusterID = invoker.getUrl().getParameter("clusterID", "N/A");
-            String address = invoker.getUrl().getAddress();
-            logger.info(String.format("[ROUTER-CHAIN-DETAIL] %s %s, invoker[%d]: %s (clusterID: %s)",
-                stage, routerName, i, address, clusterID));
-        }
+        return commonRouterResult;
     }
 
     /**

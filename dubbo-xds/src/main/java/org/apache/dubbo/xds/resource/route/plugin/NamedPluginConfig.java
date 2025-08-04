@@ -33,7 +33,7 @@ public class NamedPluginConfig {
         this.config = config;
     }
 
-    String name() {
+    public String name() {
         return name;
     }
 

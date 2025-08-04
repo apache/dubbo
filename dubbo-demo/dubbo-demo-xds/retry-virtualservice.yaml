@@ -1,0 +1,23 @@
+# 测试重试配置的VirtualService
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: dubbo-retry-test
+  namespace: dubbo-proxyless
+spec:
+  hosts:
+  - dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+  http:
+  - match:
+    - headers:
+        test-scenario:
+          exact: "retry-test"
+    timeout: 10s
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
+      retryOn: "5xx,reset,connect-failure,refused-stream,deadline-exceeded,internal,resource-exhausted,unavailable,cancelled"
+      retryRemoteLocalities: true
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local

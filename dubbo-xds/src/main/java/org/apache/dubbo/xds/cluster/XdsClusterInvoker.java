@@ -28,13 +28,20 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.xds.resource.route.RouteAction;
+import org.apache.dubbo.xds.resource.route.RetryPolicy;
+import io.grpc.Status;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
-
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsClusterInvoker.class);
-
+    
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsClusterInvoker.class);
+    
     public XdsClusterInvoker(Directory<T> directory) {
         super(directory);
     }
@@ -42,48 +49,208 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
             throws RpcException {
-        logger.info("[XDS-CLUSTER] XdsClusterInvoker.doInvoke called with {} invokers", invokers.size());
+        RouteAction routeAction = (RouteAction) invocation.get("xds.route.action");
         
-        // 记录所有可用的invoker信息
-        for (int i = 0; i < invokers.size(); i++) {
-            Invoker<T> invoker = invokers.get(i);
-            String clusterID = invoker.getUrl().getParameter("clusterID");
-            String address = invoker.getUrl().getAddress();
-            logger.info("[XDS-CLUSTER] Available invoker[{}]: {} (clusterID: {})", i, address, clusterID);
+        if (routeAction != null && routeAction.getRetryPolicy() != null) {
+            logger.debug("[XDS] Using xDS retry policy for invocation: {}", routeAction.getRetryPolicy());
+            return doInvokeWithXdsRetry(invocation, invokers, loadbalance, routeAction.getRetryPolicy());
+        } else {
+            logger.debug("[XDS] Using standard Dubbo retry mechanism");
+            return doSingleInvoke(invocation, invokers, loadbalance);
         }
-
-        while (true) {
-            Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
-            String selectedAddress = invoker.getUrl().getAddress();
-            String selectedClusterID = invoker.getUrl().getParameter("clusterID");
-            logger.info("[XDS-CLUSTER] LoadBalance selected invoker: {} (clusterID: {})", selectedAddress, selectedClusterID);
+    }
+    
+    private Result doInvokeWithXdsRetry(Invocation invocation, List<Invoker<T>> invokers, 
+                                       LoadBalance loadbalance, RetryPolicy retryPolicy) throws RpcException {
+        String methodName = RpcUtils.getMethodName(invocation);
+        int maxAttempts = retryPolicy.getMaxAttempts();
+        long initialBackoffMs = com.google.protobuf.util.Durations.toMillis(retryPolicy.getInitialBackoff());
+        long maxBackoffMs = com.google.protobuf.util.Durations.toMillis(retryPolicy.getMaxBackoff());
+        
+        logger.info("[XDS-TEST] Starting XDS retry logic: maxAttempts={}, initialBackoff={}ms, maxBackoff={}ms, retryableCodes={}", 
+                   maxAttempts, initialBackoffMs, maxBackoffMs, retryPolicy.getRetryableStatusCodes());
+        
+        RpcException lastException = null;
+        List<Invoker<T>> invoked = new ArrayList<>(invokers.size());
+        Set<String> providers = new HashSet<>(maxAttempts);
+        
+        for (int i = 0; i < maxAttempts; i++) {
+            Invoker<T> invoker = select(loadbalance, invocation, invokers, invoked);
+            invoked.add(invoker);
             
             try {
-                logger.info("[XDS-CLUSTER] Attempting to invoke: {} with clusterID: {}", selectedAddress, selectedClusterID);
-                Result result = invokeWithContext(invoker, invocation);
-                logger.info("[XDS-CLUSTER] Invoke SUCCESS: {} returned result", selectedAddress);
-                return result;
-            } catch (Throwable e) {
-                logger.error("[XDS-CLUSTER] Invoke FAILED: {} with error: {}", selectedAddress, e.getMessage());
-                if (e instanceof RpcException && ((RpcException) e).isBiz()) { // biz exception.
-                    throw (RpcException) e;
+                logger.info("[XDS-RETRY] Attempt {}/{}: invoking {}", i + 1, maxAttempts, invoker.getUrl().getAddress());
+                Result result = invoker.invoke(invocation);
+
+                // 检查异步结果中的异常
+                if (result.hasException()) {
+                    Throwable exception = result.getException();
+                    logger.info("[XDS-RETRY] Attempt {}/{} has exception in result: {}", i + 1, maxAttempts, exception.getMessage());
+
+                    if (exception instanceof RpcException) {
+                        throw (RpcException) exception;
+                    } else {
+                        throw new RpcException(exception.getMessage(), exception);
+                    }
                 }
-                throw new RpcException(
-                        e instanceof RpcException ? ((RpcException) e).getCode() : 0,
-                        "Xds invoke providers " + invoker.getUrl() + " "
-                                + loadbalance.getClass().getSimpleName()
-                                + " for service " + getInterface().getName()
-                                + " method " + RpcUtils.getMethodName(invocation) + " on consumer "
-                                + NetUtils.getLocalHost()
-                                + " use dubbo version " + Version.getVersion()
-                                + ", but no luck to perform the invocation. Last error is: " + e.getMessage(),
-                        e.getCause() != null ? e.getCause() : e);
+
+                return result;
+            } catch (RpcException e) {
+                logger.info("[XDS-RETRY] Attempt {}/{} failed: code={}, message={}, isBiz={}",
+                    i + 1, maxAttempts, e.getCode(), e.getMessage(), e.isBiz());
+
+                if (e.isBiz()) {
+                    logger.info("[XDS-RETRY] Business exception, not retrying");
+                    throw e;
+                }
+
+                boolean isRetryable = isRetryableStatusCode(e, retryPolicy);
+                logger.info("[XDS-RETRY] Exception is retryable: {}", isRetryable);
+
+                if (!isRetryable) {
+                    logger.info("[XDS-RETRY] Exception not retryable, throwing");
+                    throw e;
+                }
+
+                lastException = e;
+                providers.add(invoker.getUrl().getAddress());
+                
+                if (i < maxAttempts - 1) {
+                    long backoffMs = calculateBackoff(i, initialBackoffMs, maxBackoffMs);
+                    logger.info("[XDS-RETRY] Waiting {}ms before retry {}/{}", backoffMs, i + 2, maxAttempts);
+                    try {
+                        Thread.sleep(backoffMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RpcException("Interrupted during retry backoff", ie);
+                    }
+                } else {
+                    logger.info("[XDS-RETRY] Max attempts reached, no more retries");
+                }
+                
+            } catch (Throwable t) {
+                logger.info("[XDS-RETRY] Attempt {}/{} failed with Throwable: {}", i + 1, maxAttempts, t.getMessage());
+
+                RpcException rpcException;
+                if (t instanceof RpcException) {
+                    rpcException = (RpcException) t;
+                } else {
+                    rpcException = new RpcException(t.getMessage(), t);
+                }
+
+                if (!isRetryableStatusCode(rpcException, retryPolicy)) {
+                    logger.info("[XDS-RETRY] Throwable not retryable, breaking");
+                    lastException = rpcException;
+                    providers.add(invoker.getUrl().getAddress());
+                    break;
+                }
+
+                lastException = rpcException;
+                providers.add(invoker.getUrl().getAddress());
+
+                if (i < maxAttempts - 1) {
+                    long backoffMs = calculateBackoff(i, initialBackoffMs, maxBackoffMs);
+                    logger.info("[XDS-RETRY] Waiting {}ms before retry {}/{} (from Throwable)", backoffMs, i + 2, maxAttempts);
+                    try {
+                        Thread.sleep(backoffMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RpcException("Interrupted during retry backoff", ie);
+                    }
+                } else {
+                    logger.info("[XDS-RETRY] Max attempts reached for Throwable, no more retries");
+                }
             }
         }
+        
+        throw new RpcException(
+            lastException != null ? lastException.getCode() : 0,
+            "Failed to invoke method " + methodName + " after " + maxAttempts + " attempts. "
+                + "Tried providers: " + providers + " (" + providers.size() + "/" + invokers.size() + ") "
+                + "from registry " + directory.getUrl().getAddress() + " on consumer " + NetUtils.getLocalHost()
+                + " using dubbo version " + Version.getVersion() + ". Last error: "
+                + (lastException != null ? lastException.getMessage() : "Unknown error"),
+            lastException != null ? lastException.getCause() : null
+        );
+    }
+    
+    private Result doSingleInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) 
+            throws RpcException {
+        Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
+        try {
+            return invokeWithContext(invoker, invocation);
+        } catch (Throwable e) {
+            if (e instanceof RpcException && ((RpcException) e).isBiz()) {
+                throw (RpcException) e;
+            }
+            throw new RpcException(
+                e instanceof RpcException ? ((RpcException) e).getCode() : 0,
+                "XDS invoke failed on provider " + invoker.getUrl() + " "
+                    + loadbalance.getClass().getSimpleName()
+                    + " for service " + getInterface().getName()
+                    + " method " + RpcUtils.getMethodName(invocation) + " on consumer "
+                    + NetUtils.getLocalHost()
+                    + " using dubbo version " + Version.getVersion()
+                    + ". Error: " + e.getMessage(),
+                e.getCause() != null ? e.getCause() : e);
+        }
+    }
+    
+    private boolean isRetryableStatusCode(RpcException e, RetryPolicy retryPolicy) {
+        if (retryPolicy.getRetryableStatusCodes().isEmpty()) {
+            return true;
+        }
+        
+        for (Status.Code code : retryPolicy.getRetryableStatusCodes()) {
+            if (isMatchingStatusCode(e, code)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean isMatchingStatusCode(RpcException e, Status.Code code) {
+        boolean matches = false;
+        switch (code) {
+            case CANCELLED:
+                matches = e.getCode() == RpcException.TIMEOUT_EXCEPTION ||
+                         e.getCode() == RpcException.UNKNOWN_EXCEPTION;
+                break;
+            case DEADLINE_EXCEEDED:
+                matches = e.getCode() == RpcException.TIMEOUT_EXCEPTION;
+                break;
+            case INTERNAL:
+                matches = e.getCode() == RpcException.UNKNOWN_EXCEPTION ||
+                         e.getCode() == RpcException.SERIALIZATION_EXCEPTION;
+                break;
+            case RESOURCE_EXHAUSTED:
+                matches = e.getCode() == RpcException.LIMIT_EXCEEDED_EXCEPTION ||
+                         e.getCode() == RpcException.NETWORK_EXCEPTION;
+                break;
+            case UNAVAILABLE:
+                matches = e.getCode() == RpcException.NETWORK_EXCEPTION ||
+                         e.getCode() == RpcException.FORBIDDEN_EXCEPTION;
+                break;
+            default:
+                matches = false;
+        }
+
+        logger.debug("[XDS-RETRY] Status code mapping: gRPC {} -> Dubbo {} -> matches: {}",
+            code, e.getCode(), matches);
+        return matches;
+    }
+    
+    private long calculateBackoff(int attempt, long initialBackoffMs, long maxBackoffMs) {
+        long backoff = Math.min((long) (initialBackoffMs * Math.pow(2, attempt)), maxBackoffMs);
+        
+        long jitter = ThreadLocalRandom.current().nextLong(0, backoff / 10 + 1);
+        return backoff + jitter;
     }
 
     @Override
     public boolean isAvailable() {
-        return true;
+        List<Invoker<T>> invokers = directory.list(null);
+        return invokers != null && !invokers.isEmpty() && invokers.stream().anyMatch(Invoker::isAvailable);
     }
 }

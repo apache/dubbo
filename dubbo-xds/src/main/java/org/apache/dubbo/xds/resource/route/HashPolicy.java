@@ -135,7 +135,7 @@ public class HashPolicy {
         this.filterStateName = filterStateName;
     }
 
-    HashPolicyType type() {
+    public HashPolicyType getType() {
         return type;
     }
 
@@ -204,7 +204,7 @@ public class HashPolicy {
         }
         if (o instanceof HashPolicy) {
             HashPolicy that = (HashPolicy) o;
-            return this.type.equals(that.type())
+            return this.type.equals(that.getType())
                     && this.isTerminal == that.isTerminal()
                     && (this.headerName == null
                             ? that.getHeaderName() == null

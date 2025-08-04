@@ -17,6 +17,5 @@
 package org.apache.dubbo.xds.demo;
 
 public interface DemoService {
-
     String sayHello(String name);
 }
