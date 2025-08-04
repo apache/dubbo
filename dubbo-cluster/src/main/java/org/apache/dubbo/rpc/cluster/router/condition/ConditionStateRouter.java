@@ -211,28 +211,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
             Holder<String> messageHolder)
             throws RpcException {
 
-        logger.info(
-                "[CONDITION-ROUTER] ConditionStateRouter.doRoute called with {} invokers [Thread: {}]",
-                invokers.size(),
-                Thread.currentThread().getName());
-
-        // 记录输入的invokers信息
-        for (int i = 0; i < invokers.size(); i++) {
-            Invoker<T> invoker = invokers.get(i);
-            String clusterID = invoker.getUrl().getParameter("clusterID");
-            String address = invoker.getUrl().getAddress();
-            logger.info(
-                    "[CONDITION-ROUTER] Input invoker[{}]: {} (clusterID: {}) [Thread: {}]",
-                    i,
-                    address,
-                    clusterID,
-                    Thread.currentThread().getName());
-        }
-
         if (!enabled) {
-            logger.info(
-                    "[CONDITION-ROUTER] Router disabled, returning all invokers [Thread: {}]",
-                    Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("Directly return. Reason: ConditionRouter disabled.");
             }
@@ -240,9 +219,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         }
 
         if (CollectionUtils.isEmpty(invokers)) {
-            logger.info(
-                    "[CONDITION-ROUTER] Invokers is empty, returning empty list [Thread: {}]",
-                    Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("Directly return. Reason: Invokers from previous router is empty.");
             }
@@ -250,9 +226,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         }
         try {
             if (!matchWhen(url, invocation)) {
-                logger.info(
-                        "[CONDITION-ROUTER] WhenCondition not match, returning all invokers [Thread: {}]",
-                        Thread.currentThread().getName());
                 if (needToPrintMessage) {
                     messageHolder.set("Directly return. Reason: WhenCondition not match.");
                 }
@@ -265,25 +238,15 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                         "",
                         "The current consumer in the service blocklist. consumer: " + NetUtils.getLocalHost()
                                 + ", service: " + url.getServiceKey());
-                logger.info(
-                        "[CONDITION-ROUTER] ThenCondition is empty, returning empty list [Thread: {}]",
-                        Thread.currentThread().getName());
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: ThenCondition is empty.");
                 }
                 return BitList.emptyList();
             }
-            logger.info(
-                    "[CONDITION-ROUTER] Applying thenCondition filter [Thread: {}]",
-                    Thread.currentThread().getName());
             BitList<Invoker<T>> result = invokers.clone();
             result.removeIf(invoker -> !matchThen(invoker.getUrl(), url));
 
             if (!result.isEmpty()) {
-                logger.info(
-                        "[CONDITION-ROUTER] ThenCondition filter result: {} invokers [Thread: {}]",
-                        result.size(),
-                        Thread.currentThread().getName());
                 if (needToPrintMessage) {
                     messageHolder.set("Match return.");
                 }
@@ -296,9 +259,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                         "The route result is empty and force execute. consumer: " + NetUtils.getLocalHost()
                                 + ", service: " + url.getServiceKey() + ", router: "
                                 + url.getParameterAndDecoded(RULE_KEY));
-                logger.info(
-                        "[CONDITION-ROUTER] Empty result but force=true, returning empty list [Thread: {}]",
-                        Thread.currentThread().getName());
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: Empty result from condition and condition is force.");
                 }
@@ -313,9 +273,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                             + t.getMessage(),
                     t);
         }
-        logger.info(
-                "[CONDITION-ROUTER] Error occurred or result is empty, returning all invokers [Thread: {}]",
-                Thread.currentThread().getName());
         if (needToPrintMessage) {
             messageHolder.set("Directly return. Reason: Error occurred ( or result is empty ).");
         }

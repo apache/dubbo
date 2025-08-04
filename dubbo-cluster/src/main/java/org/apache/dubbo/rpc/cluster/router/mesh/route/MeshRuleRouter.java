@@ -89,31 +89,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             Holder<String> messageHolder)
             throws RpcException {
 
-        logger.info(
-                "[MESH-ROUTER] MeshRuleRouter.doRoute called with {} invokers [Thread: {}]",
-                invokers.size(),
-                Thread.currentThread().getName());
-
-        // 记录输入的invokers
-        for (int i = 0; i < invokers.size(); i++) {
-            Invoker<T> invoker = invokers.get(i);
-            String clusterID = invoker.getUrl().getParameter("clusterID");
-            String address = invoker.getUrl().getAddress();
-            String protocol = invoker.getUrl().getProtocol();
-            logger.info(
-                    "[MESH-ROUTER] Input invoker[{}]: {} (clusterID: {}, protocol: {}) [Thread: {}]",
-                    i,
-                    address,
-                    clusterID,
-                    protocol,
-                    Thread.currentThread().getName());
-        }
-
         MeshRuleCache<T> ruleCache = this.meshRuleCache;
         if (!ruleCache.containsRule()) {
-            logger.info(
-                    "[MESH-ROUTER] MeshRuleCache has not been built. Skip route. [Thread: {}]",
-                    Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("MeshRuleCache has not been built. Skip route.");
             }
@@ -135,11 +112,6 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                 if (subset != null) {
                     BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
                     result = result.or(destination);
-                    logger.info(
-                            "[MESH-ROUTER] Found subset: {} for app: {} [Thread: {}]",
-                            subset,
-                            appName,
-                            Thread.currentThread().getName());
                     if (stringBuilder != null) {
                         stringBuilder
                                 .append("Match App: ")
@@ -156,39 +128,16 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
         // empty protection
         if (result.isEmpty()) {
-            logger.info(
-                    "[MESH-ROUTER] Empty protection after routed. [Thread: {}]",
-                    Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("Empty protection after routed.");
             }
             return invokers;
         }
 
-        // 记录and操作的结果
-        BitList<Invoker<T>> finalResult = invokers.and(result);
-        logger.info(
-                "[MESH-ROUTER] MeshRuleRouter.doRoute returning {} invokers [Thread: {}]",
-                finalResult.size(),
-                Thread.currentThread().getName());
-        for (int i = 0; i < finalResult.size(); i++) {
-            Invoker<T> invoker = finalResult.get(i);
-            String clusterID = invoker.getUrl().getParameter("clusterID");
-            String address = invoker.getUrl().getAddress();
-            String protocol = invoker.getUrl().getProtocol();
-            logger.info(
-                    "[MESH-ROUTER] Result invoker[{}]: {} (clusterID: {}, protocol: {}) [Thread: {}]",
-                    i,
-                    address,
-                    clusterID,
-                    protocol,
-                    Thread.currentThread().getName());
-        }
-
         if (needToPrintMessage) {
             messageHolder.set(stringBuilder.toString());
         }
-        return finalResult;
+        return invokers.and(result);
     }
 
     /**

@@ -24,9 +24,6 @@ import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.S
 
 public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
 
-    private static final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(StandardMeshRuleRouter.class);
-
     public StandardMeshRuleRouter(URL url) {
         super(url);
     }

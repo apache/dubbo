@@ -99,30 +99,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             Holder<String> messageHolder)
             throws RpcException {
 
-        logger.info(
-                "[TAG-ROUTER] TagStateRouter.doRoute called with {} invokers [Thread: {}]",
-                invokers.size(),
-                Thread.currentThread().getName());
-
-        // 记录输入的invokers信息
-        for (int i = 0; i < invokers.size(); i++) {
-            Invoker<T> invoker = invokers.get(i);
-            String tag = invoker.getUrl().getParameter(TAG_KEY);
-            String clusterID = invoker.getUrl().getParameter("clusterID");
-            String address = invoker.getUrl().getAddress();
-            logger.info(
-                    "[TAG-ROUTER] Input invoker[{}]: {} (tag: {}, clusterID: {}) [Thread: {}]",
-                    i,
-                    address,
-                    tag,
-                    clusterID,
-                    Thread.currentThread().getName());
-        }
-
         if (CollectionUtils.isEmpty(invokers)) {
-            logger.info(
-                    "[TAG-ROUTER] Invokers is empty, returning empty list [Thread: {}]",
-                    Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("Directly Return. Reason: Invokers from previous router is empty.");
             }
@@ -131,17 +108,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
         // since the rule can be changed by config center, we should copy one to use.
         final TagRouterRule tagRouterRuleCopy = tagRouterRule;
-        logger.info(
-                "[TAG-ROUTER] tagRouterRule: {} (valid: {}, enabled: {}) [Thread: {}]",
-                tagRouterRuleCopy,
-                tagRouterRuleCopy != null ? tagRouterRuleCopy.isValid() : "null",
-                tagRouterRuleCopy != null ? tagRouterRuleCopy.isEnabled() : "null",
-                Thread.currentThread().getName());
 
         if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
-            logger.info(
-                    "[TAG-ROUTER] Using static tag filtering [Thread: {}]",
-                    Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("Disable Tag Router. Reason: tagRouterRule is invalid or disabled");
             }
@@ -153,34 +121,15 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 ? url.getParameter(TAG_KEY)
                 : invocation.getAttachment(TAG_KEY);
 
-        logger.info(
-                "[TAG-ROUTER] Requested tag: {} [Thread: {}]",
-                tag,
-                Thread.currentThread().getName());
-
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
-            logger.info(
-                    "[TAG-ROUTER] Processing tag request: {} [Thread: {}]",
-                    tag,
-                    Thread.currentThread().getName());
             Map<String, Set<String>> tagnameToAddresses = tagRouterRuleCopy.getTagnameToAddresses();
             Set<String> addresses = selectAddressByTagLevel(tagnameToAddresses, tag, isForceUseTag(invocation));
             // filter by dynamic tag group first
             if (addresses != null) { // null means tag not set
-                logger.info(
-                        "[TAG-ROUTER] Found addresses for tag {}: {} [Thread: {}]",
-                        tag,
-                        addresses,
-                        Thread.currentThread().getName());
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
                 // if result is not null OR it's null but force=true, return result directly
                 if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {
-                    logger.info(
-                            "[TAG-ROUTER] Returning {} invokers for tag {} [Thread: {}]",
-                            result.size(),
-                            tag,
-                            Thread.currentThread().getName());
                     if (needToPrintMessage) {
                         messageHolder.set(
                                 "Use tag " + tag + " to route. Reason: result is not null OR it's null but force=true");
@@ -188,10 +137,6 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                     return result;
                 }
             } else {
-                logger.info(
-                        "[TAG-ROUTER] No addresses found for tag {}, checking static tag [Thread: {}]",
-                        tag,
-                        Thread.currentThread().getName());
                 // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by
                 // dynamic tag group but force=false. check static tag
                 result = filterInvoker(
@@ -200,12 +145,6 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
             if (CollectionUtils.isNotEmpty(result) || isForceUseTag(invocation)) {
-                logger.info(
-                        "[TAG-ROUTER] Returning {} invokers for tag {} (force: {}) [Thread: {}]",
-                        result.size(),
-                        tag,
-                        isForceUseTag(invocation),
-                        Thread.currentThread().getName());
                 if (needToPrintMessage) {
                     messageHolder.set("Use tag " + tag
                             + " to route. Reason: result is not empty or ForceUseTag key is true in invocation");
@@ -214,40 +153,22 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             }
             // FAILOVER: return all Providers without any tags.
             else {
-                logger.info(
-                        "[TAG-ROUTER] No tagged providers found, returning providers without tags [Thread: {}]",
-                        Thread.currentThread().getName());
                 BitList<Invoker<T>> tmp = filterInvoker(
                         invokers, invoker -> addressNotMatches(invoker.getUrl(), tagRouterRuleCopy.getAddresses()));
                 if (needToPrintMessage) {
                     messageHolder.set("FAILOVER: return all Providers without any tags");
                 }
-                BitList<Invoker<T>> finalResult = filterInvoker(
+                return filterInvoker(
                         tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
-                logger.info(
-                        "[TAG-ROUTER] FAILOVER: returning {} invokers without tags [Thread: {}]",
-                        finalResult.size(),
-                        Thread.currentThread().getName());
-                return finalResult;
             }
         } else {
-            logger.info(
-                    "[TAG-ROUTER] No tag requested, processing all addresses [Thread: {}]",
-                    Thread.currentThread().getName());
             // List<String> addresses = tagRouterRule.filter(providerApp);
             // return all addresses in dynamic tag group.
             Set<String> addresses = tagRouterRuleCopy.getAddresses();
             if (CollectionUtils.isNotEmpty(addresses)) {
-                logger.info(
-                        "[TAG-ROUTER] Found {} addresses in dynamic tag group [Thread: {}]",
-                        addresses.size(),
-                        Thread.currentThread().getName());
                 result = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), addresses));
                 // 1. all addresses are in dynamic tag group, return empty list.
                 if (CollectionUtils.isEmpty(result)) {
-                    logger.info(
-                            "[TAG-ROUTER] All addresses are in dynamic tag group, returning empty list [Thread: {}]",
-                            Thread.currentThread().getName());
                     if (needToPrintMessage) {
                         messageHolder.set("all addresses are in dynamic tag group, return empty list");
                     }
@@ -256,28 +177,13 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 // 2. if there are some addresses that are not in any dynamic tag group, continue to filter using the
                 // static tag group.
             }
-            logger.info(
-                    "[TAG-ROUTER] Filtering using static tag group [Thread: {}]",
-                    Thread.currentThread().getName());
             if (needToPrintMessage) {
                 messageHolder.set("filter using the static tag group");
             }
-            BitList<Invoker<T>> finalResult = filterInvoker(result, invoker -> {
+            return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
-                boolean isEmpty = StringUtils.isEmpty(localTag);
-                logger.info(
-                        "[TAG-ROUTER] Checking invoker {}: tag='{}', isEmpty={} [Thread: {}]",
-                        invoker.getUrl().getAddress(),
-                        localTag,
-                        isEmpty,
-                        Thread.currentThread().getName());
-                return isEmpty;
+                return StringUtils.isEmpty(localTag);
             });
-            logger.info(
-                    "[TAG-ROUTER] Static tag filtering result: {} invokers [Thread: {}]",
-                    finalResult.size(),
-                    Thread.currentThread().getName());
-            return finalResult;
         }
     }
 
@@ -302,39 +208,17 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY))
                 ? url.getParameter(TAG_KEY)
                 : invocation.getAttachment(TAG_KEY);
-        logger.info("[TAG-ROUTER-STATIC] Request tag is: '" + tag + "'");
 
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
-            logger.info("[TAG-ROUTER-STATIC] Request has a tag. Filtering for invokers with tag: '" + tag + "'");
             result = filterInvoker(
                     invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
-            logger.info("[TAG-ROUTER-STATIC] Found " + result.size() + " invokers with matching tag.");
-
             if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation)) {
-                logger.info(
-                        "[TAG-ROUTER-STATIC] No invokers with tag found, and not force use. Fallback to invokers with empty tag.");
-                result = filterInvoker(invokers, invoker -> {
-                    String invokerTag = invoker.getUrl().getParameter(TAG_KEY);
-                    boolean isEmpty = StringUtils.isEmpty(invokerTag);
-                    logger.info("[TAG-ROUTER-STATIC-FALLBACK] Checking invoker "
-                            + invoker.getUrl().getAddress() + ", tag='" + invokerTag + "', isEmpty=" + isEmpty);
-                    return isEmpty;
-                });
-                logger.info("[TAG-ROUTER-STATIC-FALLBACK] Found " + result.size() + " invokers with empty tag.");
+                result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
             }
         } else {
-            logger.info("[TAG-ROUTER-STATIC] Request has no tag. Filtering for invokers with empty tag.");
-            result = filterInvoker(invokers, invoker -> {
-                String invokerTag = invoker.getUrl().getParameter(TAG_KEY);
-                boolean isEmpty = StringUtils.isEmpty(invokerTag);
-                logger.info("[TAG-ROUTER-STATIC-NO_TAG] Checking invoker "
-                        + invoker.getUrl().getAddress() + ", tag='" + invokerTag + "', isEmpty=" + isEmpty);
-                return isEmpty;
-            });
-            logger.info("[TAG-ROUTER-STATIC-NO_TAG] Found " + result.size() + " invokers with empty tag.");
+            result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
         }
-        logger.info("[TAG-ROUTER-STATIC] Final result size: " + result.size());
         return result;
     }
 
