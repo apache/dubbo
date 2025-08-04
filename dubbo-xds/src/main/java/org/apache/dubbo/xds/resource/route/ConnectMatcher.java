@@ -48,8 +48,6 @@ public final class ConnectMatcher {
 
     @Override
     public String toString() {
-        return "ConnectMatcher{" +
-            "hasConnectMatcher=" + hasConnectMatcher +
-            '}';
+        return "ConnectMatcher{" + "hasConnectMatcher=" + hasConnectMatcher + '}';
     }
-} 
+}

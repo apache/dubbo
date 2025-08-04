@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.xds;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 

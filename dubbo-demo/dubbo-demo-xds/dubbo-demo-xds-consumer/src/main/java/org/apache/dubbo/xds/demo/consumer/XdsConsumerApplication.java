@@ -20,16 +20,12 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.xds.demo.DemoService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Service;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @SpringBootApplication
 @Service
@@ -39,7 +35,7 @@ public class XdsConsumerApplication {
 
     @DubboReference(providedBy = "dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local:50051")
     private DemoService demoService;
-    
+
     public static void main(String[] args) throws InterruptedException {
         // System.setProperty(IstioConstant.WORKLOAD_NAMESPACE_KEY, "dubbo-demo");
         // // System.setProperty("API_SERVER_PATH", "https://127.0.0.1:6443");
@@ -54,7 +50,7 @@ public class XdsConsumerApplication {
 
         ConfigurableApplicationContext context = SpringApplication.run(XdsConsumerApplication.class, args);
         XdsConsumerApplication application = context.getBean(XdsConsumerApplication.class);
-        
+
         while (true) {
             try {
                 Thread.sleep(10000);

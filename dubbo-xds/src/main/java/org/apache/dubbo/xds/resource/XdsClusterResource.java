@@ -45,7 +45,7 @@ import io.envoyproxy.envoy.extensions.transport_sockets.tls.v3.CommonTlsContext;
 
 public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsClusterResource.class);
-    
+
     static final String ADS_TYPE_URL_CDS = "type.googleapis.com/envoy.config.cluster.v3.Cluster";
     private static final String TYPE_URL_UPSTREAM_TLS_CONTEXT =
             "type.googleapis.com/envoy.extensions" + ".transport_sockets.tls.v3.UpstreamTlsContext";
@@ -90,35 +90,45 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
 
     @Override
     CdsUpdate doParse(Args args, Message unpackedMessage) throws ResourceInvalidException {
-        logger.info("[XDS] CDS doParse called for message type: {}", unpackedMessage.getClass().getSimpleName());
-        
+        logger.info(
+                "[XDS] CDS doParse called for message type: {}",
+                unpackedMessage.getClass().getSimpleName());
+
         if (!(unpackedMessage instanceof Cluster)) {
             logger.error("[XDS] CDS doParse: Invalid message type: {}", unpackedMessage.getClass());
             throw new ResourceInvalidException("Invalid message type: " + unpackedMessage.getClass());
         }
-        
+
         Cluster cluster = (Cluster) unpackedMessage;
-        logger.info("[XDS] CDS doParse: Processing cluster: {}, discovery type: {}", 
-                   cluster.getName(), cluster.getClusterDiscoveryTypeCase());
-        
+        logger.info(
+                "[XDS] CDS doParse: Processing cluster: {}, discovery type: {}",
+                cluster.getName(),
+                cluster.getClusterDiscoveryTypeCase());
+
         Set<String> certProviderInstances = null;
         if (args.bootstrapInfo != null && args.bootstrapInfo.getCertProviders() != null) {
             certProviderInstances = args.bootstrapInfo.getCertProviders().keySet();
         }
-        
+
         try {
             CdsUpdate result = processCluster(cluster, certProviderInstances, args.serverInfo);
-            logger.info("[XDS] CDS doParse: Successfully processed cluster: {}, cluster type: {}", 
-                       cluster.getName(), result.getClusterType());
+            logger.info(
+                    "[XDS] CDS doParse: Successfully processed cluster: {}, cluster type: {}",
+                    cluster.getName(),
+                    result.getClusterType());
             return result;
         } catch (ResourceInvalidException e) {
-            logger.error("[XDS] CDS doParse: Failed to process cluster: {}, error: {}", 
-                        cluster.getName(), e.getMessage());
+            logger.error(
+                    "[XDS] CDS doParse: Failed to process cluster: {}, error: {}", cluster.getName(), e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("[XDS] CDS doParse: Unexpected error processing cluster: {}, error: {}", 
-                        cluster.getName(), e.getMessage(), e);
-            throw new ResourceInvalidException("Unexpected error processing cluster: " + cluster.getName() + ", error: " + e.getMessage());
+            logger.error(
+                    "[XDS] CDS doParse: Unexpected error processing cluster: {}, error: {}",
+                    cluster.getName(),
+                    e.getMessage(),
+                    e);
+            throw new ResourceInvalidException(
+                    "Unexpected error processing cluster: " + cluster.getName() + ", error: " + e.getMessage());
         }
     }
 
@@ -203,7 +213,9 @@ public class XdsClusterResource extends XdsResourceType<CdsUpdate> {
             }
         }
         if (cluster.getTransportSocketMatchesCount() > 0) {
-            logger.warn("[XDS] Cluster {}: transport-socket-matches present but ignored (not fully supported)", clusterName);
+            logger.warn(
+                    "[XDS] Cluster {}: transport-socket-matches present but ignored (not fully supported)",
+                    clusterName);
             // 不返回错误，而是继续处理，忽略transport-socket-matches
         }
         if (cluster.hasTransportSocket()) {

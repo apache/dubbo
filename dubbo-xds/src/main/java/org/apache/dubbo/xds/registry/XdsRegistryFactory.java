@@ -17,14 +17,13 @@
 package org.apache.dubbo.xds.registry;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.xds.XdsResourceFactory;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 public class XdsRegistryFactory extends AbstractRegistryFactory {
-    
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsRegistryFactory.class);
 
     public XdsRegistryFactory() {

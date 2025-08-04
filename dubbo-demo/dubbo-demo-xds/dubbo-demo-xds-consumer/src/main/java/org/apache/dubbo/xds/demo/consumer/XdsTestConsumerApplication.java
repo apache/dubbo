@@ -1,45 +1,45 @@
-///*
-// * Licensed to the Apache Software Foundation (ASF) under one or more
-// * contributor license agreements.  See the NOTICE file distributed with
-// * this work for additional information regarding copyright ownership.
-// * The ASF licenses this file to You under the Apache License, Version 2.0
-// * (the "License"); you may not use this file except in compliance with
-// * the License.  You may obtain a copy of the License at
-// *
-// *     http://www.apache.org/licenses/LICENSE-2.0
-// *
-// * Unless required by applicable law or agreed to in writing, software
-// * distributed under the License is distributed on an "AS IS" BASIS,
-// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// * See the License for the specific language governing permissions and
-// * limitations under the License.
-// */
-//package org.apache.dubbo.xds.demo.consumer;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.xds.demo.consumer;
+
+// import org.apache.dubbo.config.annotation.DubboReference;
+// import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+// import org.apache.dubbo.rpc.RpcContext;
+// import org.apache.dubbo.xds.demo.DemoService;
 //
-//import org.apache.dubbo.config.annotation.DubboReference;
-//import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-//import org.apache.dubbo.rpc.RpcContext;
-//import org.apache.dubbo.xds.demo.DemoService;
+// import org.springframework.boot.SpringApplication;
+// import org.springframework.boot.autoconfigure.SpringBootApplication;
+// import org.springframework.context.ConfigurableApplicationContext;
+// import org.springframework.stereotype.Service;
 //
-//import org.springframework.boot.SpringApplication;
-//import org.springframework.boot.autoconfigure.SpringBootApplication;
-//import org.springframework.context.ConfigurableApplicationContext;
-//import org.springframework.stereotype.Service;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
 //
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+// import java.util.HashMap;
+// import java.util.Map;
+// import java.util.concurrent.CompletableFuture;
+// import java.util.concurrent.ExecutorService;
+// import java.util.concurrent.Executors;
+// import java.util.concurrent.atomic.AtomicInteger;
 //
-//import java.util.HashMap;
-//import java.util.Map;
-//import java.util.concurrent.CompletableFuture;
-//import java.util.concurrent.ExecutorService;
-//import java.util.concurrent.Executors;
-//import java.util.concurrent.atomic.AtomicInteger;
-//
-//@SpringBootApplication
-//@Service
-//@EnableDubbo
-//public class XdsTestConsumerApplication {
+// @SpringBootApplication
+// @Service
+// @EnableDubbo
+// public class XdsTestConsumerApplication {
 //    private static final Logger logger = LoggerFactory.getLogger(XdsTestConsumerApplication.class);
 //
 //    @DubboReference(providedBy = "dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local:50051")
@@ -109,9 +109,11 @@
 //
 //            // 验证超时时间是否符合预期
 //            if (duration >= expectedTimeoutMs - 500 && duration <= expectedTimeoutMs + 1000) {
-//                logger.info("✅ Timeout strategy WORKING: actual timeout {}ms matches expected {}ms", duration, expectedTimeoutMs);
+//                logger.info("✅ Timeout strategy WORKING: actual timeout {}ms matches expected {}ms", duration,
+// expectedTimeoutMs);
 //            } else {
-//                logger.warn("❌ Timeout strategy NOT WORKING: actual timeout {}ms, expected {}ms", duration, expectedTimeoutMs);
+//                logger.warn("❌ Timeout strategy NOT WORKING: actual timeout {}ms, expected {}ms", duration,
+// expectedTimeoutMs);
 //            }
 //        } finally {
 //            RpcContext.getClientAttachment().clearAttachments();
@@ -130,7 +132,8 @@
 //            long startTime = System.currentTimeMillis();
 //            try {
 //                RpcContext.getClientAttachment().setAttachment("test-scenario", "retry-test");
-//                RpcContext.getClientAttachment().setAttachment("attempt-id", String.valueOf(attemptCount.incrementAndGet()));
+//                RpcContext.getClientAttachment().setAttachment("attempt-id",
+// String.valueOf(attemptCount.incrementAndGet()));
 //
 //                String result = demoService.sayHello("retry-test-" + i);
 //                long duration = System.currentTimeMillis() - startTime;
@@ -145,7 +148,8 @@
 //                if (duration > 2000) { // 如果超过2秒，说明可能进行了重试
 //                    logger.info("✅ Retry strategy WORKING: duration {}ms suggests retries occurred", duration);
 //                } else {
-//                    logger.warn("❌ Retry strategy might NOT be working: duration {}ms too short for retries", duration);
+//                    logger.warn("❌ Retry strategy might NOT be working: duration {}ms too short for retries",
+// duration);
 //                }
 //            } finally {
 //                RpcContext.getClientAttachment().clearAttachments();
@@ -263,7 +267,8 @@
 //                        userToVersion.put(userId, version);
 //                    } else if (!firstVersion.equals(version)) {
 //                        consistent = false;
-//                        logger.warn("Hash routing inconsistency for {}: first={}, current={}", userId, firstVersion, version);
+//                        logger.warn("Hash routing inconsistency for {}: first={}, current={}", userId, firstVersion,
+// version);
 //                    }
 //
 //                    if (i == 0) {
@@ -294,4 +299,4 @@
 //
 //        logger.info("Hash routing summary: {}", userToVersion);
 //    }
-//}
+// }

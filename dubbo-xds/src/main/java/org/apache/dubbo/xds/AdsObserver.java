@@ -46,7 +46,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
 
 public class AdsObserver {
-    
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AdsObserver.class);
     private final Node node;
     private volatile XdsChannel xdsChannel;
@@ -84,8 +84,10 @@ public class AdsObserver {
 
     public void adjustResourceSubscription(XdsResourceType<?> resourceType) {
         Set<String> resourcesToObserve = getResourcesToObserve(resourceType);
-        logger.info("[XDS] Adjusting resource subscription for type: {}, resources to observe: {}",
-                   resourceType.typeName(), resourcesToObserve);
+        logger.info(
+                "[XDS] Adjusting resource subscription for type: {}, resources to observe: {}",
+                resourceType.typeName(),
+                resourcesToObserve);
         this.request(buildDiscoveryRequest(resourceType, resourcesToObserve));
     }
 
@@ -99,18 +101,25 @@ public class AdsObserver {
         return resourceNames;
     }
 
-    public <T extends ResourceUpdate> ValidatedResourceUpdate<T> process(XdsResourceType<T> resourceTypeInstance, DiscoveryResponse response) {
-        
-        ValidatedResourceUpdate<T> validatedResourceUpdate = resourceTypeInstance.parse(XdsResourceType.xdsResourceTypeArgs, response.getResourcesList());
+    public <T extends ResourceUpdate> ValidatedResourceUpdate<T> process(
+            XdsResourceType<T> resourceTypeInstance, DiscoveryResponse response) {
+
+        ValidatedResourceUpdate<T> validatedResourceUpdate =
+                resourceTypeInstance.parse(XdsResourceType.xdsResourceTypeArgs, response.getResourcesList());
         if (!validatedResourceUpdate.getErrors().isEmpty()) {
-            logger.error(REGISTRY_ERROR_PARSING_XDS,
-                    "Parse errors for {}: {}", resourceTypeInstance.typeName(), validatedResourceUpdate.getErrors());
+            logger.error(
+                    REGISTRY_ERROR_PARSING_XDS,
+                    "Parse errors for {}: {}",
+                    resourceTypeInstance.typeName(),
+                    validatedResourceUpdate.getErrors());
         }
-        
+
         ConcurrentMap<String, T> parsedResources = validatedResourceUpdate.getParsedResources().entrySet().stream()
-                .collect(Collectors.toConcurrentMap(Entry::getKey, e -> e.getValue().getResourceUpdate()));
-        
-        Map<String, XdsRawResourceProtocol<?>> resourceListenerMap = rawResourceListeners.getOrDefault(resourceTypeInstance, new ConcurrentHashMap<>());
+                .collect(Collectors.toConcurrentMap(
+                        Entry::getKey, e -> e.getValue().getResourceUpdate()));
+
+        Map<String, XdsRawResourceProtocol<?>> resourceListenerMap =
+                rawResourceListeners.getOrDefault(resourceTypeInstance, new ConcurrentHashMap<>());
         for (Map.Entry<String, XdsRawResourceProtocol<?>> entry : resourceListenerMap.entrySet()) {
             String resourceName = entry.getKey();
             XdsRawResourceProtocol<T> rawResourceListener = (XdsRawResourceProtocol<T>) entry.getValue();
@@ -138,7 +147,7 @@ public class AdsObserver {
                 logger.info("[XDS] No parsed resource found for {}", resourceName);
             }
         }
-        
+
         return validatedResourceUpdate;
     }
 
@@ -167,9 +176,9 @@ public class AdsObserver {
     }
 
     private static class ResponseObserver implements StreamObserver<DiscoveryResponse> {
-        
+
         private final AdsObserver adsObserver;
-        
+
         private final CompletableFuture<?> future;
 
         public ResponseObserver(AdsObserver adsObserver, CompletableFuture<?> future) {
@@ -179,30 +188,38 @@ public class AdsObserver {
 
         @Override
         public void onNext(DiscoveryResponse discoveryResponse) {
-            logger.info("[XDS] Receive message from server - TypeUrl: {}, VersionInfo: {}, Nonce: {}, ResourcesCount: {}",
-                       discoveryResponse.getTypeUrl(),
-                       discoveryResponse.getVersionInfo(),
-                       discoveryResponse.getNonce(),
-                       discoveryResponse.getResourcesCount());
+            logger.info(
+                    "[XDS] Receive message from server - TypeUrl: {}, VersionInfo: {}, Nonce: {}, ResourcesCount: {}",
+                    discoveryResponse.getTypeUrl(),
+                    discoveryResponse.getVersionInfo(),
+                    discoveryResponse.getNonce(),
+                    discoveryResponse.getResourcesCount());
 
             try {
                 if (future != null) {
                     future.complete(null);
                 }
-                
+
                 XdsResourceType<?> resourceType = fromTypeUrl(discoveryResponse.getTypeUrl());
 
                 if (resourceType == null) {
                     return;
                 }
 
-                ValidatedResourceUpdate<?> validatedResourceUpdate = adsObserver.process(resourceType, discoveryResponse);
+                ValidatedResourceUpdate<?> validatedResourceUpdate =
+                        adsObserver.process(resourceType, discoveryResponse);
 
                 adsObserver.requestObserver.onNext(buildAck(resourceType, discoveryResponse));
                 logger.info("[XDS] Successfully sent ACK for resource type: {}", resourceType.typeName());
 
             } catch (Throwable t) {
-                logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Error processing xDS response - TypeUrl: " + discoveryResponse.getTypeUrl() + ", Error: " + t.getMessage(), t);
+                logger.error(
+                        REGISTRY_ERROR_REQUEST_XDS,
+                        "",
+                        "",
+                        "Error processing xDS response - TypeUrl: " + discoveryResponse.getTypeUrl() + ", Error: "
+                                + t.getMessage(),
+                        t);
                 // Also print stack trace to standard error to ensure visibility
                 t.printStackTrace();
             }

@@ -71,7 +71,12 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
     private static final String ADS_TYPE_URL_RDS = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
     private static final String TYPE_URL_FILTER_CONFIG = "type.googleapis.com/envoy.config.route.v3.FilterConfig";
     // TODO(zdapeng): need to discuss how to handle unsupported values.
-    private static final Set<Status.Code> SUPPORTED_RETRYABLE_CODES = Collections.unmodifiableSet(EnumSet.of(Status.Code.CANCELLED, Status.Code.DEADLINE_EXCEEDED, Status.Code.INTERNAL, Status.Code.RESOURCE_EXHAUSTED, Status.Code.UNAVAILABLE));
+    private static final Set<Status.Code> SUPPORTED_RETRYABLE_CODES = Collections.unmodifiableSet(EnumSet.of(
+            Status.Code.CANCELLED,
+            Status.Code.DEADLINE_EXCEEDED,
+            Status.Code.INTERNAL,
+            Status.Code.RESOURCE_EXHAUSTED,
+            Status.Code.UNAVAILABLE));
 
     private static final XdsRouteConfigureResource instance = new XdsRouteConfigureResource();
 
@@ -118,15 +123,13 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
         return processRouteConfiguration((RouteConfiguration) unpackedMessage, args.filterRegistry);
     }
 
-    private static RdsUpdate processRouteConfiguration(
-            RouteConfiguration routeConfig,
-            FilterRegistry filterRegistry) throws ResourceInvalidException {
+    private static RdsUpdate processRouteConfiguration(RouteConfiguration routeConfig, FilterRegistry filterRegistry)
+            throws ResourceInvalidException {
         return new RdsUpdate(extractVirtualHosts(routeConfig, filterRegistry));
     }
 
-    static List<VirtualHost> extractVirtualHosts(
-            RouteConfiguration routeConfig,
-            FilterRegistry filterRegistry) throws ResourceInvalidException {
+    static List<VirtualHost> extractVirtualHosts(RouteConfiguration routeConfig, FilterRegistry filterRegistry)
+            throws ResourceInvalidException {
         Map<String, PluginConfig> pluginConfigMap = new HashMap<>();
         Set<String> optionalPlugins = new HashSet<>();
 
@@ -149,7 +152,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
 
         List<VirtualHost> virtualHosts = new ArrayList<>(routeConfig.getVirtualHostsCount());
         for (io.envoyproxy.envoy.config.route.v3.VirtualHost virtualHostProto : routeConfig.getVirtualHostsList()) {
-            StructOrError<VirtualHost> virtualHost = parseVirtualHost(virtualHostProto, filterRegistry, pluginConfigMap, optionalPlugins);
+            StructOrError<VirtualHost> virtualHost =
+                    parseVirtualHost(virtualHostProto, filterRegistry, pluginConfigMap, optionalPlugins);
             if (virtualHost.getErrorDetail() != null) {
                 throw new ResourceInvalidException(
                         "RouteConfiguration contains invalid virtual host: " + virtualHost.getErrorDetail());
@@ -180,18 +184,19 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
             routes.add(route.getStruct());
         }
 
-        StructOrError<Map<String, FilterConfig>> overrideConfigs = parseOverrideFilterConfigs(proto.getTypedPerFilterConfigMap(), filterRegistry);
+        StructOrError<Map<String, FilterConfig>> overrideConfigs =
+                parseOverrideFilterConfigs(proto.getTypedPerFilterConfigMap(), filterRegistry);
         if (overrideConfigs.getErrorDetail() != null) {
             return StructOrError.fromError("VirtualHost [" + proto.getName() + "] contains invalid HttpFilter config: "
                     + overrideConfigs.getErrorDetail());
         }
 
-        return StructOrError.fromStruct(VirtualHost.create(name, proto.getDomainsList(), routes, overrideConfigs.getStruct()));
+        return StructOrError.fromStruct(
+                VirtualHost.create(name, proto.getDomainsList(), routes, overrideConfigs.getStruct()));
     }
 
     static StructOrError<Map<String, FilterConfig>> parseOverrideFilterConfigs(
-            Map<String, Any> rawFilterConfigMap,
-            FilterRegistry filterRegistry) {
+            Map<String, Any> rawFilterConfigMap, FilterRegistry filterRegistry) {
         Map<String, FilterConfig> overrideConfigs = new HashMap<>();
         for (String name : rawFilterConfigMap.keySet()) {
             Any anyConfig = rawFilterConfigMap.get(name);
@@ -215,7 +220,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                     typeUrl = typedStruct.getTypeUrl();
                     rawConfig = typedStruct.getValue();
                 } else if (typeUrl.equals(TYPE_URL_TYPED_STRUCT)) {
-                    com.github.xds.type.v3.TypedStruct newTypedStruct = anyConfig.unpack(com.github.xds.type.v3.TypedStruct.class);
+                    com.github.xds.type.v3.TypedStruct newTypedStruct =
+                            anyConfig.unpack(com.github.xds.type.v3.TypedStruct.class);
                     typeUrl = newTypedStruct.getTypeUrl();
                     rawConfig = newTypedStruct.getValue();
                 }
@@ -256,7 +262,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                     "Route [" + proto.getName() + "] contains invalid RouteMatch: " + routeMatch.getErrorDetail());
         }
 
-        StructOrError<Map<String, FilterConfig>> overrideConfigsOrError = parseOverrideFilterConfigs(proto.getTypedPerFilterConfigMap(), filterRegistry);
+        StructOrError<Map<String, FilterConfig>> overrideConfigsOrError =
+                parseOverrideFilterConfigs(proto.getTypedPerFilterConfigMap(), filterRegistry);
         if (overrideConfigsOrError.getErrorDetail() != null) {
             return StructOrError.fromError("Route [" + proto.getName() + "] contains invalid HttpFilter config: "
                     + overrideConfigsOrError.getErrorDetail());
@@ -265,7 +272,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
 
         switch (proto.getActionCase()) {
             case ROUTE:
-                StructOrError<RouteAction> routeAction = parseRouteAction(proto.getRoute(), filterRegistry, pluginConfigMap, optionalPlugins);
+                StructOrError<RouteAction> routeAction =
+                        parseRouteAction(proto.getRoute(), filterRegistry, pluginConfigMap, optionalPlugins);
                 if (routeAction == null) {
                     return null;
                 }
@@ -273,7 +281,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                     return StructOrError.fromError("Route [" + proto.getName() + "] contains invalid RouteAction: "
                             + routeAction.getErrorDetail());
                 }
-                return StructOrError.fromStruct(Route.forAction(routeMatch.getStruct(), routeAction.getStruct(), overrideConfigs));
+                return StructOrError.fromStruct(
+                        Route.forAction(routeMatch.getStruct(), routeAction.getStruct(), overrideConfigs));
             case NON_FORWARDING_ACTION:
                 return StructOrError.fromStruct(Route.forNonForwardingAction(routeMatch.getStruct(), overrideConfigs));
             case REDIRECT:
@@ -298,8 +307,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
 
         FractionMatcher fractionMatch = null;
         if (proto.hasRuntimeFraction()) {
-            StructOrError<FractionMatcher> parsedFraction = parseFractionMatcher(proto.getRuntimeFraction()
-                    .getDefaultValue());
+            StructOrError<FractionMatcher> parsedFraction =
+                    parseFractionMatcher(proto.getRuntimeFraction().getDefaultValue());
             if (parsedFraction.getErrorDetail() != null) {
                 return StructOrError.fromError(parsedFraction.getErrorDetail());
             }
@@ -389,7 +398,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
 
         // 2. 如果没有timeout，再检查MaxStreamDuration（gRPC特定的超时设置）
         if (timeoutNano == null && proto.hasMaxStreamDuration()) {
-            io.envoyproxy.envoy.config.route.v3.RouteAction.MaxStreamDuration maxStreamDuration = proto.getMaxStreamDuration();
+            io.envoyproxy.envoy.config.route.v3.RouteAction.MaxStreamDuration maxStreamDuration =
+                    proto.getMaxStreamDuration();
             if (maxStreamDuration.hasGrpcTimeoutHeaderMax()) {
                 timeoutNano = Durations.toNanos(maxStreamDuration.getGrpcTimeoutHeaderMax());
             } else if (maxStreamDuration.hasMaxStreamDuration()) {
@@ -417,9 +427,11 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                     io.envoyproxy.envoy.config.route.v3.RouteAction.HashPolicy.Header headerCfg = config.getHeader();
                     Pattern regEx = null;
                     String regExSubstitute = null;
-                    if (headerCfg.hasRegexRewrite() && headerCfg.getRegexRewrite().hasPattern()
+                    if (headerCfg.hasRegexRewrite()
+                            && headerCfg.getRegexRewrite().hasPattern()
                             && headerCfg.getRegexRewrite().getPattern().hasGoogleRe2()) {
-                        regEx = Pattern.compile(headerCfg.getRegexRewrite().getPattern().getRegex());
+                        regEx = Pattern.compile(
+                                headerCfg.getRegexRewrite().getPattern().getRegex());
                         regExSubstitute = headerCfg.getRegexRewrite().getSubstitution();
                     }
                     policy = HashPolicy.forHeader(terminal, headerCfg.getHeaderName(), regEx, regExSubstitute);
@@ -439,20 +451,25 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
 
         switch (proto.getClusterSpecifierCase()) {
             case CLUSTER:
-                return StructOrError.fromStruct(RouteAction.forCluster(proto.getCluster(), hashPolicies, timeoutNano, retryPolicy, proto.getAutoHostRewrite()
-                        .getValue()));
+                return StructOrError.fromStruct(RouteAction.forCluster(
+                        proto.getCluster(),
+                        hashPolicies,
+                        timeoutNano,
+                        retryPolicy,
+                        proto.getAutoHostRewrite().getValue()));
             case CLUSTER_HEADER:
                 return null;
             case WEIGHTED_CLUSTERS:
-                List<io.envoyproxy.envoy.config.route.v3.WeightedCluster.ClusterWeight> clusterWeights = proto.getWeightedClusters()
-                        .getClustersList();
+                List<io.envoyproxy.envoy.config.route.v3.WeightedCluster.ClusterWeight> clusterWeights =
+                        proto.getWeightedClusters().getClustersList();
                 if (clusterWeights.isEmpty()) {
                     return StructOrError.fromError("No cluster found in weighted cluster list");
                 }
                 List<ClusterWeight> weightedClusters = new ArrayList<>();
                 long clusterWeightSum = 0;
                 for (io.envoyproxy.envoy.config.route.v3.WeightedCluster.ClusterWeight clusterWeight : clusterWeights) {
-                    StructOrError<ClusterWeight> clusterWeightOrError = parseClusterWeight(clusterWeight, filterRegistry);
+                    StructOrError<ClusterWeight> clusterWeightOrError =
+                            parseClusterWeight(clusterWeight, filterRegistry);
                     if (clusterWeightOrError.getErrorDetail() != null) {
                         return StructOrError.fromError(
                                 "RouteAction contains invalid ClusterWeight: " + clusterWeightOrError.getErrorDetail());
@@ -466,10 +483,15 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                 if (clusterWeightSum > UNSIGNED_INTEGER_MAX_VALUE) {
                     return StructOrError.fromError(String.format(
                             "Sum of cluster weights should be less than the maximum unsigned integer (%d), but"
-                                    + " was %d. ", UNSIGNED_INTEGER_MAX_VALUE, clusterWeightSum));
+                                    + " was %d. ",
+                            UNSIGNED_INTEGER_MAX_VALUE, clusterWeightSum));
                 }
-                return StructOrError.fromStruct(RouteAction.forWeightedClusters(weightedClusters, hashPolicies, timeoutNano, retryPolicy, proto.getAutoHostRewrite()
-                        .getValue()));
+                return StructOrError.fromStruct(RouteAction.forWeightedClusters(
+                        weightedClusters,
+                        hashPolicies,
+                        timeoutNano,
+                        retryPolicy,
+                        proto.getAutoHostRewrite().getValue()));
             case CLUSTER_SPECIFIER_PLUGIN:
                 if (enableRouteLookup) {
                     String pluginName = proto.getClusterSpecifierPlugin();
@@ -482,8 +504,12 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
                         return StructOrError.fromError("ClusterSpecifierPlugin for [" + pluginName + "] not found");
                     }
                     NamedPluginConfig namedPluginConfig = NamedPluginConfig.create(pluginName, pluginConfig);
-                    return StructOrError.fromStruct(RouteAction.forClusterSpecifierPlugin(namedPluginConfig, hashPolicies, timeoutNano, retryPolicy, proto.getAutoHostRewrite()
-                            .getValue()));
+                    return StructOrError.fromStruct(RouteAction.forClusterSpecifierPlugin(
+                            namedPluginConfig,
+                            hashPolicies,
+                            timeoutNano,
+                            retryPolicy,
+                            proto.getAutoHostRewrite().getValue()));
                 } else {
                     return null;
                 }
@@ -546,31 +572,32 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
             }
             retryableStatusCodes.add(code);
         }
-        return StructOrError.fromStruct(new RetryPolicy(maxAttempts, retryableStatusCodes, initialBackoff, maxBackoff, /* perAttemptRecvTimeout= */ null));
+        return StructOrError.fromStruct(new RetryPolicy(
+                maxAttempts, retryableStatusCodes, initialBackoff, maxBackoff, /* perAttemptRecvTimeout= */ null));
     }
 
     static StructOrError<ClusterWeight> parseClusterWeight(
-            io.envoyproxy.envoy.config.route.v3.WeightedCluster.ClusterWeight proto,
-            FilterRegistry filterRegistry) {
-        StructOrError<Map<String, FilterConfig>> overrideConfigs = parseOverrideFilterConfigs(proto.getTypedPerFilterConfigMap(), filterRegistry);
+            io.envoyproxy.envoy.config.route.v3.WeightedCluster.ClusterWeight proto, FilterRegistry filterRegistry) {
+        StructOrError<Map<String, FilterConfig>> overrideConfigs =
+                parseOverrideFilterConfigs(proto.getTypedPerFilterConfigMap(), filterRegistry);
         if (overrideConfigs.getErrorDetail() != null) {
-            return StructOrError.fromError(
-                    "ClusterWeight [" + proto.getName() + "] contains invalid HttpFilter config: "
-                            + overrideConfigs.getErrorDetail());
+            return StructOrError.fromError("ClusterWeight [" + proto.getName()
+                    + "] contains invalid HttpFilter config: " + overrideConfigs.getErrorDetail());
         }
-        return StructOrError.fromStruct(new ClusterWeight(proto.getName(), proto.getWeight()
-                .getValue(), overrideConfigs.getStruct()));
+        return StructOrError.fromStruct(
+                new ClusterWeight(proto.getName(), proto.getWeight().getValue(), overrideConfigs.getStruct()));
     }
 
     @Nullable // null if the plugin is not supported, but it's marked as optional.
-    private static PluginConfig parseClusterSpecifierPlugin(ClusterSpecifierPlugin pluginProto) throws ResourceInvalidException {
+    private static PluginConfig parseClusterSpecifierPlugin(ClusterSpecifierPlugin pluginProto)
+            throws ResourceInvalidException {
         return parseClusterSpecifierPlugin(pluginProto, ClusterSpecifierPluginRegistry.getDefaultRegistry());
     }
 
     @Nullable // null if the plugin is not supported, but it's marked as optional.
     static PluginConfig parseClusterSpecifierPlugin(
-            ClusterSpecifierPlugin pluginProto,
-            ClusterSpecifierPluginRegistry registry) throws ResourceInvalidException {
+            ClusterSpecifierPlugin pluginProto, ClusterSpecifierPluginRegistry registry)
+            throws ResourceInvalidException {
         TypedExtensionConfig extension = pluginProto.getExtension();
         String pluginName = extension.getName();
         Any anyConfig = extension.getTypedConfig();
@@ -578,7 +605,8 @@ public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
         Message rawConfig = anyConfig;
         if (typeUrl.equals(TYPE_URL_TYPED_STRUCT_UDPA) || typeUrl.equals(TYPE_URL_TYPED_STRUCT)) {
             try {
-                TypedStruct typedStruct = unpackCompatibleType(anyConfig, TypedStruct.class, TYPE_URL_TYPED_STRUCT_UDPA, TYPE_URL_TYPED_STRUCT);
+                TypedStruct typedStruct = unpackCompatibleType(
+                        anyConfig, TypedStruct.class, TYPE_URL_TYPED_STRUCT_UDPA, TYPE_URL_TYPED_STRUCT);
                 typeUrl = typedStruct.getTypeUrl();
                 rawConfig = typedStruct.getValue();
             } catch (InvalidProtocolBufferException e) {

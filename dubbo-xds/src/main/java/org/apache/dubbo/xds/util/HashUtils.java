@@ -26,8 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public final class HashUtils {
 
-    private HashUtils() {
-    }
+    private HashUtils() {}
 
     public static long generateHash(List<HashPolicy> hashPolicies, Invocation invocation) {
         if (CollectionUtils.isEmpty(hashPolicies)) {
@@ -37,13 +36,14 @@ public final class HashUtils {
         Long hash = null;
         for (HashPolicy policy : hashPolicies) {
             Long newHash = null;
-            
+
             switch (policy.getType()) {
                 case HEADER:
                     String headerValue = getHeaderValue(invocation, policy.getHeaderName());
                     if (headerValue != null) {
                         if (policy.getRegEx() != null && policy.getRegExSubstitution() != null) {
-                            headerValue = policy.getRegEx().matcher(headerValue).replaceAll(policy.getRegExSubstitution());
+                            headerValue =
+                                    policy.getRegEx().matcher(headerValue).replaceAll(policy.getRegExSubstitution());
                         }
                         newHash = (long) headerValue.hashCode();
                     }
@@ -76,12 +76,12 @@ public final class HashUtils {
                 long oldHash = (hash != null) ? ((hash << 1L) | (hash >>> 63L)) : 0;
                 hash = oldHash ^ newHash;
             }
-            
+
             if (policy.isTerminal() && hash != null) {
                 break;
             }
         }
-        
+
         return hash != null ? hash : ThreadLocalRandom.current().nextLong();
     }
 
@@ -90,7 +90,7 @@ public final class HashUtils {
         if (attachment instanceof String) {
             return (String) attachment;
         }
-        
+
         URL invokerUrl = invocation.getInvoker().getUrl();
         return invokerUrl.getParameter(headerName);
     }

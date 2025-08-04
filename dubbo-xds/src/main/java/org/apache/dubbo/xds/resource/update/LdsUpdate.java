@@ -91,9 +91,9 @@ public class LdsUpdate implements ResourceUpdate {
             return false;
         }
         LdsUpdate that = (LdsUpdate) o;
-        return port == that.port &&
-                Objects.equals(httpConnectionManager, that.httpConnectionManager) &&
-                Objects.equals(listener, that.listener);
+        return port == that.port
+                && Objects.equals(httpConnectionManager, that.httpConnectionManager)
+                && Objects.equals(listener, that.listener);
     }
 
     @Override

@@ -34,7 +34,8 @@ public final class RequestMirrorPolicy {
     @Nullable
     private final Boolean traceSampled;
 
-    public RequestMirrorPolicy(String cluster, @Nullable FractionalPercent runtimeFraction, @Nullable Boolean traceSampled) {
+    public RequestMirrorPolicy(
+            String cluster, @Nullable FractionalPercent runtimeFraction, @Nullable Boolean traceSampled) {
         this.cluster = cluster;
         this.runtimeFraction = runtimeFraction;
         this.traceSampled = traceSampled;
@@ -59,9 +60,9 @@ public final class RequestMirrorPolicy {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RequestMirrorPolicy that = (RequestMirrorPolicy) o;
-        return Objects.equals(cluster, that.cluster) &&
-            Objects.equals(runtimeFraction, that.runtimeFraction) &&
-            Objects.equals(traceSampled, that.traceSampled);
+        return Objects.equals(cluster, that.cluster)
+                && Objects.equals(runtimeFraction, that.runtimeFraction)
+                && Objects.equals(traceSampled, that.traceSampled);
     }
 
     @Override
@@ -71,10 +72,9 @@ public final class RequestMirrorPolicy {
 
     @Override
     public String toString() {
-        return "RequestMirrorPolicy{" +
-            "cluster='" + cluster + '\'' +
-            ", runtimeFraction=" + runtimeFraction +
-            ", traceSampled=" + traceSampled +
-            '}';
+        return "RequestMirrorPolicy{" + "cluster='"
+                + cluster + '\'' + ", runtimeFraction="
+                + runtimeFraction + ", traceSampled="
+                + traceSampled + '}';
     }
-} 
+}

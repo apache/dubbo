@@ -25,42 +25,31 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.apache.dubbo.xds.XdsResourceFactory;
-import org.apache.dubbo.xds.util.HashUtils;
 import org.apache.dubbo.xds.resource.filter.FilterConfig;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.xds.resource.matcher.FractionMatcher;
 import org.apache.dubbo.xds.resource.matcher.HeaderMatcher;
 import org.apache.dubbo.xds.resource.route.ClusterWeight;
-import org.apache.dubbo.xds.resource.route.HashPolicy;
 import org.apache.dubbo.xds.resource.route.Route;
 import org.apache.dubbo.xds.resource.route.RouteAction;
 import org.apache.dubbo.xds.resource.route.RouteMatch;
 import org.apache.dubbo.xds.resource.route.VirtualHost;
 import org.apache.dubbo.xds.resource.update.CdsUpdate;
 import org.apache.dubbo.xds.resource.update.CdsUpdate.ClusterType;
-import org.apache.dubbo.xds.resource.update.EdsUpdate;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
-import static org.apache.dubbo.config.Constants.MESH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.LoadbalanceRules.CONSISTENT_HASH;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> {
 
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsRouter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsRouter.class);
     private final XdsResourceFactory xdsResourceFactory = XdsResourceFactory.getInstance();
     private static final String XDS_HASH_ATTACHMENT_KEY = "xds.hash";
 
@@ -120,12 +109,15 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
         }
 
         if (route.getFilterConfigOverrides() != null) {
-            for (Map.Entry<String, FilterConfig> entry : route.getFilterConfigOverrides().entrySet()) {
+            for (Map.Entry<String, FilterConfig> entry :
+                    route.getFilterConfigOverrides().entrySet()) {
                 String filterName = entry.getKey();
                 FilterConfig filterConfig = entry.getValue();
                 invocation.setAttachment("xds.filter." + filterName, filterConfig);
             }
-            logger.debug("[XDS] Applied filter config overrides: {}", route.getFilterConfigOverrides().keySet());
+            logger.debug(
+                    "[XDS] Applied filter config overrides: {}",
+                    route.getFilterConfigOverrides().keySet());
         }
 
         if (action.isAutoHostRewrite()) {
@@ -136,7 +128,9 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
         if (action.getRetryPolicy() != null) {
             int retries = Math.max(0, action.getRetryPolicy().getMaxAttempts() - 1);
             invocation.setAttachment(RETRIES_KEY, String.valueOf(retries));
-            logger.info("[XDS] Applied basic retry policy: {} retries (xDS retry logic will be handled by ClusterInvoker)", retries);
+            logger.info(
+                    "[XDS] Applied basic retry policy: {} retries (xDS retry logic will be handled by ClusterInvoker)",
+                    retries);
         }
     }
 
@@ -225,7 +219,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
         return invokerUrl.getParameter(headerName);
     }
 
-    //需要确认集群名称的逻辑
+    // 需要确认集群名称的逻辑
     private String selectClusterFromAction(RouteAction action) {
         if (action.getCluster() != null) {
             String cluster = action.getCluster();
@@ -237,7 +231,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             String cluster = action.getNamedClusterSpecifierPluginConfig().name();
             return resolveClusterName(cluster);
         } else {
-            throw new IllegalArgumentException("[XDS] RouteAction has no cluster, header, weighted clusters, or named cluster specifier plugin config");
+            throw new IllegalArgumentException(
+                    "[XDS] RouteAction has no cluster, header, weighted clusters, or named cluster specifier plugin config");
         }
     }
 
@@ -269,7 +264,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
     }
 
     private String selectWeightedCluster(List<ClusterWeight> weightedClusters) {
-        int totalWeight = Math.max(weightedClusters.stream().mapToInt(ClusterWeight::getWeight).sum(), 1);
+        int totalWeight = Math.max(
+                weightedClusters.stream().mapToInt(ClusterWeight::getWeight).sum(), 1);
 
         long seed = System.nanoTime();
         int target = new java.util.Random(seed).nextInt(totalWeight) + 1;

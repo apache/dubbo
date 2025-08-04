@@ -59,8 +59,9 @@ public final class QueryParameterMatcher {
             return false;
         }
         QueryParameterMatcher that = (QueryParameterMatcher) o;
-        return Objects.equals(name, that.name) && Objects.equals(
-            stringMatcher, that.stringMatcher) && Objects.equals(present, that.present);
+        return Objects.equals(name, that.name)
+                && Objects.equals(stringMatcher, that.stringMatcher)
+                && Objects.equals(present, that.present);
     }
 
     @Override
@@ -70,10 +71,9 @@ public final class QueryParameterMatcher {
 
     @Override
     public String toString() {
-        return "QueryParameterMatcher{" +
-            "name='" + name + '\'' +
-            ", stringMatcher=" + stringMatcher +
-            ", present=" + present +
-            '}';
+        return "QueryParameterMatcher{" + "name='"
+                + name + '\'' + ", stringMatcher="
+                + stringMatcher + ", present="
+                + present + '}';
     }
-} 
+}

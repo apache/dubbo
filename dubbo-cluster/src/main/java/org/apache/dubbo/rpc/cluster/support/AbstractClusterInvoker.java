@@ -353,23 +353,37 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
         }
 
-        logger.info("[CLUSTER-INVOKER] AbstractClusterInvoker.invoke called for method: {} [Thread: {}]", invocation.getMethodName(), Thread.currentThread().getName());
-        
+        logger.info(
+                "[CLUSTER-INVOKER] AbstractClusterInvoker.invoke called for method: {} [Thread: {}]",
+                invocation.getMethodName(),
+                Thread.currentThread().getName());
+
         List<Invoker<T>> invokers = list(invocation);
-        
-        logger.info("[CLUSTER-INVOKER] list(invocation) returned {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
+
+        logger.info(
+                "[CLUSTER-INVOKER] list(invocation) returned {} invokers [Thread: {}]",
+                invokers.size(),
+                Thread.currentThread().getName());
         for (int i = 0; i < invokers.size(); i++) {
             Invoker<T> invoker = invokers.get(i);
             String clusterID = invoker.getUrl().getParameter("clusterID");
             String address = invoker.getUrl().getAddress();
-            logger.info("[CLUSTER-INVOKER] Invoker[{}]: {} (clusterID: {}) [Thread: {}]", i, address, clusterID, Thread.currentThread().getName());
+            logger.info(
+                    "[CLUSTER-INVOKER] Invoker[{}]: {} (clusterID: {}) [Thread: {}]",
+                    i,
+                    address,
+                    clusterID,
+                    Thread.currentThread().getName());
         }
-        
+
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
-        
-        logger.info("[CLUSTER-INVOKER] About to call doInvoke with {} invokers [Thread: {}]", invokers.size(), Thread.currentThread().getName());
-        
+
+        logger.info(
+                "[CLUSTER-INVOKER] About to call doInvoke with {} invokers [Thread: {}]",
+                invokers.size(),
+                Thread.currentThread().getName());
+
         return doInvoke(invocation, invokers, loadbalance);
     }
 

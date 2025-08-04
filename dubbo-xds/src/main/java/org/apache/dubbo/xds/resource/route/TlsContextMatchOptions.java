@@ -38,12 +38,11 @@ public final class TlsContextMatchOptions {
     @Nullable
     private final List<StringMatcher> sanMatchers;
 
-    public TlsContextMatchOptions(@Nullable Boolean presented, @Nullable Boolean validated,
-                                 @Nullable List<StringMatcher> sanMatchers) {
+    public TlsContextMatchOptions(
+            @Nullable Boolean presented, @Nullable Boolean validated, @Nullable List<StringMatcher> sanMatchers) {
         this.presented = presented;
         this.validated = validated;
-        this.sanMatchers = sanMatchers != null ? 
-            Collections.unmodifiableList(new ArrayList<>(sanMatchers)) : null;
+        this.sanMatchers = sanMatchers != null ? Collections.unmodifiableList(new ArrayList<>(sanMatchers)) : null;
     }
 
     @Nullable
@@ -66,9 +65,9 @@ public final class TlsContextMatchOptions {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TlsContextMatchOptions that = (TlsContextMatchOptions) o;
-        return Objects.equals(presented, that.presented) &&
-            Objects.equals(validated, that.validated) &&
-            Objects.equals(sanMatchers, that.sanMatchers);
+        return Objects.equals(presented, that.presented)
+                && Objects.equals(validated, that.validated)
+                && Objects.equals(sanMatchers, that.sanMatchers);
     }
 
     @Override
@@ -78,10 +77,9 @@ public final class TlsContextMatchOptions {
 
     @Override
     public String toString() {
-        return "TlsContextMatchOptions{" +
-            "presented=" + presented +
-            ", validated=" + validated +
-            ", sanMatchers=" + sanMatchers +
-            '}';
+        return "TlsContextMatchOptions{" + "presented="
+                + presented + ", validated="
+                + validated + ", sanMatchers="
+                + sanMatchers + '}';
     }
-} 
+}

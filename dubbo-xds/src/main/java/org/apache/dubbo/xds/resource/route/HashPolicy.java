@@ -57,38 +57,88 @@ public class HashPolicy {
     public static HashPolicy forHeader(
             boolean isTerminal, String headerName, @Nullable Pattern regEx, @Nullable String regExSubstitution) {
         Assert.notNull(headerName, "headerName must not be null");
-        return HashPolicy.create(HashPolicyType.HEADER, isTerminal, headerName, regEx, regExSubstitution, 
-            null, null, null, null, null, null);
+        return HashPolicy.create(
+                HashPolicyType.HEADER,
+                isTerminal,
+                headerName,
+                regEx,
+                regExSubstitution,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 
     public static HashPolicy forChannelId(boolean isTerminal) {
-        return HashPolicy.create(HashPolicyType.CHANNEL_ID, isTerminal, null, null, null, 
-            null, null, null, null, null, null);
+        return HashPolicy.create(
+                HashPolicyType.CHANNEL_ID, isTerminal, null, null, null, null, null, null, null, null, null);
     }
 
     public static HashPolicy forCookie(
             boolean isTerminal, String cookieName, @Nullable String cookiePath, @Nullable Long cookieTtl) {
         Assert.notNull(cookieName, "cookieName must not be null");
-        return HashPolicy.create(HashPolicyType.COOKIE, isTerminal, null, null, null, 
-            cookieName, cookiePath, cookieTtl, null, null, null);
+        return HashPolicy.create(
+                HashPolicyType.COOKIE,
+                isTerminal,
+                null,
+                null,
+                null,
+                cookieName,
+                cookiePath,
+                cookieTtl,
+                null,
+                null,
+                null);
     }
 
     public static HashPolicy forQueryParameter(boolean isTerminal, String queryParameterName) {
         Assert.notNull(queryParameterName, "queryParameterName must not be null");
-        return HashPolicy.create(HashPolicyType.QUERY_PARAMETER, isTerminal, null, null, null, 
-            null, null, null, queryParameterName, null, null);
+        return HashPolicy.create(
+                HashPolicyType.QUERY_PARAMETER,
+                isTerminal,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                queryParameterName,
+                null,
+                null);
     }
 
     public static HashPolicy forConnectionProperties(boolean isTerminal, Boolean sourceIp) {
         Assert.notNull(sourceIp, "sourceIp must not be null");
-        return HashPolicy.create(HashPolicyType.CONNECTION_PROPERTIES, isTerminal, null, null, null, 
-            null, null, null, null, sourceIp, null);
+        return HashPolicy.create(
+                HashPolicyType.CONNECTION_PROPERTIES,
+                isTerminal,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                sourceIp,
+                null);
     }
 
     public static HashPolicy forFilterState(boolean isTerminal, String filterStateName) {
         Assert.notNull(filterStateName, "filterStateName must not be null");
-        return HashPolicy.create(HashPolicyType.FILTER_STATE, isTerminal, null, null, null, 
-            null, null, null, null, null, filterStateName);
+        return HashPolicy.create(
+                HashPolicyType.FILTER_STATE,
+                isTerminal,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                filterStateName);
     }
 
     public static HashPolicy create(
@@ -103,8 +153,18 @@ public class HashPolicy {
             @Nullable String queryParameterName,
             @Nullable Boolean sourceIp,
             @Nullable String filterStateName) {
-        return new HashPolicy(type, isTerminal, headerName, regEx, regExSubstitution,
-            cookieName, cookiePath, cookieTtl, queryParameterName, sourceIp, filterStateName);
+        return new HashPolicy(
+                type,
+                isTerminal,
+                headerName,
+                regEx,
+                regExSubstitution,
+                cookieName,
+                cookiePath,
+                cookieTtl,
+                queryParameterName,
+                sourceIp,
+                filterStateName);
     }
 
     HashPolicy(
@@ -191,8 +251,8 @@ public class HashPolicy {
     @Override
     public String toString() {
         return "HashPolicy{" + "type=" + type + ", " + "isTerminal=" + isTerminal + ", " + "headerName=" + headerName
-                + ", " + "regEx=" + regEx + ", " + "regExSubstitution=" + regExSubstitution 
-                + ", " + "cookieName=" + cookieName + ", " + "cookiePath=" + cookiePath 
+                + ", " + "regEx=" + regEx + ", " + "regExSubstitution=" + regExSubstitution
+                + ", " + "cookieName=" + cookieName + ", " + "cookiePath=" + cookiePath
                 + ", " + "cookieTtl=" + cookieTtl + ", " + "queryParameterName=" + queryParameterName
                 + ", " + "sourceIp=" + sourceIp + ", " + "filterStateName=" + filterStateName + "}";
     }
@@ -225,9 +285,7 @@ public class HashPolicy {
                     && (this.queryParameterName == null
                             ? that.getQueryParameterName() == null
                             : this.queryParameterName.equals(that.getQueryParameterName()))
-                    && (this.sourceIp == null
-                            ? that.getSourceIp() == null
-                            : this.sourceIp.equals(that.getSourceIp()))
+                    && (this.sourceIp == null ? that.getSourceIp() == null : this.sourceIp.equals(that.getSourceIp()))
                     && (this.filterStateName == null
                             ? that.getFilterStateName() == null
                             : this.filterStateName.equals(that.getFilterStateName()));

@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.xds;
 
 import org.apache.dubbo.common.URL;
@@ -5,11 +21,9 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.xds.XdsResourceFactory.LdsUpdateWatcher.CdsUpdateNodeDirectory;
 import org.apache.dubbo.xds.XdsResourceFactory.LdsUpdateWatcher.EdsUpdateLeafDirectory;
 import org.apache.dubbo.xds.XdsResourceFactory.LdsUpdateWatcher.RdsUpdateWatcher;
-import org.apache.dubbo.xds.listener.CdsListener;
 import org.apache.dubbo.xds.registry.EdsListener;
 import org.apache.dubbo.xds.resource.XdsClusterResource;
 import org.apache.dubbo.xds.resource.XdsEndpointResource;
@@ -49,7 +63,7 @@ import com.google.common.collect.Sets;
 
 public class XdsResourceFactory {
 
-    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsResourceFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsResourceFactory.class);
     private final PilotExchanger pilotExchanger = PilotExchanger.getInstance();
     private final Map<String, List<EdsListener>> edsListeners = new ConcurrentHashMap<>();
     private final Map<String, VirtualHost> xdsVirtualHostMap = new ConcurrentHashMap<>();
@@ -59,8 +73,8 @@ public class XdsResourceFactory {
     private final Map<String, RdsUpdateWatcher> rdsWatchers = new ConcurrentHashMap<>();
     private final Map<String, CdsUpdateNodeDirectory> cdsWatchers = new ConcurrentHashMap<>();
     private final Map<String, EdsUpdateLeafDirectory> edsWatchers = new ConcurrentHashMap<>();
-    
-    private final static XdsResourceFactory instance = new XdsResourceFactory();
+
+    private static final XdsResourceFactory instance = new XdsResourceFactory();
 
     public static XdsResourceFactory getInstance() {
         return instance;
@@ -168,15 +182,22 @@ public class XdsResourceFactory {
             String rdsName = httpConnectionManager.getRdsName();
 
             if (virtualHosts != null) {
-                updateRoutes(virtualHosts, httpConnectionManager.getHttpMaxStreamDurationNano(), httpConnectionManager.getHttpFilterConfigs());
+                updateRoutes(
+                        virtualHosts,
+                        httpConnectionManager.getHttpMaxStreamDurationNano(),
+                        httpConnectionManager.getHttpFilterConfigs());
             } else {
-                rdsUpdateWatcher = new RdsUpdateWatcher(rdsName, httpConnectionManager.getHttpMaxStreamDurationNano(), httpConnectionManager.getHttpFilterConfigs());
+                rdsUpdateWatcher = new RdsUpdateWatcher(
+                        rdsName,
+                        httpConnectionManager.getHttpMaxStreamDurationNano(),
+                        httpConnectionManager.getHttpFilterConfigs());
                 rdsWatchers.putIfAbsent(rdsName, rdsUpdateWatcher);
                 pilotExchanger.subscribeXdsResource(rdsName, XdsRouteConfigureResource.getInstance(), rdsUpdateWatcher);
             }
         }
-        
-        private void updateRoutes(List<VirtualHost> virtualHosts, long httpMaxStreamDurationNano, List<NamedFilterConfig> filterConfigs) {
+
+        private void updateRoutes(
+                List<VirtualHost> virtualHosts, long httpMaxStreamDurationNano, List<NamedFilterConfig> filterConfigs) {
             VirtualHost matchedVirtualHost = null;
             for (VirtualHost virtualHost : virtualHosts) {
                 if (virtualHost.getName().equals(ldsResourceName)) {
@@ -184,17 +205,17 @@ public class XdsResourceFactory {
                     break;
                 }
             }
-            
+
             if (matchedVirtualHost == null) {
                 logger.error("[XDS] No matching VirtualHost found for: {}", ldsResourceName);
                 return;
             }
-            
+
             xdsVirtualHostMap.put(ldsResourceName, matchedVirtualHost);
             List<Route> routes = matchedVirtualHost.getRoutes();
             Set<String> clusters = new HashSet<>();
             Map<String, String> clusterNameMap = new HashMap<>();
-            
+
             for (Route route : routes) {
                 RouteAction action = route.getRouteAction();
                 if (action != null) {
@@ -211,11 +232,13 @@ public class XdsResourceFactory {
                     }
                 }
             }
-            
-            Set<String> addedClusters = existingClusters == null ? clusters : Sets.difference(clusters, existingClusters);
-            Set<String> deletedClusters = existingClusters == null ? Collections.emptySet() : Sets.difference(existingClusters, clusters);
+
+            Set<String> addedClusters =
+                    existingClusters == null ? clusters : Sets.difference(clusters, existingClusters);
+            Set<String> deletedClusters =
+                    existingClusters == null ? Collections.emptySet() : Sets.difference(existingClusters, clusters);
             existingClusters = clusters;
-            
+
             for (String cluster : addedClusters) {
                 CdsUpdateNodeDirectory cdsUpdateWatcher = new CdsUpdateNodeDirectory();
                 cdsWatchers.putIfAbsent(cluster, cdsUpdateWatcher);
@@ -232,8 +255,8 @@ public class XdsResourceFactory {
             @Nullable
             private final List<NamedFilterConfig> filterConfigs;
 
-            public RdsUpdateWatcher(String rdsName, long httpMaxStreamDurationNano,
-                    @Nullable List<NamedFilterConfig> filterConfigs) {
+            public RdsUpdateWatcher(
+                    String rdsName, long httpMaxStreamDurationNano, @Nullable List<NamedFilterConfig> filterConfigs) {
                 this.rdsName = rdsName;
                 this.httpMaxStreamDurationNano = httpMaxStreamDurationNano;
                 this.filterConfigs = filterConfigs;
@@ -245,7 +268,7 @@ public class XdsResourceFactory {
                     logger.warn("[XDS] Ignoring RDS update because this is not the current watcher");
                     return;
                 }
-                
+
                 updateRoutes(update.getVirtualHosts(), httpMaxStreamDurationNano, filterConfigs);
             }
         }
@@ -257,19 +280,21 @@ public class XdsResourceFactory {
                 if (update == null) {
                     return;
                 }
-                
+
                 if (update.getClusterType() == ClusterType.EDS) {
                     xdsClusterMap.put(update.getClusterName(), update);
-                    String edsResourceName = update.getEdsServiceName() != null ? update.getEdsServiceName() : update.getClusterName();
-                    
+                    String edsResourceName =
+                            update.getEdsServiceName() != null ? update.getEdsServiceName() : update.getClusterName();
+
                     if (edsWatchers.containsKey(edsResourceName)) {
                         logger.info("[XDS] EDS watcher already exists for: {}", edsResourceName);
                         return;
                     }
-                    
+
                     EdsUpdateLeafDirectory edsUpdateWatcher = new EdsUpdateLeafDirectory(update.getClusterName());
                     edsWatchers.putIfAbsent(edsResourceName, edsUpdateWatcher);
-                    pilotExchanger.subscribeXdsResource(edsResourceName, XdsEndpointResource.getInstance(), edsUpdateWatcher);
+                    pilotExchanger.subscribeXdsResource(
+                            edsResourceName, XdsEndpointResource.getInstance(), edsUpdateWatcher);
                 } else if (update.getClusterType() == ClusterType.AGGREGATE) {
                     for (String cluster : update.getPrioritizedClusterNames()) {
                         if (cdsWatchers.containsKey(cluster)) {
@@ -278,7 +303,8 @@ public class XdsResourceFactory {
                         }
                         CdsUpdateNodeDirectory cdsUpdateWatcher = new CdsUpdateNodeDirectory();
                         cdsWatchers.putIfAbsent(cluster, cdsUpdateWatcher);
-                        pilotExchanger.subscribeXdsResource(cluster, XdsClusterResource.getInstance(), cdsUpdateWatcher);
+                        pilotExchanger.subscribeXdsResource(
+                                cluster, XdsClusterResource.getInstance(), cdsUpdateWatcher);
                     }
                 } else if (update.getClusterType() == ClusterType.LOGICAL_DNS) {
 
@@ -345,15 +371,18 @@ public class XdsResourceFactory {
                 }
 
                 for (EdsListener edsListener : edsListeners.get(ldsResourceName)) {
-                    edsListener.onNotify(addresses.stream().map(address -> URL.valueOf(address.toString()).setProtocol("tri").addParameter("clusterID", clusterName)).collect(Collectors.toList()));
+                    edsListener.onNotify(addresses.stream()
+                            .map(address -> URL.valueOf(address.toString())
+                                    .setProtocol("tri")
+                                    .addParameter("clusterID", clusterName))
+                            .collect(Collectors.toList()));
                 }
 
                 sortedPriorityNames.retainAll(prioritizedLocalityWeights.keySet());
             }
 
             private List<String> generatePriorityNames(
-                    String name,
-                    Map<Locality, LocalityLbEndpoints> localityLbEndpoints) {
+                    String name, Map<Locality, LocalityLbEndpoints> localityLbEndpoints) {
                 TreeMap<Integer, List<Locality>> todo = new TreeMap<>();
                 for (Locality locality : localityLbEndpoints.keySet()) {
                     int priority = localityLbEndpoints.get(locality).getPriority();
@@ -414,7 +443,8 @@ public class XdsResourceFactory {
             //                    }
             //                });
             //                // TODO: Consider cases where some clients are not available
-            //                // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor multi clusters.
+            //                // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor
+            // multi clusters.
             //
             //                // 设置新的invokers到xdsCluster中
             //                BitList<Invoker<T>> bitList = new BitList<>(invokers);

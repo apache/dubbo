@@ -18,17 +18,10 @@ package org.apache.dubbo.xds.registry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
-import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.xds.XdsResourceFactory;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +32,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 
 public class XdsRegistry extends FailbackRegistry {
-    
+
     private final XdsResourceFactory xdsResourceFactory = XdsResourceFactory.getInstance();
     // use to accumulate different cluster invokers
     private final Map<String, Map<String, List<URL>>> accumulatedInvokers = new ConcurrentHashMap<>();
@@ -56,17 +49,15 @@ public class XdsRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doRegister(URL url) {
-    }
+    public void doRegister(URL url) {}
 
     @Override
-    public void doUnregister(URL url) {
-    }
+    public void doUnregister(URL url) {}
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
         String appName = url.getParameter(PROVIDED_BY);
-        
+
         xdsResourceFactory.subscribeApp(appName, (addresses -> {
             String clusterID = null;
             if (!addresses.isEmpty()) {
@@ -74,24 +65,25 @@ public class XdsRegistry extends FailbackRegistry {
             }
 
             List<URL> instances = addresses.stream()
-                    .map(address -> new DubboServiceAddressURL(address.getUrlAddress(), address.getUrlParam(), url, null))
+                    .map(address ->
+                            new DubboServiceAddressURL(address.getUrlAddress(), address.getUrlParam(), url, null))
                     .collect(Collectors.toList());
-            
+
             accumulateAndNotifyInvokers(appName, clusterID, instances, listener);
         }));
     }
 
-    private void accumulateAndNotifyInvokers(String serviceName, String clusterID, List<URL> newInvokers, NotifyListener listener) {
-        Map<String, List<URL>> clusterInvokers = accumulatedInvokers.computeIfAbsent(serviceName, k -> new ConcurrentHashMap<>());
+    private void accumulateAndNotifyInvokers(
+            String serviceName, String clusterID, List<URL> newInvokers, NotifyListener listener) {
+        Map<String, List<URL>> clusterInvokers =
+                accumulatedInvokers.computeIfAbsent(serviceName, k -> new ConcurrentHashMap<>());
         clusterInvokers.put(clusterID, new CopyOnWriteArrayList<>(newInvokers));
-        List<URL> allInvokers = clusterInvokers.values().stream()
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
-        
+        List<URL> allInvokers =
+                clusterInvokers.values().stream().flatMap(List::stream).collect(Collectors.toList());
+
         listener.notify(allInvokers);
     }
 
     @Override
-    public void doUnsubscribe(URL url, NotifyListener listener) {
-    }
+    public void doUnsubscribe(URL url, NotifyListener listener) {}
 }

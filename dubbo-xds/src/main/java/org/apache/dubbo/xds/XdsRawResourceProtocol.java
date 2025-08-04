@@ -42,8 +42,7 @@ public class XdsRawResourceProtocol<T extends ResourceUpdate> {
     // serviceKey to watcher
     protected volatile Map<String, XdsResourceListener<T>> resourceListeners = new ConcurrentHashMap<>();
 
-    public XdsRawResourceProtocol(
-            AdsObserver adsObserver, Node node, XdsResourceType<T> resourceType) {
+    public XdsRawResourceProtocol(AdsObserver adsObserver, Node node, XdsResourceType<T> resourceType) {
         this.adsObserver = adsObserver;
         this.node = node;
         this.resourceTypeInstance = resourceType;

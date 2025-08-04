@@ -48,8 +48,6 @@ public final class GrpcRouteMatchOptions {
 
     @Override
     public String toString() {
-        return "GrpcRouteMatchOptions{" +
-            "isGrpc=" + isGrpc +
-            '}';
+        return "GrpcRouteMatchOptions{" + "isGrpc=" + isGrpc + '}';
     }
-} 
+}
