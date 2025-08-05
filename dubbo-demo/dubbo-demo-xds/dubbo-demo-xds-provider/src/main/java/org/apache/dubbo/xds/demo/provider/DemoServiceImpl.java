@@ -15,32 +15,32 @@
  * limitations under the License.
  */
 package org.apache.dubbo.xds.demo.provider;
-//
-// import org.apache.dubbo.config.annotation.DubboService;
-// import org.apache.dubbo.rpc.RpcContext;
-// import org.apache.dubbo.xds.demo.DemoService;
-//
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
-//
-// @DubboService
-// public class DemoServiceImpl implements DemoService {
-//
-//    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
-//
-//    @Override
-//    public String sayHello(String name) {
-//        String version = System.getProperty("service.version", "v1");
-//        String podName = System.getenv("POD_NAME");
-//
-//        logger.info("Hello " + name + ", request from consumer: "
-//                + RpcContext.getContext().getRemoteAddress() + ", version: " + version);
-//
-//        String response = "hello" + name + " from " + version;
-//        if (podName != null) {
-//            response += " (pod: " + podName + ")";
-//        }
-//
-//        return response;
-//    }
-// }
+
+ import org.apache.dubbo.config.annotation.DubboService;
+ import org.apache.dubbo.rpc.RpcContext;
+ import org.apache.dubbo.xds.demo.DemoService;
+
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+
+ @DubboService
+ public class DemoServiceImpl implements DemoService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+
+    @Override
+    public String sayHello(String name) {
+        String version = System.getProperty("service.version", "v1");
+        String podName = System.getenv("POD_NAME");
+
+        logger.info("Hello " + name + ", request from consumer: "
+                + RpcContext.getContext().getRemoteAddress() + ", version: " + version);
+
+        String response = "hello" + name + " from " + version;
+        if (podName != null) {
+            response += " (pod: " + podName + ")";
+        }
+
+        return response;
+    }
+ }
