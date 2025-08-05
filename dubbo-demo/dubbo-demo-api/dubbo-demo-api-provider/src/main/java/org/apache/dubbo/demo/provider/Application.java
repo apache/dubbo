@@ -26,7 +26,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 public class Application {
 
-    private static final String REGISTRY_URL = "zookeeper://117.72.78.235:2181";
+    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 
     public static void main(String[] args) {
         startWithBootstrap();
@@ -41,7 +41,7 @@ public class Application {
         bootstrap
                 .application(new ApplicationConfig("dubbo-demo-api-provider"))
                 .registry(new RegistryConfig(REGISTRY_URL))
-                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
+                .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
                 .service(service)
                 .start()
                 .await();
