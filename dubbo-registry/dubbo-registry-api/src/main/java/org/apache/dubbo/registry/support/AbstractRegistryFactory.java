@@ -26,7 +26,6 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
@@ -74,7 +73,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
 
         String key = createRegistryCacheKey(url);
         Registry registry = null;
-        boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
+        boolean check = RegistryFactory.isCheck(url);
 
         // Lock the registry access process to ensure a single instance of the registry
         registryManager.getRegistryLock().lock();
