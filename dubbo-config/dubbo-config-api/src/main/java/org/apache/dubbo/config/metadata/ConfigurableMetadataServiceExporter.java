@@ -73,7 +73,7 @@ public class ConfigurableMetadataServiceExporter {
     }
 
     public synchronized ConfigurableMetadataServiceExporter export() {
-        if ((serviceConfig == null && serviceConfigV2 == null) || !isExported()) {
+        if (!isExported()) {
             if (MetadataServiceVersionUtils.needExportV1(applicationModel)) {
                 exportV1();
             }
