@@ -75,7 +75,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGO
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.NACOE_REGISTER_COMPATIBLE;
+import static org.apache.dubbo.common.constants.RegistryConstants.NACOS_REGISTER_COMPATIBLE;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_CONSUMER_URL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
@@ -188,7 +188,7 @@ public class NacosRegistry extends FailbackRegistry {
                 serviceNames.add(serviceName);
 
                 // in https://github.com/apache/dubbo/issues/14075
-                if (getUrl().getParameter(NACOE_REGISTER_COMPATIBLE, false)) {
+                if (getUrl().getParameter(NACOS_REGISTER_COMPATIBLE, false)) {
                     // servicename is "org.apache.dubbo.xxService:1.0.0"
                     String compatibleServiceName = getServiceName(url, true);
                     serviceNames.add(compatibleServiceName);
@@ -227,7 +227,7 @@ public class NacosRegistry extends FailbackRegistry {
             serviceNames.add(serviceName);
 
             // in https://github.com/apache/dubbo/issues/14075
-            if (getUrl().getParameter(NACOE_REGISTER_COMPATIBLE, false)) {
+            if (getUrl().getParameter(NACOS_REGISTER_COMPATIBLE, false)) {
                 // servicename is "org.apache.dubbo.xxService:1.0.0"
                 String serviceName1 = getServiceName(url, true);
                 serviceNames.add(serviceName1);

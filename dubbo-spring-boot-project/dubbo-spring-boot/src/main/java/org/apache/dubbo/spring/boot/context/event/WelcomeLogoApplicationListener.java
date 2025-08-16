@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -38,12 +38,12 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.LINE_SEPARATOR;
  * @since 2.7.0
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 20 + 1) // After LoggingApplicationListener#DEFAULT_ORDER
-public class WelcomeLogoApplicationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+public class WelcomeLogoApplicationListener implements ApplicationListener<ApplicationContextInitializedEvent> {
 
     private static AtomicBoolean processed = new AtomicBoolean(false);
 
     @Override
-    public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
+    public void onApplicationEvent(ApplicationContextInitializedEvent event) {
 
         // Skip if processed before, prevent duplicated execution in Hierarchical ApplicationContext
         if (processed.get()) {

@@ -36,6 +36,7 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
             ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long heartbeatTick, int heartbeat) {
         super(channelProvider, hashedWheelTimer, heartbeatTick);
         this.heartbeat = heartbeat;
+        start();
     }
 
     @Override

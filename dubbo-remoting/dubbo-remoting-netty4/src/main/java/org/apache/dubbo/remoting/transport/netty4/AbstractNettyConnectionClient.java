@@ -177,15 +177,21 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         NettyChannel.removeChannelIfDisconnected(getNettyChannel());
     }
 
-    protected void doReconnect() {
-        connectivityExecutor.execute(() -> {
-            try {
-                doConnect();
-            } catch (RemotingException e) {
-                logger.error(
-                        TRANSPORT_FAILED_RECONNECT, "", "", "Failed to reconnect to server: " + getConnectAddress());
-            }
-        });
+    protected void scheduleReconnect(long reconnectDuration, TimeUnit unit) {
+        connectivityExecutor.schedule(
+                () -> {
+                    try {
+                        doConnect();
+                    } catch (RemotingException e) {
+                        logger.error(
+                                TRANSPORT_FAILED_RECONNECT,
+                                "",
+                                "",
+                                "Failed to connect to server: " + getConnectAddress());
+                    }
+                },
+                reconnectDuration,
+                unit);
     }
 
     @Override
@@ -378,7 +384,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             // Notify the connection is unavailable.
             disconnectedPromise.trySuccess(null);
 
-            doReconnect();
+            scheduleReconnect(reconnectDuration, TimeUnit.MILLISECONDS);
         }
     }
 }

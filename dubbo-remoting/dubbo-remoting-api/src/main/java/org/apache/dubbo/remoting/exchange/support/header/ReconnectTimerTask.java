@@ -38,6 +38,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
             int idleTimeout) {
         super(channelProvider, hashedWheelTimer, heartbeatTimeoutTick);
         this.idleTimeout = idleTimeout;
+        start();
     }
 
     @Override
