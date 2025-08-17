@@ -44,7 +44,6 @@ import org.apache.dubbo.xds.resource.update.CdsUpdate.ClusterType;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> {

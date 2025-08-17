@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.xds.resource;
 
+import org.apache.dubbo.xds.resource.exception.ResourceInvalidException;
+import org.apache.dubbo.xds.resource.filter.FilterRegistry;
+import org.apache.dubbo.xds.resource.update.RdsUpdate;
+
 import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
@@ -23,16 +27,8 @@ import io.envoyproxy.envoy.config.route.v3.RouteMatch;
 import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import io.envoyproxy.envoy.config.route.v3.WeightedCluster;
 import io.envoyproxy.envoy.type.matcher.v3.StringMatcher;
-
-import org.apache.dubbo.xds.resource.exception.ResourceInvalidException;
-import org.apache.dubbo.xds.resource.filter.FilterRegistry;
-import org.apache.dubbo.xds.resource.update.RdsUpdate;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,29 +48,19 @@ class XdsRouteResourceTest {
     void testParseValidRouteConfiguration() throws ResourceInvalidException {
         // Arrange
         RouteConfiguration routeConfig = RouteConfiguration.newBuilder()
-            .setName("test-route-config")
-            .addVirtualHosts(
-                VirtualHost.newBuilder()
-                    .setName("test-virtual-host")
-                    .addDomains("example.com")
-                    .addRoutes(
-                        Route.newBuilder()
-                            .setMatch(
-                                RouteMatch.newBuilder()
-                                    .setPath("/api/v1/test")
-                            )
-                            .setRoute(
-                                RouteAction.newBuilder()
-                                    .setCluster("test-cluster")
-                            )
-                    )
-            )
-            .build();
+                .setName("test-route-config")
+                .addVirtualHosts(VirtualHost.newBuilder()
+                        .setName("test-virtual-host")
+                        .addDomains("example.com")
+                        .addRoutes(Route.newBuilder()
+                                .setMatch(RouteMatch.newBuilder().setPath("/api/v1/test"))
+                                .setRoute(RouteAction.newBuilder().setCluster("test-cluster"))))
+                .build();
 
         // Act
         RdsUpdate result = xdsRouteResource.doParse(
-            new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null), 
-            routeConfig);
+                new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null),
+                routeConfig);
 
         // Assert
         assertNotNull(result);
@@ -85,48 +71,27 @@ class XdsRouteResourceTest {
     void testParseRouteWithHeaderMatching() throws ResourceInvalidException {
         // Arrange
         RouteConfiguration routeConfig = RouteConfiguration.newBuilder()
-            .setName("header-route-config")
-            .addVirtualHosts(
-                VirtualHost.newBuilder()
-                    .setName("header-virtual-host")
-                    .addDomains("*")
-                    .addRoutes(
-                        Route.newBuilder()
-                            .setMatch(
-                                RouteMatch.newBuilder()
-                                    .setPrefix("/")
-                                    .addHeaders(
-                                        io.envoyproxy.envoy.config.route.v3.HeaderMatcher.newBuilder()
-                                            .setName("user-type")
-                                            .setStringMatch(
-                                                StringMatcher.newBuilder()
-                                                    .setExact("vip")
-                                            )
-                                    )
-                            )
-                            .setRoute(
-                                RouteAction.newBuilder()
-                                    .setCluster("vip-cluster")
-                            )
-                    )
-                    .addRoutes(
-                        Route.newBuilder()
-                            .setMatch(
-                                RouteMatch.newBuilder()
-                                    .setPrefix("/")
-                            )
-                            .setRoute(
-                                RouteAction.newBuilder()
-                                    .setCluster("default-cluster")
-                            )
-                    )
-            )
-            .build();
+                .setName("header-route-config")
+                .addVirtualHosts(VirtualHost.newBuilder()
+                        .setName("header-virtual-host")
+                        .addDomains("*")
+                        .addRoutes(Route.newBuilder()
+                                .setMatch(RouteMatch.newBuilder()
+                                        .setPrefix("/")
+                                        .addHeaders(io.envoyproxy.envoy.config.route.v3.HeaderMatcher.newBuilder()
+                                                .setName("user-type")
+                                                .setStringMatch(StringMatcher.newBuilder()
+                                                        .setExact("vip"))))
+                                .setRoute(RouteAction.newBuilder().setCluster("vip-cluster")))
+                        .addRoutes(Route.newBuilder()
+                                .setMatch(RouteMatch.newBuilder().setPrefix("/"))
+                                .setRoute(RouteAction.newBuilder().setCluster("default-cluster"))))
+                .build();
 
         // Act
         RdsUpdate result = xdsRouteResource.doParse(
-            new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null), 
-            routeConfig);
+                new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null),
+                routeConfig);
 
         // Assert
         assertNotNull(result);
@@ -139,47 +104,28 @@ class XdsRouteResourceTest {
     void testParseRouteWithWeightedClusters() throws ResourceInvalidException {
         // Arrange
         RouteConfiguration routeConfig = RouteConfiguration.newBuilder()
-            .setName("weighted-route-config")
-            .addVirtualHosts(
-                VirtualHost.newBuilder()
-                    .setName("weighted-virtual-host")
-                    .addDomains("*")
-                    .addRoutes(
-                        Route.newBuilder()
-                            .setMatch(
-                                RouteMatch.newBuilder()
-                                    .setPrefix("/")
-                            )
-                            .setRoute(
-                                RouteAction.newBuilder()
-                                    .setWeightedClusters(
-                                        WeightedCluster.newBuilder()
-                                            .addClusters(
-                                                WeightedCluster.ClusterWeight.newBuilder()
-                                                    .setName("cluster-v1")
-                                                    .setWeight(
-                                                        com.google.protobuf.UInt32Value.newBuilder()
-                                                            .setValue(70)
-                                                    )
-                                            )
-                                            .addClusters(
-                                                WeightedCluster.ClusterWeight.newBuilder()
-                                                    .setName("cluster-v2")
-                                                    .setWeight(
-                                                        com.google.protobuf.UInt32Value.newBuilder()
-                                                            .setValue(30)
-                                                    )
-                                            )
-                                    )
-                            )
-                    )
-            )
-            .build();
+                .setName("weighted-route-config")
+                .addVirtualHosts(VirtualHost.newBuilder()
+                        .setName("weighted-virtual-host")
+                        .addDomains("*")
+                        .addRoutes(Route.newBuilder()
+                                .setMatch(RouteMatch.newBuilder().setPrefix("/"))
+                                .setRoute(RouteAction.newBuilder()
+                                        .setWeightedClusters(WeightedCluster.newBuilder()
+                                                .addClusters(WeightedCluster.ClusterWeight.newBuilder()
+                                                        .setName("cluster-v1")
+                                                        .setWeight(com.google.protobuf.UInt32Value.newBuilder()
+                                                                .setValue(70)))
+                                                .addClusters(WeightedCluster.ClusterWeight.newBuilder()
+                                                        .setName("cluster-v2")
+                                                        .setWeight(com.google.protobuf.UInt32Value.newBuilder()
+                                                                .setValue(30)))))))
+                .build();
 
         // Act
         RdsUpdate result = xdsRouteResource.doParse(
-            new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null), 
-            routeConfig);
+                new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null),
+                routeConfig);
 
         // Assert
         assertNotNull(result);
@@ -191,34 +137,23 @@ class XdsRouteResourceTest {
     void testParseRouteWithTimeout() throws ResourceInvalidException {
         // Arrange
         RouteConfiguration routeConfig = RouteConfiguration.newBuilder()
-            .setName("timeout-route-config")
-            .addVirtualHosts(
-                VirtualHost.newBuilder()
-                    .setName("timeout-virtual-host")
-                    .addDomains("*")
-                    .addRoutes(
-                        Route.newBuilder()
-                            .setMatch(
-                                RouteMatch.newBuilder()
-                                    .setPrefix("/")
-                            )
-                            .setRoute(
-                                RouteAction.newBuilder()
-                                    .setCluster("test-cluster")
-                                    .setTimeout(
-                                        com.google.protobuf.Duration.newBuilder()
-                                            .setSeconds(5)
-                                            .setNanos(0)
-                                    )
-                            )
-                    )
-            )
-            .build();
+                .setName("timeout-route-config")
+                .addVirtualHosts(VirtualHost.newBuilder()
+                        .setName("timeout-virtual-host")
+                        .addDomains("*")
+                        .addRoutes(Route.newBuilder()
+                                .setMatch(RouteMatch.newBuilder().setPrefix("/"))
+                                .setRoute(RouteAction.newBuilder()
+                                        .setCluster("test-cluster")
+                                        .setTimeout(com.google.protobuf.Duration.newBuilder()
+                                                .setSeconds(5)
+                                                .setNanos(0)))))
+                .build();
 
         // Act
         RdsUpdate result = xdsRouteResource.doParse(
-            new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null), 
-            routeConfig);
+                new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null),
+                routeConfig);
 
         // Assert
         assertNotNull(result);
@@ -230,37 +165,24 @@ class XdsRouteResourceTest {
     void testParseRouteWithRetryPolicy() throws ResourceInvalidException {
         // Arrange
         RouteConfiguration routeConfig = RouteConfiguration.newBuilder()
-            .setName("retry-route-config")
-            .addVirtualHosts(
-                VirtualHost.newBuilder()
-                    .setName("retry-virtual-host")
-                    .addDomains("*")
-                    .addRoutes(
-                        Route.newBuilder()
-                            .setMatch(
-                                RouteMatch.newBuilder()
-                                    .setPrefix("/")
-                            )
-                            .setRoute(
-                                RouteAction.newBuilder()
-                                    .setCluster("test-cluster")
-                                    .setRetryPolicy(
-                                        io.envoyproxy.envoy.config.route.v3.RetryPolicy.newBuilder()
-                                            .setRetryOn("5xx,reset,connect-failure")
-                                            .setNumRetries(
-                                                com.google.protobuf.UInt32Value.newBuilder()
-                                                    .setValue(3)
-                                            )
-                                    )
-                            )
-                    )
-            )
-            .build();
+                .setName("retry-route-config")
+                .addVirtualHosts(VirtualHost.newBuilder()
+                        .setName("retry-virtual-host")
+                        .addDomains("*")
+                        .addRoutes(Route.newBuilder()
+                                .setMatch(RouteMatch.newBuilder().setPrefix("/"))
+                                .setRoute(RouteAction.newBuilder()
+                                        .setCluster("test-cluster")
+                                        .setRetryPolicy(io.envoyproxy.envoy.config.route.v3.RetryPolicy.newBuilder()
+                                                .setRetryOn("5xx,reset,connect-failure")
+                                                .setNumRetries(com.google.protobuf.UInt32Value.newBuilder()
+                                                        .setValue(3))))))
+                .build();
 
         // Act
         RdsUpdate result = xdsRouteResource.doParse(
-            new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null), 
-            routeConfig);
+                new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null),
+                routeConfig);
 
         // Assert
         assertNotNull(result);
@@ -271,14 +193,13 @@ class XdsRouteResourceTest {
     @Test
     void testParseEmptyRouteConfiguration() throws ResourceInvalidException {
         // Arrange
-        RouteConfiguration routeConfig = RouteConfiguration.newBuilder()
-            .setName("empty-route-config")
-            .build();
+        RouteConfiguration routeConfig =
+                RouteConfiguration.newBuilder().setName("empty-route-config").build();
 
         // Act
         RdsUpdate result = xdsRouteResource.doParse(
-            new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null), 
-            routeConfig);
+                new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null),
+                routeConfig);
 
         // Assert
         assertNotNull(result);
@@ -307,14 +228,13 @@ class XdsRouteResourceTest {
     @Test
     void testParseRouteWithNullArgs() throws ResourceInvalidException {
         // Arrange
-        RouteConfiguration routeConfig = RouteConfiguration.newBuilder()
-            .setName("test-route-config")
-            .build();
+        RouteConfiguration routeConfig =
+                RouteConfiguration.newBuilder().setName("test-route-config").build();
 
         // Act
         RdsUpdate result = xdsRouteResource.doParse(
-            new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null), 
-            routeConfig);
+                new XdsResourceType.Args(null, null, null, null, FilterRegistry.getDefaultRegistry(), null, null, null),
+                routeConfig);
 
         // Assert
         assertNotNull(result);

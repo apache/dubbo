@@ -27,22 +27,19 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.xds.resource.route.RetryPolicy;
 import org.apache.dubbo.xds.resource.route.RouteAction;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import com.google.protobuf.Duration;
 import io.grpc.Status;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -91,8 +88,8 @@ class XdsClusterInvokerTest {
 
         invocation = new RpcInvocation();
         invocation.setMethodName("testMethod");
-        invocation.setParameterTypes(new Class[]{String.class});
-        invocation.setArguments(new Object[]{"test"});
+        invocation.setParameterTypes(new Class[] {String.class});
+        invocation.setArguments(new Object[] {"test"});
 
         // Set up invoker mocks
         when(invoker1.getUrl()).thenReturn(url);
@@ -134,8 +131,10 @@ class XdsClusterInvokerTest {
         // Set up retry policy in invocation
         when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
         when(retryPolicy.getMaxAttempts()).thenReturn(3);
-        when(retryPolicy.getInitialBackoff()).thenReturn(Duration.newBuilder().setNanos(25_000_000).build());
-        when(retryPolicy.getMaxBackoff()).thenReturn(Duration.newBuilder().setNanos(250_000_000).build());
+        when(retryPolicy.getInitialBackoff())
+                .thenReturn(Duration.newBuilder().setNanos(25_000_000).build());
+        when(retryPolicy.getMaxBackoff())
+                .thenReturn(Duration.newBuilder().setNanos(250_000_000).build());
         when(retryPolicy.getRetryableStatusCodes()).thenReturn(Collections.emptyList());
         invocation.put("xds.route.action", routeAction);
 
@@ -157,8 +156,14 @@ class XdsClusterInvokerTest {
         // Set up retry policy with proper Duration objects
         when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
         when(retryPolicy.getMaxAttempts()).thenReturn(3);
-        when(retryPolicy.getInitialBackoff()).thenReturn(Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build());
-        when(retryPolicy.getMaxBackoff()).thenReturn(Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build());
+        when(retryPolicy.getInitialBackoff())
+                .thenReturn(
+                        Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build());
+        when(retryPolicy.getMaxBackoff())
+                .thenReturn(Duration.newBuilder()
+                        .setSeconds(0)
+                        .setNanos(250_000_000)
+                        .build());
         when(retryPolicy.getRetryableStatusCodes()).thenReturn(Collections.emptyList());
         invocation.put("xds.route.action", routeAction);
 
@@ -187,8 +192,12 @@ class XdsClusterInvokerTest {
         // Set up retry policy with proper Duration objects
         when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
         when(retryPolicy.getMaxAttempts()).thenReturn(2);
-        when(retryPolicy.getInitialBackoff()).thenReturn(Duration.newBuilder().setSeconds(0).setNanos(1_000_000).build()); // 1ms for faster test
-        when(retryPolicy.getMaxBackoff()).thenReturn(Duration.newBuilder().setSeconds(0).setNanos(10_000_000).build());
+        when(retryPolicy.getInitialBackoff())
+                .thenReturn(
+                        Duration.newBuilder().setSeconds(0).setNanos(1_000_000).build()); // 1ms for faster test
+        when(retryPolicy.getMaxBackoff())
+                .thenReturn(
+                        Duration.newBuilder().setSeconds(0).setNanos(10_000_000).build());
         when(retryPolicy.getRetryableStatusCodes()).thenReturn(Collections.emptyList());
         invocation.put("xds.route.action", routeAction);
 
@@ -223,8 +232,14 @@ class XdsClusterInvokerTest {
         // Set up retry policy with specific retryable status codes and proper Duration objects
         when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
         when(retryPolicy.getMaxAttempts()).thenReturn(3);
-        when(retryPolicy.getInitialBackoff()).thenReturn(Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build());
-        when(retryPolicy.getMaxBackoff()).thenReturn(Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build());
+        when(retryPolicy.getInitialBackoff())
+                .thenReturn(
+                        Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build());
+        when(retryPolicy.getMaxBackoff())
+                .thenReturn(Duration.newBuilder()
+                        .setSeconds(0)
+                        .setNanos(250_000_000)
+                        .build());
         when(retryPolicy.getRetryableStatusCodes()).thenReturn(Arrays.asList(Status.Code.UNAVAILABLE));
         invocation.put("xds.route.action", routeAction);
 

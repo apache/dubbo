@@ -22,15 +22,15 @@ import org.apache.dubbo.xds.bootstrap.XdsServer;
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -108,8 +108,9 @@ class AdsObserverTest {
 
         // Act & Assert
         // ConcurrentHashMap doesn't allow null keys, so this should throw NullPointerException
-        assertThrows(NullPointerException.class, () ->
-            adsObserver.addListener(resourceName, resourceType, resourceListener));
+        assertThrows(
+                NullPointerException.class,
+                () -> adsObserver.addListener(resourceName, resourceType, resourceListener));
     }
 
     @Test

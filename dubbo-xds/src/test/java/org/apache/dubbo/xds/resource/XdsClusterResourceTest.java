@@ -20,8 +20,10 @@ import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.XdsServer;
 import org.apache.dubbo.xds.resource.exception.ResourceInvalidException;
-import org.apache.dubbo.xds.resource.filter.FilterRegistry;
 import org.apache.dubbo.xds.resource.update.CdsUpdate;
+
+import java.util.Arrays;
+import java.util.HashMap;
 
 import io.envoyproxy.envoy.config.cluster.v3.Cluster;
 import io.envoyproxy.envoy.config.core.v3.Address;
@@ -30,15 +32,11 @@ import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.Endpoint;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.config.endpoint.v3.LocalityLbEndpoints;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -90,16 +88,14 @@ class XdsClusterResourceTest {
     void testParseValidCluster() throws ResourceInvalidException {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("test-cluster")
-            .setType(Cluster.DiscoveryType.EDS)
-            .setEdsClusterConfig(
-                Cluster.EdsClusterConfig.newBuilder()
-                    .setEdsConfig(
-                        io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
-                            .setAds(io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource.getDefaultInstance())
-                    )
-            )
-            .build();
+                .setName("test-cluster")
+                .setType(Cluster.DiscoveryType.EDS)
+                .setEdsClusterConfig(Cluster.EdsClusterConfig.newBuilder()
+                        .setEdsConfig(io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
+                                .setAds(
+                                        io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource
+                                                .getDefaultInstance())))
+                .build();
 
         // Act & Assert
         try (MockedStatic<Bootstrapper> bootstrapperMock = mockStatic(Bootstrapper.class)) {
@@ -118,34 +114,28 @@ class XdsClusterResourceTest {
     void testParseClusterWithUnsupportedType() {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("test-cluster")
-            .setType(Cluster.DiscoveryType.STATIC)
-            .build();
+                .setName("test-cluster")
+                .setType(Cluster.DiscoveryType.STATIC)
+                .build();
 
         // Act & Assert
-        assertThrows(ResourceInvalidException.class, () ->
-            xdsClusterResource.doParse(args, cluster));
+        assertThrows(ResourceInvalidException.class, () -> xdsClusterResource.doParse(args, cluster));
     }
 
     @Test
     void testParseClusterWithTransportSocketMatches() {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("test-cluster")
-            .setType(Cluster.DiscoveryType.EDS)
-            .addTransportSocketMatches(
-                Cluster.TransportSocketMatch.newBuilder()
-                    .setName("tls")
-                    .build()
-            )
-            .setEdsClusterConfig(
-                Cluster.EdsClusterConfig.newBuilder()
-                    .setEdsConfig(
-                        io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
-                            .setAds(io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource.getDefaultInstance())
-                    )
-            )
-            .build();
+                .setName("test-cluster")
+                .setType(Cluster.DiscoveryType.EDS)
+                .addTransportSocketMatches(
+                        Cluster.TransportSocketMatch.newBuilder().setName("tls").build())
+                .setEdsClusterConfig(Cluster.EdsClusterConfig.newBuilder()
+                        .setEdsConfig(io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
+                                .setAds(
+                                        io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource
+                                                .getDefaultInstance())))
+                .build();
 
         // Act & Assert
         try (MockedStatic<Bootstrapper> bootstrapperMock = mockStatic(Bootstrapper.class)) {
@@ -164,30 +154,18 @@ class XdsClusterResourceTest {
     void testParseClusterWithLogicalDns() throws ResourceInvalidException {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("test-cluster")
-            .setType(Cluster.DiscoveryType.LOGICAL_DNS)
-            .setLoadAssignment(
-                ClusterLoadAssignment.newBuilder()
-                    .setClusterName("test-cluster")
-                    .addEndpoints(
-                        LocalityLbEndpoints.newBuilder()
-                            .addLbEndpoints(
-                                LbEndpoint.newBuilder()
-                                    .setEndpoint(
-                                        Endpoint.newBuilder()
-                                            .setAddress(
-                                                Address.newBuilder()
-                                                    .setSocketAddress(
-                                                        SocketAddress.newBuilder()
-                                                            .setAddress("127.0.0.1")
-                                                            .setPortValue(8080)
-                                                    )
-                                            )
-                                    )
-                            )
-                    )
-            )
-            .build();
+                .setName("test-cluster")
+                .setType(Cluster.DiscoveryType.LOGICAL_DNS)
+                .setLoadAssignment(ClusterLoadAssignment.newBuilder()
+                        .setClusterName("test-cluster")
+                        .addEndpoints(LocalityLbEndpoints.newBuilder()
+                                .addLbEndpoints(LbEndpoint.newBuilder()
+                                        .setEndpoint(Endpoint.newBuilder()
+                                                .setAddress(Address.newBuilder()
+                                                        .setSocketAddress(SocketAddress.newBuilder()
+                                                                .setAddress("127.0.0.1")
+                                                                .setPortValue(8080)))))))
+                .build();
 
         // Act
         CdsUpdate result = xdsClusterResource.doParse(args, cluster);
@@ -239,16 +217,14 @@ class XdsClusterResourceTest {
     void testParseEmptyCluster() throws ResourceInvalidException {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("")
-            .setType(Cluster.DiscoveryType.EDS)
-            .setEdsClusterConfig(
-                Cluster.EdsClusterConfig.newBuilder()
-                    .setEdsConfig(
-                        io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
-                            .setAds(io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource.getDefaultInstance())
-                    )
-            )
-            .build();
+                .setName("")
+                .setType(Cluster.DiscoveryType.EDS)
+                .setEdsClusterConfig(Cluster.EdsClusterConfig.newBuilder()
+                        .setEdsConfig(io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
+                                .setAds(
+                                        io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource
+                                                .getDefaultInstance())))
+                .build();
 
         // Act & Assert
         try (MockedStatic<Bootstrapper> bootstrapperMock = mockStatic(Bootstrapper.class)) {
@@ -265,9 +241,7 @@ class XdsClusterResourceTest {
     @Test
     void testExtractResourceName() {
         // Arrange
-        Cluster cluster = Cluster.newBuilder()
-            .setName("test-cluster")
-            .build();
+        Cluster cluster = Cluster.newBuilder().setName("test-cluster").build();
 
         // Act
         String resourceName = xdsClusterResource.extractResourceName(cluster);
@@ -280,35 +254,27 @@ class XdsClusterResourceTest {
     void testParseClusterWithOriginalDst() {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("PassthroughCluster")
-            .setType(Cluster.DiscoveryType.ORIGINAL_DST)
-            .build();
+                .setName("PassthroughCluster")
+                .setType(Cluster.DiscoveryType.ORIGINAL_DST)
+                .build();
 
         // Act & Assert
-        assertThrows(ResourceInvalidException.class, () ->
-            xdsClusterResource.doParse(args, cluster));
+        assertThrows(ResourceInvalidException.class, () -> xdsClusterResource.doParse(args, cluster));
     }
 
     @Test
     void testParseClusterWithComplexConfiguration() throws ResourceInvalidException {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("complex-cluster")
-            .setType(Cluster.DiscoveryType.EDS)
-            .setEdsClusterConfig(
-                Cluster.EdsClusterConfig.newBuilder()
-                    .setEdsConfig(
-                        io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
-                            .setAds(io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource.getDefaultInstance())
-                    )
-                    .setServiceName("complex-service")
-            )
-            .setConnectTimeout(
-                com.google.protobuf.Duration.newBuilder()
-                    .setSeconds(5)
-                    .setNanos(0)
-            )
-            .build();
+                .setName("complex-cluster")
+                .setType(Cluster.DiscoveryType.EDS)
+                .setEdsClusterConfig(Cluster.EdsClusterConfig.newBuilder()
+                        .setEdsConfig(io.envoyproxy.envoy.config.core.v3.ConfigSource.newBuilder()
+                                .setAds(io.envoyproxy.envoy.config.core.v3.AggregatedConfigSource.getDefaultInstance()))
+                        .setServiceName("complex-service"))
+                .setConnectTimeout(
+                        com.google.protobuf.Duration.newBuilder().setSeconds(5).setNanos(0))
+                .build();
 
         // Act & Assert
         try (MockedStatic<Bootstrapper> bootstrapperMock = mockStatic(Bootstrapper.class)) {
@@ -327,29 +293,25 @@ class XdsClusterResourceTest {
     void testParseInvalidMessageType() {
         // Arrange
         io.envoyproxy.envoy.config.listener.v3.Listener invalidMessage =
-            io.envoyproxy.envoy.config.listener.v3.Listener.newBuilder()
-                .setName("invalid")
-                .build();
+                io.envoyproxy.envoy.config.listener.v3.Listener.newBuilder()
+                        .setName("invalid")
+                        .build();
 
         // Act & Assert
-        assertThrows(ResourceInvalidException.class, () ->
-            xdsClusterResource.doParse(args, invalidMessage));
+        assertThrows(ResourceInvalidException.class, () -> xdsClusterResource.doParse(args, invalidMessage));
     }
 
     @Test
     void testParseClusterWithAggregateType() throws ResourceInvalidException {
         // Arrange
         Cluster cluster = Cluster.newBuilder()
-            .setName("aggregate-cluster")
-            .setClusterType(
-                Cluster.CustomClusterType.newBuilder()
-                    .setName("envoy.clusters.aggregate")
-                    .setTypedConfig(
-                        com.google.protobuf.Any.newBuilder()
-                            .setTypeUrl("type.googleapis.com/envoy.extensions.clusters.aggregate.v3.ClusterConfig")
-                    )
-            )
-            .build();
+                .setName("aggregate-cluster")
+                .setClusterType(Cluster.CustomClusterType.newBuilder()
+                        .setName("envoy.clusters.aggregate")
+                        .setTypedConfig(com.google.protobuf.Any.newBuilder()
+                                .setTypeUrl(
+                                        "type.googleapis.com/envoy.extensions.clusters.aggregate.v3.ClusterConfig")))
+                .build();
 
         // Act
         CdsUpdate result = xdsClusterResource.doParse(args, cluster);

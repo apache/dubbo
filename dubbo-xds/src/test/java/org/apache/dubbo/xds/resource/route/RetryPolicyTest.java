@@ -16,14 +16,13 @@
  */
 package org.apache.dubbo.xds.resource.route;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.protobuf.Duration;
 import io.grpc.Status;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,12 +36,15 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 3;
         List<Status.Code> retryableStatusCodes = Arrays.asList(Status.Code.UNAVAILABLE, Status.Code.CANCELLED);
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build(); // 25ms
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build(); // 250ms
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build(); // 25ms
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build(); // 250ms
         Duration perAttemptTimeout = Duration.newBuilder().setSeconds(5).build(); // 5s
 
         // Act
-        RetryPolicy retryPolicy = new RetryPolicy(maxAttempts, retryableStatusCodes, initialBackoff, maxBackoff, perAttemptTimeout);
+        RetryPolicy retryPolicy =
+                new RetryPolicy(maxAttempts, retryableStatusCodes, initialBackoff, maxBackoff, perAttemptTimeout);
 
         // Assert
         assertEquals(maxAttempts, retryPolicy.getMaxAttempts());
@@ -57,7 +59,8 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 5;
         List<Status.Code> retryableStatusCodes = Collections.singletonList(Status.Code.DEADLINE_EXCEEDED);
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(10_000_000).build(); // 10ms
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(10_000_000).build(); // 10ms
         Duration maxBackoff = Duration.newBuilder().setSeconds(1).build(); // 1s
 
         // Act
@@ -76,8 +79,10 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 2;
         List<Status.Code> emptyStatusCodes = Collections.emptyList();
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(50_000_000).build(); // 50ms
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(500_000_000).build(); // 500ms
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(50_000_000).build(); // 50ms
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(500_000_000).build(); // 500ms
 
         // Act
         RetryPolicy retryPolicy = new RetryPolicy(maxAttempts, emptyStatusCodes, initialBackoff, maxBackoff, null);
@@ -93,8 +98,10 @@ class RetryPolicyTest {
     void testRetryPolicyWithNullStatusCodesThrowsException() {
         // Arrange
         int maxAttempts = 3;
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
 
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
@@ -107,7 +114,8 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 3;
         List<Status.Code> statusCodes = Collections.singletonList(Status.Code.UNAVAILABLE);
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
 
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
@@ -120,7 +128,8 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 3;
         List<Status.Code> statusCodes = Collections.singletonList(Status.Code.UNAVAILABLE);
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
 
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
@@ -133,8 +142,10 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 3;
         List<Status.Code> statusCodes = Arrays.asList(Status.Code.UNAVAILABLE, Status.Code.CANCELLED);
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
 
         RetryPolicy retryPolicy = new RetryPolicy(maxAttempts, statusCodes, initialBackoff, maxBackoff, null);
 
@@ -151,12 +162,15 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 3;
         List<Status.Code> statusCodes = Collections.singletonList(Status.Code.UNAVAILABLE);
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
 
         RetryPolicy policy1 = new RetryPolicy(maxAttempts, statusCodes, initialBackoff, maxBackoff, null);
         RetryPolicy policy2 = new RetryPolicy(maxAttempts, statusCodes, initialBackoff, maxBackoff, null);
-        RetryPolicy policy3 = new RetryPolicy(5, statusCodes, initialBackoff, maxBackoff, null); // Different maxAttempts
+        RetryPolicy policy3 =
+                new RetryPolicy(5, statusCodes, initialBackoff, maxBackoff, null); // Different maxAttempts
 
         // Act & Assert
         assertEquals(policy1, policy2);
@@ -170,8 +184,10 @@ class RetryPolicyTest {
         // Arrange
         int maxAttempts = 3;
         List<Status.Code> statusCodes = Collections.singletonList(Status.Code.UNAVAILABLE);
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
 
         RetryPolicy policy1 = new RetryPolicy(maxAttempts, statusCodes, initialBackoff, maxBackoff, null);
         RetryPolicy policy2 = new RetryPolicy(maxAttempts, statusCodes, initialBackoff, maxBackoff, null);
@@ -185,7 +201,10 @@ class RetryPolicyTest {
         // Test with boundary values
         int maxAttempts = Integer.MAX_VALUE;
         List<Status.Code> statusCodes = Collections.singletonList(Status.Code.UNAVAILABLE);
-        Duration maxDuration = Duration.newBuilder().setSeconds(315576000000L).setNanos(999999999).build(); // Max duration
+        Duration maxDuration = Duration.newBuilder()
+                .setSeconds(315576000000L)
+                .setNanos(999999999)
+                .build(); // Max duration
 
         RetryPolicy retryPolicy = new RetryPolicy(maxAttempts, statusCodes, maxDuration, maxDuration, maxDuration);
 
@@ -200,8 +219,10 @@ class RetryPolicyTest {
         // Test with zero max attempts
         int maxAttempts = 0;
         List<Status.Code> statusCodes = Collections.singletonList(Status.Code.UNAVAILABLE);
-        Duration initialBackoff = Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
-        Duration maxBackoff = Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
+        Duration initialBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build();
+        Duration maxBackoff =
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build();
 
         RetryPolicy retryPolicy = new RetryPolicy(maxAttempts, statusCodes, initialBackoff, maxBackoff, null);
 
@@ -212,9 +233,12 @@ class RetryPolicyTest {
     void testRetryableStatusCodesImmutability() {
         // Arrange
         List<Status.Code> originalCodes = Arrays.asList(Status.Code.UNAVAILABLE, Status.Code.CANCELLED);
-        RetryPolicy retryPolicy = new RetryPolicy(3, originalCodes,
-            Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build(),
-            Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build(), null);
+        RetryPolicy retryPolicy = new RetryPolicy(
+                3,
+                originalCodes,
+                Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build(),
+                Duration.newBuilder().setSeconds(0).setNanos(250_000_000).build(),
+                null);
 
         // Act
         List<Status.Code> retrievedCodes = retryPolicy.getRetryableStatusCodes();

@@ -50,7 +50,6 @@ Dubbo Proxyless mode allows Dubbo applications to:
 ## Environment Setup
 
 ### Step 1: Install Kubernetes
-
 #### Option B: Kind (Lightweight alternative)
 
 ```bash

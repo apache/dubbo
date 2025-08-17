@@ -20,21 +20,20 @@ import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.XdsServer;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -118,7 +117,7 @@ class XdsChannelTest {
         // If channel is null, this method should handle gracefully
         assertDoesNotThrow(() -> {
             StreamObserver<DiscoveryRequest> requestObserver =
-                xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
+                    xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
             // Observer might be null if channel is not available
         });
     }
@@ -129,7 +128,7 @@ class XdsChannelTest {
         // If channel is null, this method should handle gracefully
         assertDoesNotThrow(() -> {
             StreamObserver<DeltaDiscoveryRequest> requestObserver =
-                xdsChannel.observeDeltaDiscoveryRequest(deltaDiscoveryResponseObserver);
+                    xdsChannel.observeDeltaDiscoveryRequest(deltaDiscoveryResponseObserver);
             // Observer might be null if channel is not available
         });
     }
@@ -140,7 +139,7 @@ class XdsChannelTest {
         // If channel is null, this method should handle gracefully
         assertDoesNotThrow(() -> {
             StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> requestObserver =
-                xdsChannel.createDeltaDiscoveryRequestV2(discoveryResponseObserverV2);
+                    xdsChannel.createDeltaDiscoveryRequestV2(discoveryResponseObserverV2);
             // Observer might be null if channel is not available
         });
     }
@@ -151,7 +150,7 @@ class XdsChannelTest {
         // If channel is null, this method should handle gracefully
         assertDoesNotThrow(() -> {
             StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> requestObserver =
-                xdsChannel.observeDeltaDiscoveryRequestV2(deltaDiscoveryResponseObserverV2);
+                    xdsChannel.observeDeltaDiscoveryRequestV2(deltaDiscoveryResponseObserverV2);
             // Observer might be null if channel is not available
         });
     }
@@ -187,9 +186,9 @@ class XdsChannelTest {
     void testCreateMultipleStreamObservers() {
         // Act
         StreamObserver<DiscoveryRequest> requestObserver1 =
-            xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
+                xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
         StreamObserver<DiscoveryRequest> requestObserver2 =
-            xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
+                xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
 
         // Assert
         assertNotNull(requestObserver1);
@@ -202,8 +201,7 @@ class XdsChannelTest {
     void testCreateStreamObserversWithNullObserver() {
         // Act & Assert - gRPC requires non-null responseObserver, should throw NullPointerException
         assertThrows(NullPointerException.class, () -> {
-            StreamObserver<DiscoveryRequest> requestObserver =
-                xdsChannel.createDeltaDiscoveryRequest(null);
+            StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(null);
         });
     }
 
@@ -213,9 +211,9 @@ class XdsChannelTest {
         // If channel is null (due to bootstrap failure), these methods should handle gracefully
         assertDoesNotThrow(() -> {
             StreamObserver<DiscoveryRequest> v3RequestObserver =
-                xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
+                    xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
             StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> v2RequestObserver =
-                xdsChannel.createDeltaDiscoveryRequestV2(discoveryResponseObserverV2);
+                    xdsChannel.createDeltaDiscoveryRequestV2(discoveryResponseObserverV2);
 
             // If channel is available, observers should be created
             // If channel is null, methods might return null or throw exception
@@ -226,9 +224,9 @@ class XdsChannelTest {
     void testDeltaAndRegularStreamObservers() {
         // Act
         StreamObserver<DiscoveryRequest> regularObserver =
-            xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
+                xdsChannel.createDeltaDiscoveryRequest(discoveryResponseObserver);
         StreamObserver<DeltaDiscoveryRequest> deltaObserver =
-            xdsChannel.observeDeltaDiscoveryRequest(deltaDiscoveryResponseObserver);
+                xdsChannel.observeDeltaDiscoveryRequest(deltaDiscoveryResponseObserver);
 
         // Assert
         assertNotNull(regularObserver);

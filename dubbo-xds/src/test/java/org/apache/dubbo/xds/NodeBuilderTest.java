@@ -19,16 +19,15 @@ package org.apache.dubbo.xds;
 import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 
-import io.envoyproxy.envoy.config.core.v3.Node;
+import java.util.HashMap;
+import java.util.Map;
 
+import io.envoyproxy.envoy.config.core.v3.Node;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -167,8 +166,9 @@ class NodeBuilderTest {
         assertEquals("test", struct.getFieldsMap().get("stringValue").getStringValue());
         assertEquals(42.0, struct.getFieldsMap().get("numberValue").getNumberValue());
         assertTrue(struct.getFieldsMap().get("booleanValue").getBoolValue());
-        assertEquals(com.google.protobuf.NullValue.NULL_VALUE,
-                    struct.getFieldsMap().get("nullValue").getNullValue());
+        assertEquals(
+                com.google.protobuf.NullValue.NULL_VALUE,
+                struct.getFieldsMap().get("nullValue").getNullValue());
     }
 
     @Test
@@ -290,7 +290,8 @@ class NodeBuilderTest {
         assertEquals(123.0, struct.getFieldsMap().get("integer").getNumberValue());
         assertEquals(45.67, struct.getFieldsMap().get("double").getNumberValue());
         assertFalse(struct.getFieldsMap().get("boolean").getBoolValue());
-        assertEquals(com.google.protobuf.NullValue.NULL_VALUE,
-                    struct.getFieldsMap().get("null").getNullValue());
+        assertEquals(
+                com.google.protobuf.NullValue.NULL_VALUE,
+                struct.getFieldsMap().get("null").getNullValue());
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.xds;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.XdsServer;
@@ -26,16 +25,16 @@ import org.apache.dubbo.xds.resource.update.EdsUpdate;
 import org.apache.dubbo.xds.resource.update.LdsUpdate;
 import org.apache.dubbo.xds.resource.update.RdsUpdate;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -100,8 +99,7 @@ class XdsResourceFactoryTest {
         String appName = "test-service"; // Missing port
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-            xdsResourceFactory.subscribeApp(appName, edsListener));
+        assertThrows(IllegalArgumentException.class, () -> xdsResourceFactory.subscribeApp(appName, edsListener));
     }
 
     @Test
@@ -126,7 +124,7 @@ class XdsResourceFactoryTest {
 
         // Act
         XdsResourceFactory.LdsUpdateWatcher.RdsUpdateWatcher watcher =
-            ldsWatcher.new RdsUpdateWatcher(rdsName, httpMaxStreamDurationNano, null);
+                ldsWatcher.new RdsUpdateWatcher(rdsName, httpMaxStreamDurationNano, null);
 
         // Assert
         assertNotNull(watcher);
@@ -138,8 +136,7 @@ class XdsResourceFactoryTest {
         XdsResourceFactory.LdsUpdateWatcher ldsWatcher = xdsResourceFactory.new LdsUpdateWatcher("test-listener:8080");
 
         // Act
-        XdsResourceFactory.LdsUpdateWatcher.CdsUpdateNodeDirectory watcher =
-            ldsWatcher.new CdsUpdateNodeDirectory();
+        XdsResourceFactory.LdsUpdateWatcher.CdsUpdateNodeDirectory watcher = ldsWatcher.new CdsUpdateNodeDirectory();
 
         // Assert
         assertNotNull(watcher);
@@ -153,7 +150,7 @@ class XdsResourceFactoryTest {
 
         // Act
         XdsResourceFactory.LdsUpdateWatcher.EdsUpdateLeafDirectory watcher =
-            ldsWatcher.new EdsUpdateLeafDirectory(clusterName);
+                ldsWatcher.new EdsUpdateLeafDirectory(clusterName);
 
         // Assert
         assertNotNull(watcher);
@@ -167,7 +164,7 @@ class XdsResourceFactoryTest {
 
         LdsUpdate ldsUpdate = mock(LdsUpdate.class);
         org.apache.dubbo.xds.resource.listener.HttpConnectionManager httpConnectionManager =
-            mock(org.apache.dubbo.xds.resource.listener.HttpConnectionManager.class);
+                mock(org.apache.dubbo.xds.resource.listener.HttpConnectionManager.class);
 
         when(ldsUpdate.getHttpConnectionManager()).thenReturn(httpConnectionManager);
         when(httpConnectionManager.getVirtualHosts()).thenReturn(Collections.emptyList());
@@ -204,7 +201,7 @@ class XdsResourceFactoryTest {
         // Arrange
         XdsResourceFactory.LdsUpdateWatcher ldsWatcher = xdsResourceFactory.new LdsUpdateWatcher("test-listener:8080");
         XdsResourceFactory.LdsUpdateWatcher.RdsUpdateWatcher rdsWatcher =
-            ldsWatcher.new RdsUpdateWatcher("test-route-config", 30000000000L, null);
+                ldsWatcher.new RdsUpdateWatcher("test-route-config", 30000000000L, null);
 
         RdsUpdate rdsUpdate = mock(RdsUpdate.class);
         when(rdsUpdate.getVirtualHosts()).thenReturn(Collections.emptyList());
@@ -217,8 +214,7 @@ class XdsResourceFactoryTest {
     void testCdsUpdateWatcherOnResourceUpdate() {
         // Arrange
         XdsResourceFactory.LdsUpdateWatcher ldsWatcher = xdsResourceFactory.new LdsUpdateWatcher("test-listener:8080");
-        XdsResourceFactory.LdsUpdateWatcher.CdsUpdateNodeDirectory cdsWatcher =
-            ldsWatcher.new CdsUpdateNodeDirectory();
+        XdsResourceFactory.LdsUpdateWatcher.CdsUpdateNodeDirectory cdsWatcher = ldsWatcher.new CdsUpdateNodeDirectory();
 
         CdsUpdate cdsUpdate = mock(CdsUpdate.class);
         when(cdsUpdate.getClusterName()).thenReturn("test-cluster");
@@ -232,8 +228,7 @@ class XdsResourceFactoryTest {
     void testCdsUpdateWatcherOnResourceUpdateWithNull() {
         // Arrange
         XdsResourceFactory.LdsUpdateWatcher ldsWatcher = xdsResourceFactory.new LdsUpdateWatcher("test-listener:8080");
-        XdsResourceFactory.LdsUpdateWatcher.CdsUpdateNodeDirectory cdsWatcher =
-            ldsWatcher.new CdsUpdateNodeDirectory();
+        XdsResourceFactory.LdsUpdateWatcher.CdsUpdateNodeDirectory cdsWatcher = ldsWatcher.new CdsUpdateNodeDirectory();
 
         // Act & Assert
         assertDoesNotThrow(() -> cdsWatcher.onResourceUpdate(null));
@@ -249,7 +244,7 @@ class XdsResourceFactoryTest {
 
         XdsResourceFactory.LdsUpdateWatcher ldsWatcher = xdsResourceFactory.new LdsUpdateWatcher(ldsResourceName);
         XdsResourceFactory.LdsUpdateWatcher.EdsUpdateLeafDirectory edsWatcher =
-            ldsWatcher.new EdsUpdateLeafDirectory(clusterName);
+                ldsWatcher.new EdsUpdateLeafDirectory(clusterName);
 
         EdsUpdate edsUpdate = mock(EdsUpdate.class);
         when(edsUpdate.getClusterName()).thenReturn(clusterName);

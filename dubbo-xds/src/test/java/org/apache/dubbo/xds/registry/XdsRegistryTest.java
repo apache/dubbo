@@ -19,10 +19,13 @@ package org.apache.dubbo.xds.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.xds.XdsResourceFactory;
 import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.XdsServer;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,14 +33,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -212,16 +208,14 @@ class XdsRegistryTest {
     void testSubscribeWithNullListener() {
         // Act & Assert
         // XdsRegistry extends FailbackRegistry which throws IllegalArgumentException for null listener
-        assertThrows(IllegalArgumentException.class, () ->
-            xdsRegistry.subscribe(serviceUrl, null));
+        assertThrows(IllegalArgumentException.class, () -> xdsRegistry.subscribe(serviceUrl, null));
     }
 
     @Test
     void testSubscribeWithNullUrl() {
         // Act & Assert
         // XdsRegistry extends FailbackRegistry which throws IllegalArgumentException for null URL
-        assertThrows(IllegalArgumentException.class, () ->
-            xdsRegistry.subscribe(null, notifyListener));
+        assertThrows(IllegalArgumentException.class, () -> xdsRegistry.subscribe(null, notifyListener));
     }
 
     @Test
@@ -231,8 +225,7 @@ class XdsRegistryTest {
 
         // Act & Assert
         // Should throw exception when URL doesn't have provided-by parameter
-        assertThrows(IllegalStateException.class, () ->
-            xdsRegistry.subscribe(urlWithoutProvidedBy, notifyListener));
+        assertThrows(IllegalStateException.class, () -> xdsRegistry.subscribe(urlWithoutProvidedBy, notifyListener));
     }
 
     @Test

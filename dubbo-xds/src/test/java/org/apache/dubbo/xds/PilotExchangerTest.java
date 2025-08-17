@@ -25,16 +25,16 @@ import org.apache.dubbo.xds.resource.update.EdsUpdate;
 import org.apache.dubbo.xds.resource.update.LdsUpdate;
 import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashMap;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -99,7 +99,8 @@ class PilotExchangerTest {
         // Mock resource types
         when(ldsResourceType.typeUrl()).thenReturn("type.googleapis.com/envoy.config.listener.v3.Listener");
         when(cdsResourceType.typeUrl()).thenReturn("type.googleapis.com/envoy.config.cluster.v3.Cluster");
-        when(edsResourceType.typeUrl()).thenReturn("type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment");
+        when(edsResourceType.typeUrl())
+                .thenReturn("type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment");
 
         try (MockedStatic<Bootstrapper> bootstrapperMock = mockStatic(Bootstrapper.class)) {
             bootstrapperMock.when(Bootstrapper::getInstance).thenReturn(mockBootstrapper);
@@ -163,30 +164,34 @@ class PilotExchangerTest {
         pilotExchanger.subscribeXdsResource(resourceName, ldsResourceType, ldsResourceListener);
 
         // Assert - verify that the subscription was processed
-        assertDoesNotThrow(() -> pilotExchanger.subscribeXdsResource(resourceName, ldsResourceType, ldsResourceListener));
+        assertDoesNotThrow(
+                () -> pilotExchanger.subscribeXdsResource(resourceName, ldsResourceType, ldsResourceListener));
     }
 
     @Test
     void testSubscribeXdsResourceWithNullResourceName() {
         // Act & Assert
         // ConcurrentHashMap doesn't allow null keys, so this should throw NullPointerException
-        assertThrows(NullPointerException.class, () ->
-            pilotExchanger.subscribeXdsResource(null, ldsResourceType, ldsResourceListener));
+        assertThrows(
+                NullPointerException.class,
+                () -> pilotExchanger.subscribeXdsResource(null, ldsResourceType, ldsResourceListener));
     }
 
     @Test
     void testSubscribeXdsResourceWithNullResourceType() {
         // Act & Assert
-        assertThrows(NullPointerException.class, () ->
-            pilotExchanger.subscribeXdsResource("test-resource", null, ldsResourceListener));
+        assertThrows(
+                NullPointerException.class,
+                () -> pilotExchanger.subscribeXdsResource("test-resource", null, ldsResourceListener));
     }
 
     @Test
     void testSubscribeXdsResourceWithNullResourceListener() {
         // Act & Assert
         // ConcurrentHashMap doesn't allow null values, so this should throw NullPointerException
-        assertThrows(NullPointerException.class, () ->
-            pilotExchanger.subscribeXdsResource("test-resource", ldsResourceType, null));
+        assertThrows(
+                NullPointerException.class,
+                () -> pilotExchanger.subscribeXdsResource("test-resource", ldsResourceType, null));
     }
 
     @Test
@@ -219,8 +224,8 @@ class PilotExchangerTest {
         pilotExchanger.subscribeXdsResource(resourceName, ldsResourceType, ldsResourceListener);
 
         // Assert - multiple subscriptions to the same resource should be handled gracefully
-        assertDoesNotThrow(() ->
-            pilotExchanger.subscribeXdsResource(resourceName, ldsResourceType, ldsResourceListener));
+        assertDoesNotThrow(
+                () -> pilotExchanger.subscribeXdsResource(resourceName, ldsResourceType, ldsResourceListener));
     }
 
     @Test
@@ -261,15 +266,14 @@ class PilotExchangerTest {
         pilotExchanger.destroy();
 
         // Act & Assert - operations after destroy should still work or handle gracefully
-        assertDoesNotThrow(() ->
-            pilotExchanger.subscribeXdsResource("test-resource", ldsResourceType, ldsResourceListener));
+        assertDoesNotThrow(
+                () -> pilotExchanger.subscribeXdsResource("test-resource", ldsResourceType, ldsResourceListener));
     }
 
     @Test
     void testSubscribeXdsResourceWithEmptyResourceName() {
         // Act & Assert
-        assertDoesNotThrow(() ->
-            pilotExchanger.subscribeXdsResource("", ldsResourceType, ldsResourceListener));
+        assertDoesNotThrow(() -> pilotExchanger.subscribeXdsResource("", ldsResourceType, ldsResourceListener));
     }
 
     @Test
@@ -278,8 +282,8 @@ class PilotExchangerTest {
         String specialResourceName = "test-resource-with-special-chars-!@#$%^&*()";
 
         // Act & Assert
-        assertDoesNotThrow(() ->
-            pilotExchanger.subscribeXdsResource(specialResourceName, ldsResourceType, ldsResourceListener));
+        assertDoesNotThrow(
+                () -> pilotExchanger.subscribeXdsResource(specialResourceName, ldsResourceType, ldsResourceListener));
     }
 
     @Test
@@ -399,7 +403,7 @@ class PilotExchangerTest {
 
         // Act & Assert
         assertDoesNotThrow(() ->
-            pilotExchanger.subscribeXdsResource("generic-resource", genericResourceType, genericResourceListener));
+                pilotExchanger.subscribeXdsResource("generic-resource", genericResourceType, genericResourceListener));
     }
 
     @Test

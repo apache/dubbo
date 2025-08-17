@@ -25,15 +25,15 @@ import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
 import org.apache.dubbo.xds.bootstrap.Bootstrapper;
 import org.apache.dubbo.xds.bootstrap.XdsServer;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -103,8 +103,8 @@ class XdsRouterTest {
 
         invocation = new RpcInvocation();
         invocation.setMethodName("testMethod");
-        invocation.setParameterTypes(new Class[]{String.class});
-        invocation.setArguments(new Object[]{"test"});
+        invocation.setParameterTypes(new Class[] {String.class});
+        invocation.setArguments(new Object[] {"test"});
         invocation.setInvoker(invoker1); // Set a default invoker to avoid null pointer
     }
 

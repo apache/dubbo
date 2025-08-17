@@ -18,10 +18,8 @@ package org.apache.dubbo.xds;
 
 import org.apache.dubbo.xds.resource.XdsResourceType;
 import org.apache.dubbo.xds.resource.update.LdsUpdate;
-import org.apache.dubbo.xds.resource.update.ResourceUpdate;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -61,10 +59,7 @@ class XdsRawResourceProtocolTest {
         MockitoAnnotations.openMocks(this);
 
         // Create a test node
-        node = Node.newBuilder()
-            .setId("test-node")
-            .setCluster("test-cluster")
-            .build();
+        node = Node.newBuilder().setId("test-node").setCluster("test-cluster").build();
 
         // Mock resource type
         when(resourceType.typeUrl()).thenReturn("type.googleapis.com/envoy.config.listener.v3.Listener");
@@ -228,14 +223,11 @@ class XdsRawResourceProtocolTest {
     void testConstructorWithNullParameters() {
         // Act & Assert
         // XdsRawResourceProtocol constructor may handle null parameters gracefully
-        assertDoesNotThrow(() ->
-            new XdsRawResourceProtocol<>(null, node, resourceType));
+        assertDoesNotThrow(() -> new XdsRawResourceProtocol<>(null, node, resourceType));
 
-        assertDoesNotThrow(() ->
-            new XdsRawResourceProtocol<>(adsObserver, null, resourceType));
+        assertDoesNotThrow(() -> new XdsRawResourceProtocol<>(adsObserver, null, resourceType));
 
-        assertDoesNotThrow(() ->
-            new XdsRawResourceProtocol<>(adsObserver, node, null));
+        assertDoesNotThrow(() -> new XdsRawResourceProtocol<>(adsObserver, node, null));
     }
 
     @Test
@@ -289,7 +281,7 @@ class XdsRawResourceProtocolTest {
         when(differentResourceType.typeUrl()).thenReturn("type.googleapis.com/envoy.config.cluster.v3.Cluster");
 
         XdsRawResourceProtocol<LdsUpdate> differentProtocol =
-            new XdsRawResourceProtocol<>(adsObserver, node, differentResourceType);
+                new XdsRawResourceProtocol<>(adsObserver, node, differentResourceType);
 
         // Act
         String typeUrl = differentProtocol.getTypeUrl();
