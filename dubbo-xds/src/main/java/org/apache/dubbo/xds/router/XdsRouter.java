@@ -51,7 +51,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsRouter.class);
     private final XdsResourceFactory xdsResourceFactory = XdsResourceFactory.getInstance();
-    private static final String XDS_HASH_ATTACHMENT_KEY = "xds.hash";
 
     public XdsRouter(URL url) {
         super(url);
@@ -102,10 +101,9 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
 
         invocation.put("xds.route.action", action);
 
-        if (action.getTimeoutNano() != null) {
+        if (action.getTimeoutNano() != null && action.getTimeoutNano() > 0) {
             long timeoutMs = action.getTimeoutNano() / 1_000_000L;
             invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeoutMs));
-            logger.info("[XDS] Applied timeout: {}ms from RouteAction", timeoutMs);
         }
 
         if (route.getFilterConfigOverrides() != null) {
@@ -115,22 +113,10 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
                 FilterConfig filterConfig = entry.getValue();
                 invocation.setAttachment("xds.filter." + filterName, filterConfig);
             }
-            logger.debug(
-                    "[XDS] Applied filter config overrides: {}",
-                    route.getFilterConfigOverrides().keySet());
         }
 
         if (action.isAutoHostRewrite()) {
             invocation.setAttachment("xds.auto.host.rewrite", "true");
-            logger.debug("[XDS] Applied auto host rewrite");
-        }
-
-        if (action.getRetryPolicy() != null) {
-            int retries = Math.max(0, action.getRetryPolicy().getMaxAttempts() - 1);
-            invocation.setAttachment(RETRIES_KEY, String.valueOf(retries));
-            logger.info(
-                    "[XDS] Applied basic retry policy: {} retries (xDS retry logic will be handled by ClusterInvoker)",
-                    retries);
         }
     }
 
@@ -141,10 +127,8 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             RouteMatch routeMatch = route.getRouteMatch();
 
             if (matchRoute(routeMatch, path, invocation)) {
-                logger.debug("[XDS] Route matched: {}", route);
                 RouteAction action = route.getRouteAction();
                 if (action == null) {
-                    logger.warn("[XDS] Route has no action, skipping: {}", route);
                     continue;
                 }
 
@@ -155,7 +139,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
             }
         }
 
-        logger.warn("[XDS] No route matched for path: {}", path);
         return null;
     }
 
@@ -219,7 +202,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> {
         return invokerUrl.getParameter(headerName);
     }
 
-    // 需要确认集群名称的逻辑
     private String selectClusterFromAction(RouteAction action) {
         if (action.getCluster() != null) {
             String cluster = action.getCluster();

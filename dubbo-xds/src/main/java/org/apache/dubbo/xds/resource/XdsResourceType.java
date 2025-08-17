@@ -55,8 +55,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
     static boolean enableRouteLookup = getFlag("GRPC_EXPERIMENTAL_XDS_RLS_LB", true);
     static boolean enableLeastRequest = !StringUtils.isBlank(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST"))
             ? Boolean.parseBoolean(System.getenv("GRPC_EXPERIMENTAL_ENABLE_LEAST_REQUEST"))
-            : Boolean.parseBoolean(
-                    System.getProperty("io.grpc.xds.experimentalEnableLeastRequest", "true")); // 默认启用LEAST_REQUEST
+            : Boolean.parseBoolean(System.getProperty("io.grpc.xds.experimentalEnableLeastRequest", "true"));
 
     static boolean enableWrr = getFlag("GRPC_EXPERIMENTAL_XDS_WRR_LB", true);
     static boolean enablePickFirst = getFlag("GRPC_EXPERIMENTAL_PICKFIRST_LB_CONFIG", true);
@@ -154,7 +153,7 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
             T resourceUpdate;
             try {
                 resourceUpdate = doParse(args, unpackedMessage);
-            } catch (ResourceInvalidException e) {
+            } catch (Exception e) {
                 errors.add(String.format(
                         "%s response %s '%s' validation error: %s",
                         typeName(), unpackedClassName().getSimpleName(), cname, e.getMessage()));
@@ -162,9 +161,11 @@ public abstract class XdsResourceType<T extends ResourceUpdate> {
                 continue;
             }
 
-            // Resource parsed successfully.
-            parsedResources.put(cname, new ParsedResource<T>(resourceUpdate, resource));
+            if (resourceUpdate != null) {
+                parsedResources.put(cname, new ParsedResource<T>(resourceUpdate, resource));
+            }
         }
+
         return new ValidatedResourceUpdate<T>(parsedResources, unpackedResources, invalidResources, errors);
     }
 

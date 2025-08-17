@@ -53,10 +53,8 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
         RouteAction routeAction = (RouteAction) invocation.get("xds.route.action");
 
         if (routeAction != null && routeAction.getRetryPolicy() != null) {
-            logger.debug("[XDS] Using xDS retry policy for invocation: {}", routeAction.getRetryPolicy());
             return doInvokeWithXdsRetry(invocation, invokers, loadbalance, routeAction.getRetryPolicy());
         } else {
-            logger.debug("[XDS] Using standard Dubbo retry mechanism");
             return doSingleInvoke(invocation, invokers, loadbalance);
         }
     }
@@ -69,13 +67,6 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
         long initialBackoffMs = com.google.protobuf.util.Durations.toMillis(retryPolicy.getInitialBackoff());
         long maxBackoffMs = com.google.protobuf.util.Durations.toMillis(retryPolicy.getMaxBackoff());
 
-        logger.info(
-                "[XDS-TEST] Starting XDS retry logic: maxAttempts={}, initialBackoff={}ms, maxBackoff={}ms, retryableCodes={}",
-                maxAttempts,
-                initialBackoffMs,
-                maxBackoffMs,
-                retryPolicy.getRetryableStatusCodes());
-
         RpcException lastException = null;
         List<Invoker<T>> invoked = new ArrayList<>(invokers.size());
         Set<String> providers = new HashSet<>(maxAttempts);
@@ -85,21 +76,10 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
             invoked.add(invoker);
 
             try {
-                logger.info(
-                        "[XDS-RETRY] Attempt {}/{}: invoking {}",
-                        i + 1,
-                        maxAttempts,
-                        invoker.getUrl().getAddress());
                 Result result = invoker.invoke(invocation);
 
-                // 检查异步结果中的异常
                 if (result.hasException()) {
                     Throwable exception = result.getException();
-                    logger.info(
-                            "[XDS-RETRY] Attempt {}/{} has exception in result: {}",
-                            i + 1,
-                            maxAttempts,
-                            exception.getMessage());
 
                     if (exception instanceof RpcException) {
                         throw (RpcException) exception;
@@ -110,24 +90,14 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
                 return result;
             } catch (RpcException e) {
-                logger.info(
-                        "[XDS-RETRY] Attempt {}/{} failed: code={}, message={}, isBiz={}",
-                        i + 1,
-                        maxAttempts,
-                        e.getCode(),
-                        e.getMessage(),
-                        e.isBiz());
 
                 if (e.isBiz()) {
-                    logger.info("[XDS-RETRY] Business exception, not retrying");
                     throw e;
                 }
 
                 boolean isRetryable = isRetryableStatusCode(e, retryPolicy);
-                logger.info("[XDS-RETRY] Exception is retryable: {}", isRetryable);
 
                 if (!isRetryable) {
-                    logger.info("[XDS-RETRY] Exception not retryable, throwing");
                     throw e;
                 }
 
@@ -136,7 +106,6 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
                 if (i < maxAttempts - 1) {
                     long backoffMs = calculateBackoff(i, initialBackoffMs, maxBackoffMs);
-                    logger.info("[XDS-RETRY] Waiting {}ms before retry {}/{}", backoffMs, i + 2, maxAttempts);
                     try {
                         Thread.sleep(backoffMs);
                     } catch (InterruptedException ie) {
@@ -148,8 +117,6 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
 
             } catch (Throwable t) {
-                logger.info("[XDS-RETRY] Attempt {}/{} failed with Throwable: {}", i + 1, maxAttempts, t.getMessage());
-
                 RpcException rpcException;
                 if (t instanceof RpcException) {
                     rpcException = (RpcException) t;
@@ -158,7 +125,6 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
 
                 if (!isRetryableStatusCode(rpcException, retryPolicy)) {
-                    logger.info("[XDS-RETRY] Throwable not retryable, breaking");
                     lastException = rpcException;
                     providers.add(invoker.getUrl().getAddress());
                     break;
@@ -169,11 +135,6 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
                 if (i < maxAttempts - 1) {
                     long backoffMs = calculateBackoff(i, initialBackoffMs, maxBackoffMs);
-                    logger.info(
-                            "[XDS-RETRY] Waiting {}ms before retry {}/{} (from Throwable)",
-                            backoffMs,
-                            i + 2,
-                            maxAttempts);
                     try {
                         Thread.sleep(backoffMs);
                     } catch (InterruptedException ie) {
@@ -258,7 +219,6 @@ public class XdsClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 matches = false;
         }
 
-        logger.debug("[XDS-RETRY] Status code mapping: gRPC {} -> Dubbo {} -> matches: {}", code, e.getCode(), matches);
         return matches;
     }
 

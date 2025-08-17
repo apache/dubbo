@@ -72,23 +72,15 @@ public class AdsObserver {
     @SuppressWarnings("unchecked")
     public <T extends ResourceUpdate> void addListener(
             String resourceName, XdsResourceType<T> resourceType, XdsResourceListener<T> resourceListener) {
-        logger.info("[XDS] Adding listener for resource: {} of type: {}", resourceName, resourceType.typeName());
         ConcurrentMap<String, XdsRawResourceProtocol<?>> resourceListeners =
                 rawResourceListeners.computeIfAbsent(resourceType, k -> new ConcurrentHashMap<>());
-
         XdsRawResourceProtocol<T> xdsProtocol = (XdsRawResourceProtocol<T>) resourceListeners.computeIfAbsent(
                 resourceName, k -> new XdsRawResourceProtocol<>(this, node, resourceType));
-
         xdsProtocol.subscribeResource(resourceName, resourceType, resourceListener);
     }
 
     public void adjustResourceSubscription(XdsResourceType<?> resourceType) {
-        Set<String> resourcesToObserve = getResourcesToObserve(resourceType);
-        logger.info(
-                "[XDS] Adjusting resource subscription for type: {}, resources to observe: {}",
-                resourceType.typeName(),
-                resourcesToObserve);
-        this.request(buildDiscoveryRequest(resourceType, resourcesToObserve));
+        this.request(buildDiscoveryRequest(resourceType, getResourcesToObserve(resourceType)));
     }
 
     public Set<String> getResourcesToObserve(XdsResourceType<?> resourceType) {
@@ -103,7 +95,6 @@ public class AdsObserver {
 
     public <T extends ResourceUpdate> ValidatedResourceUpdate<T> process(
             XdsResourceType<T> resourceTypeInstance, DiscoveryResponse response) {
-
         ValidatedResourceUpdate<T> validatedResourceUpdate =
                 resourceTypeInstance.parse(XdsResourceType.xdsResourceTypeArgs, response.getResourcesList());
         if (!validatedResourceUpdate.getErrors().isEmpty()) {
@@ -188,20 +179,12 @@ public class AdsObserver {
 
         @Override
         public void onNext(DiscoveryResponse discoveryResponse) {
-            logger.info(
-                    "[XDS] Receive message from server - TypeUrl: {}, VersionInfo: {}, Nonce: {}, ResourcesCount: {}",
-                    discoveryResponse.getTypeUrl(),
-                    discoveryResponse.getVersionInfo(),
-                    discoveryResponse.getNonce(),
-                    discoveryResponse.getResourcesCount());
-
             try {
                 if (future != null) {
                     future.complete(null);
                 }
 
                 XdsResourceType<?> resourceType = fromTypeUrl(discoveryResponse.getTypeUrl());
-
                 if (resourceType == null) {
                     return;
                 }
@@ -210,8 +193,6 @@ public class AdsObserver {
                         adsObserver.process(resourceType, discoveryResponse);
 
                 adsObserver.requestObserver.onNext(buildAck(resourceType, discoveryResponse));
-                logger.info("[XDS] Successfully sent ACK for resource type: {}", resourceType.typeName());
-
             } catch (Throwable t) {
                 logger.error(
                         REGISTRY_ERROR_REQUEST_XDS,
@@ -220,13 +201,10 @@ public class AdsObserver {
                         "Error processing xDS response - TypeUrl: " + discoveryResponse.getTypeUrl() + ", Error: "
                                 + t.getMessage(),
                         t);
-                // Also print stack trace to standard error to ensure visibility
-                t.printStackTrace();
             }
         }
 
         protected DiscoveryRequest buildAck(XdsResourceType<?> resourceType, DiscoveryResponse response) {
-
             // for ACK
             return DiscoveryRequest.newBuilder()
                     .setNode(adsObserver.node)
@@ -240,8 +218,6 @@ public class AdsObserver {
         @Override
         public void onError(Throwable throwable) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", throwable);
-            // Also print stack trace to standard error to ensure visibility
-            throwable.printStackTrace();
             adsObserver.triggerReConnectTask();
         }
 
@@ -252,11 +228,7 @@ public class AdsObserver {
         }
 
         XdsResourceType<?> fromTypeUrl(String typeUrl) {
-            logger.info("[XDS] fromTypeUrl called with typeUrl: {}", typeUrl);
-            XdsResourceType<?> result = adsObserver.subscribedResourceTypeUrls.get(typeUrl);
-            logger.info("[XDS] fromTypeUrl result: {}", result != null ? result.typeName() : "NULL");
-            logger.info("[XDS] Available subscribed types: {}", adsObserver.subscribedResourceTypeUrls.keySet());
-            return result;
+            return adsObserver.subscribedResourceTypeUrls.get(typeUrl);
         }
     }
 

@@ -1,36 +1,34 @@
-# Retry configuration
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: dubbo-retry-test
+  name: dubbo-header-user-type-routing
   namespace: dubbo-proxyless
 spec:
   hosts:
   - dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
   http:
-  # Retry configuration for retry test scenario
   - match:
     - headers:
-        test-scenario:
-          exact: "retry-test"
-    timeout: 15s
-    retries:
-      attempts: 6
-      perTryTimeout: 2s
-      retryOn: "5xx,reset,connect-failure,refused-stream,deadline-exceeded,internal,resource-exhausted,unavailable,cancelled"
-      retryRemoteLocalities: true
+        user-type:
+          exact: "vip"
+    timeout: 10s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v2
+      weight: 100
+  - match:
+    - headers:
+        user-type:
+          exact: "normal"
+    timeout: 10s
     route:
     - destination:
         host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
         subset: v1
-      weight: 50
-    - destination:
-        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
-        subset: v2
-      weight: 50
-  # Default route for other requests
-  - timeout: 30s
-    route:
+      weight: 100
+  # Default route (no user-type header)
+  - route:
     - destination:
         host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
         subset: v1

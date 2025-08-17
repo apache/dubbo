@@ -69,7 +69,7 @@ import io.grpc.Status;
 public class XdsRouteConfigureResource extends XdsResourceType<RdsUpdate> {
 
     private static final String ADS_TYPE_URL_RDS = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
-    private static final String TYPE_URL_FILTER_CONFIG = "type.googleapis.com/envoy.config.route.v3.FilterConfig";
+    public static final String TYPE_URL_FILTER_CONFIG = "type.googleapis.com/envoy.config.route.v3.FilterConfig";
     // TODO(zdapeng): need to discuss how to handle unsupported values.
     private static final Set<Status.Code> SUPPORTED_RETRYABLE_CODES = Collections.unmodifiableSet(EnumSet.of(
             Status.Code.CANCELLED,

@@ -2,14 +2,14 @@
 
 set -e
 
-# 颜色定义
+# Color definitions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 打印带颜色的信息
+# Print colored information
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -26,62 +26,62 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 清理现有部署
+# Clean up existing deployments
 cleanup_existing_deployments() {
-    print_info "清理现有的Dubbo部署..."
+    print_info "Cleaning up existing Dubbo deployments..."
     
-    # 删除现有的deployments
-    print_info "删除现有的deployments..."
+    # Delete existing deployments
+    print_info "Deleting existing deployments..."
     kubectl delete deployment dubbo-demo-xds-provider -n dubbo-proxyless --ignore-not-found=true
     kubectl delete deployment dubbo-demo-xds-provider-v1 -n dubbo-proxyless --ignore-not-found=true
     kubectl delete deployment dubbo-demo-xds-provider-v2 -n dubbo-proxyless --ignore-not-found=true
     kubectl delete deployment dubbo-demo-xds-consumer -n dubbo-proxyless --ignore-not-found=true
     
-    # 删除现有的services
-    print_info "删除现有的services..."
+    # Delete existing services
+    print_info "Deleting existing services..."
     kubectl delete service dubbo-demo-xds-provider -n dubbo-proxyless --ignore-not-found=true
     kubectl delete service dubbo-demo-xds-provider-v1 -n dubbo-proxyless --ignore-not-found=true
     kubectl delete service dubbo-demo-xds-provider-v2 -n dubbo-proxyless --ignore-not-found=true
     kubectl delete service dubbo-demo-xds-consumer -n dubbo-proxyless --ignore-not-found=true
     
-    # 删除现有的VirtualService和DestinationRule
-    print_info "删除现有的Istio配置..."
+    # Delete existing VirtualService and DestinationRule
+    print_info "Deleting existing Istio configurations..."
     kubectl delete virtualservice dubbo-demo-xds-provider -n dubbo-proxyless --ignore-not-found=true
     kubectl delete destinationrule dubbo-demo-xds-provider -n dubbo-proxyless --ignore-not-found=true
     
-    # 等待Pod完全删除
-    print_info "等待Pod完全删除..."
+    # Wait for Pods to be completely deleted
+    print_info "Waiting for Pods to be completely deleted..."
     kubectl wait --for=delete pods -l app=dubbo-demo-xds-provider -n dubbo-proxyless --timeout=120s || true
     kubectl wait --for=delete pods -l app=dubbo-demo-xds-consumer -n dubbo-proxyless --timeout=120s || true
     
-    print_success "清理完成"
+    print_success "Cleanup completed"
 }
 
-# 检查清理结果
+# Check cleanup results
 check_cleanup_status() {
-    print_info "检查清理状态..."
+    print_info "Checking cleanup status..."
     
-    # 检查是否还有相关的Pod
+    # Check if there are still related Pods
     REMAINING_PODS=$(kubectl get pods -n dubbo-proxyless -l app=dubbo-demo-xds-provider -o name 2>/dev/null | wc -l)
     REMAINING_CONSUMER_PODS=$(kubectl get pods -n dubbo-proxyless -l app=dubbo-demo-xds-consumer -o name 2>/dev/null | wc -l)
     
     if [ "$REMAINING_PODS" -eq 0 ] && [ "$REMAINING_CONSUMER_PODS" -eq 0 ]; then
-        print_success "所有相关Pod已删除"
+        print_success "All related Pods have been deleted"
     else
-        print_warning "仍有 $REMAINING_PODS 个Provider Pod和 $REMAINING_CONSUMER_PODS 个Consumer Pod存在"
-        print_info "当前Pod状态:"
+        print_warning "There are still $REMAINING_PODS Provider Pods and $REMAINING_CONSUMER_PODS Consumer Pods remaining"
+        print_info "Current Pod status:"
         kubectl get pods -n dubbo-proxyless -o wide
     fi
 }
 
-# 主函数
+# Main function
 main() {
     echo "=========================================="
-    echo "    Dubbo 部署清理脚本"
+    echo "    Dubbo Deployment Cleanup Script"
     echo "=========================================="
     echo
     
-    print_info "当前Pod状态:"
+    print_info "Current Pod status:"
     kubectl get pods -n dubbo-proxyless -o wide
     echo
     
@@ -91,13 +91,13 @@ main() {
     check_cleanup_status
     echo
     
-    print_success "清理完成！现在可以重新部署了。"
+    print_success "Cleanup completed! You can now redeploy."
     echo
-    print_info "重新部署命令:"
-    echo "  ./deploy-provider.sh   # 部署Provider"
-    echo "  ./deploy-consumer.sh   # 部署Consumer"
-    echo "  ./deploy-all.sh        # 一键部署所有组件"
+    print_info "Redeployment commands:"
+    echo "  ./deploy-provider.sh   # Deploy Provider"
+    echo "  ./deploy-consumer.sh   # Deploy Consumer"
+    echo "  ./deploy-all.sh        # Deploy all components with one click"
 }
 
-# 执行主函数
-main "$@" 
+# Execute main function
+main "$@"

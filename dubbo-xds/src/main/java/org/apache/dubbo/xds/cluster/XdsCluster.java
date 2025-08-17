@@ -23,8 +23,6 @@ import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
 
 public class XdsCluster extends AbstractCluster {
 
-    public static final String NAME = "xds";
-
     @Override
     protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new XdsClusterInvoker<>(directory);
