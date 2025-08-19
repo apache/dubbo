@@ -57,7 +57,7 @@ import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_LOAD_MAPPING_CACHE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.METADATA_SERVER_DISCONNECTED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
@@ -127,7 +127,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                 succeeded = doMapping(metadataReport, url);
             } catch (Exception e) {
                 logger.warn(
-                        METADATA_SERVER_DISCONNECTED,
+                        CONFIG_SERVER_DISCONNECTED,
                         e.getMessage(),
                         "service: " + serviceInterface + ", metadata-center url: " + metadataReport.getUrl(),
                         "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] Failed registering mapping to remote."
@@ -229,7 +229,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                 MetadataReport metadataReport = entry.getKey();
                 if (!metadataReport.isAvailable()) {
                     logger.warn(
-                            METADATA_SERVER_DISCONNECTED,
+                            CONFIG_SERVER_DISCONNECTED,
                             "connect is not available",
                             "metadata-center url: " + metadataReport.getUrl(),
                             "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] Retry Failed.");
@@ -241,7 +241,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                         AbstractServiceNameMapping.this.doMapping(metadataReport, url);
                     } catch (Throwable e) {
                         logger.warn(
-                                METADATA_SERVER_DISCONNECTED,
+                                CONFIG_SERVER_DISCONNECTED,
                                 e.getMessage(),
                                 "service url: " + url + ", metadata-center url: " + metadataReport.getUrl(),
                                 "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] Retry Failed. Add Retry Task.",
