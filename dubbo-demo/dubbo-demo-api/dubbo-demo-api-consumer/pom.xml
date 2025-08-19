@@ -48,6 +48,16 @@
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-configcenter-zookeeper</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-metadata-report-zookeeper</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-rpc-dubbo</artifactId>
       <version>${project.version}</version>
     </dependency>
