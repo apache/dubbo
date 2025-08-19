@@ -106,7 +106,8 @@ public class TripleCustomerProtocolWrapper {
                 int fieldNum = extractFieldNumFromTag(tag);
                 int wireType = extractWireTypeFromTag(tag);
                 if (wireType != 2) {
-                    throw new RuntimeException(String.format("unexpect wireType, expect %d realType %d", 2, wireType));
+                    throw new RuntimeException(
+                            String.format("unexpected wireType, expect %d realType %d", 2, wireType));
                 }
                 if (fieldNum == 1) {
                     int serializeTypeLength = readRawVarint32(byteBuffer);
@@ -237,7 +238,8 @@ public class TripleCustomerProtocolWrapper {
                 int fieldNum = extractFieldNumFromTag(tag);
                 int wireType = extractWireTypeFromTag(tag);
                 if (wireType != 2) {
-                    throw new RuntimeException(String.format("unexpect wireType, expect %d realType %d", 2, wireType));
+                    throw new RuntimeException(
+                            String.format("unexpected wireType, expect %d realType %d", 2, wireType));
                 }
                 if (fieldNum == 1) {
                     int serializeTypeLength = readRawVarint32(byteBuffer);

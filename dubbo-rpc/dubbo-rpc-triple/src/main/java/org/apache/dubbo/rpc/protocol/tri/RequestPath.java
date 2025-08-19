@@ -30,7 +30,7 @@ public final class RequestPath {
         this.methodName = methodName;
     }
 
-    // Request path patten:
+    // Request path pattern:
     //     '{interfaceName}/{methodName}' or '{contextPath}/{interfaceName}/{methodName}'
     //      └─── path ────┘ └─ method ─┘      └────────── path ───────────┘ └─ method ─┘
     public static RequestPath parse(String fullPath) {
