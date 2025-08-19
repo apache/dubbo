@@ -1,2 +1,0 @@
-grpc=org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcRequestHandlerMapping
-rest=org.apache.dubbo.rpc.protocol.tri.rest.mapping.RestRequestHandlerMapping

@@ -1,3 +1,0 @@
-http-context=org.apache.dubbo.rpc.protocol.tri.h12.HttpContextFilter
-http-context-callback=org.apache.dubbo.rpc.protocol.tri.h12.HttpContextCallbackFilter
-rest-extension=org.apache.dubbo.rpc.protocol.tri.rest.filter.RestExtensionExecutionFilter

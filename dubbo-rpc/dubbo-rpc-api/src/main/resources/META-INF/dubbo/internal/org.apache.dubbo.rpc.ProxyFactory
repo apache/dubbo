@@ -1,4 +1,0 @@
-stub=org.apache.dubbo.rpc.proxy.wrapper.StubProxyFactoryWrapper
-jdk=org.apache.dubbo.rpc.proxy.jdk.JdkProxyFactory
-javassist=org.apache.dubbo.rpc.proxy.javassist.JavassistProxyFactory
-nativestub=org.apache.dubbo.rpc.stub.StubProxyFactory

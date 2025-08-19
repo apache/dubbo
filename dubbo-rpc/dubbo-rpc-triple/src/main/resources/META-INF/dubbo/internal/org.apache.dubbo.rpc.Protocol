@@ -1,3 +1,0 @@
-tri=org.apache.dubbo.rpc.protocol.tri.TripleProtocol
-grpc=org.apache.dubbo.rpc.protocol.tri.GrpcProtocol
-rest2=org.apache.dubbo.rpc.protocol.tri.RestProtocol
