@@ -430,6 +430,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
         logger.info("[INSTANCE_REGISTER] [METADATA_REGISTER] Try to register interface application mapping for service "
                 + url.getServiceKey());
+        try {
+            serviceNameMapping.mapping(url);
+            return;
+        } catch (UnsupportedOperationException ignore) {
+        }
         boolean succeeded = false;
         try {
             succeeded = serviceNameMapping.map(url);

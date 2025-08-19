@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.data.Stat;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
@@ -68,23 +67,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
                 new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperClientManager.connect(url);
-        boolean isConnected = zkClient.isConnected();
-        if (!isConnected) {
-
-            IllegalStateException illegalStateException = new IllegalStateException(
-                    "Failed to connect with zookeeper, pls check if url " + url + " is correct.");
-
-            if (logger != null) {
-                logger.error(
-                        CONFIG_FAILED_CONNECT_REGISTRY,
-                        "configuration server offline",
-                        "",
-                        "Failed to connect with zookeeper",
-                        illegalStateException);
-            }
-
-            throw illegalStateException;
-        }
     }
 
     /**
@@ -173,5 +155,10 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         if (zookeeperDataListener != null && CollectionUtils.isEmpty(zookeeperDataListener.getListeners())) {
             zkClient.removeDataListener(pathKey, zookeeperDataListener);
         }
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return zkClient != null && zkClient.isConnected();
     }
 }

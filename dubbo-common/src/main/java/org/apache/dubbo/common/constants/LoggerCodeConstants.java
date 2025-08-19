@@ -335,6 +335,8 @@ public interface LoggerCodeConstants {
 
     String CONFIG_FAILED_NOTIFY_EVENT = "5-18";
 
+    String METADATA_SERVER_DISCONNECTED = "5-19";
+
     /**
      * Absent. Changed to 81-4.
      */

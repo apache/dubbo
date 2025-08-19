@@ -18,7 +18,7 @@ package org.apache.dubbo.registry.zookeeper.util;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.RegistryFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
@@ -118,7 +118,7 @@ public abstract class CuratorFrameworkUtils {
             throw new IllegalStateException("zookeeper client initialization failed");
         }
 
-        boolean check = RegistryFactory.isCheck(connectionURL);
+        boolean check = UrlUtils.isCheck(connectionURL);
         if (check && !curatorFramework.getZookeeperClient().isConnected()) {
             throw new IllegalStateException("failed to connect to zookeeper server");
         }

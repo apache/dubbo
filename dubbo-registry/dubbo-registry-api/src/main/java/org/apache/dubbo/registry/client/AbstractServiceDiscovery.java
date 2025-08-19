@@ -167,7 +167,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (revisionUpdated) {
             try {
                 reportMetadata(this.metadataInfo);
+                if (!isAvailable()) {
+                    throw new IllegalStateException("Service Discovery Connection is not Available");
+                }
                 doRegister(this.serviceInstance);
+                this.serviceInstance.setRegistered(true);
             } catch (Exception e) {
                 this.serviceInstance = null;
                 throw e;
@@ -201,8 +205,21 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             logger.info(String.format(
                     "Metadata of instance changed, updating instance with revision %s.",
                     newServiceInstance.getServiceMetadata().getRevision()));
+            this.metadataInfo.setReported(false);
             doUpdate(oldServiceInstance, newServiceInstance);
+            newServiceInstance.setRegistered(true);
             this.serviceInstance = newServiceInstance;
+        } else {
+            if (!this.metadataInfo.isReported()) {
+                reportMetadata(this.metadataInfo);
+            }
+            if (this.metadataInfo.isReported() && !this.serviceInstance.isRegistered()) {
+                if (!isAvailable()) {
+                    throw new IllegalStateException("Service Discovery Connection is not Available");
+                }
+                doRegister(this.serviceInstance);
+                this.serviceInstance.setRegistered(true);
+            }
         }
     }
 
@@ -217,6 +234,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         doUnregister(this.serviceInstance);
+        this.serviceInstance.setRegistered(false);
     }
 
     @Override
@@ -266,6 +284,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                     metadata.init();
                     break;
                 } else { // failed
+                    if (!metadataReport.isAvailable()) {
+                        break;
+                    }
                     if (triedTimes > 0) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Retry the " + triedTimes + " times to get metadata for revision=" + revision);
@@ -388,7 +409,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     protected void reportMetadata(MetadataInfo metadataInfo) {
-        if (metadataInfo == null) {
+        if (metadataInfo == null || metadataInfo.isReported()) {
             return;
         }
         if (metadataReport != null) {
@@ -397,7 +418,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata())
                     || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 MetricsEventBus.post(MetadataEvent.toPushEvent(applicationModel), () -> {
+                    if (!metadataReport.isAvailable()) {
+                        throw new IllegalStateException("metadata report is not available");
+                    }
                     metadataReport.publishAppMetadata(identifier, metadataInfo);
+                    metadataInfo.setReported(true);
                     return null;
                 });
             }

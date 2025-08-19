@@ -74,4 +74,14 @@ public class NopMetadataReport implements MetadataReport {
     public boolean shouldReportMetadata() {
         return false;
     }
+
+    @Override
+    public URL getUrl() {
+        return null;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return false;
+    }
 }

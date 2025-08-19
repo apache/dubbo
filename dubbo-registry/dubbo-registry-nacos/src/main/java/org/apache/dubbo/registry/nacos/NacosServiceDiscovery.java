@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -243,5 +245,12 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                 .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                 .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+    }
+
+    @Override
+    public boolean isAvailable() {
+        Optional<String> status = Optional.ofNullable(namingService).map(NacosNamingServiceWrapper::getServerStatus);
+        boolean isConnected = status.isPresent() && UP.equals(status.get());
+        return !isDestroy() && isConnected; // && CollectionUtils.isNotEmpty(getServices());
     }
 }

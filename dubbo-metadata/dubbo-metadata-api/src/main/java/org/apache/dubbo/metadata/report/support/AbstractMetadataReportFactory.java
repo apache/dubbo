@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
 import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
@@ -65,20 +64,13 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             if (metadataReport != null) {
                 return metadataReport;
             }
-            boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
             try {
                 metadataReport = createMetadataReport(url);
             } catch (Exception e) {
-                if (!check) {
-                    logger.warn(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
-                } else {
-                    throw e;
-                }
+                logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
+                throw new IllegalStateException("Can not create metadata Report " + url, e);
             }
 
-            if (check && metadataReport == null) {
-                throw new IllegalStateException("Can not create metadata Report " + url);
-            }
             if (metadataReport != null) {
                 serviceStoreMap.put(key, metadataReport);
             }

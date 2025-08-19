@@ -79,6 +79,7 @@ public class MetadataInfo implements Serializable {
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
     private transient ExtensionLoader<MetadataParamsFilter> loader;
+    private transient volatile boolean reported = false;
 
     public MetadataInfo() {
         this(null);
@@ -378,6 +379,14 @@ public class MetadataInfo implements Serializable {
 
     private SortedSet<URL> newSortedURLs(String serviceKey) {
         return new TreeSet<>(URLComparator.INSTANCE);
+    }
+
+    public boolean isReported() {
+        return this.reported;
+    }
+
+    public void setReported(boolean reported) {
+        this.reported = reported;
     }
 
     @Override

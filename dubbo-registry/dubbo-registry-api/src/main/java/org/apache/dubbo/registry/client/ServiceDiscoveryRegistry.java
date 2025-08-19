@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -197,6 +198,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
+        removeFailedSubscribed(url, listener);
         url = addRegistryClusterKey(url);
 
         serviceDiscovery.subscribe(url, listener);
@@ -239,6 +241,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     //                    throw new IllegalStateException("Should has at least one way to know which
                     // services this interface belongs to, subscription url: " + url);
                     //                }
+                    if (!UrlUtils.isCheck(url)) {
+                        logger.info("retry mapping listener");
+                        addFailedSubscribed(url, listener);
+                    }
                     return;
                 }
             } finally {
@@ -339,6 +345,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
+        removeFailedSubscribed(url, listener);
         serviceNames = toTreeSet(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
         String serviceKey = url.getServiceKey();
@@ -380,6 +387,13 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);
+            }
+        } catch (Exception e) {
+            if (UrlUtils.isCheck(url)) {
+                throw e;
+            } else {
+                logger.info("retry service discovery subscribe");
+                addFailedSubscribed(url, listener);
             }
         } finally {
             appSubscriptionLock.unlock();

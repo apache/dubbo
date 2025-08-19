@@ -93,6 +93,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
@@ -488,6 +489,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             cc.setTimeout(registryConfig.getTimeout().longValue());
         }
         cc.setHighestPriority(false);
+        // use registry check option
+        if (Boolean.FALSE == registryConfig.isCheck()
+                || !Boolean.parseBoolean(cc.getParameters().getOrDefault(CHECK_KEY, "true"))) {
+            cc.setCheck(false);
+        }
         return cc;
     }
 
@@ -642,6 +648,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         if (metadataReportConfig.getTimeout() == null) {
             metadataReportConfig.setTimeout(registryConfig.getTimeout());
+        }
+        // use registry check option
+        if (Boolean.FALSE == registryConfig.isCheck()
+                || !Boolean.parseBoolean(metadataReportConfig.getParameters().getOrDefault(CHECK_KEY, "true"))) {
+            metadataReportConfig.setCheck(false);
         }
         return metadataReportConfig;
     }
@@ -890,19 +901,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             DynamicConfiguration dynamicConfiguration;
             try {
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            } catch (Exception e) {
-                if (!configCenter.isCheck()) {
+                if (!dynamicConfiguration.isAvailable()) {
                     logger.warn(
-                            CONFIG_FAILED_INIT_CONFIG_CENTER,
-                            "",
-                            "",
-                            "The configuration center failed to initialize",
-                            e);
-                    configCenter.setInitialized(false);
-                    return null;
-                } else {
-                    throw new IllegalStateException(e);
+                            CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize");
+                    if (!configCenter.isCheck()) {
+                        configCenter.setInitialized(true);
+                        // TODO should it `updateExternalConfigMap` when the connection recovery
+                        return dynamicConfiguration;
+                    }
                 }
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
             }
             ApplicationModel applicationModel = getApplicationModel();
 

@@ -49,6 +49,10 @@ public interface ServiceNameMapping extends Destroyable {
      */
     boolean map(URL url);
 
+    default void mapping(URL url) {
+        throw new UnsupportedOperationException("No instance method");
+    }
+
     boolean hasValidMetadataCenter();
 
     /**
