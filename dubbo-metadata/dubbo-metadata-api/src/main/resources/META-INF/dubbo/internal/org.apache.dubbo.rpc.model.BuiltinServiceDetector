@@ -1,2 +1,0 @@
-metadata=org.apache.dubbo.metadata.MetadataServiceDetector
-metadataV2=org.apache.dubbo.metadata.MetadataServiceV2Detector
