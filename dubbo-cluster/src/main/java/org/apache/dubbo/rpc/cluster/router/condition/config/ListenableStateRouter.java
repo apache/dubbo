@@ -58,7 +58,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     private volatile AbstractRouterRule routerRule;
     private volatile List<ConditionStateRouter<T>> conditionRouters = Collections.emptyList();
 
-    //    for v3.1
+    // for v3.1
     private volatile List<MultiDestConditionRouter<T>> multiDestConditionRouters = Collections.emptyList();
     private final String ruleKey;
 
@@ -79,7 +79,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             routerRule = null;
             conditionRouters = Collections.emptyList();
-            //          for v3.1
+            // for v3.1
             multiDestConditionRouters = Collections.emptyList();
         } else {
             try {

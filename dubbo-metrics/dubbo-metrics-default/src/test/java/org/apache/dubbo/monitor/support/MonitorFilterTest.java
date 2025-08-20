@@ -55,9 +55,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-/**
- * MonitorFilterTest
- */
 class MonitorFilterTest {
 
     private volatile URL lastStatistics;

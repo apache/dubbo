@@ -42,9 +42,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 
-/**
- * AbstractConfiguratorListener
- */
 public abstract class AbstractConfiguratorListener implements ConfigurationListener {
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(AbstractConfiguratorListener.class);

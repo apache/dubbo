@@ -24,8 +24,6 @@ import java.util.List;
 /**
  * An {@link ArtifactsFilter} that filters out any artifact not matching an
  * {@link Include}.
- *
- * @author David Turanski
  */
 public class IncludeFilter extends DependencyFilter {
 

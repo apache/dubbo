@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit test for nacos config center support
  */
-// FIXME: waiting for embedded Nacos suport, then we can open the switch.
+// FIXME: waiting for embedded Nacos support, then we can open the switch.
 @Disabled("https://github.com/alibaba/nacos/issues/1188")
 class NacosDynamicConfigurationTest {
     private static final Logger logger = LoggerFactory.getLogger(NacosDynamicConfigurationTest.class);

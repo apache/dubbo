@@ -448,7 +448,7 @@
         </xsd:attribute>
         <xsd:attribute name="metadata-type" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The metadta type: local or remote. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The metadata type: local or remote. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="register-consumer" type="xsd:boolean">
@@ -727,7 +727,7 @@
         </xsd:attribute>
         <xsd:attribute name="file" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The registry adddress file store. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The registry address file store. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="wait" type="xsd:string">

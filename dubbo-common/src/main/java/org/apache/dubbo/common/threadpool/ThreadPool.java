@@ -25,9 +25,6 @@ import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
-/**
- * ThreadPool
- */
 // TODO which scope for ThreadPool? APPLICATION or FRAMEWORK
 @SPI(value = "fixed", scope = ExtensionScope.FRAMEWORK)
 public interface ThreadPool {

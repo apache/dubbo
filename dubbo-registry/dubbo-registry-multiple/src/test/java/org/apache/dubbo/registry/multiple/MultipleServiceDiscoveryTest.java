@@ -51,9 +51,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-/**
- * MultipleServiceDiscoveryTest
- */
 public class MultipleServiceDiscoveryTest {
 
     private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;

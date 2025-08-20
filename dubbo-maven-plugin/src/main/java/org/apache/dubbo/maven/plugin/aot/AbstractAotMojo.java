@@ -47,9 +47,6 @@ import java.util.stream.Stream;
 
 /**
  * Abstract base class for AOT processing MOJOs.
- *
- * @author Phillip Webb
- * @author Scott Frederick
  */
 public abstract class AbstractAotMojo extends AbstractDependencyFilterMojo {
 

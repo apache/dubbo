@@ -24,9 +24,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- * ExchangeHandlerAdapter
- */
 public abstract class ExchangeHandlerAdapter extends TelnetHandlerAdapter implements ExchangeHandler {
     public ExchangeHandlerAdapter(FrameworkModel frameworkModel) {
         super(frameworkModel);

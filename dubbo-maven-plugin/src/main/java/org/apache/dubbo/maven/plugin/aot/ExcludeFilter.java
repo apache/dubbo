@@ -23,9 +23,6 @@ import java.util.List;
 
 /**
  * An {DependencyFilter} that filters out any artifact matching an {@link Exclude}.
- *
- * @author Stephane Nicoll
- * @author David Turanski
  */
 public class ExcludeFilter extends DependencyFilter {
 

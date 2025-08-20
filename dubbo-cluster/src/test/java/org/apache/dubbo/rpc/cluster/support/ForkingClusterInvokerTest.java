@@ -37,9 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-/**
- * ForkingClusterInvokerTest
- */
 @SuppressWarnings("unchecked")
 class ForkingClusterInvokerTest {
 

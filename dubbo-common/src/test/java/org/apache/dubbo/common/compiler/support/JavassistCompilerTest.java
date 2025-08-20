@@ -30,7 +30,7 @@ class JavassistCompilerTest extends JavaCodeTest {
         Class<?> clazz =
                 compiler.compile(JavaCodeTest.class, getSimpleCode(), JavassistCompiler.class.getClassLoader());
 
-        // Because javassist compiles using the caller class loader, we should't use HelloService directly
+        // Because javassist compiles using the caller class loader, we shouldn't use HelloService directly
         Object instance = clazz.getDeclaredConstructor().newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));

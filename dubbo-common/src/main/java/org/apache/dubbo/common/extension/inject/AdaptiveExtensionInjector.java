@@ -27,9 +27,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-/**
- * AdaptiveExtensionInjector
- */
 @Adaptive
 public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
 

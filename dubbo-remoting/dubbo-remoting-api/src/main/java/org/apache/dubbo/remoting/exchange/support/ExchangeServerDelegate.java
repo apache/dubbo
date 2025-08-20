@@ -26,9 +26,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
-/**
- * ExchangeServerDelegate
- */
 public class ExchangeServerDelegate implements ExchangeServer {
 
     private transient ExchangeServer server;

@@ -40,9 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
-/**
- * PageServlet
- */
 public class PageServlet extends HttpServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(PageServlet.class);

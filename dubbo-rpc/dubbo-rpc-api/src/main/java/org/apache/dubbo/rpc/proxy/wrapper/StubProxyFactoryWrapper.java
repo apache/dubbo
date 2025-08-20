@@ -43,9 +43,6 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
 import static org.apache.dubbo.rpc.Constants.STUB_EVENT_METHODS_KEY;
 import static org.apache.dubbo.rpc.Constants.STUB_KEY;
 
-/**
- * StubProxyFactoryWrapper
- */
 public class StubProxyFactoryWrapper implements ProxyFactory {
 
     private static final ErrorTypeAwareLogger LOGGER =
