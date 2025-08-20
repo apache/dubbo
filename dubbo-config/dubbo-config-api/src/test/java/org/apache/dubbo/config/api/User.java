@@ -18,9 +18,6 @@ package org.apache.dubbo.config.api;
 
 import java.io.Serializable;
 
-/**
- * User
- */
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;

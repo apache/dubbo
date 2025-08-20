@@ -18,8 +18,6 @@ package org.apache.dubbo.maven.plugin.aot;
 
 /**
  * A model for a dependency to include.
- *
- * @author David Turanski
  */
 public class Include extends FilterableDependency {
 

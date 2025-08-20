@@ -27,9 +27,6 @@ import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.container.page.PageServlet;
 
-/**
- * HomePageHandler
- */
 @Menu(name = "Home", desc = "Home page.", order = Integer.MIN_VALUE)
 public class HomePageHandler implements PageHandler {
 

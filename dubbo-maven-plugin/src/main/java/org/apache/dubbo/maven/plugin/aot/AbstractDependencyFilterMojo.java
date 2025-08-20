@@ -38,9 +38,6 @@ import java.util.StringTokenizer;
 
 /**
  * A base mojo filtering the dependencies of the project.
- *
- * @author Stephane Nicoll
- * @author David Turanski
  */
 public abstract class AbstractDependencyFilterMojo extends AbstractMojo {
 

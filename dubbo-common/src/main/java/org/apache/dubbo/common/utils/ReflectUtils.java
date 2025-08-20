@@ -56,9 +56,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
-/**
- * ReflectUtils
- */
 public final class ReflectUtils {
 
     /**
@@ -901,22 +898,22 @@ public final class ReflectUtils {
             throws NoSuchMethodException, ClassNotFoundException {
         Method method;
         if (parameterTypes == null) {
-            List<Method> finded = new ArrayList<>();
+            List<Method> found = new ArrayList<>();
             for (Method m : clazz.getMethods()) {
                 if (m.getName().equals(methodName)) {
-                    finded.add(m);
+                    found.add(m);
                 }
             }
-            if (finded.isEmpty()) {
+            if (found.isEmpty()) {
                 throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
             }
-            if (finded.size() > 1) {
+            if (found.size() > 1) {
                 String msg = String.format(
                         "Not unique method for method name(%s) in class(%s), find %d methods.",
-                        methodName, clazz.getName(), finded.size());
+                        methodName, clazz.getName(), found.size());
                 throw new IllegalStateException(msg);
             }
-            method = finded.get(0);
+            method = found.get(0);
         } else {
             Class<?>[] types = new Class<?>[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i++) {

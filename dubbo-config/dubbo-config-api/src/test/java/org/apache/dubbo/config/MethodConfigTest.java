@@ -61,7 +61,7 @@ class MethodConfigTest {
     private static final boolean ASYNC = true;
     private static final int ACTIVES = 3;
     private static final int EXECUTES = 5;
-    private static final boolean DEPERECATED = true;
+    private static final boolean DEPRECATED = true;
     private static final boolean STICKY = true;
     private static final String ONINVOKE = "invokeNotify";
     private static final String ONINVOKE_METHOD = "onInvoke";
@@ -85,7 +85,7 @@ class MethodConfigTest {
                         async = ASYNC,
                         actives = ACTIVES,
                         executes = EXECUTES,
-                        deprecated = DEPERECATED,
+                        deprecated = DEPRECATED,
                         sticky = STICKY,
                         oninvoke = ONINVOKE + "." + ONINVOKE_METHOD,
                         onthrow = ONTHROW + "." + ONTHROW_METHOD,
@@ -125,7 +125,7 @@ class MethodConfigTest {
         assertThat(ASYNC, equalTo(methodConfig.isAsync()));
         assertThat(ACTIVES, equalTo(methodConfig.getActives()));
         assertThat(EXECUTES, equalTo(methodConfig.getExecutes()));
-        assertThat(DEPERECATED, equalTo(methodConfig.getDeprecated()));
+        assertThat(DEPRECATED, equalTo(methodConfig.getDeprecated()));
         assertThat(STICKY, equalTo(methodConfig.getSticky()));
         assertThat(ONINVOKE, equalTo(methodConfig.getOninvoke()));
         assertThat(ONINVOKE_METHOD, equalTo(methodConfig.getOninvokeMethod()));

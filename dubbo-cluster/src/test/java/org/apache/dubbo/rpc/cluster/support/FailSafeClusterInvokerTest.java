@@ -82,7 +82,7 @@ class FailSafeClusterInvokerTest {
 
     // TODO assert error log
     @Test
-    void testInvokeExceptoin() {
+    void testInvokeException() {
         resetInvokerToException();
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
         invoker.invoke(invocation);
@@ -90,8 +90,7 @@ class FailSafeClusterInvokerTest {
     }
 
     @Test
-    void testInvokeNoExceptoin() {
-
+    void testInvokeNoException() {
         resetInvokerToNoException();
 
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
