@@ -1,0 +1,12 @@
+1,35,org.apache.dubbo.config.ConfigCenterConfigTest,testPrefix
+1,36,org.apache.dubbo.config.ConfigCenterConfigTest,testSetAddress
+1,37,org.apache.dubbo.config.ConfigCenterConfigTest,testMetaData
+1,48,org.apache.dubbo.config.ConfigCenterConfigTest,testParameters
+1,55,org.apache.dubbo.config.ConfigCenterConfigTest,testAttributes
+1,57,org.apache.dubbo.config.ConfigCenterConfigTest,testOverrideConfigBySystemProps
+1,59,org.apache.dubbo.config.ConfigCenterConfigTest,testOverrideConfigBySystemPropsWithId
+1,61,org.apache.dubbo.config.ConfigCenterConfigTest,testOverrideConfigByDubboProps
+1,71,org.apache.dubbo.config.ConfigCenterConfigTest,testToUrl
+1,102,org.apache.dubbo.config.ConfigCenterConfigTest,testOverrideConfigByDubboPropsWithId
+1,16670,org.apache.dubbo.config.ConfigCenterConfigTest,testOverrideConfig2
+1,30216,org.apache.dubbo.config.ConfigCenterConfigTest,testOverrideConfig

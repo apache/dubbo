@@ -146,9 +146,9 @@
     <spotless.action>check</spotless.action>
 
     <!-- Test execution configuration -->
-    <test.forkCount>1</test.forkCount>
+    <test.forkCount>2C</test.forkCount>
     <test.parallel>classes</test.parallel>
-    <test.threadCount>2</test.threadCount>
+    <test.threadCount>4</test.threadCount>
     <test.forkedProcessTimeoutInSeconds>1200</test.forkedProcessTimeoutInSeconds>
 
     <!-- Maven plugins -->

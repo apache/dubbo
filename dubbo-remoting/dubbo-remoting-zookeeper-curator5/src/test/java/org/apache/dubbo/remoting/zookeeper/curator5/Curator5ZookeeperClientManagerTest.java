@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,7 +38,10 @@ class Curator5ZookeeperClientManagerTest {
 
     @BeforeAll
     public static void beforeAll() {
-        zookeeperConnectionAddress1 = "zookeeper://127.0.0.1:2181";
+        // Use dynamic port allocation to avoid conflicts in parallel testing
+        String identifier = "Curator5ZookeeperClientManagerTest_" + System.currentTimeMillis();
+        int port = NetUtils.getReservedPortForTest(identifier);
+        zookeeperConnectionAddress1 = "zookeeper://127.0.0.1:" + port;
         Curator5ZookeeperClient mockCurator5ZookeeperClient = mock(Curator5ZookeeperClient.class);
         mockedCurator5ZookeeperClientConstruction =
                 mockConstructionWithAnswer(Curator5ZookeeperClient.class, invocationOnMock -> invocationOnMock

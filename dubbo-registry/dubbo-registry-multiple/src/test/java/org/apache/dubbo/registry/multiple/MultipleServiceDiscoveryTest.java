@@ -86,8 +86,10 @@ public class MultipleServiceDiscoveryTest {
                     .thenReturn(mockFactory);
 
             // Use dynamic ZooKeeper address instead of hardcoded one
-            String multipleRegistryUrl = "multiple://127.0.0.1:2181?reference-registry="
-                    + zookeeperConnectionAddress1.replace("zookeeper://", "")
+            // Extract port from dynamic address to avoid hardcoded port conflicts
+            String zkHost = zookeeperConnectionAddress1.replace("zookeeper://", "");
+            String multipleRegistryUrl = "multiple://" + zkHost + "?reference-registry="
+                    + zkHost
                     + "?enableEmptyProtection=false&child.a1="
                     + zookeeperConnectionAddress1;
 

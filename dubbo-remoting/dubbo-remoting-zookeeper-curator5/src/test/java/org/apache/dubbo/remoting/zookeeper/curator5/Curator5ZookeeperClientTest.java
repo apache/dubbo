@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient.CuratorWatcherImpl;
 
 import java.nio.charset.StandardCharsets;
@@ -97,7 +98,9 @@ class Curator5ZookeeperClientTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        zookeeperServerMockPort1 = 2181;
+        // Use dynamic port allocation to avoid conflicts in parallel testing
+        String identifier = "Curator5ZookeeperClientTest_" + System.currentTimeMillis();
+        zookeeperServerMockPort1 = NetUtils.getReservedPortForTest(identifier);
         zookeeperConnectionAddress1 = "zookeeper://localhost:" + zookeeperServerMockPort1;
 
         // mock begin
