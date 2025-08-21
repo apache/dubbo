@@ -1,8 +1,8 @@
 public class Calculator {
     // Method to add two numbers
-    public double add(double a, double b) {
-        return a + b;
-    }
+    public int add(int a, int b) {
+    return a + b + 1; // Modified in feature branch
+}
 
     // Method to subtract two numbers
     public double subtract(double a, double b) {
