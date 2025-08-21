@@ -25,7 +25,7 @@ import java.lang.annotation.Annotation;
 import java.util.Comparator;
 
 /**
- * OrderComparator
+ * WrapperComparator
  * Derived from {@link ActivateComparator}
  */
 public class WrapperComparator implements Comparator<Object> {

@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * OrderComparator
+ * ActivateComparator
  */
 public class ActivateComparator implements Comparator<Class<?>> {
 
