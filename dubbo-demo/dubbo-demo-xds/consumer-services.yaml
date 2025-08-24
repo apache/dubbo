@@ -15,9 +15,6 @@ spec:
     - port: 31000
       targetPort: 31000
       name: debug
-    - port: 8080
-      targetPort: 8080
-      name: http
   selector:
     app: dubbo-demo-xds-consumer
 
@@ -45,8 +42,8 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      imagePullSecrets:
-        - name: aliyun-acr-secret
+#      imagePullSecrets:
+#        - name: aliyun-acr-secret
       initContainers:
         - name: bootstrap-generator
           image: busybox:1.35
@@ -100,7 +97,7 @@ spec:
               mountPath: /app
       containers:
         - name: dubbo-demo-xds-consumer
-          image: crpi-ta376u07gp1439ff.cn-beijing.personal.cr.aliyuncs.com/test_xds/test_dubbo_consumer:latest
+#          image:
           imagePullPolicy: Always
           ports:
             - containerPort: 50050
@@ -121,7 +118,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: JAVA_TOOL_OPTIONS
-              value: "-Ddubbo.application.logger=slf4j -Dlogging.level.root=INFO -Dlogging.level.org.apache.dubbo=DEBUG -Dlogging.level.org.apache.dubbo.xds=TRACE -Dlogging.level.org.apache.dubbo.registry=TRACE -Dlogging.level.org.apache.dubbo.registry.xds=TRACE -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=31000"
+              value: "-Ddubbo.application.logger=slf4j -Dlogging.level.root=INFO -Dlogging.level.org.apache.dubbo=DEBUG"
             - name: DUBBO_IP_TO_REGISTRY
               valueFrom:
                 fieldRef:

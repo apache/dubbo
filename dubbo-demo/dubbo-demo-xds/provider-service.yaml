@@ -97,7 +97,7 @@ spec:
               mountPath: /app
       containers:
         - name: dubbo-demo-xds-provider
-          image: crpi-ta376u07gp1439ff.cn-beijing.personal.cr.aliyuncs.com/test_xds/test_dubbo_provider:latest
+#          image:
           imagePullPolicy: Always
           ports:
             - containerPort: 50051
@@ -118,7 +118,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: JAVA_TOOL_OPTIONS
-              value: "-Ddubbo.application.logger=slf4j -Dlogging.level.root=INFO -Dlogging.level.org.apache.dubbo=DEBUG -Dlogging.level.org.apache.dubbo.xds=TRACE -Dlogging.level.org.apache.dubbo.registry=TRACE -Dlogging.level.org.apache.dubbo.registry.xds=TRACE -Dservice.version=v1"
+              value: "-Ddubbo.application.logger=slf4j -Dlogging.level.root=INFO -Dlogging.level.org.apache.dubbo=DEBUG -Dservice.version=v1"
             - name: DUBBO_IP_TO_REGISTRY
               valueFrom:
                 fieldRef:
