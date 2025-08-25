@@ -118,13 +118,6 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
                 break;
             }
         }
-        if (value == null && !isAvailable()) {
-            logger.warn(
-                    INTERNAL_ERROR,
-                    "none of the config-center is available",
-                    "",
-                    "there is none of the available config-center");
-        }
         return value;
     }
 

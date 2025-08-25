@@ -167,7 +167,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (revisionUpdated) {
             try {
                 reportMetadata(this.metadataInfo);
-                if (!isAvailable()) {
+                if (!isConnectionAvailable()) {
                     throw new IllegalStateException("Service Discovery Connection is not Available");
                 }
                 doRegister(this.serviceInstance);
@@ -214,7 +214,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                 reportMetadata(this.metadataInfo);
             }
             if (this.metadataInfo.isReported() && !this.serviceInstance.isRegistered()) {
-                if (!isAvailable()) {
+                if (!isConnectionAvailable()) {
                     throw new IllegalStateException("Service Discovery Connection is not Available");
                 }
                 doRegister(this.serviceInstance);

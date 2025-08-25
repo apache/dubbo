@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -249,8 +250,13 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public boolean isAvailable() {
+        return isConnectionAvailable() && CollectionUtils.isNotEmpty(getServices());
+    }
+
+    @Override
+    public boolean isConnectionAvailable() {
         Optional<String> status = Optional.ofNullable(namingService).map(NacosNamingServiceWrapper::getServerStatus);
         boolean isConnected = status.isPresent() && UP.equals(status.get());
-        return !isDestroy() && isConnected; // && CollectionUtils.isNotEmpty(getServices());
+        return !isDestroy() && isConnected;
     }
 }

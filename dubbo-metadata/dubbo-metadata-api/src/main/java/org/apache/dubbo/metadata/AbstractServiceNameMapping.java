@@ -399,7 +399,9 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         mappingCacheManager.destroy();
         mappingListeners.clear();
         mappingLocks.clear();
-        getServiceNameMappingReportRetry().cancel();
+        if (serviceNameMappingReportRetry != null) {
+            serviceNameMappingReportRetry.cancel();
+        }
     }
 
     private class AsyncMappingTask implements Callable<Set<String>> {

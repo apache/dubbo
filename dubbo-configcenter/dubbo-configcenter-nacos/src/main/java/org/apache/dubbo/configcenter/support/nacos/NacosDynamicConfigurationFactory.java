@@ -19,7 +19,6 @@ package org.apache.dubbo.configcenter.support.nacos;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.config.configcenter.wrapper.FailbackDynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -43,6 +42,6 @@ public class NacosDynamicConfigurationFactory extends AbstractDynamicConfigurati
             // Nacos use empty string as default namespace, replace default namespace "dubbo" to ""
             nacosURL = url.removeParameter(PropertyKeyConst.NAMESPACE);
         }
-        return new FailbackDynamicConfiguration(new NacosDynamicConfiguration(nacosURL, applicationModel), nacosURL);
+        return new NacosDynamicConfiguration(nacosURL, applicationModel);
     }
 }
