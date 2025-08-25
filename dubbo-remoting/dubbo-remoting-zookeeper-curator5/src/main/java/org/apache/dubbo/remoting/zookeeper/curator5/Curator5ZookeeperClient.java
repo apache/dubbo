@@ -100,7 +100,7 @@ public class Curator5ZookeeperClient
             boolean check = UrlUtils.isCheck(url);
             if (check && !connected) {
                 IllegalStateException illegalStateException =
-                        new IllegalStateException("zookeeper not connected, the address is: " + url);
+                        new IllegalStateException("zookeeper not connected");
 
                 // 5-1 Failed to connect to configuration center.
                 logger.error(
