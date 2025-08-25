@@ -383,8 +383,7 @@ public final class DubboBootstrap {
     public DubboBootstrap metadataReport(String id, Consumer<MetadataReportBuilder> consumerBuilder) {
         MetadataReportBuilder metadataReportBuilder = createMetadataReportBuilder(id);
         consumerBuilder.accept(metadataReportBuilder);
-        metadataReport(metadataReportBuilder.build());
-        return this;
+        return metadataReport(metadataReportBuilder.build());
     }
 
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
@@ -674,8 +673,7 @@ public final class DubboBootstrap {
     public DubboBootstrap configCenter(String id, Consumer<ConfigCenterBuilder> consumerBuilder) {
         ConfigCenterBuilder configCenterBuilder = createConfigCenterBuilder(id);
         consumerBuilder.accept(configCenterBuilder);
-        configCenter(configCenterBuilder.build());
-        return this;
+        return configCenter(configCenterBuilder.build());
     }
 
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {

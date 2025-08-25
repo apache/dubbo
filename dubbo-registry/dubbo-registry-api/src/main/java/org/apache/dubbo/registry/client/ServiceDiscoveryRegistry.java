@@ -327,6 +327,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void destroy() {
+        super.destroy();
         registryManager.removeDestroyedRegistry(this);
         // stop ServiceDiscovery
         execute(serviceDiscovery::destroy);
