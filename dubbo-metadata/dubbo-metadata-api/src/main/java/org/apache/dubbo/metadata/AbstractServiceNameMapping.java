@@ -193,7 +193,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         private final Object startLock = new Object();
 
         private ServiceNameMappingReportRetry(NamedThreadFactory namedThreadFactory) {
-            this.executor = Executors.newScheduledThreadPool(0, namedThreadFactory);
+            this.executor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         }
 
         void start() {
