@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.report.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 
@@ -66,14 +67,19 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             }
             try {
                 metadataReport = createMetadataReport(url);
+                if (!metadataReport.isAvailable()) {
+                    logger.warn(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize");
+                    if (UrlUtils.isCheck(url)) {
+                        throw new IllegalStateException(
+                                "Can't create metadata-report client, the connection is not available, check fail.");
+                    }
+                }
             } catch (Exception e) {
                 logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
                 throw e;
             }
 
-            if (metadataReport != null) {
-                serviceStoreMap.put(key, metadataReport);
-            }
+            serviceStoreMap.put(key, metadataReport);
             return metadataReport;
         } finally {
             // Release the lock

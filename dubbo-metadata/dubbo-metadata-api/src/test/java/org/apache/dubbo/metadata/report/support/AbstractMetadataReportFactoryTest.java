@@ -72,7 +72,7 @@ class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public boolean isAvailable() {
-                    return false;
+                    return true;
                 }
 
                 @Override

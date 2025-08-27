@@ -904,9 +904,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 if (!dynamicConfiguration.isAvailable()) {
                     logger.warn(
                             CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize");
-                    if (!configCenter.isCheck()) {
-                        configCenter.setInitialized(true);
-                        // TODO should it `updateExternalConfigMap` when the connection recovery
+                    if (configCenter.isCheck()) {
+                        throw new IllegalStateException(
+                                "Can't create config-center client, the connection is not available, check fail.");
+                    } else {
                         return dynamicConfiguration;
                     }
                 }
