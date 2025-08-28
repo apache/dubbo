@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
@@ -118,6 +119,11 @@ class AbstractServiceNameMappingTest {
         }
 
         @Override
+        protected boolean doMap(MetadataReport metadataReport, URL url) {
+            return false;
+        }
+
+        @Override
         public boolean hasValidMetadataCenter() {
             return false;
         }
@@ -149,6 +155,11 @@ class AbstractServiceNameMappingTest {
 
         @Override
         public boolean map(URL url) {
+            return false;
+        }
+
+        @Override
+        protected boolean doMap(MetadataReport metadataReport, URL url) {
             return false;
         }
 

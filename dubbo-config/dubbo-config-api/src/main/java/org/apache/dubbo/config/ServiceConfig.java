@@ -26,7 +26,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -71,7 +70,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -400,11 +398,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         exportedURLs.forEach(url -> {
             if (url.getParameter(SERVICE_NAME_MAPPING_KEY, false)) {
                 ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
-                ScheduledExecutorService scheduledExecutor = getScopeModel()
-                        .getBeanFactory()
-                        .getBean(FrameworkExecutorRepository.class)
-                        .getSharedScheduledExecutor();
-                mapServiceName(url, serviceNameMapping, scheduledExecutor);
+                mapServiceName(url, serviceNameMapping);
             }
         });
 
@@ -423,54 +417,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         .getRegistries());
     }
 
-    protected void mapServiceName(
-            URL url, ServiceNameMapping serviceNameMapping, ScheduledExecutorService scheduledExecutor) {
+    protected void mapServiceName(URL url, ServiceNameMapping serviceNameMapping) {
         if (!exported) {
             return;
         }
         logger.info("[INSTANCE_REGISTER] [METADATA_REGISTER] Try to register interface application mapping for service "
                 + url.getServiceKey());
-        try {
-            serviceNameMapping.mapping(url);
-            return;
-        } catch (UnsupportedOperationException ignore) {
-        }
-        boolean succeeded = false;
-        try {
-            succeeded = serviceNameMapping.map(url);
-            if (succeeded) {
-                logger.info(
-                        "[INSTANCE_REGISTER][METADATA_REGISTER] Successfully registered interface application mapping for service "
-                                + url.getServiceKey());
-            } else {
-                logger.error(
-                        CONFIG_SERVER_DISCONNECTED,
-                        "configuration server disconnected",
-                        "",
-                        "[INSTANCE_REGISTER] [METADATA_REGISTER] Failed register interface application mapping for service "
-                                + url.getServiceKey());
-            }
-        } catch (Exception e) {
+        if (serviceNameMapping.map(url)) {
+            logger.info(
+                    "[INSTANCE_REGISTER][METADATA_REGISTER] Successfully registered interface application mapping for service "
+                            + url.getServiceKey());
+        } else {
             logger.error(
                     CONFIG_SERVER_DISCONNECTED,
                     "configuration server disconnected",
                     "",
                     "[INSTANCE_REGISTER] [METADATA_REGISTER] Failed register interface application mapping for service "
-                            + url.getServiceKey(),
-                    e);
+                            + url.getServiceKey());
         }
-        if (!succeeded && serviceNameMapping.hasValidMetadataCenter()) {
-            scheduleToMapping(scheduledExecutor, serviceNameMapping, url);
-        }
-    }
-
-    private void scheduleToMapping(
-            ScheduledExecutorService scheduledExecutor, ServiceNameMapping serviceNameMapping, URL url) {
-        Integer mappingRetryInterval = getApplication().getMappingRetryInterval();
-        scheduledExecutor.schedule(
-                () -> mapServiceName(url, serviceNameMapping, scheduledExecutor),
-                mappingRetryInterval == null ? 5000 : mappingRetryInterval,
-                TimeUnit.MILLISECONDS);
     }
 
     private void checkAndUpdateSubConfigs() {

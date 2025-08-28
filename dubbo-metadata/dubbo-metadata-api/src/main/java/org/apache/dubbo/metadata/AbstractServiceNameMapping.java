@@ -23,19 +23,17 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.MetadataReportRetryTask;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -43,10 +41,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -72,6 +66,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     protected MetadataReportInstance metadataReportInstance;
     protected static final List<String> IGNORED_SERVICE_INTERFACES =
             Collections.singletonList(MetadataService.class.getName());
+    protected final MetadataReportRetryTask metadataReportRetryTask;
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -90,6 +85,9 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                         .getBean(FrameworkExecutorRepository.class)
                         .getCacheRefreshingScheduledExecutor());
         metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+        this.metadataReportRetryTask =
+                applicationModel.getBeanFactory().getOrRegisterBean(MetadataReportRetryTask.class);
+        this.metadataReportRetryTask.setRetryHandler(this::doMap);
     }
 
     // only for ut
@@ -98,7 +96,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     }
 
     @Override
-    public void mapping(URL url) {
+    public boolean map(URL url) {
         if (CollectionUtils.isEmpty(
                 applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
             logger.warn(
@@ -106,11 +104,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                     "",
                     "",
                     "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] No valid metadata config center found for mapping report.");
-            return;
+            return false;
         }
         String serviceInterface = url.getServiceInterface();
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
-            return;
+            return true;
         }
 
         String appName = applicationModel.getApplicationName();
@@ -124,7 +122,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
 
             boolean succeeded = false;
             try {
-                succeeded = doMapping(metadataReport, url);
+                succeeded = doMap(metadataReport, url);
             } catch (Exception e) {
                 logger.warn(
                         CONFIG_SERVER_DISCONNECTED,
@@ -135,13 +133,15 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                         e);
             }
             if (!succeeded) {
-                getServiceNameMappingReportRetry().addTask(metadataReport, url);
+                metadataReportRetryTask.addTask(metadataReport, url);
             }
         }
-        getServiceNameMappingReportRetry().start();
+        return metadataReportRetryTask.start();
     }
 
-    protected boolean doMapping(MetadataReport metadataReport, URL url) {
+    protected abstract boolean doMap(MetadataReport metadataReport, URL url);
+
+    protected boolean registerServiceAppMapping(MetadataReport metadataReport, URL url) {
         if (!metadataReport.isAvailable()) {
             throw new IllegalStateException("metadata reporter is not available");
         }
@@ -168,89 +168,6 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         }
         return metadataReport.registerServiceAppMapping(
                 serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
-    }
-
-    private static final Object initializeRetry = new Object();
-    private static final NamedThreadFactory namedThreadFactory =
-            new NamedThreadFactory("DubboServiceNameMappingReportRetry", true);
-    private volatile ServiceNameMappingReportRetry serviceNameMappingReportRetry;
-
-    protected ServiceNameMappingReportRetry getServiceNameMappingReportRetry() {
-        if (serviceNameMappingReportRetry == null) {
-            synchronized (initializeRetry) {
-                if (serviceNameMappingReportRetry == null) {
-                    serviceNameMappingReportRetry = new ServiceNameMappingReportRetry(namedThreadFactory);
-                }
-            }
-        }
-        return serviceNameMappingReportRetry;
-    }
-
-    class ServiceNameMappingReportRetry {
-        private final ScheduledExecutorService executor;
-        private volatile ScheduledFuture<?> future;
-        private final Map<MetadataReport, Set<URL>> taskQueue = new ConcurrentHashMap<>();
-        private final Object startLock = new Object();
-
-        private ServiceNameMappingReportRetry(NamedThreadFactory namedThreadFactory) {
-            this.executor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
-        }
-
-        void start() {
-            if (future == null) {
-                synchronized (startLock) {
-                    if (future == null) {
-                        future = executor.scheduleWithFixedDelay(this::run, 1000, 3000, TimeUnit.MILLISECONDS);
-                    }
-                }
-            }
-        }
-
-        void addTask(MetadataReport metadataReport, URL url) {
-            taskQueue
-                    .computeIfAbsent(metadataReport, k -> new ConcurrentHashSet<>())
-                    .add(url);
-        }
-
-        void cancel() {
-            if (future != null) {
-                future.cancel(false);
-            }
-            executor.shutdown();
-            serviceNameMappingReportRetry = null;
-        }
-
-        private void run() {
-            if (taskQueue.isEmpty()) {
-                cancel();
-                return;
-            }
-            for (Entry<MetadataReport, Set<URL>> entry : taskQueue.entrySet()) {
-                MetadataReport metadataReport = entry.getKey();
-                if (!metadataReport.isAvailable()) {
-                    logger.warn(
-                            CONFIG_SERVER_DISCONNECTED,
-                            "connect is not available",
-                            "metadata-center url: " + metadataReport.getUrl(),
-                            "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] Retry Failed.");
-                    continue;
-                }
-                Set<URL> urlSet = taskQueue.remove(metadataReport);
-                for (URL url : urlSet) {
-                    try {
-                        AbstractServiceNameMapping.this.doMapping(metadataReport, url);
-                    } catch (Throwable e) {
-                        logger.warn(
-                                CONFIG_SERVER_DISCONNECTED,
-                                e.getMessage(),
-                                "service url: " + url + ", metadata-center url: " + metadataReport.getUrl(),
-                                "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] Retry Failed. Add Retry Task.",
-                                e);
-                        addTask(metadataReport, url);
-                    }
-                }
-            }
-        }
     }
 
     // just for test
@@ -399,8 +316,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         mappingCacheManager.destroy();
         mappingListeners.clear();
         mappingLocks.clear();
-        if (serviceNameMappingReportRetry != null) {
-            serviceNameMappingReportRetry.cancel();
+        if (metadataReportRetryTask != null) {
+            metadataReportRetryTask.cancel();
         }
     }
 

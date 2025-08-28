@@ -111,6 +111,7 @@ class MetadataServiceNameMappingTest {
                         return false;
                     }
                 });
+        when(metadataReport.isAvailable()).thenReturn(true);
         assertTrue(mapping.map(url));
 
         // metadata report using cas and retry, failed after 11 times retry

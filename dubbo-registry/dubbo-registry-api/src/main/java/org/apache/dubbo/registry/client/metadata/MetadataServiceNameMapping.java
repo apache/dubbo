@@ -65,12 +65,12 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     }
 
     @Override
-    protected boolean doMapping(MetadataReport metadataReport, URL url) {
+    protected boolean doMap(MetadataReport metadataReport, URL url) {
         boolean succeeded = false;
         int currentRetryTimes = 1;
         try {
             do {
-                succeeded = super.doMapping(metadataReport, url);
+                succeeded = registerServiceAppMapping(metadataReport, url);
                 if (succeeded) {
                     logger.info(
                             "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] Successfully registered interface application mapping for service "
@@ -94,90 +94,6 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                     e);
         }
         return succeeded;
-    }
-
-    /**
-     * Simply register to all metadata center
-     */
-    @Override
-    public boolean map(URL url) {
-        if (CollectionUtils.isEmpty(
-                applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
-            logger.warn(
-                    COMMON_PROPERTY_TYPE_MISMATCH,
-                    "",
-                    "",
-                    "[METADATA_REGISTER] No valid metadata config center found for mapping report.");
-            return false;
-        }
-        String serviceInterface = url.getServiceInterface();
-        if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
-            return true;
-        }
-
-        boolean result = true;
-        for (Map.Entry<String, MetadataReport> entry :
-                metadataReportInstance.getMetadataReports(true).entrySet()) {
-            MetadataReport metadataReport = entry.getValue();
-            String appName = applicationModel.getApplicationName();
-            try {
-                if (metadataReport.registerServiceAppMapping(serviceInterface, appName, url)) {
-                    // MetadataReport support directly register service-app mapping
-                    continue;
-                }
-
-                boolean succeeded = false;
-                int currentRetryTimes = 1;
-                String newConfigContent = appName;
-                do {
-                    ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
-                    String oldConfigContent = configItem.getContent();
-                    if (StringUtils.isNotEmpty(oldConfigContent)) {
-                        String[] oldAppNames = oldConfigContent.split(",");
-                        if (oldAppNames.length > 0) {
-                            for (String oldAppName : oldAppNames) {
-                                if (StringUtils.trim(oldAppName).equals(appName)) {
-                                    succeeded = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (succeeded) {
-                            break;
-                        }
-                        newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
-                    }
-                    succeeded = metadataReport.registerServiceAppMapping(
-                            serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
-                    if (!succeeded) {
-                        int waitTime = ThreadLocalRandom.current().nextInt(casRetryWaitTime);
-                        logger.info("Failed to publish service name mapping to metadata center by cas operation. "
-                                + "Times: "
-                                + currentRetryTimes + ". " + "Next retry delay: "
-                                + waitTime + ". " + "Service Interface: "
-                                + serviceInterface + ". " + "Origin Content: "
-                                + oldConfigContent + ". " + "Ticket: "
-                                + configItem.getTicket() + ". " + "Expected Content: "
-                                + newConfigContent);
-                        Thread.sleep(waitTime);
-                    }
-                } while (!succeeded && currentRetryTimes++ <= casRetryTimes);
-
-                if (!succeeded) {
-                    result = false;
-                }
-            } catch (Exception e) {
-                result = false;
-                logger.warn(
-                        INTERNAL_ERROR,
-                        "unknown error in registry module",
-                        "",
-                        "Failed registering mapping to remote." + metadataReport,
-                        e);
-            }
-        }
-
-        return result;
     }
 
     @Override
