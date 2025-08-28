@@ -66,6 +66,10 @@ public class MetadataReportRetryTask {
                 .add(url);
     }
 
+    /**
+     * start retry task once
+     * @return bool is retry task running
+     */
     public boolean start() {
         if (future == null && !taskQueue.isEmpty()) {
             synchronized (startLock) {
@@ -78,6 +82,9 @@ public class MetadataReportRetryTask {
         return future != null;
     }
 
+    /**
+     * stop retry task
+     */
     public void cancel() {
         if (future != null) {
             future.cancel(false);
@@ -86,6 +93,7 @@ public class MetadataReportRetryTask {
     }
 
     private void retry() {
+        // stop task if there is no task
         if (taskQueue.isEmpty()) {
             cancel();
             return;

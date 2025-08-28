@@ -136,7 +136,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                 metadataReportRetryTask.addTask(metadataReport, url);
             }
         }
-        return metadataReportRetryTask.start();
+        return !metadataReportRetryTask.start();
     }
 
     protected abstract boolean doMap(MetadataReport metadataReport, URL url);
