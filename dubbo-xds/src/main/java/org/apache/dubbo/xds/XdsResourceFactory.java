@@ -74,9 +74,16 @@ public class XdsResourceFactory {
     private final Map<String, CdsUpdateNodeDirectory> cdsWatchers = new ConcurrentHashMap<>();
     private final Map<String, EdsUpdateLeafDirectory> edsWatchers = new ConcurrentHashMap<>();
 
-    private static final XdsResourceFactory instance = new XdsResourceFactory();
+    private static volatile XdsResourceFactory instance;
 
     public static XdsResourceFactory getInstance() {
+        if (instance == null) {
+            synchronized (XdsResourceFactory.class) {
+                if (instance == null) {
+                    instance = new XdsResourceFactory();
+                }
+            }
+        }
         return instance;
     }
 
