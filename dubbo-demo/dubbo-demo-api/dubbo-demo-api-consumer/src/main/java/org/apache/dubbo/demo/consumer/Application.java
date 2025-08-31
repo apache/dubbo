@@ -19,6 +19,8 @@ package org.apache.dubbo.demo.consumer;
 import org.apache.dubbo.api.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -31,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class Application {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
-    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+    private static final String ZOOKEEPER_URL = "zookeeper://127.0.0.1:2181";
 
     public static void main(String[] args) {
         runWithBootstrap();
@@ -42,10 +44,15 @@ public class Application {
         reference.setInterface(DemoService.class);
         reference.setGeneric("true");
 
+        ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
+        configCenterConfig.setAddress(ZOOKEEPER_URL);
+
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap
                 .application(new ApplicationConfig("dubbo-demo-api-consumer"))
-                .registry(new RegistryConfig(REGISTRY_URL))
+                .configCenter(configCenterConfig)
+                .registry(new RegistryConfig(ZOOKEEPER_URL))
+                .metadataReport(new MetadataReportConfig(ZOOKEEPER_URL))
                 .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
                 .reference(reference)
                 .start();

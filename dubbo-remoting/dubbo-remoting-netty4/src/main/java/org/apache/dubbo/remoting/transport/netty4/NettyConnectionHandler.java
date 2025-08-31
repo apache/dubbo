@@ -26,7 +26,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.EventLoop;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
@@ -71,16 +70,14 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
         if (!(channel instanceof Channel)) {
             return;
         }
-        Channel nettyChannel = ((Channel) channel);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Connection:{} is reconnecting, attempt={}", connectionClient, 1);
         }
-        EventLoop eventLoop = nettyChannel.eventLoop();
         if (connectionClient.isClosed()) {
             LOGGER.info("The connection {} has been closed and will not reconnect", connectionClient);
             return;
         }
-        eventLoop.schedule(connectionClient::doReconnect, 1, TimeUnit.SECONDS);
+        connectionClient.scheduleReconnect(1, TimeUnit.SECONDS);
     }
 
     @Override
