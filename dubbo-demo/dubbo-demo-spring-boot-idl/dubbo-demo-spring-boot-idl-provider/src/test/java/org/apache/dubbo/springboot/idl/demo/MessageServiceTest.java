@@ -28,7 +28,8 @@ public class MessageServiceTest {
     @Test
     public void testMessageGenerator() {
         try {
-            Class.forName("org.apache.dubbo.demo.message.DubboMessageServiceTriple");
+            // load class
+            Class.forName(DubboMessageServiceTriple.class.getName());
         } catch (ClassNotFoundException ignored) {
         }
         FileDescriptor schemaDescriptor =
