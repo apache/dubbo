@@ -158,4 +158,8 @@ public abstract class AbstractTripleMutinyPublisher<T> extends CancelableStreamO
     public boolean isCancelled() {
         return cancelled;
     }
+
+    public boolean isSubscribed() {
+        return subscribed.get();
+    }
 }

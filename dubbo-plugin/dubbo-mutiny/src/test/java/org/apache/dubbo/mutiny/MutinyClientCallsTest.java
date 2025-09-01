@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import org.awaitility.Durations;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -123,10 +124,17 @@ public class MutinyClientCallsTest {
                                 publisher.onCompleted();
                             }
                         };
-
                         publisher.onSubscribe(fakeSubscription);
 
                         new Thread(() -> {
+                                    int tryCnt = 0;
+                                    while (!publisher.isSubscribed() && tryCnt++ < 5) {
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
                                     publisher.onNext("item1");
                                     publisher.onNext("item2");
                                     publisher.onCompleted();
@@ -141,7 +149,7 @@ public class MutinyClientCallsTest {
             Multi<String> multiResponse = MutinyClientCalls.oneToMany(invoker, uniRequest, method);
 
             List<String> collectedItems =
-                    multiResponse.collect().asList().await().indefinitely();
+                    multiResponse.collect().asList().await().atMost(Durations.FIVE_SECONDS);
 
             Assertions.assertTrue(stubCalled.get(), "StubInvocationUtil.serverStreamCall should be called");
             Assertions.assertEquals(2, collectedItems.size());
