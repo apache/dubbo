@@ -288,7 +288,7 @@ jobs:
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
         run: |
-          cd test && bash -c 'DEBIAN_MIRROR=http://archive.debian.org/debian-archive ./build-test-image.sh'
+          cd test && bash -c ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
       - name: "Upload test logs"
@@ -394,7 +394,7 @@ jobs:
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
         run: |
-          cd test && bash -c 'DEBIAN_MIRROR=http://archive.debian.org/debian-archive ./build-test-image.sh'
+          cd test && bash -c ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
       - name: "Upload test logs"
