@@ -138,10 +138,4 @@ public interface ServiceInstance extends Serializable {
     void setServiceMetadata(MetadataInfo serviceMetadata);
 
     InstanceAddressURL toURL(String protocol);
-
-    default boolean isRegistered() {
-        return true;
-    }
-
-    default void setRegistered(boolean reported) {}
 }

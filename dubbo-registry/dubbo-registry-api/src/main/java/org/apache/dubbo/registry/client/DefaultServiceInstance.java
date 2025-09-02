@@ -61,7 +61,6 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private transient String address;
     private transient MetadataInfo serviceMetadata;
-    private transient boolean registered;
 
     /**
      * used at runtime
@@ -168,16 +167,6 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public void setHealthy(boolean healthy) {
         this.healthy = healthy;
-    }
-
-    @Override
-    public boolean isRegistered() {
-        return this.registered;
-    }
-
-    @Override
-    public void setRegistered(boolean reported) {
-        this.registered = reported;
     }
 
     @Override

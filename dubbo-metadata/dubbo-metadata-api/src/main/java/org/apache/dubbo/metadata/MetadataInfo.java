@@ -79,7 +79,7 @@ public class MetadataInfo implements Serializable {
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
     private transient ExtensionLoader<MetadataParamsFilter> loader;
-    private transient volatile boolean reported = false;
+    private transient volatile String reportedRevision = null;
 
     public MetadataInfo() {
         this(null);
@@ -382,11 +382,11 @@ public class MetadataInfo implements Serializable {
     }
 
     public boolean isReported() {
-        return this.reported;
+        return calAndGetRevision().equals(this.reportedRevision);
     }
 
-    public void setReported(boolean reported) {
-        this.reported = reported;
+    public void setReportRevision(String reportRevision) {
+        this.reportedRevision = reportRevision;
     }
 
     @Override

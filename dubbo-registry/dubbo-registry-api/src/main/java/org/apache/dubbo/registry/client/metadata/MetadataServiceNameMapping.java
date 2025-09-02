@@ -109,7 +109,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         // data.
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
-        if (metadataReport == null || !metadataReport.isAvailable()) {
+        if (metadataReport == null) {
             return Collections.emptySet();
         }
         return metadataReport.getServiceAppMapping(serviceInterface, mappingListener, url);

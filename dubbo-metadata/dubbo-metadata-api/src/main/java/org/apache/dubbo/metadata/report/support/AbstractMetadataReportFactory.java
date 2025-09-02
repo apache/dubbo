@@ -65,21 +65,22 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             if (metadataReport != null) {
                 return metadataReport;
             }
+            boolean check = UrlUtils.isCheck(url);
             try {
                 metadataReport = createMetadataReport(url);
-                if (!metadataReport.isAvailable()) {
-                    logger.warn(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize");
-                    if (UrlUtils.isCheck(url)) {
-                        throw new IllegalStateException(
-                                "Can't create metadata-report client, the connection is not available, check fail.");
-                    }
-                }
             } catch (Exception e) {
-                logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
-                throw e;
+                if (!check) {
+                    logger.warn(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
+                } else {
+                    throw e;
+                }
             }
-
-            serviceStoreMap.put(key, metadataReport);
+            if (check && (metadataReport == null || !metadataReport.isAvailable())) {
+                throw new IllegalStateException("Can not create metadata Report " + url);
+            }
+            if (metadataReport != null) {
+                serviceStoreMap.put(key, metadataReport);
+            }
             return metadataReport;
         } finally {
             // Release the lock

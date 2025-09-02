@@ -897,22 +897,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (!configCenter.checkOrUpdateInitialized(true)) {
                 return null;
             }
-
             DynamicConfiguration dynamicConfiguration;
             try {
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-                if (!dynamicConfiguration.isAvailable()) {
-                    logger.warn(
-                            CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize");
-                    if (configCenter.isCheck()) {
-                        throw new IllegalStateException(
-                                "Can't create config-center client, the connection is not available, check fail.");
-                    } else {
-                        return dynamicConfiguration;
-                    }
-                }
             } catch (Exception e) {
-                throw new IllegalStateException(e);
+                if (!configCenter.isCheck()) {
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
+                    configCenter.setInitialized(false);
+                    return null;
+                } else {
+                    throw new IllegalStateException(e);
+                }
+            }
+            if (!dynamicConfiguration.isAvailable() && !configCenter.isCheck()) {
+                logger.warn("The configuration center initialize successfully. but connection is available now, and the config-center.check is false, it will return now.");
+                return dynamicConfiguration;
             }
             ApplicationModel applicationModel = getApplicationModel();
 

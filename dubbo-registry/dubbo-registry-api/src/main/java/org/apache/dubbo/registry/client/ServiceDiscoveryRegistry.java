@@ -198,7 +198,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
-        removeFailedSubscribed(url, listener);
         url = addRegistryClusterKey(url);
 
         serviceDiscovery.subscribe(url, listener);
@@ -241,10 +240,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     //                    throw new IllegalStateException("Should has at least one way to know which
                     // services this interface belongs to, subscription url: " + url);
                     //                }
-                    if (!UrlUtils.isCheck(url)) {
-                        logger.info("retry mapping listener");
-                        addFailedSubscribed(url, listener);
-                    }
                     return;
                 }
             } finally {
