@@ -122,13 +122,13 @@ public class NettyClient extends AbstractClient {
                 .channel(socketChannelClass());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(DEFAULT_CONNECT_TIMEOUT, getConnectTimeout()));
-        SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
+                SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
                 if (sslContext != null) {
                     ch.pipeline().addLast("negotiation", new SslClientTlsHandler(sslContext));
                 }

@@ -113,7 +113,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
         final NettyConnectionHandler connectionHandler = new NettyConnectionHandler(this);
         nettyBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout());
-        SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
         nettyBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
@@ -121,6 +120,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 final ChannelPipeline pipeline = ch.pipeline();
                 NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
 
+                SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
                 if (sslContext != null) {
                     pipeline.addLast("negotiation", new SslClientTlsHandler(sslContext));
                 }
