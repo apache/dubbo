@@ -108,6 +108,10 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v4
+
+      - run: git log -n 5 --oneline
+      - run: ls -l dubbo-xds/src/main/java/org/apache/dubbo/xds/resource/update/
+
       - name: "Set up JDK"
         uses: actions/setup-java@v4
         with:
