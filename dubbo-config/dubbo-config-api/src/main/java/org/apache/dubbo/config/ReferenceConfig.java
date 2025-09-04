@@ -720,7 +720,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
         boolean available = invoker.isAvailable();
-        available = true;
         if (available) {
             return;
         }
