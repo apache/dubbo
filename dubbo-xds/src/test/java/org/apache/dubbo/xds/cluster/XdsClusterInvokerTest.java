@@ -108,7 +108,8 @@ class XdsClusterInvokerTest {
         // Arrange
         List<Invoker<Object>> invokers = Arrays.asList(invoker1);
         when(directory.list(any(Invocation.class))).thenReturn(invokers);
-        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class))).thenReturn(invoker1);
+        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class)))
+                .thenReturn(invoker1);
         when(invoker1.invoke(any(Invocation.class))).thenReturn(result);
         when(result.hasException()).thenReturn(false);
 
@@ -126,7 +127,8 @@ class XdsClusterInvokerTest {
         // Arrange
         List<Invoker<Object>> invokers = Arrays.asList(invoker1);
         when(directory.list(any(Invocation.class))).thenReturn(invokers);
-        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class))).thenReturn(invoker1);
+        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class)))
+                .thenReturn(invoker1);
         when(invoker1.invoke(any(Invocation.class))).thenReturn(result);
         when(result.hasException()).thenReturn(false);
 
@@ -154,7 +156,9 @@ class XdsClusterInvokerTest {
         // Arrange
         List<Invoker<Object>> invokers = Arrays.asList(invoker1, invoker2);
         when(directory.list(any(Invocation.class))).thenReturn(invokers);
-        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class))).thenReturn(invoker1).thenReturn(invoker2);
+        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class)))
+                .thenReturn(invoker1)
+                .thenReturn(invoker2);
 
         // Set up retry policy with proper Duration objects
         when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
@@ -191,7 +195,9 @@ class XdsClusterInvokerTest {
         // Arrange
         List<Invoker<Object>> invokers = Arrays.asList(invoker1, invoker2);
         when(directory.list(any(Invocation.class))).thenReturn(invokers);
-        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class))).thenReturn(invoker1).thenReturn(invoker2);
+        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class)))
+                .thenReturn(invoker1)
+                .thenReturn(invoker2);
 
         // Set up retry policy with proper Duration objects
         when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
@@ -232,7 +238,8 @@ class XdsClusterInvokerTest {
         // Arrange
         List<Invoker<Object>> invokers = Arrays.asList(invoker1);
         when(directory.list(any(Invocation.class))).thenReturn(invokers);
-        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class))).thenReturn(invoker1);
+        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class)))
+                .thenReturn(invoker1);
 
         // Set up retry policy with specific retryable status codes and proper Duration objects
         when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
