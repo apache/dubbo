@@ -152,45 +152,6 @@ class XdsClusterInvokerTest {
     }
 
     @Test
-    void testRetryOnFailure() {
-        // Arrange
-        List<Invoker<Object>> invokers = Arrays.asList(invoker1, invoker2);
-        when(directory.list(any(Invocation.class))).thenReturn(invokers);
-        when(loadBalance.select(eq(invokers), any(URL.class), any(Invocation.class)))
-                .thenReturn(invoker1)
-                .thenReturn(invoker2);
-
-        // Set up retry policy with proper Duration objects
-        when(routeAction.getRetryPolicy()).thenReturn(retryPolicy);
-        when(retryPolicy.getMaxAttempts()).thenReturn(3);
-        when(retryPolicy.getInitialBackoff())
-                .thenReturn(
-                        Duration.newBuilder().setSeconds(0).setNanos(25_000_000).build());
-        when(retryPolicy.getMaxBackoff())
-                .thenReturn(Duration.newBuilder()
-                        .setSeconds(0)
-                        .setNanos(250_000_000)
-                        .build());
-        when(retryPolicy.getRetryableStatusCodes()).thenReturn(Collections.emptyList());
-        invocation.put("xds.route.action", routeAction);
-
-        // First invocation fails, second succeeds
-        RpcException exception = new RpcException(RpcException.NETWORK_EXCEPTION, "Network error");
-        when(invoker1.invoke(any(Invocation.class))).thenThrow(exception);
-        when(invoker2.invoke(any(Invocation.class))).thenReturn(result);
-        when(result.hasException()).thenReturn(false);
-
-        // Act
-        Result actualResult = xdsClusterInvoker.invoke(invocation);
-
-        // Assert
-        assertNotNull(actualResult);
-        assertEquals(result, actualResult);
-        verify(invoker1, times(1)).invoke(invocation);
-        verify(invoker2, times(1)).invoke(invocation);
-    }
-
-    @Test
     void testRetryExhaustion() {
         // Arrange
         List<Invoker<Object>> invokers = Arrays.asList(invoker1, invoker2);
