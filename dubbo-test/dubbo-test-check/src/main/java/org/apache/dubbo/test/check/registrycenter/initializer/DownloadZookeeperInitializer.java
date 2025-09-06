@@ -198,7 +198,8 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
                                 TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE,
                                 "",
                                 "",
-                                "Failed to download the file, download url: " + url);
+                                "Failed to download the file, download url: " + url,
+                                t);
                         super.onThrowable(t);
                     }
                 });
