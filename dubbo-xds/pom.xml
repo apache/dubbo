@@ -30,7 +30,7 @@
 
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <protobuf-java_version>3.19.6</protobuf-java_version>
+    <protobuf-java_version>3.25.1</protobuf-java_version>
   </properties>
 
   <dependencies>
@@ -234,31 +234,4 @@
       </extension>
     </extensions>
   </build>
-
-  <profiles>
-    <profile>
-      <id>jdk8</id>
-      <activation>
-        <property>
-          <name>jdk.profile</name>
-          <value>8</value>
-        </property>
-      </activation>
-      <properties>
-        <protobuf-java_version>3.19.6</protobuf-java_version>
-      </properties>
-    </profile>
-    <profile>
-      <id>jdk11plus</id>
-      <activation>
-        <property>
-          <name>jdk.profile</name>
-          <value>11plus</value>
-        </property>
-      </activation>
-      <properties>
-        <protobuf-java_version>3.25.1</protobuf-java_version>
-      </properties>
-    </profile>
-  </profiles>
 </project>
