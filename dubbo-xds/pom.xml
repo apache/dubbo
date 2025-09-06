@@ -30,7 +30,7 @@
 
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <protobuf-java_version>3.25.1</protobuf-java_version>
+    <protobuf-java_version>3.19.6</protobuf-java_version>
   </properties>
   <dependencies>
     <dependency>
@@ -106,10 +106,12 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
+      <version>${protobuf-java_version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
+      <version>${protobuf-java_version}</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
