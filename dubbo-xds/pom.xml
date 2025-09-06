@@ -239,7 +239,10 @@
     <profile>
       <id>jdk8</id>
       <activation>
-        <jdk>[1.8,1.9)</jdk>
+        <property>
+          <name>jdk.profile</name>
+          <value>8</value>
+        </property>
       </activation>
       <properties>
         <protobuf-java_version>3.19.6</protobuf-java_version>
@@ -248,10 +251,13 @@
     <profile>
       <id>jdk11plus</id>
       <activation>
-        <jdk>[11,)</jdk>
+        <property>
+          <name>jdk.profile</name>
+          <value>11plus</value>
+        </property>
       </activation>
       <properties>
-        <protobuf-java_version>3.21.12</protobuf-java_version>
+        <protobuf-java_version>3.25.1</protobuf-java_version>
       </properties>
     </profile>
   </profiles>
