@@ -66,7 +66,7 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
     /**
      * The timeout when download zookeeper binary archive file.
      */
-    private static final int REQUEST_TIMEOUT = 30 * 1000;
+    private static final int REQUEST_TIMEOUT = 180 * 1000;
 
     /**
      * The timeout when connect the download url.
