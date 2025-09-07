@@ -245,22 +245,96 @@ jobs:
           key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
           restore-keys: |
             zookeeper-${{ runner.os }}-
-      - name: "Test with maven on Java: 8"
-        timeout-minutes: 90
+      - name: "Pre-check (Java 8) - env / repo / files"
         if: ${{ matrix.java == '8' }}
         run: |
+          echo "===== java & maven versions ====="
+          java -version || true
+          ./mvnw -v || true
+          echo
+          echo "===== git info ====="
+          git rev-parse --abbrev-ref HEAD || true
+          git log -n 1 --oneline || true
+          echo
+          echo "===== repo top-level list (short) ====="
+          ls -la | sed -n '1,200p' || true
+          echo
+          echo "===== check dubbo-xds presence ====="
+          if [ -d dubbo-xds ]; then
+            echo "dubbo-xds exists"
+            ls -la dubbo-xds | sed -n '1,200p'
+            echo "list src/main/java/org/apache/dubbo/xds/resource/update/"
+            ls -la dubbo-xds/src/main/java/org/apache/dubbo/xds/resource/update/ || true
+            echo "print head of LdsUpdate.java (first 60 lines):"
+            sed -n '1,60p' dubbo-xds/src/main/java/org/apache/dubbo/xds/resource/update/LdsUpdate.java || true
+          else
+            echo "ERROR: dubbo-xds directory NOT found!"
+          fi
+          echo
+          echo "===== check controlplane api jar in local repo (quick) ====="
+          ls -la ~/.m2/repository/io/envoyproxy/controlplane/api || true
+          if [ -f ~/.m2/repository/io/envoyproxy/controlplane/api/1.0.45/api-1.0.45.jar ]; then
+            echo "Found api-1.0.45.jar"
+            jar tf ~/.m2/repository/io/envoyproxy/controlplane/api/1.0.45/api-1.0.45.jar | grep 'io/envoyproxy/envoy/config/listener/v3/Listener.class' || true
+          else
+            echo "controlplane api jar not in local repo"
+          fi
+          echo
+          echo "===== effective-pom (partial) - check modules & plugin versions ====="
+          ./mvnw help:effective-pom -Pjacoco,'!jdk15ge-add-open',skip-spotless -Doutput=effective-pom.xml >/dev/null || true
+          grep -n "<modules>" -n effective-pom.xml || true
+          grep -n "dubbo-xds" effective-pom.xml || true
+          grep -n "maven-compiler-plugin" effective-pom.xml || true
+          echo "===== end pre-check ====="
+
+      - name: "Run maven (Java 8) with debug output"
+        if: ${{ matrix.java == '8' }}
+        timeout-minutes: 90
+        run: |
           set -o pipefail
-          ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,'!jdk15ge-add-open',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
+          # run maven with debug and tee logs to file for post-inspection
+          ./mvnw ${{ env.MAVEN_ARGS }} clean test verify \
+            -Pjacoco,'!jdk15ge-add-open',skip-spotless \
+            -DtrimStackTrace=false -Dmaven.test.skip=false \
+            -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false \
+            -Drat.skip=false \
+            -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper \
+            -X 2>&1 | tee maven_full_debug.log
+
+      - name: "Post-check / diagnostics (Java 8)"
+        if: ${{ matrix.java == '8' }}
+        run: |
+          echo "===== show compile-related lines (grep) ====="
+          # show lines related to compilation & source files & errors
+          grep -n "Compiling [0-9]* source" maven_full_debug.log || true
+          grep -n "Recompiling the module" maven_full_debug.log || true
+          grep -n "Stale source detected" maven_full_debug.log || true
+          grep -n "cannot find symbol" maven_full_debug.log || true
+          grep -n "error: cannot find symbol" maven_full_debug.log || true
+          echo
+          echo "===== list generated-sources and target/classes for dubbo-xds ====="
+          ls -la dubbo-xds/target || true
+          ls -la dubbo-xds/target/generated-sources/protobuf/java || true
+          ls -la dubbo-xds/target/classes/org/apache/dubbo/xds/resource/update || true
+          find dubbo-xds/target -name "*Listener*.class" -print || true
+          find dubbo-xds/target -name "LdsUpdate*.class" -print || true
+          echo
+          echo "===== show effective reactor build order (top) ====="
+          grep -n "Reactor build order" maven_full_debug.log || true
+          grep -n "Building.*dubbo-xds" maven_full_debug.log || true
+          echo
+          echo "===== show plugin versions used during run ====="
+          grep -n "maven-compiler-plugin" maven_full_debug.log || true
+          echo
+          echo "===== tail of maven log (last 200 lines) ====="
+          tail -n 200 maven_full_debug.log || true
+
       - name: "Test with maven on Java: ${{ matrix.java }}"
         timeout-minutes: 90
         if: ${{ matrix.java != '8' }}
         run: |
           set -o pipefail
           ./mvnw ${{ env.MAVEN_ARGS }} clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge-add-open',skip-spotless -DtrimStackTrace=false -Dmaven.test.skip=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper 2>&1 | tee >(grep -n -B 1 -A 200 "FAILURE! -- in" > test_errors.log)
-      - name: "List generated sources"
-        run: |
-          echo "Check generated sources for protobuf:"
-          ls -R dubbo-xds/target/generated-sources/protobuf/java || true
       - name: "Print test error log"
         if: failure()
         run: cat test_errors.log
