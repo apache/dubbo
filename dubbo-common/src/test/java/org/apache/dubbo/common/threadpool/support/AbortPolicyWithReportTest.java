@@ -156,9 +156,9 @@ class AbortPolicyWithReportTest {
         final String os =
                 SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME).toLowerCase();
         if (os.contains(OS_WIN_PREFIX)) {
-            // "con" is one of Windows reserved names,
+            // colon is a reserved character which could not be used in a file or directory name,
             // https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
-            return "con";
+            return "c:o:n";
         } else {
             return "/dev/full/" + UUID.randomUUID().toString();
         }
