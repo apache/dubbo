@@ -71,7 +71,7 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
     /**
      * The timeout when connect the download url.
      */
-    private static final int CONNECT_TIMEOUT = 10 * 1000;
+    private static final int CONNECT_TIMEOUT = 60 * 1000;
 
     /**
      * Returns {@code true} if the file exists with the given file path, otherwise {@code false}.
