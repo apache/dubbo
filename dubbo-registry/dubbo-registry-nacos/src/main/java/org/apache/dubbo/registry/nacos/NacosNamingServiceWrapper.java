@@ -201,9 +201,6 @@ public class NacosNamingServiceWrapper {
             }
 
             InstanceInfo oldInstanceInfo = optional.get();
-            instancesInfo.getInstances().remove(oldInstanceInfo);
-            instancesInfo.getInstances().add(new InstanceInfo(newInstance, oldInstanceInfo.getNamingService()));
-
             if (isSupportBatchRegister && instancesInfo.isBatchRegistered()) {
                 NamingService namingService = oldInstanceInfo.getNamingService();
                 List<Instance> instanceListToRegister = instancesInfo.getInstances().stream()
@@ -211,11 +208,15 @@ public class NacosNamingServiceWrapper {
                         .collect(Collectors.toList());
 
                 accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister));
+                instancesInfo.getInstances().remove(oldInstanceInfo);
+                instancesInfo.getInstances().add(new InstanceInfo(newInstance, oldInstanceInfo.getNamingService()));
                 return;
             }
 
             // fallback to register one by one
             accept(() -> oldInstanceInfo.getNamingService().registerInstance(nacosServiceName, group, newInstance));
+            instancesInfo.getInstances().remove(oldInstanceInfo);
+            instancesInfo.getInstances().add(new InstanceInfo(newInstance, oldInstanceInfo.getNamingService()));
         } finally {
             instancesInfo.unlock();
         }
@@ -255,33 +256,30 @@ public class NacosNamingServiceWrapper {
                 return;
             }
             InstanceInfo instanceInfo = optional.get();
-            instancesInfo.getInstances().remove(instanceInfo);
-
-            if (instancesInfo.getInstances().isEmpty()) {
-                registerStatus.remove(new InstanceId(nacosServiceName, group));
-                instancesInfo.setValid(false);
-            }
-
-            // only one registered
-            if (instancesInfo.getInstances().isEmpty()) {
-                // directly unregister
-                accept(() -> instanceInfo.getNamingService().deregisterInstance(nacosServiceName, group, instance));
+            if (instancesInfo.getInstances().size() == 1
+                    && instanceInfo.equals(instancesInfo.getInstances().get(0))) {
                 instancesInfo.setBatchRegistered(false);
-                return;
             }
-
             if (instancesInfo.isBatchRegistered()) {
                 // register the rest instances
                 List<Instance> instanceListToRegister = new ArrayList<>();
                 for (InstanceInfo info : instancesInfo.getInstances()) {
-                    instanceListToRegister.add(info.getInstance());
+                    if (!info.equals(instanceInfo)) {
+                        instanceListToRegister.add(info.getInstance());
+                    }
                 }
                 accept(() -> instanceInfo
                         .getNamingService()
                         .batchRegisterInstance(nacosServiceName, group, instanceListToRegister));
+                instancesInfo.getInstances().remove(instanceInfo);
             } else {
                 // unregister one
                 accept(() -> instanceInfo.getNamingService().deregisterInstance(nacosServiceName, group, instance));
+                instancesInfo.getInstances().remove(instanceInfo);
+            }
+            if (instancesInfo.getInstances().isEmpty()) {
+                registerStatus.remove(new InstanceId(nacosServiceName, group));
+                instancesInfo.setValid(false);
             }
         } finally {
             instancesInfo.unlock();

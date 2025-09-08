@@ -79,7 +79,7 @@ public class MetadataInfo implements Serializable {
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
     private transient ExtensionLoader<MetadataParamsFilter> loader;
-    private transient volatile String reportedRevision = null;
+    private transient volatile String reportedRevision;
 
     public MetadataInfo() {
         this(null);
@@ -107,7 +107,8 @@ public class MetadataInfo implements Serializable {
             boolean updated,
             ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs,
             ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs,
-            ExtensionLoader<MetadataParamsFilter> loader) {
+            ExtensionLoader<MetadataParamsFilter> loader,
+            String reportedRevision) {
         this.app = app;
         this.revision = revision;
         this.services = new ConcurrentHashMap<>(services);
@@ -120,6 +121,7 @@ public class MetadataInfo implements Serializable {
         this.exportedServiceURLs =
                 exportedServiceURLs == null ? null : new ConcurrentSkipListMap<>(exportedServiceURLs);
         this.loader = loader;
+        this.reportedRevision = reportedRevision;
     }
 
     /**
@@ -382,11 +384,15 @@ public class MetadataInfo implements Serializable {
     }
 
     public boolean isReported() {
-        return calAndGetRevision().equals(this.reportedRevision);
+        return Objects.equals(revision, reportedRevision);
     }
 
     public void setReportRevision(String reportRevision) {
         this.reportedRevision = reportRevision;
+    }
+
+    public String getReportedRevision() {
+        return reportedRevision;
     }
 
     @Override
@@ -493,7 +499,8 @@ public class MetadataInfo implements Serializable {
                 updated,
                 subscribedServiceURLs,
                 exportedServiceURLs,
-                loader);
+                loader,
+                reportedRevision);
     }
 
     private Object readResolve() {

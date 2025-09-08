@@ -156,19 +156,31 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (isDestroy) {
             return;
         }
-        if (this.serviceInstance != null) {
-            return;
+        if (this.serviceInstance == null) {
+            ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
+            if (!isValidInstance(serviceInstance)) {
+                return;
+            }
+            this.serviceInstance = serviceInstance;
         }
-        ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
-        if (!isValidInstance(serviceInstance)) {
-            return;
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
+        if (revisionUpdated) {
+            try {
+                reportMetadata(this.metadataInfo);
+                DefaultServiceInstance newServiceInstance =
+                        new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
+                newServiceInstance
+                        .getMetadata()
+                        .put(
+                                EXPORTED_SERVICES_REVISION_PROPERTY_NAME,
+                                newServiceInstance.getServiceMetadata().getRevision());
+                doRegister(newServiceInstance);
+                this.serviceInstance = newServiceInstance;
+            } catch (Exception e) {
+                this.serviceInstance = null;
+                throw e;
+            }
         }
-        reportMetadata(this.metadataInfo);
-        if (!isConnectionAvailable()) {
-            throw new IllegalStateException("Service Discovery Connection is not Available");
-        }
-        doRegister(serviceInstance);
-        this.serviceInstance = serviceInstance;
     }
 
     /**
@@ -192,13 +204,17 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         ServiceInstance oldServiceInstance = this.serviceInstance;
         DefaultServiceInstance newServiceInstance =
                 new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
-        String existingInstanceRevision = newServiceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
-        String newRevision = newServiceInstance.getServiceMetadata().calAndGetRevision();
-        if (!newRevision.equals(existingInstanceRevision)) {
-            logger.info(
-                    String.format("Metadata of instance changed, updating instance with revision %s.", newRevision));
+        boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
+        if (revisionUpdated) {
+            logger.info(String.format(
+                    "Metadata of instance changed, updating instance with revision %s.",
+                    newServiceInstance.getServiceMetadata().getRevision()));
+            newServiceInstance
+                    .getMetadata()
+                    .put(
+                            EXPORTED_SERVICES_REVISION_PROPERTY_NAME,
+                            newServiceInstance.getServiceMetadata().getRevision());
             doUpdate(oldServiceInstance, newServiceInstance);
-            this.serviceInstance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, newRevision);
         }
     }
 
@@ -213,6 +229,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         doUnregister(this.serviceInstance);
+        this.serviceInstance = null;
     }
 
     @Override
@@ -347,12 +364,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
      */
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) {
         this.doUnregister(oldServiceInstance);
-
-        this.serviceInstance = newServiceInstance;
+        this.serviceInstance = null;
 
         if (!EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
             reportMetadata(newServiceInstance.getServiceMetadata());
             this.doRegister(newServiceInstance);
+            this.serviceInstance = newServiceInstance;
+        } else {
+            metadataInfo.setReportRevision(EMPTY_REVISION);
         }
     }
 
@@ -372,19 +391,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         instance.setServiceMetadata(metadataInfo);
         setMetadataStorageType(instance, metadataType);
         ServiceInstanceMetadataUtils.customizeInstance(instance, applicationModel);
-        instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
         return instance;
     }
 
     protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
-        String existingInstanceRevision = getExportedServicesRevision(instance);
         MetadataInfo metadataInfo = instance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
-        if (!newRevision.equals(existingInstanceRevision)) {
-            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
-            return true;
-        }
-        return false;
+        return !newRevision.equals(metadataInfo.getReportedRevision())
+                || !newRevision.equals(instance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
     }
 
     protected void reportMetadata(MetadataInfo metadataInfo) {
@@ -404,6 +418,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                     metadataInfo.setReportRevision(identifier.getRevision());
                     return null;
                 });
+            } else {
+                metadataInfo.setReportRevision(identifier.getRevision());
             }
         }
         MetadataInfo clonedMetadataInfo = metadataInfo.clone();

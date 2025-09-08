@@ -389,7 +389,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 throw e;
             } else {
                 logger.info("retry service discovery subscribe");
-                addFailedSubscribed(url, listener);
+                Set<String> finalServiceNames = serviceNames;
+                addFailedSubscribed(url, listener, () -> this.subscribeURLs(url, listener, finalServiceNames));
             }
         } finally {
             appSubscriptionLock.unlock();

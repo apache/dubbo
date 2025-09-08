@@ -130,12 +130,11 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         Instance newInstance = toInstance(newServiceInstance);
 
         try {
-            this.serviceInstance = newServiceInstance;
             reportMetadata(newServiceInstance.getServiceMetadata());
             execute(namingService, service -> {
-                Instance instance = toInstance(serviceInstance);
-                service.updateInstance(instance.getServiceName(), group, oldInstance, newInstance);
+                service.updateInstance(newInstance.getServiceName(), group, oldInstance, newInstance);
             });
+            this.serviceInstance = newServiceInstance;
         } catch (Exception e) {
             throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
         }

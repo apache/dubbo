@@ -914,9 +914,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     throw new IllegalStateException(e);
                 }
             }
-            if (!dynamicConfiguration.isAvailable() && !configCenter.isCheck()) {
-                logger.warn(
-                        "The configuration center initialize successfully. but connection is available now, and the config-center.check is false, it will return now.");
+            if (dynamicConfiguration == null || !dynamicConfiguration.isAvailable()) {
+                if (configCenter.isCheck()) {
+                    throw new IllegalStateException("The configuration center is not available");
+                } else if (dynamicConfiguration == null) {
+                    logger.warn("The configuration center failed to initialize, dynamicConfiguration is null.");
+                } else {
+                    logger.warn("The configuration center initialize successfully, but connection is not available.");
+                }
                 return dynamicConfiguration;
             }
             ApplicationModel applicationModel = getApplicationModel();

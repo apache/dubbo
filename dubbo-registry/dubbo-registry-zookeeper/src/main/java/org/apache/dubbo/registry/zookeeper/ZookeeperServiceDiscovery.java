@@ -133,9 +133,9 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         }
 
         try {
-            this.serviceInstance = newServiceInstance;
             reportMetadata(newServiceInstance.getServiceMetadata());
             serviceDiscovery.updateService(newInstance);
+            this.serviceInstance = newServiceInstance;
         } catch (Exception e) {
             throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
         }
