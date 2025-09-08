@@ -140,17 +140,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) {
-        String invokerAddress = getUrl().getAddress();
-        String invokerClusterID = getUrl().getParameter("clusterID");
-        LOGGER.info(
-                "[TRIPLE-INVOKE] TripleInvoker.doInvoke called on invoker: {} (clusterID: {})",
-                invokerAddress,
-                invokerClusterID);
-        LOGGER.info("[TRIPLE-INVOKE] Connection client address: {}", connectionClient.getLocalAddress());
-        LOGGER.info("[TRIPLE-INVOKE] Connection is connected: {}", connectionClient.isConnected());
-
         if (!connectionClient.isConnected()) {
-            LOGGER.warn("[TRIPLE-INVOKE] Connection client is not connected for invoker: {}", invokerAddress);
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             RpcException exception = TriRpcStatus.UNAVAILABLE
                     .withDescription(String.format("upstream %s is unavailable", getUrl().getAddress()))
