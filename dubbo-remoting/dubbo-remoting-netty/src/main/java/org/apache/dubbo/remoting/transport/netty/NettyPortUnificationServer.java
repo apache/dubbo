@@ -90,7 +90,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     @Override
-    protected void doOpen() {
+    protected void doOpen0() {
         NettyHelper.setNettyLoggerFactory();
         ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory(EVENT_LOOP_BOSS_POOL_NAME, true));
         ExecutorService worker =

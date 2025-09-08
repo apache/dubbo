@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -33,6 +34,7 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
+import org.apache.dubbo.rpc.service.EchoService;
 
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +42,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.protocol.tri.support.IGreeter.SERVER_MSG;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TripleProtocolTest {
 
@@ -65,7 +68,8 @@ class TripleProtocolTest {
         serviceRepository.registerProvider(providerModel);
         providerUrl = providerUrl.setServiceModel(providerModel);
 
-        Protocol protocol = new TripleProtocol(providerUrl.getOrDefaultFrameworkModel());
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("tri");
+
         ProxyFactory proxy =
                 applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Invoker<IGreeter> invoker = proxy.getInvoker(serviceImpl, IGreeter.class, providerUrl);
@@ -106,6 +110,11 @@ class TripleProtocolTest {
         serverOutboundMessageSubscriber.getLatch().await(1000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(REQUEST_MSG, serverOutboundMessageSubscriber.getOnNextData());
         Assertions.assertTrue(serverOutboundMessageSubscriber.isOnCompleted());
+
+        EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, consumerUrl));
+        assertEquals(echo.$echo("test"), "test");
+        assertEquals(echo.$echo("abcdefg"), "abcdefg");
+        assertEquals(echo.$echo(1234), 1234);
 
         export.unexport();
         protocol.destroy();

@@ -42,7 +42,6 @@ public class OneToManyMethodHandler<T, R> implements StubMethodHandler<T, R> {
     public CompletableFuture<?> invoke(Object[] arguments) {
         T request = (T) arguments[0];
         StreamObserver<R> responseObserver = (StreamObserver<R>) arguments[1];
-        ReactorServerCalls.oneToMany(request, responseObserver, func);
-        return CompletableFuture.completedFuture(null);
+        return ReactorServerCalls.oneToMany(request, responseObserver, func);
     }
 }

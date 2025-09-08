@@ -17,6 +17,7 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -376,7 +377,7 @@ public final class URLBuilder extends ServiceConfigURL {
 
     @Override
     public URLBuilder addParameters(String... pairs) {
-        if (pairs == null || pairs.length == 0) {
+        if (ArrayUtils.isEmpty(pairs)) {
             return this;
         }
         if (pairs.length % 2 != 0) {
@@ -416,7 +417,7 @@ public final class URLBuilder extends ServiceConfigURL {
 
     @Override
     public URLBuilder removeParameters(String... keys) {
-        if (keys == null || keys.length == 0) {
+        if (ArrayUtils.isEmpty(keys)) {
             return this;
         }
         for (String key : keys) {
@@ -458,7 +459,7 @@ public final class URLBuilder extends ServiceConfigURL {
             return false;
         }
         String value = getMethodParameter(method, key);
-        return value != null && value.length() > 0;
+        return StringUtils.isNotEmpty(value);
     }
 
     @Override

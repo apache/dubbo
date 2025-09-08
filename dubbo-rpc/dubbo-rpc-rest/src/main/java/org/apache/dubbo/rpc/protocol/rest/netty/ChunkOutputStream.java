@@ -67,12 +67,10 @@ public class ChunkOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        int dataLengthLeftToWrite = len;
-        int dataToWriteOffset = off;
-        if (buffer.maxWritableBytes() < dataLengthLeftToWrite) {
+        if (buffer.maxWritableBytes() < len) {
             throwExceedPayloadLimitException(buffer.readableBytes() + len);
         }
-        buffer.writeBytes(b, dataToWriteOffset, dataLengthLeftToWrite);
+        buffer.writeBytes(b, off, len);
     }
 
     @Override
@@ -80,7 +78,7 @@ public class ChunkOutputStream extends OutputStream {
         int readable = buffer.readableBytes();
         if (readable == 0) return;
         if (!response.isCommitted()) response.prepareChunkStream();
-        ctx.writeAndFlush(new DefaultHttpContent(buffer.copy()));
+        ctx.write(new DefaultHttpContent(buffer.copy()));
         buffer.clear();
         super.flush();
     }

@@ -44,6 +44,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.EncoderException;
+import io.netty.util.ReferenceCountUtil;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ENCODE_IN_IO_THREAD;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -61,14 +62,13 @@ final class NettyChannel extends AbstractChannel {
     /**
      * the cache for netty channel and dubbo channel
      */
-    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP =
-            new ConcurrentHashMap<Channel, NettyChannel>();
+    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<>();
     /**
      * netty channel
      */
     private final Channel channel;
 
-    private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     private final AtomicBoolean active = new AtomicBoolean(false);
 
@@ -186,10 +186,11 @@ final class NettyChannel extends AbstractChannel {
 
         boolean success = true;
         int timeout = 0;
+        ByteBuf buf = null;
         try {
             Object outputMessage = message;
             if (!encodeInIOThread) {
-                ByteBuf buf = channel.alloc().buffer();
+                buf = channel.alloc().buffer();
                 ChannelBuffer buffer = new NettyBackedChannelBuffer(buf);
                 codec.encode(this, buffer, message);
                 outputMessage = buf;
@@ -225,6 +226,10 @@ final class NettyChannel extends AbstractChannel {
             }
         } catch (Throwable e) {
             removeChannelIfDisconnected(channel);
+            if (buf != null) {
+                // Release the ByteBuf if an exception occurs
+                ReferenceCountUtil.safeRelease(buf);
+            }
             throw new RemotingException(
                     this,
                     "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to "

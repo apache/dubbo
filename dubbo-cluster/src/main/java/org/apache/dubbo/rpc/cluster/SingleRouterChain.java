@@ -212,7 +212,7 @@ public class SingleRouterChain<T> {
     public RouterSnapshotNode<T> buildRouterSnapshot(
             URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
-        RouterSnapshotNode<T> parentNode = new RouterSnapshotNode<T>("Parent", resultInvokers.clone());
+        RouterSnapshotNode<T> parentNode = new RouterSnapshotNode<>("Parent", resultInvokers.clone());
         parentNode.setNodeOutputInvokers(resultInvokers.clone());
 
         // 1. route state router
@@ -227,7 +227,7 @@ public class SingleRouterChain<T> {
             return parentNode;
         }
 
-        RouterSnapshotNode<T> commonRouterNode = new RouterSnapshotNode<T>("CommonRouter", resultInvokers.clone());
+        RouterSnapshotNode<T> commonRouterNode = new RouterSnapshotNode<>("CommonRouter", resultInvokers.clone());
         parentNode.appendNode(commonRouterNode);
         List<Invoker<T>> commonRouterResult = resultInvokers;
 
@@ -237,7 +237,7 @@ public class SingleRouterChain<T> {
             List<Invoker<T>> inputInvokers = new ArrayList<>(commonRouterResult);
 
             RouterSnapshotNode<T> currentNode =
-                    new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers);
+                    new RouterSnapshotNode<>(router.getClass().getSimpleName(), inputInvokers);
 
             // append to router node chain
             commonRouterNode.appendNode(currentNode);

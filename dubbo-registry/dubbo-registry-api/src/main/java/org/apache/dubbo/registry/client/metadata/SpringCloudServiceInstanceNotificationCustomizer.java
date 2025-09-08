@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SpringCloudServiceInstanceNotificationCustomizer implements ServiceInstanceNotificationCustomizer {
+    private static final String REST_PROTOCOL = "rest";
+
     @Override
     public void customize(List<ServiceInstance> serviceInstance) {
         if (serviceInstance.isEmpty()) {
@@ -38,8 +40,8 @@ public class SpringCloudServiceInstanceNotificationCustomizer implements Service
         }
 
         for (ServiceInstance instance : serviceInstance) {
-            MetadataInfo.ServiceInfo serviceInfo =
-                    new MetadataInfo.ServiceInfo("*", "*", "*", "rest", instance.getPort(), "*", new HashMap<>());
+            MetadataInfo.ServiceInfo serviceInfo = new MetadataInfo.ServiceInfo(
+                    "*", "*", "*", REST_PROTOCOL, instance.getPort(), "*", new HashMap<>());
             String revision = "SPRING_CLOUD-" + instance.getServiceName() + "-" + instance.getAddress() + "-"
                     + instance.getPort();
             MetadataInfo metadataInfo =
@@ -49,6 +51,16 @@ public class SpringCloudServiceInstanceNotificationCustomizer implements Service
                             new ConcurrentHashMap<>(Collections.singletonMap("*", serviceInfo))) {
                         @Override
                         public List<ServiceInfo> getMatchedServiceInfos(ProtocolServiceKey consumerProtocolServiceKey) {
+                            String consumerProtocol = consumerProtocolServiceKey.getProtocol();
+                            if (consumerProtocol != null && !REST_PROTOCOL.equalsIgnoreCase(consumerProtocol)) {
+                                return Collections.emptyList();
+                            }
+
+                            String protocol = consumerProtocol;
+                            if (protocol == null) {
+                                protocol = REST_PROTOCOL;
+                            }
+
                             getServices()
                                     .putIfAbsent(
                                             consumerProtocolServiceKey.getServiceKeyString(),
@@ -56,7 +68,7 @@ public class SpringCloudServiceInstanceNotificationCustomizer implements Service
                                                     consumerProtocolServiceKey.getInterfaceName(),
                                                     consumerProtocolServiceKey.getGroup(),
                                                     consumerProtocolServiceKey.getVersion(),
-                                                    consumerProtocolServiceKey.getProtocol(),
+                                                    protocol,
                                                     instance.getPort(),
                                                     consumerProtocolServiceKey.getInterfaceName(),
                                                     new HashMap<>()));

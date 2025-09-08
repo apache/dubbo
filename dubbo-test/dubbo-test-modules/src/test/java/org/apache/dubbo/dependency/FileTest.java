@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.dependency;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -133,7 +135,7 @@ class FileTest {
         List<String> artifactIdsInRoot = IOUtils.readLines(
                 this.getClass()
                         .getClassLoader()
-                        .getResource("META-INF/versions/.artifacts")
+                        .getResource(CommonConstants.DUBBO_VERSIONS_KEY + "/.artifacts")
                         .openStream(),
                 StandardCharsets.UTF_8);
         artifactIdsInRoot.removeIf(s -> s.startsWith("#"));

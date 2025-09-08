@@ -56,6 +56,8 @@ public interface ClientStream extends Stream {
                 boolean isReturnTriException) {
             onComplete(status, attachments);
         }
+
+        void onClose();
     }
 
     /**

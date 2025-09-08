@@ -42,7 +42,7 @@ public class ViolationReport implements Serializable {
 
     public void addConstraintViolation(RestConstraintViolation constraintViolation) {
         if (constraintViolations == null) {
-            constraintViolations = new LinkedList<RestConstraintViolation>();
+            constraintViolations = new LinkedList<>();
         }
         constraintViolations.add(constraintViolation);
     }

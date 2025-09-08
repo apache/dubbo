@@ -149,7 +149,11 @@ public interface Constants {
 
     String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
 
+    String SERVER_THREAD_POOL_PREFIX = SERVER_THREAD_POOL_NAME + "-";
+
     String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
+
+    String CLIENT_THREAD_POOL_PREFIX = CLIENT_THREAD_POOL_NAME + "-";
 
     String REST_PROTOCOL = "rest";
 }

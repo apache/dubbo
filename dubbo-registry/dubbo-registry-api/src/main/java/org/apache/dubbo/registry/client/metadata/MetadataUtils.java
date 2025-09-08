@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
@@ -150,6 +151,7 @@ public class MetadataUtils {
 
         ProxyFactory proxyFactory =
                 applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        url = url.addParameter(CHECK_KEY, false);
 
         MetadataService metadataService = proxyFactory.getProxy(invoker);
 

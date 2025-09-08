@@ -57,7 +57,6 @@ public class ProviderParseContext extends BaseParseContext {
     public String getPathVariable(int urlSplitIndex) {
 
         String[] split = getRequestFacade().getRequestURI().split("/");
-
-        return split[urlSplitIndex];
+        return split[urlSplitIndex].split("\\?")[0];
     }
 }

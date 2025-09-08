@@ -317,7 +317,7 @@ public class RpcUtils {
                 timeout = Long.parseLong((String) obj);
             } else if (obj instanceof Number) {
                 timeout = ((Number) obj).longValue();
-            } else {
+            } else if (obj != null) {
                 timeout = Long.parseLong(obj.toString());
             }
         } catch (Exception e) {

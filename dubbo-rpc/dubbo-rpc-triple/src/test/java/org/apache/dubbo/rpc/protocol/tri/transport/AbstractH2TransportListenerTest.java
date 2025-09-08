@@ -40,6 +40,9 @@ class AbstractH2TransportListenerTest {
 
             @Override
             public void cancelByRemote(long errorCode) {}
+
+            @Override
+            public void onClose() {}
         };
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HTTPS.name()).path("/foo.bar").method(HttpMethod.POST.asciiName());

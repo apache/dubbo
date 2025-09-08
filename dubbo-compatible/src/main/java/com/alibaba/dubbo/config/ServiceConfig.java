@@ -86,7 +86,7 @@ public class ServiceConfig<T> extends org.apache.dubbo.config.ServiceConfig<T> {
         if (providers == null || providers.isEmpty()) {
             return null;
         }
-        List<ProtocolConfig> protocols = new ArrayList<ProtocolConfig>(providers.size());
+        List<ProtocolConfig> protocols = new ArrayList<>(providers.size());
         for (ProviderConfig provider : providers) {
             protocols.add(convertProviderToProtocol(provider));
         }

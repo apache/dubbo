@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.message.codec;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
@@ -26,11 +27,8 @@ import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *  body is form
@@ -39,17 +37,15 @@ import java.util.Set;
 public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
+    public Object decode(byte[] body, ArgInfo argInfo) throws Exception {
+        Class<?> targetType = argInfo.getParamType();
         Object map = DataParseUtils.multipartFormConvert(body, targetType);
         Map valuesMap = (Map) map;
         if (Map.class.isAssignableFrom(targetType)) {
             return map;
         } else if (DataParseUtils.isTextType(targetType)) {
 
-            // only fetch  first
-            Set set = valuesMap.keySet();
-            ArrayList arrayList = new ArrayList<>(set);
-            Object key = arrayList.get(0);
+            String key = argInfo.getParamName();
             Object value = valuesMap.get(key);
             if (value == null) {
                 return null;

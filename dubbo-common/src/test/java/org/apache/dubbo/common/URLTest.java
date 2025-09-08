@@ -1132,4 +1132,22 @@ class URLTest {
         assertEquals(20881, url.getPort());
         assertEquals("apache", url.getParameter("name"));
     }
+
+    @Test
+    void testToServiceString() {
+        URL url = URL.valueOf(
+                "zookeeper://10.20.130.230:4444/org.apache.dubbo.metadata.report.MetadataReport?version=1.0.0&application=vic&group=aaa");
+        assertEquals(
+                "zookeeper://10.20.130.230:4444/aaa/org.apache.dubbo.metadata.report.MetadataReport:1.0.0",
+                url.toServiceString());
+    }
+
+    @Test
+    void testToServiceStringWithParameters() {
+        URL url = URL.valueOf(
+                "zookeeper://10.20.130.230:4444/org.apache.dubbo.metadata.report.MetadataReport?version=1.0.0&application=vic&group=aaa&namespace=test");
+        assertEquals(
+                "zookeeper://10.20.130.230:4444/aaa/org.apache.dubbo.metadata.report.MetadataReport:1.0.0?namespace=test",
+                url.toServiceString("namespace"));
+    }
 }

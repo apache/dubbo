@@ -35,6 +35,7 @@ class LiveTest {
     @AfterEach
     public void reset() {
         frameworkModel.destroy();
+        MockLivenessProbe.setCheckReturnValue(false);
     }
 
     @Test

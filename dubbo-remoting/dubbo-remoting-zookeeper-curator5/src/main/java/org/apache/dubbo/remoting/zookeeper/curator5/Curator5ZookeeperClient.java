@@ -55,6 +55,7 @@ import org.apache.zookeeper.data.Stat;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ZOOKEEPER_ENSEMBLE_TRACKER_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 
@@ -74,10 +75,12 @@ public class Curator5ZookeeperClient
         try {
             int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
             int sessionExpireMs = url.getParameter(SESSION_KEY, DEFAULT_SESSION_TIMEOUT_MS);
+            boolean ensembleTracker = url.getParameter(ZOOKEEPER_ENSEMBLE_TRACKER_KEY, DEFAULT_ENSEMBLE_TRACKER);
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
                     .retryPolicy(new RetryNTimes(1, 1000))
                     .connectionTimeoutMs(timeout)
+                    .ensembleTracker(ensembleTracker)
                     .sessionTimeoutMs(sessionExpireMs);
             String userInformation = url.getUserInformation();
             if (userInformation != null && userInformation.length() > 0) {

@@ -43,11 +43,11 @@ final class NettyChannel extends AbstractChannel {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyChannel.class);
 
     private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> CHANNEL_MAP =
-            new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
+            new ConcurrentHashMap<>();
 
     private final org.jboss.netty.channel.Channel channel;
 
-    private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     private NettyChannel(org.jboss.netty.channel.Channel channel, URL url, ChannelHandler handler) {
         super(url, handler);

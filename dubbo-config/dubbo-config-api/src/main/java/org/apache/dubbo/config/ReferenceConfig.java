@@ -346,6 +346,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
                 serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
                 repository.registerService(serviceDescriptor);
+                setInterface(serviceDescriptor.getInterfaceName());
             } else {
                 serviceDescriptor = repository.registerService(interfaceClass);
             }

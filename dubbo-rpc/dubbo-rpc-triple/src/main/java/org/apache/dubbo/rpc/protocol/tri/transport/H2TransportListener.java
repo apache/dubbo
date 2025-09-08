@@ -42,4 +42,6 @@ public interface H2TransportListener {
     void onData(ByteBuf data, boolean endStream);
 
     void cancelByRemote(long errorCode);
+
+    void onClose();
 }

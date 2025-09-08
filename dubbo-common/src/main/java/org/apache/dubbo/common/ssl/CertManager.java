@@ -32,8 +32,8 @@ public class CertManager {
 
     public ProviderCert getProviderConnectionConfig(URL localAddress, SocketAddress remoteAddress) {
         for (CertProvider certProvider : certProviders) {
-            if (certProvider.isSupport(localAddress)) {
-                ProviderCert cert = certProvider.getProviderConnectionConfig(localAddress);
+            if (certProvider.isSupport(localAddress, remoteAddress)) {
+                ProviderCert cert = certProvider.getProviderConnectionConfig(localAddress, remoteAddress);
                 if (cert != null) {
                     return cert;
                 }

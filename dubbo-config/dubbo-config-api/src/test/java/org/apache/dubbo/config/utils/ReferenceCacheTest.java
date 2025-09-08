@@ -35,6 +35,7 @@ class ReferenceCacheTest {
     public void setUp() throws Exception {
         DubboBootstrap.reset();
         MockReferenceConfig.setCounter(0);
+        XxxMockReferenceConfig.setCounter(0);
         SimpleReferenceCache.CACHE_HOLDER.clear();
     }
 

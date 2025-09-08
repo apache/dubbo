@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -317,11 +318,18 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
 
         Object value = originValue;
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            ServiceModel consumerServiceModel = getUrl().getServiceModel();
-            if (consumerServiceModel != null) {
-                Thread.currentThread().setContextClassLoader(consumerServiceModel.getClassLoader());
+            // 1. By default, the classloader of the current Thread is the consumer class loader.
+            ClassLoader consumerClassLoader = contextClassLoader;
+            ServiceModel serviceModel = getUrl().getServiceModel();
+            // 2. If there is a ConsumerModel in the url, the classloader of the ConsumerModel is consumerLoader
+            if (Objects.nonNull(serviceModel) && serviceModel instanceof ConsumerModel) {
+                consumerClassLoader = serviceModel.getClassLoader();
+            }
+            // 3. request result copy
+            if (Objects.nonNull(consumerClassLoader)) {
+                Thread.currentThread().setContextClassLoader(consumerClassLoader);
                 Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
                 if (returnTypes == null) {
                     return originValue;
@@ -334,7 +342,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             }
             return value;
         } finally {
-            Thread.currentThread().setContextClassLoader(cl);
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
         }
     }
 

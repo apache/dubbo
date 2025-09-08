@@ -22,6 +22,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
+
+import javax.net.ssl.SSLSession;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -30,7 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
 
 /**
  * NettyServerHandler.
@@ -43,6 +48,8 @@ public class NettyServerHandler extends ChannelDuplexHandler {
      * <ip:port, dubbo channel>
      */
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
+
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
 
     private final URL url;
 
@@ -123,6 +130,15 @@ public class NettyServerHandler extends ChannelDuplexHandler {
             }
         }
         super.userEventTriggered(ctx, evt);
+        if (evt instanceof SslHandshakeCompletionEvent) {
+            SslHandshakeCompletionEvent handshakeEvent = (SslHandshakeCompletionEvent) evt;
+            if (handshakeEvent.isSuccess()) {
+                NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+                channel.setAttribute(
+                        Constants.SSL_SESSION_KEY,
+                        ctx.channel().attr(SSL_SESSION_KEY).get());
+            }
+        }
     }
 
     @Override

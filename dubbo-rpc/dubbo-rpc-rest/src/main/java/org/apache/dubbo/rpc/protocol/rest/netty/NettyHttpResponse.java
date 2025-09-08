@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,10 +35,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -49,11 +51,13 @@ public class NettyHttpResponse implements HttpResponse {
     private static final int EMPTY_CONTENT_LENGTH = 0;
     private int status = 200;
     private OutputStream os;
-    private Map<String, List<String>> outputHeaders;
+    private final Map<String, List<String>> outputHeaders;
     private final ChannelHandlerContext ctx;
     private boolean committed;
-    private boolean keepAlive;
-    private HttpMethod method;
+    private final boolean keepAlive;
+
+    private final int idleTimeout;
+    private final HttpMethod method;
     // raw response body
     private Object responseBody;
     // raw response class
@@ -67,6 +71,7 @@ public class NettyHttpResponse implements HttpResponse {
         outputHeaders = new HashMap<>();
         this.method = method;
         os = new ChunkOutputStream(this, ctx, url.getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
+        this.idleTimeout = url.getParameter(RestConstant.IDLE_TIMEOUT_PARAM, RestConstant.IDLE_TIMEOUT);
         this.ctx = ctx;
         this.keepAlive = keepAlive;
     }
@@ -123,7 +128,6 @@ public class NettyHttpResponse implements HttpResponse {
             throw new IllegalStateException("Messages.MESSAGES.alreadyCommitted()");
         }
         outputHeaders.clear();
-        outputHeaders.clear();
     }
 
     public boolean isKeepAlive() {
@@ -139,7 +143,7 @@ public class NettyHttpResponse implements HttpResponse {
     public DefaultHttpResponse getEmptyHttpResponse() {
         DefaultFullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.valueOf(getStatus()));
         if (method == null || !method.equals(HttpMethod.HEAD)) {
-            res.headers().add(Names.CONTENT_LENGTH, EMPTY_CONTENT_LENGTH);
+            res.headers().add(HttpHeaderNames.CONTENT_LENGTH, EMPTY_CONTENT_LENGTH);
         }
         transformResponseHeaders(res);
 
@@ -153,7 +157,7 @@ public class NettyHttpResponse implements HttpResponse {
     public void prepareChunkStream() {
         committed = true;
         DefaultHttpResponse response = getDefaultHttpResponse();
-        HttpHeaders.setTransferEncodingChunked(response);
+        HttpUtil.setTransferEncodingChunked(response, true);
         ctx.write(response);
     }
 
@@ -183,24 +187,25 @@ public class NettyHttpResponse implements HttpResponse {
     @Override
     public void addOutputHeaders(String name, String value) {
 
-        List<String> values = outputHeaders.get(name);
+        List<String> values = outputHeaders.computeIfAbsent(name, k -> new ArrayList<>());
 
-        if (values == null) {
-            values = new ArrayList<>();
-            outputHeaders.put(name, values);
+        if (values.contains(value)) {
+            return;
         }
 
         values.add(value);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static void transformHeaders(
-            NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
-        //        if (nettyResponse.isKeepAlive()) {
-        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        //        } else {
-        //            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-        //        }
+    public void transformHeaders(NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
+        if (nettyResponse.isKeepAlive()) {
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            if (idleTimeout > 0) {
+                response.headers().set(HttpHeaderNames.KEEP_ALIVE, "timeout=" + idleTimeout);
+            }
+        } else {
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+        }
 
         for (Map.Entry<String, List<String>> entry :
                 nettyResponse.getOutputHeaders().entrySet()) {

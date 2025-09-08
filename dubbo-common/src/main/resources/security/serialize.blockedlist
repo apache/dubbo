@@ -190,7 +190,6 @@ org.thymeleaf.
 org.yaml.snakeyaml.tokens.
 pstore.shaded.org.apache.commons.collections.
 sun.print.
-sun.rmi.server.
-sun.rmi.transport.
+sun.rmi.
 weblogic.ejb20.internal.
 weblogic.jms.common.

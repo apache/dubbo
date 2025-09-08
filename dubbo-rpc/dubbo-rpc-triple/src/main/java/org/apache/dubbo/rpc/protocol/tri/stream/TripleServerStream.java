@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -44,6 +45,8 @@ import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
+import javax.net.ssl.SSLSession;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -65,6 +68,7 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
 
@@ -74,6 +78,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 public class TripleServerStream extends AbstractStream implements ServerStream {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleServerStream.class);
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
+
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
     private final TripleWriteQueue writeQueue;
     private final PathResolver pathResolver;
@@ -110,6 +116,11 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     @Override
     public SocketAddress remoteAddress() {
         return remoteAddress;
+    }
+
+    @Override
+    public SSLSession getSslSession() {
+        return http2StreamChannel.attr(SSL_SESSION_KEY).get();
     }
 
     @Override
@@ -461,6 +472,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         private void doOnData(ByteBuf data, boolean endStream) {
             if (deframer == null) {
+                ReferenceCountUtil.release(data);
                 return;
             }
             deframer.deframe(data);
@@ -481,6 +493,14 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             }
             executor.execute(() -> listener.onCancelByRemote(
                     TriRpcStatus.CANCELLED.withDescription("Canceled by client ,errorCode=" + errorCode)));
+        }
+
+        @Override
+        public void onClose() {
+            if (listener == null) {
+                return;
+            }
+            executor.execute(() -> listener.onCancelByRemote(TriRpcStatus.CANCELLED));
         }
     }
 

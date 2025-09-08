@@ -340,6 +340,17 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
 
+            int originSize = invokerUrls.size();
+            invokerUrls = invokerUrls.stream().distinct().collect(Collectors.toList());
+            if (invokerUrls.size() != originSize) {
+                logger.info("Received duplicated invoker urls changed event from registry. "
+                        + "Registry type: instance. "
+                        + "Service Key: "
+                        + getConsumerUrl().getServiceKey() + ". "
+                        + "Notify Urls Size : " + originSize + ". "
+                        + "Distinct Urls Size: " + invokerUrls.size() + ".");
+            }
+
             // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
             // destroyAllInvokers().
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
@@ -778,6 +789,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                     invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
             copiedInvocation.setObjectAttachment(CommonConstants.GROUP_KEY, protocolServiceKey.getGroup());
             copiedInvocation.setObjectAttachment(CommonConstants.VERSION_KEY, protocolServiceKey.getVersion());
+            // When there are multiple MethodDescriptors with the same method name, the return type will be wrong
+            // same with org.apache.dubbo.rpc.stub.StubInvocationUtil.call
+            // fix https://github.com/apache/dubbo/issues/13931
+            if (invocation instanceof RpcInvocation) {
+                copiedInvocation.setReturnType(((RpcInvocation) invocation).getReturnType());
+            }
             return originInvoker.invoke(copiedInvocation);
         }
 

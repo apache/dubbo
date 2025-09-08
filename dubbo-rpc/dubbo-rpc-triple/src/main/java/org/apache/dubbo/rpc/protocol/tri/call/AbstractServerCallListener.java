@@ -62,14 +62,18 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         final long stInMillis = System.currentTimeMillis();
         try {
             final Result response = invoker.invoke(invocation);
+            if (response.hasException()) {
+                doOnResponseHasException(response.getException());
+                return;
+            }
             response.whenCompleteWithContext((r, t) -> {
                 responseObserver.setResponseAttachments(response.getObjectAttachments());
                 if (t != null) {
                     responseObserver.onError(t);
                     return;
                 }
-                if (response.hasException()) {
-                    doOnResponseHasException(response.getException());
+                if (r.hasException()) {
+                    doOnResponseHasException(r.getException());
                     return;
                 }
                 final long cost = System.currentTimeMillis() - stInMillis;

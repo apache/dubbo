@@ -361,7 +361,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setRegistry(RegistryConfig registry) {
-        List<RegistryConfig> registries = new ArrayList<RegistryConfig>(1);
+        List<RegistryConfig> registries = new ArrayList<>(1);
         registries.add(registry);
         this.registries = registries;
     }

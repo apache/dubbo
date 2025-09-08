@@ -339,7 +339,7 @@ public /*final**/ class URL implements Serializable {
     }
 
     static String appendDefaultPort(String address, int defaultPort) {
-        if (address != null && address.length() > 0 && defaultPort > 0) {
+        if (StringUtils.isNotEmpty(address) && defaultPort > 0) {
             int i = address.indexOf(':');
             if (i < 0) {
                 return address + ":" + defaultPort;
@@ -525,7 +525,7 @@ public /*final**/ class URL implements Serializable {
         List<URL> urls = new ArrayList<>();
         urls.add(this);
         String[] backups = getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
-        if (backups != null && backups.length > 0) {
+        if (ArrayUtils.isNotEmpty(backups)) {
             for (String backup : backups) {
                 urls.add(this.setAddress(backup));
             }
@@ -805,7 +805,7 @@ public /*final**/ class URL implements Serializable {
 
     public boolean hasParameter(String key) {
         String value = getParameter(key);
-        return value != null && value.length() > 0;
+        return StringUtils.isNotEmpty(value);
     }
 
     public String getMethodParameterAndDecoded(String method, String key) {
@@ -1061,7 +1061,7 @@ public /*final**/ class URL implements Serializable {
     }
 
     public URL addParameters(String... pairs) {
-        if (pairs == null || pairs.length == 0) {
+        if (ArrayUtils.isEmpty(pairs)) {
             return this;
         }
         if (pairs.length % 2 != 0) {
@@ -1295,6 +1295,19 @@ public /*final**/ class URL implements Serializable {
         return serviceNameBuilder.toString();
     }
 
+    /**
+     * The format is "{interface}:[version]"
+     *
+     * @return
+     */
+    public String getCompatibleColonSeparatedKey() {
+        StringBuilder serviceNameBuilder = new StringBuilder();
+        serviceNameBuilder.append(this.getServiceInterface());
+        compatibleAppend(serviceNameBuilder, VERSION_KEY);
+        compatibleAppend(serviceNameBuilder, GROUP_KEY);
+        return serviceNameBuilder.toString();
+    }
+
     private void append(StringBuilder target, String parameterName, boolean first) {
         String parameterValue = this.getParameter(parameterName);
         if (!isBlank(parameterValue)) {
@@ -1304,6 +1317,14 @@ public /*final**/ class URL implements Serializable {
             target.append(parameterValue);
         } else {
             target.append(':');
+        }
+    }
+
+    private void compatibleAppend(StringBuilder target, String parameterName) {
+        String parameterValue = this.getParameter(parameterName);
+        if (!isBlank(parameterValue)) {
+            target.append(':');
+            target.append(parameterValue);
         }
     }
 
@@ -1374,6 +1395,10 @@ public /*final**/ class URL implements Serializable {
 
     public String toServiceString() {
         return buildString(true, false, true, true);
+    }
+
+    public String toServiceString(String... parameters) {
+        return buildString(true, true, true, true, parameters);
     }
 
     @Deprecated
@@ -1589,9 +1614,9 @@ public /*final**/ class URL implements Serializable {
         return attributes == null ? Collections.emptyMap() : attributes;
     }
 
-    public URL addAttributes(Map<String, Object> attributes) {
-        if (attributes != null) {
-            attributes.putAll(attributes);
+    public URL addAttributes(Map<String, Object> attributeMap) {
+        if (attributeMap != null) {
+            attributes.putAll(attributeMap);
         }
         return this;
     }
@@ -1718,7 +1743,7 @@ public /*final**/ class URL implements Serializable {
 
     public boolean hasServiceParameter(String service, String key) {
         String value = getServiceParameter(service, key);
-        return value != null && value.length() > 0;
+        return StringUtils.isNotEmpty(value);
     }
 
     public float getPositiveServiceParameter(String service, String key, float defaultValue) {

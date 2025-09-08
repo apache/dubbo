@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.media.MediaType;
@@ -109,11 +110,10 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                             Method reflectMethod = restMethodMetadata.getReflectMethod();
                             mediaType =
                                     MediaTypeUtil.convertMediaType(reflectMethod.getReturnType(), r.getContentType());
-                            Object value = HttpMessageCodecManager.httpMessageDecode(
-                                    r.getBody(),
-                                    reflectMethod.getReturnType(),
-                                    reflectMethod.getGenericReturnType(),
-                                    mediaType);
+                            ArgInfo argInfo = new ArgInfo();
+                            argInfo.setParamType(reflectMethod.getReturnType());
+                            argInfo.setActualType(reflectMethod.getGenericReturnType());
+                            Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(), argInfo, mediaType);
                             appResponse.setValue(value);
                             // resolve response attribute & attachment
                             HttpHeaderUtil.parseResponseHeader(appResponse, r);

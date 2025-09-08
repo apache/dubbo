@@ -62,7 +62,7 @@ public class DubboAutoConfiguration {
     @ConditionalOnProperty(prefix = DUBBO_SCAN_PREFIX, name = BASE_PACKAGES_PROPERTY_NAME)
     @ConditionalOnBean(name = BASE_PACKAGES_BEAN_NAME)
     @Bean
-    public ServiceAnnotationPostProcessor serviceAnnotationBeanProcessor(
+    public static ServiceAnnotationPostProcessor serviceAnnotationBeanProcessor(
             @Qualifier(BASE_PACKAGES_BEAN_NAME) Set<String> packagesToScan) {
         return new ServiceAnnotationPostProcessor(packagesToScan);
     }

@@ -201,7 +201,6 @@ class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements I
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        PROVIDER_APPLICATION_NAME = null;
         serviceConfig = null;
         // TODO: we need to check whether this scenario is normal
         // TODO: the Exporter and ServiceDiscoveryRegistry are same in multiple registry center

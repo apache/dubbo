@@ -854,8 +854,8 @@ public class DelegateURL extends com.alibaba.dubbo.common.URL {
     }
 
     @Override
-    public org.apache.dubbo.common.URL addAttributes(Map<String, Object> attributes) {
-        return apacheUrl.addAttributes(attributes);
+    public org.apache.dubbo.common.URL addAttributes(Map<String, Object> attributeMap) {
+        return apacheUrl.addAttributes(attributeMap);
     }
 
     @Override

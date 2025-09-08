@@ -65,7 +65,7 @@ public interface RestDemoService {
     Boolean testBody2(Boolean b);
 
     @POST
-    @Path("/testBody3")
+    @Path("/testBody4")
     @Consumes({MediaType.TEXT_PLAIN})
     TestPO testBody2(TestPO b);
 

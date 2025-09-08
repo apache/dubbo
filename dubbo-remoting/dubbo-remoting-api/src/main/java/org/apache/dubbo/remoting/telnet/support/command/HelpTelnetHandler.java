@@ -73,12 +73,12 @@ public class HelpTelnetHandler implements TelnetHandler {
     }
 
     private String generateForAllCommand(Channel channel) {
-        List<List<String>> table = new ArrayList<List<String>>();
+        List<List<String>> table = new ArrayList<>();
         List<TelnetHandler> handlers = extensionLoader.getActivateExtension(channel.getUrl(), "telnet");
         if (CollectionUtils.isNotEmpty(handlers)) {
             for (TelnetHandler handler : handlers) {
                 Help help = handler.getClass().getAnnotation(Help.class);
-                List<String> row = new ArrayList<String>();
+                List<String> row = new ArrayList<>();
                 String parameter = " " + extensionLoader.getExtensionName(handler) + " "
                         + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
                 row.add(parameter.length() > 55 ? parameter.substring(0, 55) + "..." : parameter);

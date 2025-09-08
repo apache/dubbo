@@ -74,8 +74,7 @@ public class ProtocolListenerWrapper implements Protocol {
                     .getBeanFactory()
                     .getBean(InjvmExporterListener.class));
         }
-        return new ListenerExporterWrapper<T>(
-                protocol.export(invoker), Collections.unmodifiableList(exporterListeners));
+        return new ListenerExporterWrapper<>(protocol.export(invoker), Collections.unmodifiableList(exporterListeners));
     }
 
     @Override

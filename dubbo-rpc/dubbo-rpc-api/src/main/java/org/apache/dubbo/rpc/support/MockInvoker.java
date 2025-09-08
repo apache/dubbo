@@ -47,8 +47,8 @@ import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 
 public final class MockInvoker<T> implements Invoker<T> {
     private final ProxyFactory proxyFactory;
-    private static final Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
-    private static final Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
+    private static final Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<>();
 
     private final URL url;
     private final Class<T> type;

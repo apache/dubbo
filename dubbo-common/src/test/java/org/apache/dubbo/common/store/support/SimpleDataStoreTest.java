@@ -16,9 +16,13 @@
  */
 package org.apache.dubbo.common.store.support;
 
+import org.apache.dubbo.common.store.DataStoreUpdateListener;
+
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -56,5 +60,31 @@ class SimpleDataStoreTest {
         assertTrue(map != null && map.size() == 1);
         dataStore.remove("component", "key");
         assertNotEquals(map, dataStore.get("component"));
+    }
+
+    @Test
+    void testNotify() {
+        DataStoreUpdateListener listener = Mockito.mock(DataStoreUpdateListener.class);
+        dataStore.addListener(listener);
+
+        ArgumentCaptor<String> componentNameCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Object> valueCaptor = ArgumentCaptor.forClass(Object.class);
+
+        dataStore.put("name", "key", "1");
+        Mockito.verify(listener).onUpdate(componentNameCaptor.capture(), keyCaptor.capture(), valueCaptor.capture());
+        assertEquals("name", componentNameCaptor.getValue());
+        assertEquals("key", keyCaptor.getValue());
+        assertEquals("1", valueCaptor.getValue());
+
+        dataStore.remove("name", "key");
+        Mockito.verify(listener, Mockito.times(2))
+                .onUpdate(componentNameCaptor.capture(), keyCaptor.capture(), valueCaptor.capture());
+        assertEquals("name", componentNameCaptor.getValue());
+        assertEquals("key", keyCaptor.getValue());
+        assertNull(valueCaptor.getValue());
+
+        dataStore.remove("name2", "key");
+        Mockito.verify(listener, Mockito.times(0)).onUpdate("name2", "key", null);
     }
 }

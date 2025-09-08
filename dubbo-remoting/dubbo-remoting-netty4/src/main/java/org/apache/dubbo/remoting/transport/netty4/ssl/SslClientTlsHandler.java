@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.netty4.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.Constants;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
@@ -28,13 +29,14 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
+import io.netty.util.AttributeKey;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslClientTlsHandler.class);
-
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
     private final SslContext sslContext;
 
     public SslClientTlsHandler(URL url) {
@@ -60,6 +62,7 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
                         ctx.pipeline().get(SslHandler.class).engine().getSession();
                 logger.info("TLS negotiation succeed with: " + session.getPeerHost());
                 ctx.pipeline().remove(this);
+                ctx.channel().attr(SSL_SESSION_KEY).set(session);
             } else {
                 logger.error(
                         INTERNAL_ERROR,

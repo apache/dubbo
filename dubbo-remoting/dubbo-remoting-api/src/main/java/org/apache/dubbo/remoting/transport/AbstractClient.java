@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -28,9 +29,11 @@ import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,6 +44,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
+import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
  * AbstractClient
@@ -55,12 +63,22 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     protected volatile ExecutorService executor;
 
+    protected volatile ScheduledExecutorService connectivityExecutor;
+
+    private FrameworkModel frameworkModel;
+
+    protected long reconnectDuaration;
+
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         // set default needReconnect true when channel is not connected
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, true);
 
+        frameworkModel = url.getOrDefaultFrameworkModel();
+
         initExecutor(url);
+
+        reconnectDuaration = getReconnectDuration(url);
 
         try {
             doOpen();
@@ -134,6 +152,11 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
                 .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
+
+        connectivityExecutor = frameworkModel
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getConnectivityScheduledExecutor();
     }
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
@@ -294,6 +317,25 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } finally {
             connectLock.unlock();
         }
+    }
+
+    private long getReconnectDuration(URL url) {
+        int idleTimeout = getIdleTimeout(url);
+        long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
+        return calculateReconnectDuration(url, heartbeatTimeoutTick);
+    }
+
+    private long calculateLeastDuration(int time) {
+        if (time / HEARTBEAT_CHECK_TICK <= 0) {
+            return LEAST_HEARTBEAT_DURATION;
+        } else {
+            return time / HEARTBEAT_CHECK_TICK;
+        }
+    }
+
+    private long calculateReconnectDuration(URL url, long tick) {
+        long leastReconnectDuration = url.getParameter(LEAST_RECONNECT_DURATION_KEY, LEAST_RECONNECT_DURATION);
+        return Math.max(leastReconnectDuration, tick);
     }
 
     @Override

@@ -120,7 +120,7 @@ public abstract class Mixin {
 
             Class<?> neighbor = null;
             // impl methods.
-            Set<String> worked = new HashSet<String>();
+            Set<String> worked = new HashSet<>();
             for (int i = 0; i < ics.length; i++) {
                 if (!Modifier.isPublic(ics[i].getModifiers())) {
                     String npkg = ics[i].getPackage().getName();

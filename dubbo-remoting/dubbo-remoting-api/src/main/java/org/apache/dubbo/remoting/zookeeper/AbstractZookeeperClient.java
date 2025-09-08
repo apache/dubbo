@@ -40,6 +40,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     // may hang up to wait name resolution up to 10s
     protected int DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
     protected int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
+    protected boolean DEFAULT_ENSEMBLE_TRACKER = true;
 
     private final URL url;
 

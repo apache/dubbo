@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
-
 public class ModuleEnvironment extends Environment implements ModuleExt {
 
     // delegate
@@ -94,19 +92,13 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     @Override
     public Configuration getDynamicGlobalConfiguration() {
         if (dynamicConfiguration == null) {
-            return applicationDelegate.getDynamicGlobalConfiguration();
+            CompositeConfiguration configuration = new CompositeConfiguration();
+            configuration.addConfiguration(applicationDelegate.getDynamicGlobalConfiguration());
+            configuration.addConfiguration(orderedPropertiesConfiguration);
+            return configuration;
         }
+
         if (dynamicGlobalConfiguration == null) {
-            if (dynamicConfiguration == null) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(
-                            COMMON_UNEXPECTED_EXCEPTION,
-                            "",
-                            "",
-                            "dynamicConfiguration is null , return globalConfiguration.");
-                }
-                return getConfiguration();
-            }
             dynamicGlobalConfiguration = new CompositeConfiguration();
             dynamicGlobalConfiguration.addConfiguration(dynamicConfiguration);
             dynamicGlobalConfiguration.addConfiguration(getConfiguration());

@@ -53,7 +53,9 @@ public class ParamProviderParamParser extends ProviderParamParser {
         String param = request.getParameter(argInfo.getAnnotationNameAttribute());
 
         Object paramValue = paramTypeConvert(argInfo.getParamType(), param);
-        parseContext.setValueByIndex(argInfo.getIndex(), paramValue);
+        if (paramValue != null) {
+            parseContext.setValueByIndex(argInfo.getIndex(), paramValue);
+        }
     }
 
     @Override

@@ -119,7 +119,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         // 0-1 - Thread pool is EXHAUSTED!
         logger.warn(COMMON_THREAD_POOL_EXHAUSTED, "too much client requesting provider", "", msg);
 
-        if (Boolean.parseBoolean(url.getParameter(DUMP_ENABLE, "true"))) {
+        if (Boolean.parseBoolean(url.getParameter(DUMP_ENABLE, Boolean.TRUE.toString()))) {
             dumpJStack();
         }
 
@@ -184,13 +184,12 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                     jstack(jStackStream);
                 } catch (Exception t) {
                     logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
-                } finally {
-                    lastPrintTime = System.currentTimeMillis();
                 }
             });
+            lastPrintTime = System.currentTimeMillis();
         } finally {
             guard.release();
-            // must shutdown thread pool ,if not will lead to OOM
+            // must shut down thread pool ,if not will lead to OOM
             if (pool != null) {
                 pool.shutdown();
             }

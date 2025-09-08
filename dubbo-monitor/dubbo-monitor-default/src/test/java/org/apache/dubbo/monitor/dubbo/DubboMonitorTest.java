@@ -30,6 +30,8 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -139,7 +141,13 @@ class DubboMonitorTest {
     }
 
     @Test
-    void testMonitorFactory() {
+    void testMonitorFactory() throws IOException {
+        int port;
+        try (ServerSocket socket = new ServerSocket(0)) {
+            port = socket.getLocalPort();
+            socket.close();
+        }
+
         MockMonitorService monitorService = new MockMonitorService();
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(APPLICATION_KEY, "morgan")
@@ -163,12 +171,12 @@ class DubboMonitorTest {
         Exporter<MonitorService> exporter = protocol.export(proxyFactory.getInvoker(
                 monitorService,
                 MonitorService.class,
-                URL.valueOf("dubbo://127.0.0.1:17979/" + MonitorService.class.getName())));
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + MonitorService.class.getName())));
         try {
             Monitor monitor = null;
             long start = System.currentTimeMillis();
             while (System.currentTimeMillis() - start < 60000) {
-                monitor = monitorFactory.getMonitor(URL.valueOf("dubbo://127.0.0.1:17979?interval=10"));
+                monitor = monitorFactory.getMonitor(URL.valueOf("dubbo://127.0.0.1:" + port + "?interval=10"));
                 if (monitor == null) {
                     continue;
                 }

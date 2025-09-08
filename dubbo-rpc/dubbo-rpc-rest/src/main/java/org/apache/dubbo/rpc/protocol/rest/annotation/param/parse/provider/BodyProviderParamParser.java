@@ -41,8 +41,7 @@ public class BodyProviderParamParser extends ProviderParamParser {
         try {
             String contentType = parseContext.getRequestFacade().getHeader(RestHeaderEnum.CONTENT_TYPE.getHeader());
             MediaType mediaType = MediaTypeUtil.convertMediaType(argInfo.getParamType(), contentType);
-            Object param = HttpMessageCodecManager.httpMessageDecode(
-                    request.getInputStream(), argInfo.getParamType(), argInfo.actualReflectType(), mediaType);
+            Object param = HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), argInfo, mediaType);
             parseContext.setValueByIndex(argInfo.getIndex(), param);
         } catch (Throwable e) {
             throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage());

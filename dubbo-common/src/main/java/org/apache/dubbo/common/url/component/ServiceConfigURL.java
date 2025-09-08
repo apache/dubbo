@@ -113,12 +113,12 @@ public class ServiceConfigURL extends URL {
     }
 
     @Override
-    public URL addAttributes(Map<String, Object> attributes) {
+    public URL addAttributes(Map<String, Object> attributeMap) {
         Map<String, Object> newAttributes = new HashMap<>();
         if (this.attributes != null) {
             newAttributes.putAll(this.attributes);
         }
-        newAttributes.putAll(attributes);
+        newAttributes.putAll(attributeMap);
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }
 

@@ -272,6 +272,7 @@ public class BraveAutoConfiguration {
                 prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE_CORRELATION,
                 name = "enabled",
                 matchIfMissing = true)
+        @ConditionalOnMissingBean
         brave.baggage.CorrelationScopeCustomizer correlationFieldsCorrelationScopeCustomizer() {
             return (builder) -> {
                 List<String> correlationFields = this.dubboConfigProperties

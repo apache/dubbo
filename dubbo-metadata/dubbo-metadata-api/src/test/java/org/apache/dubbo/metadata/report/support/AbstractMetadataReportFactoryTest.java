@@ -145,4 +145,26 @@ class AbstractMetadataReportFactoryTest {
         MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url2);
         Assertions.assertNotEquals(metadataReport1, metadataReport2);
     }
+
+    @Test
+    void testGetForSameNamespace() {
+        URL url1 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName()
+                + ":4444/org.apache.dubbo.TestService1?version=1.0.0&application=vic&namespace=test");
+        URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName()
+                + ":4444/org.apache.dubbo.TestService2?version=1.0.0&application=vic&namespace=test");
+        MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);
+        MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url2);
+        Assertions.assertEquals(metadataReport1, metadataReport2);
+    }
+
+    @Test
+    void testGetForDiffNamespace() {
+        URL url1 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName()
+                + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&namespace=test");
+        URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName()
+                + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&namespace=dev");
+        MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);
+        MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url2);
+        Assertions.assertNotEquals(metadataReport1, metadataReport2);
+    }
 }

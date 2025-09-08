@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
@@ -32,7 +31,7 @@ import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpUtil;
 
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
@@ -57,8 +56,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
     protected void decode(
             ChannelHandlerContext ctx, io.netty.handler.codec.http.FullHttpRequest request, List<Object> out)
             throws Exception {
-        boolean keepAlive = HttpHeaders.isKeepAlive(request);
-
+        boolean keepAlive = HttpUtil.isKeepAlive(request);
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive, url);
         NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx, serviceDeployer);
 
@@ -74,7 +72,6 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
             } finally {
                 // write response
                 try {
-                    nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONNECTION.getHeader(), "close");
                     nettyHttpResponse.finish();
                 } catch (IOException e) {
                     logger.error(

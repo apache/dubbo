@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -39,6 +40,8 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
+
+import javax.net.ssl.SSLSession;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -61,6 +64,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
+import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
@@ -73,6 +77,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 public class TripleClientStream extends AbstractStream implements ClientStream {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientStream.class);
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
 
     public final ClientStream.Listener listener;
     private final TripleWriteQueue writeQueue;
@@ -164,6 +169,11 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     @Override
     public SocketAddress remoteAddress() {
         return parent.remoteAddress();
+    }
+
+    @Override
+    public SSLSession getSslSession() {
+        return parent.attr(SSL_SESSION_KEY).get();
     }
 
     @Override
@@ -471,6 +481,11 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                         TriRpcStatus.CANCELLED.withDescription("Canceled by remote peer, errorCode=" + errorCode);
                 finishProcess(transportError, null, false);
             });
+        }
+
+        @Override
+        public void onClose() {
+            executor.execute(listener::onClose);
         }
     }
 }

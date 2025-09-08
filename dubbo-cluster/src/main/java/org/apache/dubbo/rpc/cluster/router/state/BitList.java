@@ -93,23 +93,23 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     // Provided by BitList only
-    public List<E> getOriginList() {
+    public synchronized List<E> getOriginList() {
         return originList;
     }
 
-    public void addIndex(int index) {
+    public synchronized void addIndex(int index) {
         this.rootSet.set(index);
     }
 
-    public int totalSetSize() {
+    public synchronized int totalSetSize() {
         return this.originList.size();
     }
 
-    public boolean indexExist(int index) {
+    public synchronized boolean indexExist(int index) {
         return this.rootSet.get(index);
     }
 
-    public E getByIndex(int index) {
+    public synchronized E getByIndex(int index) {
         return this.originList.get(index);
     }
 
@@ -120,7 +120,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
      * @param target target bitList
      * @return this bitList only contains those elements contain in both two list and source bitList's tailList
      */
-    public BitList<E> and(BitList<E> target) {
+    public synchronized BitList<E> and(BitList<E> target) {
         rootSet.and(target.rootSet);
         if (target.getTailList() != null) {
             target.getTailList().forEach(this::addToTailList);
@@ -128,28 +128,28 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         return this;
     }
 
-    public BitList<E> or(BitList<E> target) {
+    public synchronized BitList<E> or(BitList<E> target) {
         BitSet resultSet = (BitSet) rootSet.clone();
         resultSet.or(target.rootSet);
         return new BitList<>(originList, resultSet, tailList);
     }
 
-    public boolean hasMoreElementInTailList() {
+    public synchronized boolean hasMoreElementInTailList() {
         return CollectionUtils.isNotEmpty(tailList);
     }
 
-    public List<E> getTailList() {
+    public synchronized List<E> getTailList() {
         return tailList;
     }
 
-    public void addToTailList(E e) {
+    public synchronized void addToTailList(E e) {
         if (tailList == null) {
             tailList = new LinkedList<>();
         }
         tailList.add(e);
     }
 
-    public E randomSelectOne() {
+    public synchronized E randomSelectOne() {
         int originSize = originList.size();
         int tailSize = tailList != null ? tailList.size() : 0;
         int totalSize = originSize + tailSize;
@@ -181,18 +181,18 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
 
     // Provided by JDK List interface
     @Override
-    public int size() {
+    public synchronized int size() {
         return rootSet.cardinality() + (CollectionUtils.isNotEmpty(tailList) ? tailList.size() : 0);
     }
 
     @Override
-    public boolean contains(Object o) {
+    public synchronized boolean contains(Object o) {
         int idx = originList.indexOf(o);
         return (idx >= 0 && rootSet.get(idx)) || (CollectionUtils.isNotEmpty(tailList) && tailList.contains(o));
     }
 
     @Override
-    public Iterator<E> iterator() {
+    public synchronized Iterator<E> iterator() {
         return new BitListIterator<>(this, 0);
     }
 
@@ -205,7 +205,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
      * Notice: It is not recommended adding duplicated element.
      */
     @Override
-    public boolean add(E e) {
+    public synchronized boolean add(E e) {
         int index = originList.indexOf(e);
         if (index > -1) {
             rootSet.set(index);
@@ -225,7 +225,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
      * If the element is not contained in originList, try to remove from tailList.
      */
     @Override
-    public boolean remove(Object o) {
+    public synchronized boolean remove(Object o) {
         int idx = originList.indexOf(o);
         if (idx > -1 && rootSet.get(idx)) {
             rootSet.set(idx, false);
@@ -242,7 +242,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
      * This may change the default behaviour when adding new element later.
      */
     @Override
-    public void clear() {
+    public synchronized void clear() {
         rootSet.clear();
         // to remove references
         originList = Collections.emptyList();
@@ -252,7 +252,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     @Override
-    public E get(int index) {
+    public synchronized E get(int index) {
         int bitIndex = -1;
         if (index < 0) {
             throw new IndexOutOfBoundsException();
@@ -272,7 +272,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     @Override
-    public E remove(int index) {
+    public synchronized E remove(int index) {
         int bitIndex = -1;
         if (index >= rootSet.cardinality()) {
             if (CollectionUtils.isNotEmpty(tailList)) {
@@ -290,7 +290,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     @Override
-    public int indexOf(Object o) {
+    public synchronized int indexOf(Object o) {
         int bitIndex = -1;
         for (int i = 0; i < rootSet.cardinality(); i++) {
             bitIndex = rootSet.nextSetBit(bitIndex + 1);
@@ -311,7 +311,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean addAll(Collection<? extends E> c) {
+    public synchronized boolean addAll(Collection<? extends E> c) {
         if (c instanceof BitList) {
             rootSet.or(((BitList<? extends E>) c).rootSet);
             if (((BitList<? extends E>) c).hasMoreElementInTailList()) {
@@ -325,7 +325,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     @Override
-    public int lastIndexOf(Object o) {
+    public synchronized int lastIndexOf(Object o) {
         int bitIndex = -1;
         int index = -1;
         if (CollectionUtils.isNotEmpty(tailList)) {
@@ -344,22 +344,22 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     @Override
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
         return this.rootSet.isEmpty() && CollectionUtils.isEmpty(tailList);
     }
 
     @Override
-    public ListIterator<E> listIterator() {
+    public synchronized ListIterator<E> listIterator() {
         return new BitListIterator<>(this, 0);
     }
 
     @Override
-    public ListIterator<E> listIterator(int index) {
+    public synchronized ListIterator<E> listIterator(int index) {
         return new BitListIterator<>(this, index);
     }
 
     @Override
-    public BitList<E> subList(int fromIndex, int toIndex) {
+    public synchronized BitList<E> subList(int fromIndex, int toIndex) {
         BitSet resultSet = (BitSet) rootSet.clone();
         List<E> copiedTailList = tailList == null ? null : new LinkedList<>(tailList);
         if (toIndex < size()) {
@@ -414,7 +414,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         }
 
         @Override
-        public boolean hasNext() {
+        public synchronized boolean hasNext() {
             if (isInTailList) {
                 return tailListIterator.hasNext();
             } else {
@@ -428,7 +428,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         }
 
         @Override
-        public E next() {
+        public synchronized E next() {
             if (isInTailList) {
                 if (tailListIterator.hasNext()) {
                     index += 1;
@@ -457,7 +457,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         }
 
         @Override
-        public boolean hasPrevious() {
+        public synchronized boolean hasPrevious() {
             if (isInTailList) {
                 boolean hasPreviousInTailList = tailListIterator.hasPrevious();
                 if (hasPreviousInTailList) {
@@ -471,7 +471,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         }
 
         @Override
-        public E previous() {
+        public synchronized E previous() {
             if (isInTailList) {
                 boolean hasPreviousInTailList = tailListIterator.hasPrevious();
                 if (hasPreviousInTailList) {
@@ -503,17 +503,17 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         }
 
         @Override
-        public int nextIndex() {
+        public synchronized int nextIndex() {
             return hasNext() ? index + 1 : index;
         }
 
         @Override
-        public int previousIndex() {
+        public synchronized int previousIndex() {
             return index;
         }
 
         @Override
-        public void remove() {
+        public synchronized void remove() {
             if (lastReturnedIndex == -1) {
                 throw new IllegalStateException();
             } else {
@@ -533,17 +533,17 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         }
 
         @Override
-        public void set(E e) {
+        public synchronized void set(E e) {
             throw new UnsupportedOperationException("Set method is not supported in BitListIterator!");
         }
 
         @Override
-        public void add(E e) {
+        public synchronized void add(E e) {
             throw new UnsupportedOperationException("Add method is not supported in BitListIterator!");
         }
     }
 
-    public ArrayList<E> cloneToArrayList() {
+    public synchronized ArrayList<E> cloneToArrayList() {
         if (rootSet.cardinality() == originList.size() && (CollectionUtils.isEmpty(tailList))) {
             return new ArrayList<>(originList);
         }
@@ -553,7 +553,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     @Override
-    public BitList<E> clone() {
+    public synchronized BitList<E> clone() {
         return new BitList<>(
                 originList, (BitSet) rootSet.clone(), tailList == null ? null : new LinkedList<>(tailList));
     }

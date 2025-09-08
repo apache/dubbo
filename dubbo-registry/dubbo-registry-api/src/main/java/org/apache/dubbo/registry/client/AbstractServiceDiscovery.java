@@ -84,7 +84,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this(applicationModel, applicationModel.getApplicationName(), registryURL);
         MetadataReportInstance metadataReportInstance =
                 applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
-        metadataType = metadataReportInstance.getMetadataType();
+        this.metadataType = metadataReportInstance.getMetadataType();
         this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
     }
 
@@ -157,8 +157,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
         boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
-            reportMetadata(this.metadataInfo);
-            doRegister(this.serviceInstance);
+            try {
+                reportMetadata(this.metadataInfo);
+                doRegister(this.serviceInstance);
+            } catch (Exception e) {
+                this.serviceInstance = null;
+                throw e;
+            }
         }
     }
 

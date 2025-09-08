@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +40,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.awaitility.Awaitility.await;
 
 public class ConnectionTest {
 
@@ -138,6 +140,7 @@ public class ConnectionTest {
 
         nettyPortUnificationServer.bind();
         // auto reconnect
+        await().atMost(Duration.ofSeconds(100)).until(() -> connectionClient.isAvailable());
         Assertions.assertTrue(connectionClient.isAvailable());
 
         connectionClient.close();

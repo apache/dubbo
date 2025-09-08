@@ -44,7 +44,7 @@ public class DeprecatedFilter implements Filter {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DeprecatedFilter.class);
 
-    private static final Set<String> LOGGED = new ConcurrentHashSet<String>();
+    private static final Set<String> LOGGED = new ConcurrentHashSet<>();
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.LockUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -56,6 +57,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -121,6 +124,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     private final ScheduledExecutorService connectivityExecutor;
 
     private volatile ScheduledFuture<?> connectivityCheckFuture;
+
+    private final ReentrantLock invokerRefreshLock = new ReentrantLock();
 
     /**
      * The max count of invokers for each reconnect task select to try to reconnect.
@@ -293,17 +298,19 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addInvalidateInvoker(Invoker<T> invoker) {
-        // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
-        if (removeValidInvoker(invoker)) {
-            // 2. add this invoker to reconnect list
-            invokersToReconnect.add(invoker);
-            // 3. try start check connectivity task
-            checkConnectivity();
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
+            if (removeValidInvoker(invoker)) {
+                // 2. add this invoker to reconnect list
+                invokersToReconnect.add(invoker);
+                // 3. try start check connectivity task
+                checkConnectivity();
 
-            logger.info("The invoker " + invoker.getUrl()
-                    + " has been added to invalidate list due to connectivity problem. "
-                    + "Will trying to reconnect to it in the background.");
-        }
+                logger.info("The invoker " + invoker.getUrl()
+                        + " has been added to invalidate list due to connectivity problem. "
+                        + "Will trying to reconnect to it in the background.");
+            }
+        });
     }
 
     public void checkConnectivity() {
@@ -322,23 +329,30 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                             // 1. pick invokers from invokersToReconnect
                             // limit max reconnectTaskTryCount, prevent this task hang up all the connectivityExecutor
                             // for long time
-                            if (invokersToReconnect.size() < reconnectTaskTryCount) {
-                                invokersToTry.addAll(invokersToReconnect);
-                            } else {
-                                for (int i = 0; i < reconnectTaskTryCount; i++) {
-                                    Invoker<T> tInvoker = invokersToReconnect.get(
-                                            ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
-                                    if (!invokersToTry.contains(tInvoker)) {
-                                        // ignore if is selected, invokersToTry's size is always smaller than
-                                        // reconnectTaskTryCount + 1
-                                        invokersToTry.add(tInvoker);
+                            LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+                                if (invokersToReconnect.size() < reconnectTaskTryCount) {
+                                    invokersToTry.addAll(invokersToReconnect);
+                                } else {
+                                    for (int i = 0; i < reconnectTaskTryCount; i++) {
+                                        Invoker<T> tInvoker = invokersToReconnect.get(
+                                                ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
+                                        if (!invokersToTry.contains(tInvoker)) {
+                                            // ignore if is selected, invokersToTry's size is always smaller than
+                                            // reconnectTaskTryCount + 1
+                                            invokersToTry.add(tInvoker);
+                                        }
                                     }
                                 }
-                            }
+                            });
 
                             // 2. try to check the invoker's status
                             for (Invoker<T> invoker : invokersToTry) {
-                                if (invokers.contains(invoker)) {
+                                AtomicBoolean invokerExist = new AtomicBoolean(false);
+                                LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+                                    invokerExist.set(invokers.contains(invoker));
+                                });
+                                // Should not lock here, `invoker.isAvailable` may need some time to check
+                                if (invokerExist.get()) {
                                     if (invoker.isAvailable()) {
                                         needDeleteList.add(invoker);
                                     }
@@ -348,22 +362,37 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                             }
 
                             // 3. recover valid invoker
-                            for (Invoker<T> tInvoker : needDeleteList) {
-                                if (invokers.contains(tInvoker)) {
-                                    addValidInvoker(tInvoker);
-                                    logger.info(
-                                            "Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
+                            LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+                                for (Invoker<T> tInvoker : needDeleteList) {
+                                    if (invokers.contains(tInvoker)) {
+                                        addValidInvoker(tInvoker);
+                                        logger.info("Recover service address: " + tInvoker.getUrl()
+                                                + "  from invalid list.");
+                                    } else {
+                                        logger.info(
+                                                "The invoker " + tInvoker.getUrl()
+                                                        + " has been removed from invokers list. Will remove it in reconnect list.");
+                                    }
+                                    invokersToReconnect.remove(tInvoker);
                                 }
-                                invokersToReconnect.remove(tInvoker);
-                            }
+                            });
+                        } catch (Throwable t) {
+                            logger.error(
+                                    LoggerCodeConstants.INTERNAL_ERROR,
+                                    "",
+                                    "",
+                                    "Error occurred when check connectivity. ",
+                                    t);
                         } finally {
                             checkConnectivityPermit.release();
                         }
 
                         // 4. submit new task if it has more to recover
-                        if (!invokersToReconnect.isEmpty()) {
-                            checkConnectivity();
-                        }
+                        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+                            if (!invokersToReconnect.isEmpty()) {
+                                checkConnectivity();
+                            }
+                        });
                         MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(
                                 applicationModel, getSummary(), getDirectoryMeta()));
                     },
@@ -382,9 +411,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      * 4. all the invokers disappeared from total invokers should be removed in the disabled invokers list
      */
     public void refreshInvoker() {
-        if (invokersInitialized) {
-            refreshInvokerInternal();
-        }
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            if (invokersInitialized) {
+                refreshInvokerInternal();
+            }
+        });
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
@@ -393,7 +424,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return Collections.emptyMap();
     }
 
-    private synchronized void refreshInvokerInternal() {
+    private void refreshInvokerInternal() {
         BitList<Invoker<T>> copiedInvokers = invokers.clone();
         refreshInvokers(copiedInvokers, invokersToReconnect);
         refreshInvokers(copiedInvokers, disabledInvokers);
@@ -414,25 +445,29 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        if (invokers.contains(invoker)) {
-            disabledInvokers.add(invoker);
-            removeValidInvoker(invoker);
-            logger.info("Disable service address: " + invoker.getUrl() + ".");
-        }
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            if (invokers.contains(invoker)) {
+                disabledInvokers.add(invoker);
+                removeValidInvoker(invoker);
+                logger.info("Disable service address: " + invoker.getUrl() + ".");
+            }
+        });
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        if (disabledInvokers.remove(invoker)) {
-            try {
-                addValidInvoker(invoker);
-                logger.info("Recover service address: " + invoker.getUrl() + "  from disabled list.");
-            } catch (Throwable ignore) {
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            if (disabledInvokers.remove(invoker)) {
+                try {
+                    addValidInvoker(invoker);
+                    logger.info("Recover service address: " + invoker.getUrl() + "  from disabled list.");
+                } catch (Throwable ignore) {
 
+                }
             }
-        }
+        });
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
     }
@@ -491,9 +526,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     protected void setInvokers(BitList<Invoker<T>> invokers) {
-        this.invokers = invokers;
-        refreshInvokerInternal();
-        this.invokersInitialized = true;
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            this.invokers = invokers;
+            refreshInvokerInternal();
+            this.invokersInitialized = true;
+        });
 
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
@@ -501,29 +538,31 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void destroyInvokers() {
         // set empty instead of clearing to support concurrent access.
-        this.invokers = BitList.emptyList();
-        this.validInvokers = BitList.emptyList();
-        this.invokersInitialized = false;
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            this.invokers = BitList.emptyList();
+            this.validInvokers = BitList.emptyList();
+            this.invokersInitialized = false;
+        });
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        boolean result;
-        synchronized (this.validInvokers) {
-            result = this.validInvokers.add(invoker);
-        }
+        AtomicBoolean result = new AtomicBoolean(false);
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            result.set(this.validInvokers.add(invoker));
+        });
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
-        return result;
+        return result.get();
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        boolean result;
-        synchronized (this.validInvokers) {
-            result = this.validInvokers.remove(invoker);
-        }
+        AtomicBoolean result = new AtomicBoolean(false);
+        LockUtils.safeLock(invokerRefreshLock, LockUtils.DEFAULT_TIMEOUT, () -> {
+            result.set(this.validInvokers.remove(invoker));
+        });
         MetricsEventBus.publish(
                 RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary(), getDirectoryMeta()));
-        return result;
+        return result.get();
     }
 
     protected abstract List<Invoker<T>> doList(

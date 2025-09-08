@@ -1,0 +1,88 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+title: "[Q/A][Java SDK (Component)] xxx"
+body:
+- type: markdown
+  attributes:
+    value: |
+      <img src="https://dubbo.apache.org/imgs/nav_logo2.png" alt="Dubbo logo" height="90px" align="right" />
+
+      Thank you for finding the time to report the question! We really appreciate the community efforts to improve Dubbo.
+
+      If you need to report a security issue, please visit [our security policy](https://github.com/apache/dubbo/security/policy).
+
+      **Dubbo is open for world wide collaboration, please make sure that all the content you provide is in English.**
+      Remember that non-English question is quite not friendly for everyone, and might unable to get the response!
+
+- type: checkboxes
+  attributes:
+    label: Pre-check
+    options:
+      - label: >
+          I am sure that all the content I provide is in English.
+        required: true
+
+- type: dropdown
+  attributes:
+    label: Apache Dubbo Component
+    description: |
+      What Apache Dubbo component are you using? Apache Dubbo has many subprojects, please make sure
+      to choose the component that you want to ask questions about.
+    multiple: false
+    options:
+      - "Java SDK (apache/dubbo)"
+      - "Java Samples (apache/dubbo-samples)"
+      - "Java Integration Cases (apache/dubbo-integration-cases)"
+      - "Java SPI Extensions (apache/dubbo-spi-extensions)"
+      - "Java Benchmark (apache/dubbo-benchmark)"
+      - "Go SDK (apache/dubbo-go)"
+      - "Go Samples (apache/dubbo-go-samples)"
+      - "Rust SDK (apache/dubbo-rust)"
+      - "Node.js SDK (apache/dubbo-js)"
+      - "Python SDK (apache/dubbo-python)"
+      - "Kubernetes Integration (apache/dubbo-kubernetes)"
+      - "Pixiu Gateway (apache/dubbo-go-pixiu)"
+      - "Pixiu Gateway Samples (apache/dubbo-go-pixiu-samples)"
+      - "Admin (apache/dubbo-admin)"
+      - "Website (apache/dubbo-website)"
+      - "Awesome (apache/dubbo-awesome)"
+      - "Initializer (apache/dubbo-intializer)"
+      - "Others (apache/dubbo-xxx)"
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Details
+    description: Anything you want to know?
+  validations:
+    required: true
+
+- type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: The Code of Conduct helps create a safe space for everyone. We require that everyone agrees to it.
+    options:
+      - label: >
+          I agree to follow this project's
+          [Code of Conduct](https://www.apache.org/foundation/policies/conduct)
+        required: true
+
+- type: markdown
+  attributes:
+    value: "Thanks for completing our form!"

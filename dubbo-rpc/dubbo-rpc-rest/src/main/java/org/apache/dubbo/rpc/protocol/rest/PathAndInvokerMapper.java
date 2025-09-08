@@ -53,18 +53,17 @@ public class PathAndInvokerMapper {
      */
     public void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
 
-        metadataMap.entrySet().stream().forEach(entry -> {
-            PathMatcher pathMatcher = entry.getKey();
+        metadataMap.forEach((pathMatcher, value) -> {
             if (pathMatcher.hasPathVariable()) {
                 addPathMatcherToPathMap(
                         pathMatcher,
                         pathToServiceMapContainPathVariable,
-                        InvokerAndRestMethodMetadataPair.pair(invoker, entry.getValue()));
+                        InvokerAndRestMethodMetadataPair.pair(invoker, value));
             } else {
                 addPathMatcherToPathMap(
                         pathMatcher,
                         pathToServiceMapNoPathVariable,
-                        InvokerAndRestMethodMetadataPair.pair(invoker, entry.getValue()));
+                        InvokerAndRestMethodMetadataPair.pair(invoker, value));
             }
         });
     }
@@ -78,16 +77,14 @@ public class PathAndInvokerMapper {
     public InvokerAndRestMethodMetadataPair getRestMethodMetadata(PathMatcher pathMatcher) {
 
         // first search from pathToServiceMapNoPathVariable
-        if (pathToServiceMapNoPathVariable.containsKey(pathMatcher)) {
-            return pathToServiceMapNoPathVariable.get(pathMatcher);
+        InvokerAndRestMethodMetadataPair pair;
+        pair = pathToServiceMapNoPathVariable.get(pathMatcher);
+        if (pair == null) {
+            // second search from pathToServiceMapContainPathVariable
+            pair = pathToServiceMapContainPathVariable.get(pathMatcher);
         }
 
-        // second search from pathToServiceMapContainPathVariable
-        if (pathToServiceMapContainPathVariable.containsKey(pathMatcher)) {
-            return pathToServiceMapContainPathVariable.get(pathMatcher);
-        }
-
-        return null;
+        return pair;
     }
 
     /**
@@ -117,12 +114,10 @@ public class PathAndInvokerMapper {
             Map<PathMatcher, InvokerAndRestMethodMetadataPair> pathMatcherPairMap,
             InvokerAndRestMethodMetadataPair invokerRestMethodMetadataPair) {
 
-        if (pathMatcherPairMap.containsKey(pathMatcher)) {
-
-            // cover the old service metadata when  current interface is old interface & current method desc equals
+        InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
+        if (beforeMetadata != null) {
+            // cover the old service metadata when current interface is old interface & current method desc equals
             // old`s method desc,else ,throw double check exception
-
-            InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
             // true when reExport
             if (!invokerRestMethodMetadataPair.compareServiceMethod(beforeMetadata)) {
                 throw new DoublePathCheckException("dubbo rest double path check error, current path is: " + pathMatcher
@@ -145,15 +140,12 @@ public class PathAndInvokerMapper {
 
         PathMatcher newPathMatcher = PathMatcher.convertPathMatcher(pathMatcher);
 
-        if (!pathMatcherToHttpMethodMap.containsKey(newPathMatcher)) {
-            HashSet<String> httpMethods = new HashSet<>();
+        Set<String> httpMethods = pathMatcherToHttpMethodMap.computeIfAbsent(newPathMatcher, k -> {
+            HashSet<String> methods = new HashSet<>();
 
-            httpMethods.add(pathMatcher.getHttpMethod());
-
-            pathMatcherToHttpMethodMap.put(newPathMatcher, httpMethods);
-        }
-
-        Set<String> httpMethods = pathMatcherToHttpMethodMap.get(newPathMatcher);
+            methods.add(pathMatcher.getHttpMethod());
+            return methods;
+        });
 
         httpMethods.add(newPathMatcher.getHttpMethod());
     }

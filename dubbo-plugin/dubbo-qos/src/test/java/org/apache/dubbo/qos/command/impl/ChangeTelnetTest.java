@@ -71,7 +71,7 @@ class ChangeTelnetTest {
         mockChannel.attr(ChangeTelnet.SERVICE_KEY).set("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20884/demo"));
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20884/demo?group=g&version=1.0.0"));
     }
 
     @AfterEach
@@ -108,6 +108,15 @@ class ChangeTelnetTest {
                 .export(mockInvoker);
         String result = change.execute(mockCommandContext, new String[] {"demo"});
         assertEquals("Used the demo as default.\r\nYou can cancel default service by command: cd /", result);
+    }
+
+    @Test
+    void testChangeServiceKey() {
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
+        String result = change.execute(mockCommandContext, new String[] {"g/demo:1.0.0"});
+        assertEquals("Used the g/demo:1.0.0 as default.\r\nYou can cancel default service by command: cd /", result);
     }
 
     @Test

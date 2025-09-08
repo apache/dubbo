@@ -36,7 +36,8 @@ class GsonUtilsTest {
             Assertions.fail();
         } catch (RuntimeException ex) {
             Assertions.assertEquals(
-                    "Generic serialization [gson] Json syntax exception thrown when parsing (message:{'name':'Tom','age':} type:class org.apache.dubbo.common.json.GsonUtilsTest$User) error:com.google.gson.stream.MalformedJsonException: Expected value at line 1 column 21 path $.age",
+                    "Generic serialization [gson] Json syntax exception thrown when parsing (message:{'name':'Tom','age':} type:class org.apache.dubbo.common.json.GsonUtilsTest$User) error:com.google.gson.stream.MalformedJsonException: Expected value at line 1 column 21 path $.age\n"
+                            + "See https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
                     ex.getMessage());
         }
     }

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -38,6 +39,8 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
+
+import javax.net.ssl.SSLSession;
 
 import java.util.Map;
 import java.util.Objects;
@@ -264,6 +267,10 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(StreamUtils.toAttachments(requestMetadata));
         inv.put(REMOTE_ADDRESS_KEY, stream.remoteAddress());
+        SSLSession sslSession = stream.getSslSession();
+        if (null != sslSession) {
+            inv.put(Constants.SSL_SESSION_KEY, sslSession);
+        }
         // handle timeout
         String timeout = (String) requestMetadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
         try {
