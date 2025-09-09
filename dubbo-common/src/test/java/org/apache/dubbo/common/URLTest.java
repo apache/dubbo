@@ -1222,4 +1222,249 @@ class URLTest {
         assertTrue(toStringResult.contains("application=my-app"));
         assertTrue(toStringResult.contains("version=1.0.0"));
     }
+
+    @Test
+    void test_toString_withSpecificParameters() {
+        // Test toString(parameters...) method with sensitive parameters
+        URL url = URL.valueOf(
+                "dubbo://127.0.0.1:20880/service?application=my-app&accessKey=ak123&secretKey=sk456&version=1.0.0&timeout=5000");
+
+        // Test toString with specific parameters including sensitive ones
+        String result1 = url.toString("application", "accessKey", "version");
+        assertFalse(result1.contains("accessKey")); // should be filtered out
+        assertTrue(result1.contains("application=my-app"));
+        assertTrue(result1.contains("version=1.0.0"));
+        assertFalse(result1.contains("timeout")); // not included in parameters
+
+        // Test toFullString with specific parameters including sensitive ones
+        String result2 = url.toFullString("application", "accessKey", "version");
+        assertTrue(result2.contains("accessKey=ak123")); // should be shown in full string
+        assertTrue(result2.contains("application=my-app"));
+        assertTrue(result2.contains("version=1.0.0"));
+        assertFalse(result2.contains("timeout")); // not included in parameters
+    }
+
+    @Test
+    void test_buildParameters_edgeCases() {
+        // Test with empty parameters
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service");
+        String result1 = url1.toString();
+        assertFalse(result1.contains("?"));
+
+        // Test with only sensitive parameters
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service?accessKey=ak&secretKey=sk");
+        String result2 = url2.toString();
+        assertFalse(result2.contains("accessKey"));
+        assertFalse(result2.contains("secretKey"));
+        assertFalse(result2.contains("?")); // No parameters should remain
+
+        // Test with null parameter value
+        Map<String, String> params = new HashMap<>();
+        params.put("application", "test");
+        params.put("accessKey", null);
+        params.put("version", "1.0.0");
+        URL url3 = new URL("dubbo", "127.0.0.1", 20880, "service", params);
+        String result3 = url3.toString();
+        assertTrue(result3.contains("application=test"));
+        assertTrue(result3.contains("version=1.0.0"));
+        assertFalse(result3.contains("accessKey"));
+
+        // Verify toFullString shows null value parameters
+        String result4 = url3.toFullString();
+        assertTrue(result4.contains("accessKey=")); // null value should show as empty
+    }
+
+    @Test
+    void test_isSensitiveParameter_coverage() {
+        // Test URL with mixed parameters to ensure all sensitive parameter checks are covered
+        URL url = URL.valueOf(
+                "dubbo://127.0.0.1:20880/service?normalParam=value&username=user&password=pass&accessKey=ak&secretKey=sk&anotherParam=value2");
+
+        String toStringResult = url.toString();
+
+        // Should contain non-sensitive parameters
+        assertTrue(toStringResult.contains("normalParam=value"));
+        assertTrue(toStringResult.contains("anotherParam=value2"));
+
+        // Should NOT contain any of the sensitive parameters
+        assertFalse(toStringResult.contains("username=user"));
+        assertFalse(toStringResult.contains("password=pass"));
+        assertFalse(toStringResult.contains("accessKey=ak"));
+        assertFalse(toStringResult.contains("secretKey=sk"));
+
+        // Verify toFullString shows all parameters
+        String toFullStringResult = url.toFullString();
+        assertTrue(toFullStringResult.contains("normalParam=value"));
+        assertTrue(toFullStringResult.contains("anotherParam=value2"));
+        assertTrue(toFullStringResult.contains("username=user"));
+        assertTrue(toFullStringResult.contains("password=pass"));
+        assertTrue(toFullStringResult.contains("accessKey=ak"));
+        assertTrue(toFullStringResult.contains("secretKey=sk"));
+    }
+
+    @Test
+    void test_buildParameters_showSensitive_true() {
+        // Test buildParameters with showSensitive=true (used by toFullString)
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880/service?app=test&accessKey=ak123&secretKey=sk456&version=1.0");
+
+        // This indirectly tests buildParameters with showSensitive=true through toFullString
+        String fullString = url.toFullString();
+        assertTrue(fullString.contains("accessKey=ak123"));
+        assertTrue(fullString.contains("secretKey=sk456"));
+        assertTrue(fullString.contains("app=test"));
+        assertTrue(fullString.contains("version=1.0"));
+    }
+
+    @Test
+    void test_buildParameters_showSensitive_false() {
+        // Test buildParameters with showSensitive=false (used by toString)
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880/service?app=test&accessKey=ak123&secretKey=sk456&version=1.0");
+
+        // This indirectly tests buildParameters with showSensitive=false through toString
+        String normalString = url.toString();
+        assertFalse(normalString.contains("accessKey"));
+        assertFalse(normalString.contains("secretKey"));
+        assertTrue(normalString.contains("app=test"));
+        assertTrue(normalString.contains("version=1.0"));
+    }
+
+    @Test
+    void test_buildString_variants() {
+        // Test different buildString method variants to ensure coverage
+        URL url =
+                URL.valueOf("dubbo://user:pass@127.0.0.1:20880/service?app=test&accessKey=ak&secretKey=sk&version=1.0");
+
+        // Test buildString() - no parameters, should hide sensitive
+        String result1 = url.toString();
+        assertFalse(result1.contains("user:pass"));
+        assertFalse(result1.contains("accessKey"));
+        assertFalse(result1.contains("secretKey"));
+
+        // Test buildString with appendParameters=true, showSensitive=false
+        String result2 = url.toString();
+        assertTrue(result2.contains("app=test"));
+        assertFalse(result2.contains("accessKey"));
+
+        // Test buildString with appendParameters=true, showSensitive=true
+        String result3 = url.toFullString();
+        assertTrue(result3.contains("app=test"));
+        assertTrue(result3.contains("accessKey=ak"));
+        assertTrue(result3.contains("user:pass"));
+    }
+
+    @Test
+    void test_edge_cases_for_coverage() {
+        // Test case where parameters map is empty
+        URL url1 = new URL("dubbo", "127.0.0.1", 20880, "service", new HashMap<>());
+        String result1 = url1.toString();
+        assertFalse(result1.contains("?"));
+
+        // Test case where all parameters are sensitive
+        Map<String, String> sensitiveParams = new HashMap<>();
+        sensitiveParams.put("username", "user");
+        sensitiveParams.put("password", "pass");
+        sensitiveParams.put("accessKey", "ak");
+        sensitiveParams.put("secretKey", "sk");
+        URL url2 = new URL("dubbo", "127.0.0.1", 20880, "service", sensitiveParams);
+        String result2 = url2.toString();
+        assertFalse(result2.contains("?"));
+        assertFalse(result2.contains("username"));
+        assertFalse(result2.contains("password"));
+        assertFalse(result2.contains("accessKey"));
+        assertFalse(result2.contains("secretKey"));
+
+        // But toFullString should show them
+        String result3 = url2.toFullString();
+        assertTrue(result3.contains("username=user"));
+        assertTrue(result3.contains("password=pass"));
+        assertTrue(result3.contains("accessKey=ak"));
+        assertTrue(result3.contains("secretKey=sk"));
+    }
+
+    @Test
+    void test_additional_coverage_scenarios() {
+        // Test case 1: URL with only username parameter (no password)
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service?username=onlyuser&app=test");
+        String result1 = url1.toString();
+        assertFalse(result1.contains("username=onlyuser"));
+        assertTrue(result1.contains("app=test"));
+
+        // Test case 2: URL with only password parameter (no username)
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service?password=onlypass&app=test");
+        String result2 = url2.toString();
+        assertFalse(result2.contains("password=onlypass"));
+        assertTrue(result2.contains("app=test"));
+
+        // Test case 3: URL with only accessKey parameter (no secretKey)
+        URL url3 = URL.valueOf("dubbo://127.0.0.1:20880/service?accessKey=onlyak&app=test");
+        String result3 = url3.toString();
+        assertFalse(result3.contains("accessKey=onlyak"));
+        assertTrue(result3.contains("app=test"));
+
+        // Test case 4: URL with only secretKey parameter (no accessKey)
+        URL url4 = URL.valueOf("dubbo://127.0.0.1:20880/service?secretKey=onlysk&app=test");
+        String result4 = url4.toString();
+        assertFalse(result4.contains("secretKey=onlysk"));
+        assertTrue(result4.contains("app=test"));
+
+        // Test case 5: URL with sensitive parameters having empty values
+        URL url5 = URL.valueOf("dubbo://127.0.0.1:20880/service?username=&password=&accessKey=&secretKey=&app=test");
+        String result5 = url5.toString();
+        assertFalse(result5.contains("username="));
+        assertFalse(result5.contains("password="));
+        assertFalse(result5.contains("accessKey="));
+        assertFalse(result5.contains("secretKey="));
+        assertTrue(result5.contains("app=test"));
+
+        // Verify toFullString shows empty values for debugging
+        String full5 = url5.toFullString();
+        assertTrue(full5.contains("username="));
+        assertTrue(full5.contains("password="));
+        assertTrue(full5.contains("accessKey="));
+        assertTrue(full5.contains("secretKey="));
+    }
+
+    @Test
+    void test_parameter_order_and_formatting() {
+        URL url = URL.valueOf(
+                "dubbo://127.0.0.1:20880/service?z_param=last&accessKey=sensitive&b_param=second&secretKey=secret&a_param=first");
+
+        String result = url.toString();
+        // Non-sensitive parameters should be present regardless of order
+        assertTrue(result.contains("z_param=last"));
+        assertTrue(result.contains("b_param=second"));
+        assertTrue(result.contains("a_param=first"));
+
+        // Sensitive parameters should be filtered regardless of position
+        assertFalse(result.contains("accessKey"));
+        assertFalse(result.contains("secretKey"));
+        assertFalse(result.contains("sensitive"));
+        assertFalse(result.contains("secret"));
+    }
+
+    @Test
+    void test_buildParameters_with_specific_keys() {
+        // Test buildParameters when called with specific parameter keys
+        Map<String, String> params = new HashMap<>();
+        params.put("app", "testapp");
+        params.put("version", "1.0.0");
+        params.put("accessKey", "ak123");
+        params.put("secretKey", "sk456");
+        params.put("username", "user");
+        params.put("password", "pass");
+
+        URL url = new URL("dubbo", "127.0.0.1", 20880, "service", params);
+
+        // Test toString with specific parameters - sensitive ones should be filtered
+        String result1 = url.toString("app", "accessKey", "version");
+        assertTrue(result1.contains("app=testapp"));
+        assertTrue(result1.contains("version=1.0.0"));
+        assertFalse(result1.contains("accessKey")); // Should be filtered even when explicitly requested
+
+        // Test toFullString with specific parameters - should show all requested parameters
+        String result2 = url.toFullString("app", "accessKey", "version");
+        assertTrue(result2.contains("app=testapp"));
+        assertTrue(result2.contains("version=1.0.0"));
+        assertTrue(result2.contains("accessKey=ak123")); // Should show in full string
+    }
 }
