@@ -39,7 +39,8 @@ public class DefaultTPSLimiter implements TPSLimiter {
 
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {
-        boolean isMethodLevelTpsConfigured = url.hasMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_RATE_KEY);
+        boolean isMethodLevelTpsConfigured =
+                url.hasMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_RATE_KEY);
         String key = isMethodLevelTpsConfigured
                 ? url.getServiceKey() + "#" + RpcUtils.getMethodName(invocation)
                 : url.getServiceKey();
