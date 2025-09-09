@@ -21,5 +21,4 @@ public interface Jsr310Converter<T> {
     Object generalize(T t);
 
     T realize(Object obj);
-
 }

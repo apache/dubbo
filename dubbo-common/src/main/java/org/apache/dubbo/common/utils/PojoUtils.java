@@ -166,8 +166,7 @@ public class PojoUtils {
         }
 
         Class<?> pojoClazz = pojo.getClass();
-        if (pojoClazz.isArray()
-                && Enum.class.isAssignableFrom(pojoClazz.getComponentType())) {
+        if (pojoClazz.isArray() && Enum.class.isAssignableFrom(pojoClazz.getComponentType())) {
             int len = Array.getLength(pojo);
             String[] values = new String[len];
             for (int i = 0; i < len; i++) {
