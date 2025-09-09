@@ -39,8 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
  */
 @TestPropertySource(
         properties = {
-                "dubbo.generic.local-date-time-format = yyyy-MM-dd HH:mm:ss.SSS",
-                "dubbo.generic.local-time-format = HH:mm:ss||HH:mm:ss.SSS"
+            "dubbo.generic.local-date-time-format = yyyy-MM-dd HH:mm:ss.SSS",
+            "dubbo.generic.local-time-format = HH:mm:ss||HH:mm:ss.SSS"
         })
 @SpringBootTest(classes = {Jsr310ConverterApplicationListener.class})
 @Disabled
@@ -74,5 +74,4 @@ public class Jsr310ConverterApplicationListenerTest {
         assertInstanceOf(LocalTime.class, localTime);
         assertEquals(12, localTime.toString().length());
     }
-
 }
