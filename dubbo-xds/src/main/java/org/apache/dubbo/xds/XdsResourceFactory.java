@@ -278,7 +278,8 @@ public class XdsResourceFactory {
             }
         }
 
-        public class CdsUpdateNodeDirectory implements XdsResourceListener<org.apache.dubbo.xds.resource.update.CdsUpdate> {
+        public class CdsUpdateNodeDirectory
+                implements XdsResourceListener<org.apache.dubbo.xds.resource.update.CdsUpdate> {
 
             @Override
             public void onResourceUpdate(org.apache.dubbo.xds.resource.update.CdsUpdate update) {
@@ -317,7 +318,8 @@ public class XdsResourceFactory {
             }
         }
 
-        public class EdsUpdateLeafDirectory implements XdsResourceListener<org.apache.dubbo.xds.resource.update.EdsUpdate> {
+        public class EdsUpdateLeafDirectory
+                implements XdsResourceListener<org.apache.dubbo.xds.resource.update.EdsUpdate> {
 
             private final String clusterName;
             // private final String edsResourceName;

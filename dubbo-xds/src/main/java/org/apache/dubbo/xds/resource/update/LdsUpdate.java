@@ -18,9 +18,10 @@ package org.apache.dubbo.xds.resource.update;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.xds.resource.listener.HttpConnectionManager;
-import io.envoyproxy.envoy.config.listener.v3.Listener;
 
 import java.util.Objects;
+
+import io.envoyproxy.envoy.config.listener.v3.Listener;
 
 public class LdsUpdate implements ResourceUpdate {
 
@@ -29,12 +30,16 @@ public class LdsUpdate implements ResourceUpdate {
     private Listener rawListener;
     private int port = -1;
 
-    public LdsUpdate(HttpConnectionManager httpConnectionManager, org.apache.dubbo.xds.resource.listener.Listener listener) {
+    public LdsUpdate(
+            HttpConnectionManager httpConnectionManager, org.apache.dubbo.xds.resource.listener.Listener listener) {
         this.httpConnectionManager = httpConnectionManager;
         this.listener = listener;
     }
 
-    public LdsUpdate(HttpConnectionManager httpConnectionManager, org.apache.dubbo.xds.resource.listener.Listener listener, int port) {
+    public LdsUpdate(
+            HttpConnectionManager httpConnectionManager,
+            org.apache.dubbo.xds.resource.listener.Listener listener,
+            int port) {
         this.httpConnectionManager = httpConnectionManager;
         this.listener = listener;
         this.port = port;
