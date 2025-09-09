@@ -18,23 +18,23 @@ package org.apache.dubbo.xds.resource.update;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.xds.resource.listener.HttpConnectionManager;
-import org.apache.dubbo.xds.resource.listener.Listener;
+import io.envoyproxy.envoy.config.listener.v3.Listener;
 
 import java.util.Objects;
 
 public class LdsUpdate implements ResourceUpdate {
 
     private HttpConnectionManager httpConnectionManager;
-    private Listener listener;
-    private io.envoyproxy.envoy.config.listener.v3.Listener rawListener;
+    private org.apache.dubbo.xds.resource.listener.Listener listener;
+    private Listener rawListener;
     private int port = -1;
 
-    public LdsUpdate(HttpConnectionManager httpConnectionManager, Listener listener) {
+    public LdsUpdate(HttpConnectionManager httpConnectionManager, org.apache.dubbo.xds.resource.listener.Listener listener) {
         this.httpConnectionManager = httpConnectionManager;
         this.listener = listener;
     }
 
-    public LdsUpdate(HttpConnectionManager httpConnectionManager, Listener listener, int port) {
+    public LdsUpdate(HttpConnectionManager httpConnectionManager, org.apache.dubbo.xds.resource.listener.Listener listener, int port) {
         this.httpConnectionManager = httpConnectionManager;
         this.listener = listener;
         this.port = port;
@@ -48,11 +48,11 @@ public class LdsUpdate implements ResourceUpdate {
         this.httpConnectionManager = httpConnectionManager;
     }
 
-    public Listener getListener() {
+    public org.apache.dubbo.xds.resource.listener.Listener getListener() {
         return listener;
     }
 
-    public void setListener(Listener listener) {
+    public void setListener(org.apache.dubbo.xds.resource.listener.Listener listener) {
         this.listener = listener;
     }
 
@@ -111,12 +111,12 @@ public class LdsUpdate implements ResourceUpdate {
         return new LdsUpdate(httpConnectionManager, null, port);
     }
 
-    public static LdsUpdate forTcpListener(Listener listener) {
+    public static LdsUpdate forTcpListener(org.apache.dubbo.xds.resource.listener.Listener listener) {
         Assert.notNull(listener, "listener must not be null");
         return new LdsUpdate(null, listener);
     }
 
-    public static LdsUpdate forTcpListener(Listener listener, int port) {
+    public static LdsUpdate forTcpListener(org.apache.dubbo.xds.resource.listener.Listener listener, int port) {
         Assert.notNull(listener, "listener must not be null");
         return new LdsUpdate(null, listener, port);
     }

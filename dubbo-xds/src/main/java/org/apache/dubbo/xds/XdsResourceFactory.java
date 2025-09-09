@@ -42,8 +42,6 @@ import org.apache.dubbo.xds.resource.route.VirtualHost;
 import org.apache.dubbo.xds.resource.update.CdsUpdate;
 import org.apache.dubbo.xds.resource.update.CdsUpdate.ClusterType;
 import org.apache.dubbo.xds.resource.update.EdsUpdate;
-import org.apache.dubbo.xds.resource.update.LdsUpdate;
-import org.apache.dubbo.xds.resource.update.RdsUpdate;
 
 import javax.annotation.Nullable;
 
@@ -165,7 +163,7 @@ public class XdsResourceFactory {
         return clusters;
     }
 
-    public class LdsUpdateWatcher implements XdsResourceListener<LdsUpdate> {
+    public class LdsUpdateWatcher implements XdsResourceListener<org.apache.dubbo.xds.resource.update.LdsUpdate> {
 
         private final String ldsResourceName;
 
@@ -180,7 +178,7 @@ public class XdsResourceFactory {
         }
 
         @Override
-        public void onResourceUpdate(LdsUpdate update) {
+        public void onResourceUpdate(org.apache.dubbo.xds.resource.update.LdsUpdate update) {
             if (update == null) {
                 return;
             }
@@ -253,7 +251,7 @@ public class XdsResourceFactory {
             }
         }
 
-        public class RdsUpdateWatcher implements XdsResourceListener<RdsUpdate> {
+        public class RdsUpdateWatcher implements XdsResourceListener<org.apache.dubbo.xds.resource.update.RdsUpdate> {
 
             private String rdsName;
 
@@ -270,7 +268,7 @@ public class XdsResourceFactory {
             }
 
             @Override
-            public void onResourceUpdate(RdsUpdate update) {
+            public void onResourceUpdate(org.apache.dubbo.xds.resource.update.RdsUpdate update) {
                 if (RdsUpdateWatcher.this != rdsUpdateWatcher) {
                     logger.warn("[XDS] Ignoring RDS update because this is not the current watcher");
                     return;
@@ -280,10 +278,10 @@ public class XdsResourceFactory {
             }
         }
 
-        public class CdsUpdateNodeDirectory implements XdsResourceListener<CdsUpdate> {
+        public class CdsUpdateNodeDirectory implements XdsResourceListener<org.apache.dubbo.xds.resource.update.CdsUpdate> {
 
             @Override
-            public void onResourceUpdate(CdsUpdate update) {
+            public void onResourceUpdate(org.apache.dubbo.xds.resource.update.CdsUpdate update) {
                 if (update == null) {
                     return;
                 }
@@ -319,7 +317,7 @@ public class XdsResourceFactory {
             }
         }
 
-        public class EdsUpdateLeafDirectory implements XdsResourceListener<EdsUpdate> {
+        public class EdsUpdateLeafDirectory implements XdsResourceListener<org.apache.dubbo.xds.resource.update.EdsUpdate> {
 
             private final String clusterName;
             // private final String edsResourceName;
@@ -342,7 +340,7 @@ public class XdsResourceFactory {
             }
 
             @Override
-            public void onResourceUpdate(EdsUpdate update) {
+            public void onResourceUpdate(org.apache.dubbo.xds.resource.update.EdsUpdate update) {
                 if (update == null) {
                     logger.warn("[XDS] Received null EdsUpdate for cluster: {}", clusterName);
                     return;
@@ -421,77 +419,6 @@ public class XdsResourceFactory {
                 localityPriorityNames = newNames;
                 return ret;
             }
-
-            /**
-             * 根据endpoints生成invoker
-             * @param addresses
-             */
-            //            private void generateInvokersFromEndpoints(List<URLAddress> addresses) {
-            //
-            //                List<Invoker<T>> invokers = new ArrayList<>();
-            //                addresses.forEach(address -> {
-            //                    URL url = new URL(
-            //                            protocolName,
-            //                            address.getIp(),
-            //                            address.getPort(),
-            //                            serviceType.getName(),
-            //                            oriUrl.getParameters());
-            //                    // set cluster name
-            //                    url = url.addParameter("clusterID", clusterName);
-            //                    // set load balance policy
-            //                    //            url = url.addParameter("loadbalance", lbPolicy);
-            //                    //  cluster to invoker
-            //                    try {
-            //                        Invoker<T> invoker = protocol.refer(serviceType, url);
-            //
-            //                        invokers.add(invoker);
-            //                    } catch (Throwable e) {
-            //                        logger.error("Failed to refer invoker from address " + address, e);
-            //                    }
-            //                });
-            //                // TODO: Consider cases where some clients are not available
-            //                // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor
-            // multi clusters.
-            //
-            //                // 设置新的invokers到xdsCluster中
-            //                BitList<Invoker<T>> bitList = new BitList<>(invokers);
-            //                refreshRouter(bitList.clone(), () -> setInvokers(bitList));
-            //            }
         }
     }
-
-    //
-    //    public void onResourceUpdate(CdsUpdate cdsUpdate) {
-    //        // for eds cluster, do nothing
-    //
-    //        // for aggregate clusters, do subscription
-    //        String clusterName = cdsUpdate.getClusterName();
-    //        this.pilotExchanger.subscribeCds(clusterName, this);
-    //    }
-    //
-    //    public void onResourceUpdate(String clusterName, EdsUpdate edsUpdate) {
-    //        xdsEndpointMap.put(clusterName, edsUpdate);
-    //        //        String lbPolicy = xdsCluster.getLbPolicy();
-    //        List<LbEndpoint> xdsEndpoints = edsUpdate.getLocalityLbEndpointsMap().values().stream()
-    //                .flatMap(e -> e.getEndpoints().stream())
-    //                .collect(Collectors.toList());
-    //        BitList<Invoker<T>> invokers = new BitList<>(Collections.emptyList());
-    //        xdsEndpoints.forEach(e -> {
-    //            String ip = e.getAddresses().get(0).getAddress();
-    //            int port = e.getAddresses().get(0).getPort();
-    //            URL url = new URL(this.protocolName, ip, port, this.serviceType.getName(), this.url.getParameters());
-    //            // set cluster name
-    //            url = url.addParameter("clusterID", clusterName);
-    //            // set load balance policy
-    //            //            url = url.addParameter("loadbalance", lbPolicy);
-    //            //  cluster to invoker
-    //            Invoker<T> invoker = this.protocol.refer(this.serviceType, url);
-    //            invokers.add(invoker);
-    //        });
-    //        // TODO: Consider cases where some clients are not available
-    //        // super.getInvokers().addAll(invokers);
-    //        // TODO: Need add new api which can add invokers, because a XdsDirectory need monitor multi clusters.
-    //        super.setInvokers(invokers);
-    //        //        xdsCluster.setInvokers(invokers);
-    //    }
 }
