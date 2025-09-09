@@ -293,6 +293,10 @@ public interface CommonConstants {
 
     String PASSWORD_KEY = "password";
 
+    String ACCESS_KEY = "accessKey";
+
+    String SECRET_KEY = "secretKey";
+
     String HOST_KEY = "host";
 
     String PORT_KEY = "port";

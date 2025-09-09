@@ -551,4 +551,31 @@ class UrlUtilsTest {
         assertTrue(UrlUtils.isServiceDiscoveryURL(url3));
         assertTrue(UrlUtils.isServiceDiscoveryURL(url4));
     }
+
+    @Test
+    void testParseURL_removeSensitiveParameters() {
+        // Test that parseURL removes accessKey and secretKey from defaults
+        Map<String, String> defaults = new HashMap<>();
+        defaults.put("protocol", "nacos");
+        defaults.put("application", "my-app");
+        defaults.put("accessKey", "sensitive-ak");
+        defaults.put("secretKey", "sensitive-sk");
+        defaults.put("username", "user");
+        defaults.put("password", "pass");
+        defaults.put("version", "1.0.0");
+
+        URL url = UrlUtils.parseURL("127.0.0.1:8848", defaults);
+
+        // Verify that sensitive parameters are removed from the processed defaults
+        // by checking that they don't appear in the URL string representation
+        String urlString = url.toString();
+        assertFalse(urlString.contains("accessKey"));
+        assertFalse(urlString.contains("secretKey"));
+        assertFalse(urlString.contains("username"));
+        assertFalse(urlString.contains("password"));
+
+        // But non-sensitive parameters should be present
+        assertTrue(urlString.contains("application=my-app"));
+        assertTrue(urlString.contains("version=1.0.0"));
+    }
 }

@@ -1149,4 +1149,77 @@ class URLTest {
                 "zookeeper://10.20.130.230:4444/aaa/org.apache.dubbo.metadata.report.MetadataReport:1.0.0?namespace=test",
                 url.toServiceString("namespace"));
     }
+
+    @Test
+    void test_toString_hideSensitiveParameters() {
+        // Test URL with accessKey and secretKey parameters
+        URL url = URL.valueOf(
+                "nacos://127.0.0.1:8848/RegistryService?application=my-app&accessKey=my-access-key&secretKey=my-secret-key&version=1.0.0");
+
+        String toStringResult = url.toString();
+
+        // toString() should hide sensitive parameters
+        assertFalse(toStringResult.contains("accessKey"));
+        assertFalse(toStringResult.contains("my-access-key"));
+        assertFalse(toStringResult.contains("secretKey"));
+        assertFalse(toStringResult.contains("my-secret-key"));
+
+        // But should contain non-sensitive parameters
+        assertTrue(toStringResult.contains("application=my-app"));
+        assertTrue(toStringResult.contains("version=1.0.0"));
+    }
+
+    @Test
+    void test_toFullString_showSensitiveParameters() {
+        // Test URL with accessKey and secretKey parameters
+        URL url = URL.valueOf(
+                "nacos://127.0.0.1:8848/RegistryService?application=my-app&accessKey=my-access-key&secretKey=my-secret-key&version=1.0.0");
+
+        String toFullStringResult = url.toFullString();
+
+        // toFullString() should show all parameters including sensitive ones
+        assertTrue(toFullStringResult.contains("accessKey=my-access-key"));
+        assertTrue(toFullStringResult.contains("secretKey=my-secret-key"));
+        assertTrue(toFullStringResult.contains("application=my-app"));
+        assertTrue(toFullStringResult.contains("version=1.0.0"));
+    }
+
+    @Test
+    void test_toString_hideUsernamePassword() {
+        // Verify existing behavior for username and password still works
+        URL url = URL.valueOf("dubbo://username:password@10.20.130.230:20880/service?application=my-app&version=1.0.0");
+
+        String toStringResult = url.toString();
+
+        // toString() should hide username and password in URL authority
+        assertFalse(toStringResult.contains("username"));
+        assertFalse(toStringResult.contains("password"));
+
+        // But should show the host and other parameters
+        assertTrue(toStringResult.contains("10.20.130.230"));
+        assertTrue(toStringResult.contains("application=my-app"));
+    }
+
+    @Test
+    void test_toString_withAllSensitiveParameters() {
+        // Test URL with all types of sensitive parameters
+        URL url = URL.valueOf(
+                "nacos://username:password@127.0.0.1:8848/service?application=my-app&username=user&password=pass&accessKey=ak&secretKey=sk&version=1.0.0");
+
+        String toStringResult = url.toString();
+
+        // toString() should hide all sensitive parameters
+        assertFalse(toStringResult.contains("username"));
+        assertFalse(toStringResult.contains("password"));
+        assertFalse(toStringResult.contains("accessKey"));
+        assertFalse(toStringResult.contains("secretKey"));
+        assertFalse(toStringResult.contains("user"));
+        assertFalse(toStringResult.contains("pass"));
+        assertFalse(toStringResult.contains("ak"));
+        assertFalse(toStringResult.contains("sk"));
+
+        // But should contain non-sensitive parameters
+        assertTrue(toStringResult.contains("application=my-app"));
+        assertTrue(toStringResult.contains("version=1.0.0"));
+    }
 }
