@@ -525,6 +525,7 @@
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
         <module>dubbo-plugin/dubbo-spring6-security</module>
+        <module>dubbo-plugin/dubbo-mutiny</module>
       </modules>
     </profile>
     <!-- jacoco: mvn validate -Pjacoco  -->
@@ -676,6 +677,7 @@
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
         <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-plugin-loom</module>
+        <module>dubbo-plugin/dubbo-mutiny</module>
         <module>dubbo-distribution/dubbo-all</module>
         <module>dubbo-distribution/dubbo-all-shaded</module>
         <module>dubbo-distribution/dubbo-apache-release</module>
