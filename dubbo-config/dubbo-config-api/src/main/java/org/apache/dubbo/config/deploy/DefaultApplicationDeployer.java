@@ -119,6 +119,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(DefaultApplicationDeployer.class);
 
+    private static final String REFRESH_ERR = "Refresh instance and metadata error.";
+
     private final ApplicationModel applicationModel;
 
     private final ConfigManager configManager;
@@ -1054,7 +1056,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                                     }
                                 } catch (Exception e) {
                                     if (!applicationModel.isDestroyed()) {
-                                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+                                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", REFRESH_ERR, e);
                                     }
                                 }
                             },
@@ -1071,7 +1073,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             try {
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
             } catch (Exception e) {
-                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", REFRESH_ERR, e);
             }
         }
     }
@@ -1360,7 +1362,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
             }
         } catch (Exception e) {
-            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", REFRESH_ERR, e);
         }
     }
 
