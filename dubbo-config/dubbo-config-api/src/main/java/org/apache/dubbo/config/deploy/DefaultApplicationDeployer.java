@@ -1054,12 +1054,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                                     }
                                 } catch (Exception e) {
                                     if (!applicationModel.isDestroyed()) {
-                                        logger.error(
-                                                CONFIG_REFRESH_INSTANCE_ERROR,
-                                                "",
-                                                "",
-                                                "Refresh instance and metadata error.",
-                                                e);
+                                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
                                     }
                                 }
                             },
