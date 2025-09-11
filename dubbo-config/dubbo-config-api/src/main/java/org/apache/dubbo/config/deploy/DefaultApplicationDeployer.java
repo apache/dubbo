@@ -920,9 +920,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 if (configCenter.isCheck()) {
                     throw new IllegalStateException("The configuration center is not available");
                 } else if (dynamicConfiguration == null) {
-                    logger.warn("The configuration center failed to initialize, dynamicConfiguration is null.");
+                    logger.warn(
+                            CONFIG_FAILED_INIT_CONFIG_CENTER,
+                            "",
+                            "",
+                            "The configuration center failed to initialize, dynamicConfiguration is null.");
                 } else {
-                    logger.warn("The configuration center initialize successfully, but connection is not available.");
+                    logger.warn(
+                            CONFIG_FAILED_INIT_CONFIG_CENTER,
+                            "",
+                            "",
+                            "The configuration center initialize successfully, but connection is not available.");
                 }
                 return dynamicConfiguration;
             }
