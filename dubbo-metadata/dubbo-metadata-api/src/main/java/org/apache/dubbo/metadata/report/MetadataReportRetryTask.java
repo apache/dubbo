@@ -112,7 +112,8 @@ public class MetadataReportRetryTask {
             for (URL url : urlSet) {
                 try {
                     if (!retryHandler.apply(metadataReport, url)) {
-                        throw new Exception("method doMap() return false");
+                        throw new Exception("metadata-report retry task handler failed for service url: " + url
+                                + ", metadata-center url: " + metadataReport.getUrl());
                     }
                 } catch (Throwable e) {
                     logger.warn(

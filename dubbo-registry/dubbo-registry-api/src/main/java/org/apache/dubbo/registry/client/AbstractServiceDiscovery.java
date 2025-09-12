@@ -397,8 +397,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
         MetadataInfo metadataInfo = instance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
-        return !newRevision.equals(metadataInfo.getReportedRevision())
-                || !newRevision.equals(instance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
+        boolean isMetadataReportSuccess = newRevision.equals(metadataInfo.getReportedRevision());
+        boolean isServiceInstanceUpdateSuccess =
+                newRevision.equals(instance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
+        return !isMetadataReportSuccess || !isServiceInstanceUpdateSuccess;
     }
 
     protected void reportMetadata(MetadataInfo metadataInfo) {
