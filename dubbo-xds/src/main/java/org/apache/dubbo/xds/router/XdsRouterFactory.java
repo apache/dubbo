@@ -24,8 +24,14 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 @Activate(order = 300)
 public class XdsRouterFactory implements StateRouterFactory {
 
+    private static final String XDS_ROUTER_KEY = "xds";
+
     @Override
     public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        if (!XDS_ROUTER_KEY.equals(url.getProtocol())) {
+            return null;
+        }
+
         return new XdsRouter<>(url);
     }
 }
