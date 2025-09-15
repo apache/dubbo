@@ -45,6 +45,8 @@ public class ResetZookeeperProcessor implements Processor {
                 client.start();
                 boolean connected = client.blockUntilConnected(1000, TimeUnit.MILLISECONDS);
                 if (!connected) {
+                    // close CuratorFramework to stop re-connection.
+                    client.close();
                     throw new IllegalStateException("zookeeper not connected");
                 }
                 client.delete().deletingChildrenIfNeeded().forPath("/dubbo");
