@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -322,13 +321,10 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (future == null || future.isDone()) {
                 return;
             }
+
             ExecutorService executor = future.getExecutor();
             if (executor != null && !executor.isShutdown()) {
-                try {
-                    executor.execute(() -> notifyTimeout(future));
-                } catch (RejectedExecutionException e) {
-                    notifyTimeout(future);
-                }
+                executor.execute(() -> notifyTimeout(future));
             } else {
                 notifyTimeout(future);
             }
