@@ -1182,11 +1182,11 @@ public /*final**/ class URL implements Serializable {
     }
 
     public String toFullString() {
-        return buildString(true, true);
+        return buildString(true, true, false, false, true);
     }
 
     public String toFullString(String... parameters) {
-        return buildString(true, true, parameters);
+        return buildString(true, true, false, false, true, parameters);
     }
 
     public String toParameterString() {
@@ -1200,11 +1200,19 @@ public /*final**/ class URL implements Serializable {
     }
 
     protected void buildParameters(StringBuilder buf, boolean concat, String[] parameters) {
+        buildParameters(buf, concat, false, parameters);
+    }
+
+    protected void buildParameters(StringBuilder buf, boolean concat, boolean showSensitive, String[] parameters) {
         if (CollectionUtils.isNotEmptyMap(getParameters())) {
             List<String> includes = (ArrayUtils.isEmpty(parameters) ? null : Arrays.asList(parameters));
             boolean first = true;
             for (Map.Entry<String, String> entry : new TreeMap<>(getParameters()).entrySet()) {
-                if (StringUtils.isNotEmpty(entry.getKey()) && (includes == null || includes.contains(entry.getKey()))) {
+                String key = entry.getKey();
+                // Skip sensitive parameters in non-full string representations unless showSensitive is true
+                if (StringUtils.isNotEmpty(key)
+                        && (showSensitive || !isSensitiveParameter(key))
+                        && (includes == null || includes.contains(key))) {
                     if (first) {
                         if (concat) {
                             buf.append('?');
@@ -1213,7 +1221,7 @@ public /*final**/ class URL implements Serializable {
                     } else {
                         buf.append('&');
                     }
-                    buf.append(entry.getKey());
+                    buf.append(key);
                     buf.append('=');
                     buf.append(entry.getValue() == null ? "" : entry.getValue().trim());
                 }
@@ -1221,12 +1229,26 @@ public /*final**/ class URL implements Serializable {
         }
     }
 
+    private boolean isSensitiveParameter(String key) {
+        return org.apache.dubbo.common.config.SensitiveParameterConfig.isSensitiveParameter(key);
+    }
+
     private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
-        return buildString(appendUser, appendParameter, false, false, parameters);
+        return buildString(appendUser, appendParameter, false, false, false, parameters);
     }
 
     private String buildString(
             boolean appendUser, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
+        return buildString(appendUser, appendParameter, useIP, useService, false, parameters);
+    }
+
+    private String buildString(
+            boolean appendUser,
+            boolean appendParameter,
+            boolean useIP,
+            boolean useService,
+            boolean showSensitive,
+            String... parameters) {
         StringBuilder buf = new StringBuilder();
         if (StringUtils.isNotEmpty(getProtocol())) {
             buf.append(getProtocol());
@@ -1265,7 +1287,7 @@ public /*final**/ class URL implements Serializable {
         }
 
         if (appendParameter) {
-            buildParameters(buf, true, parameters);
+            buildParameters(buf, true, showSensitive, parameters);
         }
         return buf.toString();
     }
