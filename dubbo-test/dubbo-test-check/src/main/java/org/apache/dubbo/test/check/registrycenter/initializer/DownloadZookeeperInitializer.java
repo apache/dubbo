@@ -66,12 +66,12 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
     /**
      * The timeout when download zookeeper binary archive file.
      */
-    private static final int REQUEST_TIMEOUT = 30 * 1000;
+    private static final int REQUEST_TIMEOUT = 180 * 1000;
 
     /**
      * The timeout when connect the download url.
      */
-    private static final int CONNECT_TIMEOUT = 10 * 1000;
+    private static final int CONNECT_TIMEOUT = 60 * 1000;
 
     /**
      * Returns {@code true} if the file exists with the given file path, otherwise {@code false}.
@@ -198,7 +198,8 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
                                 TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE,
                                 "",
                                 "",
-                                "Failed to download the file, download url: " + url);
+                                "Failed to download the file, download url: " + url,
+                                t);
                         super.onThrowable(t);
                     }
                 });
