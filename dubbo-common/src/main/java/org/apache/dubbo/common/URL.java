@@ -57,7 +57,6 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.ACCESS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ADDRESS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -74,7 +73,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SECRET_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
