@@ -1232,7 +1232,7 @@ public /*final**/ class URL implements Serializable {
     }
 
     private boolean isSensitiveParameter(String key) {
-        return USERNAME_KEY.equals(key) || PASSWORD_KEY.equals(key) || ACCESS_KEY.equals(key) || SECRET_KEY.equals(key);
+        return org.apache.dubbo.common.config.SensitiveParameterConfig.isSensitiveParameter(key);
     }
 
     private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
