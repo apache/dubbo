@@ -99,7 +99,10 @@ public class Curator5ZookeeperClient
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
             boolean check = UrlUtils.isCheck(url);
             if (check && !connected) {
-                IllegalStateException illegalStateException = new IllegalStateException("zookeeper not connected");
+                // close CuratorFramework to stop re-connection.
+                client.close();
+                IllegalStateException illegalStateException =
+                        new IllegalStateException("zookeeper not connected, the address is: " + url);
 
                 // 5-1 Failed to connect to configuration center.
                 logger.error(

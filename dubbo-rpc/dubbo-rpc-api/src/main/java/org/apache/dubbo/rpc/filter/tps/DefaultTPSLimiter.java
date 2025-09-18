@@ -39,27 +39,32 @@ public class DefaultTPSLimiter implements TPSLimiter {
 
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {
+        boolean isMethodLevelTpsConfigured =
+                url.hasMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_RATE_KEY);
+        String key = isMethodLevelTpsConfigured
+                ? url.getServiceKey() + "#" + RpcUtils.getMethodName(invocation)
+                : url.getServiceKey();
         int rate = url.getMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_RATE_KEY, -1);
         long interval = url.getMethodParameter(
                 RpcUtils.getMethodName(invocation), TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
-        String serviceKey = url.getServiceKey();
+
         if (rate > 0) {
-            StatItem statItem = stats.get(serviceKey);
+            StatItem statItem = stats.get(key);
             if (statItem == null) {
-                stats.putIfAbsent(serviceKey, new StatItem(serviceKey, rate, interval));
-                statItem = stats.get(serviceKey);
+                stats.putIfAbsent(key, new StatItem(key, rate, interval));
+                statItem = stats.get(key);
             } else {
                 // rate or interval has changed, rebuild
                 if (statItem.getRate() != rate || statItem.getInterval() != interval) {
-                    stats.put(serviceKey, new StatItem(serviceKey, rate, interval));
-                    statItem = stats.get(serviceKey);
+                    stats.put(key, new StatItem(key, rate, interval));
+                    statItem = stats.get(key);
                 }
             }
             return statItem.isAllowable();
         } else {
-            StatItem statItem = stats.get(serviceKey);
+            StatItem statItem = stats.get(key);
             if (statItem != null) {
-                stats.remove(serviceKey);
+                stats.remove(key);
             }
         }
 
