@@ -54,8 +54,8 @@ public class SensitiveParameterConfig {
             Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
                     CommonConstants.USERNAME_KEY, // "username"
                     CommonConstants.PASSWORD_KEY, // "password"
-                    "accessKey", // ACCESS_KEY
-                    "secretKey" // SECRET_KEY
+                    CommonConstants.ACCESS_KEY, // "accessKey"
+                    CommonConstants.SECRET_KEY // "secretKey"
                     )));
 
     /**
