@@ -77,7 +77,7 @@ class ConfigManagerSensitiveParameterTest {
     }
 
     @Test
-    void testSensitiveParameterConfigWithoutApplication() {
+    void testSensitiveParameterUtilsWithoutApplicationConfig() {
         // Test behavior when no ApplicationConfig is set
         // Should still work with default parameters
         assertTrue(SensitiveParameterUtils.isSensitiveParameter("password"));
