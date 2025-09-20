@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn compile -DskipTests -q)",
+      "Bash(mvn test -Dtest=SensitiveParameterConfigTest -q)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

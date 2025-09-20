@@ -18,6 +18,8 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,9 +35,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * - System properties
  * - Environment variables
  * - Programmatic configuration
+ * - Dubbo configuration system
  * </p>
  */
-public class SensitiveParameterConfig {
+public class SensitiveParameterConfig extends AbstractConfig {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * System property key for configuring custom sensitive parameters
@@ -67,6 +72,83 @@ public class SensitiveParameterConfig {
      * Custom sensitive parameters configured at runtime
      */
     private static volatile Set<String> customSensitiveParameters = null;
+
+    /**
+     * Global instance of the configuration
+     */
+    private static volatile SensitiveParameterConfig instance;
+
+    /**
+     * Configuration property for additional sensitive parameters (comma-separated)
+     */
+    private String additionalParameters;
+
+    public SensitiveParameterConfig() {
+        super();
+    }
+
+    public SensitiveParameterConfig(ScopeModel scopeModel) {
+        super(scopeModel);
+    }
+
+    /**
+     * Get global instance of SensitiveParameterConfig
+     */
+    public static SensitiveParameterConfig getInstance() {
+        if (instance == null) {
+            synchronized (SensitiveParameterConfig.class) {
+                if (instance == null) {
+                    instance = new SensitiveParameterConfig();
+                    instance.refresh(); // Initialize with default configuration
+                }
+            }
+        }
+        return instance;
+    }
+
+    /**
+     * Get additional sensitive parameters
+     */
+    public String getAdditionalParameters() {
+        return additionalParameters;
+    }
+
+    /**
+     * Set additional sensitive parameters (comma-separated)
+     */
+    public void setAdditionalParameters(String additionalParameters) {
+        this.additionalParameters = additionalParameters;
+        updateCustomSensitiveParameters();
+    }
+
+    /**
+     * Update the static custom sensitive parameters when configuration changes
+     */
+    private void updateCustomSensitiveParameters() {
+        Set<String> newCustomParams = loadCustomSensitiveParameters();
+
+        // Add configured additional parameters
+        if (StringUtils.isNotEmpty(additionalParameters)) {
+            String[] paramArray = additionalParameters.split(",");
+            Set<String> mutableParams = new HashSet<>(newCustomParams);
+            for (String param : paramArray) {
+                if (StringUtils.isNotEmpty(param)) {
+                    mutableParams.add(param.trim());
+                }
+            }
+            newCustomParams = Collections.unmodifiableSet(mutableParams);
+        }
+
+        customSensitiveParameters = newCustomParams;
+        clearCache();
+    }
+
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        // Initialize custom parameters when configuration is refreshed
+        updateCustomSensitiveParameters();
+    }
 
     /**
      * Check if a parameter key is considered sensitive
@@ -222,12 +304,5 @@ public class SensitiveParameterConfig {
         }
 
         return Collections.unmodifiableSet(params);
-    }
-
-    /**
-     * Private constructor to prevent instantiation
-     */
-    private SensitiveParameterConfig() {
-        // Utility class
     }
 }

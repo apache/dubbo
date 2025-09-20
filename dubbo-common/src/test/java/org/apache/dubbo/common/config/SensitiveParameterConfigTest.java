@@ -197,4 +197,55 @@ class SensitiveParameterConfigTest {
             SensitiveParameterConfig.getAllSensitiveParameters().add("test");
         });
     }
+
+    @Test
+    void testConfigurationBeanFunctionality() {
+        // Test the new configuration bean functionality
+        SensitiveParameterConfig config = new SensitiveParameterConfig();
+
+        // Test setting additional parameters through configuration
+        config.setAdditionalParameters("configParam1,configParam2");
+
+        // Refresh to apply configuration
+        config.refresh();
+
+        // Test that the additional parameters are now sensitive
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("configParam1"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("configParam2"));
+
+        // Default parameters should still work
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("username"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("password"));
+    }
+
+    @Test
+    void testGlobalInstance() {
+        // Test the global instance functionality
+        SensitiveParameterConfig instance1 = SensitiveParameterConfig.getInstance();
+        SensitiveParameterConfig instance2 = SensitiveParameterConfig.getInstance();
+
+        // Should be the same instance (singleton)
+        assertSame(instance1, instance2);
+
+        // Should be properly initialized
+        assertNotNull(instance1);
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("username"));
+    }
+
+    @Test
+    void testAdditionalParametersGetterSetter() {
+        SensitiveParameterConfig config = new SensitiveParameterConfig();
+
+        // Initially should be null
+        assertNull(config.getAdditionalParameters());
+
+        // Set additional parameters
+        config.setAdditionalParameters("param1,param2,param3");
+        assertEquals("param1,param2,param3", config.getAdditionalParameters());
+
+        // Test that setting triggers update
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("param1"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("param2"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("param3"));
+    }
 }
