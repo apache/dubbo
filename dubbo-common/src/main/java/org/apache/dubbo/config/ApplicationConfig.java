@@ -316,6 +316,15 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private Boolean onlyUseMetadataV2;
 
+    /**
+     * Additional sensitive parameter names (comma-separated) that should be hidden
+     * in URL string representations to prevent credential leakage in logs and exceptions.
+     * <p>
+     * Example: "customToken,apiSecret,myPassword"
+     * </p>
+     */
+    private String additionalSensitiveParameters;
+
     public ApplicationConfig() {}
 
     public ApplicationConfig(ApplicationModel applicationModel) {
@@ -822,6 +831,20 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setOnlyUseMetadataV2(Boolean onlyUseMetadataV2) {
         this.onlyUseMetadataV2 = onlyUseMetadataV2;
+    }
+
+    /**
+     * Get additional sensitive parameters
+     */
+    public String getAdditionalSensitiveParameters() {
+        return additionalSensitiveParameters;
+    }
+
+    /**
+     * Set additional sensitive parameters (comma-separated)
+     */
+    public void setAdditionalSensitiveParameters(String additionalSensitiveParameters) {
+        this.additionalSensitiveParameters = additionalSensitiveParameters;
     }
 
     @Override

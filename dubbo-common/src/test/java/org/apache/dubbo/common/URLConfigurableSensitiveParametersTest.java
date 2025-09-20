@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.common;
 
-import org.apache.dubbo.common.config.SensitiveParameterConfig;
+import org.apache.dubbo.common.utils.SensitiveParameterUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,15 +33,27 @@ class URLConfigurableSensitiveParametersTest {
     @BeforeEach
     void setUp() {
         // Reset configuration before each test
-        SensitiveParameterConfig.resetToDefaults();
-        System.clearProperty(SensitiveParameterConfig.SENSITIVE_PARAMS_PROPERTY);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().orElse(null);
+        if (applicationConfig != null) {
+            applicationConfig.setAdditionalSensitiveParameters(null);
+        } else {
+            // Create ApplicationConfig if it doesn't exist
+            applicationConfig = new ApplicationConfig();
+            applicationModel.getConfigManager().setApplication(applicationConfig);
+        }
     }
 
     @AfterEach
     void tearDown() {
         // Clean up after each test
-        SensitiveParameterConfig.resetToDefaults();
-        System.clearProperty(SensitiveParameterConfig.SENSITIVE_PARAMS_PROPERTY);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().orElse(null);
+        if (applicationConfig != null) {
+            applicationConfig.setAdditionalSensitiveParameters(null);
+        }
     }
 
     @Test
@@ -67,8 +83,11 @@ class URLConfigurableSensitiveParametersTest {
 
     @Test
     void testCustomSensitiveParametersInURL() {
-        // Add custom sensitive parameter
-        SensitiveParameterConfig.addSensitiveParameters("apiKey", "clientSecret");
+        // Add custom sensitive parameter via ApplicationConfig
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().get();
+        applicationConfig.setAdditionalSensitiveParameters("apiKey,clientSecret");
 
         URL url = URL.valueOf(
                 "nacos://127.0.0.1:8848/registry?username=admin&apiKey=custom123&clientSecret=secret456&timeout=5000");
@@ -92,19 +111,19 @@ class URLConfigurableSensitiveParametersTest {
     }
 
     @Test
-    void testSystemPropertyConfiguration() {
-        // Configure custom sensitive parameters via system property
-        System.setProperty(SensitiveParameterConfig.SENSITIVE_PARAMS_PROPERTY, "customToken,bearerToken");
-
-        // Reset to reload configuration
-        SensitiveParameterConfig.resetToDefaults();
+    void testApplicationConfigSensitiveParameters() {
+        // Configure custom sensitive parameters via ApplicationConfig
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().get();
+        applicationConfig.setAdditionalSensitiveParameters("customToken,bearerToken");
 
         URL url = URL.valueOf(
                 "nacos://127.0.0.1:8848/registry?username=admin&customToken=abc123&bearerToken=xyz789&timeout=5000");
 
         String urlString = url.toString();
 
-        // All sensitive parameters should be hidden (default + system property)
+        // All sensitive parameters should be hidden (default + configured)
         assertFalse(urlString.contains("username=admin"));
         assertFalse(urlString.contains("customToken=abc123"));
         assertFalse(urlString.contains("bearerToken=xyz789"));
@@ -114,33 +133,39 @@ class URLConfigurableSensitiveParametersTest {
     }
 
     @Test
-    void testRemovingCustomSensitiveParameters() {
-        // Add custom parameters
-        SensitiveParameterConfig.addSensitiveParameters("apiKey", "token");
+    void testChangingCustomSensitiveParameters() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().get();
 
-        URL url1 = URL.valueOf("nacos://127.0.0.1:8848/registry?apiKey=test123&token=abc&timeout=5000");
+        // Add custom parameters
+        applicationConfig.setAdditionalSensitiveParameters("apiKey,customToken");
+        URL url1 = URL.valueOf("nacos://127.0.0.1:8848/registry?apiKey=test123&customToken=abc&timeout=5000");
         String urlString1 = url1.toString();
 
         // Should be hidden initially
         assertFalse(urlString1.contains("apiKey=test123"));
-        assertFalse(urlString1.contains("token=abc"));
+        assertFalse(urlString1.contains("customToken=abc"));
 
-        // Remove one custom parameter
-        SensitiveParameterConfig.removeSensitiveParameters("apiKey");
+        // Update configuration to only include customToken
+        applicationConfig.setAdditionalSensitiveParameters("customToken");
 
-        URL url2 = URL.valueOf("nacos://127.0.0.1:8848/registry?apiKey=test123&token=abc&timeout=5000");
+        URL url2 = URL.valueOf("nacos://127.0.0.1:8848/registry?apiKey=test123&customToken=abc&timeout=5000");
         String urlString2 = url2.toString();
 
-        // apiKey should now be visible, token should still be hidden
+        // apiKey should now be visible, customToken should still be hidden
         assertTrue(urlString2.contains("apiKey=test123"));
-        assertFalse(urlString2.contains("token=abc"));
+        assertFalse(urlString2.contains("customToken=abc"));
         assertTrue(urlString2.contains("timeout=5000"));
     }
 
     @Test
     void testExceptionScenarioWithCustomSensitiveParameters() {
         // Add custom sensitive parameter for exception scenario
-        SensitiveParameterConfig.addSensitiveParameters("nacosAccessKey", "nacosSecretKey");
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().get();
+        applicationConfig.setAdditionalSensitiveParameters("nacosAccessKey,nacosSecretKey");
 
         URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?nacosAccessKey=ak123&nacosSecretKey=sk456&timeout=5000");
 
@@ -162,7 +187,10 @@ class URLConfigurableSensitiveParametersTest {
 
     @Test
     void testParameterOrderingWithCustomSensitive() {
-        SensitiveParameterConfig.addSensitiveParameters("customSensitive");
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().get();
+        applicationConfig.setAdditionalSensitiveParameters("customSensitive");
 
         URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?a=1&customSensitive=hidden&b=2&username=admin&c=3");
 
@@ -184,13 +212,17 @@ class URLConfigurableSensitiveParametersTest {
 
     @Test
     void testConcurrentConfigurationChanges() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().get();
+
         URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?dynamicParam=value&username=admin");
 
         // Initially dynamicParam should be visible
         assertTrue(url.toString().contains("dynamicParam=value"));
 
         // Add dynamicParam as sensitive
-        SensitiveParameterConfig.addSensitiveParameters("dynamicParam");
+        applicationConfig.setAdditionalSensitiveParameters("dynamicParam");
 
         // Create new URL instance to see updated behavior
         URL url2 = URL.valueOf("nacos://127.0.0.1:8848/registry?dynamicParam=value&username=admin");
@@ -199,7 +231,7 @@ class URLConfigurableSensitiveParametersTest {
         assertFalse(url2.toString().contains("dynamicParam=value"));
 
         // Remove it from sensitive list
-        SensitiveParameterConfig.removeSensitiveParameters("dynamicParam");
+        applicationConfig.setAdditionalSensitiveParameters("");
 
         // Create another URL instance
         URL url3 = URL.valueOf("nacos://127.0.0.1:8848/registry?dynamicParam=value&username=admin");
@@ -207,5 +239,32 @@ class URLConfigurableSensitiveParametersTest {
         // dynamicParam should be visible again, username still hidden
         assertTrue(url3.toString().contains("dynamicParam=value"));
         assertFalse(url3.toString().contains("username=admin"));
+    }
+
+    @Test
+    void testSensitiveParameterUtilsAPI() {
+        // Test default parameters
+        assertTrue(SensitiveParameterUtils.isSensitiveParameter("password"));
+        assertTrue(SensitiveParameterUtils.isSensitiveParameter("accessKey"));
+        assertFalse(SensitiveParameterUtils.isSensitiveParameter("timeout"));
+
+        // Configure additional parameters
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig =
+                applicationModel.getConfigManager().getApplication().get();
+        applicationConfig.setAdditionalSensitiveParameters("myToken,mySecret");
+
+        // Test configured parameters
+        assertTrue(SensitiveParameterUtils.isSensitiveParameter("myToken"));
+        assertTrue(SensitiveParameterUtils.isSensitiveParameter("mySecret"));
+        assertTrue(SensitiveParameterUtils.isSensitiveParameter("password")); // Still works for defaults
+        assertFalse(SensitiveParameterUtils.isSensitiveParameter("timeout"));
+
+        // Test getAllSensitiveParameters
+        Set<String> allParams = SensitiveParameterUtils.getAllSensitiveParameters();
+        assertTrue(allParams.contains("password"));
+        assertTrue(allParams.contains("myToken"));
+        assertTrue(allParams.contains("mySecret"));
+        assertFalse(allParams.contains("timeout"));
     }
 }

@@ -1199,6 +1199,10 @@ public /*final**/ class URL implements Serializable {
         return buf.toString();
     }
 
+    /**
+     * Overloaded for backward compatibility. Defaults to hiding sensitive parameters
+     * by passing {@code false} for {@code showSensitive}.
+     */
     protected void buildParameters(StringBuilder buf, boolean concat, String[] parameters) {
         buildParameters(buf, concat, false, parameters);
     }
@@ -1211,7 +1215,7 @@ public /*final**/ class URL implements Serializable {
                 String key = entry.getKey();
                 // Skip sensitive parameters in non-full string representations unless showSensitive is true
                 if (StringUtils.isNotEmpty(key)
-                        && (!isSensitiveParameter(key) || showSensitive)
+                        && (showSensitive || !isSensitiveParameter(key))
                         && (includes == null || includes.contains(key))) {
                     if (first) {
                         if (concat) {
@@ -1230,13 +1234,21 @@ public /*final**/ class URL implements Serializable {
     }
 
     private boolean isSensitiveParameter(String key) {
-        return org.apache.dubbo.common.config.SensitiveParameterConfig.isSensitiveParameter(key);
+        return org.apache.dubbo.common.utils.SensitiveParameterUtils.isSensitiveParameter(key);
     }
 
+    /**
+     * Overloaded for backward compatibility. Defaults to hiding sensitive parameters
+     * by passing {@code false} for {@code showSensitive}.
+     */
     private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
         return buildString(appendUser, appendParameter, false, false, false, parameters);
     }
 
+    /**
+     * Overloaded for backward compatibility. Defaults to hiding sensitive parameters
+     * by passing {@code false} for {@code showSensitive}.
+     */
     private String buildString(
             boolean appendUser, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
         return buildString(appendUser, appendParameter, useIP, useService, false, parameters);
