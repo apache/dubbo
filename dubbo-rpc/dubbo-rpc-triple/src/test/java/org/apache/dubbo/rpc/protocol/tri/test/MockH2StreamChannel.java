@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class MockH2StreamChannel implements H2StreamChannel {
+public class MockH2StreamChannel implements H2StreamChannel<OutputStream> {
 
     private HttpMetadata httpMetadata;
     private final List<OutputStream> bodies = new ArrayList<>();
@@ -44,7 +44,7 @@ public class MockH2StreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
+    public CompletableFuture<Void> writeMessage(HttpOutputMessage<OutputStream> httpOutputMessage) {
         bodies.add(httpOutputMessage.getBody());
         return CompletableFuture.completedFuture(null);
     }
@@ -68,7 +68,7 @@ public class MockH2StreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
+    public Http2OutputMessage<OutputStream> newOutputMessage(boolean endStream) {
         return new MockHttp2OutputMessage(endStream);
     }
 

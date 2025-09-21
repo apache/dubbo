@@ -24,6 +24,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public interface HttpMessageDecoder extends CodecMediaType {
@@ -54,5 +57,21 @@ public interface HttpMessageDecoder extends CodecMediaType {
 
     default Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws DecodeException {
         return decode(inputStream, targetTypes, UTF_8);
+    }
+
+    default Object decode(ByteBuf buffer, Class<?> targetType, Charset charset) throws DecodeException {
+        return decode(new ByteBufInputStream(buffer), targetType, charset);
+    }
+
+    default Object[] decode(ByteBuf buffer, Class<?>[] targetTypes, Charset charset) throws DecodeException {
+        return new Object[] {decode(buffer, ArrayUtils.isEmpty(targetTypes) ? null : targetTypes[0], charset)};
+    }
+
+    default Object decode(ByteBuf buffer, Class<?> targetType) throws DecodeException {
+        return decode(buffer, targetType, UTF_8);
+    }
+
+    default Object[] decode(ByteBuf buffer, Class<?>[] targetTypes) throws DecodeException {
+        return decode(buffer, targetTypes, UTF_8);
     }
 }

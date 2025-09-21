@@ -17,33 +17,38 @@
 package org.apache.dubbo.rpc.protocol.tri.h3;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
-import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http3.Http3TransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2ServerChannelObserver;
 
-public final class GenericHttp3ServerTransportListener extends GenericHttp2ServerTransportListener
-        implements Http3TransportListener {
+public final class GenericHttp3ServerTransportListener<INPUT, OUTPUT>
+        extends GenericHttp2ServerTransportListener<INPUT, OUTPUT> implements Http3TransportListener<INPUT, OUTPUT> {
 
     public GenericHttp3ServerTransportListener(
-            H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
-        super(h2StreamChannel, url, frameworkModel);
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(h2StreamChannel, url, frameworkModel, typeToken);
     }
 
     @Override
-    protected Http2ServerChannelObserver newResponseObserver(H2StreamChannel h2StreamChannel) {
-        return new Http3ServerUnaryChannelObserver(getFrameworkModel(), h2StreamChannel);
+    protected Http2ServerChannelObserver<INPUT, OUTPUT> newResponseObserver(H2StreamChannel<OUTPUT> h2StreamChannel) {
+        return new Http3ServerUnaryChannelObserver<>(getFrameworkModel(), h2StreamChannel, getTypeToken());
     }
 
     @Override
-    protected Http2ServerChannelObserver newStreamResponseObserver(H2StreamChannel h2StreamChannel) {
-        return new Http3ServerUnaryChannelObserver(getFrameworkModel(), h2StreamChannel);
+    protected Http2ServerChannelObserver<INPUT, OUTPUT> newStreamResponseObserver(
+            H2StreamChannel<OUTPUT> h2StreamChannel) {
+        return new Http3ServerUnaryChannelObserver<>(getFrameworkModel(), h2StreamChannel, getTypeToken());
     }
 
     @Override
-    protected void doOnData(Http2InputMessage message) {
+    protected void doOnData(Http2InputMessage<INPUT> message) {
         if (message.isEndStream()) {
             onDataCompletion(message);
             return;

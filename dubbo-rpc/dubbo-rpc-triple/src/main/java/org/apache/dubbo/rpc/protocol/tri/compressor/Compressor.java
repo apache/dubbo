@@ -23,6 +23,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.OutputStream;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * compress payload for grpc request， and decompress response payload Configure it in files,
  * pictures or other configurations that exist in the system properties Configure {@link
@@ -53,4 +55,13 @@ public interface Compressor extends MessageEncoding {
     byte[] compress(byte[] payloadByteArr);
 
     OutputStream decorate(OutputStream outputStream);
+
+    /**
+     * compress payload
+     *
+     * @param src payload byte buffer
+     *
+     * @return compressed payload byte buffer
+     */
+    ByteBuf compress(ByteBuf src);
 }

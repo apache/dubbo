@@ -20,6 +20,7 @@ import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpVersion;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h1.Http1InputMessage;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
@@ -56,6 +57,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -101,8 +104,13 @@ public class TripleFilter implements Filter {
         AsyncContext context = request.startAsync(request, response);
         ServletStreamChannel channel = new ServletStreamChannel(request, response, context);
         try {
-            Http2TransportListener listener = determineHttp2ServerTransportListenerFactory(request.getContentType())
-                    .newInstance(channel, ServletExchanger.getUrl(), FrameworkModel.defaultModel());
+            Http2TransportListener<InputStream, OutputStream> listener = determineHttp2ServerTransportListenerFactory(
+                            request.getContentType())
+                    .newInstance(
+                            channel,
+                            ServletExchanger.getUrl(),
+                            FrameworkModel.defaultModel(),
+                            new MessageTypeToken<InputStream, OutputStream>() {});
 
             boolean isGrpc = listener instanceof GrpcHttp2ServerTransportListener;
             channel.setGrpc(isGrpc);
@@ -123,15 +131,19 @@ public class TripleFilter implements Filter {
         AsyncContext context = request.startAsync(request, response);
         ServletStreamChannel channel = new ServletStreamChannel(request, response, context);
         try {
-            Http1ServerTransportListener listener = DefaultHttp11ServerTransportListenerFactory.INSTANCE.newInstance(
-                    channel, ServletExchanger.getUrl(), FrameworkModel.defaultModel());
+            Http1ServerTransportListener<InputStream, OutputStream> listener =
+                    DefaultHttp11ServerTransportListenerFactory.INSTANCE.newInstance(
+                            channel,
+                            ServletExchanger.getUrl(),
+                            FrameworkModel.defaultModel(),
+                            new MessageTypeToken<InputStream, OutputStream>() {});
             channel.setGrpc(false);
             context.setTimeout(resolveTimeout(request, false));
             ServletInputStream is = request.getInputStream();
             response.getOutputStream().setWriteListener(new TripleWriteListener(channel));
 
             listener.onMetadata(new HttpMetadataAdapter(request));
-            listener.onData(new Http1InputMessage(
+            listener.onData(new Http1InputMessage<>(
                     is.available() == 0 ? StreamUtils.EMPTY : new ByteArrayInputStream(StreamUtils.readBytes(is))));
         } catch (Throwable t) {
             LOGGER.info("Failed to process request", t);
@@ -221,12 +233,15 @@ public class TripleFilter implements Filter {
 
     private static final class TripleReadListener implements ReadListener {
 
-        private final Http2TransportListener listener;
+        private final Http2TransportListener<InputStream, OutputStream> listener;
         private final ServletStreamChannel channel;
         private final ServletInputStream input;
         private final byte[] buffer = new byte[4 * 1024];
 
-        TripleReadListener(Http2TransportListener listener, ServletStreamChannel channel, ServletInputStream input) {
+        TripleReadListener(
+                Http2TransportListener<InputStream, OutputStream> listener,
+                ServletStreamChannel channel,
+                ServletInputStream input) {
             this.listener = listener;
             this.channel = channel;
             this.input = input;
@@ -240,13 +255,13 @@ public class TripleFilter implements Filter {
                     return;
                 }
                 byte[] copy = Arrays.copyOf(buffer, length);
-                listener.onData(new Http2InputMessageFrame(new ByteArrayInputStream(copy), false));
+                listener.onData(new Http2InputMessageFrame<>(new ByteArrayInputStream(copy), false));
             }
         }
 
         @Override
         public void onAllDataRead() {
-            listener.onData(new Http2InputMessageFrame(StreamUtils.EMPTY, true));
+            listener.onData(new Http2InputMessageFrame<>(StreamUtils.EMPTY, true));
         }
 
         @Override

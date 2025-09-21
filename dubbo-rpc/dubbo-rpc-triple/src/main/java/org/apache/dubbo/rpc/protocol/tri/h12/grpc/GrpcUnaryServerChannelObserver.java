@@ -16,13 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public class GrpcUnaryServerChannelObserver extends GrpcStreamServerChannelObserver {
+public class GrpcUnaryServerChannelObserver<INPUT, OUTPUT> extends GrpcStreamServerChannelObserver<INPUT, OUTPUT> {
 
-    public GrpcUnaryServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(frameworkModel, h2StreamChannel);
+    public GrpcUnaryServerChannelObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken);
     }
 
     @Override

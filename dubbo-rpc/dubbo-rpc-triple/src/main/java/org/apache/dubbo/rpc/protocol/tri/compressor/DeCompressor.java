@@ -20,6 +20,8 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import io.netty.buffer.ByteBuf;
+
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface DeCompressor extends MessageEncoding {
 
@@ -42,4 +44,13 @@ public interface DeCompressor extends MessageEncoding {
      * @return decompressed payload byte array
      */
     byte[] decompress(byte[] payloadByteArr);
+
+    /**
+     * decompress payload
+     *
+     * @param src payload byte buffer
+     *
+     * @return decompressed payload byte buffer
+     */
+    ByteBuf decompress(ByteBuf src);
 }

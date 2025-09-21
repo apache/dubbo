@@ -34,6 +34,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * The MetaUtils provides utility methods for working with service descriptors and method descriptors.
  */
@@ -121,6 +123,28 @@ public final class DescriptorUtils {
                 } else if (methodDescriptors.get(0).getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                     methodDescriptor = methodDescriptors.get(1);
                 }
+            }
+        }
+        return methodDescriptor;
+    }
+
+    public static MethodDescriptor findTripleMethodDescriptor(
+            ServiceDescriptor serviceDescriptor, String methodName, ByteBuf rawMessage) {
+        MethodDescriptor methodDescriptor = findReflectionMethodDescriptor(serviceDescriptor, methodName);
+        if (methodDescriptor == null) {
+            List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
+            TripleRequestWrapper request = TripleRequestWrapper.parseFrom(rawMessage.nioBuffer());
+            String[] paramTypes = request.getArgTypes().toArray(new String[0]);
+            // wrapper mode the method can overload so maybe list
+            for (MethodDescriptor descriptor : methodDescriptors) {
+                // params type is array
+                if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
+                    methodDescriptor = descriptor;
+                    break;
+                }
+            }
+            if (methodDescriptor == null) {
+                throw new UnimplementedException("method:" + methodName);
             }
         }
         return methodDescriptor;

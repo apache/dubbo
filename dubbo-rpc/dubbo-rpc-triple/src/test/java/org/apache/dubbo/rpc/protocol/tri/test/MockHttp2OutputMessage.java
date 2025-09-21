@@ -21,7 +21,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
-public class MockHttp2OutputMessage implements Http2OutputMessage {
+public class MockHttp2OutputMessage implements Http2OutputMessage<OutputStream> {
 
     private final OutputStream outputStream;
     private final boolean endStream;

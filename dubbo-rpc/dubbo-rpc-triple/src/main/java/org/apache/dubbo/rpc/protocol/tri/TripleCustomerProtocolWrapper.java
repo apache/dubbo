@@ -229,8 +229,11 @@ public class TripleCustomerProtocolWrapper {
         public TripleRequestWrapper() {}
 
         public static TripleRequestWrapper parseFrom(byte[] data) {
+            return parseFrom(ByteBuffer.wrap(data));
+        }
+
+        public static TripleRequestWrapper parseFrom(ByteBuffer byteBuffer) {
             TripleRequestWrapper tripleRequestWrapper = new TripleRequestWrapper();
-            ByteBuffer byteBuffer = ByteBuffer.wrap(data);
             tripleRequestWrapper.args = new ArrayList<>();
             tripleRequestWrapper.argTypes = new ArrayList<>();
             while (byteBuffer.position() < byteBuffer.limit()) {

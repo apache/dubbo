@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.websocket.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.nested.TripleConfig;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.command.Http2WriteQueueChannel;
@@ -27,6 +28,7 @@ import org.apache.dubbo.remoting.websocket.WebSocketServerTransportListenerFacto
 import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -54,14 +56,15 @@ public class WebSocketProtocolSelectorHandler extends SimpleChannelInboundHandle
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
-        H2StreamChannel streamChannel = new NettyWebSocketChannel(ctx.channel(), tripleConfig);
+        H2StreamChannel<ByteBuf> streamChannel = new NettyWebSocketChannel(ctx.channel(), tripleConfig);
         HttpWriteQueueHandler writeQueueHandler = ctx.channel().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {
-            HttpWriteQueue writeQueue = writeQueueHandler.getWriteQueue();
-            streamChannel = new Http2WriteQueueChannel(streamChannel, writeQueue);
+            HttpWriteQueue<ByteBuf> writeQueue = writeQueueHandler.getWriteQueue();
+            streamChannel = new Http2WriteQueueChannel<>(streamChannel, writeQueue);
         }
-        WebSocketTransportListener webSocketTransportListener =
-                defaultWebSocketServerTransportListenerFactory.newInstance(streamChannel, url, frameworkModel);
+        WebSocketTransportListener<ByteBuf, ByteBuf> webSocketTransportListener =
+                defaultWebSocketServerTransportListenerFactory.newInstance(
+                        streamChannel, url, frameworkModel, new MessageTypeToken<ByteBuf, ByteBuf>() {});
         ctx.channel().closeFuture().addListener(future -> webSocketTransportListener.close());
         ctx.pipeline()
                 .addLast(new NettyHttp2FrameHandler(streamChannel, webSocketTransportListener))

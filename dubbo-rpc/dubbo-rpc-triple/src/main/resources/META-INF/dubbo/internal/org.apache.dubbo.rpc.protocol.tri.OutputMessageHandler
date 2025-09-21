@@ -1,0 +1,2 @@
+inputStream=org.apache.dubbo.rpc.protocol.tri.OutputStreamMessageHandler
+byteBuf=org.apache.dubbo.rpc.protocol.tri.ByteBufOutputMessageHandler

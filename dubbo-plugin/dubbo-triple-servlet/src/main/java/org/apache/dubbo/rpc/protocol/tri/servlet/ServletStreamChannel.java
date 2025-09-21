@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.servlet;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.http12.EmptyOutputStreamMessage;
 import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -38,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
@@ -48,7 +50,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-final class ServletStreamChannel implements H2StreamChannel {
+final class ServletStreamChannel implements H2StreamChannel<OutputStream> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServletStreamChannel.class);
 
@@ -104,6 +106,7 @@ final class ServletStreamChannel implements H2StreamChannel {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void flushQueue() {
         if (writeQueue.isEmpty()) {
             return;
@@ -114,7 +117,7 @@ final class ServletStreamChannel implements H2StreamChannel {
                 if (obj instanceof HttpMetadata) {
                     writeHeaderInternal((HttpMetadata) obj);
                 } else if (obj instanceof HttpOutputMessage) {
-                    writeMessageInternal((HttpOutputMessage) obj);
+                    writeMessageInternal((HttpOutputMessage<OutputStream>) obj);
                 }
             }
         }
@@ -150,8 +153,8 @@ final class ServletStreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        return new Http2OutputMessageFrame(new ByteArrayOutputStream(256), endStream);
+    public Http2OutputMessage<OutputStream> newOutputMessage(boolean endStream) {
+        return new Http2OutputMessageFrame<>(new ByteArrayOutputStream(256), endStream);
     }
 
     @Override
@@ -213,7 +216,7 @@ final class ServletStreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
+    public CompletableFuture<Void> writeMessage(HttpOutputMessage<OutputStream> httpOutputMessage) {
         if (writeable.get()) {
             flushQueue();
             writeMessageInternal(httpOutputMessage);
@@ -223,11 +226,11 @@ final class ServletStreamChannel implements H2StreamChannel {
         return completed();
     }
 
-    private void writeMessageInternal(HttpOutputMessage httpOutputMessage) {
+    private void writeMessageInternal(HttpOutputMessage<OutputStream> httpOutputMessage) {
         boolean endStream = false;
         if (httpOutputMessage instanceof Http2OutputMessage) {
-            endStream = ((Http2OutputMessage) httpOutputMessage).isEndStream();
-        } else if (httpOutputMessage == HttpOutputMessage.EMPTY_MESSAGE) {
+            endStream = ((Http2OutputMessage<OutputStream>) httpOutputMessage).isEndStream();
+        } else if (httpOutputMessage == EmptyOutputStreamMessage.INSTANCE) {
             endStream = true;
         }
         try {

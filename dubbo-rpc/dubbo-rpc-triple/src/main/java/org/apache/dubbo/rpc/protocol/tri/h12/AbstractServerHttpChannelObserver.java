@@ -14,12 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.remoting.http12.ErrorResponse;
+import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.HttpUtils;
+import org.apache.dubbo.remoting.http12.ServerHttpChannelObserver;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.ResponseEncoder;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.MessageHandlerRegistry;
+import org.apache.dubbo.rpc.protocol.tri.OutputMessageHandler;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,11 +44,14 @@ import java.util.function.Function;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger;
 
-public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> implements ServerHttpChannelObserver<H> {
+public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel<OUTPUT>, OUTPUT>
+        implements ServerHttpChannelObserver<H, OUTPUT> {
 
     private static final ErrorTypeAwareLogger LOGGER = getErrorTypeAwareLogger(AbstractServerHttpChannelObserver.class);
 
     private final H httpChannel;
+
+    private final OutputMessageHandler<OUTPUT> messageHandler;
 
     private List<BiConsumer<HttpHeaders, Throwable>> headersCustomizers;
 
@@ -42,7 +59,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     private Function<Throwable, ?> exceptionCustomizer;
 
-    private HttpMessageEncoder responseEncoder;
+    private ResponseEncoder<OUTPUT> responseEncoder;
 
     private boolean headerSent;
 
@@ -50,8 +67,11 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     private boolean closed;
 
-    protected AbstractServerHttpChannelObserver(H httpChannel) {
+    protected AbstractServerHttpChannelObserver(
+            FrameworkModel frameworkModel, H httpChannel, Class<OUTPUT> outputType) {
         this.httpChannel = httpChannel;
+        this.messageHandler =
+                findOutputMessageHandler(frameworkModel.getOrRegisterBean(MessageHandlerRegistry.class), outputType);
     }
 
     @Override
@@ -80,12 +100,16 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         this.exceptionCustomizer = exceptionCustomizer;
     }
 
-    public HttpMessageEncoder getResponseEncoder() {
+    public ResponseEncoder<OUTPUT> getResponseEncoder() {
         return responseEncoder;
     }
 
     public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
-        this.responseEncoder = responseEncoder;
+        this.responseEncoder = createResponseEncoder(responseEncoder);
+    }
+
+    protected final ResponseEncoder<OUTPUT> createResponseEncoder(HttpMessageEncoder responseEncoder) {
+        return messageHandler.createResponseEncoder(responseEncoder);
     }
 
     @Override
@@ -143,7 +167,8 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     protected void doOnNext(Object data) throws Throwable {
         int statusCode = resolveStatusCode(data);
         if (!headerSent) {
-            sendMetadata(buildMetadata(statusCode, data, null, HttpOutputMessage.EMPTY_MESSAGE));
+            sendMetadata(
+                    buildMetadata(statusCode, data, null, getMessageHandler().empty()));
         }
         sendMessage(buildMessage(statusCode, data));
     }
@@ -159,7 +184,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     }
 
     protected final HttpMetadata buildMetadata(
-            int statusCode, Object data, Throwable throwable, HttpOutputMessage message) {
+            int statusCode, Object data, Throwable throwable, HttpOutputMessage<OUTPUT> message) {
         HttpMetadata metadata = encodeHttpMetadata(message == null);
         HttpHeaders headers = metadata.headers();
         headers.set(HttpHeaderNames.STATUS.getKey(), HttpUtils.toStatusString(statusCode));
@@ -178,7 +203,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected abstract HttpMetadata encodeHttpMetadata(boolean endStream);
 
-    protected void customizeHeaders(HttpHeaders headers, Throwable throwable, HttpOutputMessage message) {
+    protected void customizeHeaders(HttpHeaders headers, Throwable throwable, HttpOutputMessage<OUTPUT> message) {
         List<BiConsumer<HttpHeaders, Throwable>> headersCustomizers = this.headersCustomizers;
         if (headersCustomizers != null) {
             for (int i = 0, size = headersCustomizers.size(); i < size; i++) {
@@ -198,7 +223,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
     }
 
-    protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
+    protected HttpOutputMessage<OUTPUT> buildMessage(int statusCode, Object data) throws Throwable {
         if (statusCode < 200 || statusCode == 204 || statusCode == 304) {
             return null;
         }
@@ -221,7 +246,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             } catch (Throwable ignored) {
             }
         }
-        HttpOutputMessage message = encodeHttpOutputMessage(data);
+        HttpOutputMessage<OUTPUT> message = encodeHttpOutputMessage(data);
         try {
             preOutputMessage(message);
             responseEncoder.encode(message.getBody(), data);
@@ -232,11 +257,11 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         return message;
     }
 
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
+    protected HttpOutputMessage<OUTPUT> encodeHttpOutputMessage(Object data) {
         return getHttpChannel().newOutputMessage();
     }
 
-    protected final void sendMessage(HttpOutputMessage message) throws Throwable {
+    protected final void sendMessage(HttpOutputMessage<OUTPUT> message) throws Throwable {
         if (message == null) {
             return;
         }
@@ -244,9 +269,9 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         postOutputMessage(message);
     }
 
-    protected void preOutputMessage(HttpOutputMessage message) throws Throwable {}
+    protected void preOutputMessage(HttpOutputMessage<OUTPUT> message) throws Throwable {}
 
-    protected void postOutputMessage(HttpOutputMessage message) throws Throwable {}
+    protected void postOutputMessage(HttpOutputMessage<OUTPUT> message) throws Throwable {}
 
     protected Throwable customizeError(Throwable throwable) {
         if (exceptionCustomizer == null) {
@@ -267,7 +292,8 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         int statusCode = resolveErrorStatusCode(throwable);
         Object data = buildErrorResponse(statusCode, throwable);
         if (!headerSent) {
-            sendMetadata(buildMetadata(statusCode, data, throwable, HttpOutputMessage.EMPTY_MESSAGE));
+            sendMetadata(buildMetadata(
+                    statusCode, data, throwable, getMessageHandler().empty()));
         }
         sendMessage(buildMessage(statusCode, data));
     }
@@ -350,5 +376,18 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected final void closed() {
         closed = true;
+    }
+
+    public final OutputMessageHandler<OUTPUT> getMessageHandler() {
+        return messageHandler;
+    }
+
+    private OutputMessageHandler<OUTPUT> findOutputMessageHandler(
+            MessageHandlerRegistry registry, Class<OUTPUT> outputType) {
+        OutputMessageHandler<OUTPUT> handler = registry.get(outputType);
+        if (handler == null) {
+            throw new IllegalArgumentException("Unsupported message type: " + outputType);
+        }
+        return handler;
     }
 }

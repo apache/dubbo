@@ -19,13 +19,13 @@ package org.apache.dubbo.remoting.http12;
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
-public interface HttpChannel {
+public interface HttpChannel<OUTPUT> {
 
     CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata);
 
-    CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage);
+    CompletableFuture<Void> writeMessage(HttpOutputMessage<OUTPUT> httpOutputMessage);
 
-    HttpOutputMessage newOutputMessage();
+    HttpOutputMessage<OUTPUT> newOutputMessage();
 
     SocketAddress remoteAddress();
 

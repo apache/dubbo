@@ -19,4 +19,4 @@ package org.apache.dubbo.remoting.http12.h1;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 
-public interface Http1Request extends RequestMetadata, HttpInputMessage {}
+public interface Http1Request<T> extends RequestMetadata, HttpInputMessage<T> {}

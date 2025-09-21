@@ -20,25 +20,26 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 
-public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObserver {
+public final class Http1UnaryServerChannelObserver<OUTPUT> extends Http1ServerChannelObserver<OUTPUT> {
 
-    public Http1UnaryServerChannelObserver(HttpChannel httpChannel) {
-        super(httpChannel);
+    public Http1UnaryServerChannelObserver(
+            FrameworkModel frameworkModel, HttpChannel<OUTPUT> httpChannel, Class<OUTPUT> outputType) {
+        super(frameworkModel, httpChannel, outputType);
     }
 
     @Override
     protected void doOnNext(Object data) throws Throwable {
         int statusCode = resolveStatusCode(data);
-        HttpOutputMessage message = buildMessage(statusCode, data);
+        HttpOutputMessage<OUTPUT> message = buildMessage(statusCode, data);
         sendMetadata(buildMetadata(statusCode, data, null, message));
         sendMessage(message);
     }
@@ -47,18 +48,20 @@ public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObs
     protected void doOnError(Throwable throwable) throws Throwable {
         int statusCode = resolveErrorStatusCode(throwable);
         Object data = buildErrorResponse(statusCode, throwable);
-        HttpOutputMessage message = buildMessage(statusCode, data);
+        HttpOutputMessage<OUTPUT> message = buildMessage(statusCode, data);
         sendMetadata(buildMetadata(statusCode, data, throwable, message));
         sendMessage(message);
     }
 
     @Override
-    protected void customizeHeaders(HttpHeaders headers, Throwable throwable, HttpOutputMessage message) {
+    protected void customizeHeaders(HttpHeaders headers, Throwable throwable, HttpOutputMessage<OUTPUT> message) {
         super.customizeHeaders(headers, throwable, message);
         int contentLength = 0;
         if (message != null) {
-            OutputStream body = message.getBody();
-            if (body instanceof ByteBufOutputStream) {
+            OUTPUT body = message.getBody();
+            if (body instanceof ByteBuf) {
+                contentLength = ((ByteBuf) body).readableBytes();
+            } else if (body instanceof ByteBufOutputStream) {
                 contentLength = ((ByteBufOutputStream) body).writtenBytes();
             } else if (body instanceof ByteArrayOutputStream) {
                 contentLength = ((ByteArrayOutputStream) body).size();

@@ -31,12 +31,17 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.PackableMethodFactory;
+import org.apache.dubbo.rpc.protocol.tri.ByteBufPackableMethod;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
@@ -95,6 +100,29 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     }
 
     @Override
+    public void encode(ByteBuf buffer, Object data, Charset charset) throws EncodeException {
+        try {
+            if (!(packableMethod instanceof ByteBufPackableMethod)) {
+                encode(new ByteBufOutputStream(buffer), data, charset);
+                return;
+            }
+            buffer.writeByte(0);
+            int position = buffer.writerIndex();
+            buffer.writerIndex(position + 4);
+            ((ByteBufPackableMethod) packableMethod).packResponse(buffer, data);
+            int length = buffer.writerIndex() - position - 4;
+            buffer.markWriterIndex();
+            buffer.writerIndex(position);
+            buffer.writeInt(length);
+            buffer.resetWriterIndex();
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new EncodeException(e);
+        }
+    }
+
+    @Override
     public Object decode(InputStream inputStream, Class<?> targetType, Charset charset) throws DecodeException {
         try {
             byte[] data = StreamUtils.readBytes(inputStream);
@@ -109,6 +137,29 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
     @Override
     public Object[] decode(InputStream inputStream, Class<?>[] targetTypes, Charset charset) throws DecodeException {
         Object message = decode(inputStream, ArrayUtils.isEmpty(targetTypes) ? null : targetTypes[0], charset);
+        if (message instanceof Object[]) {
+            return (Object[]) message;
+        }
+        return new Object[] {message};
+    }
+
+    @Override
+    public Object decode(ByteBuf buffer, Class<?> targetTypes, Charset charset) throws DecodeException {
+        try {
+            if (!(packableMethod instanceof ByteBufPackableMethod)) {
+                return decode(new ByteBufInputStream(buffer), targetTypes, charset);
+            }
+            return ((ByteBufPackableMethod) packableMethod).parseRequest(buffer);
+        } catch (HttpStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DecodeException(e);
+        }
+    }
+
+    @Override
+    public Object[] decode(ByteBuf buffer, Class<?>[] targetTypes, Charset charset) throws DecodeException {
+        Object message = decode(buffer, ArrayUtils.isEmpty(targetTypes) ? null : targetTypes[0], charset);
         if (message instanceof Object[]) {
             return (Object[]) message;
         }

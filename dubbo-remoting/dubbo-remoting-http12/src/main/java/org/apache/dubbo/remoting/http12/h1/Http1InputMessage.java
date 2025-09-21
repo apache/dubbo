@@ -18,18 +18,16 @@ package org.apache.dubbo.remoting.http12.h1;
 
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 
-import java.io.InputStream;
+public final class Http1InputMessage<T> implements HttpInputMessage<T> {
 
-public final class Http1InputMessage implements HttpInputMessage {
+    private final T body;
 
-    private final InputStream body;
-
-    public Http1InputMessage(InputStream body) {
+    public Http1InputMessage(T body) {
         this.body = body;
     }
 
     @Override
-    public InputStream getBody() {
+    public T getBody() {
         return body;
     }
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-public interface HttpChannelHolder {
+public interface HttpChannelHolder<OUTPUT> {
 
-    HttpChannel getHttpChannel();
+    HttpChannel<OUTPUT> getHttpChannel();
 }

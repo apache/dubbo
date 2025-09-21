@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpRequest;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.message.HttpMessageDecoder;
@@ -46,6 +47,8 @@ import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder.TProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,7 +56,8 @@ import java.util.Map;
 
 final class TestRunnerImpl implements TestRunner {
 
-    static final Http2InputMessage END = new Http2InputMessageFrame(new ByteArrayInputStream(new byte[0]), true);
+    static final Http2InputMessage<InputStream> END =
+            new Http2InputMessageFrame(new ByteArrayInputStream(new byte[0]), true);
 
     private final FrameworkModel frameworkModel;
     private final ApplicationModel applicationModel;
@@ -96,7 +100,8 @@ final class TestRunnerImpl implements TestRunner {
     public TestResponse run(TestRequest request) {
         MockH2StreamChannel channel = new MockH2StreamChannel();
         URL url = new URL(TestProtocol.NAME, TestProtocol.HOST, TestProtocol.PORT, request.getProviderParams());
-        TestServerTransportListener listener = new TestServerTransportListener(channel, url, frameworkModel);
+        TestServerTransportListener<InputStream, OutputStream> listener = new TestServerTransportListener<>(
+                channel, url, frameworkModel, new MessageTypeToken<InputStream, OutputStream>() {});
 
         if (request.getMethod() == null) {
             request.setMethod(HttpMethods.GET.name());

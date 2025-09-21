@@ -20,22 +20,19 @@ import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-public final class DefaultHttp1Response implements HttpMetadata, HttpInputMessage {
+public final class DefaultHttp1Response<T> implements HttpMetadata, HttpInputMessage<T> {
 
     private final HttpMetadata httpMetadata;
 
-    private final HttpInputMessage httpInputMessage;
+    private final HttpInputMessage<T> httpInputMessage;
 
-    public DefaultHttp1Response(HttpMetadata httpMetadata, HttpInputMessage httpInputMessage) {
+    public DefaultHttp1Response(HttpMetadata httpMetadata, HttpInputMessage<T> httpInputMessage) {
         this.httpMetadata = httpMetadata;
         this.httpInputMessage = httpInputMessage;
     }
 
     @Override
-    public InputStream getBody() {
+    public T getBody() {
         return httpInputMessage.getBody();
     }
 
@@ -45,7 +42,7 @@ public final class DefaultHttp1Response implements HttpMetadata, HttpInputMessag
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws Exception {
         httpInputMessage.close();
     }
 }

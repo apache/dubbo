@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.http3.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -27,6 +28,7 @@ import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameHandler;
 import org.apache.dubbo.remoting.http3.Http3ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -52,16 +54,17 @@ public class NettyHttp3ProtocolSelectorHandler extends SimpleChannelInboundHandl
             throw new UnsupportedMediaTypeException(contentType);
         }
 
-        H2StreamChannel streamChannel = new NettyHttp3StreamChannel((QuicStreamChannel) ctx.channel());
+        H2StreamChannel<ByteBuf> streamChannel = new NettyHttp3StreamChannel((QuicStreamChannel) ctx.channel());
         HttpWriteQueueHandler writeQueueHandler = ctx.channel().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {
-            HttpWriteQueue writeQueue = writeQueueHandler.getWriteQueue();
-            streamChannel = new Http2WriteQueueChannel(streamChannel, writeQueue);
+            HttpWriteQueue<ByteBuf> writeQueue = writeQueueHandler.getWriteQueue();
+            streamChannel = new Http2WriteQueueChannel<>(streamChannel, writeQueue);
         }
 
         ChannelPipeline pipeline = ctx.pipeline();
-        pipeline.addLast(
-                new NettyHttp2FrameHandler(streamChannel, factory.newInstance(streamChannel, url, frameworkModel)));
+        pipeline.addLast(new NettyHttp2FrameHandler(
+                streamChannel,
+                factory.newInstance(streamChannel, url, frameworkModel, new MessageTypeToken<ByteBuf, ByteBuf>() {})));
         pipeline.remove(this);
         ctx.fireChannelRead(metadata);
     }

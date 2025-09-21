@@ -14,35 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
-import org.apache.dubbo.remoting.http12.AbstractServerHttpChannelObserver;
 import org.apache.dubbo.remoting.http12.ErrorCodeHolder;
 import org.apache.dubbo.remoting.http12.FlowControlStreamObserver;
 import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
+import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
+import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.Http2CancelableStreamObserver;
+import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerHttpChannelObserver;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
-public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver<H2StreamChannel>
+public class Http2ServerChannelObserver<INPUT, OUTPUT>
+        extends AbstractServerHttpChannelObserver<H2StreamChannel<OUTPUT>, OUTPUT>
         implements FlowControlStreamObserver<Object>, Http2CancelableStreamObserver<Object> {
 
     private CancellationContext cancellationContext;
 
-    private StreamingDecoder streamingDecoder;
+    private StreamingDecoder<INPUT> streamingDecoder;
 
     private boolean autoRequestN = true;
 
-    public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
-        super(h2StreamChannel);
+    public Http2ServerChannelObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken.getOutputType());
     }
 
-    public void setStreamingDecoder(StreamingDecoder streamingDecoder) {
+    public void setStreamingDecoder(StreamingDecoder<INPUT> streamingDecoder) {
         this.streamingDecoder = streamingDecoder;
     }
 

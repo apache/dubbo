@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -33,6 +34,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Set;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -74,13 +76,14 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
             throw new UnsupportedMediaTypeException(contentType);
         }
         Channel channel = ctx.channel();
-        H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) channel, tripleConfig);
+        H2StreamChannel<ByteBuf> h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) channel, tripleConfig);
         HttpWriteQueueHandler writeQueueHandler = channel.parent().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {
-            HttpWriteQueue writeQueue = writeQueueHandler.getWriteQueue();
-            h2StreamChannel = new Http2WriteQueueChannel(h2StreamChannel, writeQueue);
+            HttpWriteQueue<ByteBuf> writeQueue = writeQueueHandler.getWriteQueue();
+            h2StreamChannel = new Http2WriteQueueChannel<>(h2StreamChannel, writeQueue);
         }
-        Http2TransportListener http2TransportListener = factory.newInstance(h2StreamChannel, url, frameworkModel);
+        Http2TransportListener<ByteBuf, ByteBuf> http2TransportListener =
+                factory.newInstance(h2StreamChannel, url, frameworkModel, new MessageTypeToken<ByteBuf, ByteBuf>() {});
         channel.closeFuture().addListener(future -> http2TransportListener.close());
         ctx.pipeline()
                 .addLast(new NettyHttp2FrameHandler(h2StreamChannel, http2TransportListener))

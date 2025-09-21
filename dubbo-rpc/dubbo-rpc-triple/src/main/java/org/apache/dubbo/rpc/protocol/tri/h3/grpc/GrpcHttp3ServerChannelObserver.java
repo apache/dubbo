@@ -17,15 +17,20 @@
 package org.apache.dubbo.rpc.protocol.tri.h3.grpc;
 
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcStreamServerChannelObserver;
 import org.apache.dubbo.rpc.protocol.tri.h3.Helper;
 
-public final class GrpcHttp3ServerChannelObserver extends GrpcStreamServerChannelObserver {
+public final class GrpcHttp3ServerChannelObserver<INPUT, OUTPUT>
+        extends GrpcStreamServerChannelObserver<INPUT, OUTPUT> {
 
-    public GrpcHttp3ServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(frameworkModel, h2StreamChannel);
+    public GrpcHttp3ServerChannelObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken);
     }
 
     @Override

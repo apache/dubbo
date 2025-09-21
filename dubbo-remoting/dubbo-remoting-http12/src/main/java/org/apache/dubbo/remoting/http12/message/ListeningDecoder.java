@@ -18,11 +18,9 @@ package org.apache.dubbo.remoting.http12.message;
 
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
-import java.io.InputStream;
+public interface ListeningDecoder<T> {
 
-public interface ListeningDecoder {
-
-    void decode(InputStream inputStream) throws DecodeException;
+    void decode(T input) throws DecodeException;
 
     void close();
 

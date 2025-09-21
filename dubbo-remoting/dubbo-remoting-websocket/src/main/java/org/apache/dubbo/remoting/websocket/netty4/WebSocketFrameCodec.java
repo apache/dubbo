@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.websocket.netty4;
 
-import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -28,15 +27,13 @@ import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1HttpHeaders;
-import org.apache.dubbo.remoting.websocket.FinalFragmentByteBufInputStream;
+import org.apache.dubbo.remoting.websocket.FinalFragmentByteBuf;
 import org.apache.dubbo.remoting.websocket.WebSocketHeaderNames;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -53,7 +50,7 @@ public class WebSocketFrameCodec extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof BinaryWebSocketFrame || msg instanceof TextWebSocketFrame) {
-            Http2InputMessage http2InputMessage = onDataFrame((WebSocketFrame) msg);
+            Http2InputMessage<ByteBuf> http2InputMessage = onDataFrame((WebSocketFrame) msg);
             super.channelRead(ctx, http2InputMessage);
         } else if (msg instanceof CloseWebSocketFrame) {
             Object closeMessage = onCloseFrame((CloseWebSocketFrame) msg);
@@ -63,10 +60,11 @@ public class WebSocketFrameCodec extends ChannelDuplexHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Http2OutputMessage) {
-            WebSocketFrame webSocketFrame = encodeWebSocketFrame(ctx, (Http2OutputMessage) msg);
+            WebSocketFrame webSocketFrame = encodeWebSocketFrame((Http2OutputMessage<ByteBuf>) msg);
             super.write(ctx, webSocketFrame, promise);
         } else if (msg instanceof Http2Header) {
             Http2Header http2Header = (Http2Header) msg;
@@ -96,17 +94,16 @@ public class WebSocketFrameCodec extends ChannelDuplexHandler {
         return new Http2MetadataFrame(httpHeaders);
     }
 
-    private Http2InputMessageFrame onDataFrame(WebSocketFrame webSocketFrame) {
+    private Http2InputMessageFrame<ByteBuf> onDataFrame(WebSocketFrame webSocketFrame) {
         ByteBuf data = webSocketFrame.content();
-        return new Http2InputMessageFrame(
-                new FinalFragmentByteBufInputStream(data, true, webSocketFrame.isFinalFragment()), false);
+        return new Http2InputMessageFrame<>(new FinalFragmentByteBuf(data, webSocketFrame.isFinalFragment()), false);
     }
 
     private Object onCloseFrame(CloseWebSocketFrame closeWebSocketFrame) {
         if (closeWebSocketFrame.statusCode() != WebSocketCloseStatus.NORMAL_CLOSURE.code()) {
             return new DefaultHttp2ResetFrame(closeWebSocketFrame.statusCode());
         }
-        return new Http2InputMessageFrame(StreamUtils.EMPTY, true);
+        return new Http2InputMessageFrame<>(Unpooled.EMPTY_BUFFER, true);
     }
 
     private CloseWebSocketFrame encodeCloseWebSocketFrame(Http2Header http2Header) {
@@ -125,16 +122,8 @@ public class WebSocketFrameCodec extends ChannelDuplexHandler {
         return new CloseWebSocketFrame(status);
     }
 
-    private WebSocketFrame encodeWebSocketFrame(ChannelHandlerContext ctx, Http2OutputMessage outputMessage)
-            throws IOException {
-        OutputStream body = outputMessage.getBody();
-        if (body == null) {
-            return new BinaryWebSocketFrame();
-        }
-        if (body instanceof ByteBufOutputStream) {
-            ByteBuf buffer = ((ByteBufOutputStream) body).buffer();
-            return new BinaryWebSocketFrame(buffer);
-        }
-        throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
+    private WebSocketFrame encodeWebSocketFrame(Http2OutputMessage<ByteBuf> outputMessage) {
+        ByteBuf body = outputMessage.getBody();
+        return new BinaryWebSocketFrame(body);
     }
 }

@@ -21,23 +21,29 @@ import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.HttpResult;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.ResponseEncoder;
 import org.apache.dubbo.remoting.http12.message.ServerSentEventEncoder;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public final class Http2SseServerChannelObserver extends Http2StreamServerChannelObserver {
+public final class Http2SseServerChannelObserver<INPUT, OUTPUT>
+        extends Http2StreamServerChannelObserver<INPUT, OUTPUT> {
 
-    private HttpMessageEncoder originalResponseEncoder;
+    private ResponseEncoder<OUTPUT> originalResponseEncoder;
 
-    public Http2SseServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(frameworkModel, h2StreamChannel);
+    public Http2SseServerChannelObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken);
     }
 
     @Override
     public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
         super.setResponseEncoder(new ServerSentEventEncoder(responseEncoder));
-        this.originalResponseEncoder = responseEncoder;
+        this.originalResponseEncoder = super.createResponseEncoder(responseEncoder);
     }
 
     @Override
@@ -47,7 +53,7 @@ public final class Http2SseServerChannelObserver extends Http2StreamServerChanne
     }
 
     @Override
-    protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
+    protected HttpOutputMessage<OUTPUT> buildMessage(int statusCode, Object data) throws Throwable {
         if (data instanceof HttpResult) {
             data = ((HttpResult<?>) data).getBody();
 
@@ -55,7 +61,7 @@ public final class Http2SseServerChannelObserver extends Http2StreamServerChanne
                 return null;
             }
 
-            HttpOutputMessage message = encodeHttpOutputMessage(data);
+            HttpOutputMessage<OUTPUT> message = encodeHttpOutputMessage(data);
             try {
                 originalResponseEncoder.encode(message.getBody(), data);
             } catch (Throwable t) {

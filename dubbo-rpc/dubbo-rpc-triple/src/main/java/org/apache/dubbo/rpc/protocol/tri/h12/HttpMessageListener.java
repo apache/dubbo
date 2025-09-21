@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12;
 
-import java.io.InputStream;
+public interface HttpMessageListener<T> {
 
-public interface HttpMessageListener {
-
-    void onMessage(InputStream inputStream);
+    void onMessage(T input);
 }

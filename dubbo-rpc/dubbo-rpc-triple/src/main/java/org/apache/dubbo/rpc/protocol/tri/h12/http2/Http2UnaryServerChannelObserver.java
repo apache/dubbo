@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.FluentLogger;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
@@ -29,18 +30,21 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
-public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObserver {
+public class Http2UnaryServerChannelObserver<INPUT, OUTPUT> extends Http2StreamServerChannelObserver<INPUT, OUTPUT> {
 
     private static final FluentLogger LOGGER = FluentLogger.of(Http2UnaryServerChannelObserver.class);
 
-    public Http2UnaryServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(frameworkModel, h2StreamChannel);
+    public Http2UnaryServerChannelObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken);
     }
 
     @Override
     protected void doOnNext(Object data) throws Throwable {
         int statusCode = resolveStatusCode(data);
-        HttpOutputMessage message = buildMessage(statusCode, data);
+        HttpOutputMessage<OUTPUT> message = buildMessage(statusCode, data);
         HttpMetadata metadata = buildMetadata(statusCode, data, null, message);
         customizeTrailers(metadata.headers(), null);
         sendMetadata(metadata);
@@ -51,7 +55,7 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
     protected void doOnError(Throwable throwable) throws Throwable {
         int statusCode = resolveErrorStatusCode(throwable);
         Object data = buildErrorResponse(statusCode, throwable);
-        HttpOutputMessage message;
+        HttpOutputMessage<OUTPUT> message;
         try {
             message = buildMessage(statusCode, data);
         } catch (Throwable t) {
@@ -74,7 +78,7 @@ public class Http2UnaryServerChannelObserver extends Http2StreamServerChannelObs
     protected void doOnCompleted(Throwable throwable) {}
 
     @Override
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
+    protected HttpOutputMessage<OUTPUT> encodeHttpOutputMessage(Object data) {
         return getHttpChannel().newOutputMessage(true);
     }
 

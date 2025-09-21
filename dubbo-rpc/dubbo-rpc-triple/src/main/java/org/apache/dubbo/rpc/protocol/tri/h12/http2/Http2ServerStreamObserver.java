@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
-import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
@@ -30,21 +30,25 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.Map;
 
-public class Http2ServerStreamObserver extends Http2ServerChannelObserver
+public class Http2ServerStreamObserver<INPUT, OUTPUT> extends Http2ServerChannelObserver<INPUT, OUTPUT>
         implements ServerStreamObserver<Object>, AttachmentHolder {
 
     private final FrameworkModel frameworkModel;
 
     private Map<String, Object> attachments;
 
-    public Http2ServerStreamObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(h2StreamChannel);
+    public Http2ServerStreamObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken);
         this.frameworkModel = frameworkModel;
     }
 
     @Override
     public void setCompression(String compression) {
-        CompressibleEncoder compressibleEncoder = new CompressibleEncoder(getResponseEncoder());
+        CompressibleEncoder compressibleEncoder =
+                new CompressibleEncoder(getResponseEncoder().delegate());
         compressibleEncoder.setCompressor(Compressor.getCompressor(frameworkModel, compression));
         setResponseEncoder(compressibleEncoder);
     }

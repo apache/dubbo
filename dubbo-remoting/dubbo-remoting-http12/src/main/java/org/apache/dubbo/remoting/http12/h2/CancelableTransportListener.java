@@ -20,8 +20,9 @@ import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpTransportListener;
 
-public interface CancelableTransportListener<HEADER extends HttpMetadata, MESSAGE extends HttpInputMessage>
-        extends HttpTransportListener<HEADER, MESSAGE> {
+public interface CancelableTransportListener<
+                HEADER extends HttpMetadata, MESSAGE extends HttpInputMessage<INPUT>, INPUT, OUTPUT>
+        extends HttpTransportListener<HEADER, MESSAGE, INPUT, OUTPUT> {
 
     void cancelByRemote(long errorCode);
 }

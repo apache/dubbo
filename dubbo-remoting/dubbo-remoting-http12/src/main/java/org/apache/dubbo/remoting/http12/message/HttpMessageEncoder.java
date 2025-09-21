@@ -22,6 +22,9 @@ import org.apache.dubbo.remoting.http12.exception.EncodeException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public interface HttpMessageEncoder extends CodecMediaType {
@@ -38,6 +41,22 @@ public interface HttpMessageEncoder extends CodecMediaType {
 
     default void encode(OutputStream outputStream, Object[] data) throws EncodeException {
         encode(outputStream, ArrayUtils.first(data), UTF_8);
+    }
+
+    default void encode(ByteBuf buffer, Object data, Charset charset) throws EncodeException {
+        encode(new ByteBufOutputStream(buffer), data, charset);
+    }
+
+    default void encode(ByteBuf buffer, Object[] data, Charset charset) throws EncodeException {
+        encode(buffer, ArrayUtils.first(data), charset);
+    }
+
+    default void encode(ByteBuf buffer, Object data) throws EncodeException {
+        encode(buffer, data, UTF_8);
+    }
+
+    default void encode(ByteBuf buffer, Object[] data) throws EncodeException {
+        encode(buffer, ArrayUtils.first(data), UTF_8);
     }
 
     default String contentType() {

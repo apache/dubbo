@@ -18,24 +18,22 @@ package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 
-import java.io.InputStream;
+public class DefaultHttpMessageListener<T> implements HttpMessageListener<T> {
 
-public class DefaultHttpMessageListener implements HttpMessageListener {
-
-    private ListeningDecoder listeningDecoder;
+    private ListeningDecoder<T> listeningDecoder;
 
     public DefaultHttpMessageListener() {}
 
-    public DefaultHttpMessageListener(ListeningDecoder listeningDecoder) {
+    public DefaultHttpMessageListener(ListeningDecoder<T> listeningDecoder) {
         this.listeningDecoder = listeningDecoder;
     }
 
-    public void setListeningDecoder(ListeningDecoder listeningDecoder) {
+    public void setListeningDecoder(ListeningDecoder<T> listeningDecoder) {
         this.listeningDecoder = listeningDecoder;
     }
 
     @Override
-    public void onMessage(InputStream inputStream) {
-        listeningDecoder.decode(inputStream);
+    public void onMessage(T input) {
+        listeningDecoder.decode(input);
     }
 }

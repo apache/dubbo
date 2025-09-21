@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
-public interface Http2OutputMessage extends HttpOutputMessage, Http2StreamFrame {
+public interface Http2OutputMessage<T> extends HttpOutputMessage<T>, Http2StreamFrame {
 
     @Override
     default String name() {

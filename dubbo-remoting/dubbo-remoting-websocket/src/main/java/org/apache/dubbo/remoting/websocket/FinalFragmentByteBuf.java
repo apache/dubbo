@@ -14,27 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.remoting.websocket;
 
-import org.apache.dubbo.remoting.http12.AbstractServerHttpChannelObserver;
-import org.apache.dubbo.remoting.http12.HttpChannel;
-import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1HttpHeaders;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.WrappedByteBuf;
 
-public class Http1ServerChannelObserver extends AbstractServerHttpChannelObserver<HttpChannel> {
+public class FinalFragmentByteBuf extends WrappedByteBuf implements FinalFragment {
 
-    public Http1ServerChannelObserver(HttpChannel httpChannel) {
-        super(httpChannel);
+    private final boolean finalFragment;
+
+    public FinalFragmentByteBuf(ByteBuf buf, boolean finalFragment) {
+        super(buf);
+        this.finalFragment = finalFragment;
     }
 
     @Override
-    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
-        return new Http1Metadata(new NettyHttp1HttpHeaders());
-    }
-
-    @Override
-    protected void doOnCompleted(Throwable throwable) {
-        getHttpChannel().writeMessage(HttpOutputMessage.EMPTY_MESSAGE);
+    public boolean isFinalFragment() {
+        return finalFragment;
     }
 }
