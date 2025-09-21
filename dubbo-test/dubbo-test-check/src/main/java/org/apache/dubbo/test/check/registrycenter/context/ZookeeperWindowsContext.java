@@ -50,6 +50,11 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
     private final ExecuteWatchdog WATCHDOG = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
 
     /**
+     * Set it to TRUE when using WatchDog.
+     */
+    private boolean usedWatchDog = false;
+
+    /**
      * The map to store the pair of clientPort and PID.
      */
     private Map<Integer, Integer> processIds = new HashMap<>();
@@ -93,6 +98,7 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
      * Returns the {@link ExecuteWatchdog}.
      */
     public ExecuteWatchdog getWatchdog() {
+        usedWatchDog = true;
         return WATCHDOG;
     }
 
@@ -101,7 +107,10 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
      */
     public void destroy() {
         this.processIds.clear();
-        this.WATCHDOG.destroyProcess();
+        // check WatchDog used flag to avoid hanging at destroyProcess when WatchDog is not used.
+        if (usedWatchDog) {
+            this.WATCHDOG.destroyProcess();
+        }
         try {
             DEFAULT_EXECUTOR_SERVICE.shutdownNow();
         } catch (SecurityException | NullPointerException ex) {

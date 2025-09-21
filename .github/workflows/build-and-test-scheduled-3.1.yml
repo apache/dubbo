@@ -491,7 +491,7 @@ jobs:
 
       - name: "Setup Zookeeper environment"
         run: |
-          wget -t 1 -T 120 https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
+          wget -t 1 -T 120 https://archive.apache.org/dist/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
           tar -zxvf apache-zookeeper-3.8.4-bin.tar.gz
           mv apache-zookeeper-3.8.4-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.4-bin/conf/zoo.cfg
           apache-zookeeper-3.8.4-bin/bin/zkServer.sh start

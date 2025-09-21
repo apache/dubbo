@@ -65,12 +65,52 @@ class DefaultTPSLimiterTest {
     }
 
     @Test
-    void testTPSLimiterForMethodLevelConfig() {
+    void testMethodLevelTpsOverridesServiceLevel() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
         url = url.addParameter(TPS_LIMIT_RATE_KEY, TEST_LIMIT_RATE);
         int tpsConfigForMethodLevel = 3;
+        url = url.addParameter("tps", 1);
+        url = url.addParameter("echo.tps", tpsConfigForMethodLevel);
+        url = url.addParameter(TPS_LIMIT_INTERVAL_KEY, 1000);
+        for (int i = 1; i <= tpsConfigForMethodLevel + 1; i++) {
+            if (i == tpsConfigForMethodLevel + 1) {
+                Assertions.assertFalse(defaultTPSLimiter.isAllowable(url, invocation));
+            } else {
+                Assertions.assertTrue(defaultTPSLimiter.isAllowable(url, invocation));
+            }
+        }
+    }
+
+    @Test
+    void testServiceLevelTpsWhenOtherMethodsHaveTps() {
+        Invocation invocation = new MockInvocation();
+        URL url = URL.valueOf("test://test");
+        url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
+        url = url.addParameter(TPS_LIMIT_RATE_KEY, TEST_LIMIT_RATE);
+        int tpsConfigForServiceLevel = 3;
+        url = url.addParameter("tps", tpsConfigForServiceLevel);
+        url = url.addParameter("otherMethod.tps", 1);
+        url = url.addParameter(TPS_LIMIT_INTERVAL_KEY, 1000);
+        for (int i = 1; i <= tpsConfigForServiceLevel + 1; i++) {
+            if (i == tpsConfigForServiceLevel + 1) {
+                Assertions.assertFalse(defaultTPSLimiter.isAllowable(url, invocation));
+            } else {
+                Assertions.assertTrue(defaultTPSLimiter.isAllowable(url, invocation));
+            }
+        }
+    }
+
+    @Test
+    void testMethodLevelTpsIsolation() {
+        Invocation invocation = new MockInvocation();
+        URL url = URL.valueOf("test://test");
+        url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
+        url = url.addParameter(TPS_LIMIT_RATE_KEY, TEST_LIMIT_RATE);
+        int tpsConfigForMethodLevel = 3;
+        url = url.addParameter("tps", 1);
+        url = url.addParameter("otherMethod.tps", 2);
         url = url.addParameter("echo.tps", tpsConfigForMethodLevel);
         url = url.addParameter(TPS_LIMIT_INTERVAL_KEY, 1000);
         for (int i = 1; i <= tpsConfigForMethodLevel + 1; i++) {
