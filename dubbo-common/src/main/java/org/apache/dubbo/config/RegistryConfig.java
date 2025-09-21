@@ -205,12 +205,53 @@ public class RegistryConfig extends AbstractConfig {
      */
     private String secure;
 
+    /**
+     * Namespace for MSE Nacos registry.
+     */
+    private String namespace;
+
+    /**
+     * Access key for MSE Nacos authentication (sensitive parameter).
+     */
+    private String accessKey;
+
+    /**
+     * Secret key for MSE Nacos authentication (sensitive parameter).
+     */
+    private String secretKey;
+
     public String getSecure() {
         return secure;
     }
 
     public void setSecure(String secure) {
         this.secure = secure;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public RegistryConfig() {}
@@ -269,9 +310,27 @@ public class RegistryConfig extends AbstractConfig {
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
                 updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
 
+                // Extract MSE Nacos specific parameters
+                updatePropertyIfAbsent(this::getNamespace, this::setNamespace, url.getParameter("namespace"));
+                updatePropertyIfAbsent(this::getAccessKey, this::setAccessKey, url.getParameter("accessKey"));
+                updatePropertyIfAbsent(this::getSecretKey, this::setSecretKey, url.getParameter("secretKey"));
+
+                // Extract timeout parameter
+                String timeoutStr = url.getParameter("timeout");
+                if (timeoutStr != null) {
+                    try {
+                        updatePropertyIfAbsent(this::getTimeout, this::setTimeout, Integer.valueOf(timeoutStr));
+                    } catch (NumberFormatException ignored) {
+                        // Ignore invalid timeout values
+                    }
+                }
+
                 Map<String, String> params = url.getParameters();
                 if (CollectionUtils.isNotEmptyMap(params)) {
                     params.remove(BACKUP_KEY);
+                    // Remove sensitive parameters from the parameters map to prevent exposure
+                    params.remove("accessKey");
+                    params.remove("secretKey");
                 }
                 updateParameters(params);
             } catch (Exception ignored) {
@@ -575,5 +634,48 @@ public class RegistryConfig extends AbstractConfig {
     @Parameter(excluded = true)
     public Boolean isDefault() {
         return isDefault;
+    }
+
+    /**
+     * Get safe credential information for logging/debugging purposes.
+     * Sensitive parameters like accessKey and secretKey are masked.
+     *
+     * @return safe string representation without exposing sensitive data
+     */
+    public String getSafeCredentialInfo() {
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isNotEmpty(address)) {
+            sb.append("address=").append(address);
+        }
+        if (StringUtils.isNotEmpty(namespace)) {
+            sb.append(", namespace=").append(namespace);
+        }
+        if (StringUtils.isNotEmpty(accessKey)) {
+            sb.append(", accessKey=").append(maskSensitiveValue(accessKey));
+        }
+        if (StringUtils.isNotEmpty(secretKey)) {
+            sb.append(", secretKey=").append(maskSensitiveValue(secretKey));
+        }
+        if (StringUtils.isNotEmpty(username)) {
+            sb.append(", username=").append(username);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Mask sensitive values for safe logging.
+     * Shows first 3 and last 3 characters, masking the middle with '***'.
+     *
+     * @param value sensitive value to mask
+     * @return masked value for safe display
+     */
+    private String maskSensitiveValue(String value) {
+        if (StringUtils.isEmpty(value)) {
+            return value;
+        }
+        if (value.length() <= 6) {
+            return "***";
+        }
+        return value.substring(0, 3) + "***" + value.substring(value.length() - 3);
     }
 }
