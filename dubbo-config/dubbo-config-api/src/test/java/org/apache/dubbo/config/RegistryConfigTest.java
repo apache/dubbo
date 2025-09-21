@@ -357,4 +357,100 @@ class RegistryConfigTest {
         assertThat(parameters, not(hasKey("accessKey")));
         assertThat(parameters, not(hasKey("secretKey")));
     }
+
+    @Test
+    void testAddressParsingWithInvalidTimeout() {
+        RegistryConfig registry = new RegistryConfig();
+        // Test with invalid timeout parameter that should be ignored
+        registry.setAddress("nacos://127.0.0.1:8848/registry?timeout=invalid&namespace=test");
+
+        // Should parse successfully and ignore invalid timeout
+        assertThat(registry.getProtocol(), equalTo("nacos"));
+        assertThat(registry.getNamespace(), equalTo("test"));
+        // timeout should remain null since invalid value was ignored
+        assertThat(registry.getTimeout(), is((Integer) null));
+    }
+
+    @Test
+    void testAddressParsingWithMalformedURL() {
+        RegistryConfig registry = new RegistryConfig();
+        // Test with malformed URL that should be handled gracefully
+        registry.setAddress("not-a-valid-url");
+
+        // Should not throw exception and address should be set as-is
+        assertThat(registry.getAddress(), equalTo("not-a-valid-url"));
+        // Protocol should remain null since URL couldn't be parsed
+        assertThat(registry.getProtocol(), is((String) null));
+    }
+
+    @Test
+    void testSafeCredentialInfoWithNullValues() {
+        RegistryConfig registry = new RegistryConfig();
+        // Test with all null values
+        String safeInfo = registry.getSafeCredentialInfo();
+
+        // Should handle null values gracefully and return empty string
+        assertThat(safeInfo, equalTo(""));
+    }
+
+    @Test
+    void testSafeCredentialInfoWithEmptyValues() {
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress("");
+        registry.setNamespace("");
+        registry.setAccessKey("");
+        registry.setSecretKey("");
+        registry.setUsername("");
+
+        String safeInfo = registry.getSafeCredentialInfo();
+
+        // Should handle empty values and not include them in output
+        assertThat(safeInfo, equalTo(""));
+    }
+
+    @Test
+    void testAddressParsingWithComplexCredentials() {
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress(
+                "nacos://user%40domain:complex%21password@127.0.0.1:8848/registry?accessKey=ak123&secretKey=sk456&timeout=3000");
+
+        // Should correctly parse URL-encoded credentials
+        // Note: Dubbo URL parsing preserves encoded format in username/password
+        assertThat(registry.getUsername(), equalTo("user%40domain"));
+        assertThat(registry.getPassword(), equalTo("complex%21password"));
+        assertThat(registry.getAccessKey(), equalTo("ak123"));
+        assertThat(registry.getSecretKey(), equalTo("sk456"));
+        assertThat(registry.getTimeout(), is(3000));
+
+        // Verify sensitive parameters are removed from parameters map
+        Map<String, String> parameters = registry.getParameters();
+        assertThat(parameters, not(hasKey("accessKey")));
+        assertThat(parameters, not(hasKey("secretKey")));
+    }
+
+    @Test
+    void testUpdateParametersWithNullAndEmpty() {
+        RegistryConfig registry = new RegistryConfig();
+
+        // Test with null parameters
+        registry.updateParameters(null);
+        assertThat(registry.getParameters(), is((Map<String, String>) null));
+
+        // Test with empty parameters
+        registry.updateParameters(Collections.emptyMap());
+        assertThat(registry.getParameters(), is((Map<String, String>) null));
+
+        // Test normal operation
+        Map<String, String> params = new HashMap<>();
+        params.put("key1", "value1");
+        registry.updateParameters(params);
+        assertThat(registry.getParameters(), hasEntry("key1", "value1"));
+
+        // Test updating existing parameters
+        Map<String, String> moreParams = new HashMap<>();
+        moreParams.put("key2", "value2");
+        registry.updateParameters(moreParams);
+        assertThat(registry.getParameters(), hasEntry("key1", "value1"));
+        assertThat(registry.getParameters(), hasEntry("key2", "value2"));
+    }
 }

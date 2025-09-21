@@ -208,4 +208,192 @@ class URLConfigurableSensitiveParametersTest {
         assertTrue(url3.toString().contains("dynamicParam=value"));
         assertFalse(url3.toString().contains("username=admin"));
     }
+
+    @Test
+    void testShowSensitiveFlagBehavior() {
+        URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?username=admin&password=secret&timeout=5000");
+
+        // Test default behavior (showSensitive = false)
+        String defaultString = url.toString();
+        assertFalse(defaultString.contains("username=admin"));
+        assertFalse(defaultString.contains("password=secret"));
+        assertTrue(defaultString.contains("timeout=5000"));
+
+        // Test with showSensitive = true (toFullString)
+        String fullString = url.toFullString();
+        assertTrue(fullString.contains("username=admin"));
+        assertTrue(fullString.contains("password=secret"));
+        assertTrue(fullString.contains("timeout=5000"));
+
+        // Test toString with parameters (includes)
+        String paramString = url.toParameterString();
+        assertFalse(paramString.contains("username=admin"));
+        assertFalse(paramString.contains("password=secret"));
+        assertTrue(paramString.contains("timeout=5000"));
+    }
+
+    @Test
+    void testMixedSensitiveAndNonSensitiveParameters() {
+        SensitiveParameterConfig.addSensitiveParameters("customSensitive");
+
+        URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?" + "username=admin&"
+                + // default sensitive
+                "customSensitive=hidden&"
+                + // custom sensitive
+                "timeout=5000&"
+                + // non-sensitive
+                "version=1.0&"
+                + // non-sensitive
+                "accessKey=mykey"); // default sensitive
+
+        String urlString = url.toString();
+
+        // All sensitive parameters should be hidden
+        assertFalse(urlString.contains("username=admin"));
+        assertFalse(urlString.contains("customSensitive=hidden"));
+        assertFalse(urlString.contains("accessKey=mykey"));
+
+        // Non-sensitive parameters should be visible
+        assertTrue(urlString.contains("timeout=5000"));
+        assertTrue(urlString.contains("version=1.0"));
+
+        // Full string should show everything
+        String fullString = url.toFullString();
+        assertTrue(fullString.contains("username=admin"));
+        assertTrue(fullString.contains("customSensitive=hidden"));
+        assertTrue(fullString.contains("accessKey=mykey"));
+        assertTrue(fullString.contains("timeout=5000"));
+        assertTrue(fullString.contains("version=1.0"));
+    }
+
+    @Test
+    void testEmptyParameterHandling() {
+        // Test URL with empty parameter values
+        URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?username=&password=secret&timeout=&version=1.0");
+
+        String urlString = url.toString();
+
+        // Empty sensitive parameter should still be hidden
+        assertFalse(urlString.contains("username="));
+        assertFalse(urlString.contains("password=secret"));
+
+        // Empty non-sensitive parameter should be visible
+        assertTrue(urlString.contains("timeout="));
+        assertTrue(urlString.contains("version=1.0"));
+    }
+
+    @Test
+    void testParameterOrderPreservation() {
+        URL url = URL.valueOf(
+                "nacos://127.0.0.1:8848/registry?" + "a=1&username=admin&b=2&password=secret&c=3&timeout=5000");
+
+        String urlString = url.toString();
+
+        // Non-sensitive parameters should maintain relative order
+        int aIndex = urlString.indexOf("a=1");
+        int bIndex = urlString.indexOf("b=2");
+        int cIndex = urlString.indexOf("c=3");
+        int timeoutIndex = urlString.indexOf("timeout=5000");
+
+        assertTrue(aIndex >= 0);
+        assertTrue(bIndex > aIndex);
+        assertTrue(cIndex > bIndex);
+        assertTrue(timeoutIndex > cIndex);
+
+        // Sensitive parameters should not appear
+        assertFalse(urlString.contains("username=admin"));
+        assertFalse(urlString.contains("password=secret"));
+    }
+
+    @Test
+    void testLogicalOperatorChangeWithSensitiveParameters() {
+        // Test the logical condition change: (!isSensitiveParameter(key) || showSensitive)
+        URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?username=admin&password=secret&timeout=5000&retries=3");
+
+        // Case 1: !isSensitiveParameter(key) = true, showSensitive = false
+        // Result: true || false = true (parameter should be shown)
+        String normalString = url.toString();
+        assertTrue(normalString.contains("timeout=5000"), "Non-sensitive parameter should be visible");
+        assertTrue(normalString.contains("retries=3"), "Non-sensitive parameter should be visible");
+
+        // Case 2: !isSensitiveParameter(key) = false, showSensitive = false
+        // Result: false || false = false (parameter should be hidden)
+        assertFalse(normalString.contains("username=admin"), "Sensitive parameter should be hidden");
+        assertFalse(normalString.contains("password=secret"), "Sensitive parameter should be hidden");
+
+        // Case 3: !isSensitiveParameter(key) = false, showSensitive = true
+        // Result: false || true = true (parameter should be shown)
+        String fullString = url.toFullString();
+        assertTrue(fullString.contains("username=admin"), "Sensitive parameter should be visible in full string");
+        assertTrue(fullString.contains("password=secret"), "Sensitive parameter should be visible in full string");
+
+        // Case 4: !isSensitiveParameter(key) = true, showSensitive = true
+        // Result: true || true = true (parameter should be shown)
+        assertTrue(fullString.contains("timeout=5000"), "Non-sensitive parameter should be visible in full string");
+        assertTrue(fullString.contains("retries=3"), "Non-sensitive parameter should be visible in full string");
+    }
+
+    @Test
+    void testShortCircuitEvaluationBehavior() {
+        // Add a custom sensitive parameter
+        SensitiveParameterConfig.addSensitiveParameters("customSensitive");
+
+        URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?normalParam=value&customSensitive=hidden");
+
+        // Test short-circuit evaluation where first condition is true
+        String urlString = url.toString();
+
+        // For normalParam: !isSensitiveParameter("normalParam") = true
+        // Short-circuit: true || showSensitive = true (doesn't evaluate showSensitive)
+        assertTrue(
+                urlString.contains("normalParam=value"),
+                "Non-sensitive parameter should be visible due to short-circuit evaluation");
+
+        // For customSensitive: !isSensitiveParameter("customSensitive") = false
+        // Must evaluate: false || showSensitive = false (showSensitive is false in toString)
+        assertFalse(
+                urlString.contains("customSensitive=hidden"),
+                "Custom sensitive parameter should be hidden when showSensitive is false");
+
+        // Test with showSensitive = true
+        String fullString = url.toFullString();
+
+        // For customSensitive: !isSensitiveParameter("customSensitive") = false
+        // Must evaluate: false || showSensitive = true (showSensitive is true in toFullString)
+        assertTrue(
+                fullString.contains("customSensitive=hidden"),
+                "Custom sensitive parameter should be visible when showSensitive is true");
+    }
+
+    @Test
+    void testBooleanLogicConsistencyAcrossMethods() {
+        SensitiveParameterConfig.addSensitiveParameters("apiKey");
+
+        URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?apiKey=secret123&timeout=5000");
+
+        // Test toString() - showSensitive = false
+        String toStringResult = url.toString();
+        assertFalse(toStringResult.contains("apiKey=secret123"), "toString should hide sensitive parameters");
+        assertTrue(toStringResult.contains("timeout=5000"), "toString should show non-sensitive parameters");
+
+        // Test toFullString() - showSensitive = true
+        String toFullStringResult = url.toFullString();
+        assertTrue(toFullStringResult.contains("apiKey=secret123"), "toFullString should show sensitive parameters");
+        assertTrue(toFullStringResult.contains("timeout=5000"), "toFullString should show non-sensitive parameters");
+
+        // Test toParameterString() - showSensitive = false
+        String toParameterStringResult = url.toParameterString();
+        assertFalse(
+                toParameterStringResult.contains("apiKey=secret123"),
+                "toParameterString should hide sensitive parameters");
+        assertTrue(
+                toParameterStringResult.contains("timeout=5000"),
+                "toParameterString should show non-sensitive parameters");
+
+        // All methods should be logically consistent
+        assertEquals(
+                toStringResult.contains("apiKey=secret123"),
+                toParameterStringResult.contains("apiKey=secret123"),
+                "toString and toParameterString should have same sensitive parameter visibility");
+    }
 }

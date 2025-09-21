@@ -1211,7 +1211,7 @@ public /*final**/ class URL implements Serializable {
                 String key = entry.getKey();
                 // Skip sensitive parameters in non-full string representations unless showSensitive is true
                 if (StringUtils.isNotEmpty(key)
-                        && (showSensitive || !isSensitiveParameter(key))
+                        && (!isSensitiveParameter(key) || showSensitive)
                         && (includes == null || includes.contains(key))) {
                     if (first) {
                         if (concat) {

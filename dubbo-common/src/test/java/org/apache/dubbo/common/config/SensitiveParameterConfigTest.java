@@ -197,4 +197,65 @@ class SensitiveParameterConfigTest {
             SensitiveParameterConfig.getAllSensitiveParameters().add("test");
         });
     }
+
+    @Test
+    void testEnvironmentVariableConfiguration() {
+        // This test simulates environment variable loading
+        // Note: We can't actually set environment variables in unit tests,
+        // but we can test the system property path which covers similar logic
+
+        // Test with malformed configuration (empty values, spaces)
+        System.setProperty(
+                SensitiveParameterConfig.SENSITIVE_PARAMS_PROPERTY, "envParam1,,  envParam2  , , envParam3,");
+
+        SensitiveParameterConfig.resetToDefaults();
+
+        // Test that valid parameters are loaded and invalid ones are ignored
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("envParam1"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("envParam2"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("envParam3"));
+
+        // Empty entries should be ignored
+        assertFalse(SensitiveParameterConfig.isSensitiveParameter(""));
+        assertFalse(SensitiveParameterConfig.isSensitiveParameter("   "));
+    }
+
+    @Test
+    void testConcurrentAccess() {
+        // Test thread safety of lazy initialization
+        SensitiveParameterConfig.resetToDefaults();
+
+        // Simulate concurrent access to getCustomSensitiveParameters
+        Runnable task = () -> {
+            for (int i = 0; i < 100; i++) {
+                SensitiveParameterConfig.getCustomSensitiveParameters();
+                SensitiveParameterConfig.isSensitiveParameter("testParam");
+            }
+        };
+
+        Thread thread1 = new Thread(task);
+        Thread thread2 = new Thread(task);
+
+        thread1.start();
+        thread2.start();
+
+        assertDoesNotThrow(() -> {
+            thread1.join(1000);
+            thread2.join(1000);
+        });
+    }
+
+    @Test
+    void testParameterTrimming() {
+        // Test that parameters are properly trimmed during add/remove operations
+        SensitiveParameterConfig.addSensitiveParameters("  spacedParam  ", "\ttabbedParam\t", "\nnewlineParam\n");
+
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("spacedParam"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("tabbedParam"));
+        assertTrue(SensitiveParameterConfig.isSensitiveParameter("newlineParam"));
+
+        // Original untrimmed versions should not be sensitive
+        assertFalse(SensitiveParameterConfig.isSensitiveParameter("  spacedParam  "));
+        assertFalse(SensitiveParameterConfig.isSensitiveParameter("\ttabbedParam\t"));
+    }
 }
