@@ -262,38 +262,28 @@ class RegistryConfigTest {
     }
 
     @Test
-    void testMseNacosNamespace() {
-        RegistryConfig registry = new RegistryConfig();
-        registry.setNamespace("test-namespace");
-        assertThat(registry.getNamespace(), equalTo("test-namespace"));
-    }
-
-    @Test
-    void testMseNacosAccessKey() {
+    void testAccessKey() {
         RegistryConfig registry = new RegistryConfig();
         registry.setAccessKey("test-access-key");
         assertThat(registry.getAccessKey(), equalTo("test-access-key"));
     }
 
     @Test
-    void testMseNacosSecretKey() {
+    void testSecretKey() {
         RegistryConfig registry = new RegistryConfig();
         registry.setSecretKey("test-secret-key");
         assertThat(registry.getSecretKey(), equalTo("test-secret-key"));
     }
 
     @Test
-    void testMseNacosAddressWithCredentials() {
+    void testAddressWithCredentials() {
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(
-                "nacos://127.0.0.1:8848/registry?namespace=test-ns&accessKey=ak123456789&secretKey=sk987654321&timeout=5000");
+        registry.setAddress("nacos://127.0.0.1:8848/registry?accessKey=ak123456789&secretKey=sk987654321&timeout=5000");
 
         assertThat(
                 registry.getAddress(),
-                equalTo(
-                        "nacos://127.0.0.1:8848/registry?namespace=test-ns&accessKey=ak123456789&secretKey=sk987654321&timeout=5000"));
+                equalTo("nacos://127.0.0.1:8848/registry?accessKey=ak123456789&secretKey=sk987654321&timeout=5000"));
         assertThat(registry.getProtocol(), equalTo("nacos"));
-        assertThat(registry.getNamespace(), equalTo("test-ns"));
         assertThat(registry.getAccessKey(), equalTo("ak123456789"));
         assertThat(registry.getSecretKey(), equalTo("sk987654321"));
         assertThat(registry.getTimeout(), is(5000));
@@ -302,14 +292,12 @@ class RegistryConfigTest {
         Map<String, String> parameters = registry.getParameters();
         assertThat(parameters, not(hasKey("accessKey")));
         assertThat(parameters, not(hasKey("secretKey")));
-        assertThat(parameters, hasEntry("namespace", "test-ns"));
     }
 
     @Test
     void testSafeCredentialInfo() {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("nacos://127.0.0.1:8848");
-        registry.setNamespace("test-namespace");
         registry.setAccessKey("ak123456789012345");
         registry.setSecretKey("sk987654321098765");
         registry.setUsername("testuser");
@@ -318,7 +306,6 @@ class RegistryConfigTest {
 
         // Should contain non-sensitive information
         assertThat(safeInfo, org.hamcrest.CoreMatchers.containsString("address=nacos://127.0.0.1:8848"));
-        assertThat(safeInfo, org.hamcrest.CoreMatchers.containsString("namespace=test-namespace"));
         assertThat(safeInfo, org.hamcrest.CoreMatchers.containsString("username=testuser"));
 
         // Should mask sensitive information
@@ -344,7 +331,7 @@ class RegistryConfigTest {
     }
 
     @Test
-    void testMseNacosParametersExcluded() {
+    void testParametersExcluded() {
         RegistryConfig registry = new RegistryConfig();
         registry.setAccessKey("test-access-key");
         registry.setSecretKey("test-secret-key");
@@ -362,11 +349,10 @@ class RegistryConfigTest {
     void testAddressParsingWithInvalidTimeout() {
         RegistryConfig registry = new RegistryConfig();
         // Test with invalid timeout parameter that should be ignored
-        registry.setAddress("nacos://127.0.0.1:8848/registry?timeout=invalid&namespace=test");
+        registry.setAddress("nacos://127.0.0.1:8848/registry?timeout=invalid");
 
         // Should parse successfully and ignore invalid timeout
         assertThat(registry.getProtocol(), equalTo("nacos"));
-        assertThat(registry.getNamespace(), equalTo("test"));
         // timeout should remain null since invalid value was ignored
         assertThat(registry.getTimeout(), is((Integer) null));
     }
@@ -397,7 +383,6 @@ class RegistryConfigTest {
     void testSafeCredentialInfoWithEmptyValues() {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("");
-        registry.setNamespace("");
         registry.setAccessKey("");
         registry.setSecretKey("");
         registry.setUsername("");

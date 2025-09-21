@@ -293,6 +293,12 @@ public interface CommonConstants {
 
     String PASSWORD_KEY = "password";
 
+    String ACCESS_KEY = "accessKey";
+
+    String SECRET_KEY = "secretKey";
+
+    String SENSITIVE_PARAMETER_NAMES = "dubbo.url.sensitive-parameter-names";
+
     String HOST_KEY = "host";
 
     String PORT_KEY = "port";

@@ -24,7 +24,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ACCESS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SECRET_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
@@ -206,17 +208,12 @@ public class RegistryConfig extends AbstractConfig {
     private String secure;
 
     /**
-     * Namespace for MSE Nacos registry.
-     */
-    private String namespace;
-
-    /**
-     * Access key for MSE Nacos authentication (sensitive parameter).
+     * Access key for authentication (sensitive parameter).
      */
     private String accessKey;
 
     /**
-     * Secret key for MSE Nacos authentication (sensitive parameter).
+     * Secret key for authentication (sensitive parameter).
      */
     private String secretKey;
 
@@ -226,14 +223,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setSecure(String secure) {
         this.secure = secure;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
     }
 
     @Parameter(excluded = true, attribute = false)
@@ -310,10 +299,9 @@ public class RegistryConfig extends AbstractConfig {
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
                 updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
 
-                // Extract MSE Nacos specific parameters
-                updatePropertyIfAbsent(this::getNamespace, this::setNamespace, url.getParameter("namespace"));
-                updatePropertyIfAbsent(this::getAccessKey, this::setAccessKey, url.getParameter("accessKey"));
-                updatePropertyIfAbsent(this::getSecretKey, this::setSecretKey, url.getParameter("secretKey"));
+                // Extract authentication parameters
+                updatePropertyIfAbsent(this::getAccessKey, this::setAccessKey, url.getParameter(ACCESS_KEY));
+                updatePropertyIfAbsent(this::getSecretKey, this::setSecretKey, url.getParameter(SECRET_KEY));
 
                 // Extract timeout parameter
                 String timeoutStr = url.getParameter("timeout");
@@ -329,8 +317,8 @@ public class RegistryConfig extends AbstractConfig {
                 if (CollectionUtils.isNotEmptyMap(params)) {
                     params.remove(BACKUP_KEY);
                     // Remove sensitive parameters from the parameters map to prevent exposure
-                    params.remove("accessKey");
-                    params.remove("secretKey");
+                    params.remove(ACCESS_KEY);
+                    params.remove(SECRET_KEY);
                 }
                 updateParameters(params);
             } catch (Exception ignored) {
@@ -646,9 +634,6 @@ public class RegistryConfig extends AbstractConfig {
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isNotEmpty(address)) {
             sb.append("address=").append(address);
-        }
-        if (StringUtils.isNotEmpty(namespace)) {
-            sb.append(", namespace=").append(namespace);
         }
         if (StringUtils.isNotEmpty(accessKey)) {
             sb.append(", accessKey=").append(maskSensitiveValue(accessKey));

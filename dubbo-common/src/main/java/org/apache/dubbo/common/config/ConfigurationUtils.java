@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -500,5 +501,53 @@ public final class ConfigurationUtils {
     @Deprecated
     public static int get(String property, int defaultValue) {
         return get(ApplicationModel.defaultModel(), property, defaultValue);
+    }
+
+    private static volatile Set<String> sensitiveParameterNames;
+
+    /**
+     * Check if a parameter name is sensitive and should be hidden in URL string representations
+     *
+     * @param url  the URL (used to get the application model for configuration)
+     * @param name the parameter name to check
+     * @return true if the parameter is sensitive and should be hidden
+     */
+    public static boolean isSensitiveParameter(org.apache.dubbo.common.URL url, String name) {
+        if (StringUtils.isEmpty(name)) {
+            return false;
+        }
+
+        return getSensitiveParameterNames(url).contains(name);
+    }
+
+    private static Set<String> getSensitiveParameterNames(org.apache.dubbo.common.URL url) {
+        Set<String> sensitiveParameters = new HashSet<>();
+
+        // Always include default sensitive parameters
+        sensitiveParameters.add(org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY);
+        sensitiveParameters.add(org.apache.dubbo.common.constants.CommonConstants.SECRET_KEY);
+
+        // Add custom parameters from system property
+        String systemValue =
+                System.getProperty(org.apache.dubbo.common.constants.CommonConstants.SENSITIVE_PARAMETER_NAMES);
+        if (StringUtils.isNotEmpty(systemValue)) {
+            String[] names = StringUtils.tokenize(systemValue);
+            sensitiveParameters.addAll(Arrays.asList(names));
+        }
+
+        // Add custom parameters from application model configuration
+        try {
+            String configValue = getProperty(
+                    url.getOrDefaultApplicationModel(),
+                    org.apache.dubbo.common.constants.CommonConstants.SENSITIVE_PARAMETER_NAMES);
+            if (StringUtils.isNotEmpty(configValue)) {
+                String[] names = StringUtils.tokenize(configValue);
+                sensitiveParameters.addAll(Arrays.asList(names));
+            }
+        } catch (Exception ignored) {
+            // Fallback to default if configuration access fails
+        }
+
+        return sensitiveParameters;
     }
 }

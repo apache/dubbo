@@ -1203,15 +1203,15 @@ public /*final**/ class URL implements Serializable {
         buildParameters(buf, concat, false, parameters);
     }
 
-    protected void buildParameters(StringBuilder buf, boolean concat, boolean showSensitive, String[] parameters) {
+    protected void buildParameters(StringBuilder buf, boolean concat, boolean withSensitive, String[] parameters) {
         if (CollectionUtils.isNotEmptyMap(getParameters())) {
             List<String> includes = (ArrayUtils.isEmpty(parameters) ? null : Arrays.asList(parameters));
             boolean first = true;
             for (Map.Entry<String, String> entry : new TreeMap<>(getParameters()).entrySet()) {
                 String key = entry.getKey();
-                // Skip sensitive parameters in non-full string representations unless showSensitive is true
+                // Skip sensitive parameters in non-full string representations unless withSensitive is true
                 if (StringUtils.isNotEmpty(key)
-                        && (!isSensitiveParameter(key) || showSensitive)
+                        && (withSensitive || !isSensitiveParameter(key))
                         && (includes == null || includes.contains(key))) {
                     if (first) {
                         if (concat) {
@@ -1230,7 +1230,7 @@ public /*final**/ class URL implements Serializable {
     }
 
     private boolean isSensitiveParameter(String key) {
-        return org.apache.dubbo.common.config.SensitiveParameterConfig.isSensitiveParameter(key);
+        return org.apache.dubbo.common.config.ConfigurationUtils.isSensitiveParameter(this, key);
     }
 
     private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
@@ -1247,7 +1247,7 @@ public /*final**/ class URL implements Serializable {
             boolean appendParameter,
             boolean useIP,
             boolean useService,
-            boolean showSensitive,
+            boolean withSensitive,
             String... parameters) {
         StringBuilder buf = new StringBuilder();
         if (StringUtils.isNotEmpty(getProtocol())) {
@@ -1287,7 +1287,7 @@ public /*final**/ class URL implements Serializable {
         }
 
         if (appendParameter) {
-            buildParameters(buf, true, showSensitive, parameters);
+            buildParameters(buf, true, withSensitive, parameters);
         }
         return buf.toString();
     }
