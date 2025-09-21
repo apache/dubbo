@@ -237,7 +237,8 @@ class RegistryConfigTest {
         Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
     }
 
-    public void testPreferredWithTrueValue() {
+    @Test
+    void testPreferredWithTrueValue() {
         RegistryConfig registry = new RegistryConfig();
         registry.setPreferred(true);
         Map<String, String> map = new HashMap<>();
