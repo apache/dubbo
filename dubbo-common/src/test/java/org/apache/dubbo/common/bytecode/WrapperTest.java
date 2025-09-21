@@ -18,6 +18,8 @@ package org.apache.dubbo.common.bytecode;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -179,9 +181,14 @@ class WrapperTest {
 
     @Test
     void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
-        assertArrayEquals(
-                new String[] {"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
-        assertArrayEquals(new String[] {"hello", "world"}, ClassUtils.getMethodNames(Son.class));
+        String[] methodNamesFromWrapepr = Wrapper.getWrapper(Son.class).getMethodNames();
+        String[] methodNamesFromClassUtils = ClassUtils.getMethodNames(Son.class);
+
+        Arrays.sort(methodNamesFromWrapepr);
+        Arrays.sort(methodNamesFromClassUtils);
+
+        assertArrayEquals(new String[] {"hello", "world"}, methodNamesFromWrapepr);
+        assertArrayEquals(new String[] {"hello", "world"}, methodNamesFromClassUtils);
     }
 
     @Test
