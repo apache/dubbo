@@ -18,26 +18,38 @@ package org.apache.dubbo.rpc.protocol.tri.test;
 
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 
 public class MockHttp2OutputMessage implements Http2OutputMessage {
 
-    private final OutputStream outputStream;
+    private final ByteBuf bodyBuffer;
     private final boolean endStream;
 
     public MockHttp2OutputMessage(boolean endStream) {
-        outputStream = new ByteArrayOutputStream();
+        bodyBuffer = UnpooledByteBufAllocator.DEFAULT.buffer();
+        this.endStream = endStream;
+    }
+
+    public MockHttp2OutputMessage(ByteBuf body, boolean endStream) {
+        bodyBuffer = body;
         this.endStream = endStream;
     }
 
     @Override
-    public OutputStream getBody() {
-        return outputStream;
+    public ByteBuf getBody() {
+        return bodyBuffer;
     }
 
     @Override
     public boolean isEndStream() {
         return endStream;
+    }
+
+    @Override
+    public void close() {
+        if (bodyBuffer != null && bodyBuffer.refCnt() > 0) {
+            bodyBuffer.release();
+        }
     }
 }

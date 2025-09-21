@@ -16,11 +16,38 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 public interface WrapperUnPack extends UnPack {
 
-    default Object unpack(byte[] data) throws Exception {
+    /**
+     * Stream-based unpack InputStream with exception handling
+     */
+    @Override
+    default Object unpack(InputStream input) throws IOException {
+        return unpack(input, false);
+    }
+
+    /**
+     * Stream-based unpack InputStream with exception handling option
+     */
+    Object unpack(InputStream input, boolean isReturnTriException) throws IOException;
+
+    /**
+     * @deprecated Use {@link #unpack(InputStream)} for stream-based processing
+     */
+    @Deprecated
+    default Object unpack(byte[] data) throws IOException {
         return unpack(data, false);
     }
 
-    Object unpack(byte[] data, boolean isReturnTriException) throws Exception;
+    /**
+     * @deprecated Use {@link #unpack(InputStream, boolean)} for stream-based processing
+     */
+    @Deprecated
+    default Object unpack(byte[] data, boolean isReturnTriException) throws IOException {
+        return unpack(new ByteArrayInputStream(data), isReturnTriException);
+    }
 }

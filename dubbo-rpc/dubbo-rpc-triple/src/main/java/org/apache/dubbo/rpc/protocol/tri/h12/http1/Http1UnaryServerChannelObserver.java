@@ -24,11 +24,6 @@ import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-
-import io.netty.buffer.ByteBufOutputStream;
-
 public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObserver {
 
     public Http1UnaryServerChannelObserver(HttpChannel httpChannel) {
@@ -40,7 +35,7 @@ public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObs
         int statusCode = resolveStatusCode(data);
         HttpOutputMessage message = buildMessage(statusCode, data);
         sendMetadata(buildMetadata(statusCode, data, null, message));
-        sendMessage(message);
+        getHttpChannel().writeMessage(message);
     }
 
     @Override
@@ -49,7 +44,7 @@ public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObs
         Object data = buildErrorResponse(statusCode, throwable);
         HttpOutputMessage message = buildMessage(statusCode, data);
         sendMetadata(buildMetadata(statusCode, data, throwable, message));
-        sendMessage(message);
+        getHttpChannel().writeMessage(message);
     }
 
     @Override
@@ -57,13 +52,10 @@ public final class Http1UnaryServerChannelObserver extends Http1ServerChannelObs
         super.customizeHeaders(headers, throwable, message);
         int contentLength = 0;
         if (message != null) {
-            OutputStream body = message.getBody();
-            if (body instanceof ByteBufOutputStream) {
-                contentLength = ((ByteBufOutputStream) body).writtenBytes();
-            } else if (body instanceof ByteArrayOutputStream) {
-                contentLength = ((ByteArrayOutputStream) body).size();
-            } else {
-                throw new IllegalArgumentException("Unsupported body type: " + body.getClass());
+            // In zero-copy mode, getBody() returns ByteBuf
+            io.netty.buffer.ByteBuf body = message.getBody();
+            if (body != null) {
+                contentLength = body.readableBytes();
             }
         }
         headers.set(HttpHeaderNames.CONTENT_LENGTH.getKey(), String.valueOf(contentLength));

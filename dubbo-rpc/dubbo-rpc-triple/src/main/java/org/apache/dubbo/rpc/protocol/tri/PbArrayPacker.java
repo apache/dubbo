@@ -18,11 +18,13 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.model.Pack;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 import com.google.protobuf.Message;
 
 public class PbArrayPacker implements Pack {
-
-    private static final Pack PB_PACK = o -> ((Message) o).toByteArray();
 
     private final boolean singleArgument;
 
@@ -31,10 +33,21 @@ public class PbArrayPacker implements Pack {
     }
 
     @Override
-    public byte[] pack(Object obj) throws Exception {
+    public void pack(Object obj, OutputStream output) throws IOException {
         if (!singleArgument) {
             obj = ((Object[]) obj)[0];
         }
-        return PB_PACK.pack(obj);
+        Message message = (Message) obj;
+
+        // Stream-based: serialize directly to OutputStream for zero-copy
+        message.writeTo(output);
+    }
+
+    @Override
+    @Deprecated
+    public byte[] pack(Object obj) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        pack(obj, baos);
+        return baos.toByteArray();
     }
 }

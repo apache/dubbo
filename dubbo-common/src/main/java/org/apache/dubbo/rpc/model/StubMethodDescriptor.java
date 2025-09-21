@@ -150,6 +150,12 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     }
 
     @Override
+    @Deprecated
+    public Pack pack(Object[] arguments) {
+        return requestPack;
+    }
+
+    @Override
     public String toString() {
         return "StubMethodDescriptor{" + "method=" + methodName + '('
                 + (parameterClasses.length > 0 ? parameterClasses[0].getSimpleName() : "") + "), rpcType='" + rpcType

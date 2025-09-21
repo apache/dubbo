@@ -102,6 +102,42 @@ public class FastJson2ObjectOutput implements ObjectOutput {
     @Override
     public void writeObject(Object obj) throws IOException {
         updateClassLoaderIfNeed();
+
+        try {
+            if (fastjson2SecurityManager.getSecurityFilter().isCheckSerializable()) {
+                tryDirectStreamWrite(
+                        obj,
+                        JSONWriter.Feature.WriteClassName,
+                        JSONWriter.Feature.FieldBased,
+                        JSONWriter.Feature.ErrorOnNoneSerializable,
+                        JSONWriter.Feature.ReferenceDetection,
+                        JSONWriter.Feature.WriteNulls,
+                        JSONWriter.Feature.NotWriteDefaultValue,
+                        JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+                        JSONWriter.Feature.WriteNameAsSymbol);
+            } else {
+                tryDirectStreamWrite(
+                        obj,
+                        JSONWriter.Feature.WriteClassName,
+                        JSONWriter.Feature.FieldBased,
+                        JSONWriter.Feature.ReferenceDetection,
+                        JSONWriter.Feature.WriteNulls,
+                        JSONWriter.Feature.NotWriteDefaultValue,
+                        JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+                        JSONWriter.Feature.WriteNameAsSymbol);
+            }
+        } catch (Exception e) {
+            writeObjectFallback(obj);
+        }
+        os.flush();
+    }
+
+    private void tryDirectStreamWrite(Object obj, JSONWriter.Feature... features) throws IOException {
+        // Temporarily revert to original buffered approach to test if this is causing connection issues
+        throw new IOException("Direct stream write temporarily disabled for debugging");
+    }
+
+    private void writeObjectFallback(Object obj) throws IOException {
         byte[] bytes;
         if (fastjson2SecurityManager.getSecurityFilter().isCheckSerializable()) {
             bytes = JSONB.toBytes(
@@ -127,7 +163,6 @@ public class FastJson2ObjectOutput implements ObjectOutput {
         }
         writeLength(bytes.length);
         os.write(bytes);
-        os.flush();
     }
 
     private void updateClassLoaderIfNeed() {

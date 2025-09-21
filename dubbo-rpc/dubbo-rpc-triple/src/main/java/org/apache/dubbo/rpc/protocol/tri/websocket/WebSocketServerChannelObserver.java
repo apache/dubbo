@@ -31,7 +31,7 @@ public class WebSocketServerChannelObserver extends Http2StreamServerChannelObse
     protected void doOnNext(Object data) throws Throwable {
         int statusCode = resolveStatusCode(data);
         HttpOutputMessage httpOutputMessage = buildMessage(statusCode, data);
-        sendMessage(httpOutputMessage);
+        getHttpChannel().writeMessage(httpOutputMessage);
     }
 
     @Override

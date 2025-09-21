@@ -19,6 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -98,6 +102,26 @@ public class TripleCustomerProtocolWrapper {
             return type;
         }
 
+        public static TripleResponseWrapper parseFrom(InputStream input) throws IOException {
+            // Read all data from InputStream first
+            byte[] data;
+            if (input instanceof ByteArrayInputStream) {
+                ByteArrayInputStream bais = (ByteArrayInputStream) input;
+                data = new byte[bais.available()];
+                bais.read(data);
+            } else {
+                // For other InputStreams, read all bytes
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesRead);
+                }
+                data = baos.toByteArray();
+            }
+            return parseFrom(data);
+        }
+
         public static TripleResponseWrapper parseFrom(byte[] data) {
             TripleResponseWrapper tripleResponseWrapper = new TripleResponseWrapper();
             ByteBuffer byteBuffer = ByteBuffer.wrap(data);
@@ -168,6 +192,11 @@ public class TripleCustomerProtocolWrapper {
             return byteBuffer.array();
         }
 
+        public void writeTo(OutputStream output) throws IOException {
+            byte[] data = toByteArray();
+            output.write(data);
+        }
+
         public static final class Builder {
             private String serializeType;
 
@@ -227,6 +256,26 @@ public class TripleCustomerProtocolWrapper {
         }
 
         public TripleRequestWrapper() {}
+
+        public static TripleRequestWrapper parseFrom(InputStream input) throws IOException {
+            // Read all data from InputStream first
+            byte[] data;
+            if (input instanceof ByteArrayInputStream) {
+                ByteArrayInputStream bais = (ByteArrayInputStream) input;
+                data = new byte[bais.available()];
+                bais.read(data);
+            } else {
+                // For other InputStreams, read all bytes
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesRead);
+                }
+                data = baos.toByteArray();
+            }
+            return parseFrom(data);
+        }
 
         public static TripleRequestWrapper parseFrom(byte[] data) {
             TripleRequestWrapper tripleRequestWrapper = new TripleRequestWrapper();
@@ -315,6 +364,11 @@ public class TripleCustomerProtocolWrapper {
                 }
             }
             return byteBuffer.array();
+        }
+
+        public void writeTo(OutputStream output) throws IOException {
+            byte[] data = toByteArray();
+            output.write(data);
         }
 
         public static final class Builder {

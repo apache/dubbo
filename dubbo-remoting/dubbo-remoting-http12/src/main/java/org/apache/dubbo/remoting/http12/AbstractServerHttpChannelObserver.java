@@ -17,15 +17,15 @@
 package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import io.netty.buffer.ByteBuf;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger;
@@ -142,10 +142,12 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected void doOnNext(Object data) throws Throwable {
         int statusCode = resolveStatusCode(data);
+        HttpOutputMessage message = buildMessage(statusCode, data);
         if (!headerSent) {
-            sendMetadata(buildMetadata(statusCode, data, null, HttpOutputMessage.EMPTY_MESSAGE));
+            sendMetadata(buildMetadata(statusCode, data, null, message));
         }
-        sendMessage(buildMessage(statusCode, data));
+        getHttpChannel().sendMessage(message, true);
+        postOutputMessage(message);
     }
 
     protected final int resolveStatusCode(Object data) {
@@ -193,9 +195,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
         getHttpChannel().writeHeader(metadata);
         headerSent = true;
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Http response headers sent: " + metadata.headers());
-        }
     }
 
     protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
@@ -209,22 +208,11 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
             return null;
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            try {
-                String text;
-                if (data instanceof byte[]) {
-                    text = new String((byte[]) data, StandardCharsets.UTF_8);
-                } else {
-                    text = JsonUtils.toJson(data);
-                }
-                LOGGER.debug("Http response body sent: '{}' by [{}]", text, httpChannel);
-            } catch (Throwable ignored) {
-            }
-        }
-        HttpOutputMessage message = encodeHttpOutputMessage(data);
+        ByteBuf byteBuf = encodeDataToByteBuf(data);
+
+        HttpOutputMessage message = encodeHttpOutputMessage(byteBuf);
         try {
             preOutputMessage(message);
-            responseEncoder.encode(message.getBody(), data);
         } catch (Throwable t) {
             message.close();
             throw t;
@@ -232,16 +220,15 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         return message;
     }
 
-    protected HttpOutputMessage encodeHttpOutputMessage(Object data) {
-        return getHttpChannel().newOutputMessage();
+    protected HttpOutputMessage encodeHttpOutputMessage(ByteBuf body) {
+        return getHttpChannel().newOutputMessage(body);
     }
 
-    protected final void sendMessage(HttpOutputMessage message) throws Throwable {
-        if (message == null) {
-            return;
-        }
-        getHttpChannel().writeMessage(message);
-        postOutputMessage(message);
+    /**
+     * Encode data to ByteBuf for zero-copy implementation
+     */
+    protected ByteBuf encodeDataToByteBuf(Object data) throws Throwable {
+        return responseEncoder.encode(data, getHttpChannel().alloc());
     }
 
     protected void preOutputMessage(HttpOutputMessage message) throws Throwable {}
@@ -265,11 +252,15 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected void doOnError(Throwable throwable) throws Throwable {
         int statusCode = resolveErrorStatusCode(throwable);
-        Object data = buildErrorResponse(statusCode, throwable);
+        ErrorResponse errorResponse = buildErrorResponse(statusCode, throwable);
         if (!headerSent) {
-            sendMetadata(buildMetadata(statusCode, data, throwable, HttpOutputMessage.EMPTY_MESSAGE));
+            HttpOutputMessage message = buildMessage(statusCode, errorResponse);
+            HttpMetadata metadata = buildMetadata(statusCode, null, throwable, message);
+            sendMetadata(metadata);
+            getHttpChannel().sendMessage(message, true);
+            return;
         }
-        sendMessage(buildMessage(statusCode, data));
+        getHttpChannel().sendMessage(null, true);
     }
 
     protected final int resolveErrorStatusCode(Throwable throwable) {
@@ -317,9 +308,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         }
         customizeTrailers(headers, throwable);
         getHttpChannel().writeHeader(trailerMetadata);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Http response trailers sent: " + headers);
-        }
     }
 
     protected HttpMetadata encodeTrailers(Throwable throwable) {

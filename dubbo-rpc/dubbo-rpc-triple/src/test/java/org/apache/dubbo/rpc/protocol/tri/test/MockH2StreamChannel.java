@@ -19,19 +19,21 @@ package org.apache.dubbo.rpc.protocol.tri.test;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
-import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
+
 public class MockH2StreamChannel implements H2StreamChannel {
 
     private HttpMetadata httpMetadata;
-    private final List<OutputStream> bodies = new ArrayList<>();
+    private final List<ByteBuf> bodies = new ArrayList<>();
 
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
@@ -47,6 +49,11 @@ public class MockH2StreamChannel implements H2StreamChannel {
     public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
         bodies.add(httpOutputMessage.getBody());
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public CompletableFuture<Void> sendMessage(Object message, boolean endStream) {
+        return writeMessage((HttpOutputMessage) message);
     }
 
     @Override
@@ -68,15 +75,25 @@ public class MockH2StreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        return new MockHttp2OutputMessage(endStream);
+    public HttpOutputMessage newOutputMessage() {
+        return new MockHttp2OutputMessage(false);
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage(ByteBuf body) {
+        return new MockHttp2OutputMessage(body, false);
+    }
+
+    @Override
+    public ByteBufAllocator alloc() {
+        return UnpooledByteBufAllocator.DEFAULT;
     }
 
     public HttpMetadata getHttpMetadata() {
         return httpMetadata;
     }
 
-    public List<OutputStream> getBodies() {
+    public List<ByteBuf> getBodies() {
         return bodies;
     }
 }

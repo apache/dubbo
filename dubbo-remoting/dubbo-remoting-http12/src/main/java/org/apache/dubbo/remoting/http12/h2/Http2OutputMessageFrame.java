@@ -17,32 +17,43 @@
 package org.apache.dubbo.remoting.http12.h2;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
-import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 public final class Http2OutputMessageFrame implements Http2OutputMessage {
 
-    private final OutputStream body;
-
+    private final ByteBuf bodyBuffer;
     private final boolean endStream;
+    private final ByteBufAllocator allocator;
 
-    public Http2OutputMessageFrame(OutputStream body, boolean endStream) {
-        this.body = body;
+    public Http2OutputMessageFrame(ByteBuf bodyBuffer, boolean endStream) {
+        this.bodyBuffer = bodyBuffer;
+        this.endStream = endStream;
+        this.allocator = bodyBuffer != null ? bodyBuffer.alloc() : ByteBufAllocator.DEFAULT;
+    }
+
+    public Http2OutputMessageFrame(ByteBufAllocator allocator, boolean endStream) {
+        this.allocator = allocator;
+        this.bodyBuffer = allocator.buffer();
         this.endStream = endStream;
     }
 
     @Override
-    public OutputStream getBody() {
-        return body;
+    public ByteBuf getBody() {
+        return bodyBuffer;
+    }
+
+    @Override
+    public ByteBufAllocator getAllocator() {
+        return allocator;
     }
 
     @Override
     public void close() throws IOException {
-        if (body instanceof ByteBufOutputStream) {
-            ((ByteBufOutputStream) body).buffer().release();
+        if (bodyBuffer != null && bodyBuffer.refCnt() > 0) {
+            bodyBuffer.release();
         }
-        body.close();
     }
 
     @Override

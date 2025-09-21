@@ -18,15 +18,17 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
-public interface Http2OutputMessage extends HttpOutputMessage, Http2StreamFrame {
+import io.netty.buffer.ByteBuf;
 
-    @Override
-    default String name() {
-        return "DATA";
-    }
+public interface Http2OutputMessage extends HttpOutputMessage {
 
-    @Override
-    default long id() {
-        return -1;
+    boolean isEndStream();
+
+    /**
+     * @deprecated Use {@link #getBody()} for zero-copy processing
+     */
+    @Deprecated
+    default ByteBuf getBodyBuffer() {
+        return getBody();
     }
 }

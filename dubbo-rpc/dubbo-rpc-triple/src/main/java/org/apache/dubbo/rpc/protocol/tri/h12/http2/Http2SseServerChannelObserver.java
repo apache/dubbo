@@ -26,6 +26,8 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.ServerSentEventEncoder;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import io.netty.buffer.ByteBuf;
+
 public final class Http2SseServerChannelObserver extends Http2StreamServerChannelObserver {
 
     private HttpMessageEncoder originalResponseEncoder;
@@ -55,13 +57,23 @@ public final class Http2SseServerChannelObserver extends Http2StreamServerChanne
                 return null;
             }
 
-            HttpOutputMessage message = encodeHttpOutputMessage(data);
-            try {
-                originalResponseEncoder.encode(message.getBody(), data);
-            } catch (Throwable t) {
-                message.close();
-                throw t;
+            // Use zero-copy encoding
+            ByteBuf encodedData;
+            if (originalResponseEncoder instanceof org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcCompositeCodec) {
+                encodedData = ((org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcCompositeCodec) originalResponseEncoder)
+                        .encode(data, getHttpChannel().alloc());
+            } else {
+                // Fallback to traditional encoding with ByteBuf wrapper
+                encodedData = getHttpChannel().alloc().buffer();
+                try (io.netty.buffer.ByteBufOutputStream outputStream =
+                        new io.netty.buffer.ByteBufOutputStream(encodedData)) {
+                    originalResponseEncoder.encode(outputStream, data);
+                } catch (Exception e) {
+                    encodedData.release();
+                    throw e;
+                }
             }
+            HttpOutputMessage message = encodeHttpOutputMessage(encodedData);
             return message;
         }
         return super.buildMessage(statusCode, data);

@@ -25,11 +25,10 @@ import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 
-import java.io.OutputStream;
 import java.net.SocketAddress;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -112,15 +111,13 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
                     promise);
         } else if (msg instanceof Http2OutputMessage) {
             Http2OutputMessage message = (Http2OutputMessage) msg;
-            OutputStream body = message.getBody();
-            assert body instanceof ByteBufOutputStream || body == null;
+            ByteBuf body = message.getBody();
             if (message.isEndStream()) {
                 if (body == null) {
                     ctx.close(promise);
                     return;
                 }
-                ChannelFuture future =
-                        ctx.write(new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer()), ctx.newPromise());
+                ChannelFuture future = ctx.write(new DefaultHttp3DataFrame(body), ctx.newPromise());
                 if (future.isDone()) {
                     ctx.close(promise);
                 } else {
@@ -132,7 +129,7 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
                 promise.trySuccess();
                 return;
             }
-            ctx.write(new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer()), promise);
+            ctx.write(new DefaultHttp3DataFrame(body), promise);
         } else {
             ctx.write(msg, promise);
         }

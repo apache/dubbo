@@ -16,12 +16,30 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+/**
+ * Zero-copy pack interface using pure Java Stream API
+ */
 public interface Pack {
 
     /**
-     * @param obj instance
-     * @return byte array
-     * @throws Exception when error occurs
+     * Stream-based pack object to OutputStream for zero-copy processing
+     * @param obj instance to pack
+     * @param output OutputStream to write packed data
+     * @throws IOException when I/O error occurs
      */
-    byte[] pack(Object obj) throws Exception;
+    void pack(Object obj, OutputStream output) throws IOException;
+
+    /**
+     * @deprecated Use {@link #pack(Object, OutputStream)} for stream-based processing
+     */
+    @Deprecated
+    default byte[] pack(Object obj) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        pack(obj, baos);
+        return baos.toByteArray();
+    }
 }

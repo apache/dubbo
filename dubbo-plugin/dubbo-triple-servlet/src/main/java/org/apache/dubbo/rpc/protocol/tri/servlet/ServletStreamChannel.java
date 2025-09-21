@@ -37,7 +37,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
@@ -47,6 +46,10 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 
 final class ServletStreamChannel implements H2StreamChannel {
 
@@ -150,8 +153,15 @@ final class ServletStreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        return new Http2OutputMessageFrame(new ByteArrayOutputStream(256), endStream);
+    public HttpOutputMessage newOutputMessage() {
+        // Use ByteBuf for zero-copy, allocate with reasonable initial capacity
+        return new Http2OutputMessageFrame(alloc().buffer(256), false);
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage(ByteBuf body) {
+        // Zero-copy: directly use the provided ByteBuf
+        return new Http2OutputMessageFrame(body, false);
     }
 
     @Override
@@ -223,6 +233,16 @@ final class ServletStreamChannel implements H2StreamChannel {
         return completed();
     }
 
+    @Override
+    public CompletableFuture<Void> sendMessage(Object message, boolean endStream) {
+        if (message instanceof ByteBuf) {
+            ByteBuf body = (ByteBuf) message;
+            // Zero-copy: directly use ByteBuf
+            return writeMessage(new Http2OutputMessageFrame(body, endStream));
+        }
+        return writeMessage((HttpOutputMessage) message);
+    }
+
     private void writeMessageInternal(HttpOutputMessage httpOutputMessage) {
         boolean endStream = false;
         if (httpOutputMessage instanceof Http2OutputMessage) {
@@ -231,10 +251,16 @@ final class ServletStreamChannel implements H2StreamChannel {
             endStream = true;
         }
         try {
-            ByteArrayOutputStream bos = (ByteArrayOutputStream) httpOutputMessage.getBody();
-            ServletOutputStream out = response.getOutputStream();
-            bos.writeTo(out);
-            out.flush();
+            // Adapt to zero-copy: getBody() now returns ByteBuf
+            ByteBuf bodyBuffer = httpOutputMessage.getBody();
+            if (bodyBuffer != null && bodyBuffer.isReadable()) {
+                ServletOutputStream out = response.getOutputStream();
+                // Convert ByteBuf to bytes for ServletOutputStream
+                byte[] data = new byte[bodyBuffer.readableBytes()];
+                bodyBuffer.getBytes(bodyBuffer.readerIndex(), data);
+                out.write(data);
+                out.flush();
+            }
         } catch (Throwable t) {
             LOGGER.info("Failed to write message", t);
         } finally {
@@ -252,6 +278,11 @@ final class ServletStreamChannel implements H2StreamChannel {
     @Override
     public SocketAddress localAddress() {
         return InetSocketAddress.createUnresolved(request.getLocalAddr(), request.getLocalPort());
+    }
+
+    @Override
+    public ByteBufAllocator alloc() {
+        return UnpooledByteBufAllocator.DEFAULT;
     }
 
     @Override

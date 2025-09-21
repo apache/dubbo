@@ -16,12 +16,28 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Zero-copy unpack interface using pure Java Stream API
+ */
 public interface UnPack {
 
     /**
-     * @param data byte array
+     * Stream-based unpack InputStream to object for zero-copy processing
+     * @param input InputStream containing packed data
      * @return object instance
-     * @throws Exception            exception
+     * @throws IOException when I/O error occurs
      */
-    Object unpack(byte[] data) throws Exception;
+    Object unpack(InputStream input) throws IOException;
+
+    /**
+     * @deprecated Use {@link #unpack(InputStream)} for stream-based processing
+     */
+    @Deprecated
+    default Object unpack(byte[] data) throws IOException {
+        return unpack(new ByteArrayInputStream(data));
+    }
 }

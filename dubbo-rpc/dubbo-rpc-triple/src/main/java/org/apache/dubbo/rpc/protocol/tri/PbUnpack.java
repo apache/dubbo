@@ -20,6 +20,7 @@ import org.apache.dubbo.rpc.model.UnPack;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class PbUnpack<T> implements UnPack {
 
@@ -30,8 +31,14 @@ public class PbUnpack<T> implements UnPack {
     }
 
     @Override
+    public Object unpack(InputStream input) throws IOException {
+        // Stream-based: deserialize directly from InputStream for zero-copy
+        return SingleProtobufUtils.deserialize(input, clz);
+    }
+
+    @Override
+    @Deprecated
     public Object unpack(byte[] data) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return SingleProtobufUtils.deserialize(bais, clz);
+        return unpack(new ByteArrayInputStream(data));
     }
 }

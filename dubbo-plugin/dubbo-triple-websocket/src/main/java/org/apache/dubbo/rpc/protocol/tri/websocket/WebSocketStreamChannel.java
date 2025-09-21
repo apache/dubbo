@@ -23,17 +23,14 @@ import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.HttpStatus;
-import org.apache.dubbo.remoting.http12.LimitedByteArrayOutputStream;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
-import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessageFrame;
 import org.apache.dubbo.remoting.websocket.WebSocketHeaderNames;
 
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -41,6 +38,9 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 import static org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_REMOTE_ADDRESS;
 
@@ -78,9 +78,22 @@ public class WebSocketStreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        return new Http2OutputMessageFrame(
-                new LimitedByteArrayOutputStream(256, tripleConfig.getMaxResponseBodySizeOrDefault()), endStream);
+    public HttpOutputMessage newOutputMessage() {
+        // Use ByteBuf for zero-copy with size limit awareness
+        int maxSize = tripleConfig.getMaxResponseBodySizeOrDefault();
+        int initialCapacity = Math.min(256, maxSize);
+        return new Http2OutputMessageFrame(alloc().buffer(initialCapacity, maxSize), false);
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage(ByteBuf body) {
+        // Zero-copy: directly use ByteBuf, but check size limit
+        int maxSize = tripleConfig.getMaxResponseBodySizeOrDefault();
+        if (body.readableBytes() > maxSize) {
+            throw new IllegalArgumentException(
+                    "Response body size " + body.readableBytes() + " exceeds limit " + maxSize);
+        }
+        return new Http2OutputMessageFrame(body, false);
     }
 
     @Override
@@ -100,15 +113,28 @@ public class WebSocketStreamChannel implements H2StreamChannel {
 
     @Override
     public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
-        ByteArrayOutputStream body = (ByteArrayOutputStream) httpOutputMessage.getBody();
+        // Adapt to zero-copy: getBody() now returns ByteBuf
+        ByteBuf bodyBuffer = httpOutputMessage.getBody();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         try {
-            session.getBasicRemote().sendBinary(ByteBuffer.wrap(body.toByteArray()));
+            if (bodyBuffer != null && bodyBuffer.isReadable()) {
+                // Convert ByteBuf to ByteBuffer for WebSocket
+                ByteBuffer byteBuffer = bodyBuffer.nioBuffer();
+                session.getBasicRemote().sendBinary(byteBuffer);
+            }
             completableFuture.complete(null);
         } catch (IOException e) {
             completableFuture.completeExceptionally(e);
         }
         return completableFuture;
+    }
+
+    @Override
+    public CompletableFuture<Void> sendMessage(Object message, boolean endStream) {
+        if (message instanceof ByteBuf) {
+            return writeMessage(newOutputMessage((ByteBuf) message));
+        }
+        return writeMessage((HttpOutputMessage) message);
     }
 
     @Override
@@ -119,6 +145,11 @@ public class WebSocketStreamChannel implements H2StreamChannel {
     @Override
     public SocketAddress localAddress() {
         return localAddress;
+    }
+
+    @Override
+    public ByteBufAllocator alloc() {
+        return H2StreamChannel.super.alloc();
     }
 
     @Override

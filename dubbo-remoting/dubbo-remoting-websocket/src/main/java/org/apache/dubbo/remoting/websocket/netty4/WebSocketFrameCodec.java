@@ -32,11 +32,9 @@ import org.apache.dubbo.remoting.websocket.FinalFragmentByteBufInputStream;
 import org.apache.dubbo.remoting.websocket.WebSocketHeaderNames;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -127,14 +125,10 @@ public class WebSocketFrameCodec extends ChannelDuplexHandler {
 
     private WebSocketFrame encodeWebSocketFrame(ChannelHandlerContext ctx, Http2OutputMessage outputMessage)
             throws IOException {
-        OutputStream body = outputMessage.getBody();
+        ByteBuf body = outputMessage.getBody();
         if (body == null) {
             return new BinaryWebSocketFrame();
         }
-        if (body instanceof ByteBufOutputStream) {
-            ByteBuf buffer = ((ByteBufOutputStream) body).buffer();
-            return new BinaryWebSocketFrame(buffer);
-        }
-        throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
+        return new BinaryWebSocketFrame(body);
     }
 }
