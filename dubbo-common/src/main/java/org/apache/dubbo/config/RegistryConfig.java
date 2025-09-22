@@ -623,44 +623,4 @@ public class RegistryConfig extends AbstractConfig {
     public Boolean isDefault() {
         return isDefault;
     }
-
-    /**
-     * Get safe credential information for logging/debugging purposes.
-     * Sensitive parameters like accessKey and secretKey are masked.
-     *
-     * @return safe string representation without exposing sensitive data
-     */
-    public String getSafeCredentialInfo() {
-        StringBuilder sb = new StringBuilder();
-        if (StringUtils.isNotEmpty(address)) {
-            sb.append("address=").append(address);
-        }
-        if (StringUtils.isNotEmpty(accessKey)) {
-            sb.append(", accessKey=").append(maskSensitiveValue(accessKey));
-        }
-        if (StringUtils.isNotEmpty(secretKey)) {
-            sb.append(", secretKey=").append(maskSensitiveValue(secretKey));
-        }
-        if (StringUtils.isNotEmpty(username)) {
-            sb.append(", username=").append(username);
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Mask sensitive values for safe logging.
-     * Shows first 3 and last 3 characters, masking the middle with '***'.
-     *
-     * @param value sensitive value to mask
-     * @return masked value for safe display
-     */
-    private String maskSensitiveValue(String value) {
-        if (StringUtils.isEmpty(value)) {
-            return value;
-        }
-        if (value.length() <= 6) {
-            return "***";
-        }
-        return value.substring(0, 3) + "***" + value.substring(value.length() - 3);
-    }
 }

@@ -302,7 +302,7 @@ class RegistryConfigTest {
         registry.setSecretKey("sk987654321098765");
         registry.setUsername("testuser");
 
-        String safeInfo = registry.getSafeCredentialInfo();
+        String safeInfo = getSafeCredentialInfo(registry);
 
         // Should contain non-sensitive information
         assertThat(safeInfo, org.hamcrest.CoreMatchers.containsString("address=nacos://127.0.0.1:8848"));
@@ -323,7 +323,7 @@ class RegistryConfigTest {
         registry.setAccessKey("abc");
         registry.setSecretKey("def");
 
-        String safeInfo = registry.getSafeCredentialInfo();
+        String safeInfo = getSafeCredentialInfo(registry);
 
         // Short keys should be completely masked
         assertThat(safeInfo, org.hamcrest.CoreMatchers.containsString("accessKey=***"));
@@ -373,7 +373,7 @@ class RegistryConfigTest {
     void testSafeCredentialInfoWithNullValues() {
         RegistryConfig registry = new RegistryConfig();
         // Test with all null values
-        String safeInfo = registry.getSafeCredentialInfo();
+        String safeInfo = getSafeCredentialInfo(registry);
 
         // Should handle null values gracefully and return empty string
         assertThat(safeInfo, equalTo(""));
@@ -387,7 +387,7 @@ class RegistryConfigTest {
         registry.setSecretKey("");
         registry.setUsername("");
 
-        String safeInfo = registry.getSafeCredentialInfo();
+        String safeInfo = getSafeCredentialInfo(registry);
 
         // Should handle empty values and not include them in output
         assertThat(safeInfo, equalTo(""));
@@ -437,5 +437,46 @@ class RegistryConfigTest {
         registry.updateParameters(moreParams);
         assertThat(registry.getParameters(), hasEntry("key1", "value1"));
         assertThat(registry.getParameters(), hasEntry("key2", "value2"));
+    }
+
+    /**
+     * Test helper method to get safe credential info without exposing sensitive data.
+     * Moved from RegistryConfig to test class as per code review feedback.
+     *
+     * @param registry the RegistryConfig instance
+     * @return safe string representation without exposing sensitive data
+     */
+    private String getSafeCredentialInfo(RegistryConfig registry) {
+        StringBuilder sb = new StringBuilder();
+        if (org.apache.dubbo.common.utils.StringUtils.isNotEmpty(registry.getAddress())) {
+            sb.append("address=").append(registry.getAddress());
+        }
+        if (org.apache.dubbo.common.utils.StringUtils.isNotEmpty(registry.getAccessKey())) {
+            sb.append(", accessKey=").append(maskSensitiveValue(registry.getAccessKey()));
+        }
+        if (org.apache.dubbo.common.utils.StringUtils.isNotEmpty(registry.getSecretKey())) {
+            sb.append(", secretKey=").append(maskSensitiveValue(registry.getSecretKey()));
+        }
+        if (org.apache.dubbo.common.utils.StringUtils.isNotEmpty(registry.getUsername())) {
+            sb.append(", username=").append(registry.getUsername());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Test helper method to mask sensitive values for safe logging.
+     * Shows first 3 and last 3 characters, masking the middle with '***'.
+     *
+     * @param value sensitive value to mask
+     * @return masked value for safe display
+     */
+    private String maskSensitiveValue(String value) {
+        if (org.apache.dubbo.common.utils.StringUtils.isEmpty(value)) {
+            return value;
+        }
+        if (value.length() <= 6) {
+            return "***";
+        }
+        return value.substring(0, 3) + "***" + value.substring(value.length() - 3);
     }
 }
