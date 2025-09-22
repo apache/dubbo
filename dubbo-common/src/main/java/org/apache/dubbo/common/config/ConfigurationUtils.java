@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -41,6 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.SENSITIVE_PARAMETER_NAMES;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
@@ -503,51 +506,28 @@ public final class ConfigurationUtils {
         return get(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
-    private static volatile Set<String> sensitiveParameterNames;
+    private static volatile Set<String> SensitiveParameterNames;
 
-    /**
-     * Check if a parameter name is sensitive and should be hidden in URL string representations
-     *
-     * @param url  the URL (used to get the application model for configuration)
-     * @param name the parameter name to check
-     * @return true if the parameter is sensitive and should be hidden
-     */
-    public static boolean isSensitiveParameter(org.apache.dubbo.common.URL url, String name) {
-        if (StringUtils.isEmpty(name)) {
-            return false;
-        }
+    public static boolean isSensitiveParameter(URL url, String name) {
+        if (SensitiveParameterNames == null) {
+            synchronized (ConfigurationUtils.class) {
+                if (SensitiveParameterNames == null) {
+                    Set<String> names = new HashSet<>();
+                    // Always include default sensitive parameters
+                    names.add(CommonConstants.PASSWORD_KEY);
+                    names.add("secretKey");
 
-        return getSensitiveParameterNames(url).contains(name);
-    }
+                    // Add custom parameters from configuration
+                    String value = getProperty(url.getOrDefaultApplicationModel(), SENSITIVE_PARAMETER_NAMES);
+                    if (value != null) {
+                        String[] customNames = StringUtils.tokenize(value);
+                        names.addAll(Arrays.asList(customNames));
+                    }
 
-    private static Set<String> getSensitiveParameterNames(org.apache.dubbo.common.URL url) {
-        Set<String> sensitiveParameters = new HashSet<>();
-
-        // Always include default sensitive parameters
-        sensitiveParameters.add(org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY);
-        sensitiveParameters.add(org.apache.dubbo.common.constants.CommonConstants.SECRET_KEY);
-
-        // Add custom parameters from system property
-        String systemValue =
-                System.getProperty(org.apache.dubbo.common.constants.CommonConstants.SENSITIVE_PARAMETER_NAMES);
-        if (StringUtils.isNotEmpty(systemValue)) {
-            String[] names = StringUtils.tokenize(systemValue);
-            sensitiveParameters.addAll(Arrays.asList(names));
-        }
-
-        // Add custom parameters from application model configuration
-        try {
-            String configValue = getProperty(
-                    url.getOrDefaultApplicationModel(),
-                    org.apache.dubbo.common.constants.CommonConstants.SENSITIVE_PARAMETER_NAMES);
-            if (StringUtils.isNotEmpty(configValue)) {
-                String[] names = StringUtils.tokenize(configValue);
-                sensitiveParameters.addAll(Arrays.asList(names));
+                    SensitiveParameterNames = names;
+                }
             }
-        } catch (Exception ignored) {
-            // Fallback to default if configuration access fails
         }
-
-        return sensitiveParameters;
+        return SensitiveParameterNames.contains(name);
     }
 }
