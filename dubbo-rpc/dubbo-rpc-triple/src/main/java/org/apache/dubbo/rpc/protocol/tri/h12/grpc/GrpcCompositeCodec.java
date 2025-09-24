@@ -111,10 +111,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
             buffer.writerIndex(position + 4);
             ((ByteBufPackableMethod) packableMethod).packResponse(buffer, data);
             int length = buffer.writerIndex() - position - 4;
-            buffer.markWriterIndex();
-            buffer.writerIndex(position);
-            buffer.writeInt(length);
-            buffer.resetWriterIndex();
+            buffer.setInt(position, length);
         } catch (HttpStatusException e) {
             throw e;
         } catch (Exception e) {

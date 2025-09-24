@@ -25,23 +25,19 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
 public class DataQueueCommand extends StreamQueueCommand {
 
-    private final byte[] data;
-
-    private final int compressFlag;
+    private final ByteBuf data;
 
     private final boolean endStream;
 
-    private DataQueueCommand(
-            TripleStreamChannelFuture streamChannelFuture, byte[] data, int compressFlag, boolean endStream) {
+    private DataQueueCommand(TripleStreamChannelFuture streamChannelFuture, ByteBuf data, boolean endStream) {
         super(streamChannelFuture);
         this.data = data;
-        this.compressFlag = compressFlag;
         this.endStream = endStream;
     }
 
     public static DataQueueCommand create(
-            TripleStreamChannelFuture streamChannelFuture, byte[] data, boolean endStream, int compressFlag) {
-        return new DataQueueCommand(streamChannelFuture, data, compressFlag, endStream);
+            TripleStreamChannelFuture streamChannelFuture, ByteBuf data, boolean endStream) {
+        return new DataQueueCommand(streamChannelFuture, data, endStream);
     }
 
     @Override
@@ -49,16 +45,12 @@ public class DataQueueCommand extends StreamQueueCommand {
         if (data == null) {
             ctx.write(new DefaultHttp2DataFrame(endStream), promise);
         } else {
-            ByteBuf buf = ctx.alloc().buffer();
-            buf.writeByte(compressFlag);
-            buf.writeInt(data.length);
-            buf.writeBytes(data);
-            ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
+            ctx.write(new DefaultHttp2DataFrame(data, endStream), promise);
         }
     }
 
     // for test
-    public byte[] getData() {
+    public ByteBuf getData() {
         return data;
     }
 

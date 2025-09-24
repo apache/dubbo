@@ -22,7 +22,7 @@ public interface StreamingDecoder<T> {
 
     void request(int numMessages);
 
-    void decode(T inputStream) throws DecodeException;
+    void decode(T input) throws DecodeException;
 
     void close();
 

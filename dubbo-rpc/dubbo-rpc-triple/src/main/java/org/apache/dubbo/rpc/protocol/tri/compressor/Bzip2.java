@@ -72,15 +72,14 @@ public class Bzip2 implements Compressor, DeCompressor {
     }
 
     @Override
-    public ByteBuf compress(ByteBuf src) {
+    public void compress(ByteBuf src, ByteBuf dst) {
         byte[] input = new byte[src.readableBytes()];
         src.readBytes(input);
-        ByteBuf dst = src.alloc().ioBuffer(input.length);
+        dst.ensureWritable(input.length);
 
         try (ByteBufOutputStream out = new ByteBufOutputStream(dst);
                 BZip2CompressorOutputStream bZip2CompressorOutputStream = new BZip2CompressorOutputStream(out)) {
             bZip2CompressorOutputStream.write(input);
-            return dst;
         } catch (IOException e) {
             throw new IllegalStateException(e);
         } finally {

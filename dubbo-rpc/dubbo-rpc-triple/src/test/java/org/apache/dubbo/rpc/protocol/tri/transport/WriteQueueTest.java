@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultEventLoop;
@@ -82,8 +83,9 @@ class WriteQueueTest {
         TripleStreamChannelFuture tripleStreamChannelFuture = new TripleStreamChannelFuture(embeddedChannel);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(tripleStreamChannelFuture, new DefaultHttp2Headers())
                 .channel(channel));
-        writeQueue.enqueue(DataQueueCommand.create(tripleStreamChannelFuture, new byte[0], false, 0)
-                .channel(channel));
+        writeQueue.enqueue(
+                DataQueueCommand.create(tripleStreamChannelFuture, Unpooled.wrappedBuffer(new byte[] {0}), false)
+                        .channel(channel));
         TriRpcStatus status =
                 TriRpcStatus.UNKNOWN.withCause(new RpcException()).withDescription("Encode Response data error");
         writeQueue.enqueue(CancelQueueCommand.createCommand(tripleStreamChannelFuture, Http2Error.CANCEL)

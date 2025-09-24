@@ -47,8 +47,8 @@ public class Identity implements Compressor, DeCompressor {
     }
 
     @Override
-    public ByteBuf compress(ByteBuf src) {
-        return src;
+    public void compress(ByteBuf src, ByteBuf dst) {
+        // no op
     }
 
     @Override

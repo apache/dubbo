@@ -22,6 +22,7 @@ import javax.net.ssl.SSLSession;
 
 import java.net.SocketAddress;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
 
@@ -43,7 +44,7 @@ public interface Stream {
          *
          * @param message message received from remote peer
          */
-        void onMessage(byte[] message, boolean isReturnTriException);
+        void onMessage(ByteBuf message, boolean isReturnTriException);
 
         /**
          * Callback when receive cancel signal.

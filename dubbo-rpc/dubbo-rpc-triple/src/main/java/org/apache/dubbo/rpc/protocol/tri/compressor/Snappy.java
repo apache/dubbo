@@ -55,14 +55,17 @@ public class Snappy implements Compressor, DeCompressor {
     }
 
     @Override
-    public ByteBuf compress(ByteBuf src) {
+    public void compress(ByteBuf src, ByteBuf dst) {
         try {
             int maxCompressedLength = org.xerial.snappy.Snappy.maxCompressedLength(src.readableBytes());
-            ByteBuf dst = src.alloc().ioBuffer(maxCompressedLength);
-            org.xerial.snappy.Snappy.compress(src.nioBuffer(), dst.nioBuffer());
-            return dst;
+            dst.ensureWritable(maxCompressedLength);
+            int compressedSize = org.xerial.snappy.Snappy.compress(
+                    src.nioBuffer(), dst.nioBuffer(dst.writerIndex(), maxCompressedLength));
+            dst.writerIndex(dst.writerIndex() + compressedSize);
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        } finally {
+            src.release();
         }
     }
 

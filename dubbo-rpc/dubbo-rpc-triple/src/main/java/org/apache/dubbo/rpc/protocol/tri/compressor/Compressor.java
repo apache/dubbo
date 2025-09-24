@@ -60,8 +60,7 @@ public interface Compressor extends MessageEncoding {
      * compress payload
      *
      * @param src payload byte buffer
-     *
-     * @return compressed payload byte buffer
+     * @param dst compressed payload byte buffer
      */
-    ByteBuf compress(ByteBuf src);
+    void compress(ByteBuf src, ByteBuf dst);
 }

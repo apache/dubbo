@@ -67,15 +67,14 @@ public class Gzip implements Compressor, DeCompressor {
     }
 
     @Override
-    public ByteBuf compress(ByteBuf src) {
+    public void compress(ByteBuf src, ByteBuf dst) {
         byte[] input = new byte[src.readableBytes()];
         src.readBytes(input);
-        ByteBuf dst = src.alloc().ioBuffer(input.length);
+        dst.ensureWritable(input.length);
 
         try (ByteBufOutputStream out = new ByteBufOutputStream(dst);
                 GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out)) {
             gzipOutputStream.write(input);
-            return dst;
         } catch (IOException e) {
             throw new IllegalStateException(e);
         } finally {

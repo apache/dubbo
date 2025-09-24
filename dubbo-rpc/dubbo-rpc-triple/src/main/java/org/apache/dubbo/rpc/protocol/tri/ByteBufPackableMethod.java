@@ -26,6 +26,22 @@ public interface ByteBufPackableMethod extends PackableMethod {
         return getRequestUnpack().unpack(buffer);
     }
 
+    default Object parseResponse(ByteBuf data) throws Exception {
+        return parseResponse(data, false);
+    }
+
+    default Object parseResponse(ByteBuf data, boolean isReturnTriException) throws Exception {
+        ByteBufUnPack unPack = getResponseUnpack();
+        if (unPack instanceof ByteBufWrapperUnPack) {
+            return ((ByteBufWrapperUnPack) unPack).unpack(data, isReturnTriException);
+        }
+        return unPack.unpack(data);
+    }
+
+    default void packRequest(ByteBuf buffer, Object request) throws Exception {
+        getRequestPack().pack(request);
+    }
+
     default void packResponse(ByteBuf buffer, Object response) throws Exception {
         getResponsePack().pack(buffer, response);
     }
