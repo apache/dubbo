@@ -135,7 +135,7 @@ public class TriRpcStatus implements Serializable {
                 code = Code.UNAVAILABLE;
                 break;
             case METHOD_NOT_FOUND:
-                code = Code.NOT_FOUND;
+                code = Code.UNIMPLEMENTED;
                 break;
             case SERIALIZATION_EXCEPTION:
                 code = Code.INTERNAL;
