@@ -1,0 +1,2 @@
+memory=org.apache.dubbo.rpc.protocol.tri.server.InMemoryServerSequenceStore
+file=org.apache.dubbo.rpc.protocol.tri.server.FileServerSequenceStore

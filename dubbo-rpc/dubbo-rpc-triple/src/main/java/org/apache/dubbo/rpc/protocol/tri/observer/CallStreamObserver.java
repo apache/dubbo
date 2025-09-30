@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext;
 
 public interface CallStreamObserver<T> extends StreamObserver<T> {
 
@@ -48,4 +49,12 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      * specified.
      */
     void disableAutoFlowControl();
+
+    /**
+     * Get the reliability context for this stream.
+     * This provides business observability and control over reliability features.
+     *
+     * @return ReliabilityContext instance, or null if reliability is not enabled
+     */
+    ReliabilityContext reliability();
 }

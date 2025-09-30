@@ -61,6 +61,7 @@ import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -337,6 +338,16 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             application = (String) invocation.getObjectAttachmentWithoutConvert(CommonConstants.REMOTE_APPLICATION_KEY);
         }
         meta.application = application;
+
+        // Add reliability negotiation for streaming calls (disabled by default for compatibility)
+        boolean reliabilityEnabled = getUrl().getParameter("stream.reliability.enabled", false);
+        if (reliabilityEnabled && methodDescriptor.getRpcType() != UNARY) {
+            Map<String, Object> attachments = invocation.getObjectAttachments();
+            attachments.put("tri-reliable-version", "1.0");
+            attachments.put("tri-session-id", java.util.UUID.randomUUID().toString());
+            attachments.put("tri-stream-cap", "ack,heartbeat,retry");
+        }
+
         meta.attachments = invocation.getObjectAttachments();
         return meta;
     }

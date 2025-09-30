@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.observer;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
+import org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext;
 
 public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ClientStreamObserver<T> {
 
@@ -75,5 +76,14 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void disableAutoFlowControl() {
         call.setAutoRequest(false);
+    }
+
+    @Override
+    public ReliabilityContext reliability() {
+        // Delegate to the underlying call if it supports reliability
+        if (call instanceof ReliabilityContext) {
+            return (ReliabilityContext) call;
+        }
+        return null;
     }
 }

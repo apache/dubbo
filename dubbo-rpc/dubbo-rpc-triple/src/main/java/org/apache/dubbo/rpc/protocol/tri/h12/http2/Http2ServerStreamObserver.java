@@ -16,22 +16,32 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
+import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.h12.AttachmentHolder;
 import org.apache.dubbo.rpc.protocol.tri.h12.CompressibleEncoder;
+import org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.Map;
 
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+
 public class Http2ServerStreamObserver extends Http2ServerChannelObserver
         implements ServerStreamObserver<Object>, AttachmentHolder {
+
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(Http2ServerStreamObserver.class);
 
     private final FrameworkModel frameworkModel;
 
@@ -65,5 +75,44 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
         HttpHeaders headers = metadata.headers();
         StreamUtils.putHeaders(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         return metadata;
+    }
+
+    @Override
+    public ReliabilityContext reliability() {
+        // Server-side streams don't support reliability context in this implementation
+        return null;
+    }
+
+    public void sendAckHeaders(Map<String, Object> ackAttachments) {
+        try {
+            DefaultHttp2Headers headers = new DefaultHttp2Headers(false, ackAttachments.size());
+
+            // Convert attachments to HTTP/2 headers
+            for (Map.Entry<String, Object> entry : ackAttachments.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (value != null) {
+                    headers.set(key, value.toString());
+                }
+            }
+
+            // Write headers frame directly to the HTTP/2 stream and flush immediately
+            // This ensures ACK headers are sent immediately without waiting for data
+            H2StreamChannel streamChannel = getHttpChannel();
+            if (streamChannel != null) {
+                // Create and send a HEADERS frame (not end stream)
+                HttpMetadata metadata = new Http2MetadataFrame(new NettyHttpHeaders<>(headers), false);
+
+                // Write and flush to ensure immediate transmission
+                streamChannel.writeHeader(metadata);
+                streamChannel.flush();
+
+                // Debug log to confirm ACK headers were sent
+                LOGGER.debug("Server sent ACK headers and flushed: {}", ackAttachments);
+            }
+        } catch (Exception e) {
+            // Log but don't throw to maintain stream stability
+            LOGGER.warn("Failed to send ACK headers", e);
+        }
     }
 }

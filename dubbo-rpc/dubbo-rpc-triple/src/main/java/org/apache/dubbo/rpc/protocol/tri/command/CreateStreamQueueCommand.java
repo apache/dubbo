@@ -51,12 +51,26 @@ public class CreateStreamQueueCommand extends QueuedCommand {
 
     @Override
     public void run(Channel channel) {
-        // work in I/O thread
-        Future<Http2StreamChannel> future = bootstrap.open();
-        if (future.isSuccess()) {
-            streamChannelFuture.complete(future.getNow());
-        } else {
-            streamChannelFuture.completeExceptionally(future.cause());
-        }
+        // Execute in the channel's event loop to ensure thread safety
+        channel.eventLoop().execute(() -> {
+            // work in I/O thread
+            Future<Http2StreamChannel> future = bootstrap.open();
+
+            // Use async listener to handle the result properly
+            future.addListener((io.netty.util.concurrent.Future<Http2StreamChannel> f) -> {
+                if (f.isSuccess()) {
+                    Http2StreamChannel streamChannel = f.getNow();
+                    streamChannelFuture.complete(streamChannel);
+                } else {
+                    Throwable cause = f.cause();
+                    if (cause != null) {
+                        streamChannelFuture.completeExceptionally(cause);
+                    } else {
+                        streamChannelFuture.completeExceptionally(
+                                new RuntimeException("Failed to create Http2StreamChannel: unknown error"));
+                    }
+                }
+            });
+        });
     }
 }

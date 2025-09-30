@@ -23,8 +23,10 @@ import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
+import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.DefaultStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
@@ -39,6 +41,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.Http3Exchanger;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
+import org.apache.dubbo.rpc.protocol.tri.h12.AttachmentHolder;
 import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
@@ -49,6 +52,10 @@ import java.io.InputStream;
 
 public class GenericHttp2ServerTransportListener extends AbstractServerTransportListener<Http2Header, Http2InputMessage>
         implements Http2TransportListener {
+
+    private static final org.apache.dubbo.common.logger.ErrorTypeAwareLogger LOGGER =
+            org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger(
+                    GenericHttp2ServerTransportListener.class);
 
     private final H2StreamChannel h2StreamChannel;
     private final StreamingDecoder streamingDecoder;
@@ -96,24 +103,38 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         serverCallListener = startListener(rpcInvocation, context.getMethodDescriptor(), context.getInvoker());
         DefaultListeningDecoder listeningDecoder = new DefaultListeningDecoder(
                 context.getHttpMessageDecoder(), context.getMethodMetadata().getActualRequestTypes());
-        listeningDecoder.setListener(new Http2StreamingDecodeListener(serverCallListener));
+        listeningDecoder.setListener(new Http2StreamingDecodeListener(serverCallListener, this));
         streamingDecoder.setFragmentListener(new StreamingDecoder.DefaultFragmentListener(listeningDecoder));
         return new StreamingHttpMessageListener(streamingDecoder);
     }
 
     private ServerCallListener startListener(
             RpcInvocation invocation, MethodDescriptor methodDescriptor, Invoker<?> invoker) {
+        // Process reliability negotiation
+        java.util.Map<String, Object> attachments = invocation.getObjectAttachments();
+        boolean reliabilityEnabled = attachments.containsKey("tri-reliable-version");
+        String sessionId = null;
+
+        if (reliabilityEnabled) {
+            sessionId = (String) attachments.get("tri-session-id");
+            // Server confirms support
+            org.apache.dubbo.rpc.RpcContext.getContext().setAttachment("tri-reliable-ack", "1.0");
+            org.apache.dubbo.rpc.RpcContext.getContext().setAttachment("tri-session-id", sessionId);
+        }
+
         switch (methodDescriptor.getRpcType()) {
             case UNARY:
                 prepareUnaryServerCall();
                 return new UnaryServerCallListener(invocation, invoker, responseObserver);
             case SERVER_STREAM:
                 prepareStreamServerCall();
-                return new ServerStreamServerCallListener(invocation, invoker, responseObserver);
+                return new ServerStreamServerCallListener(
+                        invocation, invoker, responseObserver, reliabilityEnabled, sessionId);
             case BI_STREAM:
             case CLIENT_STREAM:
                 prepareStreamServerCall();
-                return new BiStreamServerCallListener(invocation, invoker, responseObserver);
+                return new BiStreamServerCallListener(
+                        invocation, invoker, responseObserver, reliabilityEnabled, sessionId);
             default:
                 throw new IllegalStateException("Can not reach here");
         }
@@ -133,13 +154,95 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         }
     }
 
+    private static final ThreadLocal<Long> currentMessageSequence = new ThreadLocal<>();
+
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         responseObserver.setResponseEncoder(getContext().getHttpMessageEncoder());
         responseObserver.request(1);
+
+        // Process heartbeat first for immediate response
+        processHeartbeatHeaders(metadata);
+
+        // Extract sequence number from headers for reliable streaming
+        String seqHeader = metadata.header("tri-seq");
+        if (seqHeader != null) {
+            try {
+                Long sequenceNumber = Long.parseLong(seqHeader);
+                // Set in ThreadLocal for current message processing
+                currentMessageSequence.set(sequenceNumber);
+            } catch (NumberFormatException e) {
+                // Log and continue - not a critical error
+            }
+        }
+
         if (metadata.isEndStream()) {
             getStreamingDecoder().close();
         }
+    }
+
+    private void processHeartbeatHeaders(Http2Header metadata) {
+        // Check for heartbeat from client
+        String heartbeatHeader = metadata.header("tri-heartbeat");
+        if (heartbeatHeader != null) {
+            sendHeartbeatAck(heartbeatHeader);
+            return;
+        }
+
+        // Check for heartbeat ACK from client (for bidirectional heartbeat)
+        String heartbeatAckHeader = metadata.header("tri-heartbeat-ack");
+        if (heartbeatAckHeader != null) {
+            // Server received ACK from client, update last received time if needed
+            // This is useful for bidirectional streaming where server also sends heartbeats
+            LOGGER.debug("Received heartbeat ACK from client: {}", heartbeatAckHeader);
+        }
+    }
+
+    private void sendHeartbeatAck(String originalHeartbeat) {
+        try {
+            // Create HTTP/2 metadata frame for immediate heartbeat ACK
+            DefaultHttpHeaders headers = new DefaultHttpHeaders();
+            headers.set("tri-heartbeat-ack", originalHeartbeat);
+            headers.set("tri-server-time", String.valueOf(System.currentTimeMillis()));
+
+            // Create HTTP/2 metadata frame (HEADERS frame without ending stream)
+            Http2MetadataFrame heartbeatFrame = new Http2MetadataFrame(headers, false);
+
+            // Send immediately via H2StreamChannel for fast response
+            java.util.concurrent.CompletableFuture<Void> future = h2StreamChannel.writeHeader(heartbeatFrame);
+            h2StreamChannel.flush();
+
+            // Also set in response attachments for compatibility
+            if (responseObserver instanceof AttachmentHolder) {
+                AttachmentHolder attachmentHolder = (AttachmentHolder) responseObserver;
+                java.util.Map<String, Object> existingAttachments = attachmentHolder.getResponseAttachments();
+                java.util.Map<String, Object> heartbeatAttachments = existingAttachments != null
+                        ? new java.util.HashMap<>(existingAttachments)
+                        : new java.util.HashMap<>();
+
+                heartbeatAttachments.put("tri-heartbeat-ack", originalHeartbeat);
+                heartbeatAttachments.put("tri-server-time", String.valueOf(System.currentTimeMillis()));
+                attachmentHolder.setResponseAttachments(heartbeatAttachments);
+            }
+
+            future.whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    LOGGER.debug("Failed to send immediate heartbeat ACK frame", throwable);
+                } else {
+                    LOGGER.debug("Sent immediate heartbeat ACK to client: {}", originalHeartbeat);
+                }
+            });
+
+        } catch (Exception e) {
+            LOGGER.warn("Failed to send heartbeat ACK", e);
+        }
+    }
+
+    Long extractCurrentSequence() {
+        Long sequence = currentMessageSequence.get();
+        // Clear after use to prevent memory leaks
+        currentMessageSequence.remove();
+        return sequence;
     }
 
     @Override
@@ -185,19 +288,50 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     public void close() {
-        responseObserver.close();
+        try {
+            // Clear ThreadLocal to prevent memory leaks
+            currentMessageSequence.remove();
+
+            // Close response observer
+            if (responseObserver != null) {
+                responseObserver.close();
+            }
+
+            // Cancel server call listener if needed
+            if (serverCallListener != null) {
+                try {
+                    serverCallListener.onCancel(0); // Graceful cancellation
+                } catch (Exception e) {
+                    LOGGER.debug("Error cancelling server call listener during close", e);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Error during GenericHttp2ServerTransportListener close", e);
+        }
     }
 
     private static final class Http2StreamingDecodeListener implements ListeningDecoder.Listener {
 
         private final ServerCallListener serverCallListener;
+        private final GenericHttp2ServerTransportListener transportListener;
 
-        Http2StreamingDecodeListener(ServerCallListener serverCallListener) {
+        Http2StreamingDecodeListener(
+                ServerCallListener serverCallListener, GenericHttp2ServerTransportListener transportListener) {
             this.serverCallListener = serverCallListener;
+            this.transportListener = transportListener;
         }
 
         @Override
         public void onMessage(Object message) {
+            // Pass sequence number to ServerCallListener before processing message
+            Long currentSeq = transportListener.extractCurrentSequence();
+            if (currentSeq != null) {
+                if (serverCallListener instanceof BiStreamServerCallListener) {
+                    ((BiStreamServerCallListener) serverCallListener).setCurrentSequence(currentSeq);
+                } else if (serverCallListener instanceof ServerStreamServerCallListener) {
+                    ((ServerStreamServerCallListener) serverCallListener).setCurrentSequence(currentSeq);
+                }
+            }
             serverCallListener.onMessage(message);
         }
 

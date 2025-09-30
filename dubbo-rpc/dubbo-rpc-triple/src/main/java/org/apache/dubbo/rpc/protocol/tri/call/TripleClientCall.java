@@ -41,7 +41,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
 
-public class TripleClientCall implements ClientCall, ClientStream.Listener {
+public class TripleClientCall
+        implements ClientCall, ClientStream.Listener, org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
     private final AbstractConnectionClient connectionClient;
     private final Executor executor;
@@ -253,6 +254,19 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                 this.requestMetadata = metadata;
                 this.listener = responseListener;
                 this.stream = stream;
+
+                // Initialize reliability if the stream supports it
+                if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.AbstractTripleClientStream) {
+                    org.apache.dubbo.rpc.protocol.tri.stream.AbstractTripleClientStream reliableStream =
+                            (org.apache.dubbo.rpc.protocol.tri.stream.AbstractTripleClientStream) stream;
+                    reliableStream.initializeReliability(metadata, connectionClient.getUrl());
+
+                    // Set reconnection manager for real reconnection capability
+                    // Use the existing transport listener to maintain consistency across reconnection
+                    reliableStream.setReconnectionManager(new TripleReconnectionManager(
+                            connectionClient, this, reliableStream.getTransportListener()));
+                }
+
                 return new ClientCallToObserverAdapter<>(this);
             }
         }
@@ -267,5 +281,131 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     @Override
     public void setAutoRequest(boolean autoRequest) {
         this.autoRequest = autoRequest;
+    }
+
+    // ========== ReliabilityContext Implementation ==========
+
+    @Override
+    public String getState() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getState();
+        }
+        return "DISABLED";
+    }
+
+    @Override
+    public long getLastAckedSeq() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getLastAckedSeq();
+        }
+        return -1;
+    }
+
+    @Override
+    public int getPendingCount() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getPendingCount();
+        }
+        return 0;
+    }
+
+    @Override
+    public int getInFlightCount() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getInFlightCount();
+        }
+        return 0;
+    }
+
+    @Override
+    public String getSessionId() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getSessionId();
+        }
+        return null;
+    }
+
+    @Override
+    public long getTotalSentCount() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getTotalSentCount();
+        }
+        return 0;
+    }
+
+    @Override
+    public long getTotalRetryCount() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getTotalRetryCount();
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean isConnectionActive() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).isConnectionActive();
+        }
+        return false;
+    }
+
+    @Override
+    public java.util.Map<String, Object> getStatistics() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getStatistics();
+        }
+        return new java.util.HashMap<>();
+    }
+
+    @Override
+    public void onStateChange(java.util.function.Consumer<String> callback) {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).onStateChange(callback);
+        }
+    }
+
+    @Override
+    public void onRecovery(java.util.function.Consumer<String> callback) {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).onRecovery(callback);
+        }
+    }
+
+    @Override
+    public void onRetry(java.util.function.Consumer<Long> callback) {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).onRetry(callback);
+        }
+    }
+
+    @Override
+    public boolean retryMessage(long sequence) {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).retryMessage(sequence);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean triggerRecovery() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).triggerRecovery();
+        }
+        return false;
+    }
+
+    @Override
+    public void setInFlightLimit(int limit) {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).setInFlightLimit(limit);
+        }
+    }
+
+    @Override
+    public org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityConfig getRetryConfig() {
+        if (stream instanceof org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) {
+            return ((org.apache.dubbo.rpc.protocol.tri.stream.ReliabilityContext) stream).getRetryConfig();
+        }
+        return null;
     }
 }
