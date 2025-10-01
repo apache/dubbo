@@ -39,8 +39,6 @@ import org.apache.dubbo.rpc.stub.StubMethodHandler;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.stub.UnaryStubMethodHandler;
 
-import com.google.protobuf.Message;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -68,38 +66,38 @@ public final class {{className}} {
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    obj -> ((com.google.protobuf.Message) obj).toByteArray(),obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 
     private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, java.util.concurrent.CompletableFuture.class, MethodDescriptor.RpcType.UNARY,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 
     private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}Async",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 {{/unaryMethods}}
 {{#serverStreamingMethods}}
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 {{/serverStreamingMethods}}
 {{#clientStreamingMethods}}
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 {{/clientStreamingMethods}}
 {{#biStreamingWithoutClientStreamMethods}}
 
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
     {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
-    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 {{/biStreamingWithoutClientStreamMethods}}
 
