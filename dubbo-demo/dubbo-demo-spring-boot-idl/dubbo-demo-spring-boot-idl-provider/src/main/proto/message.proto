@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+syntax = "proto3";
 
-import org.apache.dubbo.rpc.RpcContext;
+option java_multiple_files = true;
+option java_package = "org.apache.dubbo.demo.message";
+option java_outer_classname = "Message";
+option objc_class_prefix = "HLW";
 
-import static java.lang.String.format;
+package message;
 
-/**
- * The implementation of {@link EchoService}
- *
- * @see EchoService
- * @since 2.7.5
- */
-public class EchoServiceImpl implements EchoService {
+// The request message containing the user's name.
+message HelloRequest {
+    string name = 1;
+}
 
-    @Override
-    public String echo(String message) {
-        RpcContext rpcContext = RpcContext.getServiceContext();
-        return format("[%s:%s] ECHO - %s", rpcContext.getLocalHost(), rpcContext.getLocalPort(), message);
-    }
+// The response message containing the greetings.
+message HelloReply {
+    string message = 1;
+}
+
+// Service definition.
+service MessageService {
+    // Sends a greeting.
+    rpc sayHello(HelloRequest) returns (HelloReply);
 }

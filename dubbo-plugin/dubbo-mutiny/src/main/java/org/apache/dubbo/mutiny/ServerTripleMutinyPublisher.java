@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+package org.apache.dubbo.mutiny;
+
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
 /**
- * Echo Service
- *
- * @since 2.7.5
+ * Used in ManyToOne and ManyToMany in server. <br>
+ * It is a Publisher for user subscriber to subscribe. <br>
+ * It is a StreamObserver for requestStream. <br>
+ * It is a Subscription for user subscriber to request and pass request to responseStream.
  */
-public interface EchoService {
+public class ServerTripleMutinyPublisher<T> extends AbstractTripleMutinyPublisher<T> {
 
-    String GROUP = "DEFAULT";
-
-    String VERSION = "1.0.0";
-
-    String echo(String message);
+    public ServerTripleMutinyPublisher(CallStreamObserver<?> callStreamObserver) {
+        super.onSubscribe(callStreamObserver);
+    }
 }

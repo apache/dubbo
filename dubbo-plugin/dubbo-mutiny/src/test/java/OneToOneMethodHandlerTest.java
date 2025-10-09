@@ -14,16 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap.rest;
+import org.apache.dubbo.mutiny.handler.OneToOneMethodHandler;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
-public class UserServiceImpl implements UserService {
+import org.junit.jupiter.api.Test;
 
-    private final AtomicLong idGen = new AtomicLong();
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    @Override
-    public User getUser(Long id) {
-        return new User(id, "username" + id);
+/**
+ * Unit test for OneToOneMethodHandler
+ */
+public final class OneToOneMethodHandlerTest {
+
+    @Test
+    void testInvoke() throws ExecutionException, InterruptedException {
+        String request = "request";
+        OneToOneMethodHandler<String, String> handler =
+                new OneToOneMethodHandler<>(requestUni -> requestUni.map(r -> r + "Test"));
+        CompletableFuture<?> future = handler.invoke(new Object[] {request});
+        assertEquals("requestTest", future.get());
     }
 }

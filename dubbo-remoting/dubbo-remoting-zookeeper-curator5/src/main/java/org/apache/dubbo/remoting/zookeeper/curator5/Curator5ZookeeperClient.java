@@ -99,6 +99,8 @@ public class Curator5ZookeeperClient
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
             boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
             if (check && !connected) {
+                // close CuratorFramework to stop re-connection.
+                client.close();
                 IllegalStateException illegalStateException =
                         new IllegalStateException("zookeeper not connected, the address is: " + url);
 
