@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
@@ -73,7 +74,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
 
         String key = createRegistryCacheKey(url);
         Registry registry = null;
-        boolean check = RegistryFactory.isCheck(url);
+        boolean check = UrlUtils.isCheck(url);
 
         // Lock the registry access process to ensure a single instance of the registry
         registryManager.getRegistryLock().lock();

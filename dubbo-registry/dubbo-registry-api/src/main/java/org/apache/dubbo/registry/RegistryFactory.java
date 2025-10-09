@@ -48,8 +48,4 @@ public interface RegistryFactory {
      */
     @Adaptive({PROTOCOL_KEY})
     Registry getRegistry(URL url);
-
-    static boolean isCheck(URL url) {
-        return url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
-    }
 }
