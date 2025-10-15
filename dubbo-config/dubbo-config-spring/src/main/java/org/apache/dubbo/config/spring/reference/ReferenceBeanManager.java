@@ -154,6 +154,10 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         for (ReferenceBean referenceBean : getReferences()) {
             initReferenceBean(referenceBean);
         }
+        // add a null check for moduleModel to be compatible with the native environment
+        if (moduleModel == null) {
+            setApplicationContext(applicationContext);
+        }
     }
 
     /**
