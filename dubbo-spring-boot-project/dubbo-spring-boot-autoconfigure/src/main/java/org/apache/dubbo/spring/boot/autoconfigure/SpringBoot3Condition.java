@@ -14,23 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+package org.apache.dubbo.spring.boot.autoconfigure;
 
-import org.apache.dubbo.rpc.RpcContext;
+import org.springframework.boot.SpringBootVersion;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
-import static java.lang.String.format;
+public class SpringBoot3Condition implements Condition {
 
-/**
- * The implementation of {@link EchoService}
- *
- * @see EchoService
- * @since 2.7.5
- */
-public class EchoServiceImpl implements EchoService {
+    public static boolean IS_SPRING_BOOT_3 = SpringBootVersion.getVersion().charAt(0) >= '3';
 
     @Override
-    public String echo(String message) {
-        RpcContext rpcContext = RpcContext.getServiceContext();
-        return format("[%s:%s] ECHO - %s", rpcContext.getLocalHost(), rpcContext.getLocalPort(), message);
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        return IS_SPRING_BOOT_3;
     }
 }
