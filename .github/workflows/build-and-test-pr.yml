@@ -35,7 +35,7 @@ env:
 jobs:
   check-format:
     name: "Check if code needs formatting"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -76,7 +76,7 @@ jobs:
   license:
     name: "Check License"
     needs: check-format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: "Check License"
@@ -102,7 +102,7 @@ jobs:
   build-source:
     name: "Build Dubbo"
     needs: check-format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
@@ -175,7 +175,7 @@ jobs:
   unit-test-prepare:
     name: "Preparation for Unit Test"
     needs: check-format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
     env:
@@ -207,8 +207,8 @@ jobs:
 
   unit-test:
     needs: [check-format, unit-test-prepare]
-    name: "Unit Test On ubuntu-latest Java: ${{ matrix.java }}"
-    runs-on: ubuntu-latest
+    name: "Unit Test On ubuntu-22.04 Java: ${{ matrix.java }}"
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -276,7 +276,7 @@ jobs:
 
   samples-test-prepare:
     needs: check-format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JOB_COUNT: 3
     steps:
@@ -293,8 +293,8 @@ jobs:
           path: test/jobs
   samples-test-job:
     needs: [check-format, build-source, samples-test-prepare]
-    name: "Samples Test on ubuntu-latest (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
-    runs-on: ubuntu-latest
+    name: "Samples Test on ubuntu-22.04 (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
+    runs-on: ubuntu-22.04
     timeout-minutes: 90
     env:
       JAVA_VER: ${{matrix.java}}
@@ -367,9 +367,9 @@ jobs:
           path: test/logs/*
   samples-test-result:
     needs: [check-format, samples-test-job]
-    name: "Samples Test Result on ubuntu-latest (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
+    name: "Samples Test Result on ubuntu-22.04 (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JAVA_VER: ${{matrix.java}}
     strategy:
@@ -391,7 +391,7 @@ jobs:
 
   integration-test-prepare:
     needs: check-format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JOB_COUNT: 3
     steps:
@@ -408,8 +408,8 @@ jobs:
           path: test/jobs
   integration-test-job:
     needs: [check-format, build-source, integration-test-prepare]
-    name: "Integration Test on ubuntu-latest (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
-    runs-on: ubuntu-latest
+    name: "Integration Test on ubuntu-22.04 (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
+    runs-on: ubuntu-22.04
     timeout-minutes: 90
     env:
       JAVA_VER: ${{matrix.java}}
@@ -481,10 +481,10 @@ jobs:
           name: integration-test-logs-${{matrix.job_id}}-java${{matrix.java}}
           path: test/logs/*
   integration-test-result:
-    name: "Integration Test Result on ubuntu-latest (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
+    name: "Integration Test Result on ubuntu-22.04 (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
     needs: [check-format, integration-test-job]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JAVA_VER: ${{matrix.java}}
     strategy:
@@ -505,8 +505,8 @@ jobs:
         run: ./test/scripts/merge-test-results.sh
 
   samples-jacoco-result-merge:
-    name: "Samples Jacoco Result on ubuntu-latest (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
-    runs-on: ubuntu-latest
+    name: "Samples Jacoco Result on ubuntu-22.04 (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
+    runs-on: ubuntu-22.04
     needs: [check-format, samples-test-result]
     strategy:
       matrix:
@@ -555,8 +555,8 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   integration-jacoco-result-merge:
-    name: "Integration Jacoco Result on ubuntu-latest (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
-    runs-on: ubuntu-latest
+    name: "Integration Jacoco Result on ubuntu-22.04 (JobId: ${{matrix.job_id}} Java: ${{matrix.java}})"
+    runs-on: ubuntu-22.04
     needs: [check-format, integration-test-result, samples-test-result]
     strategy:
       matrix:
@@ -607,7 +607,7 @@ jobs:
 
   error-code-inspecting:
     needs: check-format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -651,7 +651,7 @@ jobs:
 
   native-image-inspecting:
     needs: check-format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
