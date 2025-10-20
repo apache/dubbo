@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.common;
 
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BatchExecutorQueue<T> {
-
     static final int DEFAULT_QUEUE_SIZE = 128;
-    private final Queue<T> queue;
+    private volatile Queue<T> queue;
+    private volatile Queue<T> readQueue;
     private final AtomicBoolean scheduled;
     private final int chunkSize;
 
@@ -35,6 +34,7 @@ public class BatchExecutorQueue<T> {
 
     public BatchExecutorQueue(int chunkSize) {
         this.queue = new ConcurrentLinkedQueue<>();
+        this.readQueue = new ConcurrentLinkedQueue<>();
         this.scheduled = new AtomicBoolean(false);
         this.chunkSize = chunkSize;
     }
@@ -50,31 +50,32 @@ public class BatchExecutorQueue<T> {
         }
     }
 
+    private Queue<T> swapQueue() {
+        // Swaps the active write queue with the standby read queue.
+        // This lock-free handoff allows producers to continue writing to a fresh queue
+        // while the consumer processes the accumulated batch from the swapped-out queue.
+        // Volatile variables ensure safe publication between threads.
+        Queue<T> snapshot = queue;
+        queue = readQueue;
+        readQueue = snapshot;
+        return snapshot;
+    }
+
     private void run(Executor executor) {
         try {
-            Queue<T> snapshot = new LinkedList<>();
             T item;
-            while ((item = queue.poll()) != null) {
-                snapshot.add(item);
-            }
-            int i = 0;
-            boolean flushedOnce = false;
-            while ((item = snapshot.poll()) != null) {
-                if (snapshot.size() == 0) {
-                    flushedOnce = false;
-                    break;
-                }
+            int i = 1;
+            Queue<T> snapshotQueue = swapQueue();
+            while ((item = snapshotQueue.poll()) != null) {
                 if (i == chunkSize) {
-                    i = 0;
                     flush(item);
-                    flushedOnce = true;
+                    i = 1;
+                } else if (snapshotQueue.isEmpty()) {
+                    flush(item);
                 } else {
                     prepare(item);
                     i++;
                 }
-            }
-            if (!flushedOnce && item != null) {
-                flush(item);
             }
         } finally {
             scheduled.set(false);
