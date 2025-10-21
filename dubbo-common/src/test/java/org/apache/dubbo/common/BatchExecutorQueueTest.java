@@ -25,7 +25,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BatchExecutorQueueTest {
@@ -51,59 +50,70 @@ public class BatchExecutorQueueTest {
 
     @Test
     public void testEnqueueAndProcess() throws InterruptedException {
-        AtomicInteger prepareCount = new AtomicInteger(0);
+        int itemCount = 10000;
+        int chunkSize = 256;
+        CountDownLatch prepareCount = new CountDownLatch(itemCount);
         AtomicInteger flushCount = new AtomicInteger(0);
+        AtomicInteger flushNum = new AtomicInteger(0);
+        AtomicInteger flushNumMax = new AtomicInteger(0);
 
-        BatchExecutorQueue<Object> batchQueue = new BatchExecutorQueue<Object>() {
+        BatchExecutorQueue<Object> batchQueue = new BatchExecutorQueue<Object>(chunkSize) {
             @Override
             protected void prepare(Object item) {
-                prepareCount.incrementAndGet();
+                prepareCount.countDown();
+                flushNum.incrementAndGet();
             }
 
             @Override
             protected void flush(Object item) {
                 prepare(item);
                 flushCount.incrementAndGet();
+                flushNumMax.set(Math.max(flushNumMax.get(), flushNum.get()));
+                flushNum.set(0);
             }
         };
 
         // Enqueue multiple items
-        int itemCount = 100;
         for (int i = 0; i < itemCount; i++) {
             batchQueue.enqueue(i, executor);
         }
 
         // Wait for processing to complete
-        int i = 0;
-        while (prepareCount.get() < itemCount && ++i < 10) {
-            TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(100));
-        }
+        boolean allFlush = prepareCount.await(10, TimeUnit.SECONDS);
 
         // Verify that all items were processed
-        assertEquals(itemCount, prepareCount.get(), "Prepare should be called");
+        assertTrue(allFlush, "Total processed items should match enqueued items");
         assertTrue(flushCount.get() > 0, "Flush should be called");
+        assertTrue(flushNumMax.get() <= chunkSize, "Flush should be called with chunk size");
     }
 
     @Test
     public void testMultipleThreadEnqueue() throws InterruptedException {
-        AtomicInteger prepareCount = new AtomicInteger(0);
+        int threadCount = poolSize - 1;
+        int itemsPerThread = 1000000;
+        int itemCount = threadCount * itemsPerThread;
+        int chunkSize = 256;
+        CountDownLatch prepareCount = new CountDownLatch(itemCount);
         AtomicInteger flushCount = new AtomicInteger(0);
+        AtomicInteger flushNum = new AtomicInteger(0);
+        AtomicInteger flushNumMax = new AtomicInteger(0);
 
-        BatchExecutorQueue<Object> batchQueue = new BatchExecutorQueue<Object>() {
+        BatchExecutorQueue<Object> batchQueue = new BatchExecutorQueue<Object>(chunkSize) {
             @Override
             protected void prepare(Object item) {
-                prepareCount.incrementAndGet();
+                prepareCount.countDown();
+                flushNum.incrementAndGet();
             }
 
             @Override
             protected void flush(Object item) {
                 prepare(item);
                 flushCount.incrementAndGet();
+                flushNumMax.set(Math.max(flushNumMax.get(), flushNum.get()));
+                flushNum.set(0);
             }
         };
 
-        int threadCount = poolSize - 1;
-        int itemsPerThread = 5000000;
         Runnable enqueueTask = () -> {
             for (int i = 0; i < itemsPerThread; i++) {
                 batchQueue.enqueue(i, executor);
@@ -116,13 +126,11 @@ public class BatchExecutorQueueTest {
         }
 
         // Wait for processing to complete
-        int i = 0;
-        while (prepareCount.get() < threadCount * itemsPerThread) {
-            TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(100));
-            assertTrue(++i < 10000, "Total processed items should match enqueued items");
-        }
+        boolean allFlush = prepareCount.await(1, TimeUnit.MINUTES);
 
         // Verify that all items were processed
+        assertTrue(allFlush, "Total processed items should match enqueued items");
         assertTrue(flushCount.get() > 0, "Flush should be called at least once");
+        assertTrue(flushNumMax.get() <= chunkSize, "Flush should be called with chunk size");
     }
 }
