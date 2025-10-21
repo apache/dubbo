@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
@@ -27,8 +28,12 @@ public class GenericHttp2ServerTransportListenerFactory implements Http2ServerTr
     public static final Http2ServerTransportListenerFactory INSTANCE = new GenericHttp2ServerTransportListenerFactory();
 
     @Override
-    public Http2TransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel) {
-        return new GenericHttp2ServerTransportListener(streamChannel, url, frameworkModel);
+    public <INPUT, OUTPUT> Http2TransportListener<INPUT, OUTPUT> newInstance(
+            H2StreamChannel<OUTPUT> streamChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        return new GenericHttp2ServerTransportListener<>(streamChannel, url, frameworkModel, typeToken);
     }
 
     @Override

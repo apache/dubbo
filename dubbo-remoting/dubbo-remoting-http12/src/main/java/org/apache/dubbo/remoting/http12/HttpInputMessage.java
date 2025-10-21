@@ -16,15 +16,14 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import java.io.IOException;
-import java.io.InputStream;
+public interface HttpInputMessage<T> extends AutoCloseable {
 
-public interface HttpInputMessage extends AutoCloseable {
-
-    InputStream getBody();
+    T getBody();
 
     @Override
-    default void close() throws IOException {
-        getBody().close();
+    default void close() throws Exception {
+        if (getBody() instanceof AutoCloseable) {
+            ((AutoCloseable) getBody()).close();
+        }
     }
 }

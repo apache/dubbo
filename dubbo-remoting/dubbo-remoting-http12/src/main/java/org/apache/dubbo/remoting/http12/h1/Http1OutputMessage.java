@@ -18,29 +18,32 @@ package org.apache.dubbo.remoting.http12.h1;
 
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 
-public final class Http1OutputMessage implements HttpOutputMessage {
+public final class Http1OutputMessage<T> implements HttpOutputMessage<T> {
 
-    private final OutputStream outputStream;
+    private final T body;
 
-    public Http1OutputMessage(OutputStream outputStream) {
-        this.outputStream = outputStream;
+    public Http1OutputMessage(T body) {
+        this.body = body;
     }
 
     @Override
-    public OutputStream getBody() {
-        return outputStream;
+    public T getBody() {
+        return body;
     }
 
     @Override
-    public void close() throws IOException {
-        if (outputStream instanceof ByteBufOutputStream) {
-            ((ByteBufOutputStream) outputStream).buffer().release();
+    public void close() throws Exception {
+        if (body instanceof AutoCloseable) {
+            ((AutoCloseable) body).close();
         }
-        outputStream.close();
+        if (body instanceof ByteBufOutputStream) {
+            ((ByteBufOutputStream) body).buffer().release();
+        }
+        if (body instanceof ByteBuf) {
+            ((ByteBuf) body).release();
+        }
     }
 }

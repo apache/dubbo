@@ -20,10 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface Http1ServerTransportListenerFactory {
 
-    Http1ServerTransportListener newInstance(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel);
+    <INPUT, OUTPUT> Http1ServerTransportListener<INPUT, OUTPUT> newInstance(
+            HttpChannel<OUTPUT> httpChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken);
 }

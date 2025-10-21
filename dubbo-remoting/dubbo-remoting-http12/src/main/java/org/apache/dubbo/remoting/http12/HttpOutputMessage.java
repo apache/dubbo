@@ -16,26 +16,14 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+public interface HttpOutputMessage<T> extends AutoCloseable {
 
-public interface HttpOutputMessage extends AutoCloseable {
-
-    HttpOutputMessage EMPTY_MESSAGE = new HttpOutputMessage() {
-
-        private final OutputStream INPUT_STREAM = new ByteArrayOutputStream(0);
-
-        @Override
-        public OutputStream getBody() {
-            return INPUT_STREAM;
-        }
-    };
-
-    OutputStream getBody();
+    T getBody();
 
     @Override
-    default void close() throws IOException {
-        getBody().close();
+    default void close() throws Exception {
+        if (getBody() instanceof AutoCloseable) {
+            ((AutoCloseable) getBody()).close();
+        }
     }
 }

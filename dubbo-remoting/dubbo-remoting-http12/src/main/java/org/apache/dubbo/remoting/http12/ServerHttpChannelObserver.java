@@ -21,7 +21,8 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public interface ServerHttpChannelObserver<H extends HttpChannel> extends StreamObserver<Object>, AutoCloseable {
+public interface ServerHttpChannelObserver<H extends HttpChannel<OUTPUT>, OUTPUT>
+        extends StreamObserver<Object>, AutoCloseable {
 
     H getHttpChannel();
 

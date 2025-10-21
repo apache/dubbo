@@ -22,10 +22,10 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
-import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
-import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
+import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.Invoker;
@@ -41,20 +41,26 @@ import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
-public class DefaultHttp11ServerTransportListener
-        extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage>
-        implements Http1ServerTransportListener {
+public class DefaultHttp11ServerTransportListener<INPUT, OUTPUT>
+        extends AbstractServerTransportListener<RequestMetadata, HttpInputMessage<INPUT>, INPUT, OUTPUT>
+        implements Http1ServerTransportListener<INPUT, OUTPUT> {
 
-    private final HttpChannel httpChannel;
-    private Http1ServerChannelObserver responseObserver;
+    private final HttpChannel<OUTPUT> httpChannel;
+    private Http1ServerChannelObserver<OUTPUT> responseObserver;
 
-    public DefaultHttp11ServerTransportListener(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
-        super(frameworkModel, url, httpChannel);
+    public DefaultHttp11ServerTransportListener(
+            HttpChannel<OUTPUT> httpChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, url, httpChannel, typeToken);
         this.httpChannel = httpChannel;
-        responseObserver = prepareResponseObserver(new Http1UnaryServerChannelObserver(httpChannel));
+        responseObserver = prepareResponseObserver(new Http1UnaryServerChannelObserver<>(
+                frameworkModel, httpChannel, getTypeToken().getOutputType()));
     }
 
-    private Http1ServerChannelObserver prepareResponseObserver(Http1ServerChannelObserver responseObserver) {
+    private Http1ServerChannelObserver<OUTPUT> prepareResponseObserver(
+            Http1ServerChannelObserver<OUTPUT> responseObserver) {
         responseObserver.setExceptionCustomizer(getExceptionCustomizer());
         RpcInvocationBuildContext context = getContext();
         responseObserver.setResponseEncoder(context == null ? JsonCodec.INSTANCE : context.getHttpMessageEncoder());
@@ -62,16 +68,18 @@ public class DefaultHttp11ServerTransportListener
     }
 
     @Override
-    protected HttpMessageListener buildHttpMessageListener() {
+    protected HttpMessageListener<INPUT> buildHttpMessageListener() {
         RpcInvocationBuildContext context = getContext();
         RpcInvocation rpcInvocation = buildRpcInvocation(context);
 
         ServerCallListener serverCallListener =
                 startListener(rpcInvocation, context.getMethodDescriptor(), context.getInvoker());
-        DefaultListeningDecoder listeningDecoder = new DefaultListeningDecoder(
-                context.getHttpMessageDecoder(), context.getMethodMetadata().getActualRequestTypes());
+        ListeningDecoder<INPUT> listeningDecoder = getMessageHandler()
+                .createListeningDecoder(
+                        context.getHttpMessageDecoder(),
+                        context.getMethodMetadata().getActualRequestTypes());
         listeningDecoder.setListener(serverCallListener::onMessage);
-        return new DefaultHttpMessageListener(listeningDecoder);
+        return new DefaultHttpMessageListener<>(listeningDecoder);
     }
 
     private ServerCallListener startListener(
@@ -80,7 +88,8 @@ public class DefaultHttp11ServerTransportListener
             case UNARY:
                 return new AutoCompleteUnaryServerCallListener(invocation, invoker, responseObserver);
             case SERVER_STREAM:
-                responseObserver = prepareResponseObserver(new Http1SseServerChannelObserver(httpChannel));
+                responseObserver = prepareResponseObserver(new Http1SseServerChannelObserver<>(
+                        getFrameworkModel(), httpChannel, getTypeToken().getOutputType()));
                 responseObserver.addHeadersCustomizer((hs, t) ->
                         hs.set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.TEXT_EVENT_STREAM.getName()));
                 return new AutoCompleteServerStreamServerCallListener(invocation, invoker, responseObserver);
@@ -97,6 +106,11 @@ public class DefaultHttp11ServerTransportListener
     @Override
     protected void onError(Throwable throwable) {
         responseObserver.onError(throwable);
+    }
+
+    @Override
+    protected String protocol() {
+        return "http";
     }
 
     @Override

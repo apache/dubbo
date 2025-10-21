@@ -26,14 +26,11 @@ import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 
-import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -156,9 +153,8 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
                 headersFrame.stream().id(), new DefaultHttpHeaders(headersFrame.headers()), headersFrame.isEndStream());
     }
 
-    private Http2InputMessage onHttp2DataFrame(Http2DataFrame dataFrame) {
-        return new Http2InputMessageFrame(
-                dataFrame.stream().id(), new ByteBufInputStream(dataFrame.content(), true), dataFrame.isEndStream());
+    private Http2InputMessage<ByteBuf> onHttp2DataFrame(Http2DataFrame dataFrame) {
+        return new Http2InputMessageFrame<>(dataFrame.stream().id(), dataFrame.content(), dataFrame.isEndStream());
     }
 
     @SuppressWarnings("unchecked")
@@ -167,16 +163,12 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
                 ((NettyHttpHeaders<Http2Headers>) http2Header.headers()).getHeaders(), http2Header.isEndStream());
     }
 
-    private Http2DataFrame encodeHttp2DataFrame(Http2OutputMessage outputMessage) {
-        OutputStream body = outputMessage.getBody();
+    private Http2DataFrame encodeHttp2DataFrame(Http2OutputMessage<ByteBuf> outputMessage) {
+        ByteBuf body = outputMessage.getBody();
         if (body == null) {
             return new DefaultHttp2DataFrame(outputMessage.isEndStream());
         }
-        if (body instanceof ByteBufOutputStream) {
-            ByteBuf buffer = ((ByteBufOutputStream) body).buffer();
-            return new DefaultHttp2DataFrame(buffer, outputMessage.isEndStream());
-        }
-        throw new IllegalArgumentException("Http2OutputMessage body must be ByteBufOutputStream");
+        return new DefaultHttp2DataFrame(body, outputMessage.isEndStream());
     }
 
     private static class CachedMsg {

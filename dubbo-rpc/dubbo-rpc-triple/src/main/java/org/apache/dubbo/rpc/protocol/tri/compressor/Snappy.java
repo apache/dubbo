@@ -21,6 +21,8 @@ import org.apache.dubbo.rpc.RpcException;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * snappy compressor, Provide high-speed compression speed and reasonable compression ratio
  *
@@ -53,6 +55,21 @@ public class Snappy implements Compressor, DeCompressor {
     }
 
     @Override
+    public void compress(ByteBuf src, ByteBuf dst) {
+        try {
+            int maxCompressedLength = org.xerial.snappy.Snappy.maxCompressedLength(src.readableBytes());
+            dst.ensureWritable(maxCompressedLength);
+            int compressedSize = org.xerial.snappy.Snappy.compress(
+                    src.nioBuffer(), dst.nioBuffer(dst.writerIndex(), maxCompressedLength));
+            dst.writerIndex(dst.writerIndex() + compressedSize);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            src.release();
+        }
+    }
+
+    @Override
     public byte[] decompress(byte[] payloadByteArr) {
         if (null == payloadByteArr || 0 == payloadByteArr.length) {
             return new byte[0];
@@ -60,6 +77,18 @@ public class Snappy implements Compressor, DeCompressor {
 
         try {
             return org.xerial.snappy.Snappy.uncompress(payloadByteArr);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public ByteBuf decompress(ByteBuf src) {
+        try {
+            int uncompressedLength = org.xerial.snappy.Snappy.uncompressedLength(src.nioBuffer());
+            ByteBuf dst = src.alloc().ioBuffer(uncompressedLength);
+            org.xerial.snappy.Snappy.uncompress(src.nioBuffer(), dst.nioBuffer());
+            return dst;
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

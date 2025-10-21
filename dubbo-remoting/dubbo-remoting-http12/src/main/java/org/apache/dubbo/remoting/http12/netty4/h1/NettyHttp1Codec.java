@@ -23,13 +23,11 @@ import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h1.DefaultHttp1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1InputMessage;
 import org.apache.dubbo.remoting.http12.h1.Http1RequestMetadata;
+import org.apache.dubbo.remoting.http12.netty4.EmptyByteBufMessage;
 
-import java.io.OutputStream;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -54,17 +52,18 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
             keepAlive = HttpUtil.isKeepAlive(request);
             super.channelRead(
                     ctx,
-                    new DefaultHttp1Request(
+                    new DefaultHttp1Request<>(
                             new Http1RequestMetadata(
                                     new NettyHttp1HttpHeaders(request.headers()),
                                     request.method().name(),
                                     request.uri()),
-                            new Http1InputMessage(new ByteBufInputStream(request.content(), true))));
+                            new Http1InputMessage<>(request.content())));
             return;
         }
         super.channelRead(ctx, msg);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof HttpMetadata) {
@@ -72,7 +71,7 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
             return;
         }
         if (msg instanceof HttpOutputMessage) {
-            doWriteMessage(ctx, ((HttpOutputMessage) msg), promise);
+            doWriteMessage(ctx, ((HttpOutputMessage<ByteBuf>) msg), promise);
             return;
         }
         super.write(ctx, msg, promise);
@@ -95,8 +94,8 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
         ctx.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, status, headers.getHeaders()), promise);
     }
 
-    private void doWriteMessage(ChannelHandlerContext ctx, HttpOutputMessage msg, ChannelPromise promise) {
-        if (HttpOutputMessage.EMPTY_MESSAGE == msg) {
+    private void doWriteMessage(ChannelHandlerContext ctx, HttpOutputMessage<ByteBuf> msg, ChannelPromise promise) {
+        if (EmptyByteBufMessage.INSTANCE == msg) {
             if (keepAlive) {
                 ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, promise);
             } else {
@@ -104,12 +103,7 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
             }
             return;
         }
-        OutputStream body = msg.getBody();
-        if (body instanceof ByteBufOutputStream) {
-            ByteBuf buffer = ((ByteBufOutputStream) body).buffer();
-            ctx.writeAndFlush(buffer, promise);
-            return;
-        }
-        throw new IllegalArgumentException("HttpOutputMessage body must be 'io.netty.buffer.ByteBufOutputStream'");
+        ByteBuf body = msg.getBody();
+        ctx.writeAndFlush(body, promise);
     }
 }

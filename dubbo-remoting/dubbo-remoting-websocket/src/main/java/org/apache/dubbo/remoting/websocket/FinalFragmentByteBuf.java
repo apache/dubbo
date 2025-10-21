@@ -14,32 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.remoting.websocket;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.WrappedByteBuf;
 
-public interface Deframer {
+public class FinalFragmentByteBuf extends WrappedByteBuf implements FinalFragment {
 
-    /**
-     * Adds the given data to this deframer and attempts delivery to the listener.
-     *
-     * @param data the raw data read from the remote endpoint. Must be non-null.
-     */
-    void deframe(ByteBuf data);
+    private final boolean finalFragment;
 
-    /**
-     * Requests up to the given number of messages from the call. No additional messages will be
-     * delivered.
-     *
-     * <p>If {@link #close()} has been called, this method will have no effect.
-     *
-     * @param numMessages the requested number of messages to be delivered to the listener.
-     */
-    void request(int numMessages);
+    public FinalFragmentByteBuf(ByteBuf buf, boolean finalFragment) {
+        super(buf);
+        this.finalFragment = finalFragment;
+    }
 
-    /**
-     * Closes this deframer and frees any resources. After this method is called, additional calls
-     * will have no effect.
-     */
-    void close();
+    @Override
+    public boolean isFinalFragment() {
+        return finalFragment;
+    }
 }

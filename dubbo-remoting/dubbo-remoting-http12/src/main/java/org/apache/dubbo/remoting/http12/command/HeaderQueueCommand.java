@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12.command;
 
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 
-public class HeaderQueueCommand extends HttpChannelQueueCommand {
+public class HeaderQueueCommand<OUTPUT> extends HttpChannelQueueCommand<OUTPUT> {
 
     private final HttpMetadata httpMetadata;
 

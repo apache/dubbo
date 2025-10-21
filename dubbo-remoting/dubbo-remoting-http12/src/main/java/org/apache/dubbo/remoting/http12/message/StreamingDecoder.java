@@ -18,40 +18,38 @@ package org.apache.dubbo.remoting.http12.message;
 
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 
-import java.io.InputStream;
-
-public interface StreamingDecoder {
+public interface StreamingDecoder<T> {
 
     void request(int numMessages);
 
-    void decode(InputStream inputStream) throws DecodeException;
+    void decode(T input) throws DecodeException;
 
     void close();
 
     void onStreamClosed();
 
-    void setFragmentListener(FragmentListener listener);
+    void setFragmentListener(FragmentListener<T> listener);
 
-    interface FragmentListener {
+    interface FragmentListener<T> {
 
         /**
          * @param rawMessage raw message
          */
-        void onFragmentMessage(InputStream rawMessage);
+        void onFragmentMessage(T rawMessage);
 
         default void onClose() {}
     }
 
-    final class DefaultFragmentListener implements FragmentListener {
+    final class DefaultFragmentListener<T> implements FragmentListener<T> {
 
-        private final ListeningDecoder listeningDecoder;
+        private final ListeningDecoder<T> listeningDecoder;
 
-        public DefaultFragmentListener(ListeningDecoder listeningDecoder) {
+        public DefaultFragmentListener(ListeningDecoder<T> listeningDecoder) {
             this.listeningDecoder = listeningDecoder;
         }
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {
+        public void onFragmentMessage(T rawMessage) {
             listeningDecoder.decode(rawMessage);
         }
 
@@ -61,13 +59,20 @@ public interface StreamingDecoder {
         }
     }
 
-    final class NoopFragmentListener implements FragmentListener {
+    @SuppressWarnings("unchecked")
+    static <T> FragmentListener<T> noop() {
+        return (FragmentListener<T>) NoopFragmentListener.NOOP;
+    }
 
-        static final FragmentListener NOOP = new NoopFragmentListener();
+    final class NoopFragmentListener<T> implements FragmentListener<T> {
+
+        private static final NoopFragmentListener<?> NOOP = new NoopFragmentListener<>();
 
         private NoopFragmentListener() {}
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {}
+        public void onFragmentMessage(T rawMessage) {
+            // no-op
+        }
     }
 }

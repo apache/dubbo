@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-public class RecordListener implements TriDecoder.Listener {
-    byte[] lastData;
-    int dataCount;
-    boolean close;
+import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.rpc.protocol.tri.ByteBufInputMessageHandler;
+
+import io.netty.buffer.ByteBuf;
+
+public class GrpcByteBufInputMessageHandler extends ByteBufInputMessageHandler {
 
     @Override
-    public void onRawMessage(byte[] data) {
-        dataCount += 1;
-        lastData = data;
+    public StreamingDecoder<ByteBuf> createStreamingDecoder() {
+        return new GrpcByteBufStreamingDecoder();
     }
 
     @Override
-    public void close() {
-        close = true;
+    public String supportProtocol() {
+        return "grpc";
     }
 }

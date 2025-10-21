@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.http12.h2.command;
 import org.apache.dubbo.remoting.http12.command.HttpChannelQueueCommand;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 
-public class ResetQueueCommand extends HttpChannelQueueCommand {
+public class ResetQueueCommand<OUTPUT> extends HttpChannelQueueCommand<OUTPUT> {
 
     private final long errorCode;
 
@@ -29,7 +29,7 @@ public class ResetQueueCommand extends HttpChannelQueueCommand {
 
     @Override
     public void run() {
-        ((H2StreamChannel) getHttpChannel()).writeResetFrame(errorCode).whenComplete((unused, throwable) -> {
+        ((H2StreamChannel<OUTPUT>) getHttpChannel()).writeResetFrame(errorCode).whenComplete((unused, throwable) -> {
             if (throwable != null) {
                 completeExceptionally(throwable);
             } else {

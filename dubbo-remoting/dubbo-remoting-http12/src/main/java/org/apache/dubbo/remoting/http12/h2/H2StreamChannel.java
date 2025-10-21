@@ -20,14 +20,14 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface H2StreamChannel extends HttpChannel {
+public interface H2StreamChannel<OUTPUT> extends HttpChannel<OUTPUT> {
 
     CompletableFuture<Void> writeResetFrame(long errorCode);
 
     @Override
-    default Http2OutputMessage newOutputMessage() {
+    default Http2OutputMessage<OUTPUT> newOutputMessage() {
         return this.newOutputMessage(false);
     }
 
-    Http2OutputMessage newOutputMessage(boolean endStream);
+    Http2OutputMessage<OUTPUT> newOutputMessage(boolean endStream);
 }

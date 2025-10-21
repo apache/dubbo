@@ -18,18 +18,19 @@ package org.apache.dubbo.remoting.http12.netty4;
 
 import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.EventLoop;
 
 public class HttpWriteQueueHandler extends ChannelInboundHandlerAdapter {
 
-    private HttpWriteQueue writeQueue;
+    private HttpWriteQueue<ByteBuf> writeQueue;
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         EventLoop eventLoop = ctx.channel().eventLoop();
-        this.writeQueue = new HttpWriteQueue(eventLoop);
+        this.writeQueue = new HttpWriteQueue<>(eventLoop);
     }
 
     @Override
@@ -37,7 +38,7 @@ public class HttpWriteQueueHandler extends ChannelInboundHandlerAdapter {
         this.writeQueue = null;
     }
 
-    public HttpWriteQueue getWriteQueue() {
+    public HttpWriteQueue<ByteBuf> getWriteQueue() {
         return writeQueue;
     }
 }

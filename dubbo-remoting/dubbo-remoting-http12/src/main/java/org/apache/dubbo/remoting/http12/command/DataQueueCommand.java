@@ -18,11 +18,11 @@ package org.apache.dubbo.remoting.http12.command;
 
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
-public class DataQueueCommand extends HttpChannelQueueCommand {
+public class DataQueueCommand<OUTPUT> extends HttpChannelQueueCommand<OUTPUT> {
 
-    private final HttpOutputMessage httpOutputMessage;
+    private final HttpOutputMessage<OUTPUT> httpOutputMessage;
 
-    public DataQueueCommand(HttpOutputMessage httpMessage) {
+    public DataQueueCommand(HttpOutputMessage<OUTPUT> httpMessage) {
         this.httpOutputMessage = httpMessage;
     }
 

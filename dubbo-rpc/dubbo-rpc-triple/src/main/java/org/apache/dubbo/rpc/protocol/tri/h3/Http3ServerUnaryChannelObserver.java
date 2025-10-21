@@ -17,14 +17,19 @@
 package org.apache.dubbo.rpc.protocol.tri.h3;
 
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2UnaryServerChannelObserver;
 
-public final class Http3ServerUnaryChannelObserver extends Http2UnaryServerChannelObserver {
+public final class Http3ServerUnaryChannelObserver<INPUT, OUTPUT>
+        extends Http2UnaryServerChannelObserver<INPUT, OUTPUT> {
 
-    public Http3ServerUnaryChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(frameworkModel, h2StreamChannel);
+    public Http3ServerUnaryChannelObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken);
     }
 
     @Override

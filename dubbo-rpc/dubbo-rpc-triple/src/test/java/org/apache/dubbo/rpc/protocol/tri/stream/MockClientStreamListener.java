@@ -20,10 +20,12 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
 
+import io.netty.buffer.ByteBuf;
+
 public class MockClientStreamListener implements ClientStream.Listener {
 
     public TriRpcStatus status;
-    public byte[] message;
+    public ByteBuf message;
     public boolean started;
 
     @Override
@@ -40,7 +42,7 @@ public class MockClientStreamListener implements ClientStream.Listener {
     public void onClose() {}
 
     @Override
-    public void onMessage(byte[] message, boolean isNeedReturnException) {
+    public void onMessage(ByteBuf message, boolean isNeedReturnException) {
         this.message = message;
     }
 

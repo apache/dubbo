@@ -57,6 +57,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.fory</groupId>
+      <artifactId>fory-core</artifactId>
+      <version>0.12.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
       <scope>provided</scope>

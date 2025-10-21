@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import java.io.OutputStream;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * Default compressor
  * <p>
@@ -45,7 +47,17 @@ public class Identity implements Compressor, DeCompressor {
     }
 
     @Override
+    public void compress(ByteBuf src, ByteBuf dst) {
+        // no op
+    }
+
+    @Override
     public byte[] decompress(byte[] payloadByteArr) {
         return payloadByteArr;
+    }
+
+    @Override
+    public ByteBuf decompress(ByteBuf src) {
+        return src;
     }
 }

@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
@@ -38,6 +39,9 @@ import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.Session;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import static org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_LISTENER;
 
@@ -55,36 +59,43 @@ public class TripleEndpoint extends Endpoint {
         TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
 
         WebSocketStreamChannel webSocketStreamChannel = new WebSocketStreamChannel(session, tripleConfig);
-        WebSocketTransportListener webSocketTransportListener =
+        WebSocketTransportListener<InputStream, OutputStream> webSocketTransportListener =
                 DefaultWebSocketServerTransportListenerFactory.INSTANCE.newInstance(
-                        webSocketStreamChannel, url, FrameworkModel.defaultModel());
+                        webSocketStreamChannel,
+                        url,
+                        FrameworkModel.defaultModel(),
+                        new MessageTypeToken<InputStream, OutputStream>() {});
         webSocketTransportListener.onMetadata(http2Header);
         session.addMessageHandler(new TripleTextMessageHandler(webSocketTransportListener));
         session.addMessageHandler(new TripleBinaryMessageHandler(webSocketTransportListener));
         session.getUserProperties().put(TRIPLE_WEBSOCKET_LISTENER, webSocketTransportListener);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onClose(Session session, CloseReason closeReason) {
         super.onClose(session, closeReason);
-        WebSocketTransportListener webSocketTransportListener =
-                (WebSocketTransportListener) session.getUserProperties().get(TRIPLE_WEBSOCKET_LISTENER);
+        WebSocketTransportListener<InputStream, OutputStream> webSocketTransportListener =
+                (WebSocketTransportListener<InputStream, OutputStream>)
+                        session.getUserProperties().get(TRIPLE_WEBSOCKET_LISTENER);
         if (webSocketTransportListener == null) {
             return;
         }
         if (closeReason.getCloseCode().getCode() == CloseCodes.NORMAL_CLOSURE.getCode()) {
-            Http2InputMessage http2InputMessage = new Http2InputMessageFrame(StreamUtils.EMPTY, true);
+            Http2InputMessage<InputStream> http2InputMessage = new Http2InputMessageFrame<>(StreamUtils.EMPTY, true);
             webSocketTransportListener.onData(http2InputMessage);
             return;
         }
         webSocketTransportListener.cancelByRemote(closeReason.getCloseCode().getCode());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onError(Session session, Throwable thr) {
         super.onError(session, thr);
-        WebSocketTransportListener webSocketTransportListener =
-                (WebSocketTransportListener) session.getUserProperties().get(TRIPLE_WEBSOCKET_LISTENER);
+        WebSocketTransportListener<InputStream, OutputStream> webSocketTransportListener =
+                (WebSocketTransportListener<InputStream, OutputStream>)
+                        session.getUserProperties().get(TRIPLE_WEBSOCKET_LISTENER);
         if (webSocketTransportListener == null) {
             return;
         }

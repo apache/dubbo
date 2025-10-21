@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.message.StreamingDecoder.FragmentListener;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -32,8 +33,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
-import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcByteBufStreamingDecoder;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -77,11 +77,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     private final ClientStream.Listener listener;
     protected final TripleWriteQueue writeQueue;
-    private Deframer deframer;
     private final Channel parent;
     private final TripleStreamChannelFuture streamChannelFuture;
     private boolean halfClosed;
     private boolean rst;
+    private GrpcByteBufStreamingDecoder decoder;
 
     private boolean isReturnTriException = false;
 
@@ -158,12 +158,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     @Override
-    public ChannelFuture sendMessage(byte[] message, int compressFlag) {
+    public ChannelFuture sendMessage(ByteBuf message) {
         ChannelFuture checkResult = preCheck();
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
-        final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressFlag);
+        final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false);
         return this.writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
             if (!future.isSuccess()) {
                 cancelByLocal(TriRpcStatus.INTERNAL
@@ -176,7 +176,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     @Override
     public void request(int n) {
-        deframer.request(n);
+        decoder.request(n);
     }
 
     @Override
@@ -291,17 +291,19 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     }
                 }
             }
-            TriDecoder.Listener listener = new TriDecoder.Listener() {
+            decoder = new GrpcByteBufStreamingDecoder();
+            decoder.setFragmentListener(new FragmentListener<ByteBuf>() {
                 @Override
-                public void onRawMessage(byte[] data) {
-                    AbstractTripleClientStream.this.listener.onMessage(data, isReturnTriException);
+                public void onFragmentMessage(ByteBuf rawMessage) {
+                    AbstractTripleClientStream.this.listener.onMessage(rawMessage, isReturnTriException);
                 }
 
-                public void close() {
+                @Override
+                public void onClose() {
                     finishProcess(statusFromTrailers(trailers), trailers, isReturnTriException);
                 }
-            };
-            deframer = new TriDecoder(decompressor, listener);
+            });
+            decoder.setDeCompressor(decompressor);
             AbstractTripleClientStream.this.listener.onStart();
         }
 
@@ -317,10 +319,10 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 transportError = transportError.appendDescription("trailers: " + trailers);
                 status = transportError;
             }
-            if (deframer == null) {
+            if (decoder == null) {
                 finishProcess(status, trailers, false);
             } else {
-                deframer.close();
+                decoder.close();
             }
         }
 
@@ -458,7 +460,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 handleH2TransportError(TriRpcStatus.INTERNAL.withDescription("headers not received before payload"));
                 return;
             }
-            deframer.deframe(data);
+            decoder.decode(data);
         }
 
         @Override

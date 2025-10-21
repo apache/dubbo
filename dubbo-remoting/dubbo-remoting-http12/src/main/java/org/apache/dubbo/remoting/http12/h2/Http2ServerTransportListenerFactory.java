@@ -19,12 +19,17 @@ package org.apache.dubbo.remoting.http12.h2;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface Http2ServerTransportListenerFactory {
 
-    Http2TransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel);
+    <INPUT, OUTPUT> Http2TransportListener<INPUT, OUTPUT> newInstance(
+            H2StreamChannel<OUTPUT> streamChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken);
 
     boolean supportContentType(String contentType);
 }

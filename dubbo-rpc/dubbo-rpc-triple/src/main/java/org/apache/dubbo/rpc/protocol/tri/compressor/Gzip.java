@@ -25,6 +25,10 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
+
 /**
  * gzip compressor
  */
@@ -63,6 +67,22 @@ public class Gzip implements Compressor, DeCompressor {
     }
 
     @Override
+    public void compress(ByteBuf src, ByteBuf dst) {
+        byte[] input = new byte[src.readableBytes()];
+        src.readBytes(input);
+        dst.ensureWritable(input.length);
+
+        try (ByteBufOutputStream out = new ByteBufOutputStream(dst);
+                GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out)) {
+            gzipOutputStream.write(input);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            src.release();
+        }
+    }
+
+    @Override
     public byte[] decompress(byte[] payloadByteArr) throws RpcException {
         if (null == payloadByteArr || 0 == payloadByteArr.length) {
             return new byte[0];
@@ -81,5 +101,24 @@ public class Gzip implements Compressor, DeCompressor {
         }
 
         return byteOutStream.toByteArray();
+    }
+
+    @Override
+    public ByteBuf decompress(ByteBuf src) {
+        ByteBuf dst = src.alloc().ioBuffer(src.readableBytes() * 4);
+        try (ByteBufOutputStream out = new ByteBufOutputStream(dst);
+                ByteBufInputStream in = new ByteBufInputStream(src);
+                GZIPInputStream gzipInputStream = new GZIPInputStream(in)) {
+            byte[] buffer = new byte[2048];
+            int n;
+            while ((n = gzipInputStream.read(buffer)) >= 0) {
+                out.write(buffer, 0, n);
+            }
+            return dst;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            src.release();
+        }
     }
 }

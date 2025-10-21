@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http3.netty4;
 
-import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
@@ -25,11 +24,10 @@ import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpHeaders;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 
-import java.io.OutputStream;
 import java.net.SocketAddress;
 
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -78,8 +76,7 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
 
     @Override
     protected void channelRead(ChannelHandlerContext ctx, Http3DataFrame frame) {
-        ctx.fireChannelRead(
-                new Http2InputMessageFrame(getStreamId(ctx), new ByteBufInputStream(frame.content(), true), false));
+        ctx.fireChannelRead(new Http2InputMessageFrame<>(getStreamId(ctx), frame.content(), false));
     }
 
     private static long getStreamId(ChannelHandlerContext ctx) {
@@ -88,7 +85,7 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
 
     @Override
     protected void channelInputClosed(ChannelHandlerContext ctx) {
-        ctx.fireChannelRead(new Http2InputMessageFrame(getStreamId(ctx), StreamUtils.EMPTY, true));
+        ctx.fireChannelRead(new Http2InputMessageFrame<>(getStreamId(ctx), Unpooled.EMPTY_BUFFER, true));
     }
 
     @Override
@@ -111,16 +108,14 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
                     new DefaultHttp3HeadersFrame(((NettyHttpHeaders<Http3Headers>) headers.headers()).getHeaders()),
                     promise);
         } else if (msg instanceof Http2OutputMessage) {
-            Http2OutputMessage message = (Http2OutputMessage) msg;
-            OutputStream body = message.getBody();
-            assert body instanceof ByteBufOutputStream || body == null;
+            Http2OutputMessage<ByteBuf> message = (Http2OutputMessage<ByteBuf>) msg;
+            ByteBuf body = message.getBody();
             if (message.isEndStream()) {
                 if (body == null) {
                     ctx.close(promise);
                     return;
                 }
-                ChannelFuture future =
-                        ctx.write(new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer()), ctx.newPromise());
+                ChannelFuture future = ctx.write(new DefaultHttp3DataFrame(body), ctx.newPromise());
                 if (future.isDone()) {
                     ctx.close(promise);
                 } else {
@@ -132,7 +127,7 @@ public class NettyHttp3FrameCodec extends Http3RequestStreamInboundHandler imple
                 promise.trySuccess();
                 return;
             }
-            ctx.write(new DefaultHttp3DataFrame(((ByteBufOutputStream) body).buffer()), promise);
+            ctx.write(new DefaultHttp3DataFrame(body), promise);
         } else {
             ctx.write(msg, promise);
         }

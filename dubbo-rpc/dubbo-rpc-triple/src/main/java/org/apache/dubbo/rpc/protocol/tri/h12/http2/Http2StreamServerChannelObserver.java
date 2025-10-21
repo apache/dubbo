@@ -16,15 +16,19 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 
-public class Http2StreamServerChannelObserver extends Http2ServerStreamObserver {
+public class Http2StreamServerChannelObserver<INPUT, OUTPUT> extends Http2ServerStreamObserver<INPUT, OUTPUT> {
 
-    public Http2StreamServerChannelObserver(FrameworkModel frameworkModel, H2StreamChannel h2StreamChannel) {
-        super(frameworkModel, h2StreamChannel);
+    public Http2StreamServerChannelObserver(
+            FrameworkModel frameworkModel,
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(frameworkModel, h2StreamChannel, typeToken);
     }
 
     @Override

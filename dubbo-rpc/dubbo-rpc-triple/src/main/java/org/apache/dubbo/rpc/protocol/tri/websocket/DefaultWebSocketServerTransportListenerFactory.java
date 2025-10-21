@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.websocket;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.websocket.WebSocketServerTransportListenerFactory;
 import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
@@ -28,8 +29,11 @@ public class DefaultWebSocketServerTransportListenerFactory implements WebSocket
             new DefaultWebSocketServerTransportListenerFactory();
 
     @Override
-    public WebSocketTransportListener newInstance(
-            H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel) {
-        return new DefaultWebSocketServerTransportListener(streamChannel, url, frameworkModel);
+    public <INPUT, OUTPUT> WebSocketTransportListener<INPUT, OUTPUT> newInstance(
+            H2StreamChannel<OUTPUT> streamChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        return new DefaultWebSocketServerTransportListener<>(streamChannel, url, frameworkModel, typeToken);
     }
 }

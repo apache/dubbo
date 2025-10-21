@@ -235,4 +235,8 @@ public interface TypeUtils {
         }
         return null;
     }
+
+    static Class<?> getSuperGenericType(Class<?> clazz, Class<?> interfaceClass, int index) {
+        return findActualTypeArgument(clazz, interfaceClass, index);
+    }
 }

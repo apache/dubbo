@@ -26,32 +26,32 @@ import org.apache.dubbo.remoting.http12.h2.Http2ChannelDelegate;
 
 import java.util.concurrent.CompletableFuture;
 
-public class Http2WriteQueueChannel extends Http2ChannelDelegate {
+public class Http2WriteQueueChannel<OUTPUT> extends Http2ChannelDelegate<OUTPUT> {
 
-    private final HttpWriteQueue httpWriteQueue;
+    private final HttpWriteQueue<OUTPUT> httpWriteQueue;
 
-    public Http2WriteQueueChannel(H2StreamChannel h2StreamChannel, HttpWriteQueue httpWriteQueue) {
+    public Http2WriteQueueChannel(H2StreamChannel<OUTPUT> h2StreamChannel, HttpWriteQueue<OUTPUT> httpWriteQueue) {
         super(h2StreamChannel);
         this.httpWriteQueue = httpWriteQueue;
     }
 
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
-        HeaderQueueCommand cmd = new HeaderQueueCommand(httpMetadata);
+        HeaderQueueCommand<OUTPUT> cmd = new HeaderQueueCommand<>(httpMetadata);
         cmd.setHttpChannel(this::getH2StreamChannel);
         return httpWriteQueue.enqueue(cmd);
     }
 
     @Override
-    public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
-        DataQueueCommand cmd = new DataQueueCommand(httpOutputMessage);
+    public CompletableFuture<Void> writeMessage(HttpOutputMessage<OUTPUT> httpOutputMessage) {
+        DataQueueCommand<OUTPUT> cmd = new DataQueueCommand<>(httpOutputMessage);
         cmd.setHttpChannel(this::getH2StreamChannel);
         return httpWriteQueue.enqueue(cmd);
     }
 
     @Override
     public CompletableFuture<Void> writeResetFrame(long errorCode) {
-        ResetQueueCommand cmd = new ResetQueueCommand(errorCode);
+        ResetQueueCommand<OUTPUT> cmd = new ResetQueueCommand<>(errorCode);
         cmd.setHttpChannel(this::getH2StreamChannel);
         return this.httpWriteQueue.enqueue(cmd);
     }

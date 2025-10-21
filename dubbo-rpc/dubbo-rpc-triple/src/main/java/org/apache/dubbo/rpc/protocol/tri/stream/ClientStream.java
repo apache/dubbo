@@ -20,6 +20,7 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.util.concurrent.Future;
 
 /**
@@ -66,7 +67,7 @@ public interface ClientStream extends Stream {
      * @param message message to send to remote peer
      * @return future to callback when send message is done
      */
-    Future<?> sendMessage(byte[] message, int compressFlag);
+    Future<?> sendMessage(ByteBuf message);
 
     /**
      * No more data will be sent, half close this stream to wait server response.

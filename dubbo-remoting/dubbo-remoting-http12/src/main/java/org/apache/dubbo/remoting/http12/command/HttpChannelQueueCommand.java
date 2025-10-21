@@ -21,16 +21,16 @@ import org.apache.dubbo.remoting.http12.HttpChannelHolder;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class HttpChannelQueueCommand extends CompletableFuture<Void>
-        implements QueueCommand, HttpChannelHolder {
+public abstract class HttpChannelQueueCommand<OUTPUT> extends CompletableFuture<Void>
+        implements QueueCommand, HttpChannelHolder<OUTPUT> {
 
-    private HttpChannelHolder httpChannelHolder;
+    private HttpChannelHolder<OUTPUT> httpChannelHolder;
 
-    public void setHttpChannel(HttpChannelHolder httpChannelHolder) {
+    public void setHttpChannel(HttpChannelHolder<OUTPUT> httpChannelHolder) {
         this.httpChannelHolder = httpChannelHolder;
     }
 
-    public HttpChannel getHttpChannel() {
+    public HttpChannel<OUTPUT> getHttpChannel() {
         return httpChannelHolder.getHttpChannel();
     }
 }

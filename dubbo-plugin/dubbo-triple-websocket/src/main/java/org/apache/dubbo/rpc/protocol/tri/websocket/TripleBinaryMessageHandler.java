@@ -23,20 +23,23 @@ import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
 
 import javax.websocket.MessageHandler;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 public class TripleBinaryMessageHandler implements MessageHandler.Partial<ByteBuffer> {
 
-    private final WebSocketTransportListener webSocketTransportListener;
+    private final WebSocketTransportListener<InputStream, OutputStream> webSocketTransportListener;
 
-    public TripleBinaryMessageHandler(WebSocketTransportListener webSocketTransportListener) {
+    public TripleBinaryMessageHandler(
+            WebSocketTransportListener<InputStream, OutputStream> webSocketTransportListener) {
         this.webSocketTransportListener = webSocketTransportListener;
     }
 
     @Override
     public void onMessage(ByteBuffer messagePart, boolean last) {
-        Http2InputMessage http2InputMessage =
-                new Http2InputMessageFrame(new FinalFragmentByteArrayInputStream(messagePart.array(), last), false);
+        Http2InputMessage<InputStream> http2InputMessage =
+                new Http2InputMessageFrame<>(new FinalFragmentByteArrayInputStream(messagePart.array(), last), false);
         webSocketTransportListener.onData(http2InputMessage);
     }
 }

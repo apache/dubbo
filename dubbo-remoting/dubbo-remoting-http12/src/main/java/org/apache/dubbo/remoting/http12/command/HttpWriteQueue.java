@@ -21,7 +21,7 @@ import org.apache.dubbo.common.BatchExecutorQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class HttpWriteQueue extends BatchExecutorQueue<HttpChannelQueueCommand> {
+public class HttpWriteQueue<OUTPUT> extends BatchExecutorQueue<HttpChannelQueueCommand<OUTPUT>> {
 
     private final Executor executor;
 
@@ -29,18 +29,18 @@ public class HttpWriteQueue extends BatchExecutorQueue<HttpChannelQueueCommand> 
         this.executor = executor;
     }
 
-    public CompletableFuture<Void> enqueue(HttpChannelQueueCommand cmd) {
+    public CompletableFuture<Void> enqueue(HttpChannelQueueCommand<OUTPUT> cmd) {
         this.enqueue(cmd, this.executor);
         return cmd;
     }
 
     @Override
-    protected void prepare(HttpChannelQueueCommand item) {
+    protected void prepare(HttpChannelQueueCommand<OUTPUT> item) {
         item.run();
     }
 
     @Override
-    protected void flush(HttpChannelQueueCommand item) {
+    protected void flush(HttpChannelQueueCommand<OUTPUT> item) {
         item.run();
         item.getHttpChannel().flush();
     }

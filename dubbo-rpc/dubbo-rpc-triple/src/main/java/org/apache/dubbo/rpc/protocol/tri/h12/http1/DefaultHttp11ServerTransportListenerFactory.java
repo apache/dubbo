@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.h12.http1;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListener;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -28,7 +29,11 @@ public class DefaultHttp11ServerTransportListenerFactory implements Http1ServerT
             new DefaultHttp11ServerTransportListenerFactory();
 
     @Override
-    public Http1ServerTransportListener newInstance(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
-        return new DefaultHttp11ServerTransportListener(httpChannel, url, frameworkModel);
+    public <INPUT, OUTPUT> Http1ServerTransportListener<INPUT, OUTPUT> newInstance(
+            HttpChannel<OUTPUT> httpChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        return new DefaultHttp11ServerTransportListener<>(httpChannel, url, frameworkModel, typeToken);
     }
 }

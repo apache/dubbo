@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.http12.message;
 
 import java.io.InputStream;
 
-public class DefaultListeningDecoder implements ListeningDecoder {
+public class DefaultListeningDecoder implements ListeningDecoder<InputStream> {
 
     private final HttpMessageDecoder httpMessageDecoder;
 

@@ -22,22 +22,24 @@ import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.HttpResult;
-import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.ResponseEncoder;
 import org.apache.dubbo.remoting.http12.message.ServerSentEventEncoder;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
+public class Http1SseServerChannelObserver<OUTPUT> extends Http1ServerChannelObserver<OUTPUT> {
 
-    private HttpMessageEncoder originalResponseEncoder;
+    private ResponseEncoder<OUTPUT> originalResponseEncoder;
 
-    public Http1SseServerChannelObserver(HttpChannel httpChannel) {
-        super(httpChannel);
+    public Http1SseServerChannelObserver(
+            FrameworkModel frameworkModel, HttpChannel<OUTPUT> httpChannel, Class<OUTPUT> outputType) {
+        super(frameworkModel, httpChannel, outputType);
     }
 
     @Override
     public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
         super.setResponseEncoder(new ServerSentEventEncoder(responseEncoder));
-        this.originalResponseEncoder = responseEncoder;
+        this.originalResponseEncoder = super.createResponseEncoder(responseEncoder);
     }
 
     @Override
@@ -56,7 +58,7 @@ public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
     }
 
     @Override
-    protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
+    protected HttpOutputMessage<OUTPUT> buildMessage(int statusCode, Object data) throws Throwable {
         if (data instanceof HttpResult) {
             data = ((HttpResult<?>) data).getBody();
 
@@ -64,7 +66,7 @@ public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
                 return null;
             }
 
-            HttpOutputMessage message = encodeHttpOutputMessage(data);
+            HttpOutputMessage<OUTPUT> message = encodeHttpOutputMessage(data);
             try {
                 originalResponseEncoder.encode(message.getBody(), data);
             } catch (Throwable t) {

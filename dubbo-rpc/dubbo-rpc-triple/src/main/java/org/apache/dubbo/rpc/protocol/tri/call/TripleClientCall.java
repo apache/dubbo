@@ -22,11 +22,13 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.ByteBufPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
+import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream.Listener;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
@@ -34,6 +36,8 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http2.Http2Exception.StreamException;
 
 import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
@@ -41,7 +45,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
 
-public class TripleClientCall implements ClientCall, ClientStream.Listener {
+public class TripleClientCall implements ClientCall, Listener {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
     private final AbstractConnectionClient connectionClient;
     private final Executor executor;
@@ -49,7 +53,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private final TripleWriteQueue writeQueue;
     private RequestMetadata requestMetadata;
     private ClientStream stream;
-    private ClientCall.Listener listener;
+    private Listener listener;
     private boolean canceled;
     private boolean headerSent;
     private boolean autoRequest = true;
@@ -69,7 +73,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(byte[] message, boolean isReturnTriException) {
+    public void onMessage(ByteBuf message, boolean isReturnTriException) {
         if (done) {
             LOGGER.warn(
                     PROTOCOL_STREAM_LISTENER,
@@ -81,8 +85,17 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         try {
-            Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
-            listener.onMessage(unpacked, message.length);
+            int contentLength = message.readableBytes();
+            Object unpacked;
+            if (requestMetadata.packableMethod instanceof ByteBufPackableMethod) {
+                unpacked = ((ByteBufPackableMethod) requestMetadata.packableMethod)
+                        .parseResponse(message, isReturnTriException);
+            } else {
+                byte[] data = new byte[contentLength];
+                message.readBytes(data);
+                unpacked = requestMetadata.packableMethod.parseResponse(data, isReturnTriException);
+            }
+            listener.onMessage(unpacked, contentLength);
         } catch (Throwable t) {
             TriRpcStatus status = TriRpcStatus.INTERNAL
                     .withDescription("Deserialize response failed")
@@ -194,17 +207,16 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             headerSent = true;
             stream.sendHeader(requestMetadata.toHeaders());
         }
-        final byte[] data;
+        ByteBuf buffer = allocate();
         try {
-            data = requestMetadata.packableMethod.packRequest(message);
-            int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
-            final byte[] compress = requestMetadata.compressor.compress(data);
-            stream.sendMessage(compress, compressed).addListener(f -> {
+            ByteBuf messageBuffer = prepareMessageBuffer(buffer, message);
+            stream.sendMessage(messageBuffer).addListener(f -> {
                 if (!f.isSuccess()) {
                     cancelByLocal(f.cause());
                 }
             });
         } catch (Throwable t) {
+            buffer.release();
             LOGGER.error(
                     PROTOCOL_FAILED_SERIALIZE_TRIPLE,
                     "",
@@ -223,6 +235,33 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         }
     }
     // stream listener end
+
+    private ByteBuf prepareMessageBuffer(ByteBuf buffer, Object message) throws Exception {
+        boolean isIdentityEncoding = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding());
+        ByteBuf targetBuffer = isIdentityEncoding ? buffer : allocate();
+
+        targetBuffer.writeByte(isIdentityEncoding ? 0 : 1);
+        int position = targetBuffer.writerIndex();
+        targetBuffer.writerIndex(position + 4);
+
+        packRequest(buffer, message);
+
+        if (!isIdentityEncoding) {
+            requestMetadata.compressor.compress(buffer, targetBuffer);
+        }
+        int len = targetBuffer.writerIndex() - position - 4;
+        targetBuffer.setInt(position, len);
+        return targetBuffer;
+    }
+
+    private void packRequest(ByteBuf buffer, Object message) throws Exception {
+        if (requestMetadata.packableMethod instanceof ByteBufPackableMethod) {
+            ((ByteBufPackableMethod) requestMetadata.packableMethod).packRequest(buffer, message);
+        } else {
+            byte[] data = requestMetadata.packableMethod.packRequest(message);
+            buffer.writeBytes(data);
+        }
+    }
 
     @Override
     public void halfClose() {
@@ -245,7 +284,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     }
 
     @Override
-    public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
+    public StreamObserver<Object> start(RequestMetadata metadata, Listener responseListener) {
         ClientStream stream;
         for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
             stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
@@ -267,5 +306,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     @Override
     public void setAutoRequest(boolean autoRequest) {
         this.autoRequest = autoRequest;
+    }
+
+    private ByteBuf allocate() {
+        return this.connectionClient.<Channel>getChannel(true).alloc().buffer();
     }
 }

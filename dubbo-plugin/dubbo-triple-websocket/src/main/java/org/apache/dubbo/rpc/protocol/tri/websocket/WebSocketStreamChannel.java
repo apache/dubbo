@@ -35,6 +35,7 @@ import javax.websocket.Session;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -44,7 +45,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketConstants.TRIPLE_WEBSOCKET_REMOTE_ADDRESS;
 
-public class WebSocketStreamChannel implements H2StreamChannel {
+public class WebSocketStreamChannel implements H2StreamChannel<OutputStream> {
 
     private final Session session;
 
@@ -78,8 +79,8 @@ public class WebSocketStreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        return new Http2OutputMessageFrame(
+    public Http2OutputMessage<OutputStream> newOutputMessage(boolean endStream) {
+        return new Http2OutputMessageFrame<>(
                 new LimitedByteArrayOutputStream(256, tripleConfig.getMaxResponseBodySizeOrDefault()), endStream);
     }
 
@@ -99,7 +100,7 @@ public class WebSocketStreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
+    public CompletableFuture<Void> writeMessage(HttpOutputMessage<OutputStream> httpOutputMessage) {
         ByteArrayOutputStream body = (ByteArrayOutputStream) httpOutputMessage.getBody();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         try {

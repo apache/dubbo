@@ -18,4 +18,4 @@ package org.apache.dubbo.remoting.websocket;
 
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 
-public interface WebSocketTransportListener extends Http2TransportListener {}
+public interface WebSocketTransportListener<INPUT, OUTPUT> extends Http2TransportListener<INPUT, OUTPUT> {}

@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.http12.netty4.h2;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-import org.apache.dubbo.remoting.http12.LimitedByteBufOutputStream;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessageFrame;
@@ -29,11 +28,10 @@ import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
-public class NettyH2StreamChannel implements H2StreamChannel {
+public class NettyH2StreamChannel implements H2StreamChannel<ByteBuf> {
 
     private final Http2StreamChannel http2StreamChannel;
 
@@ -53,18 +51,15 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
+    public CompletableFuture<Void> writeMessage(HttpOutputMessage<ByteBuf> httpOutputMessage) {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
         http2StreamChannel.write(httpOutputMessage).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        ByteBuf buffer = http2StreamChannel.alloc().buffer();
-        ByteBufOutputStream outputStream =
-                new LimitedByteBufOutputStream(buffer, tripleConfig.getMaxResponseBodySizeOrDefault());
-        return new Http2OutputMessageFrame(outputStream, endStream);
+    public Http2OutputMessage<ByteBuf> newOutputMessage(boolean endStream) {
+        return new Http2OutputMessageFrame<>(http2StreamChannel.alloc().buffer(), endStream);
     }
 
     @Override

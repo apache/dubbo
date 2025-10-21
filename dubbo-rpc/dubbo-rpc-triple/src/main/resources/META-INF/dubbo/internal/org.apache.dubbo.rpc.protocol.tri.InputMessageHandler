@@ -1,0 +1,6 @@
+http-inputStream=org.apache.dubbo.rpc.protocol.tri.InputStreamMessageHandler
+grpc-inputStream=org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcInputStreamMessageHandler
+
+http-byteBuf=org.apache.dubbo.rpc.protocol.tri.ByteBufInputMessageHandler
+grpc-byteBuf=org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcByteBufInputMessageHandler
+websocket-byteBuf=org.apache.dubbo.rpc.protocol.tri.websocket.WebSocketByteBufInputMessageHandler

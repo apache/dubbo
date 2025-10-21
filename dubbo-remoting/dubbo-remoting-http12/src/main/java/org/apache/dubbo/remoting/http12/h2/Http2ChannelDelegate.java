@@ -22,15 +22,15 @@ import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
-public class Http2ChannelDelegate implements H2StreamChannel {
+public class Http2ChannelDelegate<OUTPUT> implements H2StreamChannel<OUTPUT> {
 
-    private final H2StreamChannel h2StreamChannel;
+    private final H2StreamChannel<OUTPUT> h2StreamChannel;
 
-    public Http2ChannelDelegate(H2StreamChannel h2StreamChannel) {
+    public Http2ChannelDelegate(H2StreamChannel<OUTPUT> h2StreamChannel) {
         this.h2StreamChannel = h2StreamChannel;
     }
 
-    public H2StreamChannel getH2StreamChannel() {
+    public H2StreamChannel<OUTPUT> getH2StreamChannel() {
         return h2StreamChannel;
     }
 
@@ -40,7 +40,7 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     }
 
     @Override
-    public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
+    public CompletableFuture<Void> writeMessage(HttpOutputMessage<OUTPUT> httpOutputMessage) {
         return h2StreamChannel.writeMessage(httpOutputMessage);
     }
 
@@ -65,7 +65,7 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
+    public Http2OutputMessage<OUTPUT> newOutputMessage(boolean endStream) {
         return h2StreamChannel.newOutputMessage(endStream);
     }
 

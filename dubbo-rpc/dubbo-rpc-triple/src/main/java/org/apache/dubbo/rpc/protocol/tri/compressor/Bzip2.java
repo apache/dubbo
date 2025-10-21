@@ -22,6 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -69,6 +72,22 @@ public class Bzip2 implements Compressor, DeCompressor {
     }
 
     @Override
+    public void compress(ByteBuf src, ByteBuf dst) {
+        byte[] input = new byte[src.readableBytes()];
+        src.readBytes(input);
+        dst.ensureWritable(input.length);
+
+        try (ByteBufOutputStream out = new ByteBufOutputStream(dst);
+                BZip2CompressorOutputStream bZip2CompressorOutputStream = new BZip2CompressorOutputStream(out)) {
+            bZip2CompressorOutputStream.write(input);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            src.release();
+        }
+    }
+
+    @Override
     public byte[] decompress(byte[] payloadByteArr) {
         if (null == payloadByteArr || 0 == payloadByteArr.length) {
             return new byte[0];
@@ -87,5 +106,24 @@ public class Bzip2 implements Compressor, DeCompressor {
             throw new IllegalStateException(e);
         }
         return out.toByteArray();
+    }
+
+    @Override
+    public ByteBuf decompress(ByteBuf src) {
+        ByteBuf dst = src.alloc().ioBuffer(src.readableBytes() * 4);
+        try (ByteBufOutputStream out = new ByteBufOutputStream(dst);
+                ByteBufInputStream in = new ByteBufInputStream(src);
+                BZip2CompressorInputStream bZip2CompressorInputStream = new BZip2CompressorInputStream(in)) {
+            byte[] buffer = new byte[2048];
+            int n;
+            while ((n = bZip2CompressorInputStream.read(buffer)) >= 0) {
+                out.write(buffer, 0, n);
+            }
+            return dst;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            src.release();
+        }
     }
 }

@@ -27,10 +27,9 @@ import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.quic.QuicStreamChannel;
 
-public class NettyHttp3StreamChannel implements H2StreamChannel {
+public class NettyHttp3StreamChannel implements H2StreamChannel<ByteBuf> {
 
     private final QuicStreamChannel http3StreamChannel;
 
@@ -46,9 +45,8 @@ public class NettyHttp3StreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public Http2OutputMessage newOutputMessage(boolean endStream) {
-        ByteBuf buffer = http3StreamChannel.alloc().buffer();
-        return new Http2OutputMessageFrame(new ByteBufOutputStream(buffer), endStream);
+    public Http2OutputMessage<ByteBuf> newOutputMessage(boolean endStream) {
+        return new Http2OutputMessageFrame<>(http3StreamChannel.alloc().buffer(), endStream);
     }
 
     @Override
@@ -59,7 +57,7 @@ public class NettyHttp3StreamChannel implements H2StreamChannel {
     }
 
     @Override
-    public CompletableFuture<Void> writeMessage(HttpOutputMessage httpOutputMessage) {
+    public CompletableFuture<Void> writeMessage(HttpOutputMessage<ByteBuf> httpOutputMessage) {
         NettyHttpChannelFutureListener futureListener = new NettyHttpChannelFutureListener();
         http3StreamChannel.write(httpOutputMessage).addListener(futureListener);
         return futureListener;

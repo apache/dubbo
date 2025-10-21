@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.remoting.websocket;
 
-import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
-public class FinalFragmentStreamingDecoder implements StreamingDecoder {
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
+
+public class FinalFragmentStreamingDecoder implements StreamingDecoder<ByteBuf> {
 
     private boolean inDelivery;
 
@@ -34,21 +35,21 @@ public class FinalFragmentStreamingDecoder implements StreamingDecoder {
 
     private boolean closing;
 
-    protected final CompositeInputStream accumulate = new CompositeInputStream();
+    protected final CompositeByteBuf accumulate = Unpooled.compositeBuffer();
 
-    protected FragmentListener listener;
+    protected FragmentListener<ByteBuf> listener;
 
     @Override
     public void request(int numMessages) {}
 
     @Override
-    public void decode(InputStream inputStream) throws DecodeException {
+    public void decode(ByteBuf buffer) throws DecodeException {
         if (closing || closed) {
             // ignored
             return;
         }
-        accumulate.addInputStream(inputStream);
-        if (inputStream instanceof FinalFragment && ((FinalFragment) inputStream).isFinalFragment()) {
+        accumulate.addComponent(true, buffer);
+        if (buffer instanceof FinalFragmentByteBuf && ((FinalFragmentByteBuf) buffer).isFinalFragment()) {
             pendingDelivery = true;
             deliver();
         }
@@ -66,15 +67,12 @@ public class FinalFragmentStreamingDecoder implements StreamingDecoder {
             return;
         }
         closed = true;
-        try {
-            accumulate.close();
-        } catch (IOException e) {
-            throw new DecodeException(e);
-        }
+        accumulate.clear();
+        accumulate.release();
     }
 
     @Override
-    public void setFragmentListener(FragmentListener listener) {
+    public void setFragmentListener(FragmentListener<ByteBuf> listener) {
         this.listener = listener;
     }
 
@@ -91,13 +89,13 @@ public class FinalFragmentStreamingDecoder implements StreamingDecoder {
                 processBody();
                 pendingDelivery = false;
             }
-            if (closing) {
-                if (!closed) {
-                    closed = true;
-                    accumulate.close();
-                    listener.onClose();
-                }
+            if (closing && !closed) {
+                closed = true;
+                accumulate.clear();
+                accumulate.release();
+                listener.onClose();
             }
+
         } catch (IOException e) {
             throw new DecodeException(e);
         } finally {
@@ -106,18 +104,10 @@ public class FinalFragmentStreamingDecoder implements StreamingDecoder {
     }
 
     private void processBody() throws IOException {
-        byte[] rawMessage = readRawMessage(accumulate, accumulate.available());
-        InputStream inputStream = new ByteArrayInputStream(rawMessage);
-        invokeListener(inputStream);
+        invokeListener(accumulate);
     }
 
-    protected void invokeListener(InputStream inputStream) {
-        this.listener.onFragmentMessage(inputStream);
-    }
-
-    protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {
-        byte[] data = new byte[length];
-        inputStream.read(data, 0, length);
-        return data;
+    protected void invokeListener(ByteBuf buffer) {
+        this.listener.onFragmentMessage(buffer);
     }
 }

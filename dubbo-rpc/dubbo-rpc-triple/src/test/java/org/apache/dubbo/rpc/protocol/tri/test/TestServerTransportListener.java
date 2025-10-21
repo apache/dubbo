@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.test;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -24,10 +25,14 @@ import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportLi
 
 import java.util.concurrent.Executor;
 
-public class TestServerTransportListener extends GenericHttp2ServerTransportListener {
+public class TestServerTransportListener<INPUT, OUTPUT> extends GenericHttp2ServerTransportListener<INPUT, OUTPUT> {
 
-    public TestServerTransportListener(H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
-        super(h2StreamChannel, url, frameworkModel);
+    public TestServerTransportListener(
+            H2StreamChannel<OUTPUT> h2StreamChannel,
+            URL url,
+            FrameworkModel frameworkModel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        super(h2StreamChannel, url, frameworkModel, typeToken);
     }
 
     @Override

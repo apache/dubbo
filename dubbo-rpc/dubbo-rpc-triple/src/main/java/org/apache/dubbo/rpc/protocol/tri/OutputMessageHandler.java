@@ -14,27 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h1;
+package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.remoting.http12.AbstractServerHttpChannelObserver;
-import org.apache.dubbo.remoting.http12.HttpChannel;
-import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
-import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1HttpHeaders;
+import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.remoting.http12.message.ResponseEncoder;
 
-public class Http1ServerChannelObserver extends AbstractServerHttpChannelObserver<HttpChannel> {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface OutputMessageHandler<OUTPUT> {
 
-    public Http1ServerChannelObserver(HttpChannel httpChannel) {
-        super(httpChannel);
-    }
+    ResponseEncoder<OUTPUT> createResponseEncoder(HttpMessageEncoder messageEncoder);
 
-    @Override
-    protected HttpMetadata encodeHttpMetadata(boolean endStream) {
-        return new Http1Metadata(new NettyHttp1HttpHeaders());
-    }
-
-    @Override
-    protected void doOnCompleted(Throwable throwable) {
-        getHttpChannel().writeMessage(HttpOutputMessage.EMPTY_MESSAGE);
-    }
+    HttpOutputMessage<OUTPUT> empty();
 }

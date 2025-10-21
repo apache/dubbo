@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.HttpTransportListener;
+import org.apache.dubbo.remoting.http12.MessageTypeToken;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
@@ -38,6 +39,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorUtils;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
+import org.apache.dubbo.rpc.protocol.tri.InputMessageHandler;
+import org.apache.dubbo.rpc.protocol.tri.MessageHandlerRegistry;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstants;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -51,29 +54,39 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage>
-        implements HttpTransportListener<HEADER, MESSAGE> {
+public abstract class AbstractServerTransportListener<
+                HEADER extends RequestMetadata, MESSAGE extends HttpInputMessage<INPUT>, INPUT, OUTPUT>
+        implements HttpTransportListener<HEADER, MESSAGE, INPUT, OUTPUT> {
 
     private static final FluentLogger LOGGER = FluentLogger.of(AbstractServerTransportListener.class);
     private static final String HEADER_FILTERS_CACHE = "HEADER_FILTERS_CACHE";
 
     private final FrameworkModel frameworkModel;
     private final URL url;
-    private final HttpChannel httpChannel;
+    private final HttpChannel<OUTPUT> httpChannel;
     private final RequestRouter requestRouter;
     private final ExceptionCustomizerWrapper exceptionCustomizerWrapper;
+    private final InputMessageHandler<INPUT> messageHandler;
+    private final MessageTypeToken<INPUT, OUTPUT> typeToken;
 
     private Executor executor;
     private HEADER httpMetadata;
     private RpcInvocationBuildContext context;
-    private HttpMessageListener httpMessageListener;
+    private HttpMessageListener<INPUT> httpMessageListener;
 
-    protected AbstractServerTransportListener(FrameworkModel frameworkModel, URL url, HttpChannel httpChannel) {
+    protected AbstractServerTransportListener(
+            FrameworkModel frameworkModel,
+            URL url,
+            HttpChannel<OUTPUT> httpChannel,
+            MessageTypeToken<INPUT, OUTPUT> typeToken) {
         this.frameworkModel = frameworkModel;
         this.url = url;
         this.httpChannel = httpChannel;
-        requestRouter = frameworkModel.getOrRegisterBean(DefaultRequestRouter.class);
-        exceptionCustomizerWrapper = new ExceptionCustomizerWrapper(frameworkModel);
+        this.typeToken = typeToken;
+        this.requestRouter = frameworkModel.getOrRegisterBean(DefaultRequestRouter.class);
+        this.exceptionCustomizerWrapper = new ExceptionCustomizerWrapper(frameworkModel);
+        this.messageHandler =
+                findMessageHandler(frameworkModel.getOrRegisterBean(MessageHandlerRegistry.class), typeToken);
     }
 
     @Override
@@ -141,7 +154,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         // default no op
     }
 
-    protected abstract HttpMessageListener buildHttpMessageListener();
+    protected abstract HttpMessageListener<INPUT> buildHttpMessageListener();
 
     protected void onMetadataCompletion(HEADER metadata) {
         // default no op
@@ -333,7 +346,7 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return context;
     }
 
-    protected final void setHttpMessageListener(HttpMessageListener httpMessageListener) {
+    protected final void setHttpMessageListener(HttpMessageListener<INPUT> httpMessageListener) {
         this.httpMessageListener = httpMessageListener;
     }
 
@@ -345,4 +358,24 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         context.setMethodDescriptor(methodDescriptor);
         exceptionCustomizerWrapper.setMethodDescriptor(methodDescriptor);
     }
+
+    protected final InputMessageHandler<INPUT> getMessageHandler() {
+        return messageHandler;
+    }
+
+    protected final MessageTypeToken<INPUT, OUTPUT> getTypeToken() {
+        return typeToken;
+    }
+
+    @SuppressWarnings("unchecked")
+    private InputMessageHandler<INPUT> findMessageHandler(
+            MessageHandlerRegistry registry, MessageTypeToken<INPUT, OUTPUT> typeToken) {
+        InputMessageHandler<INPUT> handler = registry.get(typeToken.getInputType(), protocol());
+        if (handler == null) {
+            throw new IllegalArgumentException("Unsupported message type: " + typeToken.getInputType());
+        }
+        return handler;
+    }
+
+    protected abstract String protocol();
 }

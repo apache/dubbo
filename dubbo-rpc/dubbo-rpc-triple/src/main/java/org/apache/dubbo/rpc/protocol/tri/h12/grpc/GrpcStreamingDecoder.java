@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-import org.apache.dubbo.remoting.http12.message.LengthFieldStreamingDecoder;
+import org.apache.dubbo.remoting.http12.message.InputStreamLengthFieldDecoder;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.compressor.CompressorConfigure;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class GrpcStreamingDecoder extends LengthFieldStreamingDecoder {
+public class GrpcStreamingDecoder extends InputStreamLengthFieldDecoder implements CompressorConfigure {
 
     private static final int COMPRESSED_FLAG_MASK = 1;
     private static final int RESERVED_MASK = 0xFE;
@@ -36,12 +38,29 @@ public class GrpcStreamingDecoder extends LengthFieldStreamingDecoder {
         super(1, 4);
     }
 
+    @Override
     public void setDeCompressor(DeCompressor deCompressor) {
         this.deCompressor = deCompressor;
     }
 
     @Override
-    protected void processOffset(InputStream inputStream, int lengthFieldOffset) throws IOException {
+    protected void processHeader() throws IOException {
+        byte[] offsetData = new byte[lengthFieldOffset];
+        accumulate.read(offsetData);
+        processOffset(new ByteArrayInputStream(offsetData));
+        requiredLength = readLengthField(accumulate, lengthFieldLength);
+        state = DecodeState.PAYLOAD;
+    }
+
+    @Override
+    protected void processBody() throws IOException {
+        byte[] rawMessage = readRawMessage(accumulate, requiredLength);
+        invokeListener(new ByteArrayInputStream(rawMessage));
+        state = DecodeState.HEADER;
+        requiredLength = fixedHeaderLength;
+    }
+
+    protected void processOffset(InputStream inputStream) throws IOException {
         int type = inputStream.read();
         if ((type & RESERVED_MASK) != 0) {
             throw new RpcException("gRPC frame header malformed: reserved bits not zero");
@@ -49,9 +68,9 @@ public class GrpcStreamingDecoder extends LengthFieldStreamingDecoder {
         compressedFlag = (type & COMPRESSED_FLAG_MASK) != 0;
     }
 
-    @Override
     protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {
-        byte[] rawMessage = super.readRawMessage(inputStream, length);
+        byte[] rawMessage = new byte[length];
+        inputStream.read(rawMessage);
         return compressedFlag ? deCompressedMessage(rawMessage) : rawMessage;
     }
 

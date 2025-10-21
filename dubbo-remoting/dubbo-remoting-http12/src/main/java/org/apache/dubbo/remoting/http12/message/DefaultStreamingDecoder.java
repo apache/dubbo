@@ -22,13 +22,13 @@ import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class DefaultStreamingDecoder implements StreamingDecoder {
+public class DefaultStreamingDecoder implements StreamingDecoder<InputStream> {
 
     private boolean closed;
 
     protected final CompositeInputStream accumulate = new CompositeInputStream();
 
-    protected FragmentListener listener = NoopFragmentListener.NOOP;
+    protected FragmentListener<InputStream> listener = StreamingDecoder.noop();
 
     @Override
     public void request(int numMessages) {
@@ -73,7 +73,7 @@ public class DefaultStreamingDecoder implements StreamingDecoder {
     }
 
     @Override
-    public void setFragmentListener(FragmentListener listener) {
+    public void setFragmentListener(FragmentListener<InputStream> listener) {
         this.listener = listener;
     }
 }
