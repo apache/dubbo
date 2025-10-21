@@ -22,9 +22,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BatchExecutorQueue<T> {
+
     static final int DEFAULT_QUEUE_SIZE = 128;
-    private volatile Queue<T> queue;
-    private volatile Queue<T> readQueue;
+    private final Queue<T> queue;
     private final AtomicBoolean scheduled;
     private final int chunkSize;
 
@@ -34,7 +34,6 @@ public class BatchExecutorQueue<T> {
 
     public BatchExecutorQueue(int chunkSize) {
         this.queue = new ConcurrentLinkedQueue<>();
-        this.readQueue = new ConcurrentLinkedQueue<>();
         this.scheduled = new AtomicBoolean(false);
         this.chunkSize = chunkSize;
     }
@@ -50,27 +49,15 @@ public class BatchExecutorQueue<T> {
         }
     }
 
-    private Queue<T> swapQueue() {
-        // Swaps the active write queue with the standby read queue.
-        // This lock-free handoff allows producers to continue writing to a fresh queue
-        // while the consumer processes the accumulated batch from the swapped-out queue.
-        // Volatile variables ensure safe publication between threads.
-        Queue<T> snapshot = queue;
-        queue = readQueue;
-        readQueue = snapshot;
-        return snapshot;
-    }
-
     private void run(Executor executor) {
         try {
             T item;
             int i = 1;
-            Queue<T> snapshotQueue = swapQueue();
-            while ((item = snapshotQueue.poll()) != null) {
+            while ((item = queue.poll()) != null) {
                 if (i == chunkSize) {
                     flush(item);
                     i = 1;
-                } else if (snapshotQueue.isEmpty()) {
+                } else if (queue.isEmpty()) {
                     flush(item);
                 } else {
                     prepare(item);
