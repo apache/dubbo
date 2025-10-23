@@ -328,8 +328,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 try {
                     executor.execute(() -> notifyTimeout(future));
                 } catch (RejectedExecutionException e) {
-                    notifyTimeout(future);
-                    throw e;
+                    notifyExecutionError(future, e);
                 }
             } else {
                 notifyTimeout(future);
@@ -344,6 +343,18 @@ public class DefaultFuture extends CompletableFuture<Object> {
             timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
             // handle response.
             DefaultFuture.received(future.getChannel(), timeoutResponse, true);
+        }
+
+        private void notifyExecutionError(DefaultFuture future, Throwable e) {
+            // create exception response.
+            Response errorResponse = new Response(future.getId());
+            // set error status
+            errorResponse.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
+            // set detailed error message
+            errorResponse.setErrorMessage("Executor rejected the task for handling timeout notification: "
+                    + e.getClass().getSimpleName() + " - " + e.getMessage());
+            // handle response.
+            DefaultFuture.received(future.getChannel(), errorResponse, true);
         }
     }
 }
