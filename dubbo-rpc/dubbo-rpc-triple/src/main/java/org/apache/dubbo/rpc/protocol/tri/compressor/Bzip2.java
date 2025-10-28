@@ -73,7 +73,7 @@ public class Bzip2 implements Compressor, DeCompressor {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ByteArrayInputStream in = new ByteArrayInputStream(payloadByteArr);
-             BZip2CompressorInputStream unZip = new BZip2CompressorInputStream(in)) {
+                BZip2CompressorInputStream unZip = new BZip2CompressorInputStream(in)) {
 
             byte[] buffer = new byte[2048];
             int n;
