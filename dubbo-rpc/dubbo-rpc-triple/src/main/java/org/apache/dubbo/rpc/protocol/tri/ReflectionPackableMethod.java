@@ -38,8 +38,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import com.google.protobuf.Message;
-
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.utils.ProtobufUtils.isProtobufClass;
 

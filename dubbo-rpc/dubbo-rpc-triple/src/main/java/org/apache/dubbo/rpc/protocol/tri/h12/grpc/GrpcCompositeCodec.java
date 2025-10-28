@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
-import com.google.protobuf.Message;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.io.StreamUtils;
@@ -43,6 +41,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 
@@ -121,8 +120,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
                 }
             }
 
-
-            outputStream.write(0);  // gRPC compression flag: 0 = identity (no compression)
+            outputStream.write(0); // gRPC compression flag: 0 = identity (no compression)
             byte[] bytes = packableMethod.packResponse(data);
             writeLength(outputStream, bytes.length);
             outputStream.write(bytes);
@@ -165,8 +163,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         }
     }
 
-    private Message extractProtobufMessage(Object data, PbArrayPacker packer)
-            throws ClassCastException {
+    private Message extractProtobufMessage(Object data, PbArrayPacker packer) throws ClassCastException {
         if (!packer.isSingleArgument() && data instanceof Object[]) {
             Object[] arr = (Object[]) data;
             if (arr.length > 0) {
