@@ -37,4 +37,8 @@ public class PbArrayPacker implements Pack {
         }
         return PB_PACK.pack(obj);
     }
+
+    public boolean isSingleArgument() {
+        return singleArgument;
+    }
 }

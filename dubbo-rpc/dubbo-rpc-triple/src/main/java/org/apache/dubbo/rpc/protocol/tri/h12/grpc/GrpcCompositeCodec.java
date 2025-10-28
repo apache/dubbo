@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
+import com.google.protobuf.Message;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.io.StreamUtils;
@@ -24,19 +26,25 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpOverPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.PackableMethodFactory;
+import org.apache.dubbo.rpc.protocol.tri.PbArrayPacker;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
@@ -78,12 +86,43 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
-        // protobuf
-        // TODO int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 :
-        // 1;
         try {
-            int compressed = 0;
-            outputStream.write(compressed);
+            if (packableMethod != null
+                    && !packableMethod.needWrapper()
+                    && outputStream instanceof ByteBufOutputStream) {
+
+                Pack responsePack = packableMethod.getResponsePack();
+
+                if (responsePack instanceof PbArrayPacker) {
+                    PbArrayPacker pbPacker = (PbArrayPacker) responsePack;
+                    ByteBufOutputStream bbos = (ByteBufOutputStream) outputStream;
+                    ByteBuf buffer = bbos.buffer();
+
+                    try {
+                        com.google.protobuf.Message message = extractProtobufMessage(data, pbPacker);
+
+                        int payloadSize = message.getSerializedSize();
+                        int totalSize = 5 + payloadSize;
+                        buffer.ensureWritable(totalSize);
+
+                        // gRPC frame header (5 bytes): 1 byte compression flag + 4 bytes length
+                        buffer.writeByte(0);
+                        buffer.writeInt(payloadSize);
+
+                        message.writeTo(outputStream);
+
+                        return;
+
+                    } catch (IndexOutOfBoundsException | HttpOverPayloadException e) {
+                        if (e instanceof HttpOverPayloadException) {
+                            throw e;
+                        }
+                    }
+                }
+            }
+
+
+            outputStream.write(0);  // gRPC compression flag: 0 = identity (no compression)
             byte[] bytes = packableMethod.packResponse(data);
             writeLength(outputStream, bytes.length);
             outputStream.write(bytes);
@@ -124,6 +163,18 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         } catch (IOException e) {
             throw new EncodeException(e);
         }
+    }
+
+    private Message extractProtobufMessage(Object data, PbArrayPacker packer)
+            throws ClassCastException {
+        if (!packer.isSingleArgument() && data instanceof Object[]) {
+            Object[] arr = (Object[]) data;
+            if (arr.length > 0) {
+                return (Message) arr[0];
+            }
+            throw new IllegalArgumentException("Empty array data for Protobuf message");
+        }
+        return (Message) data;
     }
 
     @Override
