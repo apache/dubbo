@@ -47,11 +47,8 @@ public class Bzip2 implements Compressor, DeCompressor {
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        BZip2CompressorOutputStream cos;
-        try {
-            cos = new BZip2CompressorOutputStream(out);
+        try (BZip2CompressorOutputStream cos = new BZip2CompressorOutputStream(out)) {
             cos.write(payloadByteArr);
-            cos.close();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -75,9 +72,9 @@ public class Bzip2 implements Compressor, DeCompressor {
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ByteArrayInputStream in = new ByteArrayInputStream(payloadByteArr);
-        try {
-            BZip2CompressorInputStream unZip = new BZip2CompressorInputStream(in);
+        try (ByteArrayInputStream in = new ByteArrayInputStream(payloadByteArr);
+             BZip2CompressorInputStream unZip = new BZip2CompressorInputStream(in)) {
+
             byte[] buffer = new byte[2048];
             int n;
             while ((n = unZip.read(buffer)) >= 0) {
