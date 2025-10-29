@@ -60,11 +60,14 @@ public class NacosConnectionManager {
 
     private final boolean check;
 
+    private final Properties nacosProperties;
+
     public NacosConnectionManager(URL connectionURL, boolean check, int retryTimes, int sleepMsBetweenRetries) {
         this.connectionURL = connectionURL;
         this.check = check;
         this.retryTimes = retryTimes;
         this.sleepMsBetweenRetries = sleepMsBetweenRetries;
+        this.nacosProperties = buildNacosProperties(this.connectionURL);
         // create default one
         this.namingServiceList.add(createNamingService());
     }
@@ -78,6 +81,7 @@ public class NacosConnectionManager {
         this.retryTimes = 0;
         this.sleepMsBetweenRetries = 0;
         this.check = false;
+        this.nacosProperties = null;
         // create default one
         this.namingServiceList.add(namingService);
     }
@@ -116,7 +120,6 @@ public class NacosConnectionManager {
      * @return {@link NamingService}
      */
     protected NamingService createNamingService() {
-        Properties nacosProperties = buildNacosProperties(this.connectionURL);
         NamingService namingService = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
@@ -177,6 +180,9 @@ public class NacosConnectionManager {
 
     private Properties buildNacosProperties(URL url) {
         Properties properties = new Properties();
+        if (StringUtils.isEmpty(url.getHost())) {
+            return properties;
+        }
         setServerAddr(url, properties);
         setProperties(url, properties);
         return properties;

@@ -98,6 +98,12 @@ public class RestConfig implements Serializable {
     private OpenAPIConfig openapi;
 
     /**
+     * The Mcp configuration.
+     */
+    @Nested
+    private McpConfig mcp;
+
+    /**
      * Multiple configurations for openapi.
      */
     private Map<String, OpenAPIConfig> openapis;
@@ -210,6 +216,16 @@ public class RestConfig implements Serializable {
     @Parameter(attribute = false)
     public void setOpenapi(OpenAPIConfig openapi) {
         this.openapi = openapi;
+    }
+
+    @Parameter(excluded = true)
+    public McpConfig getMcp() {
+        return mcp;
+    }
+
+    @Parameter(attribute = false)
+    public void setMcp(McpConfig mcp) {
+        this.mcp = mcp;
     }
 
     @Parameter(excluded = true)
