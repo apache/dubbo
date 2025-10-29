@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -165,7 +166,8 @@ class JsonUtilsTest {
     }
 
     @Test
-    void consistentTest() {
+    void consistentTest() throws Exception {
+        ObjectMapper om = new ObjectMapper();
         List<Object> objs = new LinkedList<>();
 
         {
@@ -261,11 +263,11 @@ class JsonUtilsTest {
 
             setJson(null);
 
-            Assertions.assertEquals(fromFastjson1, fromFastjson2);
-            Assertions.assertEquals(fromFastjson1, fromGson);
-            Assertions.assertEquals(fromFastjson2, fromGson);
-            Assertions.assertEquals(fromFastjson1, fromJackson);
-            Assertions.assertEquals(fromFastjson2, fromJackson);
+            Assertions.assertEquals(om.readTree(fromFastjson1), om.readTree(fromFastjson2));
+            Assertions.assertEquals(om.readTree(fromFastjson1), om.readTree(fromGson));
+            Assertions.assertEquals(om.readTree(fromFastjson2), om.readTree(fromGson));
+            Assertions.assertEquals(om.readTree(fromFastjson1), om.readTree(fromJackson));
+            Assertions.assertEquals(om.readTree(fromFastjson2), om.readTree(fromJackson));
         }
     }
 
