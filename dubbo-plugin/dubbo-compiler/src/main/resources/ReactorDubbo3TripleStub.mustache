@@ -71,7 +71,31 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
-        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), new org.apache.dubbo.rpc.model.Pack() {
+            @Override
+            public byte[] pack(Object obj) throws Exception {
+                return ((com.google.protobuf.Message) obj).toByteArray();
+            }
+            @Override
+            public boolean supportsStreamPacking() {
+                return true;
+            }
+            @Override
+            public org.apache.dubbo.rpc.model.PackContext createPackContext(Object obj) throws Exception {
+                final com.google.protobuf.Message message = (com.google.protobuf.Message) obj;
+                return new org.apache.dubbo.rpc.model.PackContext() {
+                    private final int size = message.getSerializedSize();
+                    @Override
+                    public int getSize() {
+                        return size;
+                    }
+                    @Override
+                    public void writeTo(java.io.OutputStream os) throws Exception {
+                        message.writeTo(os);
+                    }
+                };
+            }
+        }, {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/unaryMethods}}
 
@@ -81,7 +105,31 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
-        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), new org.apache.dubbo.rpc.model.Pack() {
+            @Override
+            public byte[] pack(Object obj) throws Exception {
+                return ((com.google.protobuf.Message) obj).toByteArray();
+            }
+            @Override
+            public boolean supportsStreamPacking() {
+                return true;
+            }
+            @Override
+            public org.apache.dubbo.rpc.model.PackContext createPackContext(Object obj) throws Exception {
+                final com.google.protobuf.Message message = (com.google.protobuf.Message) obj;
+                return new org.apache.dubbo.rpc.model.PackContext() {
+                    private final int size = message.getSerializedSize();
+                    @Override
+                    public int getSize() {
+                        return size;
+                    }
+                    @Override
+                    public void writeTo(java.io.OutputStream os) throws Exception {
+                        message.writeTo(os);
+                    }
+                };
+            }
+        }, {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/serverStreamingMethods}}
 
@@ -91,7 +139,31 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
-        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), new org.apache.dubbo.rpc.model.Pack() {
+            @Override
+            public byte[] pack(Object obj) throws Exception {
+                return ((com.google.protobuf.Message) obj).toByteArray();
+            }
+            @Override
+            public boolean supportsStreamPacking() {
+                return true;
+            }
+            @Override
+            public org.apache.dubbo.rpc.model.PackContext createPackContext(Object obj) throws Exception {
+                final com.google.protobuf.Message message = (com.google.protobuf.Message) obj;
+                return new org.apache.dubbo.rpc.model.PackContext() {
+                    private final int size = message.getSerializedSize();
+                    @Override
+                    public int getSize() {
+                        return size;
+                    }
+                    @Override
+                    public void writeTo(java.io.OutputStream os) throws Exception {
+                        message.writeTo(os);
+                    }
+                };
+            }
+        }, {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/clientStreamingMethods}}
 
@@ -101,7 +173,31 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
-        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), new org.apache.dubbo.rpc.model.Pack() {
+            @Override
+            public byte[] pack(Object obj) throws Exception {
+                return ((com.google.protobuf.Message) obj).toByteArray();
+            }
+            @Override
+            public boolean supportsStreamPacking() {
+                return true;
+            }
+            @Override
+            public org.apache.dubbo.rpc.model.PackContext createPackContext(Object obj) throws Exception {
+                final com.google.protobuf.Message message = (com.google.protobuf.Message) obj;
+                return new org.apache.dubbo.rpc.model.PackContext() {
+                    private final int size = message.getSerializedSize();
+                    @Override
+                    public int getSize() {
+                        return size;
+                    }
+                    @Override
+                    public void writeTo(java.io.OutputStream os) throws Exception {
+                        message.writeTo(os);
+                    }
+                };
+            }
+        }, {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/biStreamingWithoutClientStreamMethods}}
 

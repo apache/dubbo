@@ -31,9 +31,9 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.Pack;
+import org.apache.dubbo.rpc.model.PackContext;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.PackableMethodFactory;
-import org.apache.dubbo.rpc.protocol.tri.PbArrayPacker;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +41,6 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 
@@ -92,23 +91,19 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
                 Pack responsePack = packableMethod.getResponsePack();
 
-                if (responsePack instanceof PbArrayPacker) {
-                    PbArrayPacker pbPacker = (PbArrayPacker) responsePack;
+                if (responsePack.supportsStreamPacking()) {
                     ByteBufOutputStream bbos = (ByteBufOutputStream) outputStream;
                     ByteBuf buffer = bbos.buffer();
 
                     try {
-                        com.google.protobuf.Message message = extractProtobufMessage(data, pbPacker);
-
-                        int payloadSize = message.getSerializedSize();
+                        PackContext ctx = responsePack.createPackContext(data);
+                        int payloadSize = ctx.getSize();
                         int totalSize = 5 + payloadSize;
                         buffer.ensureWritable(totalSize);
 
-                        // gRPC frame header (5 bytes): 1 byte compression flag + 4 bytes length
                         buffer.writeByte(0);
                         buffer.writeInt(payloadSize);
-
-                        message.writeTo(outputStream);
+                        ctx.writeTo(outputStream);
 
                         return;
 
@@ -120,7 +115,7 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
                 }
             }
 
-            outputStream.write(0); // gRPC compression flag: 0 = identity (no compression)
+            outputStream.write(0);
             byte[] bytes = packableMethod.packResponse(data);
             writeLength(outputStream, bytes.length);
             outputStream.write(bytes);
@@ -161,17 +156,6 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
         } catch (IOException e) {
             throw new EncodeException(e);
         }
-    }
-
-    private Message extractProtobufMessage(Object data, PbArrayPacker packer) throws ClassCastException {
-        if (!packer.isSingleArgument() && data instanceof Object[]) {
-            Object[] arr = (Object[]) data;
-            if (arr.length > 0) {
-                return (Message) arr[0];
-            }
-            throw new IllegalArgumentException("Empty array data for Protobuf message");
-        }
-        return (Message) data;
     }
 
     @Override
