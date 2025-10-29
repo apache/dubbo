@@ -329,6 +329,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                     executor.execute(() -> notifyTimeout(future));
                 } catch (RejectedExecutionException e) {
                     notifyExecutionError(future, e);
+                    throw e;
                 }
             } else {
                 notifyTimeout(future);
