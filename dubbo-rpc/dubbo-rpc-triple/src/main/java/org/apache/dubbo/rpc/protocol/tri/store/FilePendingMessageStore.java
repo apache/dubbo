@@ -498,9 +498,11 @@ public class FilePendingMessageStore implements PendingMessageStore {
             }
         } catch (Exception e) {
             LOGGER.error(
-                    "Failed to cleanup acknowledged messages up to: {} for session: {}",
-                    ackedSequence,
-                    currentMetadata.getSessionId(),
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Failed to cleanup acknowledged messages up to: " + ackedSequence + " for session: "
+                            + currentMetadata.getSessionId(),
                     e);
             throw new StoreException("Failed to cleanup acknowledged messages", e);
         } finally {

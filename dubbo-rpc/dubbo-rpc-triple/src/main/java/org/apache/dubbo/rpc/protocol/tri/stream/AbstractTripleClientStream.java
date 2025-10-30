@@ -909,18 +909,22 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             // Validate state transition logic
             if (!isValidStateTransition(oldState, newState)) {
                 LOGGER.warn(
-                        "Invalid state transition from {} to {} ({}) for session: {}",
-                        oldState,
-                        newState,
-                        reason,
-                        sessionId);
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Invalid state transition from " + oldState + " to " + newState + " (" + reason
+                                + ") for session: " + sessionId);
                 return;
             }
 
             heartbeatState = newState;
 
             LOGGER.warn(
-                    "Heartbeat state transition: {} -> {} ({}), sessionId: {}", oldState, newState, reason, sessionId);
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Heartbeat state transition: " + oldState + " -> " + newState + " (" + reason + "), sessionId: "
+                            + sessionId);
 
             // Trigger state change callbacks
             updateReliabilityState(newState.name(), reason);
@@ -1180,12 +1184,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 long totalRetryCount = getTotalRetryCount();
 
                 LOGGER.warn(
-                        "Reconnection failure statistics for session: {} - "
-                                + "Total messages sent: {}, Pending messages: {}, Total retries: {}",
-                        sessionId,
-                        totalSent,
-                        pendingCount,
-                        totalRetryCount);
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Reconnection failure statistics for session: " + sessionId + " - " + "Total messages sent: "
+                                + totalSent + ", Pending messages: " + pendingCount + ", Total retries: "
+                                + totalRetryCount);
             }
         } catch (Exception e) {
             LOGGER.debug("Error logging reconnection failure statistics for session: {}", sessionId, e);
@@ -1789,10 +1793,13 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             TripleStreamChannelFuture currentFuture = getCurrentStreamChannelFuture();
             if (currentFuture == null || currentFuture.isCancelled() || currentFuture.isCompletedExceptionally()) {
                 LOGGER.warn(
-                        "Stream channel future is not valid for resend - null: {}, cancelled: {}, exceptional: {}",
-                        currentFuture == null,
-                        currentFuture != null && currentFuture.isCancelled(),
-                        currentFuture != null && currentFuture.isCompletedExceptionally());
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Stream channel future is not valid for resend - null: " + (currentFuture == null)
+                                + ", cancelled: " + (currentFuture != null && currentFuture.isCancelled())
+                                + ", exceptional: "
+                                + (currentFuture != null && currentFuture.isCompletedExceptionally()));
                 return false;
             }
 
@@ -1874,7 +1881,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         } catch (Exception e) {
             LOGGER.error(
-                    "Failed to resend message with sequence: {} for session: {}", pending.getSequence(), sessionId, e);
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Failed to resend message with sequence: " + pending.getSequence() + " for session: " + sessionId,
+                    e);
 
             // If we fail to resend a message after reconnection, treat it as a permanent failure
             handleConnectionFailure();
@@ -2181,9 +2192,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             }
         } catch (java.util.concurrent.RejectedExecutionException e) {
             LOGGER.warn(
-                    "Failed to schedule exponential backoff retry for seq: {} in session: {}",
-                    pending.getSequence(),
-                    sessionId,
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Failed to schedule exponential backoff retry for seq: " + pending.getSequence() + " in session: "
+                            + sessionId,
                     e);
         }
     }
@@ -2367,10 +2380,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         lastTemporaryFailureTime = currentTime;
 
         LOGGER.warn(
-                "Temporary failure detected for session: {} - Reason: {}, Failure count: {}",
-                sessionId,
-                failureReason,
-                currentFailures);
+                INTERNAL_ERROR,
+                "",
+                "",
+                "Temporary failure detected for session: " + sessionId + " - Reason: " + failureReason
+                        + ", Failure count: " + currentFailures);
 
         if (currentFailures >= MAX_TEMPORARY_FAILURES) {
             LOGGER.error(
@@ -3169,11 +3183,13 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
                     if (current < newlyAckedCount) {
                         LOGGER.warn(
-                                "InFlight count protection triggered: attempted to ack {} messages but only {} were in flight. "
-                                        + "This may indicate duplicate ACKs or sequence number issues. Corrected to: {}",
-                                newlyAckedCount,
-                                current,
-                                updated);
+                                INTERNAL_ERROR,
+                                "",
+                                "",
+                                "InFlight count protection triggered: attempted to ack " + newlyAckedCount
+                                        + " messages but only " + current + " were in flight. "
+                                        + "This may indicate duplicate ACKs or sequence number issues. Corrected to: "
+                                        + updated);
                     }
 
                     LOGGER.debug(
@@ -3398,10 +3414,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         // Check 1: Max retry count
         if (pending.getRetryCount() >= config.getMaxRetries()) {
             LOGGER.warn(
-                    "Message seq={} exceeded max retries ({}/{}), dropping",
-                    pending.getSequence(),
-                    pending.getRetryCount(),
-                    config.getMaxRetries());
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Message seq=" + pending.getSequence() + " exceeded max retries (" + pending.getRetryCount() + "/"
+                            + config.getMaxRetries() + "), dropping");
             return false;
         }
 
@@ -3411,10 +3428,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         if (totalTimeout > 0 && elapsedTime > totalTimeout) {
             LOGGER.warn(
-                    "Message seq={} exceeded total retry timeout ({}ms > {}ms), dropping",
-                    pending.getSequence(),
-                    elapsedTime,
-                    totalTimeout);
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Message seq=" + pending.getSequence() + " exceeded total retry timeout (" + elapsedTime + "ms > "
+                            + totalTimeout + "ms), dropping");
             return false;
         }
 
