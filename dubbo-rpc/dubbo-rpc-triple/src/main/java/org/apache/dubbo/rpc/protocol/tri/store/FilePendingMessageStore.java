@@ -19,7 +19,13 @@ package org.apache.dubbo.rpc.protocol.tri.store;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -267,7 +273,7 @@ public class FilePendingMessageStore implements PendingMessageStore {
         List<PendingMessage> messages = new ArrayList<>();
 
         try (DataInputStream inputStream =
-                new DataInputStream(new BufferedInputStream(new FileInputStream(path.toFile())))) {
+                new DataInputStream(new BufferedInputStream(Files.newInputStream(path.toFile().toPath())))) {
 
             while (inputStream.available() > 0) {
                 try {
