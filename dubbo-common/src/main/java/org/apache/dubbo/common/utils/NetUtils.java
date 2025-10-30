@@ -647,7 +647,12 @@ public final class NetUtils {
     }
 
     public static String toAddressString(InetSocketAddress address) {
-        return address.getAddress().getHostAddress() + ":" + address.getPort();
+        if (address == null) {
+            return null;
+        }
+        InetAddress inetAddress = address.getAddress();
+        String host = inetAddress != null ? inetAddress.getHostAddress() : address.getHostString();
+        return host + ":" + address.getPort();
     }
 
     public static InetSocketAddress toAddress(String address) {

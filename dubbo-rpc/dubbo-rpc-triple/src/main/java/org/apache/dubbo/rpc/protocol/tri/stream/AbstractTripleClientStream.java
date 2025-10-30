@@ -240,20 +240,23 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      * Initialize executors and schedulers for reliability features.
      */
     private void initializeExecutors() {
+        // Use safe session identifier to handle potential null sessionId
+        String safeSessionId = (sessionId != null) ? sessionId : "temp-" + System.nanoTime();
+
         this.heartbeatScheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "reliability-heartbeat-" + sessionId);
+            Thread t = new Thread(r, "reliability-heartbeat-" + safeSessionId);
             t.setDaemon(true);
             return t;
         });
 
         this.retryScheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "reliability-retry-" + sessionId);
+            Thread t = new Thread(r, "reliability-retry-" + safeSessionId);
             t.setDaemon(true);
             return t;
         });
 
         this.recoveryExecutor = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "reliability-recovery-" + sessionId);
+            Thread t = new Thread(r, "reliability-recovery-" + safeSessionId);
             t.setDaemon(true);
             return t;
         });

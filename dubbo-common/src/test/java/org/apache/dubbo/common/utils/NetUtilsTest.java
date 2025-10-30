@@ -178,6 +178,12 @@ class NetUtilsTest {
     }
 
     @Test
+    void testToAddressStringWhenUnresolved() {
+        InetSocketAddress socketAddress = InetSocketAddress.createUnresolved("dubbo-unresolved", 4321);
+        assertThat(NetUtils.toAddressString(socketAddress), equalTo("dubbo-unresolved:4321"));
+    }
+
+    @Test
     void testToAddress() {
         InetSocketAddress address = NetUtils.toAddress("localhost:1234");
         assertThat(address.getHostName(), equalTo("localhost"));
