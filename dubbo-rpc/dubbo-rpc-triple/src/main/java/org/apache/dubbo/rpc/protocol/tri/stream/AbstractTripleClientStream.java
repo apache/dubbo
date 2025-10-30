@@ -240,19 +240,18 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      * Initialize executors and schedulers for reliability features.
      */
     private void initializeExecutors() {
-        // 创建专用的线程池，避免相互阻塞
-        this.heartbeatScheduler = frameworkModel
-                .getBeanFactory()
-                .getBean(org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository.class)
-                .nextScheduledExecutor();
+        this.heartbeatScheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "reliability-heartbeat-" + sessionId);
+            t.setDaemon(true);
+            return t;
+        });
 
-        // 创建独立的重试检查调度器，避免与心跳冲突
-        this.retryScheduler = frameworkModel
-                .getBeanFactory()
-                .getBean(org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository.class)
-                .nextScheduledExecutor();
+        this.retryScheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "reliability-retry-" + sessionId);
+            t.setDaemon(true);
+            return t;
+        });
 
-        // 创建单线程调度恢复执行器，确保恢复操作串行执行并支持延迟调度
         this.recoveryExecutor = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "reliability-recovery-" + sessionId);
             t.setDaemon(true);
@@ -525,7 +524,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         }
 
         // Initialize reliability features from headers
-        initializeReliabilityFromHeaders(headers);
+        if (headers != null && headers.contains("tri-reliable-version")) {
+            initializeReliabilityFromHeaders(headers);
+        }
 
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(getCurrentStreamChannelFuture(), headers);
         return writeQueue.enqueueFuture(headerCmd, parent.eventLoop()).addListener(future -> {
@@ -572,7 +573,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         }
 
         // Clean up reliability resources
-        cleanupReliabilityResources();
+        if (reliabilityEnabled || reliabilityInitialized.get()) {
+            cleanupReliabilityResources();
+        }
 
         // Handle case where stream channel future is null (e.g., after connection failure)
         TripleStreamChannelFuture currentFuture = getCurrentStreamChannelFuture();
@@ -2638,6 +2641,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     private void cleanupReliabilityResources() {
+        // Early return if reliability was never enabled
+        if (!reliabilityEnabled && !reliabilityInitialized.get()) {
+            return;
+        }
+
         // Prevent multiple cleanup calls using atomic flag
         if (reliabilityResourcesCleaned) {
             LOGGER.debug("Reliability resources already cleaned for session: {}", sessionId);
