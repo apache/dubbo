@@ -422,7 +422,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     recoveredCurrentSeq);
 
         } catch (Exception e) {
-            LOGGER.error("Failed to recover session state for session: {}, continuing with fresh state", sessionId, e);
+            LOGGER.error(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Failed to recover session state for session: " + sessionId + ", continuing with fresh state",
+                    e);
             // Continue with fresh state - don't fail initialization
         }
     }
@@ -620,9 +625,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         int currentInFlight = inFlightCount.get();
         if (currentInFlight >= config.getMaxInFlightMessages()) {
             LOGGER.warn(
-                    "InFlight limit exceeded: {}/{} messages, rejecting new message",
-                    currentInFlight,
-                    config.getMaxInFlightMessages());
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "InFlight limit exceeded: " + currentInFlight + "/" + config.getMaxInFlightMessages()
+                            + " messages, rejecting new message");
             io.netty.channel.ChannelPromise rejectPromise = parent.newPromise();
             rejectPromise.setFailure(new IllegalStateException("InFlight message limit exceeded"));
             return rejectPromise;
@@ -1136,9 +1143,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             } else {
                 // Non-recoverable failure: Terminate the stream
                 LOGGER.error(
-                        "Non-recoverable connection failure for session: {} - Reason: {}, terminating stream",
-                        sessionId,
-                        reason);
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Non-recoverable connection failure for session: " + sessionId + " - Reason: " + reason
+                                + ", terminating stream");
 
                 if (listener != null) {
                     // Call onComplete to terminate the stream
@@ -1393,7 +1402,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             transitionToState(HeartbeatState.RECONNECTING, reason);
             if (heartbeatState != HeartbeatState.RECONNECTING) {
                 LOGGER.warn(
-                        "Failed to transition from {} to RECONNECTING state for session: {}", previousState, sessionId);
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to transition from " + previousState + " to RECONNECTING state for session: "
+                                + sessionId);
                 return false;
             }
 
@@ -1414,8 +1427,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             boolean storeRecovered = reinitializeMessageStore();
             if (!storeRecovered) {
                 LOGGER.warn(
-                        "MessageStore reinitializtion failed, continuing without persistence for session: {}",
-                        sessionId);
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "MessageStore reinitializtion failed, continuing without persistence for session: "
+                                + sessionId);
             }
 
             // Step 6: Reset sequence tracking
@@ -1550,9 +1566,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             // Verify we are in PAUSED state
             if (heartbeatState != HeartbeatState.PAUSED) {
                 LOGGER.warn(
-                        "Cannot recover from PAUSED state - current state is: {} for session: {}",
-                        heartbeatState,
-                        sessionId);
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Cannot recover from PAUSED state - current state is: " + heartbeatState + " for session: "
+                                + sessionId);
                 return false;
             }
 
@@ -1730,8 +1748,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 // Decrement InFlight count for dropped message
                 inFlightCount.decrementAndGet();
                 LOGGER.warn(
-                        "Dropping message seq={} during reconnection resend (retry limit exceeded)",
-                        pending.getSequence());
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Dropping message seq=" + pending.getSequence()
+                                + " during reconnection resend (retry limit exceeded)");
                 return true; // Remove from resend list
             }
             return false; // Keep for resend
@@ -1740,9 +1761,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         int droppedCount = originalCount - messagesToResend.size();
         if (droppedCount > 0) {
             LOGGER.warn(
-                    "Dropped {} messages during reconnection resend due to retry limits for session: {}",
-                    droppedCount,
-                    sessionId);
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Dropped " + droppedCount + " messages during reconnection resend due to retry limits for session: "
+                            + sessionId);
         }
 
         if (messagesToResend.isEmpty()) {
@@ -1776,9 +1799,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             // Check if parent channel is active
             if (parent == null || !parent.isActive()) {
                 LOGGER.warn(
-                        "Parent channel is not active for resend - null: {}, active: {}",
-                        parent == null,
-                        parent != null && parent.isActive());
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Parent channel is not active for resend - null: " + (parent == null) + ", active: "
+                                + (parent != null && parent.isActive()));
                 return false;
             }
 
@@ -2349,9 +2374,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         if (currentFailures >= MAX_TEMPORARY_FAILURES) {
             LOGGER.error(
-                    "Max temporary failures ({}) exceeded for session: {}, marking as failed but keeping recovery capability",
-                    MAX_TEMPORARY_FAILURES,
-                    sessionId);
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Max temporary failures (" + MAX_TEMPORARY_FAILURES + ") exceeded for session: " + sessionId
+                            + ", marking as failed but keeping recovery capability");
             handleTemporaryFailure("Max temporary failures exceeded");
         } else {
             // Try to recover instead of immediate cleanup
@@ -2386,7 +2413,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     }
                 } else {
                     LOGGER.warn(
-                            "Session {} is in terminal state {}, cannot attempt recovery", sessionId, heartbeatState);
+                            INTERNAL_ERROR,
+                            "",
+                            "",
+                            "Session " + sessionId + " is in terminal state " + heartbeatState
+                                    + ", cannot attempt recovery");
                 }
             } catch (Exception e) {
                 LOGGER.error(INTERNAL_ERROR, "", "", "Error during recovery attempt for session: " + sessionId, e);
@@ -3211,8 +3242,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             if (serverAck == null) {
                 // Server doesn't support reliability, fallback to non-reliable mode
                 LOGGER.warn(
-                        "Server doesn't support reliability (no tri-reliable-ack header), falling back to non-reliable mode for session: {}",
-                        sessionId);
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Server doesn't support reliability (no tri-reliable-ack header), falling back to non-reliable mode for session: "
+                                + sessionId);
 
                 // Disable reliability and cleanup resources
                 performReliabilityFallback("Server capability negotiation failed");
