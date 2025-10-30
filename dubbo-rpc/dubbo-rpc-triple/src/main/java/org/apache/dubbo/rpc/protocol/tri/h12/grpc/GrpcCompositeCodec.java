@@ -24,11 +24,14 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
 import org.apache.dubbo.remoting.http12.exception.EncodeException;
+import org.apache.dubbo.remoting.http12.exception.HttpOverPayloadException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.Pack;
+import org.apache.dubbo.rpc.model.PackContext;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.PackableMethodFactory;
 
@@ -37,6 +40,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
@@ -78,12 +84,38 @@ public class GrpcCompositeCodec implements HttpMessageCodec {
 
     @Override
     public void encode(OutputStream outputStream, Object data, Charset charset) throws EncodeException {
-        // protobuf
-        // TODO int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 :
-        // 1;
         try {
-            int compressed = 0;
-            outputStream.write(compressed);
+            if (packableMethod != null
+                    && !packableMethod.needWrapper()
+                    && outputStream instanceof ByteBufOutputStream) {
+
+                Pack responsePack = packableMethod.getResponsePack();
+
+                if (responsePack.supportsStreamPacking()) {
+                    ByteBufOutputStream bbos = (ByteBufOutputStream) outputStream;
+                    ByteBuf buffer = bbos.buffer();
+
+                    try {
+                        PackContext ctx = responsePack.createPackContext(data);
+                        int payloadSize = ctx.getSize();
+                        int totalSize = 5 + payloadSize;
+                        buffer.ensureWritable(totalSize);
+
+                        buffer.writeByte(0);
+                        buffer.writeInt(payloadSize);
+                        ctx.writeTo(outputStream);
+
+                        return;
+
+                    } catch (IndexOutOfBoundsException | HttpOverPayloadException e) {
+                        if (e instanceof HttpOverPayloadException) {
+                            throw e;
+                        }
+                    }
+                }
+            }
+
+            outputStream.write(0);
             byte[] bytes = packableMethod.packResponse(data);
             writeLength(outputStream, bytes.length);
             outputStream.write(bytes);

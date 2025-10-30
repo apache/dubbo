@@ -38,8 +38,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import com.google.protobuf.Message;
-
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.utils.ProtobufUtils.isProtobufClass;
 
@@ -50,7 +48,6 @@ public class ReflectionPackableMethod implements PackableMethod {
     private static final String REACTOR_RETURN_CLASS = "reactor.core.publisher.Mono";
     private static final String RX_RETURN_CLASS = "io.reactivex.Single";
     private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
-    private static final Pack PB_PACK = o -> ((Message) o).toByteArray();
 
     private final Pack requestPack;
     private final Pack responsePack;
@@ -89,7 +86,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         this.needWrapper = needWrap(method, actualRequestTypes, actualResponseType);
         if (!needWrapper) {
             requestPack = new PbArrayPacker(singleArgument);
-            responsePack = PB_PACK;
+            responsePack = new PbArrayPacker(true);
             requestUnpack = new PbUnpack<>(actualRequestTypes[0]);
             responseUnpack = new PbUnpack<>(actualResponseType);
         } else {

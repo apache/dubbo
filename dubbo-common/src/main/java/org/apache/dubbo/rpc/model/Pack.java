@@ -19,9 +19,31 @@ package org.apache.dubbo.rpc.model;
 public interface Pack {
 
     /**
+     * Pack object to byte array
      * @param obj instance
      * @return byte array
      * @throws Exception when error occurs
      */
     byte[] pack(Object obj) throws Exception;
+
+    /**
+     * Check if this Pack implementation supports zero-copy stream packing
+     * @return true if supports stream packing
+     */
+    default boolean supportsStreamPacking() {
+        return false;
+    }
+
+    /**
+     * Create a PackContext for zero-copy optimization.
+     * The context encapsulates both size calculation and stream writing.
+     *
+     * @param obj instance to pack
+     * @return PackContext instance
+     * @throws Exception when error occurs
+     */
+    default PackContext createPackContext(Object obj) throws Exception {
+        byte[] bytes = pack(obj);
+        return PackContext.of(bytes);
+    }
 }

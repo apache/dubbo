@@ -17,6 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.model.Pack;
+import org.apache.dubbo.rpc.model.PackContext;
+
+import java.io.OutputStream;
 
 import com.google.protobuf.Message;
 
@@ -36,5 +39,47 @@ public class PbArrayPacker implements Pack {
             obj = ((Object[]) obj)[0];
         }
         return PB_PACK.pack(obj);
+    }
+
+    @Override
+    public boolean supportsStreamPacking() {
+        return true;
+    }
+
+    @Override
+    public PackContext createPackContext(Object obj) throws Exception {
+        Message message = extractMessage(obj);
+        return new ProtobufPackContext(message);
+    }
+
+    public boolean isSingleArgument() {
+        return singleArgument;
+    }
+
+    private Message extractMessage(Object obj) {
+        if (!singleArgument) {
+            obj = ((Object[]) obj)[0];
+        }
+        return (Message) obj;
+    }
+
+    private static class ProtobufPackContext implements PackContext {
+        private final Message message;
+        private final int size;
+
+        ProtobufPackContext(Message message) {
+            this.message = message;
+            this.size = message.getSerializedSize();
+        }
+
+        @Override
+        public int getSize() {
+            return size;
+        }
+
+        @Override
+        public void writeTo(OutputStream os) throws Exception {
+            message.writeTo(os);
+        }
     }
 }
