@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_STORAGE_TYPE_PROPERTY_NAME;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
@@ -107,6 +108,25 @@ class CuratorFrameworkUtilsTest {
                 CuratorFrameworkUtils.buildServiceDiscovery(curatorFramework, ROOT_PATH.getParameterValue(registryUrl));
         Assertions.assertNotNull(discovery);
         curatorFramework.getZookeeperClient().close();
+    }
+
+    @Test
+    void testBuildCuratorFrameworkCheckConnectDefault() {
+        when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
+            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
+            curatorFramework.getZookeeperClient().close();
+        });
+    }
+
+    @Test
+    void testBuildCuratorFrameworkNotCheckConnect() {
+        when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
+        URL url = registryUrl.addParameter(CHECK_KEY, false);
+        Assertions.assertDoesNotThrow(() -> {
+            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(url, null);
+            curatorFramework.getZookeeperClient().close();
+        });
     }
 
     @Test
