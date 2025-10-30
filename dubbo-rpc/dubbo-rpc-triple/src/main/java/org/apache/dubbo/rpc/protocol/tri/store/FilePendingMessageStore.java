@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.store;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -154,7 +155,11 @@ public class FilePendingMessageStore implements PendingMessageStore {
     @Override
     public void ack(long sequence) throws StoreException {
         if (currentMetadata == null) {
-            LOGGER.warn("Store not initialized, cannot ack sequence: {}", sequence);
+            LOGGER.warn(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Store not initialized, cannot ack sequence: " + sequence);
             return;
         }
 
@@ -205,7 +210,12 @@ public class FilePendingMessageStore implements PendingMessageStore {
                         try {
                             return readMessagesFromFile(path).stream();
                         } catch (Exception e) {
-                            LOGGER.warn("Failed to read messages from file: {}", path, e);
+                            LOGGER.warn(
+                                    LoggerCodeConstants.INTERNAL_ERROR,
+                                    "",
+                                    "",
+                                    "Failed to read messages from file: " + path,
+                                    e);
                             return Stream.empty();
                         }
                     })
@@ -354,7 +364,12 @@ public class FilePendingMessageStore implements PendingMessageStore {
                     try {
                         return Files.getLastModifiedTime(path).toMillis() < cutoffTime;
                     } catch (IOException e) {
-                        LOGGER.warn("Failed to get last modified time for file: {}", path, e);
+                        LOGGER.warn(
+                                LoggerCodeConstants.INTERNAL_ERROR,
+                                "",
+                                "",
+                                "Failed to get last modified time for file: " + path,
+                                e);
                         return false;
                     }
                 })
@@ -363,7 +378,8 @@ public class FilePendingMessageStore implements PendingMessageStore {
                         Files.deleteIfExists(path);
                         LOGGER.debug("Deleted old file: {}", path);
                     } catch (IOException e) {
-                        LOGGER.warn("Failed to delete old file: {}", path, e);
+                        LOGGER.warn(
+                                LoggerCodeConstants.INTERNAL_ERROR, "", "", "Failed to delete old file: " + path, e);
                     }
                 });
     }
@@ -430,7 +446,12 @@ public class FilePendingMessageStore implements PendingMessageStore {
                                 }
                             }
                         } catch (IOException e) {
-                            LOGGER.warn("Failed to read messages from file during cleanup: {}", file, e);
+                            LOGGER.warn(
+                                    LoggerCodeConstants.INTERNAL_ERROR,
+                                    "",
+                                    "",
+                                    "Failed to read messages from file during cleanup: " + file,
+                                    e);
                         }
                     }
 
@@ -441,7 +462,12 @@ public class FilePendingMessageStore implements PendingMessageStore {
                             try {
                                 Files.deleteIfExists(file);
                             } catch (IOException e) {
-                                LOGGER.warn("Failed to delete old file during cleanup: {}", file, e);
+                                LOGGER.warn(
+                                        LoggerCodeConstants.INTERNAL_ERROR,
+                                        "",
+                                        "",
+                                        "Failed to delete old file during cleanup: " + file,
+                                        e);
                             }
                         }
 
@@ -500,7 +526,8 @@ public class FilePendingMessageStore implements PendingMessageStore {
             return parseMetadataJson(jsonContent);
 
         } catch (Exception e) {
-            LOGGER.error("Failed to load metadata for session: {}", sessionId, e);
+            LOGGER.error(
+                    LoggerCodeConstants.INTERNAL_ERROR, "", "", "Failed to load metadata for session: " + sessionId, e);
             // Return null instead of throwing to allow graceful fallback
             return null;
         } finally {
@@ -537,7 +564,12 @@ public class FilePendingMessageStore implements PendingMessageStore {
             LOGGER.debug("Updated metadata for session: {}", metadata.getSessionId());
 
         } catch (Exception e) {
-            LOGGER.error("Failed to update metadata for session: {}", metadata.getSessionId(), e);
+            LOGGER.error(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Failed to update metadata for session: " + metadata.getSessionId(),
+                    e);
             throw new StoreException("Failed to update metadata", e);
         } finally {
             lock.writeLock().unlock();
@@ -588,11 +620,15 @@ public class FilePendingMessageStore implements PendingMessageStore {
                         lastUpdateTime);
             } else {
                 // If no currentMetadata, return partial metadata (will be enriched later)
-                LOGGER.warn("No current metadata available, returning partial metadata for session: {}", sessionId);
+                LOGGER.warn(
+                        LoggerCodeConstants.INTERNAL_ERROR,
+                        "",
+                        "",
+                        "No current metadata available, returning partial metadata for session: " + sessionId);
                 return null;
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to parse metadata JSON", e);
+            LOGGER.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Failed to parse metadata JSON", e);
             return null;
         }
     }

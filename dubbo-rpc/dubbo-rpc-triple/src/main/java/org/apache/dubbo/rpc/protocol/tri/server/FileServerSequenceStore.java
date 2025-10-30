@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.server;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -148,7 +149,11 @@ public class FileServerSequenceStore implements ServerSequenceStore {
                             }
                         } catch (NumberFormatException e) {
                             // Skip invalid lines
-                            LOGGER.warn("Invalid sequence number in file: {}", line);
+                            LOGGER.warn(
+                                    LoggerCodeConstants.INTERNAL_ERROR,
+                                    "",
+                                    "",
+                                    "Invalid sequence number in file: " + line);
                         }
                     }
                 }
@@ -261,7 +266,12 @@ public class FileServerSequenceStore implements ServerSequenceStore {
             Files.deleteIfExists(testFile);
             return true;
         } catch (Exception e) {
-            LOGGER.warn("File store health check failed for directory: {}", storeDirectory, e);
+            LOGGER.warn(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "File store health check failed for directory: " + storeDirectory,
+                    e);
             return false;
         }
     }
@@ -310,7 +320,11 @@ public class FileServerSequenceStore implements ServerSequenceStore {
                         maxSeq = Math.max(maxSeq, sequence);
                         count++;
                     } catch (NumberFormatException e) {
-                        LOGGER.warn("Invalid sequence number in file: {}, skipping", line);
+                        LOGGER.warn(
+                                LoggerCodeConstants.INTERNAL_ERROR,
+                                "",
+                                "",
+                                "Invalid sequence number in file: " + line + ", skipping");
                     }
                 }
 

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
@@ -69,12 +70,16 @@ public class TripleReconnectionManager implements ReconnectionManager {
                 if (success) {
                     LOGGER.info("Reconnection successful for connection client: {}", connectionClient);
                 } else {
-                    LOGGER.warn("Reconnection failed for connection client: {}", connectionClient);
+                    LOGGER.warn(
+                            LoggerCodeConstants.INTERNAL_ERROR,
+                            "",
+                            "",
+                            "Reconnection failed for connection client: " + connectionClient);
                 }
 
                 return success;
             } catch (Exception e) {
-                LOGGER.error("Error during reconnection attempt", e);
+                LOGGER.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error during reconnection attempt", e);
                 return false;
             }
         });
@@ -96,7 +101,7 @@ public class TripleReconnectionManager implements ReconnectionManager {
             // Get the active channel, this should be the new channel after reconnection
             return connectionClient.getChannel(true);
         } catch (Exception e) {
-            LOGGER.error("Error getting new stream channel", e);
+            LOGGER.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error getting new stream channel", e);
             return null;
         }
     }
@@ -149,11 +154,20 @@ public class TripleReconnectionManager implements ReconnectionManager {
                 return streamChannelFuture;
 
             } else {
-                LOGGER.warn("Failed to create TripleStreamChannelFuture - no active channel available");
+                LOGGER.warn(
+                        LoggerCodeConstants.INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to create TripleStreamChannelFuture - no active channel available");
                 return null;
             }
         } catch (Exception e) {
-            LOGGER.error("Error creating new TripleStreamChannelFuture for reconnection", e);
+            LOGGER.error(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Error creating new TripleStreamChannelFuture for reconnection",
+                    e);
             return null;
         }
     }

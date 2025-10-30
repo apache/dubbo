@@ -79,6 +79,7 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
 /**
@@ -226,7 +227,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             LOGGER.info("Successfully completed unified reliability initialization for session: {}", sessionId);
 
         } catch (Exception e) {
-            LOGGER.error("Failed to initialize reliability for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Failed to initialize reliability for session: " + sessionId, e);
             // Reset the flag to allow retry
             reliabilityInitialized.set(false);
             // Clean up any partial initialization
@@ -271,7 +272,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 sessionId = (String) attachments.get("tri-session-id");
                 if (sessionId == null) {
                     sessionId = hasSessionIdFromHeaders ? this.sessionId : "metadata-session-" + System.nanoTime();
-                    LOGGER.warn("No session ID in request metadata, using: {}", sessionId);
+                    LOGGER.warn(INTERNAL_ERROR, "", "", "No session ID in request metadata, using: " + sessionId);
                 }
             } else {
                 sessionId = this.sessionId; // Use session ID from headers
@@ -351,7 +352,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             LOGGER.info("Initialized message store of type: {} for session: {}", storeType, sessionId);
         } catch (Exception e) {
-            LOGGER.error("Failed to initialize message store for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Failed to initialize message store for session: " + sessionId, e);
             // Fallback to in-memory store
             this.messageStore = new org.apache.dubbo.rpc.protocol.tri.store.InMemoryPendingMessageStore();
             try {
@@ -364,7 +365,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 this.currentMetadata = metadata; // Store reference for later updates
                 messageStore.init(metadata);
             } catch (Exception ex) {
-                LOGGER.error("Failed to initialize fallback in-memory store for session: {}", sessionId, ex);
+                LOGGER.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to initialize fallback in-memory store for session: " + sessionId,
+                        ex);
             }
         }
     }
@@ -451,7 +457,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             LOGGER.info("Recovered {} messages for session: {}", recoveredMessages.size(), sessionId);
         } catch (Exception e) {
-            LOGGER.error("Failed to recover pending messages for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Failed to recover pending messages for session: " + sessionId, e);
         }
     }
 
@@ -531,14 +537,22 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         // Classify error: recoverable (network issue) vs non-recoverable (protocol error)
         if (isRecoverableException(cause)) {
             // Recoverable: Handle as temporary failure, trigger recovery
-            LOGGER.warn("Recoverable transport exception for session: {} - {}", sessionId, cause.getMessage());
+            LOGGER.warn(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Recoverable transport exception for session: " + sessionId + " - " + cause.getMessage());
             handleTemporaryFailureWithCount("Transport exception: " + cause.getMessage());
 
             // Do NOT call onComplete - let recovery mechanism handle it
             // The stream remains alive for retry/reconnect
         } else {
             // Non-recoverable: Terminate the stream immediately
-            LOGGER.error("Non-recoverable transport exception for session: {} - {}", sessionId, cause.getMessage());
+            LOGGER.error(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Non-recoverable transport exception for session: " + sessionId + " - " + cause.getMessage());
 
             // Clean up resources and notify business layer
             cleanupReliabilityResources();
@@ -641,7 +655,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                                 sessionId);
                 messageStore.put(storeMessage);
             } catch (StoreException e) {
-                LOGGER.warn("Failed to persist message with sequence: {} for session: {}", seq, sessionId, e);
+                LOGGER.warn(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to persist message with sequence: " + seq + " for session: " + sessionId,
+                        e);
             }
         }
 
@@ -745,7 +764,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                             checkHeartbeatState();
                             sendHeartbeatIfNeeded();
                         } catch (Exception e) {
-                            LOGGER.warn("Heartbeat monitoring failed for session: {}", sessionId, e);
+                            LOGGER.warn(
+                                    INTERNAL_ERROR, "", "", "Heartbeat monitoring failed for session: " + sessionId, e);
                         }
                     },
                     config.getHeartbeatInterval(),
@@ -812,7 +832,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     HeaderQueueCommand.createHeaders(getCurrentStreamChannelFuture(), heartbeat, false);
             writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
                 if (!future.isSuccess()) {
-                    LOGGER.warn("Failed to send heartbeat", future.cause());
+                    LOGGER.warn(INTERNAL_ERROR, "", "", "Failed to send heartbeat", future.cause());
                 }
             });
             lastHeartbeatSentTime = now;
@@ -850,7 +870,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     HeaderQueueCommand.createHeaders(getCurrentStreamChannelFuture(), heartbeat, false);
             writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
                 if (!future.isSuccess()) {
-                    LOGGER.warn("Failed to send heartbeat with custom headers", future.cause());
+                    LOGGER.warn(INTERNAL_ERROR, "", "", "Failed to send heartbeat with custom headers", future.cause());
                 } else {
                     LOGGER.debug("Successfully sent heartbeat with custom headers");
                 }
@@ -858,7 +878,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             lastHeartbeatSentTime = now;
         } catch (Exception e) {
-            LOGGER.error("Error sending heartbeat with headers", e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Error sending heartbeat with headers", e);
         }
     }
 
@@ -937,7 +957,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     private void attemptReconnect() {
-        LOGGER.warn("Connection reconnection needed for session: {}", sessionId);
+        LOGGER.warn(INTERNAL_ERROR, "", "", "Connection reconnection needed for session: " + sessionId);
 
         // Schedule recovery in dedicated recovery executor to avoid blocking heartbeat thread
         try {
@@ -945,12 +965,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 try {
                     performSessionRecovery();
                 } catch (Exception e) {
-                    LOGGER.error("Session recovery failed for session: {}", sessionId, e);
+                    LOGGER.error(INTERNAL_ERROR, "", "", "Session recovery failed for session: " + sessionId, e);
                     transitionToState(HeartbeatState.FAILED, "Session recovery failed");
                 }
             });
         } catch (java.util.concurrent.RejectedExecutionException e) {
-            LOGGER.warn("Failed to schedule session recovery for session: {}", sessionId);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Failed to schedule session recovery for session: " + sessionId);
             transitionToState(HeartbeatState.FAILED, "Unable to schedule recovery");
         }
     }
@@ -983,14 +1003,22 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         // Check if connection is still active
         if (!parent.isActive()) {
-            LOGGER.warn("Connection is inactive for session: {}, attempting reconnection", sessionId);
+            LOGGER.warn(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Connection is inactive for session: " + sessionId + ", attempting reconnection");
 
             // Attempt real reconnection using reconnection manager
             if (reconnectionManager != null) {
                 attemptRealReconnection();
                 return;
             } else {
-                LOGGER.error("No reconnection manager available for session: {}, recovery failed", sessionId);
+                LOGGER.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "No reconnection manager available for session: " + sessionId + ", recovery failed");
                 transitionToState(HeartbeatState.FAILED, "No reconnection manager available");
                 return;
             }
@@ -1005,7 +1033,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         reconnectionManager.attemptReconnection().whenComplete((success, throwable) -> {
             if (throwable != null) {
-                LOGGER.error("Reconnection failed for session: {}", sessionId, throwable);
+                LOGGER.error(INTERNAL_ERROR, "", "", "Reconnection failed for session: " + sessionId, throwable);
                 handleReconnectionFailure("Reconnection attempt failed with exception", throwable);
                 return;
             }
@@ -1020,11 +1048,16 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     performActiveSessionRecovery();
                     LOGGER.info("Session recovery completed after reconnection for session: {}", sessionId);
                 } catch (Exception e) {
-                    LOGGER.error("Error during session recovery after reconnection for session: {}", sessionId, e);
+                    LOGGER.error(
+                            INTERNAL_ERROR,
+                            "",
+                            "",
+                            "Error during session recovery after reconnection for session: " + sessionId,
+                            e);
                     handleReconnectionFailure("Error during session recovery", e);
                 }
             } else {
-                LOGGER.warn("Reconnection failed for session: {}", sessionId);
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Reconnection failed for session: " + sessionId);
                 handleReconnectionFailure("Reconnection failed - no active connection", null);
             }
         });
@@ -1032,7 +1065,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     private void handleReconnectionFailure(String reason, Throwable throwable) {
         try {
-            LOGGER.error("Handling reconnection failure for session: {} - Reason: {}", sessionId, reason, throwable);
+            LOGGER.error(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Handling reconnection failure for session: " + sessionId + " - Reason: " + reason,
+                    throwable);
 
             // Mark the session as failed
             transitionToState(HeartbeatState.FAILED, reason);
@@ -1047,7 +1085,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             logReconnectionFailureStatistics();
 
         } catch (Exception e) {
-            LOGGER.error("Error during reconnection failure handling for session: {}", sessionId, e);
+            LOGGER.error(
+                    INTERNAL_ERROR, "", "", "Error during reconnection failure handling for session: " + sessionId, e);
         }
     }
 
@@ -1083,7 +1122,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     try {
                         stateChangeCallback.accept(heartbeatState.name());
                     } catch (Exception e) {
-                        LOGGER.warn("Error in state change callback for session: {}", sessionId, e);
+                        LOGGER.warn(
+                                INTERNAL_ERROR, "", "", "Error in state change callback for session: " + sessionId, e);
                     }
                 }
 
@@ -1106,11 +1146,20 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     LOGGER.debug(
                             "Successfully terminated stream for session: {} due to non-recoverable error", sessionId);
                 } else {
-                    LOGGER.warn("No listener available to terminate stream for session: {}", sessionId);
+                    LOGGER.warn(
+                            INTERNAL_ERROR,
+                            "",
+                            "",
+                            "No listener available to terminate stream for session: " + sessionId);
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Error notifying business layer of connection failure for session: {}", sessionId, e);
+            LOGGER.error(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Error notifying business layer of connection failure for session: " + sessionId,
+                    e);
         }
     }
 
@@ -1208,7 +1257,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             LOGGER.info("Successfully restarted reliability schedulers for session: {}", sessionId);
 
         } catch (Exception e) {
-            LOGGER.error("Failed to restart reliability schedulers for session: {}", sessionId, e);
+            LOGGER.error(
+                    INTERNAL_ERROR, "", "", "Failed to restart reliability schedulers for session: " + sessionId, e);
             // Don't fail the recovery process, but log the error
         }
     }
@@ -1220,7 +1270,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             // Use the new type-safe method to get stream future
             TripleStreamChannelFuture newStreamChannelFuture = reconnectionManager.createStreamFuture();
             if (newStreamChannelFuture == null) {
-                LOGGER.warn("No new stream channel available after reconnection for session: {}", sessionId);
+                LOGGER.warn(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "No new stream channel available after reconnection for session: " + sessionId);
                 handleReconnectionFailure("Failed to create new stream channel", null);
                 return;
             }
@@ -1232,7 +1286,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 Object newStreamChannel = newStreamChannelFuture.get(10, java.util.concurrent.TimeUnit.SECONDS);
 
                 if (newStreamChannel == null) {
-                    LOGGER.warn("New stream channel creation completed but returned null for session: {}", sessionId);
+                    LOGGER.warn(
+                            INTERNAL_ERROR,
+                            "",
+                            "",
+                            "New stream channel creation completed but returned null for session: " + sessionId);
                     handleReconnectionFailure("New stream channel is null after creation", null);
                     return;
                 }
@@ -1242,11 +1300,21 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                         sessionId);
 
             } catch (java.util.concurrent.TimeoutException e) {
-                LOGGER.error("Timeout waiting for new stream channel creation for session: {}", sessionId, e);
+                LOGGER.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Timeout waiting for new stream channel creation for session: " + sessionId,
+                        e);
                 handleReconnectionFailure("New stream channel creation timeout", e);
                 return;
             } catch (Exception e) {
-                LOGGER.error("Error waiting for new stream channel creation for session: {}", sessionId, e);
+                LOGGER.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Error waiting for new stream channel creation for session: " + sessionId,
+                        e);
                 handleReconnectionFailure("New stream channel creation failed", e);
                 return;
             }
@@ -1266,12 +1334,13 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 }
 
             } catch (Exception e) {
-                LOGGER.error("Error during stream channel replacement for session: {}", sessionId, e);
+                LOGGER.error(
+                        INTERNAL_ERROR, "", "", "Error during stream channel replacement for session: " + sessionId, e);
                 handleReconnectionFailure("Stream channel replacement failed", e);
             }
 
         } catch (Exception e) {
-            LOGGER.error("Error during stream channel update for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Error during stream channel update for session: " + sessionId, e);
             handleReconnectionFailure("Stream channel update failed", e);
         }
     }
@@ -1282,7 +1351,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             // The old transport listener will naturally be replaced when the new channel is active
             LOGGER.debug("Cleaned up old connection resources for session: {}", sessionId);
         } catch (Exception e) {
-            LOGGER.warn("Error during old connection resource cleanup for session: {}", sessionId, e);
+            LOGGER.warn(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Error during old connection resource cleanup for session: " + sessionId,
+                    e);
         }
     }
 
@@ -1299,7 +1373,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             return performComprehensiveRecovery("Manual recovery from FAILED state");
 
         } catch (Exception e) {
-            LOGGER.error("Error during recovery from FAILED state for session: {}", sessionId, e);
+            LOGGER.error(
+                    INTERNAL_ERROR, "", "", "Error during recovery from FAILED state for session: " + sessionId, e);
             transitionToState(HeartbeatState.FAILED, "Recovery attempt failed with exception");
             return false;
         }
@@ -1379,7 +1454,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             return true;
 
         } catch (Exception e) {
-            LOGGER.error("Error during comprehensive recovery for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Error during comprehensive recovery for session: " + sessionId, e);
             transitionToState(HeartbeatState.FAILED, "Comprehensive recovery failed");
             return false;
         }
@@ -1422,7 +1497,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             LOGGER.info("Successfully reinitialized all executors for session: {}", sessionId);
         } catch (Exception e) {
-            LOGGER.error("Error reinitializing executors for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Error reinitializing executors for session: " + sessionId, e);
             throw new RuntimeException("Executor reinitialization failed", e);
         }
     }
@@ -1458,7 +1533,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             return true;
 
         } catch (Exception e) {
-            LOGGER.error("Failed to reinitialize messageStore for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Failed to reinitialize messageStore for session: " + sessionId, e);
             messageStore = null;
             return false;
         }
@@ -1485,7 +1560,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             return performComprehensiveRecovery("Recovery from PAUSED state");
 
         } catch (Exception e) {
-            LOGGER.error("Error during recovery from PAUSED state for session: {}", sessionId, e);
+            LOGGER.error(
+                    INTERNAL_ERROR, "", "", "Error during recovery from PAUSED state for session: " + sessionId, e);
             transitionToState(HeartbeatState.FAILED, "PAUSED state recovery failed with exception");
             return false;
         }
@@ -1498,7 +1574,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     private void loadPendingMessagesFromStorage() {
         try {
             if (messageStore == null) {
-                LOGGER.warn("Cannot load pending messages - messageStore is null for session: {}", sessionId);
+                LOGGER.warn(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Cannot load pending messages - messageStore is null for session: " + sessionId);
                 return;
             }
 
@@ -1559,7 +1639,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             }
 
         } catch (Exception e) {
-            LOGGER.error("Error loading pending messages from storage for session: {}", sessionId, e);
+            LOGGER.error(
+                    INTERNAL_ERROR, "", "", "Error loading pending messages from storage for session: " + sessionId, e);
             // Don't fail recovery just because of storage loading issues
             // The connection can still work, just without previously pending messages
         }
@@ -1608,7 +1689,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             LOGGER.info("Successfully completed ACK point renegotiation for session: {}", sessionId);
 
         } catch (Exception e) {
-            LOGGER.error("Error during ACK point renegotiation for session: {}", sessionId, e);
+            LOGGER.error(INTERNAL_ERROR, "", "", "Error during ACK point renegotiation for session: " + sessionId, e);
             // Don't fail recovery just because of ACK negotiation issues
             // The stream can still work, just with potentially some duplicate messages
         }
@@ -1627,7 +1708,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         // Verify that we have a valid new connection before resending
         if (!validateNewConnectionForResend()) {
-            LOGGER.warn("Cannot resend messages - no valid new connection available for session: {}", sessionId);
+            LOGGER.warn(
+                    INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Cannot resend messages - no valid new connection available for session: " + sessionId);
             handleConnectionFailure();
             return;
         }
@@ -1699,14 +1784,15 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             // Check if write queue is available
             if (writeQueue == null) {
-                LOGGER.warn("Write queue is not available for resend");
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Write queue is not available for resend");
                 return false;
             }
 
             LOGGER.debug("New connection validated successfully for resend on session: {}", sessionId);
             return true;
         } catch (Exception e) {
-            LOGGER.warn("Error validating new connection for resend on session: {}", sessionId, e);
+            LOGGER.warn(
+                    INTERNAL_ERROR, "", "", "Error validating new connection for resend on session: " + sessionId, e);
             return false;
         }
     }
@@ -1723,7 +1809,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                         sessionId);
             }
         } catch (Exception e) {
-            LOGGER.warn("Error updating retry counts for resend on session: {}", sessionId, e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error updating retry counts for resend on session: " + sessionId, e);
         }
     }
 
@@ -1738,7 +1824,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         try {
             // Verify that we still have a valid connection before resending
             if (!validateNewConnectionForResend()) {
-                LOGGER.error("Connection is no longer valid during message resend for session: {}", sessionId);
+                LOGGER.error(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Connection is no longer valid during message resend for session: " + sessionId);
                 handleConnectionFailure();
                 return;
             }
@@ -1770,7 +1860,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     private void handleConnectionFailure() {
-        LOGGER.warn("Connection failed temporarily for session: {}, will allow recovery", sessionId);
+        LOGGER.warn(
+                INTERNAL_ERROR,
+                "",
+                "",
+                "Connection failed temporarily for session: " + sessionId + ", will allow recovery");
 
         // Notify business layer of the connection failure
         notifyBusinessLayerOfFailure("Connection failed during message resend", null);
@@ -1814,7 +1908,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             LOGGER.debug("Sent heartbeat ACK to server: {}", originalHeartbeat);
         } catch (Exception e) {
-            LOGGER.warn("Failed to send heartbeat ACK to server", e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Failed to send heartbeat ACK to server", e);
         }
     }
 
@@ -1843,7 +1937,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                             // Schedule next check with adaptive delay
                             scheduleNextRetryCheck();
                         } catch (Exception e) {
-                            LOGGER.error("Retry check error for session: {}", sessionId, e);
+                            LOGGER.error(INTERNAL_ERROR, "", "", "Retry check error for session: " + sessionId, e);
                         }
                     },
                     1000,
@@ -1883,7 +1977,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                             // Schedule next check recursively
                             scheduleNextRetryCheck();
                         } catch (Exception e) {
-                            LOGGER.error("Retry check error for session: {}", sessionId, e);
+                            LOGGER.error(INTERNAL_ERROR, "", "", "Retry check error for session: " + sessionId, e);
                         }
                     },
                     nextDelay,
@@ -2083,11 +2177,21 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                         getCurrentStreamChannelFuture(), pending.getMessage(), false, pending.getCompressFlag());
                 writeQueue.enqueueFuture(dataCmd, parent.eventLoop()).addListener(dataResult -> {
                     if (!dataResult.isSuccess()) {
-                        LOGGER.warn("Retry data send failed for seq: " + pending.getSequence(), dataResult.cause());
+                        LOGGER.warn(
+                                INTERNAL_ERROR,
+                                "",
+                                "",
+                                "Retry data send failed for seq: " + pending.getSequence(),
+                                dataResult.cause());
                     }
                 });
             } else {
-                LOGGER.warn("Retry header send failed for seq: " + pending.getSequence(), future.cause());
+                LOGGER.warn(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Retry header send failed for seq: " + pending.getSequence(),
+                        future.cause());
             }
         });
     }
@@ -2147,7 +2251,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
         } catch (Exception e) {
             // Don't fail ACK processing if metadata update fails
-            LOGGER.warn("Failed to persist session state for session: {}", sessionId, e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Failed to persist session state for session: " + sessionId, e);
         }
     }
 
@@ -2269,7 +2373,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                                     try {
                                         triggerRecovery();
                                     } catch (Exception e) {
-                                        LOGGER.warn("Recovery attempt failed for session: {}", sessionId, e);
+                                        LOGGER.warn(
+                                                INTERNAL_ERROR,
+                                                "",
+                                                "",
+                                                "Recovery attempt failed for session: " + sessionId,
+                                                e);
                                     }
                                 },
                                 delayMs,
@@ -2280,7 +2389,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                             "Session {} is in terminal state {}, cannot attempt recovery", sessionId, heartbeatState);
                 }
             } catch (Exception e) {
-                LOGGER.error("Error during recovery attempt for session: {}", sessionId, e);
+                LOGGER.error(INTERNAL_ERROR, "", "", "Error during recovery attempt for session: " + sessionId, e);
             }
         }
     }
@@ -2331,7 +2440,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      * This version increments the failure count and should be used for independent failure events.
      */
     private void handleTemporaryFailureWithCount(String reason) {
-        LOGGER.warn("Handling temporary failure for session {}: {}", sessionId, reason);
+        LOGGER.warn(INTERNAL_ERROR, "", "", "Handling temporary failure for session " + sessionId + ": " + reason);
 
         // Transition to FAILED state to indicate current connection issues
         heartbeatState = HeartbeatState.FAILED;
@@ -2360,7 +2469,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      * This method should be used when the failure count has already been incremented by the caller.
      */
     private void handleTemporaryFailure(String reason) {
-        LOGGER.warn("Handling temporary failure for session {}: {}", sessionId, reason);
+        LOGGER.warn(INTERNAL_ERROR, "", "", "Handling temporary failure for session " + sessionId + ": " + reason);
 
         // Transition to FAILED state to indicate current connection issues
         heartbeatState = HeartbeatState.FAILED;
@@ -2425,7 +2534,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             LOGGER.debug("Cancelled {} scheduled tasks for session: {}", cancelledCount, sessionId);
 
         } catch (Exception e) {
-            LOGGER.warn("Error during task cancellation for session: {}", sessionId, e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error during task cancellation for session: " + sessionId, e);
         }
     }
 
@@ -2462,7 +2571,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             return future;
         } catch (Exception e) {
-            LOGGER.warn("Error scheduling tracked task for session: {}", sessionId, e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error scheduling tracked task for session: " + sessionId, e);
             return null;
         }
     }
@@ -2477,7 +2586,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             // They will be removed only when explicitly cancelled
             return future;
         } catch (Exception e) {
-            LOGGER.warn("Error scheduling tracked fixed-rate task for session: {}", sessionId, e);
+            LOGGER.warn(
+                    INTERNAL_ERROR, "", "", "Error scheduling tracked fixed-rate task for session: " + sessionId, e);
             return null;
         }
     }
@@ -2532,7 +2642,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     messageStore.close(metadata);
                     LOGGER.debug("Closed message store for session: {}", sessionId);
                 } catch (Exception e) {
-                    LOGGER.warn("Error closing message store for session: {}", sessionId, e);
+                    LOGGER.warn(INTERNAL_ERROR, "", "", "Error closing message store for session: " + sessionId, e);
                 }
             }
 
@@ -2541,7 +2651,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             LOGGER.debug("Successfully cleaned up all reliability resources for session: {}", sessionId);
         } catch (Exception e) {
-            LOGGER.warn("Error during reliability resource cleanup for session: {}", sessionId, e);
+            LOGGER.warn(
+                    INTERNAL_ERROR, "", "", "Error during reliability resource cleanup for session: " + sessionId, e);
         }
     }
 
@@ -2564,7 +2675,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
             LOGGER.info("Successfully paused reliability for session: {} (can be recovered)", sessionId);
         } catch (Exception e) {
-            LOGGER.warn("Error during reliability pause for session: {}", sessionId, e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error during reliability pause for session: " + sessionId, e);
         }
     }
 
@@ -2607,7 +2718,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 executor.shutdownNow();
                 // Wait for forced shutdown to complete
                 if (!executor.awaitTermination(timeoutMs / 2, java.util.concurrent.TimeUnit.MILLISECONDS)) {
-                    LOGGER.warn("Failed to shutdown {} within {}ms", name, timeoutMs);
+                    LOGGER.warn(INTERNAL_ERROR, "", "", "Failed to shutdown " + name + " within " + timeoutMs + "ms");
                 }
             }
         } catch (InterruptedException e) {
@@ -2615,11 +2726,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             LOGGER.debug("Interrupted while shutting down {}, forcing immediate shutdown", name);
             executor.shutdownNow();
         } catch (Exception e) {
-            LOGGER.warn("Error shutting down {}", name, e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error shutting down " + name, e);
             try {
                 executor.shutdownNow();
             } catch (Exception ex) {
-                LOGGER.warn("Error during forced shutdown of {}", name, ex);
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error during forced shutdown of " + name, ex);
             }
         }
     }
@@ -2662,12 +2773,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             pendingMessages.clear();
             LOGGER.debug("Cleared {} pending messages for session: {}", pendingMessages.size(), sessionId);
         } catch (Exception e) {
-            LOGGER.warn("Error clearing pending messages", e);
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error clearing pending messages", e);
             // Force clear even if notification fails
             try {
                 pendingMessages.clear();
             } catch (Exception ex) {
-                LOGGER.warn("Error force-clearing pending messages", ex);
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error force-clearing pending messages", ex);
             }
         }
     }
@@ -2726,7 +2837,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 // Clean up reliability resources when finishing
                 cleanupReliabilityResources();
             } catch (Exception e) {
-                LOGGER.warn("Error during reliability cleanup in finishProcess", e);
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error during reliability cleanup in finishProcess", e);
             }
 
             final Map<CharSequence, String> reserved = filterReservedHeaders(trailers);
@@ -3043,7 +3154,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     try {
                         messageStore.ack(ackedSeq);
                     } catch (StoreException e) {
-                        LOGGER.warn("Failed to persist ack for sequence: {} for session: {}", ackedSeq, sessionId, e);
+                        LOGGER.warn(
+                                INTERNAL_ERROR,
+                                "",
+                                "",
+                                "Failed to persist ack for sequence: " + ackedSeq + " for session: " + sessionId,
+                                e);
                     }
                 }
 
@@ -3115,7 +3231,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
          */
         private void performReliabilityFallback(String reason) {
             try {
-                LOGGER.warn("Performing reliability fallback for session: {} - Reason: {}", sessionId, reason);
+                LOGGER.warn(
+                        INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Performing reliability fallback for session: " + sessionId + " - Reason: " + reason);
 
                 // Transition to CLOSED state to prevent further reliability operations
                 transitionToState(HeartbeatState.CLOSED, reason);
@@ -3144,7 +3264,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 LOGGER.info("Successfully completed reliability fallback for session: {}", sessionId);
 
             } catch (Exception e) {
-                LOGGER.error("Error during reliability fallback for session: {}", sessionId, e);
+                LOGGER.error(INTERNAL_ERROR, "", "", "Error during reliability fallback for session: " + sessionId, e);
             }
         }
 
@@ -3419,7 +3539,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             try {
                 stateChangeCallback.accept(newState + ": " + reason);
             } catch (Exception e) {
-                LOGGER.warn("Error in state change callback", e);
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error in state change callback", e);
             }
         }
     }
@@ -3432,7 +3552,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             try {
                 recoveryCallback.accept(reason);
             } catch (Exception e) {
-                LOGGER.warn("Error in recovery callback", e);
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error in recovery callback", e);
             }
         }
     }
@@ -3445,7 +3565,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             try {
                 retryCallback.accept(sequence);
             } catch (Exception e) {
-                LOGGER.warn("Error in retry callback", e);
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error in retry callback", e);
             }
         }
     }

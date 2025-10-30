@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -105,7 +106,12 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
                     storeType,
                     sessionId);
         } catch (Exception e) {
-            LOGGER.error("Failed to initialize sequence store for session: {}", sessionId, e);
+            LOGGER.error(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Failed to initialize sequence store for session: " + sessionId,
+                    e);
             // 降级到内存窗口模式
             this.sequenceStore = null;
         }
@@ -171,12 +177,20 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
                             lastAckedSeq.get());
                 } else {
                     LOGGER.warn(
-                            "Cannot send ACK headers for sequence: {} - responseObserver is not Http2ServerStreamObserver: {}",
-                            sequence,
-                            responseObserver.getClass().getSimpleName());
+                            LoggerCodeConstants.INTERNAL_ERROR,
+                            "",
+                            "",
+                            "Cannot send ACK headers for sequence: " + sequence
+                                    + " - responseObserver is not Http2ServerStreamObserver: "
+                                    + responseObserver.getClass().getSimpleName());
                 }
             } catch (Exception e) {
-                LOGGER.warn("Failed to send ACK headers for sequence: {}", sequence, e);
+                LOGGER.warn(
+                        LoggerCodeConstants.INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to send ACK headers for sequence: " + sequence,
+                        e);
             }
         }
     }
@@ -196,7 +210,12 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
                     return true;
                 }
             } catch (ServerSequenceException e) {
-                LOGGER.warn("Failed to check sequence from persistent store: {}", sequence, e);
+                LOGGER.warn(
+                        LoggerCodeConstants.INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to check sequence from persistent store: " + sequence,
+                        e);
                 // 降级到内存检查
             }
         }
@@ -223,7 +242,12 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
             try {
                 sequenceStore.recordSequence(sequence);
             } catch (ServerSequenceException e) {
-                LOGGER.warn("Failed to record sequence to persistent store: {}", sequence, e);
+                LOGGER.warn(
+                        LoggerCodeConstants.INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Failed to record sequence to persistent store: " + sequence,
+                        e);
                 // 继续处理内存存储，不中断流程
             }
         }
@@ -252,7 +276,12 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
                     sequenceStore.cleanupAcknowledged(newMinSeq);
                     LOGGER.debug("Synced persistent store cleanup up to: {} for session: {}", newMinSeq, sessionId);
                 } catch (ServerSequenceException e) {
-                    LOGGER.warn("Failed to cleanup persistent store up to: {}", newMinSeq, e);
+                    LOGGER.warn(
+                            LoggerCodeConstants.INTERNAL_ERROR,
+                            "",
+                            "",
+                            "Failed to cleanup persistent store up to: " + newMinSeq,
+                            e);
                     // 继续清理内存存储，保持系统可用性
                 }
             }
@@ -304,7 +333,12 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
                 sequenceStore.close();
                 LOGGER.debug("Closed sequence store for session: {}", sessionId);
             } catch (ServerSequenceException e) {
-                LOGGER.warn("Error closing sequence store for session: {}", sessionId, e);
+                LOGGER.warn(
+                        LoggerCodeConstants.INTERNAL_ERROR,
+                        "",
+                        "",
+                        "Error closing sequence store for session: " + sessionId,
+                        e);
             }
         }
     }

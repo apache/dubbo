@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -112,7 +113,7 @@ public class Http2ServerStreamObserver extends Http2ServerChannelObserver
             }
         } catch (Exception e) {
             // Log but don't throw to maintain stream stability
-            LOGGER.warn("Failed to send ACK headers", e);
+            LOGGER.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Failed to send ACK headers", e);
         }
     }
 }

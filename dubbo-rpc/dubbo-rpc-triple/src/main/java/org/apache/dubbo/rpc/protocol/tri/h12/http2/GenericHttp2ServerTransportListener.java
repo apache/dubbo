@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
@@ -234,7 +235,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
             });
 
         } catch (Exception e) {
-            LOGGER.warn("Failed to send heartbeat ACK", e);
+            LOGGER.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Failed to send heartbeat ACK", e);
         }
     }
 
@@ -306,7 +307,12 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
                 }
             }
         } catch (Exception e) {
-            LOGGER.warn("Error during GenericHttp2ServerTransportListener close", e);
+            LOGGER.warn(
+                    LoggerCodeConstants.INTERNAL_ERROR,
+                    "",
+                    "",
+                    "Error during GenericHttp2ServerTransportListener close",
+                    e);
         }
     }
 
