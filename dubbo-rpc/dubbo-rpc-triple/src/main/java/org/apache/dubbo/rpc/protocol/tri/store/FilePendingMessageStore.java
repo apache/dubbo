@@ -272,8 +272,8 @@ public class FilePendingMessageStore implements PendingMessageStore {
     private List<PendingMessage> readMessagesFromFile(Path path) throws IOException {
         List<PendingMessage> messages = new ArrayList<>();
 
-        try (DataInputStream inputStream =
-                new DataInputStream(new BufferedInputStream(Files.newInputStream(path.toFile().toPath())))) {
+        try (DataInputStream inputStream = new DataInputStream(
+                new BufferedInputStream(Files.newInputStream(path.toFile().toPath())))) {
 
             while (inputStream.available() > 0) {
                 try {
