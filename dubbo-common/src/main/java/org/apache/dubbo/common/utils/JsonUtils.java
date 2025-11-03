@@ -76,22 +76,34 @@ public class JsonUtils {
         return sortedExtensions.firstEntry().getValue();
     }
 
-    private static JsonUtil loadExtensions(String name, ClassLoader classLoader, Map<String, JsonUtil> extensions) {
-        ServiceLoader<JsonUtil> loader = ServiceLoader.load(JsonUtil.class, classLoader);
-        for (Iterator<JsonUtil> it = loader.iterator(); it.hasNext(); ) {
-            try {
-                JsonUtil extension = it.next();
-                if (extension.isSupport()) {
-                    if (name != null && name.equals(extension.getName())) {
-                        return extension;
-                    }
-                    extensions.put(extension.getName(), extension);
-                }
-            } catch (Throwable ignored) {
-            }
-        }
-        return null;
-    }
+   private static JsonUtil loadExtensions(String name, ClassLoader classLoader, Map<String, JsonUtil> extensions) {
+        ServiceLoader<JsonUtil> loader = ServiceLoader.load(JsonUtil.class, classLoader);
+        Iterator<JsonUtil> it = loader.iterator();
+
+        // Restructured while loop to safely handle exceptions from hasNext()
+        while (true) {
+            try {
+                // 1. Check if there is a next element (may throw in JDK 25)
+                if (!it.hasNext()) {
+                    break; // Exit loop if no next element
+                }
+                
+                // 2. Get the next element (may also throw)
+                JsonUtil extension = it.next();
+                
+                // 3. Process the extension
+                if (extension.isSupport()) {
+                    if (name != null && name.equals(extension.getName())) {
+                        return extension;
+                    }
+                    extensions.put(extension.getName(), extension);
+                }
+            } catch (Throwable ignored) {
+                // This block handles exceptions from hasNext() or next(), skipping the faulty service provider.
+            }
+        }
+        return null;
+    }
 
     /**
      * @deprecated for unit test only
