@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -76,34 +76,38 @@ public class JsonUtils {
         return sortedExtensions.firstEntry().getValue();
     }
 
-   private static JsonUtil loadExtensions(String name, ClassLoader classLoader, Map<String, JsonUtil> extensions) {
-        ServiceLoader<JsonUtil> loader = ServiceLoader.load(JsonUtil.class, classLoader);
-        Iterator<JsonUtil> it = loader.iterator();
+    /**
+     * FIX FOR JDK 25 COMPATIBILITY (Issue #15747)
+     * Restructures the loop to safely handle Throwables thrown by ServiceLoader.iterator().hasNext()
+     * and ensures backward compatibility with older JDKs by safely skipping broken providers.
+     */
+    private static JsonUtil loadExtensions(String name, ClassLoader classLoader, Map<String, JsonUtil> extensions) {
+        ServiceLoader<JsonUtil> loader = ServiceLoader.load(JsonUtil.class, classLoader);
+        Iterator<JsonUtil> it = loader.iterator();
 
-        // Restructured while loop to safely handle exceptions from hasNext()
-        while (true) {
-            try {
-                // 1. Check if there is a next element (may throw in JDK 25)
-                if (!it.hasNext()) {
-                    break; // Exit loop if no next element
-                }
-                
-                // 2. Get the next element (may also throw)
-                JsonUtil extension = it.next();
-                
-                // 3. Process the extension
-                if (extension.isSupport()) {
-                    if (name != null && name.equals(extension.getName())) {
-                        return extension;
-                    }
-                    extensions.put(extension.getName(), extension);
-                }
-            } catch (Throwable ignored) {
-                // This block handles exceptions from hasNext() or next(), skipping the faulty service provider.
-            }
-        }
-        return null;
-    }
+        while (true) {
+            try {
+                // Check hasNext() which may throw in JDK 25
+                if (!it.hasNext()) {
+                    break;
+                }
+
+                // Get next() which may throw in all JDKs if class is broken
+                JsonUtil extension = it.next();
+
+                if (extension.isSupport()) {
+                    if (name != null && name.equals(extension.getName())) {
+                        return extension;
+                    }
+                    extensions.put(extension.getName(), extension);
+                }
+            } catch (Throwable ignored) {
+                // Safely ignore any Throwable (e.g., NoClassDefFoundError) thrown by
+                // hasNext() or next(), and continue to the next provider.
+            }
+        }
+        return null;
+    }
 
     /**
      * @deprecated for unit test only
