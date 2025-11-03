@@ -76,23 +76,18 @@ public class JsonUtils {
         return sortedExtensions.firstEntry().getValue();
     }
 
-    /**
-     * FIX FOR JDK 25 COMPATIBILITY (Issue #15747)
-     * Restructures the loop to safely handle Throwables thrown by ServiceLoader.iterator().hasNext()
-     * and ensures backward compatibility with older JDKs by safely skipping broken providers.
-     */
     private static JsonUtil loadExtensions(String name, ClassLoader classLoader, Map<String, JsonUtil> extensions) {
         ServiceLoader<JsonUtil> loader = ServiceLoader.load(JsonUtil.class, classLoader);
         Iterator<JsonUtil> it = loader.iterator();
 
         while (true) {
             try {
-                // Check hasNext() which may throw in JDK 25
+                // Safely check for next element (handles JDK 25 hasNext() exception)
                 if (!it.hasNext()) {
                     break;
                 }
 
-                // Get next() which may throw in all JDKs if class is broken
+                // Safely retrieve the next element (handles exceptions in older JDKs)
                 JsonUtil extension = it.next();
 
                 if (extension.isSupport()) {
