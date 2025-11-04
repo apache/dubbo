@@ -396,6 +396,59 @@ class JsonUtilsTest {
 
     private static Field jsonFieldCache;
 
+    /**
+     * Test for JDK 21+ compatibility with SequencedCollection.
+     * Verifies that toJavaList() works correctly with Jackson on JDK 25.
+     * This test ensures that the fix using ArrayList.class instead of List.class
+     * resolves the type inference issue introduced in JDK 21+.
+     *
+     * @date 2025-11-04
+     */
+    @Test
+    void testToJavaListJDKCompatibility() {
+        // Test with Jackson specifically, as it's most affected by SequencedCollection changes
+        setJson(null);
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, "jackson");
+
+        // Test parsing JSON array of strings (the original failing case from ConfiguratorTest)
+        String jsonArray = "[\"override://0.0.0.0/com.xx.Service?timeout=6666\", "
+                + "\"absent://0.0.0.0/com.xx.Service?timeout=8888\"]";
+        List<String> result = JsonUtils.toJavaList(jsonArray, String.class);
+
+        Assertions.assertNotNull(result, "Result should not be null");
+        Assertions.assertEquals(2, result.size(), "Should parse 2 elements");
+        Assertions.assertTrue(result.get(0).startsWith("override://"), "First element should start with 'override://'");
+        Assertions.assertTrue(result.get(1).startsWith("absent://"), "Second element should start with 'absent://'");
+
+        // Test parsing JSON array of objects
+        String jsonObjectArray = "[{\"a\":\"value1\"}, {\"b\":\"value2\"}]";
+        List<Map> mapResult = JsonUtils.toJavaList(jsonObjectArray, Map.class);
+
+        Assertions.assertNotNull(mapResult, "Map result should not be null");
+        Assertions.assertEquals(2, mapResult.size(), "Should parse 2 map elements");
+        Assertions.assertTrue(mapResult.get(0).containsKey("a"), "First map should contain key 'a'");
+        Assertions.assertTrue(mapResult.get(1).containsKey("b"), "Second map should contain key 'b'");
+
+        // Test with other JSON implementations to ensure consistency
+        String[] implementations = {"fastjson2", "fastjson", "gson"};
+        for (String impl : implementations) {
+            setJson(null);
+            SystemPropertyConfigUtils.setSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME, impl);
+
+            List<String> implResult = JsonUtils.toJavaList(jsonArray, String.class);
+            Assertions.assertNotNull(implResult, impl + " should parse the array");
+            Assertions.assertEquals(2, implResult.size(), impl + " should parse 2 elements");
+
+            SystemPropertyConfigUtils.clearSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
+        }
+
+        SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PREFER_JSON_FRAMEWORK_NAME);
+        setJson(null);
+    }
+
     private static void setJson(JsonUtil json) {
         try {
             if (jsonFieldCache == null) {
