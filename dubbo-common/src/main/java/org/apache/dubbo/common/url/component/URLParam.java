@@ -890,15 +890,17 @@ public class URLParam {
     @Override
     public int hashCode() {
         if (hashCodeCache == -1) {
+            int result = 1;
             for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
                 if (!TIMESTAMP_KEY.equals(entry.getKey())) {
-                    hashCodeCache = hashCodeCache * 31 + Objects.hashCode(entry);
+                    result += entry.hashCode();
                 }
             }
-            for (Integer value : VALUE) {
-                hashCodeCache = hashCodeCache * 31 + value;
-            }
-            hashCodeCache = hashCodeCache * 31 + ((KEY == null) ? 0 : KEY.hashCode());
+
+            result = 31 * result + Arrays.hashCode(VALUE);
+            result = 31 * result + ((KEY == null) ? 0 : KEY.hashCode());
+
+            hashCodeCache = result;
         }
         return hashCodeCache;
     }
