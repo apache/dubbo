@@ -44,7 +44,7 @@ class Curator5ZookeeperClientManagerTest {
     private ZookeeperClient zookeeperClient;
     private static URL zookeeperUrl;
     private static MockedStatic<CuratorFrameworkFactory> curatorFrameworkFactoryMockedStatic;
-    private CuratorFramework mockCuratorFramework;
+    private static CuratorFramework mockCuratorFramework;
 
     @BeforeAll
     public static void beforeAll() {
@@ -58,12 +58,12 @@ class Curator5ZookeeperClientManagerTest {
         curatorFrameworkFactoryMockedStatic
                 .when(CuratorFrameworkFactory::builder)
                 .thenReturn(spyBuilder);
+        mockCuratorFramework = mock(CuratorFramework.class);
+        doReturn(mockCuratorFramework).when(spyBuilder).build();
     }
 
     @BeforeEach
     public void setUp() throws InterruptedException {
-        mockCuratorFramework = mock(CuratorFramework.class);
-        doReturn(mockCuratorFramework).when(spyBuilder).build();
         when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(true);
         when(mockCuratorFramework.getConnectionStateListenable()).thenReturn(StandardListenerManager.standard());
         zookeeperClient = new ZookeeperClientManager().connect(zookeeperUrl);
@@ -74,8 +74,6 @@ class Curator5ZookeeperClientManagerTest {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
     }
-
-    CuratorFrameworkFactory.Builder spyBuilder = CuratorFrameworkFactory.builder();
 
     @Test
     void testRegistryCheckConnectDefault() throws InterruptedException {
