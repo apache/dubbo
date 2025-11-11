@@ -81,11 +81,20 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     private final boolean enabled;
 
     public static <T> ConditionStateRouter<T> create(URL url) {
-        return new ConditionStateRouter<>(url);
+        ConditionStateRouter<T> router = new ConditionStateRouter<>(url);
+        if (router.enabled) {
+            router.init(url.getParameterAndDecoded(RULE_KEY));
+        }
+        return router;
     }
 
     public static <T> ConditionStateRouter<T> create(URL url, String rule, boolean force, boolean enabled) {
-        return new ConditionStateRouter<>(url, rule, force, enabled);
+        ConditionStateRouter<T> router = new ConditionStateRouter<>(url, rule, force, enabled);
+        if (router.enabled) {
+            router.init(rule);
+        }
+
+        return router;
     }
 
     private ConditionStateRouter(URL url, String rule, boolean force, boolean enabled) {
@@ -94,9 +103,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         this.enabled = enabled;
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        if (enabled) {
-            this.init(rule);
-        }
     }
 
     private ConditionStateRouter(URL url) {
@@ -106,9 +112,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
         this.enabled = url.getParameter(ENABLED_KEY, true);
-        if (enabled) {
-            init(url.getParameterAndDecoded(RULE_KEY));
-        }
     }
 
     private final void init(String rule) {

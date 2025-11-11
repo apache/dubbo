@@ -25,6 +25,12 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 public class AffinityServiceStateRouter<T> extends AffinityListenableStateRouter<T> {
     public static final String NAME = "AFFINITY_SERVICE_ROUTER";
 
+    public static <T> AffinityServiceStateRouter<T> create(URL url) {
+        AffinityServiceStateRouter<T> router = new AffinityServiceStateRouter<>(url);
+        router.init(DynamicConfiguration.getRuleKey(url));
+        return router;
+    }
+
     public AffinityServiceStateRouter(URL url) {
         super(url, DynamicConfiguration.getRuleKey(url));
     }

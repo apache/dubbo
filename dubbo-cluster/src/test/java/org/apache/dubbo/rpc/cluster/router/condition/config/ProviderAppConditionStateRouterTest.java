@@ -59,7 +59,7 @@ public class ProviderAppConditionStateRouterTest {
 
     @Test
     void test() {
-        ProviderAppStateRouter<String> router = new ProviderAppStateRouter<>(url);
+        ProviderAppStateRouter<String> router = ProviderAppStateRouter.create(url);
         router = Mockito.spy(router);
         Mockito.when(router.getRuleRepository()).thenReturn(ruleRepository);
         Mockito.when(ruleRepository.getRule("demo-provider" + RULE_SUFFIX, DynamicConfiguration.DEFAULT_GROUP))

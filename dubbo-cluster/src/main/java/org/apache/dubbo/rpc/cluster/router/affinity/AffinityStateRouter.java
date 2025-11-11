@@ -69,11 +69,19 @@ public class AffinityStateRouter<T> extends AbstractStateRouter<T> {
     private final boolean enabled;
 
     public static <T> AffinityStateRouter<T> create(URL url) {
-        return new AffinityStateRouter<>(url);
+        AffinityStateRouter<T> router = new AffinityStateRouter<>(url);
+        if (router.enabled) {
+            router.init(router.affinityKey);
+        }
+        return router;
     }
 
     public static <T> AffinityStateRouter<T> create(URL url, String affinityKey, Double ratio, boolean enabled) {
-        return new AffinityStateRouter<>(url, affinityKey, ratio, enabled);
+        AffinityStateRouter<T> router = new AffinityStateRouter<>(url, affinityKey, ratio, enabled);
+        if (router.enabled) {
+            router.init(affinityKey);
+        }
+        return router;
     }
 
     private AffinityStateRouter(URL url) {
@@ -83,9 +91,6 @@ public class AffinityStateRouter<T> extends AbstractStateRouter<T> {
         this.ratio = url.getParameter(RATIO_KEY, DefaultAffinityRatio);
         this.matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        if (this.enabled) {
-            this.init(affinityKey);
-        }
     }
 
     private AffinityStateRouter(URL url, String affinityKey, Double ratio, boolean enabled) {
@@ -95,9 +100,6 @@ public class AffinityStateRouter<T> extends AbstractStateRouter<T> {
         this.ratio = ratio;
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        if (this.enabled) {
-            this.init(affinityKey);
-        }
     }
 
     private final void init(String rule) {

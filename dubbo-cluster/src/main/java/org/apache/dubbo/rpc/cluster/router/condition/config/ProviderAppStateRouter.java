@@ -39,7 +39,13 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
     private String application;
     private final String currentApplication;
 
-    public ProviderAppStateRouter(URL url) {
+    public static <T> ProviderAppStateRouter<T> create(URL url) {
+        ProviderAppStateRouter<T> router = new ProviderAppStateRouter<>(url);
+        router.init(url.getApplication());
+        return router;
+    }
+
+    private ProviderAppStateRouter(URL url) {
         super(url, url.getApplication());
         this.currentApplication = url.getApplication();
     }

@@ -31,6 +31,6 @@ public class AffinityProviderAppStateRouterFactory extends CacheableStateRouterF
 
     @Override
     protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
-        return new AffinityProviderAppStateRouter<>(url);
+        return AffinityProviderAppStateRouter.create(url);
     }
 }

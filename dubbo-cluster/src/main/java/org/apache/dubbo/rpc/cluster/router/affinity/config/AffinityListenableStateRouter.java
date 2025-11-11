@@ -53,10 +53,9 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
     private volatile AffinityStateRouter<T> affinityRouter;
     private final String ruleKey;
 
-    public AffinityListenableStateRouter(URL url, String ruleKey) {
+    protected AffinityListenableStateRouter(URL url, String ruleKey) {
         super(url);
         this.setForce(false);
-        this.init(ruleKey);
         this.ruleKey = ruleKey;
     }
 
@@ -144,7 +143,7 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
         affinityRouter.setNextRouter(TailStateRouter.getInstance());
     }
 
-    private synchronized void init(String ruleKey) {
+    protected final synchronized void init(String ruleKey) {
         if (StringUtils.isEmpty(ruleKey)) {
             return;
         }

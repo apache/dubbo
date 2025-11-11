@@ -62,10 +62,9 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     private volatile List<MultiDestConditionRouter<T>> multiDestConditionRouters = Collections.emptyList();
     private final String ruleKey;
 
-    public ListenableStateRouter(URL url, String ruleKey) {
+    protected ListenableStateRouter(URL url, String ruleKey) {
         super(url);
         this.setForce(false);
-        this.init(ruleKey);
         this.ruleKey = ruleKey;
     }
 
@@ -185,7 +184,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         }
     }
 
-    private synchronized void init(String ruleKey) {
+    protected final void init(String ruleKey) {
         if (StringUtils.isEmpty(ruleKey)) {
             return;
         }

@@ -130,7 +130,7 @@ public class ConditionStateRouterTestV31 {
                 + "      - match: env!=gray\n"
                 + "        weight: 100";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
@@ -172,7 +172,7 @@ public class ConditionStateRouterTestV31 {
                 + "    to:\n"
                 + "      - match: env!=gray\n"
                 + "        weight: 100";
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
@@ -218,7 +218,7 @@ public class ConditionStateRouterTestV31 {
                 + "    to:\n"
                 + "      - match: host!=127.0.0.1";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
@@ -266,7 +266,7 @@ public class ConditionStateRouterTestV31 {
                 + "    to:\n"
                 + "      - match: host!=127.0.0.1";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
@@ -312,7 +312,7 @@ public class ConditionStateRouterTestV31 {
                 + "    to:\n"
                 + "      - match: host!=127.0.0.1";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
@@ -350,7 +350,7 @@ public class ConditionStateRouterTestV31 {
                 + "      - match: env=ErrTag\n"
                 + "        weight: 100";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
@@ -392,7 +392,7 @@ public class ConditionStateRouterTestV31 {
                 + "  - to:\n"
                 + "      - match: region!=beijing";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 
@@ -432,7 +432,7 @@ public class ConditionStateRouterTestV31 {
                 + "      - match: region=beijing\n"
                 + "        weight: 200";
 
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
+        ServiceStateRouter<String> router = ServiceStateRouter.create(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
         router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
 

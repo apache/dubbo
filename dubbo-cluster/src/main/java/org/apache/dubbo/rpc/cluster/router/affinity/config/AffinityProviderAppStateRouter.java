@@ -40,7 +40,13 @@ public class AffinityProviderAppStateRouter<T> extends ListenableStateRouter<T> 
     private String application;
     private final String currentApplication;
 
-    public AffinityProviderAppStateRouter(URL url) {
+    public static <T> AffinityProviderAppStateRouter<T> create(URL url) {
+        AffinityProviderAppStateRouter<T> router = new AffinityProviderAppStateRouter<>(url);
+        router.init(url.getApplication());
+        return router;
+    }
+
+    private AffinityProviderAppStateRouter(URL url) {
         super(url, url.getApplication());
         this.currentApplication = url.getApplication();
     }

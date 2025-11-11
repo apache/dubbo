@@ -62,7 +62,9 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
 
     public static <T> MultiDestConditionRouter<T> create(
             URL url, MultiDestCondition multiDestCondition, boolean force, boolean enabled) {
-        return new MultiDestConditionRouter<>(url, multiDestCondition, force, enabled);
+        MultiDestConditionRouter<T> router = new MultiDestConditionRouter<>(url, multiDestCondition, force, enabled);
+        router.init(multiDestCondition.getFrom(), multiDestCondition.getTo());
+        return router;
     }
 
     private MultiDestConditionRouter(URL url, MultiDestCondition multiDestCondition, boolean force, boolean enabled) {
@@ -71,7 +73,6 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
         this.enabled = enabled;
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        this.init(multiDestCondition.getFrom(), multiDestCondition.getTo());
     }
 
     private final void init(Map<String, String> from, List<Map<String, String>> to) {

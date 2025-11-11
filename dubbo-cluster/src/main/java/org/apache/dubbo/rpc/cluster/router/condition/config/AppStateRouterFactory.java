@@ -47,6 +47,6 @@ public class AppStateRouterFactory implements StateRouterFactory {
     }
 
     private <T> StateRouter<T> createRouter(URL url) {
-        return new AppStateRouter<>(url);
+        return AppStateRouter.create(url);
     }
 }
