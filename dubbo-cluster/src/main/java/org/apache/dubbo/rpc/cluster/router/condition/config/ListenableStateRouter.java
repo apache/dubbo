@@ -70,7 +70,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     }
 
     @Override
-    public synchronized void process(ConfigChangedEvent event) {
+    public final synchronized void process(ConfigChangedEvent event) {
         if (logger.isInfoEnabled()) {
             logger.info("Notification of condition rule, change type is: " + event.getChangeType() + ", raw rule is:\n "
                     + event.getContent());
@@ -96,7 +96,12 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
                         e);
             }
         }
+
+        // Allow subclasses to customize behavior without overriding this method
+        onConfigChange(event);
     }
+
+    protected void onConfigChange(ConfigChangedEvent event) {}
 
     @Override
     public BitList<Invoker<T>> doRoute(
@@ -160,8 +165,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (rule instanceof ConditionRouterRule) {
             this.conditionRouters = ((ConditionRouterRule) rule)
                     .getConditions().stream()
-                            .map(condition ->
-                                    new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled()))
+                            .map(condition -> ConditionStateRouter.<T>create(
+                                    getUrl(), condition, rule.isForce(), rule.isEnabled()))
                             .collect(Collectors.toList());
 
             for (ConditionStateRouter<T> conditionRouter : this.conditionRouters) {
@@ -170,7 +175,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         } else if (rule instanceof MultiDestConditionRouterRule) {
             this.multiDestConditionRouters = ((MultiDestConditionRouterRule) rule)
                     .getConditions().stream()
-                            .map(condition -> new MultiDestConditionRouter<T>(
+                            .map(condition -> MultiDestConditionRouter.<T>create(
                                     getUrl(), condition, rule.isForce(), rule.isEnabled()))
                             .collect(Collectors.toList());
 

@@ -80,7 +80,15 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
 
     private final boolean enabled;
 
-    public ConditionStateRouter(URL url, String rule, boolean force, boolean enabled) {
+    public static <T> ConditionStateRouter<T> create(URL url) {
+        return new ConditionStateRouter<>(url);
+    }
+
+    public static <T> ConditionStateRouter<T> create(URL url, String rule, boolean force, boolean enabled) {
+        return new ConditionStateRouter<>(url, rule, force, enabled);
+    }
+
+    private ConditionStateRouter(URL url, String rule, boolean force, boolean enabled) {
         super(url);
         this.setForce(force);
         this.enabled = enabled;
@@ -91,7 +99,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         }
     }
 
-    public ConditionStateRouter(URL url) {
+    private ConditionStateRouter(URL url) {
         super(url);
         this.setUrl(url);
         this.setForce(url.getParameter(FORCE_KEY, false));
@@ -103,7 +111,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         }
     }
 
-    public void init(String rule) {
+    private final void init(String rule) {
         try {
             if (rule == null || rule.trim().length() == 0) {
                 throw new IllegalArgumentException("Illegal route rule!");

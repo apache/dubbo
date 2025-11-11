@@ -30,7 +30,7 @@ public class NettyConnectionManager implements ConnectionManager {
     @Override
     public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
         try {
-            return new NettyConnectionClient(url, handler);
+            return NettyConnectionClient.create(url, handler);
         } catch (RemotingException e) {
             throw new RuntimeException(e);
         }

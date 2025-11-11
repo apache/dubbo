@@ -80,7 +80,13 @@ public class NettyServer extends AbstractServer {
     private EventLoopGroup workerGroup;
     private int serverShutdownTimeoutMills;
 
-    public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
+    public static NettyServer create(URL url, ChannelHandler handler) throws RemotingException {
+        NettyServer server = new NettyServer(url, handler);
+        server.init();
+        return server;
+    }
+
+    private NettyServer(URL url, ChannelHandler handler) throws RemotingException {
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREAD_POOL_KEY in
         // CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler

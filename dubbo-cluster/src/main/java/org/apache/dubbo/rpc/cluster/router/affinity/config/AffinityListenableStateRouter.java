@@ -61,7 +61,7 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
     }
 
     @Override
-    public synchronized void process(ConfigChangedEvent event) {
+    public final synchronized void process(ConfigChangedEvent event) {
         if (logger.isInfoEnabled()) {
             logger.info("Notification of affinity rule, change type is: " + event.getChangeType() + ", raw rule is:\n "
                     + event.getContent());
@@ -85,7 +85,11 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
                         e);
             }
         }
+
+        onConfigChange(event);
     }
+
+    protected void onConfigChange(ConfigChangedEvent event) {}
 
     @Override
     public BitList<Invoker<T>> doRoute(
@@ -135,7 +139,7 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
             return;
         }
         AffinityRouterRule affinityRule = (AffinityRouterRule) rule;
-        affinityRouter = new AffinityStateRouter<>(
+        affinityRouter = AffinityStateRouter.create(
                 getUrl(), affinityRule.getAffinityKey(), affinityRule.getRatio(), affinityRule.isEnabled());
         affinityRouter.setNextRouter(TailStateRouter.getInstance());
     }

@@ -808,10 +808,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         private URL url;
 
         ReferenceConfigurationListener(ModuleModel moduleModel, RegistryDirectory directory, URL url) {
-            super(moduleModel);
+            super(moduleModel, DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
             this.directory = directory;
             this.url = url;
-            this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
         }
 
         void stop() {
@@ -829,8 +828,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         List<RegistryDirectory> listeners = new ArrayList<>();
 
         ConsumerConfigurationListener(ModuleModel moduleModel) {
-            super(moduleModel);
-            this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
+            super(moduleModel, moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {

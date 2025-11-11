@@ -68,7 +68,15 @@ public class AffinityStateRouter<T> extends AbstractStateRouter<T> {
 
     private final boolean enabled;
 
-    public AffinityStateRouter(URL url) {
+    public static <T> AffinityStateRouter<T> create(URL url) {
+        return new AffinityStateRouter<>(url);
+    }
+
+    public static <T> AffinityStateRouter<T> create(URL url, String affinityKey, Double ratio, boolean enabled) {
+        return new AffinityStateRouter<>(url, affinityKey, ratio, enabled);
+    }
+
+    private AffinityStateRouter(URL url) {
         super(url);
         this.enabled = url.getParameter(ENABLED_KEY, true);
         this.affinityKey = url.getParameter(AFFINITY_KEY, "");
@@ -80,7 +88,7 @@ public class AffinityStateRouter<T> extends AbstractStateRouter<T> {
         }
     }
 
-    public AffinityStateRouter(URL url, String affinityKey, Double ratio, boolean enabled) {
+    private AffinityStateRouter(URL url, String affinityKey, Double ratio, boolean enabled) {
         super(url);
         this.enabled = enabled;
         this.affinityKey = affinityKey;
@@ -92,7 +100,7 @@ public class AffinityStateRouter<T> extends AbstractStateRouter<T> {
         }
     }
 
-    public void init(String rule) {
+    private final void init(String rule) {
         try {
             if (rule == null || rule.trim().isEmpty()) {
                 throw new IllegalArgumentException("Illegal affinity rule!");

@@ -60,7 +60,13 @@ public class NettyHttp3Server extends AbstractServer {
     private Consumer<ChannelPipeline> pipelineConfigurator;
     private int serverShutdownTimeoutMills;
 
-    public NettyHttp3Server(URL url, ChannelHandler handler) throws RemotingException {
+    public static NettyHttp3Server create(URL url, ChannelHandler handler) throws RemotingException {
+        NettyHttp3Server server = new NettyHttp3Server(url, handler);
+        server.init();
+        return server;
+    }
+
+    private NettyHttp3Server(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
     }
 

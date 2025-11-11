@@ -71,7 +71,13 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     private EventLoopGroup workerGroup;
     private Map<String, Channel> dubboChannels;
 
-    public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
+    public static NettyPortUnificationServer create(URL url, ChannelHandler handler) throws RemotingException {
+        NettyPortUnificationServer server = new NettyPortUnificationServer(url, handler);
+        server.init();
+        return server;
+    }
+
+    private NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
     }
 

@@ -68,8 +68,8 @@ class ThreadNameTest {
         clientURL = clientURL.setScopeModel(applicationModel);
         serverHandler = new ThreadNameVerifyHandler(serverRegex, false, serverLatch);
         clientHandler = new ThreadNameVerifyHandler(clientRegex, true, clientLatch);
-        server = new NettyServer(serverURL, serverHandler);
-        client = new NettyClient(clientURL, clientHandler);
+        server = NettyServer.create(serverURL, serverHandler);
+        client = NettyClient.create(clientURL, clientHandler);
     }
 
     @AfterEach

@@ -53,12 +53,20 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     protected ModuleModel moduleModel;
 
     public AbstractConfiguratorListener(ModuleModel moduleModel) {
+        this(moduleModel, null);
+    }
+
+    protected AbstractConfiguratorListener(ModuleModel moduleModel, String key) {
         this.moduleModel = moduleModel;
 
         ruleRepository =
                 moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
 
         initSecurityKey();
+
+        if (key != null) {
+            initWith(key);
+        }
     }
 
     private void initSecurityKey() {

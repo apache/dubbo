@@ -49,7 +49,13 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
     private AtomicReference<io.netty.channel.Channel> datagramChannel;
     private QuicChannelBootstrap bootstrap;
 
-    public NettyHttp3ConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
+    public static NettyHttp3ConnectionClient create(URL url, ChannelHandler handler) throws RemotingException {
+        NettyHttp3ConnectionClient client = new NettyHttp3ConnectionClient(url, handler);
+        client.init();
+        return client;
+    }
+
+    private NettyHttp3ConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
 
