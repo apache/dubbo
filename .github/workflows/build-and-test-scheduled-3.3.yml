@@ -136,6 +136,12 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+ on Linux"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'ubuntu') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
+      - name: "Set MAVEN_OPTS for JDK 24+ on Windows"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           ref: "3.3"
@@ -182,6 +188,12 @@ jobs:
       DUBBO_DEFAULT_SERIALIZATION: fastjson2
       MAVEN_SUREFIRE_ADD_OPENS: true
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+ on Linux"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'ubuntu') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
+      - name: "Set MAVEN_OPTS for JDK 24+ on Windows"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - uses: actions/checkout@v4
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v4
@@ -252,6 +264,9 @@ jobs:
         jdk: [ 8, 11, 17, 21, 25 ]
         job_id: [1, 2, 3, 4, 5]
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+"
+        if: ${{ matrix.jdk >= 24 }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-samples'
@@ -358,6 +373,9 @@ jobs:
         jdk: [ 8, 11, 17, 21, 25 ]
         job_id: [1, 2, 3, 4, 5]
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+"
+        if: ${{ matrix.jdk >= 24 }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-integration-cases'
