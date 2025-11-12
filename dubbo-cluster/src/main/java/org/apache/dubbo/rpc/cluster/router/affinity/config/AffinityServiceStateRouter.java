@@ -31,7 +31,7 @@ public class AffinityServiceStateRouter<T> extends AffinityListenableStateRouter
         return router;
     }
 
-    public AffinityServiceStateRouter(URL url) {
+    private AffinityServiceStateRouter(URL url) {
         super(url, DynamicConfiguration.getRuleKey(url));
     }
 }
