@@ -133,6 +133,12 @@ jobs:
       DISABLE_FILE_SYSTEM_TEST: true
     steps:
       - uses: actions/checkout@v4
+      - name: "Set MAVEN_OPTS for JDK 24+ on Linux"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'ubuntu') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
+      - name: "Set MAVEN_OPTS for JDK 24+ on Windows"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v4
         with:
@@ -178,6 +184,12 @@ jobs:
       MAVEN_SUREFIRE_ADD_OPENS: true
     steps:
       - uses: actions/checkout@v4
+      - name: "Set MAVEN_OPTS for JDK 24+ on Linux"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'ubuntu') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
+      - name: "Set MAVEN_OPTS for JDK 24+ on Windows"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v4
         with:
@@ -251,6 +263,9 @@ jobs:
         with:
           repository: 'apache/dubbo-samples'
           ref: master
+      - name: "Set MAVEN_OPTS for JDK 24+"
+        if: ${{ matrix.jdk >= 24 }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:
@@ -351,6 +366,9 @@ jobs:
         with:
           repository: 'apache/dubbo-integration-cases'
           ref: main
+      - name: "Set MAVEN_OPTS for JDK 24+"
+        if: ${{ matrix.jdk >= 24 }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
       - name: "Cache local Maven repository"
         uses: actions/cache@v3
         with:

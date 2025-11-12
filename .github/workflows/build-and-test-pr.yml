@@ -218,6 +218,9 @@ jobs:
       CURRENT_ROLE: ${{ matrix.case-role }}
       ZOOKEEPER_VERSION: 3.7.2
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+"
+        if: ${{ matrix.java >= 24 }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
       - name: "Checkout code"
         uses: actions/checkout@v4
         with:
