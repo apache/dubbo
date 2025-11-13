@@ -141,7 +141,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
     }
 
     /**
@@ -150,6 +149,8 @@ public class ReferenceBeanManager implements ApplicationContextAware {
      * @throws Exception
      */
     public void prepareReferenceBeans() throws Exception {
+        // get moduleModel here (called by DubboConfigBeanInitializer#afterPropertiesSet) to avoid getting null result.
+        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
         initialized = true;
         for (ReferenceBean referenceBean : getReferences()) {
             initReferenceBean(referenceBean);
