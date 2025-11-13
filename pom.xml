@@ -174,7 +174,7 @@
     <spotless-maven-plugin.version>2.45.0</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.3.6</revision>
+    <revision>3.3.7-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
