@@ -190,7 +190,7 @@
     <byte-buddy.version>1.15.1</byte-buddy.version>
     <prometheus-client.version>0.16.0</prometheus-client.version>
 
-    <revision>3.3.6</revision>
+    <revision>3.3.7-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
