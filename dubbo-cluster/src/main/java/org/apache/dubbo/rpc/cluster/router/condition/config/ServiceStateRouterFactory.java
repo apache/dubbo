@@ -32,6 +32,6 @@ public class ServiceStateRouterFactory extends CacheableStateRouterFactory {
 
     @Override
     protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
-        return ServiceStateRouter.create(url);
+        return new ServiceStateRouter<>(url);
     }
 }

@@ -113,7 +113,7 @@ public class AffinityRouteTest {
                 + "  key: region\n"
                 + "  ratio: 20\n";
 
-        AffinityServiceStateRouter<String> affinityRoute = AffinityServiceStateRouter.create(
+        AffinityServiceStateRouter<String> affinityRoute = new AffinityServiceStateRouter<>(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
 
         affinityRoute.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
@@ -144,7 +144,7 @@ public class AffinityRouteTest {
                 + "  key: region\n"
                 + "  ratio: 80\n";
 
-        AffinityServiceStateRouter<String> affinityRoute = AffinityServiceStateRouter.create(
+        AffinityServiceStateRouter<String> affinityRoute = new AffinityServiceStateRouter<>(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
 
         affinityRoute.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
@@ -175,7 +175,7 @@ public class AffinityRouteTest {
                 + "  key: region\n"
                 + "  ratio: 40\n";
 
-        AffinityServiceStateRouter<String> affinityRoute = AffinityServiceStateRouter.create(
+        AffinityServiceStateRouter<String> affinityRoute = new AffinityServiceStateRouter<>(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
 
         affinityRoute.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));
@@ -206,7 +206,7 @@ public class AffinityRouteTest {
                 + "  key: region\n"
                 + "  ratio: 40.1\n";
 
-        AffinityServiceStateRouter<String> affinityRoute = AffinityServiceStateRouter.create(
+        AffinityServiceStateRouter<String> affinityRoute = new AffinityServiceStateRouter<>(
                 URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
 
         affinityRoute.process(new ConfigChangedEvent("com.foo.BarService", "", config, ConfigChangeType.ADDED));

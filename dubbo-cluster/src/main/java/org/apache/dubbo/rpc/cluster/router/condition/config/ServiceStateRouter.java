@@ -25,13 +25,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 public class ServiceStateRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "SERVICE_ROUTER";
 
-    public static <T> ServiceStateRouter<T> create(URL url) {
-        ServiceStateRouter<T> router = new ServiceStateRouter<>(url);
-        router.init(DynamicConfiguration.getRuleKey(url));
-        return router;
-    }
-
-    private ServiceStateRouter(URL url) {
+    public ServiceStateRouter(URL url) {
         super(url, DynamicConfiguration.getRuleKey(url));
     }
 }

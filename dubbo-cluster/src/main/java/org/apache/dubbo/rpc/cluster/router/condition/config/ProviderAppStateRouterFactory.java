@@ -28,6 +28,6 @@ public class ProviderAppStateRouterFactory extends CacheableStateRouterFactory {
 
     @Override
     protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
-        return ProviderAppStateRouter.create(url);
+        return new ProviderAppStateRouter<>(url);
     }
 }

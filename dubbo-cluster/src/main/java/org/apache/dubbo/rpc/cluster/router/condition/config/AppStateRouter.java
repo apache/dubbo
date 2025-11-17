@@ -24,13 +24,7 @@ import org.apache.dubbo.common.URL;
 public class AppStateRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "APP_ROUTER";
 
-    public static <T> AppStateRouter<T> create(URL url) {
-        AppStateRouter<T> router = new AppStateRouter<>(url);
-        router.init(url.getApplication());
-        return router;
-    }
-
-    private AppStateRouter(URL url) {
+    public AppStateRouter(URL url) {
         super(url, url.getApplication());
     }
 }

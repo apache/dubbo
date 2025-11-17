@@ -62,6 +62,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     private volatile List<MultiDestConditionRouter<T>> multiDestConditionRouters = Collections.emptyList();
     private final String ruleKey;
 
+    private volatile boolean initialized = false;
+
     protected ListenableStateRouter(URL url, String ruleKey) {
         super(url);
         this.setForce(false);
@@ -95,12 +97,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
                         e);
             }
         }
-
-        // Allow subclasses to customize behavior without overriding this method
-        onConfigChange(event);
     }
-
-    protected void onConfigChange(ConfigChangedEvent event) {}
 
     @Override
     public BitList<Invoker<T>> doRoute(
@@ -111,6 +108,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
+        ensureInitialized();
         if (CollectionUtils.isEmpty(invokers)
                 || (conditionRouters.size() == 0 && multiDestConditionRouters.size() == 0)) {
             if (needToPrintMessage) {
@@ -145,6 +143,19 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         }
 
         return invokers;
+    }
+
+    private void ensureInitialized() {
+        if (initialized) {
+            return;
+        }
+        synchronized (this) {
+            if (initialized) {
+                return;
+            }
+            init(this.ruleKey);
+            initialized = true;
+        }
     }
 
     @Override

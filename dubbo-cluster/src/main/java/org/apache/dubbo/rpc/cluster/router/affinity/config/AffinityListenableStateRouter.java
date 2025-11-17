@@ -53,6 +53,8 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
     private volatile AffinityStateRouter<T> affinityRouter;
     private final String ruleKey;
 
+    private volatile boolean initialized = false;
+
     protected AffinityListenableStateRouter(URL url, String ruleKey) {
         super(url);
         this.setForce(false);
@@ -84,11 +86,7 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
                         e);
             }
         }
-
-        onConfigChange(event);
     }
-
-    protected void onConfigChange(ConfigChangedEvent event) {}
 
     @Override
     public BitList<Invoker<T>> doRoute(
@@ -99,6 +97,7 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
+        ensureInitialized();
         if (CollectionUtils.isEmpty(invokers) || affinityRouter == null) {
             if (needToPrintMessage) {
                 messageHolder.set(
@@ -122,6 +121,19 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
         }
 
         return invokers;
+    }
+
+    private void ensureInitialized() {
+        if (initialized) {
+            return;
+        }
+        synchronized (this) {
+            if (initialized) {
+                return;
+            }
+            init(this.ruleKey);
+            initialized = true;
+        }
     }
 
     @Override
