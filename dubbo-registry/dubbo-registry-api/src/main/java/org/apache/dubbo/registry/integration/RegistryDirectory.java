@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -826,7 +827,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
-        List<RegistryDirectory> listeners = new ArrayList<>();
+        List<RegistryDirectory> listeners = new CopyOnWriteArrayList<>();
 
         ConsumerConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);
