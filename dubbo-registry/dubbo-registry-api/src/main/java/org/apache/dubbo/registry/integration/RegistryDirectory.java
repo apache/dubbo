@@ -145,6 +145,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            consumerConfigurationListener.addNotifyListener(this);
+            referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
+        }
         String registryClusterName = registry.getUrl()
                 .getParameter(
                         RegistryConstants.REGISTRY_CLUSTER_KEY,
@@ -153,13 +160,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             super.subscribe(url);
             return null;
         });
-        if (moduleModel
-                .modelEnvironment()
-                .getConfiguration()
-                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-            consumerConfigurationListener.addNotifyListener(this);
-            referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
-        }
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
