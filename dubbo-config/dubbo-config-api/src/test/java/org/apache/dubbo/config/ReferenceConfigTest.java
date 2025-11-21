@@ -141,6 +141,9 @@ class ReferenceConfigTest {
     public void setUp() throws Exception {
         DubboBootstrap.reset();
         FrameworkModel.destroyAll();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
         ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -149,6 +152,7 @@ class ReferenceConfigTest {
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
         FrameworkModel.destroyAll();
+        SysProps.clear();
         Mockito.framework().clearInlineMocks();
     }
 
