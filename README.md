@@ -8,7 +8,7 @@
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo)
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo)
 
-Apache Dubbo is a powerful and user-friendly Web and RPC framework. It supports multiple language implementations such as Java, [Go](https://github.com/apache/dubbo-go), [Python](https://github.com/dubbo/py-client-for-apache-dubbo), [PHP](https://github.com/apache/dubbo-php-framework), [Erlang](https://github.com/apache/dubbo-erlang), [Rust](https://github.com/apache/dubbo-rust), and [Node.js/Web](https://github.com/apache/dubbo-js).  
+Apache Dubbo is a powerful and user-friendly Web and RPC framework. It supports multiple language implementations such as Java, [Go](https://github.com/apache/dubbo-go), [Python](https://github.com/dubbo/py-client-for-apache-dubbo), [PHP](https://github.com/apache/dubbo-php-framework), [Erlang](https://github.com/apache/dubbo-erlang), [Rust](https://github.com/apache/dubbo-rust), and [Node.js/Web](https://github.com/apache/dubbo-js).
 
 Dubbo provides solutions for communication, service discovery, traffic management, observability, security, tooling, and best practices for building enterprise-grade microservices.
 
@@ -71,11 +71,13 @@ Explore more through our hands-on tasks:
 
 ## 📦 Version Compatibility
 
-| Version  | JDK Support | Dependencies                                                                                          | Highlights                                                                                                     |
-|----------|-------------|--------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| **3.3.5**  | 1.8 – 21     | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.3.5/dubbo-dependencies-bom/pom.xml#L92) | ✅ Actively Maintained <br> ✅ Triple Protocol (gRPC/cURL) <br> ✅ REST Support <br> ✅ Spring Boot Starters      |
-| **3.2.16** | 1.8 – 17     | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94) | ✅ Actively Maintained <br> ✅ Metrics & Tracing <br> ✅ Thread Pool Isolation <br> ✅ +30% Performance <br> ✅ Native Image Support |
-| **3.1.11** | 1.8 – 17     | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L90) | ⚠️ Stable, but Not Actively Maintained                                                                         |
+| Version            | JDK Support | Dependencies                                                                                              | Highlights                                                                                                     |
+|--------------------|-------------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| **3.3.7-SNAPSHOT** | 1.8 – 25    | Coming Soon                                                                                               | ✅ JDK 25 Support
+| **3.3.6**          | 1.8 – 21    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.3.6/dubbo-dependencies-bom/pom.xml#L92)  | ✅ Mutiny Reactive Support <br> ✅ Affinity Router <br> ✅ Method-level TPS Limiting <br> ✅ Spring 6 Security Plugin <br> ✅ Enhanced Environment Variable Config |
+| **3.3.5**          | 1.8 – 21    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.3.5/dubbo-dependencies-bom/pom.xml#L92)  | ✅ Actively Maintained <br> ✅ Triple Protocol (gRPC/cURL) <br> ✅ REST Support <br> ✅ Spring Boot Starters      |
+| **3.2.16**         | 1.8 – 17    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94)  | ✅ Actively Maintained <br> ✅ Metrics & Tracing <br> ✅ Thread Pool Isolation <br> ✅ +30% Performance <br> ✅ Native Image Support |
+| **3.1.11**         | 1.8 – 17    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L90) | ⚠️ Stable, but Not Actively Maintained                                                                         |
 
 ### Dubbo2
 
