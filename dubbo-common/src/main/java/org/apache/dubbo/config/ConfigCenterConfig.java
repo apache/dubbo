@@ -141,6 +141,29 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     @Override
+    public String toString() {
+        return "ConfigCenterConfig{" + "address='"
+                + address + '\'' + ", protocol='"
+                + protocol + '\'' + ", namespace='"
+                + namespace + '\'' + ", group='"
+                + group + '\'' + ", check="
+                + check + ", highestPriority="
+                + highestPriority + ", username='"
+                + username + '\'' + ", password='"
+                + mask(password) + '\'' + '}';
+    }
+
+    /**
+     * Masks the given value for security purposes, replacing it with asterisks.
+     */
+    private String mask(String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        return "******";
+    }
+
+    @Override
     protected void checkDefault() {
         super.checkDefault();
 
