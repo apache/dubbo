@@ -16,8 +16,13 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.remoting.http12.CompositeInputStream;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
+import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -43,6 +48,8 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     private final int lengthFieldLength;
 
+    private final int maxMessageSize;
+
     private int requiredLength;
 
     public LengthFieldStreamingDecoder() {
@@ -57,6 +64,8 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         this.lengthFieldOffset = lengthFieldOffset;
         this.lengthFieldLength = lengthFieldLength;
         this.requiredLength = lengthFieldOffset + lengthFieldLength;
+        Configuration conf = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        this.maxMessageSize = conf.getInt(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, 50 * 1024 * 1024);
     }
 
     @Override
@@ -149,6 +158,14 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         byte[] lengthBytes = new byte[lengthFieldLength];
         ignore = accumulate.read(lengthBytes);
         requiredLength = bytesToInt(lengthBytes);
+
+        // Validate bounds
+        if (requiredLength < 0) {
+            throw new RpcException("Invalid message length: " + requiredLength);
+        }
+        if (requiredLength > maxMessageSize) {
+            throw new RpcException(String.format("Message size %d exceeds limit %d", requiredLength, maxMessageSize));
+        }
 
         // Continue reading the frame body.
         state = DecodeState.PAYLOAD;

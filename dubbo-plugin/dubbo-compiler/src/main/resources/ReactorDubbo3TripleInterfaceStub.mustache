@@ -24,12 +24,17 @@ import reactor.core.publisher.Mono;
 
 public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
 
+{{#packageName}}
     String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+{{/packageName}}
+{{^packageName}}
+    String JAVA_SERVICE_NAME = "{{serviceName}}";
+{{/packageName}}
 {{#commonPackageName}}
     String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
 {{/commonPackageName}}
 {{^commonPackageName}}
-    String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
+    String SERVICE_NAME = "{{serviceName}}";
 {{/commonPackageName}}
 {{#methods}}
     {{#javaDoc}}
