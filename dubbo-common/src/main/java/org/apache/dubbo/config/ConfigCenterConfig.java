@@ -154,6 +154,9 @@ public class ConfigCenterConfig extends AbstractConfig {
                 '}';
     }
 
+    /**
+     * Masks the given value for security purposes, replacing it with asterisks.
+     */
     private String mask(String value) {
         if (value == null || value.isEmpty()) {
             return value;
