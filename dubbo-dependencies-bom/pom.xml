@@ -95,7 +95,7 @@
     <javassist_version>3.30.2-GA</javassist_version>
     <byte-buddy_version>1.17.5</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.2.2.Final</netty4_version>
+    <netty4_version>4.2.7.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83_noneautotype</fastjson_version>
@@ -119,7 +119,7 @@
     <jcache_version>1.1.1</jcache_version>
     <apollo_client_version>2.4.0</apollo_client_version>
     <snakeyaml_version>2.4</snakeyaml_version>
-    <commons_lang3_version>3.17.0</commons_lang3_version>
+    <commons_lang3_version>3.18.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.15.1</micrometer.version>
     <opentelemetry.version>1.50.0</opentelemetry.version>
@@ -141,7 +141,7 @@
     <nacos_version>2.5.1</nacos_version>
     <sentinel.version>1.8.8</sentinel.version>
     <seata.version>1.8.0</seata.version>
-    <grpc.version>1.73.0</grpc.version>
+    <grpc.version>1.75.0</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
     <mustache_version>0.9.14</mustache_version>

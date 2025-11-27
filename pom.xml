@@ -165,12 +165,12 @@
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.11</spring-6.version>
-    <spring-security-6.version>6.5.1</spring-security-6.version>
+    <spring-security-6.version>6.5.4</spring-security-6.version>
     <spring-boot-3.version>3.5.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <!-- grpc_version should be same as grpc.version at dubbo-dependencies-bom -->
-    <grpc_version>1.73.0</grpc_version>
+    <grpc_version>1.75.0</grpc_version>
     <spotless-maven-plugin.version>2.45.0</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
