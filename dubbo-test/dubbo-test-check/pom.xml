@@ -34,6 +34,7 @@
     <commons.compress.version>1.27.1</commons.compress.version>
     <commons.exec.version>1.5.0</commons.exec.version>
     <async.http.client.version>2.12.4</async.http.client.version>
+    <commons_lang3_version>3.18.0</commons_lang3_version>
   </properties>
 
   <dependencies>
@@ -55,7 +56,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.18.0</version>
+      <version>${commons_lang3_version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
