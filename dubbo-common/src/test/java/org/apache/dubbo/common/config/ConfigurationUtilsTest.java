@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -107,5 +108,17 @@ class ConfigurationUtilsTest {
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals(
                 "zookeeper://127.0.0.1:2181\\ndubbo.protocol.port=20880", result.get("dubbo.registry.address"));
+    }
+
+    @Test
+    void testSensitiveParameterFromConfig() {
+        // Set a system property to simulate a custom sensitive parameter for testing
+        System.setProperty("dubbo.url.sensitive-parameter-names", "token");
+        // Construct a URL; the default ApplicationModel will read the configuration
+        URL url = URL.valueOf("nacos://127.0.0.1:8848/registry?password=secret&secretKey=mysecret&timeout=5000");
+        // Assert that the custom sensitive parameter is recognized
+        Assertions.assertTrue(ConfigurationUtils.isSensitiveParameter(url, "token"));
+        // Assert that a non-sensitive parameter is not recognized
+        Assertions.assertFalse(ConfigurationUtils.isSensitiveParameter(url, "username"));
     }
 }
