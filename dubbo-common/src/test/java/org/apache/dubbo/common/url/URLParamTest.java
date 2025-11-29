@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.common.url;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -307,5 +310,26 @@ class URLParamTest {
         URLParam urlParam2 = URLParam.parse("methods=aaa&aaa.method1=aaa&bbb.method2=bbb");
         Assertions.assertEquals("aaa", urlParam2.getAnyMethodParameter("method1"));
         Assertions.assertNull(urlParam2.getAnyMethodParameter("method2"));
+    }
+
+    @Test
+    void testBuildParametersFiltersSensitiveFields() throws Exception {
+        // Reset the static cache to ensure test isolation
+        Field field = ConfigurationUtils.class.getDeclaredField("SensitiveParameterNames");
+        field.setAccessible(true);
+        field.set(null, null);
+        // Set a system property to simulate custom sensitive parameters
+        System.setProperty("dubbo.url.sensitive-parameter-names", "token,password");
+        // Construct a URL
+        URL url = URL.valueOf(
+                "nacos://127.0.0.1:8848/registry?password=secret&secretKey=mysecret&token=mytoken&timeout=5000");
+        // Get the parameter string from the URL
+        String paramStr = url.toString();
+        // Verify that sensitive parameters are filtered out
+        Assertions.assertFalse(paramStr.contains("token="));
+        Assertions.assertFalse(paramStr.contains("password="));
+        // Verify that non-sensitive parameters are retained
+        Assertions.assertTrue(paramStr.contains("secretKey=mysecret"));
+        Assertions.assertTrue(paramStr.contains("timeout=5000"));
     }
 }

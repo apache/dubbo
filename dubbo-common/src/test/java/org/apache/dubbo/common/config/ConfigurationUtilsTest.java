@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
@@ -111,7 +112,11 @@ class ConfigurationUtilsTest {
     }
 
     @Test
-    void testSensitiveParameterFromConfig() {
+    void testSensitiveParameterFromConfig() throws NoSuchFieldException, IllegalAccessException {
+        // Clear the static cache to ensure fresh load
+        Field field = ConfigurationUtils.class.getDeclaredField("SensitiveParameterNames");
+        field.setAccessible(true);
+        field.set(null, null);
         // Set a system property to simulate a custom sensitive parameter for testing
         System.setProperty("dubbo.url.sensitive-parameter-names", "token");
         // Construct a URL; the default ApplicationModel will read the configuration
