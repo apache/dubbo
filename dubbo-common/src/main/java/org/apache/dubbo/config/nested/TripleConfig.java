@@ -41,6 +41,9 @@ public class TripleConfig implements Serializable {
     public static final int DEFAULT_CONNECTION_INITIAL_WINDOW_SIZE_KEY = 65_536;
     public static final int DEFAULT_MAX_FRAME_SIZE = 8_388_608;
     public static final int DEFAULT_MAX_HEADER_LIST_SIZE = 32_768;
+    public static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024 * 1024;
+
+    public static final String H2_SETTINGS_MAX_MESSAGE_SIZE_KEY = "dubbo.protocol.triple.max-message-size";
 
     /**
      * Whether enable verbose mode.
@@ -142,6 +145,11 @@ public class TripleConfig implements Serializable {
      * <p>For HTTP/2
      */
     private Integer maxHeaderListSize;
+
+    /**
+     * Maximum message size.
+     */
+    private Integer maxMessageSize;
 
     @Nested
     private RestConfig rest;
@@ -332,6 +340,19 @@ public class TripleConfig implements Serializable {
 
     public void setMaxHeaderListSize(Integer maxHeaderListSize) {
         this.maxHeaderListSize = maxHeaderListSize;
+    }
+
+    public Integer getMaxMessageSize() {
+        return maxMessageSize;
+    }
+
+    @Parameter(excluded = true, key = H2_SETTINGS_MAX_MESSAGE_SIZE_KEY)
+    public int getMaxMessageSizeOrDefault() {
+        return maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize;
+    }
+
+    public void setMaxMessageSize(Integer maxMessageSize) {
+        this.maxMessageSize = maxMessageSize;
     }
 
     public RestConfig getRest() {
