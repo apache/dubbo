@@ -41,6 +41,7 @@ import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,7 @@ import org.mockito.MockedStatic;
 import org.mockito.internal.util.collections.Sets;
 
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,23 +86,20 @@ class ZookeeperServiceDiscoveryTest {
     private ServiceDiscovery mockServiceDiscovery;
     private ServiceCacheBuilder mockServiceCacheBuilder;
     private ServiceCache mockServiceCache;
+    private static final CuratorFrameworkFactory.Builder spyBuilder = spy(CuratorFrameworkFactory.builder());
 
     @BeforeAll
     public static void beforeAll() {
         zookeeperConnectionAddress1 = "zookeeper://localhost:" + "2181";
-    }
-
-    @BeforeEach
-    public void init() throws Exception {
-        // mock begin
-        // create mock bean begin
-        CuratorFrameworkFactory.Builder realBuilder = CuratorFrameworkFactory.builder();
-        CuratorFrameworkFactory.Builder spyBuilder = spy(realBuilder);
         curatorFrameworkFactoryMockedStatic = mockStatic(CuratorFrameworkFactory.class);
         curatorFrameworkFactoryMockedStatic
                 .when(CuratorFrameworkFactory::builder)
                 .thenReturn(spyBuilder);
         serviceDiscoveryBuilderMockedStatic = mockStatic(ServiceDiscoveryBuilder.class);
+    }
+
+    @BeforeEach
+    public void init() throws Exception {
         mockServiceDiscoveryBuilder = mock(ServiceDiscoveryBuilder.class);
         mockServiceDiscovery = mock(ServiceDiscovery.class);
         mockServiceCacheBuilder = mock(ServiceCacheBuilder.class);
@@ -198,6 +197,32 @@ class ZookeeperServiceDiscoveryTest {
         serviceInstances = discovery.getInstances(SERVICE_NAME);
 
         assertTrue(serviceInstances.isEmpty());
+    }
+
+    @Test
+    void testRegistryCheckConnectDefault() {
+        when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
+
+        URL registryUrl = URL.valueOf(zookeeperConnectionAddress1);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        registryUrl.setScopeModel(applicationModel);
+
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
+            new ZookeeperServiceDiscovery(applicationModel, registryUrl);
+        });
+    }
+
+    @Test
+    void testRegistryNotCheckConnect() {
+        when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
+
+        URL registryUrl = URL.valueOf(zookeeperConnectionAddress1).addParameter(CHECK_KEY, false);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        registryUrl.setScopeModel(applicationModel);
+
+        Assertions.assertDoesNotThrow(() -> {
+            new ZookeeperServiceDiscovery(applicationModel, registryUrl);
+        });
     }
 
     @AfterAll

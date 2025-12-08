@@ -132,10 +132,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-22.04, windows-latest ]
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17, 21, 25 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+ on Linux"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'ubuntu') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
+      - name: "Set MAVEN_OPTS for JDK 24+ on Windows"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           ref: "3.3"
@@ -176,12 +182,18 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-22.04, windows-latest ]
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17, 21, 25 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       DUBBO_DEFAULT_SERIALIZATION: fastjson2
       MAVEN_SUREFIRE_ADD_OPENS: true
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+ on Linux"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'ubuntu') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
+      - name: "Set MAVEN_OPTS for JDK 24+ on Windows"
+        if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - uses: actions/checkout@v4
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v4
@@ -249,9 +261,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17, 21, 25 ]
         job_id: [1, 2, 3, 4, 5]
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+"
+        if: ${{ matrix.jdk >= 24 }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-samples'
@@ -311,7 +326,7 @@ jobs:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17, 21, 25 ]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -355,9 +370,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17, 21, 25 ]
         job_id: [1, 2, 3, 4, 5]
     steps:
+      - name: "Set MAVEN_OPTS for JDK 24+"
+        if: ${{ matrix.jdk >= 24 }}
+        run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           repository: 'apache/dubbo-integration-cases'
@@ -417,7 +435,7 @@ jobs:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
       matrix:
-        jdk: [ 8, 11, 17, 21 ]
+        jdk: [ 8, 11, 17, 21, 25 ]
     steps:
       - uses: actions/checkout@v4
         with:
