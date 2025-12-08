@@ -67,7 +67,9 @@ public class JacksonImpl extends AbstractJsonUtilImpl {
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
         try {
             JsonMapper mapper = getMapper();
-            return mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, clazz));
+            // Use ArrayList.class instead of List.class for JDK 21+ compatibility
+            // JDK 21+ introduced SequencedCollection interface which causes type inference issues with List.class
+            return mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(ArrayList.class, clazz));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }

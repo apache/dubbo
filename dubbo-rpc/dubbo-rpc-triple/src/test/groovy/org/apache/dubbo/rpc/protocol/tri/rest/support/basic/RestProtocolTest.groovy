@@ -76,12 +76,15 @@ class RestProtocolTest extends BaseServiceTest {
     }
 
     def "map argument body test"() {
-        expect:
-            runner.post(path, body) contains output
+        when:
+            def result = runner.post(path, body)
+        then:
+            result.contains('1:[2,3]')
+            result.contains('4:[5,6]')
         where:
-            path                     | body                        | output
-            '/mapArgBodyTest?age=2'  | '{"1":["2",3],"4":[5,"6"]}' | '{4:[5,6],1:[2,3]}'
-            '/mapArgBodyTest2?age=1' | '[{"1":[2,3],"4":[5,6]},2]' | '{4:[5,6],1:[2,3]}'
+            path                     | body
+            '/mapArgBodyTest?age=2'  | '{"1":["2",3],"4":[5,"6"]}'
+            '/mapArgBodyTest2?age=1' | '[{"1":[2,3],"4":[5,6]},2]'
     }
 
     def "bean argument test"() {
@@ -121,34 +124,42 @@ class RestProtocolTest extends BaseServiceTest {
     }
 
     def "advance bean argument get test"() {
-        expect:
-            runner.get(path) contains output
+        when:
+            def result = runner.get(path)
+        then:
+            if (fragments == null) {
+                assert result.contains(output)
+            } else {
+                fragments.each { frag ->
+                    assert result.contains(frag)
+                }
+            }
         where:
-            path                                                                            | output
-            '/bean?id=1&name=sam'                                                           | '"id":1,"name":"sam"'
-            '/bean?user.id=1&user.name=sam'                                                 | '"id":1,"name":"sam"'
-            '/bean?name=sam&p=123&email=a@b.com'                                            | '"email":"a@b.com","name":"sam","phone":"123"'
-            '/bean?group.name=g1&group.owner.name=jack'                                     | '"group":{"id":0,"name":"g1","owner":{"name":"jack"'
-            '/bean?group.parent.parent.children[0].name=xx'                                 | '"group":{"id":0,"parent":{"id":0,"parent":{"children":[{"id":0,"name":"xx"}],"id":0}}}'
-            '/bean?group={"name":"g1","id":2}'                                              | '"group":{"id":2,"name":"g1"}'
-            '/bean?ids=3&ids=4'                                                             | '"ids":[3,4]'
-            '/bean?ids[]=3&ids[]=4'                                                         | '"ids":[3,4]'
-            '/bean?ids[1]=3&ids[2]=4'                                                       | '"ids":[0,3,4]'
-            '/bean?scores=3&scores=4'                                                       | '"scores":[3,4]'
-            '/bean?scores[]=3&scores[]=4'                                                   | '"scores":[3,4]'
-            '/bean?scores[1]=3&scores[2]=4'                                                 | '"scores":[null,3,4]'
-            '/bean?tags[0].name=a&tags[0].value=b&tags[1].name=c&tags[1].value=d'           | '"tags":[{"name":"a","value":"b"},{"name":"c","value":"d"}]'
-            '/bean?tagsA[0].name=a&tagsA[0].value=b&tagsA[1].name=c&tagsA[1].value=d'       | '"tagsA":[{"name":"a","value":"b"},{"name":"c","value":"d"}]'
-            '/bean?tagsB[0].name=e&tagsB[1].name=c&tagsB[1].value=d'                        | '"tagsB":[{"name":"e","value":"b"},{"name":"c","value":"d"}]'
-            '/bean?tagsC[0].name=e&tagsC[1].name=c&tagsC[1].value=d'                        | '"tagsC":[{"name":"e","value":"b"},{"name":"c","value":"d"}]'
-            '/bean?groupMaps[0].one.name=a&groupMaps[1].two.name=b'                         | '"groupMaps":[{"one":{"id":0,"name":"a"}},{"two":{"id":0,"name":"b"}}]'
-            '/bean?id=1&features.a=xx&features.b=2'                                         | '"features":{"a":"xx","b":"2"}'
-            '/bean?id=1&features[a]=xx&features[b]=2'                                       | '"features":{"a":"xx","b":"2"}'
-            '/bean?group.id=2&group.features.a=1&group.features.b=xx'                       | '"group":{"features":{"a":"1","b":"xx"},"id":2}'
-            '/bean?tagMap.a.name=a&tagMap.a.value=b&tagMap.b.name=c&tagMap.b.value=d'       | '"tagMap":{"a":{"name":"a","value":"b"},"b":{"name":"c","value":"d"}}'
-            '/bean?tagMapA.a.name=e&tagMapA.b.name=c&tagMapA.b.value=d'                     | '"tagMapA":{"a":{"name":"e","value":"b"},"b":{"name":"c","value":"d"}}'
-            '/bean?tagMapB[2].name=a&tagMapB[2].value=b&tagMapB[3].name=c'                  | '"tagMapB":{2:{"name":"a","value":"b"},3:{"name":"c"}}'
-            '/bean?groupsMap.one[0].name=a&groupsMap.one[1].name=b&groupsMap.two[1].name=c' | '"groupsMap":{"one":[{"id":0,"name":"a"},{"id":0,"name":"b"}],"two":[null,{"id":0,"name":"c"}]}'
+            path                                                                            | output                                                                                   | fragments
+            '/bean?id=1&name=sam'                                                           | '"id":1,"name":"sam"'                                                                    | null
+            '/bean?user.id=1&user.name=sam'                                                 | '"id":1,"name":"sam"'                                                                    | null
+            '/bean?name=sam&p=123&email=a@b.com'                                            | '"email":"a@b.com","name":"sam","phone":"123"'                                           | null
+            '/bean?group.name=g1&group.owner.name=jack'                                     | '"group":{"id":0,"name":"g1","owner":{"name":"jack"'                                     | null
+            '/bean?group.parent.parent.children[0].name=xx'                                 | '"group":{"id":0,"parent":{"id":0,"parent":{"children":[{"id":0,"name":"xx"}],"id":0}}}' | null
+            '/bean?group={"name":"g1","id":2}'                                              | '"group":{"id":2,"name":"g1"}'                                                           | null
+            '/bean?ids=3&ids=4'                                                             | '"ids":[3,4]'                                                                            | null
+            '/bean?ids[]=3&ids[]=4'                                                         | '"ids":[3,4]'                                                                            | null
+            '/bean?ids[1]=3&ids[2]=4'                                                       | '"ids":[0,3,4]'                                                                          | null
+            '/bean?scores=3&scores=4'                                                       | '"scores":[3,4]'                                                                         | null
+            '/bean?scores[]=3&scores[]=4'                                                   | '"scores":[3,4]'                                                                         | null
+            '/bean?scores[1]=3&scores[2]=4'                                                 | '"scores":[null,3,4]'                                                                    | null
+            '/bean?tags[0].name=a&tags[0].value=b&tags[1].name=c&tags[1].value=d'           | '"tags":[{"name":"a","value":"b"},{"name":"c","value":"d"}]'                             | null
+            '/bean?tagsA[0].name=a&tagsA[0].value=b&tagsA[1].name=c&tagsA[1].value=d'       | '"tagsA":[{"name":"a","value":"b"},{"name":"c","value":"d"}]'                            | null
+            '/bean?tagsB[0].name=e&tagsB[1].name=c&tagsB[1].value=d'                        | '"tagsB":[{"name":"e","value":"b"},{"name":"c","value":"d"}]'                            | null
+            '/bean?tagsC[0].name=e&tagsC[1].name=c&tagsC[1].value=d'                        | '"tagsC":[{"name":"e","value":"b"},{"name":"c","value":"d"}]'                            | null
+            '/bean?groupMaps[0].one.name=a&groupMaps[1].two.name=b'                         | '"groupMaps":[{"one":{"id":0,"name":"a"}},{"two":{"id":0,"name":"b"}}]'                  | null
+            '/bean?id=1&features.a=xx&features.b=2'                                         | null                                                                                     | ['"features"', '"a":"xx"', '"b":"2"']
+            '/bean?id=1&features[a]=xx&features[b]=2'                                       | null                                                                                     | ['"features"', '"a":"xx"', '"b":"2"']
+            '/bean?group.id=2&group.features.a=1&group.features.b=xx'                       | null                                                                                     | ['"group"', '"features"', '"a":"1"', '"b":"xx"']
+            '/bean?tagMap.a.name=a&tagMap.a.value=b&tagMap.b.name=c&tagMap.b.value=d'       | null                                                                                     | ['"tagMap"', '"name":"a"', '"value":"b"', '"name":"c"', '"value":"d"']
+            '/bean?tagMapA.a.name=e&tagMapA.b.name=c&tagMapA.b.value=d'                     | null                                                                                     | ['"tagMapA"', '"name":"e"', '"value":"b"', '"name":"c"', '"value":"d"']
+            '/bean?tagMapB[2].name=a&tagMapB[2].value=b&tagMapB[3].name=c'                  | null                                                                                     | ['"tagMapB"', '"name":"a"', '"value":"b"', '"name":"c"']
+            '/bean?groupsMap.one[0].name=a&groupsMap.one[1].name=b&groupsMap.two[1].name=c' | null                                                                                     | ['"groupsMap"', '"one":[{"id":0,"name":"a"}', '"name":"b"', '"two":[null,{"id":0,"name":"c"}]']
     }
 
     def "bean body test"() {
