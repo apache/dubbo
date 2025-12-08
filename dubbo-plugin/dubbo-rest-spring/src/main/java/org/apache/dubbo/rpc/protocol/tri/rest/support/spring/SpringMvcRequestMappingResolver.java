@@ -89,7 +89,7 @@ public class SpringMvcRequestMappingResolver implements RequestMappingResolver {
         }
 
         ServiceMeta serviceMeta = methodMeta.getServiceMeta();
-        String name = methodMeta.getMethod().getName();
+        String name = methodMeta.getMethodName();
         String[] methods = requestMapping == null
                 ? httpExchange.getStringArray("method")
                 : requestMapping.getStringArray("method");
