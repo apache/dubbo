@@ -46,10 +46,18 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     }
 
     public void addMethod(MethodDescriptor methodDescriptor) {
-        methods.put(methodDescriptor.getMethodName(), Collections.singletonList(methodDescriptor));
-        Map<String, MethodDescriptor> descMap =
-                descToMethods.computeIfAbsent(methodDescriptor.getMethodName(), k -> new HashMap<>());
-        descMap.put(methodDescriptor.getParamDesc(), methodDescriptor);
+        doAddMethod(methodDescriptor.getMethodName(), methodDescriptor);
+        if (methods.containsKey(methodDescriptor.getJavaMethodName())) {
+            return;
+        }
+        doAddMethod(methodDescriptor.getJavaMethodName(), methodDescriptor);
+    }
+
+    private void doAddMethod(String methodName, MethodDescriptor methodDescriptor) {
+        methods.put(methodName, Collections.singletonList(methodDescriptor));
+        descToMethods
+                .computeIfAbsent(methodName, k -> new HashMap<>())
+                .put(methodDescriptor.getParamDesc(), methodDescriptor);
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
@@ -75,9 +83,6 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     /**
      * Does not use Optional as return type to avoid potential performance decrease.
      *
-     * @param methodName
-     * @param params
-     * @return
      */
     public MethodDescriptor getMethod(String methodName, String params) {
         Map<String, MethodDescriptor> methods = descToMethods.get(methodName);
@@ -90,9 +95,6 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     /**
      * Does not use Optional as return type to avoid potential performance decrease.
      *
-     * @param methodName
-     * @param paramTypes
-     * @return
      */
     public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
         List<MethodDescriptor> methodModels = methods.get(methodName);
