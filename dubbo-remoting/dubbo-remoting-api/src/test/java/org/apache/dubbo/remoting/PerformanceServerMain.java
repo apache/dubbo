@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-/**
- * PerformanceServerMain
- */
 public class PerformanceServerMain {
 
     public static void main(String[] args) throws Exception {

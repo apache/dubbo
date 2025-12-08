@@ -24,9 +24,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
-/**
- * MockFilter
- */
 public class MockFilter implements Filter {
 
     private LoadBalance loadBalance;

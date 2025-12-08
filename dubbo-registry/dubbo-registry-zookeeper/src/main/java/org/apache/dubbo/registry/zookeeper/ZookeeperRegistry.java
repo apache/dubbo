@@ -56,9 +56,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 
-/**
- * ZookeeperRegistry
- */
 public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ZookeeperRegistry.class);
@@ -206,7 +203,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                                 try {
                                     child = URL.decode(child);
                                     if (!(JsonUtils.checkJson(child))) {
-                                        throw new Exception("dubbo-admin subscribe " + child + " failed,beacause "
+                                        throw new Exception("dubbo-admin subscribe " + child + " failed, because "
                                                 + child + "is root path in " + url);
                                     }
                                 } catch (Exception e) {

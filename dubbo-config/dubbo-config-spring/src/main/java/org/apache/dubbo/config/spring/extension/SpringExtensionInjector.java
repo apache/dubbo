@@ -26,9 +26,6 @@ import java.util.Arrays;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
-/**
- * SpringExtensionInjector
- */
 public class SpringExtensionInjector implements ExtensionInjector {
 
     private ApplicationContext context;

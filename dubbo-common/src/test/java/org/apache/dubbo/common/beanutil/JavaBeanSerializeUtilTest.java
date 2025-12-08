@@ -540,7 +540,7 @@ class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(person.getLoginName(), descriptor.getProperty("loginName"));
         assertEqualsEnum(person.getStatus(), descriptor.getProperty("status"));
         assertEqualsPrimitive(person.getEmail(), descriptor.getProperty("email"));
-        assertEqualsPrimitive(person.getPenName(), descriptor.getProperty("penName"));
+        assertEqualsPrimitive(person.getPersonName(), descriptor.getProperty("personName"));
 
         JavaBeanDescriptor infoProfile = (JavaBeanDescriptor) descriptor.getProperty("infoProfile");
         Assertions.assertTrue(infoProfile.isBeanType());
@@ -609,7 +609,7 @@ class JavaBeanSerializeUtilTest {
         bigPerson.setLoginName("superman");
         bigPerson.setStatus(PersonStatus.ENABLED);
         bigPerson.setEmail("sm@1.com");
-        bigPerson.setPenName("pname");
+        bigPerson.setPersonName("pname");
 
         ArrayList<Phone> phones = new ArrayList<Phone>();
         Phone phone1 = new Phone("86", "0571", "87654321", "001");

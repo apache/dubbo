@@ -24,9 +24,6 @@ import org.apache.dubbo.remoting.Channel;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 
-/**
- * CloseTimerTask
- */
 public class CloseTimerTask extends AbstractTimerTask {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CloseTimerTask.class);
@@ -37,6 +34,7 @@ public class CloseTimerTask extends AbstractTimerTask {
             ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long tick, int closeTimeout) {
         super(channelProvider, hashedWheelTimer, tick);
         this.closeTimeout = closeTimeout;
+        start();
     }
 
     @Override

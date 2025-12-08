@@ -67,9 +67,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * AbstractClusterInvokerTest
- */
 @SuppressWarnings("rawtypes")
 class AbstractClusterInvokerTest {
     List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();

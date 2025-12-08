@@ -24,9 +24,6 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Router;
 
-/**
- *
- */
 public class CompatibleRouter implements Router {
 
     @Override

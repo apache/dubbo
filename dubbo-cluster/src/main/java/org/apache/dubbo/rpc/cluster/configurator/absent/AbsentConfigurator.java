@@ -19,9 +19,6 @@ package org.apache.dubbo.rpc.cluster.configurator.absent;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
 
-/**
- * AbsentConfigurator
- */
 public class AbsentConfigurator extends AbstractConfigurator {
 
     public AbsentConfigurator(URL url) {

@@ -17,7 +17,7 @@
 #
 #
 
-# Service scope, without  specific App
+# Service scope, without specific App
 ---
 configVersion: v2.7
 scope: service

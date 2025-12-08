@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 
 /**
  * Helper class to build the command-line arguments of a java process.
- *
- * @author Stephane Nicoll
  */
 final class CommandLineBuilder {
 

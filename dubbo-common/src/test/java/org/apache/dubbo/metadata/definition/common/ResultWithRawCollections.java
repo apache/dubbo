@@ -19,9 +19,6 @@ package org.apache.dubbo.metadata.definition.common;
 import java.util.List;
 import java.util.Map;
 
-/**
- *
- */
 @SuppressWarnings("rawtypes")
 public class ResultWithRawCollections {
 
