@@ -29,7 +29,7 @@ public class BigPerson implements Serializable {
 
     String email;
 
-    String penName;
+    String personName;
 
     PersonInfo infoProfile;
 
@@ -79,12 +79,12 @@ public class BigPerson implements Serializable {
         this.status = status;
     }
 
-    public String getPenName() {
-        return penName;
+    public String getPersonName() {
+        return personName;
     }
 
-    public void setPenName(String penName) {
-        this.penName = penName;
+    public void setPersonName(String personName) {
+        this.personName = personName;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class BigPerson implements Serializable {
         result = prime * result + ((email == null) ? 0 : email.hashCode());
         result = prime * result + ((infoProfile == null) ? 0 : infoProfile.hashCode());
         result = prime * result + ((loginName == null) ? 0 : loginName.hashCode());
-        result = prime * result + ((penName == null) ? 0 : penName.hashCode());
+        result = prime * result + ((personName == null) ? 0 : personName.hashCode());
         result = prime * result + ((personId == null) ? 0 : personId.hashCode());
         result = prime * result + ((status == null) ? 0 : status.hashCode());
         return result;
@@ -115,9 +115,9 @@ public class BigPerson implements Serializable {
         if (loginName == null) {
             if (other.loginName != null) return false;
         } else if (!loginName.equals(other.loginName)) return false;
-        if (penName == null) {
-            if (other.penName != null) return false;
-        } else if (!penName.equals(other.penName)) return false;
+        if (personName == null) {
+            if (other.personName != null) return false;
+        } else if (!personName.equals(other.personName)) return false;
         if (personId == null) {
             if (other.personId != null) return false;
         } else if (!personId.equals(other.personId)) return false;
@@ -128,7 +128,7 @@ public class BigPerson implements Serializable {
     @Override
     public String toString() {
         return "BigPerson [personId=" + personId + ", loginName=" + loginName + ", status="
-                + status + ", email=" + email + ", penName=" + penName + ", infoProfile="
+                + status + ", email=" + email + ", personName=" + personName + ", infoProfile="
                 + infoProfile + "]";
     }
 }

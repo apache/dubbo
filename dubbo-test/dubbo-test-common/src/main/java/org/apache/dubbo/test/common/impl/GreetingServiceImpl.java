@@ -18,9 +18,6 @@ package org.apache.dubbo.test.common.impl;
 
 import org.apache.dubbo.test.common.api.GreetingService;
 
-/**
- *
- */
 public class GreetingServiceImpl implements GreetingService {
     @Override
     public String hello() {

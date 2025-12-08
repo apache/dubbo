@@ -23,9 +23,6 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.Endpoint;
 import org.apache.dubbo.remoting.RemotingException;
 
-/**
- * AbstractPeer
- */
 public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     private final ChannelHandler handler;

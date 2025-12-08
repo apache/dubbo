@@ -44,9 +44,6 @@ import org.mockito.Mockito;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
-/**
- * MultipleServiceDiscoveryTest
- */
 public class MultipleServiceDiscoveryTest {
 
     private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;

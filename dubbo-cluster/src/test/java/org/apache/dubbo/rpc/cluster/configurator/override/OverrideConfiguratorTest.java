@@ -33,9 +33,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
-/**
- * OverrideConfiguratorTest
- */
 class OverrideConfiguratorTest {
 
     @Test

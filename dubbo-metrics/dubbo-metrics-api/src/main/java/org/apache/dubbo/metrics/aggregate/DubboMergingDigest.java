@@ -283,7 +283,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
 
     private void add(double x, int w, List<Double> history) {
         if (Double.isNaN(x)) {
-            throw new IllegalArgumentException("Cannot add NaN to t-digest");
+            return;
         }
 
         int where;

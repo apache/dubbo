@@ -28,8 +28,6 @@ import java.util.Arrays;
 
 /**
  * Provides access to the java binary executable, regardless of OS.
- *
- * @author Phillip Webb
  */
 public class JavaExecutable {
 

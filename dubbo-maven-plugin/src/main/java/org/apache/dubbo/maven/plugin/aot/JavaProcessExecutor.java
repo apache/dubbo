@@ -29,8 +29,6 @@ import java.util.function.Consumer;
 
 /**
  * Ease the execution of a Java process using Maven's toolchain support.
- *
- * @author Stephane Nicoll
  */
 class JavaProcessExecutor {
 

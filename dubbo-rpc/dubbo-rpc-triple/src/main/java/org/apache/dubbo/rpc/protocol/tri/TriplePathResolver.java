@@ -41,7 +41,7 @@ public class TriplePathResolver implements PathResolver {
 
         register0(serviceKey, serviceInterface, invoker, url);
 
-        // Path patten: '{interfaceName}' or '{contextPath}/{interfaceName}'
+        // Path pattern: '{interfaceName}' or '{contextPath}/{interfaceName}'
         String path = url.getPath();
         int index = path.lastIndexOf('/');
         if (index == -1) {

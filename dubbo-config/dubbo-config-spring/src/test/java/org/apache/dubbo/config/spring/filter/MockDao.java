@@ -16,7 +16,4 @@
  */
 package org.apache.dubbo.config.spring.filter;
 
-/**
- * MockDao
- */
 public interface MockDao {}

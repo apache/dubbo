@@ -45,9 +45,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 
-/**
- * AbstractProxyProtocol
- */
 public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     private final List<Class<?>> rpcExceptions = new CopyOnWriteArrayList<>();

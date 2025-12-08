@@ -20,9 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
-/**
- * MultipleRegistryFactory
- */
 public class MultipleRegistryFactory extends AbstractRegistryFactory {
 
     @Override

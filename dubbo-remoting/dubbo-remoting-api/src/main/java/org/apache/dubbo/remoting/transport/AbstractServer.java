@@ -39,9 +39,6 @@ import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
-/**
- * AbstractServer
- */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
 
     private Set<ExecutorService> executors = new ConcurrentHashSet<>();

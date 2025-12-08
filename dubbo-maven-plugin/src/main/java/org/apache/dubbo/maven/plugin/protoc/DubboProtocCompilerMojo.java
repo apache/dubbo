@@ -173,9 +173,8 @@ public class DubboProtocCompilerMojo extends AbstractMojo {
                     "protoc did not exit cleanly. Review output for more information.");
             } else if (StringUtils.isNotBlank(getError())) {
                 getLog().warn("PROTOC: " + getError());
-            } else {
-                linkProtoFilesToMaven();
             }
+            linkProtoFilesToMaven();
         } catch (CommandLineException e) {
             throw new MojoExecutionException(e);
         }

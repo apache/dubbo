@@ -39,11 +39,6 @@ public class StringToDurationConverter implements StringConverter<Duration> {
         return NORMAL_PRIORITY + 10;
     }
 
-    /**
-     * @author Phillip Webb
-     * @author Valentine Wu
-     * @link {org.springframework.boot.convert.DurationStyle}
-     */
     enum DurationStyle {
 
         /**

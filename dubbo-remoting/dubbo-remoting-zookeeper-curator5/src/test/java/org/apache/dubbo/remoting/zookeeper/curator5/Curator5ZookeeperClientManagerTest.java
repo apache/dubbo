@@ -18,36 +18,55 @@ package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.listen.StandardListenerManager;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstructionWithAnswer;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class Curator5ZookeeperClientManagerTest {
     private ZookeeperClient zookeeperClient;
-    private static MockedConstruction<Curator5ZookeeperClient> mockedCurator5ZookeeperClientConstruction;
-    private static String zookeeperConnectionAddress1;
+    private static URL zookeeperUrl;
+    private static MockedStatic<CuratorFrameworkFactory> curatorFrameworkFactoryMockedStatic;
+    private static CuratorFramework mockCuratorFramework;
 
     @BeforeAll
     public static void beforeAll() {
-        zookeeperConnectionAddress1 = "zookeeper://127.0.0.1:2181";
-        Curator5ZookeeperClient mockCurator5ZookeeperClient = mock(Curator5ZookeeperClient.class);
-        mockedCurator5ZookeeperClientConstruction =
-                mockConstructionWithAnswer(Curator5ZookeeperClient.class, invocationOnMock -> invocationOnMock
-                        .getMethod()
-                        .invoke(mockCurator5ZookeeperClient, invocationOnMock.getArguments()));
+        String zookeeperConnectionAddress1 = "zookeeper://127.0.0.1:2181";
+        zookeeperUrl = URL.valueOf(zookeeperConnectionAddress1 + "/service");
+
+        CuratorFrameworkFactory.Builder realBuilder = CuratorFrameworkFactory.builder();
+        CuratorFrameworkFactory.Builder spyBuilder = spy(realBuilder);
+
+        curatorFrameworkFactoryMockedStatic = mockStatic(CuratorFrameworkFactory.class);
+        curatorFrameworkFactoryMockedStatic
+                .when(CuratorFrameworkFactory::builder)
+                .thenReturn(spyBuilder);
+        mockCuratorFramework = mock(CuratorFramework.class);
+        doReturn(mockCuratorFramework).when(spyBuilder).build();
     }
 
     @BeforeEach
-    public void setUp() {
-        zookeeperClient = new ZookeeperClientManager().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
+    public void setUp() throws InterruptedException {
+        when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(true);
+        when(mockCuratorFramework.getConnectionStateListenable()).thenReturn(StandardListenerManager.standard());
+        zookeeperClient = new ZookeeperClientManager().connect(zookeeperUrl);
     }
 
     @Test
@@ -56,8 +75,29 @@ class Curator5ZookeeperClientManagerTest {
         zookeeperClient.close();
     }
 
+    @Test
+    void testRegistryCheckConnectDefault() throws InterruptedException {
+        when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(false);
+
+        ZookeeperClientManager zookeeperClientManager = new ZookeeperClientManager();
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
+            zookeeperClientManager.connect(zookeeperUrl);
+        });
+    }
+
+    @Test
+    void testRegistryNotCheckConnect() throws InterruptedException {
+        when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(false);
+
+        URL url = zookeeperUrl.addParameter(CHECK_KEY, false);
+        ZookeeperClientManager zookeeperClientManager = new ZookeeperClientManager();
+        Assertions.assertDoesNotThrow(() -> {
+            zookeeperClientManager.connect(url);
+        });
+    }
+
     @AfterAll
     public static void afterAll() {
-        mockedCurator5ZookeeperClientConstruction.close();
+        curatorFrameworkFactoryMockedStatic.close();
     }
 }

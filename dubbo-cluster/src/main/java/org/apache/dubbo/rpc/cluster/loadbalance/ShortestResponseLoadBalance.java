@@ -40,8 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Filter the number of invokers with the shortest response time of
  * success calls and count the weights and quantities of these invokers in last slide window.
  * If there is only one invoker, use the invoker directly;
- * if there are multiple invokers and the weights are not the same, then random according to the total weight;
- * if there are multiple invokers and the same weight, then randomly called.
+ * If there are multiple invokers and the weights are not the same, then random according to the total weight;
+ * If there are multiple invokers and the same weight, then randomly called.
  */
 public class ShortestResponseLoadBalance extends AbstractLoadBalance implements ScopeModelAware {
 
