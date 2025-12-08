@@ -244,7 +244,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             final CharSequence contentType = headers.get(HttpHeaderNames.CONTENT_TYPE.getKey());
             if (contentType == null || !GrpcUtils.isGrpcRequest(contentType.toString())) {
                 return TriRpcStatus.fromCode(TriRpcStatus.httpStatusToGrpcCode(httpStatus))
-                        .withDescription("invalid content-type: " + contentType);
+                        .withDescription("HTTP status: " + httpStatus + ", invalid content-type: " + contentType);
             }
             return null;
         }

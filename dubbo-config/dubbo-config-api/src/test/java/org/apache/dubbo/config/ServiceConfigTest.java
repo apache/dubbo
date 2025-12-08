@@ -100,6 +100,9 @@ class ServiceConfigTest {
     public void setUp() throws Exception {
         DubboBootstrap.reset();
 
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
+
         service = new ServiceConfig<>();
         service2 = new ServiceConfig<>();
         serviceWithoutRegistryConfig = new ServiceConfig<>();
@@ -165,7 +168,10 @@ class ServiceConfigTest {
     }
 
     @AfterEach
-    public void tearDown() {}
+    public void tearDown() {
+        SysProps.clear();
+        DubboBootstrap.reset();
+    }
 
     @Test
     void testExport() throws Exception {

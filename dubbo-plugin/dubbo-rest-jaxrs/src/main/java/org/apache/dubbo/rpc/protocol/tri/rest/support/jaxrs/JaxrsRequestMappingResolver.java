@@ -78,7 +78,7 @@ public class JaxrsRequestMappingResolver implements RequestMappingResolver {
             globalCorsMeta = CorsUtils.getGlobalCorsMeta(restConfig);
         }
         return builder(methodMeta, path, httpMethod)
-                .name(methodMeta.getMethod().getName())
+                .name(methodMeta.getMethodName())
                 .contextPath(methodMeta.getServiceMeta().getContextPath())
                 .service(serviceMeta.getServiceGroup(), serviceMeta.getServiceVersion())
                 .cors(globalCorsMeta)
