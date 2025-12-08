@@ -95,6 +95,13 @@ public final class MethodMeta extends AnnotationSupport {
         return method;
     }
 
+    public String getMethodName() {
+        if (methodDescriptor == null) {
+            return method.getName();
+        }
+        return methodDescriptor.getMethodName();
+    }
+
     public MethodDescriptor getMethodDescriptor() {
         return methodDescriptor;
     }

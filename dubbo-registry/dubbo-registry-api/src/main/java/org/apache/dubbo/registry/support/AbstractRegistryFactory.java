@@ -20,13 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
@@ -74,7 +74,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
 
         String key = createRegistryCacheKey(url);
         Registry registry = null;
-        boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
+        boolean check = UrlUtils.isCheck(url);
 
         // Lock the registry access process to ensure a single instance of the registry
         registryManager.getRegistryLock().lock();

@@ -55,24 +55,31 @@ public class HttpCommandDecoder {
                                 CommandContextFactory.newInstance(name, valueList.toArray(new String[] {}), true);
                     }
                 } else if (request.method() == HttpMethod.POST) {
-                    HttpPostRequestDecoder httpPostRequestDecoder = new HttpPostRequestDecoder(request);
-                    List<String> valueList = new ArrayList<>();
-                    for (InterfaceHttpData interfaceHttpData : httpPostRequestDecoder.getBodyHttpDatas()) {
-                        if (interfaceHttpData.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
-                            Attribute attribute = (Attribute) interfaceHttpData;
-                            try {
-                                valueList.add(attribute.getValue());
-                            } catch (IOException ex) {
-                                throw new RuntimeException(ex);
+                    HttpPostRequestDecoder httpPostRequestDecoder = null;
+                    try {
+                        httpPostRequestDecoder = new HttpPostRequestDecoder(request);
+                        List<String> valueList = new ArrayList<>();
+                        for (InterfaceHttpData interfaceHttpData : httpPostRequestDecoder.getBodyHttpDatas()) {
+                            if (interfaceHttpData.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                                Attribute attribute = (Attribute) interfaceHttpData;
+                                try {
+                                    valueList.add(attribute.getValue());
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                }
                             }
                         }
-                    }
-                    if (valueList.isEmpty()) {
-                        commandContext = CommandContextFactory.newInstance(name);
-                        commandContext.setHttp(true);
-                    } else {
-                        commandContext =
-                                CommandContextFactory.newInstance(name, valueList.toArray(new String[] {}), true);
+                        if (valueList.isEmpty()) {
+                            commandContext = CommandContextFactory.newInstance(name);
+                            commandContext.setHttp(true);
+                        } else {
+                            commandContext =
+                                    CommandContextFactory.newInstance(name, valueList.toArray(new String[] {}), true);
+                        }
+                    } finally {
+                        if (httpPostRequestDecoder != null) {
+                            httpPostRequestDecoder.destroy();
+                        }
                     }
                 }
             } else if (array.length == 3) {

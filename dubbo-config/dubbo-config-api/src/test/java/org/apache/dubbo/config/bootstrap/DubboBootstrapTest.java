@@ -67,6 +67,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -107,6 +108,14 @@ class DubboBootstrapTest {
     @AfterAll
     public static void tearDown() {
         SystemPropertyConfigUtils.clearSystemProperty(CommonConstants.DubboProperty.DUBBO_PROPERTIES_KEY);
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterEach

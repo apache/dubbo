@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
@@ -27,9 +25,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
-    private static final Logger logger = LoggerFactory.getLogger(StubMethodDescriptor.class);
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
     private final String methodName;
+    private final String javaMethodName;
     private final String[] compatibleParamSignatures;
     private final Class<?>[] parameterClasses;
     private final Class<?> returnClass;
@@ -51,6 +49,7 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
             UnPack requestUnpack,
             UnPack responseUnpack) {
         this.methodName = methodName;
+        this.javaMethodName = toJavaMethodName(methodName);
         this.rpcType = rpcType;
         this.requestPack = requestPack;
         this.responsePack = responsePack;
@@ -67,6 +66,11 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     @Override
     public String getMethodName() {
         return methodName;
+    }
+
+    @Override
+    public String getJavaMethodName() {
+        return javaMethodName;
     }
 
     @Override
@@ -154,5 +158,10 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
         return "StubMethodDescriptor{" + "method=" + methodName + '('
                 + (parameterClasses.length > 0 ? parameterClasses[0].getSimpleName() : "") + "), rpcType='" + rpcType
                 + "'}";
+    }
+
+    private static String toJavaMethodName(String methodName) {
+        char ch = methodName.charAt(0);
+        return Character.isUpperCase(ch) ? Character.toLowerCase(ch) + methodName.substring(1) : methodName;
     }
 }
