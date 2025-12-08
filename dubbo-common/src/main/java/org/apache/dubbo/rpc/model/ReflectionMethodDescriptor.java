@@ -130,6 +130,11 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
     }
 
     @Override
+    public String getJavaMethodName() {
+        return method.getName();
+    }
+
+    @Override
     public Method getMethod() {
         return method;
     }
