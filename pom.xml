@@ -164,17 +164,17 @@
     <maven_gmavenplus_version>3.0.2</maven_gmavenplus_version>
 
     <!-- For unify spring boot 3 version -->
-    <spring-6.version>6.2.8</spring-6.version>
+    <spring-6.version>6.2.11</spring-6.version>
     <spring-security-6.version>6.5.1</spring-security-6.version>
     <spring-boot-3.version>3.5.0</spring-boot-3.version>
 
     <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
     <!-- grpc_version should be same as grpc.version at dubbo-dependencies-bom -->
     <grpc_version>1.73.0</grpc_version>
-    <spotless-maven-plugin.version>2.44.5</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.45.0</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <revision>3.3.6-SNAPSHOT</revision>
+    <revision>3.3.7-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -651,6 +651,7 @@
         <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-plugin-loom</module>
         <module>dubbo-plugin/dubbo-mutiny</module>
+        <module>dubbo-plugin/dubbo-mcp</module>
         <module>dubbo-distribution/dubbo-all</module>
         <module>dubbo-distribution/dubbo-all-shaded</module>
         <module>dubbo-distribution/dubbo-apache-release</module>
@@ -850,10 +851,21 @@
     <profile>
       <id>jdk21-spotless</id>
       <activation>
-        <jdk>[21,)</jdk>
+        <jdk>[21,25)</jdk>
       </activation>
       <properties>
         <palantirJavaFormat.version>2.39.0</palantirJavaFormat.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk25-spotless</id>
+      <activation>
+        <jdk>[25,)</jdk>
+      </activation>
+      <properties>
+        <!-- Palantir Java Format 2.71.0+ supports JDK 25 -->
+        <palantirJavaFormat.version>2.71.0</palantirJavaFormat.version>
       </properties>
     </profile>
 
@@ -957,6 +969,24 @@
       <properties>
         <spotless.skip>true</spotless.skip>
       </properties>
+    </profile>
+    <profile>
+      <id>mcp</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-plugin/dubbo-mcp</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>mcp-demo</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-demo/dubbo-demo-mcp-server</module>
+      </modules>
     </profile>
     <profile>
       <id>loom</id>

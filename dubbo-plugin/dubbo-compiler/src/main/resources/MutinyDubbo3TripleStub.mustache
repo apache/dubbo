@@ -19,7 +19,6 @@
 package {{packageName}};
 {{/packageName}}
 
-import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -72,7 +71,7 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.UNARY,
-        obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/unaryMethods}}
 
@@ -82,7 +81,7 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.SERVER_STREAM,
-        obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/serverStreamingMethods}}
 
@@ -92,7 +91,7 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.CLIENT_STREAM,
-        obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/clientStreamingMethods}}
 
@@ -102,7 +101,7 @@ public final class {{className}} {
     {{/javaDoc}}
     private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
         {{inputType}}.class, {{outputType}}.class, MethodDescriptor.RpcType.BI_STREAM,
-        obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+        obj -> ((com.google.protobuf.Message) obj).toByteArray(), obj -> ((com.google.protobuf.Message) obj).toByteArray(), {{inputType}}::parseFrom,
         {{outputType}}::parseFrom);
 {{/biStreamingWithoutClientStreamMethods}}
 

@@ -124,6 +124,9 @@ public abstract class AbstractRetryTask implements TimerTask {
             logger.info(taskName + " : " + url);
         }
         try {
+            if (!registry.isAvailable()) {
+                throw new IllegalStateException("Registry is not available.");
+            }
             doRetry(url, registry, timeout);
         } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
 

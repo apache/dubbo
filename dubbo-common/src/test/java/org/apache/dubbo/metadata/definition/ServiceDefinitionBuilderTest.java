@@ -95,18 +95,22 @@ class ServiceDefinitionBuilderTest {
         Assertions.assertEquals(findComplexObject.getReturnType(), ComplexObject.class.getCanonicalName());
 
         Assertions.assertTrue(
-                testAnnotation
-                                .getAnnotations()
-                                .equals(
-                                        Arrays.asList(
-                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(value=777)",
+                (testAnnotation
+                                        .getAnnotations()
+                                        .contains(
+                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(value=777)")
+                                && testAnnotation
+                                        .getAnnotations()
+                                        .contains(
                                                 "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(value=888)"))
                         // JDK 17 style
-                        || testAnnotation
-                                .getAnnotations()
-                                .equals(
-                                        Arrays.asList(
-                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(777)",
+                        || (testAnnotation
+                                        .getAnnotations()
+                                        .contains(
+                                                "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(777)")
+                                && testAnnotation
+                                        .getAnnotations()
+                                        .contains(
                                                 "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(888)")));
         Assertions.assertEquals(testAnnotation.getReturnType(), "void");
 

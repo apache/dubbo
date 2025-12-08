@@ -97,7 +97,7 @@ public class BasicRequestMappingResolver implements RequestMappingResolver {
 
         String[] paths = resolvePaths(mapping);
         if (paths.length == 0) {
-            builder.path('/' + method.getName()).sig(TypeUtils.buildSig(method));
+            builder.path('/' + methodMeta.getMethodName()).sig(TypeUtils.buildSig(method));
         } else {
             builder.path(paths);
         }
