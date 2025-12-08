@@ -59,6 +59,7 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.stubbing.Answer;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -212,6 +213,16 @@ class Curator5ZookeeperClientTest {
         when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(false);
         Assertions.assertThrows(IllegalStateException.class, () -> {
             curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=1000"));
+            curatorClient.create("/testPath", true, true);
+        });
+    }
+
+    @Test
+    void testWithInvalidServerWithoutCheck() throws InterruptedException {
+        when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(false);
+        URL url = URL.valueOf("zookeeper://127.0.0.1:1/service").addParameter(CHECK_KEY, false);
+        Assertions.assertDoesNotThrow(() -> {
+            curatorClient = new Curator5ZookeeperClient(url);
             curatorClient.create("/testPath", true, true);
         });
     }
