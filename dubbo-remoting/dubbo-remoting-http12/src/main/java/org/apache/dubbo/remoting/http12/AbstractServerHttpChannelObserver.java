@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
+import org.apache.dubbo.rpc.RpcContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -160,8 +161,12 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected final HttpMetadata buildMetadata(
             int statusCode, Object data, Throwable throwable, HttpOutputMessage message) {
+        HttpResponse response = RpcContext.getServiceContext().getResponse(HttpResponse.class);
         HttpMetadata metadata = encodeHttpMetadata(message == null);
         HttpHeaders headers = metadata.headers();
+        if (response != null && response.headers() != null) {
+            headers.set(response.headers());
+        }
         headers.set(HttpHeaderNames.STATUS.getKey(), HttpUtils.toStatusString(statusCode));
         if (message != null) {
             headers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), responseEncoder.contentType());

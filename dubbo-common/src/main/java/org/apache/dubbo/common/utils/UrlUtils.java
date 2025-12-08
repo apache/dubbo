@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -520,6 +521,10 @@ public class UrlUtils {
         return REGISTRY_PROTOCOL.equals(url.getProtocol())
                 || SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol())
                 || (url.getProtocol() != null && url.getProtocol().endsWith("-registry-protocol"));
+    }
+
+    public static boolean isCheck(URL url) {
+        return url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
     }
 
     /**

@@ -41,6 +41,7 @@ dubbo-filter-cache
 dubbo-filter-validation
 dubbo-kubernetes
 dubbo-maven-plugin
+dubbo-mcp
 dubbo-metadata
 dubbo-metadata-api
 dubbo-metadata-definition-protobuf

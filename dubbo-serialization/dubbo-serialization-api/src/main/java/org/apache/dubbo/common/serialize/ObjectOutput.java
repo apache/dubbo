@@ -50,7 +50,7 @@ public interface ObjectOutput extends DataOutput {
     }
 
     default void writeEvent(String data) throws IOException {
-        writeObject(data);
+        writeUTF(data);
     }
 
     default void writeAttachments(Map<String, Object> attachments) throws IOException {
