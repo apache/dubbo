@@ -163,6 +163,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private final List<ServiceListener> serviceListeners = new ArrayList<>();
 
+    /**
+     * Whether to expose methods in this service as MCP tools, default value is false
+     */
+    private boolean mcpEnabled = false;
+
     public ServiceConfig() {}
 
     public ServiceConfig(ModuleModel moduleModel) {
@@ -194,6 +199,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @Parameter(excluded = true, attribute = false)
     public boolean isUnexported() {
         return unexported;
+    }
+
+    @Parameter(attribute = false, key = "mcp.enabled")
+    public boolean isMcpEnabled() {
+        return mcpEnabled;
+    }
+
+    public void setMcpEnabled(boolean mcpEnabled) {
+        this.mcpEnabled = mcpEnabled;
     }
 
     @Override

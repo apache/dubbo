@@ -27,14 +27,20 @@ import org.apache.dubbo.remoting.handler.MockedChannel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class DefaultFutureTest {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultFutureTest.class);
 
     private static final AtomicInteger index = new AtomicInteger();
 
@@ -67,16 +73,16 @@ class DefaultFutureTest {
     @Disabled
     public void timeoutNotSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        System.out.println(
-                "before a future is create , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "before a future is create , time is : {}", LocalDateTime.now().format(formatter));
         // timeout after 5 seconds.
         DefaultFuture f = defaultFuture(5000);
         while (!f.isDone()) {
             // spin
             Thread.sleep(100);
         }
-        System.out.println(
-                "after a future is timeout , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "after a future is timeout , time is : {}", LocalDateTime.now().format(formatter));
 
         // get operate will throw a timeout exception, because the future is timeout.
         try {
@@ -84,7 +90,7 @@ class DefaultFutureTest {
         } catch (Exception e) {
             Assertions.assertTrue(
                     e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
     }
 
@@ -100,8 +106,8 @@ class DefaultFutureTest {
     @Test
     public void clientTimeoutSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-        System.out.println(
-                "before a future is create , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "before a future is create , time is : {}", LocalDateTime.now().format(formatter));
         // timeout after 5 milliseconds.
         Channel channel = new MockedChannel();
         Request request = new Request(10);
@@ -114,8 +120,8 @@ class DefaultFutureTest {
             // spin
             Thread.sleep(100);
         }
-        System.out.println(
-                "after a future is timeout , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "after a future is timeout , time is : {}", LocalDateTime.now().format(formatter));
 
         // get operate will throw a timeout exception, because the future is timeout.
         try {
@@ -123,7 +129,7 @@ class DefaultFutureTest {
         } catch (Exception e) {
             Assertions.assertTrue(
                     e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
             Assertions.assertTrue(e.getMessage()
                     .startsWith(
                             e.getCause().getClass().getCanonicalName() + ": Sending request timeout in client-side"));
@@ -143,8 +149,8 @@ class DefaultFutureTest {
     @Disabled
     public void timeoutSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        System.out.println(
-                "before a future is create , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "before a future is create , time is : {}", LocalDateTime.now().format(formatter));
         // timeout after 5 seconds.
         Channel channel = new MockedChannel();
         Request request = new Request(10);
@@ -155,8 +161,8 @@ class DefaultFutureTest {
             // spin
             Thread.sleep(100);
         }
-        System.out.println(
-                "after a future is timeout , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "after a future is timeout , time is : {}", LocalDateTime.now().format(formatter));
 
         // get operate will throw a timeout exception, because the future is timeout.
         try {
@@ -164,7 +170,7 @@ class DefaultFutureTest {
         } catch (Exception e) {
             Assertions.assertTrue(
                     e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
     }
     /**
@@ -176,8 +182,8 @@ class DefaultFutureTest {
     @Test
     void interruptSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        System.out.println(
-                "before a future is create , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "before a future is create , time is : {}", LocalDateTime.now().format(formatter));
         // timeout after 1 seconds.
         Channel channel = new MockedChannel();
         int channelId = 10;
@@ -195,14 +201,14 @@ class DefaultFutureTest {
             f.get();
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof InterruptedException, "catch exception is not interrupted exception!");
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         } finally {
             executor.shutdown();
         }
         // waiting timeout check task finished
         Thread.sleep(1500);
-        System.out.println(
-                "after a future is timeout , time is : " + LocalDateTime.now().format(formatter));
+        logger.info(
+                "after a future is timeout , time is : {}", LocalDateTime.now().format(formatter));
 
         DefaultFuture future = DefaultFuture.getFuture(channelId);
         // waiting future should be removed by time out check task
@@ -219,6 +225,43 @@ class DefaultFutureTest {
         DefaultFuture.newFuture(channel, request, 1000, executor);
         DefaultFuture.closeChannel(channel, 0);
         Assertions.assertFalse(executor.isTerminated());
+    }
+
+    @Test
+    void testTimeoutWithRejectedExecution() throws Exception {
+        // Create a ThreadPoolExecutor with a queue capacity of 1
+        ThreadPoolExecutor customExecutor = new ThreadPoolExecutor(
+                1, // corePoolSize
+                1, // maxPoolSize
+                60L,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(1), // queue capacity is 1
+                new ThreadPoolExecutor.AbortPolicy() // default rejection policy: throws exception
+                );
+        // Submit two tasks to occupy the thread and the queue
+        customExecutor.submit(() -> {
+            try {
+                Thread.sleep(500); // occupy the thread for a while
+            } catch (InterruptedException ignored) {
+            }
+        });
+        customExecutor.submit(() -> {
+            try {
+                Thread.sleep(500); // occupy the queue
+            } catch (InterruptedException ignored) {
+            }
+        });
+        // Create a Dubbo Mock Channel and a request
+        Channel channel = new MockedChannel();
+        Request request = new Request(999);
+        // Use Dubbo's newFuture and pass in the custom thread pool
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 100, customExecutor);
+        // Mark the request as sent
+        DefaultFuture.sent(channel, request);
+        // Wait for the timeout task to trigger
+        Thread.sleep(300);
+        Assertions.assertNull(DefaultFuture.getFuture(999), "Future should be removed from FUTURES after timeout");
+        customExecutor.shutdown();
     }
 
     @Test
@@ -258,7 +301,7 @@ class DefaultFutureTest {
                 Thread.sleep(500);
                 parent.interrupt();
             } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
+                logger.error(e.getMessage());
             }
         }
     }

@@ -23,9 +23,6 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST_COMPATIBLE
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 
-/**
- *
- */
 public interface Constants {
 
     String STATUS_KEY = "status";

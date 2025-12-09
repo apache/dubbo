@@ -153,7 +153,7 @@ class PerformanceClientTest {
                             while (latch.getCount() > 0) {
                                 long c = count.get() - lastCount;
                                 if (!bfirst) // The first time is inaccurate.
-                                System.out.println("[" + dateFormat.format(new Date()) + "] count: " + count.get()
+                                logger.info("[" + dateFormat.format(new Date()) + "] count: " + count.get()
                                         + ", error: " + error.get() + ",tps:" + (c / elapsd));
 
                                 bfirst = false;
@@ -237,12 +237,12 @@ class PerformanceClientTest {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
-            System.out.println("connected event,channel;" + channel);
+            logger.info("connected event,channel;" + channel);
         }
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
-            System.out.println("disconnected event,channel;" + channel);
+            logger.info("disconnected event,channel;" + channel);
         }
     }
 }

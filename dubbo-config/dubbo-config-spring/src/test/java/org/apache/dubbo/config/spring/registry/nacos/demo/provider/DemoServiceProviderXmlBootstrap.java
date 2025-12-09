@@ -29,7 +29,6 @@ public class DemoServiceProviderXmlBootstrap {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
         context.setConfigLocation("/META-INF/spring/dubbo-nacos-provider-context.xml");
         context.refresh();
-        System.out.println("DemoService provider (XML) is starting...");
         System.in.read();
     }
 }

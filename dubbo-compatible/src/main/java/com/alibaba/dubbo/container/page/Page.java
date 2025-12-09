@@ -20,9 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Page
- */
 public class Page {
 
     private final String navigation;

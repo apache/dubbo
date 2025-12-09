@@ -20,7 +20,7 @@ import org.apache.dubbo.common.convert.Converter;
 import org.apache.dubbo.common.convert.StringToIntegerConverter;
 
 /**
- * A {@link Converter} implementation of {@linkg String} to {@link Integer}
+ * A {@link Converter} implementation of {@link String} to {@link Integer}
  *
  * @since 2.7.7
  */

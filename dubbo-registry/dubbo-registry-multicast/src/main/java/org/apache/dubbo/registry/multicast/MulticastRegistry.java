@@ -68,9 +68,6 @@ import static org.apache.dubbo.registry.Constants.SUBSCRIBE;
 import static org.apache.dubbo.registry.Constants.UNREGISTER;
 import static org.apache.dubbo.registry.Constants.UNSUBSCRIBE;
 
-/**
- * MulticastRegistry
- */
 public class MulticastRegistry extends FailbackRegistry {
 
     // logging output

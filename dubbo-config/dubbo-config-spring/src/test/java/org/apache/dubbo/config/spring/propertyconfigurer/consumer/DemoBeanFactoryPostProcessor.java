@@ -36,7 +36,6 @@ public class DemoBeanFactoryPostProcessor implements BeanFactoryPostProcessor, P
         if (demoService == null) {
             throw new IllegalStateException("demoService is not injected");
         }
-        System.out.println("DemoBeanFactoryPostProcessor");
     }
 
     /**

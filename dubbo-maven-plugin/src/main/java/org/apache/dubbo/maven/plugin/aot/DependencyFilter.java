@@ -27,9 +27,6 @@ import java.util.Set;
 
 /**
  * Base class for {@link ArtifactsFilter} based on a {@link org.apache.dubbo.maven.plugin.aot.FilterableDependency} list.
- *
- * @author Stephane Nicoll
- * @author David Turanski
  */
 public abstract class DependencyFilter extends AbstractArtifactsFilter {
 

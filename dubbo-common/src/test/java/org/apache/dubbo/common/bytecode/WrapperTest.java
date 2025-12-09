@@ -18,8 +18,12 @@ package org.apache.dubbo.common.bytecode;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class WrapperTest {
+    private static final Logger logger = LoggerFactory.getLogger(WrapperTest.class);
+
     @Test
     void testMain() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
@@ -175,9 +181,14 @@ class WrapperTest {
 
     @Test
     void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
-        assertArrayEquals(
-                new String[] {"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
-        assertArrayEquals(new String[] {"hello", "world"}, ClassUtils.getMethodNames(Son.class));
+        String[] methodNamesFromWrapepr = Wrapper.getWrapper(Son.class).getMethodNames();
+        String[] methodNamesFromClassUtils = ClassUtils.getMethodNames(Son.class);
+
+        Arrays.sort(methodNamesFromWrapepr);
+        Arrays.sort(methodNamesFromClassUtils);
+
+        assertArrayEquals(new String[] {"hello", "world"}, methodNamesFromWrapepr);
+        assertArrayEquals(new String[] {"hello", "world"}, methodNamesFromClassUtils);
     }
 
     @Test
@@ -256,7 +267,7 @@ class WrapperTest {
         }
 
         public void hello(String name) {
-            System.out.println("hello " + name);
+            logger.info("hello {}", name);
         }
 
         public int showInt(int v) {

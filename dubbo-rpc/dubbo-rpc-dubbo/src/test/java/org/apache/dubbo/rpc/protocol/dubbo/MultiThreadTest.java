@@ -35,9 +35,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MultiThreadTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(MultiThreadTest.class);
     private Protocol protocol =
             ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy =
@@ -54,17 +57,20 @@ class MultiThreadTest {
 
     @Test
     void testDubboMultiThreadInvoke() throws Exception {
+        String testService = DemoService.class.getName();
         ApplicationModel.defaultModel()
                 .getDefaultModule()
                 .getServiceRepository()
-                .registerService("TestService", DemoService.class);
+                .registerService(testService, DemoService.class);
         int port = NetUtils.getAvailablePort();
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(
-                new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));
+                new DemoServiceImpl(),
+                DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + testService)));
 
         final AtomicInteger counter = new AtomicInteger();
         final DemoService service = proxy.getProxy(
-                protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));
+                protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + testService)));
         Assertions.assertEquals(service.getSize(new String[] {"123", "456", "789"}), 3);
 
         final StringBuffer sb = new StringBuffer();
@@ -77,7 +83,7 @@ class MultiThreadTest {
             exec.execute(new Runnable() {
                 public void run() {
                     for (int i = 0; i < 30; i++) {
-                        System.out.println(fi + ":" + counter.getAndIncrement());
+                        logger.info("{}:{}", fi, counter.getAndIncrement());
                         Assertions.assertEquals(service.echo(sb.toString()), sb.toString());
                     }
                 }

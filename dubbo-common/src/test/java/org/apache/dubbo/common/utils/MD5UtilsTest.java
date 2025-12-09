@@ -26,8 +26,12 @@ import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MD5UtilsTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(MD5UtilsTest.class);
 
     @Test
     void test() {
@@ -38,7 +42,7 @@ class MD5UtilsTest {
         };
         final String[] result = {sharedMd5Utils.getMd5(input[0]), new MD5Utils().getMd5(input[1])};
 
-        System.out.println("Expected result: " + Arrays.asList(result));
+        logger.info("Expected result: {}", Arrays.asList(result));
         int nThreads = 8;
         CountDownLatch latch = new CountDownLatch(nThreads);
         List<Throwable> errors = Collections.synchronizedList(new ArrayList<>());
@@ -94,7 +98,8 @@ class MD5UtilsTest {
                 e.printStackTrace();
             } finally {
                 long cost = System.currentTimeMillis() - start;
-                System.out.println("[" + Thread.currentThread().getName() + "] progress: " + i + ", cost: " + cost);
+                logger.info(
+                        "[{}] progress: {}, cost: {}", Thread.currentThread().getName(), i, cost);
                 latch.countDown();
             }
         }

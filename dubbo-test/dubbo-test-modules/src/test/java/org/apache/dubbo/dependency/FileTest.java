@@ -58,6 +58,8 @@ class FileTest {
         ignoredModules.add(Pattern.compile("dubbo-spring6-security"));
         ignoredModules.add(Pattern.compile("dubbo-spring-boot-3-autoconfigure"));
         ignoredModules.add(Pattern.compile("dubbo-plugin-loom.*"));
+        ignoredModules.add(Pattern.compile("dubbo-mutiny.*"));
+        ignoredModules.add(Pattern.compile("dubbo-mcp"));
 
         ignoredArtifacts.add(Pattern.compile("dubbo-demo.*"));
         ignoredArtifacts.add(Pattern.compile("dubbo-test.*"));
@@ -77,6 +79,8 @@ class FileTest {
 
         ignoredModulesInDubboAllShade.add(Pattern.compile("dubbo-spring6-security"));
         ignoredModulesInDubboAllShade.add(Pattern.compile("dubbo-plugin-loom"));
+        ignoredModulesInDubboAllShade.add(Pattern.compile("dubbo-mcp"));
+        ignoredModulesInDubboAllShade.add(Pattern.compile("dubbo-mutiny"));
     }
 
     @Test
@@ -667,7 +671,6 @@ class FileTest {
         }
         Assertions.assertNotNull(baseFile, "Can not find base dir");
 
-        System.out.println("Found Project Base Path: " + baseFile.getAbsolutePath());
         return baseFile;
     }
 

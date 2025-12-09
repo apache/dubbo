@@ -407,10 +407,8 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                 if (cancelled) {
                     cancel(INTERNAL_ERROR, cause);
                 }
-                if (monitor.isOverFlowControl()) {
-                    cause = new Throwable();
-                    cancel(FLOW_CONTROL_ERROR, cause);
-                }
+
+                // does not check overflow anymore: Let receiver continue receiving the pending bytes.
             }
             return writtenBytes;
         }
@@ -670,14 +668,6 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
         final boolean isWritableConnection() {
             return connectionState.windowSize() - totalPendingBytes > 0 && isChannelWritable();
         }
-
-        final boolean isOverFlowControl() {
-            if (connectionState.windowSize() == 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 
     /**
@@ -777,13 +767,8 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                 checkAllWritabilityChanged();
             } else if (isWritable(state) != state.markedWritability()) {
                 notifyWritabilityChanged(state);
-            } else if (isOverFlowControl()) {
-                throw streamError(
-                        state.stream().id(),
-                        FLOW_CONTROL_ERROR,
-                        "TotalPendingBytes size overflow for stream: %d",
-                        state.stream().id());
             }
+            // does not check overflow anymore: Let receiver continue receiving the pending bytes.
         }
 
         private void checkAllWritabilityChanged() throws Http2Exception {

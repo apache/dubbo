@@ -23,7 +23,6 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.rest.Mapping;
 import org.apache.dubbo.rpc.stub.annotations.GRequest;
-import com.google.protobuf.Message;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +31,12 @@ import java.util.concurrent.CompletableFuture;
 
 public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
 
+{{#packageName}}
     String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+{{/packageName}}
+{{^packageName}}
+    String JAVA_SERVICE_NAME = "{{serviceName}}";
+{{/packageName}}
 {{#commonPackageName}}
     String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
 {{/commonPackageName}}

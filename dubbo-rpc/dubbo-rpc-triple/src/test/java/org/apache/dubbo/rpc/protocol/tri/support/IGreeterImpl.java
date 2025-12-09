@@ -29,14 +29,12 @@ public class IGreeterImpl implements IGreeter {
 
     @Override
     public void serverStream(String str, StreamObserver<String> observer) {
-        System.out.println("server stream data=" + str);
         observer.onNext(str);
         observer.onCompleted();
     }
 
     @Override
     public StreamObserver<String> bidirectionalStream(StreamObserver<String> observer) {
-        System.out.println("bi stream");
         mockStreamObserver = new MockStreamObserver() {
 
             @Override

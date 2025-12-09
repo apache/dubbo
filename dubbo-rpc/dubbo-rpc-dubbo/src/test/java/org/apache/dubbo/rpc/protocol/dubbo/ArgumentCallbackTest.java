@@ -39,11 +39,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
 class ArgumentCallbackTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(ArgumentCallbackTest.class);
     protected Exporter<IDemoService> exporter = null;
     protected Exporter<IHelloService> hello_exporter = null;
     protected Invoker<IDemoService> reference = null;
@@ -134,7 +137,7 @@ class ArgumentCallbackTest {
         demoProxy.xxx(
                 new IDemoCallback() {
                     public String yyy(String msg) {
-                        System.out.println("Received callback: " + msg);
+                        logger.info("Received callback: {}", msg);
                         count.incrementAndGet();
                         return "ok";
                     }
@@ -142,7 +145,6 @@ class ArgumentCallbackTest {
                 "other custom args",
                 10,
                 100);
-        System.out.println("Async...");
         assertCallbackCount(10, 100, count);
         destroyService();
     }
@@ -157,7 +159,7 @@ class ArgumentCallbackTest {
         demoProxy.xxx(
                 new IDemoCallback() {
                     public String yyy(String msg) {
-                        System.out.println("Received callback: " + msg);
+                        logger.info("Received callback: {}", msg);
                         count.incrementAndGet();
                         return "ok";
                     }
@@ -165,7 +167,6 @@ class ArgumentCallbackTest {
                 "other custom args",
                 10,
                 100);
-        System.out.println("Async...");
         //        Thread.sleep(10000000);
         assertCallbackCount(10, 100, count);
         destroyService();
@@ -177,14 +178,14 @@ class ArgumentCallbackTest {
         initOrResetService();
         IDemoCallback callback = new IDemoCallback() {
             public String yyy(String msg) {
-                System.out.println("callback1:" + msg);
+                logger.info("callback1: {}", msg);
                 return "callback1 onChanged ," + msg;
             }
         };
 
         IDemoCallback callback2 = new IDemoCallback() {
             public String yyy(String msg) {
-                System.out.println("callback2:" + msg);
+                logger.info("callback2: {}", msg);
                 return "callback2 onChanged ," + msg;
             }
         };
@@ -231,7 +232,7 @@ class ArgumentCallbackTest {
             demoProxy.xxx(
                     new IDemoCallback() {
                         public String yyy(String msg) {
-                            System.out.println("Received callback: " + msg);
+                            logger.info("Received callback: {}", msg);
                             count.incrementAndGet();
                             return "ok";
                         }
@@ -243,7 +244,7 @@ class ArgumentCallbackTest {
             demoProxy.xxx(
                     new IDemoCallback() {
                         public String yyy(String msg) {
-                            System.out.println("Received callback: " + msg);
+                            logger.info("Received callback: {}", msg);
                             count.incrementAndGet();
                             return "ok";
                         }
@@ -267,7 +268,7 @@ class ArgumentCallbackTest {
             demoProxy.xxx(
                     new IDemoCallback() {
                         public String yyy(String msg) {
-                            System.out.println("Received callback: " + msg);
+                            logger.info("Received callback: {}", msg);
                             count.incrementAndGet();
                             return "ok";
                         }
@@ -279,7 +280,7 @@ class ArgumentCallbackTest {
             demoProxy.xxx(
                     new IDemoCallback() {
                         public String yyy(String msg) {
-                            System.out.println("Received callback: " + msg);
+                            logger.info("Received callback: {}", msg);
                             count.incrementAndGet();
                             return "ok";
                         }
@@ -296,7 +297,7 @@ class ArgumentCallbackTest {
         for (int i = 0; i < runs; i++) {
             if (last > runs) break;
             Thread.sleep(sleep * 2);
-            System.out.println(count.get() + "  " + last);
+            logger.info("{} {}", count.get(), last);
             Assertions.assertTrue(count.get() > last);
             last = count.get();
         }
@@ -354,7 +355,7 @@ class ArgumentCallbackTest {
                 public void run() {
                     for (int i = 0; i < runs; i++) {
                         String ret = callback.yyy("server invoke callback : arg:" + System.currentTimeMillis());
-                        System.out.println("callback result is :" + ret);
+                        logger.info("callback result is :{}", ret);
                         try {
                             Thread.sleep(sleep);
                         } catch (InterruptedException e) {
@@ -365,7 +366,7 @@ class ArgumentCallbackTest {
             });
             t.setDaemon(true);
             t.start();
-            System.out.println("xxx invoke complete");
+            logger.info("xxx invoke complete");
         }
 
         public int getCallbackCount() {

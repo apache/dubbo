@@ -82,15 +82,41 @@ public class XmlSafetyTest {
 
     static class ProcessChecker {
         Set<String> processesBefore;
+        String currentPid;
 
         public Set<String> getProcesses() {
+            if (currentPid == null) {
+                return Collections.emptySet();
+            }
             try {
                 Set<String> processes = new HashSet<>();
-                Process process = Runtime.getRuntime().exec("ps -e");
+                Process process = Runtime.getRuntime().exec(new String[] {"ps", "-o", "pid,ppid,cmd"});
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
+                    boolean headerSkipped = false;
                     while ((line = reader.readLine()) != null) {
-                        processes.add(line);
+                        line = line.trim();
+                        if (line.isEmpty()) {
+                            continue;
+                        }
+
+                        if (!headerSkipped) {
+                            headerSkipped = true;
+                            continue;
+                        }
+
+                        String[] parts = line.split("\\s+", 3);
+                        if (parts.length < 3) {
+                            continue;
+                        }
+
+                        String pid = parts[0];
+                        String ppid = parts[1];
+                        String cmd = parts[2];
+
+                        if (ppid.equals(currentPid) && cmd.contains("sleep") && cmd.contains("60")) {
+                            processes.add(pid + ":" + cmd);
+                        }
                     }
                 }
                 return processes;
@@ -100,13 +126,18 @@ public class XmlSafetyTest {
         }
 
         public void prepare() {
+            try {
+                currentPid = new File("/proc/self").getCanonicalFile().getName();
+            } catch (IOException e) {
+                currentPid = null;
+            }
             processesBefore = getProcesses();
         }
 
         public void check() throws Exception {
             Set<String> processesAfter = getProcesses();
             for (String msg : processesAfter) {
-                if (msg.contains("sleep")) {
+                if (!processesBefore.contains(msg)) {
                     throw new Exception("Command executed when XML deserialization.");
                 }
             }

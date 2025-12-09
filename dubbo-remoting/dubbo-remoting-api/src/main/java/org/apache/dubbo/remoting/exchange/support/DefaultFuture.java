@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -324,7 +325,12 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
             ExecutorService executor = future.getExecutor();
             if (executor != null && !executor.isShutdown()) {
-                executor.execute(() -> notifyTimeout(future));
+                try {
+                    executor.execute(() -> notifyTimeout(future));
+                } catch (RejectedExecutionException e) {
+                    notifyExecutionError(future, e);
+                    throw e;
+                }
             } else {
                 notifyTimeout(future);
             }
@@ -338,6 +344,18 @@ public class DefaultFuture extends CompletableFuture<Object> {
             timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
             // handle response.
             DefaultFuture.received(future.getChannel(), timeoutResponse, true);
+        }
+
+        private void notifyExecutionError(DefaultFuture future, Throwable e) {
+            // create exception response.
+            Response errorResponse = new Response(future.getId());
+            // set error status
+            errorResponse.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
+            // set detailed error message
+            errorResponse.setErrorMessage("Executor rejected the task for handling timeout notification: "
+                    + e.getClass().getSimpleName() + " - " + e.getMessage());
+            // handle response.
+            DefaultFuture.received(future.getChannel(), errorResponse, true);
         }
     }
 }

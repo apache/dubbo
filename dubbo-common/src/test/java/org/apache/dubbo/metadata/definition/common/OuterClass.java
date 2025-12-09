@@ -16,17 +16,21 @@
  */
 package org.apache.dubbo.metadata.definition.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 16/9/22.
  */
 public class OuterClass {
+    private static final Logger logger = LoggerFactory.getLogger(OuterClass.class);
 
     public static class InnerClass {
 
         private String name;
 
         public InnerClass() {
-            System.out.println("I am inner class");
+            logger.debug("I am inner class");
         }
 
         public String getName() {

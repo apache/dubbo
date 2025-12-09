@@ -148,5 +148,5 @@ public interface RegistryConstants {
      * by default, dubbo export servicename is "${interface}:${version}:", this servicename with ':' suffix
      * for compatible, we should export noting suffix servicename, eg: ${interface}:${version}
      */
-    String NACOE_REGISTER_COMPATIBLE = "nacos.register-compatible";
+    String NACOS_REGISTER_COMPATIBLE = "nacos.register-compatible";
 }

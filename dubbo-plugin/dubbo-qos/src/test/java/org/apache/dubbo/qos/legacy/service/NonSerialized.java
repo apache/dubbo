@@ -16,7 +16,4 @@
  */
 package org.apache.dubbo.qos.legacy.service;
 
-/**
- * NonSerialized
- */
 public class NonSerialized {}

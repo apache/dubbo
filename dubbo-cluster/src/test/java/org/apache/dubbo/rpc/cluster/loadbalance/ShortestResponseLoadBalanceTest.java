@@ -60,8 +60,6 @@ class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest {
         }
 
         // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9
-        System.out.println(sumInvoker1);
-        System.out.println(sumInvoker2);
 
         Assertions.assertEquals(sumInvoker1 + sumInvoker2, loop, "select failed!");
     }

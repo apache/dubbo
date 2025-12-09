@@ -109,6 +109,9 @@ public interface Constants {
     String H2_SETTINGS_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
 
     String H2_SETTINGS_JSON_FRAMEWORK_NAME = "dubbo.protocol.triple.rest.json-framework";
+
+    String H2_SETTINGS_MAX_MESSAGE_SIZE = "dubbo.protocol.triple.max-message-size";
+
     String H2_SETTINGS_DISALLOWED_CONTENT_TYPES = "dubbo.protocol.triple.rest.disallowed-content-types";
     String H2_SETTINGS_OPENAPI_PREFIX = "dubbo.protocol.triple.rest.openapi";
 

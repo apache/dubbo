@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-/**
- *
- */
 public interface Constants {
 
     String SHARE_CONNECTIONS_KEY = "shareconnections";

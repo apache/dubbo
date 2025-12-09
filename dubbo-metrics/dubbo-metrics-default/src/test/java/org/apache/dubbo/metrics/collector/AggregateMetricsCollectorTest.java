@@ -361,7 +361,6 @@ class AggregateMetricsCollectorTest {
         double p99 = p99Sample.applyAsDouble();
 
         // An error of less than 5% is allowed
-        System.out.println(Math.abs(1 - p95 / manualP95));
         Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.05);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.05);
     }
