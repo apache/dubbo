@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -144,6 +145,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            consumerConfigurationListener.addNotifyListener(this);
+            referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
+        }
         String registryClusterName = registry.getUrl()
                 .getParameter(
                         RegistryConstants.REGISTRY_CLUSTER_KEY,
@@ -152,13 +160,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             super.subscribe(url);
             return null;
         });
-        if (moduleModel
-                .modelEnvironment()
-                .getConfiguration()
-                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-            consumerConfigurationListener.addNotifyListener(this);
-            referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
-        }
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
@@ -826,7 +827,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
-        List<RegistryDirectory> listeners = new ArrayList<>();
+        List<RegistryDirectory> listeners = new CopyOnWriteArrayList<>();
 
         ConsumerConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);

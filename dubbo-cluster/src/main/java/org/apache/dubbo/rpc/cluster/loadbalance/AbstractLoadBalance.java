@@ -33,9 +33,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
 import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
-/**
- * AbstractLoadBalance
- */
 public abstract class AbstractLoadBalance implements LoadBalance {
     /**
      * Calculate the weight according to the uptime proportion of warmup time

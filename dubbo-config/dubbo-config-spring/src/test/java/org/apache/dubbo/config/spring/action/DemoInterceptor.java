@@ -19,9 +19,6 @@ package org.apache.dubbo.config.spring.action;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
-/**
- * DemoInterceptor
- */
 public class DemoInterceptor implements MethodInterceptor {
 
     public Object invoke(MethodInvocation invocation) throws Throwable {

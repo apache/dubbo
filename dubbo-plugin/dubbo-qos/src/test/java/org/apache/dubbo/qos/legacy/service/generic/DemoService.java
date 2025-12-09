@@ -18,9 +18,6 @@ package org.apache.dubbo.qos.legacy.service.generic;
 
 import java.util.List;
 
-/**
- * DemoService
- */
 public interface DemoService {
 
     String sayName(String name);

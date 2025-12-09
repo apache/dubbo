@@ -90,7 +90,7 @@ class SingleRegistryCenterExportMetadataIntegrationTest implements IntegrationTe
         serviceConfig.setAsync(false);
         serviceConfig.setScope(SCOPE_LOCAL);
 
-        // initailize bootstrap
+        // initialize bootstrap
         DubboBootstrap.getInstance()
                 .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
                 .protocol(new ProtocolConfig(PROTOCOL_NAME))

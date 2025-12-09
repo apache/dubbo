@@ -33,9 +33,6 @@ import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 
-/**
- * SystemPageHandler
- */
 @Menu(name = "System", desc = "Show system environment information.", order = Integer.MAX_VALUE - 10000)
 public class SystemPageHandler implements PageHandler {
 

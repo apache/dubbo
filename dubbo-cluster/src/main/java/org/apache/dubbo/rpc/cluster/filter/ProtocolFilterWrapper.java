@@ -32,9 +32,6 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
 
-/**
- * ListenerProtocol
- */
 @Activate(order = 100)
 public class ProtocolFilterWrapper implements Protocol {
 

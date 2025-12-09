@@ -1,0 +1,1 @@
+mcpServiceExportListener=org.apache.dubbo.mcp.core.McpServiceExportListener 

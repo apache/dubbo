@@ -38,9 +38,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UN
 import static org.apache.dubbo.remoting.Constants.CHARSET_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CHARSET;
 
-/**
- * TelnetCodec
- */
 public class TelnetCodec extends TransportCodec {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TelnetCodec.class);

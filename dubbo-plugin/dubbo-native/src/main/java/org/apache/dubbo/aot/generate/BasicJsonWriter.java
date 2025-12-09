@@ -28,8 +28,6 @@ import java.util.function.Consumer;
 /**
  * Very basic json writer for the purposes of translating runtime hints to native
  * configuration.
- *
- * @author Stephane Nicoll
  */
 class BasicJsonWriter {
 

@@ -40,9 +40,6 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- */
 public class ZKTools {
     private static final Logger logger = LoggerFactory.getLogger(ZKTools.class);
     private static CuratorFramework client;

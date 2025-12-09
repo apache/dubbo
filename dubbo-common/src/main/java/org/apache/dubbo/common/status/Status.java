@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.status;
 
-/**
- * Status
- */
 public class Status {
 
     private final Level level;

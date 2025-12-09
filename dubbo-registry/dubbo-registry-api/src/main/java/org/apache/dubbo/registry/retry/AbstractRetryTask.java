@@ -33,9 +33,6 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_TIMES;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_TIMES_KEY;
 
-/**
- * AbstractRetryTask
- */
 public abstract class AbstractRetryTask implements TimerTask {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -127,6 +124,9 @@ public abstract class AbstractRetryTask implements TimerTask {
             logger.info(taskName + " : " + url);
         }
         try {
+            if (!registry.isAvailable()) {
+                throw new IllegalStateException("Registry is not available.");
+            }
             doRetry(url, registry, timeout);
         } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
 

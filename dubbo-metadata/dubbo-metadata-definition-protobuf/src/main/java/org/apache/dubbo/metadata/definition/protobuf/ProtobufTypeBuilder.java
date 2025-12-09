@@ -175,7 +175,7 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
         Matcher matcher = MAP_PATTERN.matcher(typeName);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " + typeName
-                    + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
+                    + " can't be parsed.The type name should match[" + MAP_PATTERN.toString() + "].");
         }
     }
 

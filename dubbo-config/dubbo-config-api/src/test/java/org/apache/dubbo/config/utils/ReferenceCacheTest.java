@@ -19,9 +19,11 @@ package org.apache.dubbo.config.utils;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.utils.service.FooService;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +36,18 @@ class ReferenceCacheTest {
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
         MockReferenceConfig.setCounter(0);
         XxxMockReferenceConfig.setCounter(0);
+        SimpleReferenceCache.CACHE_HOLDER.clear();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        DubboBootstrap.reset();
+        SysProps.clear();
         SimpleReferenceCache.CACHE_HOLDER.clear();
     }
 

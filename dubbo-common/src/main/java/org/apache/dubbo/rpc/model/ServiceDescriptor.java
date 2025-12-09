@@ -37,18 +37,12 @@ public interface ServiceDescriptor {
     /**
      * Does not use Optional as return type to avoid potential performance decrease.
      *
-     * @param methodName
-     * @param params
-     * @return
      */
     MethodDescriptor getMethod(String methodName, String params);
 
     /**
      * Does not use Optional as return type to avoid potential performance decrease.
      *
-     * @param methodName
-     * @param paramTypes
-     * @return methodDescriptor
      */
     MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes);
 

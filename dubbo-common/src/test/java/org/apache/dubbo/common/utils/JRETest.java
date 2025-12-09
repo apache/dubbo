@@ -37,9 +37,21 @@ class JRETest {
     @Test
     void testCurrentVersion() {
         // SourceVersion is an enum, which member name is RELEASE_XX.
+        // e.g., "RELEASE_25"
+        String sourceVersionName = SourceVersion.latest().name();
+        String expectedVersion = "UNKNOWN";
+        if (sourceVersionName.contains("_")) {
+            expectedVersion = sourceVersionName.split("_")[1];
+        }
 
-        Assertions.assertEquals(
-                SourceVersion.latest().name().split("_")[1],
-                JRE.currentVersion().name().split("_")[1]);
+        String jreEnumName = JRE.currentVersion().name();
+        String actualVersion = "UNKNOWN";
+        if (jreEnumName.contains("_")) {
+            actualVersion = jreEnumName.split("_")[1];
+        } else {
+            actualVersion = jreEnumName;
+        }
+
+        Assertions.assertEquals(expectedVersion, actualVersion);
     }
 }
