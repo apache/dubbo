@@ -92,7 +92,6 @@ class AppResponseTest {
          * maybe there is -XX:-OmitStackTraceInFastThrow or run in Debug mode
          */
         if (throwable == null) {
-            System.out.println("###buildEmptyStackTraceException fail to construct NPE");
             return null;
         }
         // end construct a NullPointerException with empty stackTrace

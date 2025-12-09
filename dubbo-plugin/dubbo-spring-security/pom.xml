@@ -64,7 +64,6 @@
       <scope>test</scope>
       <optional>true</optional>
     </dependency>
-
     <!-- spring security -->
 
     <!-- jackson -->

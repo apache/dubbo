@@ -53,6 +53,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +184,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     // as proto3 only accept one protobuf parameter
                     if (args.length == 1 && args[0] instanceof String) {
                         try (UnsafeByteArrayInputStream is =
-                                new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
+                                new UnsafeByteArrayInputStream(((String) args[0]).getBytes(StandardCharsets.UTF_8))) {
                             args[0] = applicationModel
                                     .getExtensionLoader(Serialization.class)
                                     .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
@@ -255,22 +256,22 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             throws NoSuchMethodException, ClassNotFoundException {
         Method method;
         if (parameterTypes == null) {
-            List<Method> finded = new ArrayList<>();
+            List<Method> found = new ArrayList<>();
             for (Method m : clazz.getMethods()) {
                 if (m.getName().equals(methodName)) {
-                    finded.add(m);
+                    found.add(m);
                 }
             }
-            if (finded.isEmpty()) {
+            if (found.isEmpty()) {
                 throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
             }
-            if (finded.size() > 1) {
+            if (found.size() > 1) {
                 String msg = String.format(
                         "Not unique method for method name(%s) in class(%s), find %d methods.",
-                        methodName, clazz.getName(), finded.size());
+                        methodName, clazz.getName(), found.size());
                 throw new IllegalStateException(msg);
             }
-            method = finded.get(0);
+            method = found.get(0);
         } else {
             Class<?>[] types = new Class<?>[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i++) {

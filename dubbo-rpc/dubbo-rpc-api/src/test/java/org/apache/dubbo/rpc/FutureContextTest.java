@@ -21,9 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- *
- */
 class FutureContextTest {
 
     @Test

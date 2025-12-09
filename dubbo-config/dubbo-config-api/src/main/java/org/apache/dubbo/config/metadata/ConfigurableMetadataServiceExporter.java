@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -31,6 +32,7 @@ import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegationV2;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -71,7 +73,7 @@ public class ConfigurableMetadataServiceExporter {
     }
 
     public synchronized ConfigurableMetadataServiceExporter export() {
-        if (serviceConfig == null || !isExported()) {
+        if (!isExported()) {
             if (MetadataServiceVersionUtils.needExportV1(applicationModel)) {
                 exportV1();
             }
@@ -84,11 +86,26 @@ public class ConfigurableMetadataServiceExporter {
                         CONFIG_METADATA_SERVICE_EXPORTED,
                         "",
                         "",
-                        "The MetadataService has been exported : " + serviceConfig.getExportedUrls());
+                        "The MetadataService has been exported : " + getExportedUrls());
             }
         }
 
         return this;
+    }
+
+    /**
+     * Get exported urls which include v1 and v2 if existed
+     * @return exported urls
+     */
+    public List<URL> getExportedUrls() {
+        List<URL> urls = new ArrayList<>();
+        if (serviceConfig != null) {
+            urls.addAll(serviceConfig.getExportedUrls());
+        }
+        if (serviceConfigV2 != null) {
+            urls.addAll(serviceConfigV2.getExportedUrls());
+        }
+        return urls;
     }
 
     private static final String INTERNAL_METADATA_REGISTRY_ID = "internal-metadata-registry";
@@ -113,7 +130,8 @@ public class ConfigurableMetadataServiceExporter {
         metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));
 
         if (logger.isInfoEnabled()) {
-            logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
+            logger.info("[SERVICE_PUBLISH] [METADATA_REGISTER] The MetadataService exports urls : "
+                    + serviceConfig.getExportedUrls());
         }
     }
 
@@ -137,7 +155,8 @@ public class ConfigurableMetadataServiceExporter {
         metadataServiceV2.setMetadataUrl(serviceConfigV2.getExportedUrls().get(0));
 
         if (logger.isInfoEnabled()) {
-            logger.info("The MetadataServiceV2 exports urls : " + serviceConfigV2.getExportedUrls());
+            logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] The MetadataServiceV2 exports urls : "
+                    + serviceConfigV2.getExportedUrls());
         }
     }
 

@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-/**
- * Parent
- */
 public class Parent extends Ancestor {
 
     private byte b;

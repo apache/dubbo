@@ -20,11 +20,15 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.h1.Http1ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.message.HttpMessageEncoder;
 import org.apache.dubbo.remoting.http12.message.ServerSentEventEncoder;
 
 public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
+
+    private HttpMessageEncoder originalResponseEncoder;
 
     public Http1SseServerChannelObserver(HttpChannel httpChannel) {
         super(httpChannel);
@@ -33,6 +37,15 @@ public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
     @Override
     public void setResponseEncoder(HttpMessageEncoder responseEncoder) {
         super.setResponseEncoder(new ServerSentEventEncoder(responseEncoder));
+        this.originalResponseEncoder = responseEncoder;
+    }
+
+    @Override
+    protected void doOnCompleted(Throwable throwable) {
+        if (!isHeaderSent()) {
+            sendMetadata(encodeHttpMetadata(true));
+        }
+        super.doOnCompleted(throwable);
     }
 
     @Override
@@ -40,5 +53,26 @@ public class Http1SseServerChannelObserver extends Http1ServerChannelObserver {
         return super.encodeHttpMetadata(endStream)
                 .header(HttpHeaderNames.TRANSFER_ENCODING.getKey(), HttpConstants.CHUNKED)
                 .header(HttpHeaderNames.CACHE_CONTROL.getKey(), HttpConstants.NO_CACHE);
+    }
+
+    @Override
+    protected HttpOutputMessage buildMessage(int statusCode, Object data) throws Throwable {
+        if (data instanceof HttpResult) {
+            data = ((HttpResult<?>) data).getBody();
+
+            if (data == null && statusCode != 200) {
+                return null;
+            }
+
+            HttpOutputMessage message = encodeHttpOutputMessage(data);
+            try {
+                originalResponseEncoder.encode(message.getBody(), data);
+            } catch (Throwable t) {
+                message.close();
+                throw t;
+            }
+            return message;
+        }
+        return super.buildMessage(statusCode, data);
     }
 }

@@ -43,6 +43,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -54,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AbstractMetadataReportTest {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMetadataReportTest.class);
 
     private NewMetadataReport abstractMetadataReport;
     private ApplicationModel applicationModel;
@@ -416,7 +419,7 @@ class AbstractMetadataReportTest {
         protected void doStoreProviderMetadata(
                 MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
             ++executeTimes;
-            System.out.println("***" + executeTimes + ";" + System.currentTimeMillis());
+            logger.info("***" + executeTimes + ";" + System.currentTimeMillis());
             semaphore.acquireUninterruptibly();
             if (executeTimes <= needRetryTimes) {
                 throw new RuntimeException("must retry:" + executeTimes);

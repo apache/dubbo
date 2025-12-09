@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
@@ -60,7 +61,6 @@ import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -100,7 +100,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
             CommonConstants.ThirdPartyProperty.SET_FUTURE_IN_SYNC_MODE, "true"));
     private final PackableMethodFactory packableMethodFactory;
-    private final Map<MethodDescriptor, PackableMethod> packableMethodCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<MethodDescriptor, PackableMethod> packableMethodCache = new ConcurrentHashMap<>();
     private static Compressor compressor;
 
     public TripleInvoker(
@@ -313,8 +313,10 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
-            meta.packableMethod = packableMethodCache.computeIfAbsent(
-                    methodDescriptor, (md) -> packableMethodFactory.create(md, url, APPLICATION_GRPC_PROTO.getName()));
+            meta.packableMethod = ConcurrentHashMapUtils.computeIfAbsent(
+                    packableMethodCache,
+                    methodDescriptor,
+                    (md) -> packableMethodFactory.create(md, url, APPLICATION_GRPC_PROTO.getName()));
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;

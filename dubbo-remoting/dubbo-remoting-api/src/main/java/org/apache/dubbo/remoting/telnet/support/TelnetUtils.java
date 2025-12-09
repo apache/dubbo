@@ -19,9 +19,6 @@ package org.apache.dubbo.remoting.telnet.support;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * TelnetUtils
- */
 public class TelnetUtils {
 
     public static String toList(List<List<String>> table) {

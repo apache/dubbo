@@ -354,4 +354,11 @@ public @interface DubboService {
      * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
      */
     String preferSerialization() default "";
+
+    /**
+     * Whether to expose methods in this service as MCP tools, default value is false
+     * This controls whether methods in this service class can be exposed as MCP tools.
+     * Specific method-level configuration should be done via method annotations.
+     */
+    boolean mcpEnabled() default false;
 }

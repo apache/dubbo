@@ -31,9 +31,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
-/**
- * AbstractEndpoint
- */
 public abstract class AbstractEndpoint extends AbstractPeer implements Resetable {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());

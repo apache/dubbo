@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.rest.mapping
 
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.condition.PathExpression
+
 import spock.lang.Specification
 
 class RadixTreeTest extends Specification {
@@ -57,6 +59,42 @@ class RadixTreeTest extends Specification {
             '/a/b'     | 0
             '/a/b/c'   | 1
             '/a/b/c/d' | 0
+    }
+
+    def "test repeat add,no predicate function"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            Boolean val1 = tree.addPath('/a/*/*', false)
+            Boolean val2 = tree.addPath('/a/*/*', true)
+        expect:
+            val1 == null;
+            val2 == false;
+    }
+
+    def "test repeat add,use predicate function"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            Boolean val1 = tree.addPath(PathExpression.parse('/a/*/*'), false, { a, b -> a == b })
+            Boolean val2 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+            Boolean val3 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+
+        expect:
+            val1 == null;
+            val2 == null;
+        val3 == true;
+    }
+
+    def "test repeat add,use predicate function and Registration"() {
+        given:
+            def tree = new RadixTree<Boolean>()
+            Boolean val1 = tree.addPath(PathExpression.parse('/a/*/*'), false, { a, b -> a == b })
+            Boolean val2 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+            Boolean val3 = tree.addPath(PathExpression.parse('/a/*/*'), true, { a, b -> a == b })
+
+        expect:
+            val1 == null;
+            val2 == null;
+            val3 == true;
     }
 
     def "test sub path match"() {

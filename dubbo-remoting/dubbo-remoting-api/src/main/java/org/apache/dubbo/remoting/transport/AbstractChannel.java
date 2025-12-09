@@ -22,9 +22,6 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
 
-/**
- * AbstractChannel
- */
 public abstract class AbstractChannel extends AbstractPeer implements Channel {
 
     public AbstractChannel(URL url, ChannelHandler handler) {

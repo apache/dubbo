@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -64,7 +65,7 @@ public class ObjectMapperCodec {
         if (StringUtils.isBlank(content)) {
             return null;
         }
-        return deserialize(content.getBytes(), clazz);
+        return deserialize(content.getBytes(StandardCharsets.UTF_8), clazz);
     }
 
     public String serialize(Object object) {

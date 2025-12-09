@@ -40,9 +40,9 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.quic.InsecureQuicTokenHandler;
-import io.netty.incubator.codec.quic.QuicChannel;
+import io.netty.handler.codec.http3.Http3;
+import io.netty.handler.codec.quic.InsecureQuicTokenHandler;
+import io.netty.handler.codec.quic.QuicChannel;
 import io.netty.util.concurrent.Future;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -57,20 +57,23 @@ public class NettyHttp3Server extends AbstractServer {
     private EventLoopGroup bossGroup;
     private io.netty.channel.Channel channel;
 
-    private final Consumer<ChannelPipeline> pipelineConfigurator;
-    private final int serverShutdownTimeoutMills;
+    private Consumer<ChannelPipeline> pipelineConfigurator;
+    private int serverShutdownTimeoutMills;
 
-    @SuppressWarnings("unchecked")
     public NettyHttp3Server(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
-        pipelineConfigurator = (Consumer<ChannelPipeline>) getUrl().getAttribute(PIPELINE_CONFIGURATOR_KEY);
-        Objects.requireNonNull(pipelineConfigurator, "pipelineConfigurator should be set");
-        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void doOpen() throws Throwable {
         bootstrap = new Bootstrap();
+
+        // initialize pipelineConfigurator and serverShutdownTimeoutMills before potential usage to avoid NPE.
+        pipelineConfigurator = (Consumer<ChannelPipeline>) getUrl().getAttribute(PIPELINE_CONFIGURATOR_KEY);
+        Objects.requireNonNull(pipelineConfigurator, "pipelineConfigurator should be set");
+        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
+
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
         NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();

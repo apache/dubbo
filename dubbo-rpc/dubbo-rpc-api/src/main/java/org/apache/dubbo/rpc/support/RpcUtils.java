@@ -50,9 +50,6 @@ import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.apache.dubbo.rpc.Constants.ID_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
-/**
- * RpcUtils
- */
 public class RpcUtils {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RpcUtils.class);
@@ -244,9 +241,7 @@ public class RpcUtils {
 
     private static Method getMethodByService(Invocation invocation, String service) throws NoSuchMethodException {
         Class<?> invokerInterface = invocation.getInvoker().getInterface();
-        Class<?> cls = invokerInterface != null
-                ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
-                : ReflectUtils.forName(service);
+        Class<?> cls = invokerInterface != null ? invokerInterface : ReflectUtils.forName(service);
         Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         if (method.getReturnType() == void.class) {
             return null;

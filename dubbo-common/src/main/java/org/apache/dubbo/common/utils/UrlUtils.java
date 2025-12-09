@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -522,6 +523,10 @@ public class UrlUtils {
                 || (url.getProtocol() != null && url.getProtocol().endsWith("-registry-protocol"));
     }
 
+    public static boolean isCheck(URL url) {
+        return url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
+    }
+
     /**
      * The specified {@link URL} is service discovery registry type or not
      *
@@ -696,7 +701,8 @@ public class UrlUtils {
         return Optional.ofNullable(url.getServiceModel())
                 .map(ServiceModel::getServiceMetadata)
                 .map(ServiceMetadata::getAttributeMap)
-                .map(stringObjectMap -> (T) stringObjectMap.computeIfAbsent(key, k -> fn.apply(url)))
+                .map(stringObjectMap ->
+                        (T) ConcurrentHashMapUtils.computeIfAbsent(stringObjectMap, key, k -> fn.apply(url)))
                 .orElse(null);
     }
 }

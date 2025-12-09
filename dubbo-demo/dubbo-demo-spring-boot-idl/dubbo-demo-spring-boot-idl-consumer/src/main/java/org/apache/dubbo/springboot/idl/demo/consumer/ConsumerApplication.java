@@ -22,6 +22,8 @@ import org.apache.dubbo.demo.hello.GreeterService;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -31,6 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 @EnableDubbo
 public class ConsumerApplication {
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerApplication.class);
 
     @DubboReference
     private GreeterService demoService;
@@ -40,7 +43,7 @@ public class ConsumerApplication {
         ConfigurableApplicationContext context = SpringApplication.run(ConsumerApplication.class, args);
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
         HelloReply result = application.doSayHello("world");
-        System.out.println("result: " + result.getMessage());
+        logger.info("result: {}", result.getMessage());
     }
 
     public HelloReply doSayHello(String name) {

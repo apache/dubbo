@@ -266,6 +266,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-mcp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-security</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -284,10 +289,27 @@
         <artifactId>dubbo-reactive</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-mutiny</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-spring-security</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-spring6-security</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-plugin-loom</artifactId>
         <version>${project.version}</version>
       </dependency>
 

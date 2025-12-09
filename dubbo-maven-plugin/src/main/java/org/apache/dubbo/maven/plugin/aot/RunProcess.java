@@ -25,12 +25,6 @@ import java.util.Map;
 
 /**
  * Utility used to run a process.
- *
- * @author Phillip Webb
- * @author Dave Syer
- * @author Andy Wilkinson
- * @author Stephane Nicoll
- * @author Dmytro Nosan
  */
 public class RunProcess {
 

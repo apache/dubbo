@@ -21,6 +21,7 @@ import org.apache.dubbo.auth.spi.Authenticator;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
 
@@ -31,7 +32,7 @@ public class BasicAuthenticator implements Authenticator {
         String username = url.getParameter(Constants.USERNAME_KEY);
         String password = url.getParameter(Constants.PASSWORD_KEY);
         String auth = username + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
         invocation.setAttachment(Constants.AUTHORIZATION_HEADER_LOWER, authHeaderValue);
@@ -42,7 +43,7 @@ public class BasicAuthenticator implements Authenticator {
         String username = url.getParameter(Constants.USERNAME_KEY);
         String password = url.getParameter(Constants.PASSWORD_KEY);
         String auth = username + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + encodedAuth;
 
         if (!Objects.equals(authHeaderValue, invocation.getAttachment(Constants.AUTHORIZATION_HEADER))

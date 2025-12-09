@@ -221,7 +221,7 @@ public final class NetUtils {
     }
 
     static boolean isValidV4Address(InetAddress address) {
-        if (address == null || address.isLoopbackAddress()) {
+        if (address == null || address.isLoopbackAddress() || address.isLinkLocalAddress()) {
             return false;
         }
 
@@ -577,7 +577,11 @@ public final class NetUtils {
                     if (addressOp.isPresent()) {
                         try {
                             if (addressOp.get().isReachable(100)) {
-                                return networkInterface;
+                                if (addressOp.get().isSiteLocalAddress()) {
+                                    return networkInterface;
+                                } else {
+                                    result = networkInterface;
+                                }
                             }
                         } catch (IOException e) {
                             // ignore

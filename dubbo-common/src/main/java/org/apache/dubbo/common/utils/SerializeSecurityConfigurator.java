@@ -47,10 +47,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_BLOCKE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
 
 public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<ModuleModel> {
-    private final SerializeSecurityManager serializeSecurityManager;
-
-    private static final ErrorTypeAwareLogger logger =
+    private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityConfigurator.class);
+
+    private final Set<Type> markedTypeCache = new HashSet<>();
+
+    private final SerializeSecurityManager serializeSecurityManager;
 
     private final ModuleModel moduleModel;
 
@@ -137,7 +139,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         Set<URL> urls = ClassLoaderResourceLoader.loadResources(SERIALIZE_ALLOW_LIST_FILE_PATH, classLoader);
         for (URL u : urls) {
             try {
-                logger.info("Read serialize allow list from " + u);
+                LOGGER.info("Read serialize allow list from " + u);
                 String[] lines = IOUtils.readLines(u.openStream());
                 for (String line : lines) {
                     line = line.trim();
@@ -147,7 +149,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                     serializeSecurityManager.addToAlwaysAllowed(line);
                 }
             } catch (IOException e) {
-                logger.error(
+                LOGGER.error(
                         COMMON_IO_EXCEPTION,
                         "",
                         "",
@@ -161,7 +163,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         Set<URL> urls = ClassLoaderResourceLoader.loadResources(SERIALIZE_BLOCKED_LIST_FILE_PATH, classLoader);
         for (URL u : urls) {
             try {
-                logger.info("Read serialize blocked list from " + u);
+                LOGGER.info("Read serialize blocked list from " + u);
                 String[] lines = IOUtils.readLines(u.openStream());
                 for (String line : lines) {
                     line = line.trim();
@@ -171,7 +173,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                     serializeSecurityManager.addToDisAllowed(line);
                 }
             } catch (IOException e) {
-                logger.error(
+                LOGGER.error(
                         COMMON_IO_EXCEPTION,
                         "",
                         "",
@@ -213,8 +215,9 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        Set<Type> markedClass = new HashSet<>();
-        checkClass(markedClass, clazz);
+        if (!checkClass(clazz)) {
+            return;
+        }
 
         addToAllow(clazz);
 
@@ -223,84 +226,84 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         for (Method method : methodsToExport) {
             Class<?>[] parameterTypes = method.getParameterTypes();
             for (Class<?> parameterType : parameterTypes) {
-                checkClass(markedClass, parameterType);
+                checkClass(parameterType);
             }
 
             Type[] genericParameterTypes = method.getGenericParameterTypes();
             for (Type genericParameterType : genericParameterTypes) {
-                checkType(markedClass, genericParameterType);
+                checkType(genericParameterType);
             }
 
             Class<?> returnType = method.getReturnType();
-            checkClass(markedClass, returnType);
+            checkClass(returnType);
 
             Type genericReturnType = method.getGenericReturnType();
-            checkType(markedClass, genericReturnType);
+            checkType(genericReturnType);
 
             Class<?>[] exceptionTypes = method.getExceptionTypes();
             for (Class<?> exceptionType : exceptionTypes) {
-                checkClass(markedClass, exceptionType);
+                checkClass(exceptionType);
             }
 
             Type[] genericExceptionTypes = method.getGenericExceptionTypes();
             for (Type genericExceptionType : genericExceptionTypes) {
-                checkType(markedClass, genericExceptionType);
+                checkType(genericExceptionType);
             }
         }
     }
 
-    private void checkType(Set<Type> markedClass, Type type) {
+    private void checkType(Type type) {
         if (type == null) {
             return;
         }
 
         if (type instanceof Class) {
-            checkClass(markedClass, (Class<?>) type);
+            checkClass((Class<?>) type);
             return;
         }
 
-        if (!markedClass.add(type)) {
+        if (!markedTypeCache.add(type)) {
             return;
         }
 
         if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
-            checkClass(markedClass, (Class<?>) parameterizedType.getRawType());
+            checkClass((Class<?>) parameterizedType.getRawType());
             for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-                checkType(markedClass, actualTypeArgument);
+                checkType(actualTypeArgument);
             }
         } else if (type instanceof GenericArrayType) {
             GenericArrayType genericArrayType = (GenericArrayType) type;
-            checkType(markedClass, genericArrayType.getGenericComponentType());
+            checkType(genericArrayType.getGenericComponentType());
         } else if (type instanceof TypeVariable) {
             TypeVariable typeVariable = (TypeVariable) type;
             for (Type bound : typeVariable.getBounds()) {
-                checkType(markedClass, bound);
+                checkType(bound);
             }
         } else if (type instanceof WildcardType) {
             WildcardType wildcardType = (WildcardType) type;
             for (Type bound : wildcardType.getUpperBounds()) {
-                checkType(markedClass, bound);
+                checkType(bound);
             }
             for (Type bound : wildcardType.getLowerBounds()) {
-                checkType(markedClass, bound);
+                checkType(bound);
             }
         }
     }
 
-    private void checkClass(Set<Type> markedClass, Class<?> clazz) {
+    private boolean checkClass(Class<?> clazz) {
         if (clazz == null) {
-            return;
+            return false;
         }
 
-        if (!markedClass.add(clazz)) {
-            return;
+        if (!markedTypeCache.add(clazz)) {
+            return false;
         }
 
         addToAllow(clazz);
 
         if (ClassUtils.isSimpleType(clazz) || clazz.isPrimitive() || clazz.isArray()) {
-            return;
+            return true;
         }
         String className = clazz.getName();
         if (className.startsWith("java.")
@@ -308,26 +311,26 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                 || className.startsWith("com.sun.")
                 || className.startsWith("sun.")
                 || className.startsWith("jdk.")) {
-            return;
+            return true;
         }
 
         Class<?>[] interfaces = clazz.getInterfaces();
         for (Class<?> interfaceClass : interfaces) {
-            checkClass(markedClass, interfaceClass);
+            checkClass(interfaceClass);
         }
 
         for (Type genericInterface : clazz.getGenericInterfaces()) {
-            checkType(markedClass, genericInterface);
+            checkType(genericInterface);
         }
 
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null) {
-            checkClass(markedClass, superclass);
+            checkClass(superclass);
         }
 
         Type genericSuperclass = clazz.getGenericSuperclass();
         if (genericSuperclass != null) {
-            checkType(markedClass, genericSuperclass);
+            checkType(genericSuperclass);
         }
 
         Field[] fields = clazz.getDeclaredFields();
@@ -338,9 +341,11 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             }
 
             Class<?> fieldClass = field.getType();
-            checkClass(markedClass, fieldClass);
-            checkType(markedClass, field.getGenericType());
+            checkClass(fieldClass);
+            checkType(field.getGenericType());
         }
+
+        return true;
     }
 
     private void addToAllow(Class<?> clazz) {

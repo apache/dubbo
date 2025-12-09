@@ -23,16 +23,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * DemoServiceImpl
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DemoServiceImpl implements DemoService {
+    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+
     public DemoServiceImpl() {
         super();
     }
 
     public void sayHello(String name) {
-        System.out.println("hello " + name);
+        logger.info("hello {}", name);
     }
 
     public String echo(String text) {
@@ -58,8 +60,9 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()="
-                + RpcContext.getServiceContext().getRemoteHost());
+        logger.info(
+                "RpcContext.getServerAttachment().getRemoteHost()={}",
+                RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 

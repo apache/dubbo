@@ -35,14 +35,12 @@ public class DynamicTraceInterceptor implements ReaderInterceptor, WriterInterce
     @Override
     public Object aroundReadFrom(ReaderInterceptorContext readerInterceptorContext)
             throws IOException, WebApplicationException {
-        System.out.println("Dynamic reader interceptor invoked");
         return readerInterceptorContext.proceed();
     }
 
     @Override
     public void aroundWriteTo(WriterInterceptorContext writerInterceptorContext)
             throws IOException, WebApplicationException {
-        System.out.println("Dynamic writer interceptor invoked");
         writerInterceptorContext.getOutputStream().write("intercept".getBytes(StandardCharsets.UTF_8));
         writerInterceptorContext.proceed();
     }

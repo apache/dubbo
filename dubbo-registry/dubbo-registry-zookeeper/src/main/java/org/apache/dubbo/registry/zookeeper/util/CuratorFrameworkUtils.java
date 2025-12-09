@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.zookeeper.util;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
@@ -25,6 +26,7 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +94,7 @@ public abstract class CuratorFrameworkUtils {
 
         String userInformation = connectionURL.getUserInformation();
         if (StringUtils.isNotEmpty(userInformation)) {
-            builder = builder.authorization("digest", userInformation.getBytes());
+            builder = builder.authorization("digest", userInformation.getBytes(StandardCharsets.UTF_8));
             builder.aclProvider(new ACLProvider() {
                 @Override
                 public List<ACL> getDefaultAcl() {
@@ -116,7 +118,8 @@ public abstract class CuratorFrameworkUtils {
             throw new IllegalStateException("zookeeper client initialization failed");
         }
 
-        if (!curatorFramework.getZookeeperClient().isConnected()) {
+        boolean check = UrlUtils.isCheck(connectionURL);
+        if (check && !curatorFramework.getZookeeperClient().isConnected()) {
             throw new IllegalStateException("failed to connect to zookeeper server");
         }
 

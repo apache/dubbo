@@ -205,7 +205,6 @@ class InvokerSideConfigUrlTest extends UrlTestBase {
 
         String subScribedUrlStr = getSubscribedUrlString();
 
-        System.out.println("url string=========:" + subScribedUrlStr);
         String configName = config.getClass().getName();
         int column = TESTVALUE1;
 

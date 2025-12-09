@@ -39,9 +39,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-/**
- * FailfastClusterInvokerTest
- */
 @SuppressWarnings("unchecked")
 class FailfastClusterInvokerTest {
     List<Invoker<FailfastClusterInvokerTest>> invokers = new ArrayList<>();

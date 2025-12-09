@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
@@ -66,9 +68,12 @@ public class GracefulShutdown {
         try {
             Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(
                     Http2Error.NO_ERROR, ByteBufUtil.writeAscii(this.ctx.alloc(), this.goAwayMessage));
-            ctx.writeAndFlush(goAwayFrame);
-            // TODO support customize graceful shutdown timeout mills
-            ctx.close(originPromise);
+            ChannelFuture future = ctx.writeAndFlush(goAwayFrame, ctx.newPromise());
+            if (future.isDone()) {
+                ctx.close(originPromise);
+            } else {
+                future.addListener((ChannelFutureListener) f -> ctx.close(originPromise));
+            }
         } catch (Exception e) {
             ctx.fireExceptionCaught(e);
         }

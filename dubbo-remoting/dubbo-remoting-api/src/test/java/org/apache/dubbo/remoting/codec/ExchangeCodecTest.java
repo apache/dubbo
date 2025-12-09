@@ -164,7 +164,7 @@ class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     void test_Decode_Error_Response_Object() throws IOException {
-        // 00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
+        // 00000010-response/oneway/heartbeat=true |20-stats=ok|id=0|length=0
         byte[] header = new byte[] {MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
@@ -242,7 +242,7 @@ class ExchangeCodecTest extends TelnetCodecTest {
     void test_Decode_Return_Response_Person() throws IOException {
         DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(0), 100000, null);
 
-        // 00000010-response/oneway/hearbeat=false/hessian |20-stats=ok|id=0|length=0
+        // 00000010-response/oneway/heartbeat=false/hessian |20-stats=ok|id=0|length=0
         byte[] header = new byte[] {MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
@@ -250,7 +250,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Response obj = (Response) decode(request);
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
-        System.out.println(obj);
 
         future.cancel();
     }
@@ -281,7 +280,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertTrue(obj.isEvent());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
         System.clearProperty("deserialization.event.size");
     }
 
@@ -299,7 +297,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertTrue(obj.isEvent());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
     }
 
     @Test
@@ -314,7 +311,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertTrue(obj.isHeartbeat());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
     }
 
     @Test
@@ -333,13 +329,12 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertFalse(obj.isHeartbeat());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
-        System.out.println(obj);
         System.clearProperty("deserialization.event.size");
     }
 
     @Test
     void test_Decode_Error_Request_Object() throws IOException {
-        // 00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
+        // 00000010-response/oneway/heartbeat=true |20-stats=ok|id=0|length=0
         byte[] header = new byte[] {
             MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         };
@@ -358,7 +353,7 @@ class ExchangeCodecTest extends TelnetCodecTest {
     void test_Header_Response_NoSerializationFlag() throws IOException {
         DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(0), 100000, null);
 
-        // 00000010-response/oneway/hearbeat=false/noset |20-stats=ok|id=0|length=0
+        // 00000010-response/oneway/heartbeat=false/noset |20-stats=ok|id=0|length=0
         byte[] header = new byte[] {MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
@@ -366,7 +361,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Response obj = (Response) decode(request);
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
-        System.out.println(obj);
 
         future.cancel();
     }
@@ -375,7 +369,7 @@ class ExchangeCodecTest extends TelnetCodecTest {
     void test_Header_Response_Heartbeat() throws IOException {
         DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(0), 100000, null);
 
-        // 00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
+        // 00000010-response/oneway/heartbeat=true |20-stats=ok|id=0|length=0
         byte[] header = new byte[] {MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
@@ -383,7 +377,6 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Response obj = (Response) decode(request);
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
-        System.out.println(obj);
 
         future.cancel();
     }

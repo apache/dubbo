@@ -23,6 +23,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
@@ -167,7 +168,8 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        ApolloListener apolloListener = listeners.computeIfAbsent(group + key, k -> createTargetListener(key, group));
+        ApolloListener apolloListener =
+                ConcurrentHashMapUtils.computeIfAbsent(listeners, group + key, k -> createTargetListener(key, group));
         apolloListener.addListener(listener);
         dubboConfig.addChangeListener(apolloListener, Collections.singleton(key));
     }
