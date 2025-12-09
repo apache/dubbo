@@ -21,9 +21,6 @@ import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
-/**
- * FailedUnsubscribedTask
- */
 public final class FailedUnsubscribedTask extends AbstractRetryTask {
 
     private static final String NAME = "retry unsubscribe";

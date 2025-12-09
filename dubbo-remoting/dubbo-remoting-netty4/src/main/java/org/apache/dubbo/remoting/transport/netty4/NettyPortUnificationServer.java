@@ -57,7 +57,7 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  */
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
-    private final int serverShutdownTimeoutMills;
+    private int serverShutdownTimeoutMills;
     /**
      * netty server bootstrap.
      */
@@ -69,16 +69,10 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private final Map<String, Channel> dubboChannels = new ConcurrentHashMap<>();
+    private Map<String, Channel> dubboChannels;
 
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
-
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in
-        // CommonConstants.
-        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-        // read config before destroy
-        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
     @Override
@@ -102,6 +96,15 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     @Override
     public void doOpen0() {
         bootstrap = new ServerBootstrap();
+
+        // initialize dubboChannels and serverShutdownTimeoutMills before potential usage to avoid NPE.
+        dubboChannels = new ConcurrentHashMap<>();
+
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in
+        // CommonConstants.
+        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
+        // read config before destroy
+        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
 
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
         workerGroup = NettyEventLoopFactory.eventLoopGroup(

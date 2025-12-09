@@ -22,9 +22,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/**
- * EagerThreadPoolExecutor
- */
 public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
 
     public EagerThreadPoolExecutor(

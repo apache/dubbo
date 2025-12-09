@@ -31,9 +31,6 @@ import org.springframework.context.Lifecycle;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_WARN_STATUS_CHECKER;
 
-/**
- * SpringStatusChecker
- */
 @Activate
 public class SpringStatusChecker implements StatusChecker {
 

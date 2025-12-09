@@ -38,9 +38,6 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
 
-/**
- * StatusTelnetHandler
- */
 @Activate
 @Help(parameter = "[-l]", summary = "Show status.", detail = "Show status.")
 public class StatusTelnetHandler implements TelnetHandler {

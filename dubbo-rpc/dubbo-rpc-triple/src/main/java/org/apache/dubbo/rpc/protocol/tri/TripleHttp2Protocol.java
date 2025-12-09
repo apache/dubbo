@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1Codec;
 import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1ConnectionHandler;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2FrameCodec;
 import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2ProtocolSelectorHandler;
+import org.apache.dubbo.remoting.http12.netty4.h2.NettyHttp2SettingsHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.remoting.websocket.netty4.WebSocketFrameCodec;
 import org.apache.dubbo.remoting.websocket.netty4.WebSocketProtocolSelectorHandler;
@@ -155,12 +156,14 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 sourceCodec,
                 protocol -> {
                     if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
+                        NettyHttp2SettingsHandler nettyHttp2SettingsHandler = new NettyHttp2SettingsHandler();
                         return new Http2ServerUpgradeCodec(
                                 buildHttp2FrameCodec(tripleConfig),
+                                nettyHttp2SettingsHandler,
                                 new HttpWriteQueueHandler(),
                                 new FlushConsolidationHandler(64, true),
                                 new TripleServerConnectionHandler(),
-                                buildHttp2MultiplexHandler(url, tripleConfig),
+                                buildHttp2MultiplexHandler(nettyHttp2SettingsHandler, url, tripleConfig),
                                 new TripleTailHandler());
                     } else if (AsciiString.contentEquals(HttpHeaderValues.WEBSOCKET, protocol)) {
                         return new WebSocketServerUpgradeCodec(
@@ -191,12 +194,13 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 url, frameworkModel, tripleConfig, DefaultHttp11ServerTransportListenerFactory.INSTANCE)));
     }
 
-    private Http2MultiplexHandler buildHttp2MultiplexHandler(URL url, TripleConfig tripleConfig) {
+    private Http2MultiplexHandler buildHttp2MultiplexHandler(
+            NettyHttp2SettingsHandler nettyHttp2SettingsHandler, URL url, TripleConfig tripleConfig) {
         return new Http2MultiplexHandler(new ChannelInitializer<Http2StreamChannel>() {
             @Override
             protected void initChannel(Http2StreamChannel ch) {
                 ChannelPipeline p = ch.pipeline();
-                p.addLast(new NettyHttp2FrameCodec());
+                p.addLast(new NettyHttp2FrameCodec(nettyHttp2SettingsHandler));
                 p.addLast(new NettyHttp2ProtocolSelectorHandler(
                         url, frameworkModel, tripleConfig, GenericHttp2ServerTransportListenerFactory.INSTANCE));
             }
@@ -204,11 +208,13 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
+        NettyHttp2SettingsHandler nettyHttp2SettingsHandler = new NettyHttp2SettingsHandler();
         TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
         Http2FrameCodec codec = buildHttp2FrameCodec(tripleConfig);
-        Http2MultiplexHandler handler = buildHttp2MultiplexHandler(url, tripleConfig);
+        Http2MultiplexHandler handler = buildHttp2MultiplexHandler(nettyHttp2SettingsHandler, url, tripleConfig);
         handlers.add(new ChannelHandlerPretender(new HttpWriteQueueHandler()));
         handlers.add(new ChannelHandlerPretender(codec));
+        handlers.add(new ChannelHandlerPretender(nettyHttp2SettingsHandler));
         handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
         handlers.add(new ChannelHandlerPretender(new TripleServerConnectionHandler()));
         handlers.add(new ChannelHandlerPretender(handler));

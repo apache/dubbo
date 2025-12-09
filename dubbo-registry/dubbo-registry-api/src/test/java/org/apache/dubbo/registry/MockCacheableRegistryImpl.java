@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-/**
- *
- */
 public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
 
     private final List<String> children = new ArrayList<>();

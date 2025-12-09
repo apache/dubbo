@@ -36,9 +36,6 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
-/**
- * InjvmProtocol
- */
 public class InjvmProtocol extends AbstractProtocol {
 
     public static final String NAME = LOCAL_PROTOCOL;

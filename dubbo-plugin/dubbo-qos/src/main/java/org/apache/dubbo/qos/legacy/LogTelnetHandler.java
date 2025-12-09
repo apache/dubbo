@@ -31,9 +31,6 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * LogTelnetHandler
- */
 @Activate
 @Help(parameter = "level", summary = "Change log level or show log ", detail = "Change log level or show log")
 public class LogTelnetHandler implements TelnetHandler {

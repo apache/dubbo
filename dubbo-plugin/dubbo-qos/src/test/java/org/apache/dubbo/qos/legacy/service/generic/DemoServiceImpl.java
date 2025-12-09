@@ -18,9 +18,6 @@ package org.apache.dubbo.qos.legacy.service.generic;
 
 import java.util.List;
 
-/**
- * DemoServiceImpl
- */
 public class DemoServiceImpl implements DemoService {
 
     public String sayName(String name) {

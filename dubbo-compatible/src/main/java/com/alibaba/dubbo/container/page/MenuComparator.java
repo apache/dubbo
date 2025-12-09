@@ -19,9 +19,6 @@ package com.alibaba.dubbo.container.page;
 import java.io.Serializable;
 import java.util.Comparator;
 
-/**
- * MenuComparator
- */
 public class MenuComparator implements Comparator<PageHandler>, Serializable {
 
     private static final long serialVersionUID = -3161526932904414029L;

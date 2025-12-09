@@ -28,9 +28,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
-/**
- * NettyClientToServerTest
- */
 class NettyClientToServerTest extends ClientToServerTest {
 
     protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
