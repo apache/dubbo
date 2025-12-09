@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-demo-xds-provider-v2
+  namespace: dubbo-proxyless
+  labels:
+    app: dubbo-demo-xds-provider
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dubbo-demo-xds-provider
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: dubbo-demo-xds-provider
+        version: v2
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: dubbo-demo-xds-provider
+        image: crpi-ta376u07gp1439ff.cn-beijing.personal.cr.aliyuncs.com/test_xds/test_dubbo_provider:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 50051
+          name: grpc
+          protocol: TCP
+        - containerPort: 31001
+          name: debug
+          protocol: TCP
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: SERVICE_VERSION
+          value: "v2"
+        - name: JAVA_TOOL_OPTIONS
+          value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=31001 -Ddubbo.application.logger=slf4j -Dlogging.level.root=INFO -Dlogging.level.org.apache.dubbo=DEBUG -Dlogging.level.org.apache.dubbo.xds=TRACE -Dlogging.level.org.apache.dubbo.registry=TRACE -Dlogging.level.org.apache.dubbo.registry.xds=TRACE -Dservice.version=v2"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 50051
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 50051
+          initialDelaySeconds: 10
+          periodSeconds: 5 

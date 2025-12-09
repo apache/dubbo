@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: dubbo-weight-test
+  namespace: dubbo-proxyless
+spec:
+  hosts:
+  - dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+  http:
+  - match:
+    - headers:
+        test-scenario:
+          exact: "weight-test"
+    timeout: 10s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 70
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v2
+      weight: 30

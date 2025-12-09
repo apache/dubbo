@@ -1,0 +1,26 @@
+{
+  "xds_servers": [
+    {
+      "server_uri": "istiod.istio-system.svc:15010",
+      "channel_creds": [
+        {
+          "type": "insecure"
+        }
+      ],
+      "server_features": [
+        "xds_v3"
+      ]
+    }
+  ],
+  "node": {
+    "id": "dubbo-demo-xds-provider",
+    "cluster": "dubbo-demo-xds-provider",
+    "metadata": {
+      "CLUSTER_ID": "dubbo-demo-xds-provider",
+      "NAMESPACE": "dubbo-proxyless",
+      "SERVICE_NAME": "dubbo-demo-xds-provider",
+      "SERVICE_VERSION": "v1",
+      "SERVICE_NAMESPACE": "dubbo-proxyless"
+    }
+  }
+}

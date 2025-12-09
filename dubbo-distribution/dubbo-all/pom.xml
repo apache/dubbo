@@ -334,6 +334,13 @@
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-xds</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
 
     <!-- remoting -->
     <dependency>
@@ -520,6 +527,7 @@
                   <include>org.apache.dubbo:dubbo-registry-multiple</include>
                   <include>org.apache.dubbo:dubbo-registry-nacos</include>
                   <include>org.apache.dubbo:dubbo-registry-zookeeper</include>
+                  <include>org.apache.dubbo:dubbo-xds</include>
                   <include>org.apache.dubbo:dubbo-remoting-api</include>
                   <include>org.apache.dubbo:dubbo-remoting-http12</include>
                   <include>org.apache.dubbo:dubbo-remoting-http3</include>
@@ -955,6 +963,46 @@
 
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.registry.integration.ServiceURLCustomizer</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.listener.LdsListener</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.listener.CdsListener</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.api.CertSource</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.api.RequestAuthorizer</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.api.ServiceIdentitySource</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.api.TrustSource</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.authz.rule.source.RuleProvider</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.authz.rule.source.RuleFactory</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.xds.security.authz.resolver.CredentialResolver</resource>
+                </transformer>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.remoting.api.ChannelContextListener</resource>
                 </transformer>
               </transformers>
               <filters>

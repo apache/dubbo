@@ -65,7 +65,7 @@ public final class Http3SslContexts extends SslContext {
                         toX509Certificates(keyCertChainIn));
                 try (InputStream trustCertIn = cert.getTrustCertInputStream()) {
                     if (trustCertIn != null) {
-                        ClientAuth clientAuth = cert.getAuthPolicy() == AuthPolicy.CLIENT_AUTH
+                        ClientAuth clientAuth = cert.getAuthPolicy() == AuthPolicy.CLIENT_AUTH_STRICT
                                 ? ClientAuth.REQUIRE
                                 : ClientAuth.OPTIONAL;
                         builder.trustManager(toX509Certificates(trustCertIn)).clientAuth(clientAuth);

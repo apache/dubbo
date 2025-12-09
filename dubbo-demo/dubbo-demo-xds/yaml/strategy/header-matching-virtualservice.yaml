@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: dubbo-header-user-type-routing
+  namespace: dubbo-proxyless
+spec:
+  hosts:
+  - dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+  http:
+  - match:
+    - headers:
+        user-type:
+          exact: "vip"
+    timeout: 10s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v2
+      weight: 100
+  - match:
+    - headers:
+        user-type:
+          exact: "normal"
+    timeout: 10s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 100
+  # Default route (no user-type header)
+  - route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 50
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v2
+      weight: 50

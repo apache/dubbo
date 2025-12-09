@@ -1,0 +1,89 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.xds;
+
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.xds.bootstrap.BootstrapInfo;
+import org.apache.dubbo.xds.bootstrap.Bootstrapper;
+
+import io.envoyproxy.envoy.service.discovery.v3.AggregatedDiscoveryServiceGrpc;
+import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
+import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import io.grpc.Grpc;
+import io.grpc.InsecureChannelCredentials;
+import io.grpc.ManagedChannel;
+import io.grpc.stub.StreamObserver;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_CREATE_CHANNEL_XDS;
+
+public class XdsChannel {
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsChannel.class);
+
+    private final ManagedChannel channel;
+
+    public ManagedChannel getChannel() {
+        return channel;
+    }
+
+    public XdsChannel() {
+        ManagedChannel managedChannel = null;
+        try {
+            BootstrapInfo bootstrapInfo = Bootstrapper.getInstance().bootstrap();
+            String server = bootstrapInfo.getXdsServers().get(0).getServerURI();
+            // TODO(xDS): channel cred support other types
+            managedChannel = Grpc.newChannelBuilder(server, InsecureChannelCredentials.create())
+                    .build();
+        } catch (Exception e) {
+            logger.error(
+                    REGISTRY_ERROR_CREATE_CHANNEL_XDS,
+                    "",
+                    "",
+                    "Error occurred when creating gRPC channel to control panel.",
+                    e);
+        }
+        channel = managedChannel;
+    }
+
+    public StreamObserver<DeltaDiscoveryRequest> observeDeltaDiscoveryRequest(
+            StreamObserver<DeltaDiscoveryResponse> observer) {
+        return AggregatedDiscoveryServiceGrpc.newStub(channel).deltaAggregatedResources(observer);
+    }
+
+    public StreamObserver<DiscoveryRequest> createDeltaDiscoveryRequest(StreamObserver<DiscoveryResponse> observer) {
+        return AggregatedDiscoveryServiceGrpc.newStub(channel).streamAggregatedResources(observer);
+    }
+
+    public StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> observeDeltaDiscoveryRequestV2(
+            StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> observer) {
+        return io.envoyproxy.envoy.service.discovery.v2.AggregatedDiscoveryServiceGrpc.newStub(channel)
+                .deltaAggregatedResources(observer);
+    }
+
+    public StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> createDeltaDiscoveryRequestV2(
+            StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> observer) {
+        return io.envoyproxy.envoy.service.discovery.v2.AggregatedDiscoveryServiceGrpc.newStub(channel)
+                .streamAggregatedResources(observer);
+    }
+
+    public void destroy() {
+        channel.shutdown();
+    }
+}

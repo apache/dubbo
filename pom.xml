@@ -88,6 +88,7 @@
     <module>dubbo-metrics</module>
     <module>dubbo-test</module>
     <module>dubbo-maven-plugin</module>
+    <module>dubbo-xds</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-actuator</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-autoconfigure</module>
     <module>dubbo-spring-boot-project/dubbo-spring-boot-compatible</module>
@@ -112,6 +113,7 @@
     <module>dubbo-demo/dubbo-demo-api</module>
     <module>dubbo-demo/dubbo-demo-spring-boot</module>
     <module>dubbo-demo/dubbo-demo-spring-boot-idl</module>
+    <module>dubbo-demo/dubbo-demo-xds</module>
   </modules>
 
   <scm>

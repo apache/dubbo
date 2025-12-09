@@ -74,6 +74,8 @@ public interface Constants {
 
     String TOKEN_KEY = "token";
 
+    String ID_TOKEN_KEY = "identity.token";
+
     String AUTH_KEY = "auth";
 
     String AUTHENTICATOR_KEY = "authenticator";

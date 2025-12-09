@@ -1,0 +1,26 @@
+{
+  "xds_servers": [
+    {
+      "server_uri": "istiod.istio-system.svc:15010",
+      "channel_creds": [
+        {
+          "type": "insecure"
+        }
+      ],
+      "server_features": [
+        "xds_v3"
+      ]
+    }
+  ],
+  "node": {
+    "id": "sidecar~10.244.2.16~dubbo-demo-xds-consumer-dbf955587-vvzrz~dubbo-proxyless",
+    "cluster": "dubbo-demo-xds-consumer",
+    "metadata": {
+      "CLUSTER_ID": "dubbo-demo-xds-consumer",
+      "NAMESPACE": "dubbo-proxyless",
+      "SERVICE_NAME": "dubbo-demo-xds-consumer",
+      "SERVICE_VERSION": "v1",
+      "SERVICE_NAMESPACE": "dubbo-proxyless"
+    }
+  }
+}

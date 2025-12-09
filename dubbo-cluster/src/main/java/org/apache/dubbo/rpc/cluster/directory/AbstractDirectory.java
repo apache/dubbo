@@ -147,6 +147,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this(url, null, isUrlFromRegistry);
     }
 
+    public AbstractDirectory(URL url, RouterChain<T> routerChain, boolean isUrlFromRegistry, URL consumerUrl) {
+        this(addConsumerUrl(url, consumerUrl), null, isUrlFromRegistry);
+    }
+
     public AbstractDirectory(URL url, RouterChain<T> routerChain, boolean isUrlFromRegistry) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
@@ -250,6 +254,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 singleChain.getLock().readLock().unlock();
             }
         }
+    }
+
+    private static URL addConsumerUrl(URL url, URL consumerUrl) {
+        Map<String, String> referMap = new HashMap<>();
+        referMap.put(CONSUMER_URL_KEY, consumerUrl.toString());
+        url = url.putAttribute(REFER_KEY, referMap);
+        return url;
     }
 
     @Override

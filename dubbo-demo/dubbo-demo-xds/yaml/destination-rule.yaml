@@ -1,0 +1,15 @@
+# DestinationRule for defining service subsets
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: dubbo-demo-xds-provider-dr
+  namespace: dubbo-proxyless
+spec:
+  host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2

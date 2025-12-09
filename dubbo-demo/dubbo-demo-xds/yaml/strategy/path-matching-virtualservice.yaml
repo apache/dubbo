@@ -1,0 +1,34 @@
+# Path-based traffic routing - Exact matching only
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: dubbo-path-matching-routing
+  namespace: dubbo-proxyless
+spec:
+  hosts:
+  - dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+  http:
+  # Exact path matching for default Dubbo service method with weighted routing
+  - match:
+    - uri:
+        exact: "/org.apache.dubbo.xds.demo.DemoService/sayHello"
+    timeout: 10s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 70
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v2
+      weight: 30
+  # Default route for unmatched paths
+  - route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 50
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v2
+      weight: 50

@@ -1,0 +1,197 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: echo
+  name: echo
+  namespace: echo-grpc
+spec:
+  selector:
+    app: echo
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 18080
+    - name: grpc
+      port: 7070
+      targetPort: 17070
+    - name: tcp
+      port: 9090
+      targetPort: 19090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-v1
+  namespace: echo-grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo
+      version: v1
+  template:
+    metadata:
+      annotations:
+        inject.istio.io/templates: grpc-agent
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+      labels:
+        app: echo
+        version: v1
+    spec:
+      containers:
+        - args:
+            - --metrics=15014
+            - --port
+            - "18080"
+            - --tcp
+            - "19090"
+            - --xds-grpc-server=17070
+            - --grpc
+            - "17070"
+            - --grpc
+            - "17171"
+            - --port
+            - "3333"
+            - --port
+            - "8080"
+            - --version
+            - v1
+            - --crt=/cert.crt
+            - --key=/cert.key
+          env:
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          image: registry.cn-hangzhou.aliyuncs.com/aliacs-app-catalog/asm-grpc-app:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: tcp-health-port
+            timeoutSeconds: 1
+          name: app
+          ports:
+            - containerPort: 17070
+              protocol: TCP
+            - containerPort: 17171
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 3333
+              name: tcp-health-port
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          securityContext:
+            runAsGroup: 1338
+            runAsUser: 1338
+          startupProbe:
+            failureThreshold: 10
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: tcp-health-port
+            timeoutSeconds: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-v2
+  namespace: echo-grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo
+      version: v2
+  template:
+    metadata:
+      annotations:
+        inject.istio.io/templates: grpc-agent
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+      labels:
+        app: echo
+        version: v2
+    spec:
+      containers:
+        - args:
+            - --metrics=15014
+            - --xds-grpc-server=17070
+            - --port
+            - "18080"
+            - --tcp
+            - "19090"
+            - --grpc
+            - "17070"
+            - --grpc
+            - "17171"
+            - --port
+            - "3333"
+            - --port
+            - "8080"
+            - --version
+            - v2
+            - --crt=/cert.crt
+            - --key=/cert.key
+          env:
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          image: registry.cn-hangzhou.aliyuncs.com/aliacs-app-catalog/asm-grpc-app:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: tcp-health-port
+            timeoutSeconds: 1
+          name: app
+          ports:
+            - containerPort: 17070
+              protocol: TCP
+            - containerPort: 17171
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 3333
+              name: tcp-health-port
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          securityContext:
+            runAsGroup: 1338
+            runAsUser: 1338
+          startupProbe:
+            failureThreshold: 10
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: tcp-health-port
+            timeoutSeconds: 1

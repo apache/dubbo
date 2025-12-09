@@ -1,0 +1,42 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: dubbo-timeout-test
+  namespace: dubbo-proxyless
+spec:
+  hosts:
+  - dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+  http:
+  # 2 second timeout test
+  - match:
+    - headers:
+        test-scenario:
+          exact: "timeout-2s"
+    timeout: 2s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 100
+  # 5 second timeout test
+  - match:
+    - headers:
+        test-scenario:
+          exact: "timeout-5s"
+    timeout: 5s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 100
+  # Default route for other requests
+  - timeout: 30s
+    route:
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v1
+      weight: 50
+    - destination:
+        host: dubbo-demo-xds-provider.dubbo-proxyless.svc.cluster.local
+        subset: v2
+      weight: 50

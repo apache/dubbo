@@ -490,7 +490,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private T createProxy(Map<String, String> referenceParameters) {
         urls.clear();
 
-        meshModeHandleUrl(referenceParameters);
+        // TODO: Maybe not need this logic.
+        // meshModeHandleUrl(referenceParameters);
 
         if (StringUtils.isNotEmpty(url)) {
             // user specified URL, could be peer-to-peer address, or register center's address.
@@ -644,6 +645,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (isInjvm() != null && isInjvm()) {
                     u = u.addParameter(LOCAL_PROTOCOL, true);
                 }
+                ConfigValidationUtils.loadMeshConfig(u, referenceParameters);
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
             }
         }
@@ -725,6 +727,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         long startTime = System.currentTimeMillis();
         long checkDeadline = startTime + timeout;
         do {
+            logger.info("Waiting for service " + getUniqueServiceName()
+                    + " to be available..., set 'dubbo.consumer.check=false' to skip check.");
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {

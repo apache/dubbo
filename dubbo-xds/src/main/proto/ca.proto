@@ -1,0 +1,62 @@
+// Copyright Istio Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The canonical version of this proto can be found at
+// https://github.com/istio/api/blob/9abf4c87205f6ad04311fa021ce60803d8b95f78/security/v1alpha1/ca.proto
+
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+
+// Keep this package for backward compatibility.
+package istio.v1.auth;
+
+option go_package = "istio.io/api/security/v1alpha1";
+option java_generic_services = true;
+option java_multiple_files = true;
+
+// Certificate request message. The authentication should be based on:
+// 1. Bearer tokens carried in the side channel;
+// 2. Client-side certificate via Mutual TLS handshake.
+// Note: the service implementation is REQUIRED to verify the authenticated caller is authorize to
+// all SANs in the CSR. The server side may overwrite any requested certificate field based on its
+// policies.
+message IstioCertificateRequest {
+  // PEM-encoded certificate request.
+  // The public key in the CSR is used to generate the certificate,
+  // and other fields in the generated certificate may be overwritten by the CA.
+  string csr = 1;
+  // Optional: requested certificate validity period, in seconds.
+  int64 validity_duration = 3;
+
+  // $hide_from_docs
+  // Optional: Opaque metadata provided by the XDS node to Istio.
+  // Supported metadata: WorkloadName, WorkloadIP, ClusterID
+  google.protobuf.Struct metadata = 4;
+}
+
+// Certificate response message.
+message IstioCertificateResponse {
+  // PEM-encoded certificate chain.
+  // The leaf cert is the first element, and the root cert is the last element.
+  repeated string cert_chain = 1;
+}
+
+// Service for managing certificates issued by the CA.
+service IstioCertificateService {
+  // Using provided CSR, returns a signed certificate.
+  rpc CreateCertificate(IstioCertificateRequest)
+      returns (IstioCertificateResponse) {
+  }
+}
