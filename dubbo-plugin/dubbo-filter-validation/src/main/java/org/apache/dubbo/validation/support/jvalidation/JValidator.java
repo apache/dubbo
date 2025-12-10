@@ -68,6 +68,8 @@ import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 
 /**
@@ -96,7 +98,10 @@ public class JValidator implements Validator {
                     .configure()
                     .buildValidatorFactory();
         } else {
-            factory = Validation.buildDefaultValidatorFactory();
+            factory = Validation.byDefaultProvider()
+                    .configure()
+                    .messageInterpolator(new ParameterMessageInterpolator())
+                    .buildValidatorFactory();
         }
         this.validator = factory.getValidator();
         this.methodClassMap = new ConcurrentHashMap<>();
