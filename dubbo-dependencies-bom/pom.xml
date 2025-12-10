@@ -157,6 +157,8 @@
     <groovy_version>4.0.27</groovy_version>
 
     <!-- Test libs -->
+    <junit_jupiter_version>5.14.1</junit_jupiter_version>
+    <junit_platform_version>1.13.1</junit_platform_version>
     <junit_jupiter_version>5.12.2</junit_jupiter_version>
     <junit_platform_version>1.13.3</junit_platform_version>
     <awaitility_version>4.3.0</awaitility_version>
@@ -175,7 +177,7 @@
     <bouncycastle-bcprov_version>1.81</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.13.1</gson_version>
-    <jackson_version>2.19.0</jackson_version>
+    <jackson_version>2.19.1</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.7.3</maven_flatten_version>
