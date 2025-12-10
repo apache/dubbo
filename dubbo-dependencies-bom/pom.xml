@@ -122,7 +122,7 @@
     <commons_lang3_version>3.17.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.15.1</micrometer.version>
-    <opentelemetry.version>1.50.0</opentelemetry.version>
+    <opentelemetry.version>1.54.1</opentelemetry.version>
     <zipkin-reporter.version>3.5.1</zipkin-reporter.version>
     <zipkin.version>3.5.1</zipkin.version>
     <micrometer-tracing.version>1.5.1</micrometer-tracing.version>
@@ -132,7 +132,7 @@
     <reactor.version>3.7.11</reactor.version>
     <mutiny.version>2.9.0</mutiny.version>
     <rxjava.version>2.2.21</rxjava.version>
-    <okhttp_version>3.14.9</okhttp_version>
+    <okhttp_version>4.9.2</okhttp_version>
 
     <rs_api_version>2.1.1</rs_api_version>
     <resteasy_version>3.15.6.Final</resteasy_version>
@@ -159,6 +159,8 @@
     <!-- Test libs -->
     <junit_jupiter_version>5.14.1</junit_jupiter_version>
     <junit_platform_version>1.13.1</junit_platform_version>
+    <junit_jupiter_version>5.12.2</junit_jupiter_version>
+    <junit_platform_version>1.13.3</junit_platform_version>
     <awaitility_version>4.3.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
