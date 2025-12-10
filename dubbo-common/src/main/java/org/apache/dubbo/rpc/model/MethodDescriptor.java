@@ -21,7 +21,23 @@ import java.lang.reflect.Type;
 
 public interface MethodDescriptor {
 
+    /**
+     * Retrieves the method name.
+     * <p>
+     * In Protobuf scenarios, this name may start with an uppercase letter.
+     *
+     * @return the method name
+     */
     String getMethodName();
+
+    /**
+     * Retrieves the Java method name.
+     * <p>
+     * In Protobuf scenarios, This name is typically converted to start with a lowercase letter for Java naming conventions.
+     *
+     * @return the Java method name as a String
+     */
+    String getJavaMethodName();
 
     String getParamDesc();
 
