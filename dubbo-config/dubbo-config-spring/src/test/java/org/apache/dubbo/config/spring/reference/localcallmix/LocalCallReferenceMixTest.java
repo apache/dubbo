@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.reference.localcallmix;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.RpcContext;
@@ -53,11 +54,15 @@ class LocalCallReferenceMixTest {
     @BeforeAll
     public static void setUp() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterAll
     public static void tearDown() {
         DubboBootstrap.reset();
+        SysProps.clear();
     }
 
     @Autowired
