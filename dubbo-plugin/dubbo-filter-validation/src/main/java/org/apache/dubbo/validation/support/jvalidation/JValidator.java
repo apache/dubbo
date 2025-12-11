@@ -28,6 +28,7 @@ import org.apache.dubbo.validation.Validator;
 import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.MessageInterpolator;
 import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
 import javax.validation.groups.Default;
@@ -98,9 +99,10 @@ public class JValidator implements Validator {
                     .configure()
                     .buildValidatorFactory();
         } else {
+            MessageInterpolator messageInterpolator = new ParameterMessageInterpolator();
             factory = Validation.byDefaultProvider()
                     .configure()
-                    .messageInterpolator(new ParameterMessageInterpolator())
+                    .messageInterpolator(messageInterpolator)
                     .buildValidatorFactory();
         }
         this.validator = factory.getValidator();
