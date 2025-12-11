@@ -16,9 +16,19 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure.observability;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.micrometer.tracing.Baggage;
+import io.micrometer.tracing.BaggageManager;
+import io.micrometer.tracing.CurrentTraceContext;
+import io.micrometer.tracing.ScopedSpan;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Span.Builder;
+import io.micrometer.tracing.SpanCustomizer;
+import io.micrometer.tracing.TraceContext;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
 import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
@@ -131,7 +141,63 @@ class DubboMicrometerTracingAutoConfigurationTests {
 
         @Bean
         Tracer tracer() {
-            return mock(Tracer.class);
+            return new Tracer() {
+                public Span nextSpan() {
+                    return Span.NOOP;
+                }
+
+                public Span nextSpan(Span parent) {
+                    return Span.NOOP;
+                }
+
+                public SpanInScope withSpan(Span span) {
+                    return () -> {};
+                }
+
+                public ScopedSpan startScopedSpan(String name) {
+                    return ScopedSpan.NOOP;
+                }
+
+                public Span.Builder spanBuilder() {
+                    return Builder.NOOP;
+                }
+
+                public TraceContext.Builder traceContextBuilder() {
+                    return io.micrometer.tracing.TraceContext.Builder.NOOP;
+                }
+
+                public CurrentTraceContext currentTraceContext() {
+                    return CurrentTraceContext.NOOP;
+                }
+
+                public SpanCustomizer currentSpanCustomizer() {
+                    return SpanCustomizer.NOOP;
+                }
+
+                public Span currentSpan() {
+                    return Span.NOOP;
+                }
+
+                public Map<String, String> getAllBaggage() {
+                    return BaggageManager.NOOP.getAllBaggage();
+                }
+
+                public Baggage getBaggage(String name) {
+                    return Baggage.NOOP;
+                }
+
+                public Baggage getBaggage(TraceContext traceContext, String name) {
+                    return Baggage.NOOP;
+                }
+
+                public Baggage createBaggage(String name) {
+                    return Baggage.NOOP;
+                }
+
+                public Baggage createBaggage(String name, String value) {
+                    return Baggage.NOOP;
+                }
+            };
         }
     }
 
@@ -140,7 +206,17 @@ class DubboMicrometerTracingAutoConfigurationTests {
 
         @Bean
         Propagator propagator() {
-            return mock(Propagator.class);
+            return new Propagator() {
+                public List<String> fields() {
+                    return Collections.emptyList();
+                }
+
+                public <C> void inject(TraceContext context, C carrier, Setter<C> setter) {}
+
+                public <C> Span.Builder extract(C carrier, Getter<C> getter) {
+                    return Builder.NOOP;
+                }
+            };
         }
     }
 
