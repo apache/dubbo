@@ -112,7 +112,7 @@
     <jakarta_servlet_version>6.1.0</jakarta_servlet_version>
     <jetty_version>9.4.57.v20241219</jetty_version>
     <validation_new_version>3.1.1</validation_new_version>
-    <validation_version>1.1.0.Final</validation_version>
+    <validation_version>2.0.1.Final</validation_version>
     <hibernate_validator_version>6.2.0.Final</hibernate_validator_version>
     <hibernate_validator_new_version>7.0.5.Final</hibernate_validator_new_version>
     <jel_version>3.0.1-b12</jel_version>
