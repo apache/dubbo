@@ -37,6 +37,9 @@ class DubboSpringInitCustomizerTest {
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
         SysProps.setProperty("dubbo.registry.address", ZookeeperRegistryCenterConfig.getConnectionAddress());
     }
 
