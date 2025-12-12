@@ -28,6 +28,7 @@ import org.apache.dubbo.validation.Validator;
 import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.MessageInterpolator;
 import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
 import javax.validation.groups.Default;
@@ -68,6 +69,8 @@ import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 
 /**
@@ -96,7 +99,11 @@ public class JValidator implements Validator {
                     .configure()
                     .buildValidatorFactory();
         } else {
-            factory = Validation.buildDefaultValidatorFactory();
+            MessageInterpolator messageInterpolator = new ParameterMessageInterpolator();
+            factory = Validation.byDefaultProvider()
+                    .configure()
+                    .messageInterpolator(messageInterpolator)
+                    .buildValidatorFactory();
         }
         this.validator = factory.getValidator();
         this.methodClassMap = new ConcurrentHashMap<>();

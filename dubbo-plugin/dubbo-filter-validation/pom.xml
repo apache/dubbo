@@ -29,9 +29,7 @@
   <description>The validation module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
     <el_api_version>2.2.5</el_api_version>
-    <jaxb_api_version>2.2.7</jaxb_api_version>
   </properties>
   <dependencies>
     <dependency>
@@ -50,8 +48,6 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator</artifactId>
-      <version>${hibernate_validator_version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>javax.el</groupId>
@@ -62,19 +58,16 @@
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>${jaxb_api_version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
-      <version>${jaxb_api_version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-core</artifactId>
-      <version>${jaxb_api_version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -63,7 +63,7 @@ public class TripleProtocol extends AbstractProtocol {
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
 
-    public static boolean CONVERT_NO_LOWER_HEADER = false;
+    public static boolean CONVERT_NO_LOWER_HEADER = true;
     public static boolean IGNORE_1_0_0_VERSION = false;
     public static boolean RESOLVE_FALLBACK_TO_DEFAULT = true;
     public static boolean VERBOSE_ENABLED = false;
