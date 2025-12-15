@@ -132,7 +132,7 @@
     <reactor.version>3.7.11</reactor.version>
     <mutiny.version>2.9.0</mutiny.version>
     <rxjava.version>2.2.21</rxjava.version>
-    <okhttp_version>4.9.2</okhttp_version>
+    <okhttp_version>4.12.0</okhttp_version>
 
     <rs_api_version>2.1.1</rs_api_version>
     <resteasy_version>3.15.6.Final</resteasy_version>
