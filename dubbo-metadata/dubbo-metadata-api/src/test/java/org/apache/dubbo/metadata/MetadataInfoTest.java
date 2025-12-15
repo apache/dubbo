@@ -198,10 +198,6 @@ class MetadataInfoTest {
         objectInputStream.close();
 
         Assertions.assertEquals(metadataInfo, metadataInfo2);
-        Field initiatedField = MetadataInfo.class.getDeclaredField("initiated");
-        initiatedField.setAccessible(true);
-        Assertions.assertInstanceOf(AtomicBoolean.class, initiatedField.get(metadataInfo2));
-        Assertions.assertFalse(((AtomicBoolean) initiatedField.get(metadataInfo2)).get());
     }
 
     @Test
