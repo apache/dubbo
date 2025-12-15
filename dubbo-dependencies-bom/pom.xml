@@ -151,7 +151,7 @@
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-    <log4j2_version>2.25.0</log4j2_version>
+    <log4j2_version>2.25.2</log4j2_version>
     <commons_io_version>2.19.0</commons_io_version>
     <commons-codec_version>1.18.0</commons-codec_version>
     <groovy_version>4.0.27</groovy_version>
