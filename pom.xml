@@ -157,7 +157,7 @@
     <build_helper_maven_plugin_version>3.6.1</build_helper_maven_plugin_version>
     <maven_jacoco_version>0.8.13</maven_jacoco_version>
     <maven_flatten_version>1.7.3</maven_flatten_version>
-    <maven_enforce_version>3.6.0</maven_enforce_version>
+    <maven_enforce_version>3.6.2</maven_enforce_version>
     <maven_antrun_version>3.1.0</maven_antrun_version>
     <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
     <maven_protobuf_plugin_version>0.6.1</maven_protobuf_plugin_version>
