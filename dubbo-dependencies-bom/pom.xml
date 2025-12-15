@@ -176,7 +176,7 @@
     <snappy_java_version>1.1.10.7</snappy_java_version>
     <bouncycastle-bcprov_version>1.81</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
-    <gson_version>2.13.1</gson_version>
+    <gson_version>2.13.2</gson_version>
     <jackson_version>2.19.1</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
