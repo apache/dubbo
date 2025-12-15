@@ -121,7 +121,7 @@
     <snakeyaml_version>2.4</snakeyaml_version>
     <commons_lang3_version>3.18.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.15.1</micrometer.version>
+    <micrometer.version>1.16.1</micrometer.version>
     <opentelemetry.version>1.54.1</opentelemetry.version>
     <zipkin-reporter.version>3.5.1</zipkin-reporter.version>
     <zipkin.version>3.5.1</zipkin.version>
