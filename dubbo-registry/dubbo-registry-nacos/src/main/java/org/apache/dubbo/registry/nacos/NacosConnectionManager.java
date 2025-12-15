@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.nacos.NacosAppNameUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
@@ -120,6 +121,8 @@ public class NacosConnectionManager {
      * @return {@link NamingService}
      */
     protected NamingService createNamingService() {
+        NacosAppNameUtils.maybeSetProjectName(connectionURL, null, logger);
+        Properties nacosProperties = buildNacosProperties(this.connectionURL);
         NamingService namingService = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {

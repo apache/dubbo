@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.nacos.NacosAppNameUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
@@ -94,6 +95,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     public NacosMetadataReport(URL url) {
         super(url);
+        NacosAppNameUtils.maybeSetProjectName(url, null, logger);
         this.configService = buildConfigService(url);
         group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
     }

@@ -17,6 +17,10 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.nacos.NacosAppNameUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,6 +43,121 @@ import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
 import static org.mockito.ArgumentMatchers.any;
 
 public class NacosConnectionsManagerTest {
+    @Test
+    void testSetProjectNameFromDubboApplicationNameWhenEnabled() {
+        String old = System.getProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+        String expectedAppName = "test-dubbo-app-for-nacos";
+        ApplicationModel applicationModel = FrameworkModel.defaultModel().newApplication();
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+            // force NacosFactory call succeed without connecting to server
+            NamingService mock = new MockNamingService() {
+                @Override
+                public String getServerStatus() {
+                    return UP;
+                }
+            };
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
+
+            System.clearProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+
+            // Set up ApplicationModel with a specific app name
+            applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(expectedAppName));
+
+            // URL has a scope model so application model is available; enable mapping by parameter
+            URL url = URL.valueOf("nacos://127.0.0.1:8848")
+                    .addParameter(NacosAppNameUtils.NACOS_SET_PROJECT_NAME_KEY, "true")
+                    .setScopeModel(applicationModel);
+
+            new NacosConnectionManager(url, false, 0, 0);
+
+            String projectName = System.getProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+            Assertions.assertEquals(expectedAppName, projectName, "project.name should equal dubbo application name");
+        } finally {
+            // restore to avoid global side effects across tests
+            if (old == null) {
+                System.clearProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+            } else {
+                System.setProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY, old);
+            }
+            applicationModel.destroy();
+        }
+    }
+
+    @Test
+    void testSetProjectNameSkippedWhenDisabled() {
+        String old = System.getProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+        ApplicationModel applicationModel = FrameworkModel.defaultModel().newApplication();
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+            NamingService mock = new MockNamingService() {
+                @Override
+                public String getServerStatus() {
+                    return UP;
+                }
+            };
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
+
+            System.clearProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+            applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("some-app"));
+
+            // nacos.set-project-name is NOT set (defaults to false)
+            URL url = URL.valueOf("nacos://127.0.0.1:8848").setScopeModel(applicationModel);
+
+            new NacosConnectionManager(url, false, 0, 0);
+
+            String projectName = System.getProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+            Assertions.assertNull(projectName, "project.name should NOT be set when feature is disabled");
+        } finally {
+            if (old == null) {
+                System.clearProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+            } else {
+                System.setProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY, old);
+            }
+            applicationModel.destroy();
+        }
+    }
+
+    @Test
+    void testSetProjectNameNotOverwriteExisting() {
+        String old = System.getProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+        String existingValue = "already-set-by-user";
+        ApplicationModel applicationModel = FrameworkModel.defaultModel().newApplication();
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+            NamingService mock = new MockNamingService() {
+                @Override
+                public String getServerStatus() {
+                    return UP;
+                }
+            };
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mock);
+
+            // Pre-set the system property
+            System.setProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY, existingValue);
+            applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("dubbo-app"));
+
+            URL url = URL.valueOf("nacos://127.0.0.1:8848")
+                    .addParameter(NacosAppNameUtils.NACOS_SET_PROJECT_NAME_KEY, "true")
+                    .setScopeModel(applicationModel);
+
+            new NacosConnectionManager(url, false, 0, 0);
+
+            String projectName = System.getProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+            Assertions.assertEquals(existingValue, projectName, "project.name should NOT be overwritten");
+        } finally {
+            if (old == null) {
+                System.clearProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY);
+            } else {
+                System.setProperty(NacosAppNameUtils.PROJECT_NAME_SYS_PROP_KEY, old);
+            }
+            applicationModel.destroy();
+        }
+    }
+
     @Test
     public void testGet() {
         NamingService namingService = Mockito.mock(NamingService.class);

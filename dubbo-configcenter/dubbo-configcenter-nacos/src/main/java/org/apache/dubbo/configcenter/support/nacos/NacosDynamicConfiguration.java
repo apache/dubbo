@@ -25,6 +25,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.nacos.NacosAppNameUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -93,6 +94,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private final MD5Utils md5Utils = new MD5Utils();
 
     NacosDynamicConfiguration(URL url, ApplicationModel applicationModel) {
+        NacosAppNameUtils.maybeSetProjectName(url, applicationModel, logger);
         this.nacosProperties = buildNacosProperties(url);
         this.configService = buildConfigService(url);
         this.watchListenerMap = new ConcurrentHashMap<>();
