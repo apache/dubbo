@@ -1103,7 +1103,7 @@
     <profile>
       <id>spring-boot-3</id>
       <properties>
-        <tomcat.version>10.1.42</tomcat.version>
+        <tomcat.version>10.1.50</tomcat.version>
       </properties>
       <dependencyManagement>
         <dependencies>
