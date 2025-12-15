@@ -25,12 +25,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.Collections;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -69,7 +67,7 @@ class MetadataReportInstanceTest {
     void test() {
         Assertions.assertNull(
                 metadataReportInstance.getMetadataReport(registryId), "the metadata report was not initialized.");
-        assertThat(metadataReportInstance.getMetadataReports(true), Matchers.anEmptyMap());
+        Assertions.assertTrue(metadataReportInstance.getMetadataReports(true).isEmpty());
 
         metadataReportInstance.init(Collections.singletonList(metadataReportConfig));
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryId);
