@@ -294,7 +294,7 @@ public class NacosRegistry extends FailbackRegistry {
                                     INTERFACE_KEY,
                                     serviceInterface,
                                     CommonConstants.APPLICATION_KEY,
-                                    url.getApplication(), // <-- Your actual fix
+                                    url.getApplication(),
                                     CHECK_KEY,
                                     String.valueOf(false));
                     notifySubscriber(subscriberURL, serviceName, listener, instances);
