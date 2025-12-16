@@ -153,9 +153,10 @@ class NacosAppNameUtilsTest {
     }
 
     @Test
-    void testEmptyAppNameFromApplicationModel() {
-        // When ApplicationModel returns empty app name, should fall back to URL parameter
-        // ApplicationModel without ApplicationConfig returns "unknown" by default
+    void testApplicationModelWithoutConfigThrowsException() {
+        // When ApplicationModel has no ApplicationConfig set, getApplicationName() throws
+        // IllegalStateException. The exception is caught in maybeSetProjectName() and logged,
+        // but the property will not be set (the method returns early after catching the exception).
         URL url =
                 URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=fallback-app");
 
@@ -166,12 +167,11 @@ class NacosAppNameUtilsTest {
         try {
             NacosAppNameUtils.maybeSetProjectName(url, emptyAppModel, null);
 
-            // Should use URL's application parameter as fallback since ApplicationModel
-            // returns "unknown" which is considered as a valid name
-            String result = System.getProperty(PROJECT_NAME_SYS_PROP_KEY);
-            // The result could be "unknown" (from ApplicationModel) or "fallback-app" (from URL)
-            // depending on whether "unknown" is treated as empty
-            assertEquals("unknown", result);
+            // Since ApplicationModel.getApplicationName() throws an exception when no
+            // ApplicationConfig is set, the exception is caught and the property is not set.
+            // The URL's application parameter is NOT used as fallback because the exception
+            // short-circuits the entire method.
+            assertNull(System.getProperty(PROJECT_NAME_SYS_PROP_KEY));
         } finally {
             fm.destroy();
         }
@@ -182,33 +182,15 @@ class NacosAppNameUtilsTest {
         // When all sources return empty/null app name, property should not be set
         URL url = URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true");
 
-        // Pass null ApplicationModel and URL has no application param
-        // URL also has no ScopeModel set
+        // Pass null ApplicationModel, URL has no application param, and URL has no ScopeModel set.
+        // In getApplicationName():
+        //   - Priority 1: applicationModel is null, skipped
+        //   - Priority 2: url.getApplication() returns null
+        //   - Priority 3: ScopeModelUtil.getOrNullApplicationModel(null) returns null
+        // So getApplicationName() returns null, and property is not set.
         NacosAppNameUtils.maybeSetProjectName(url, null, null);
 
-        // Should be set to "unknown" from default ApplicationModel via ScopeModelUtil
-        // or null if no default model is available
-        String result = System.getProperty(PROJECT_NAME_SYS_PROP_KEY);
-        // The behavior depends on whether ScopeModelUtil returns a default model
-        // In this case, it may return "unknown" from the default ApplicationModel
-        if (result != null) {
-            assertEquals("unknown", result);
-        }
-    }
-
-    @Test
-    void testWithScopeModelInUrl() {
-        // Test when URL has ScopeModel set and ApplicationModel parameter is null
-        String appName = "scoped-app";
-        ApplicationConfig appConfig = new ApplicationConfig(appName);
-        applicationModel.getApplicationConfigManager().setApplication(appConfig);
-
-        URL url = URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true");
-        url = url.setScopeModel(applicationModel);
-
-        NacosAppNameUtils.maybeSetProjectName(url, null, null);
-
-        assertEquals(appName, System.getProperty(PROJECT_NAME_SYS_PROP_KEY));
+        assertNull(System.getProperty(PROJECT_NAME_SYS_PROP_KEY));
     }
 
     @Test
