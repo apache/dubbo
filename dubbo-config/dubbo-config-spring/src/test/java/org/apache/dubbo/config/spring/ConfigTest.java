@@ -85,6 +85,8 @@ class ConfigTest {
     public void setUp() {
         SysProps.clear();
         DubboBootstrap.reset();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterEach

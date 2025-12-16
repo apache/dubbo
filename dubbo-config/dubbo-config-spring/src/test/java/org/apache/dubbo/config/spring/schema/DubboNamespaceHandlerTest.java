@@ -28,6 +28,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -63,11 +64,15 @@ class DubboNamespaceHandlerTest {
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterEach
     public void tearDown() {
         DubboBootstrap.reset();
+        SysProps.clear();
     }
 
     @Configuration
@@ -281,6 +286,8 @@ class DubboNamespaceHandlerTest {
 
     @Test
     void testMetricsPrometheus() {
+        SysProps.setProperty("dubbo.metrics.enabled", "true");
+        SysProps.setProperty("dubbo.metrics.protocol", "prometheus");
         ClassPathXmlApplicationContext ctx =
                 new ClassPathXmlApplicationContext(resourcePath + "/metrics-prometheus.xml");
         ctx.start();
