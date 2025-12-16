@@ -76,7 +76,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.19.0</version>
+      <version>2.21.0</version>
     </dependency>
 
     <!-- Takes no effect for this dependency. To notify github dependencies bot to update ${protobuf-java.version} property.  -->
