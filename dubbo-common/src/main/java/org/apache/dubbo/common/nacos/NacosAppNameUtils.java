@@ -30,6 +30,21 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
  * system property. Dubbo registry/configcenter/metadata modules only pass parameters filtered by
  * {@code PropertyKeyConst}, which does not include any app name key in nacos-client 2.x. This helper
  * optionally maps Dubbo application name to {@code project.name} when explicitly enabled.
+ *
+ * <h3>Thread Safety</h3>
+ * <p>
+ * This utility uses a best-effort approach and is <b>not strictly thread-safe</b>. There is a potential
+ * race condition between checking whether the system property exists and setting it. If multiple threads
+ * concurrently initialize Nacos connections (e.g., registry, config-center, and metadata-report), they may
+ * all pass the existence check and race to set the property. In practice, this is benign because:
+ * <ul>
+ *   <li>All competing threads typically resolve to the same application name</li>
+ *   <li>The property is only used for display purposes in Nacos Subscriber List</li>
+ *   <li>Once set, subsequent calls will see the property and skip the set operation</li>
+ * </ul>
+ * <p>
+ * If strict thread-safety is required, callers should synchronize externally or set the
+ * {@code project.name} system property before initializing any Nacos connections.
  */
 public final class NacosAppNameUtils {
 
@@ -61,26 +76,7 @@ public final class NacosAppNameUtils {
             return;
         }
         try {
-            String appName = null;
-
-            // Priority 1: explicitly passed ApplicationModel
-            if (applicationModel != null) {
-                appName = applicationModel.getApplicationName();
-            }
-
-            // Priority 2: URL's application parameter
-            if (StringUtils.isEmpty(appName)) {
-                appName = url.getApplication();
-            }
-
-            // Priority 3: resolve from URL's ScopeModel (may return default model with "unknown" name, so check last)
-            if (StringUtils.isEmpty(appName)) {
-                ApplicationModel model = ScopeModelUtil.getOrNullApplicationModel(url.getScopeModel());
-                if (model != null) {
-                    appName = model.getApplicationName();
-                }
-            }
-
+            String appName = getApplicationName(url, applicationModel);
             if (StringUtils.isEmpty(appName)) {
                 return;
             }
@@ -99,5 +95,41 @@ public final class NacosAppNameUtils {
                     PROJECT_NAME_SYS_PROP_KEY,
                     t);
         }
+    }
+
+    /**
+     * Resolves the application name from multiple sources with the following priority:
+     * <ol>
+     *   <li>Explicitly passed ApplicationModel</li>
+     *   <li>URL's application parameter</li>
+     *   <li>URL's ScopeModel (may return default model with "unknown" name, so checked last)</li>
+     * </ol>
+     *
+     * @param url              registry/config/metadata URL (must not be null)
+     * @param applicationModel optional application model
+     * @return the resolved application name, or null if not found from any source
+     */
+    private static String getApplicationName(URL url, ApplicationModel applicationModel) {
+        // Priority 1: explicitly passed ApplicationModel
+        if (applicationModel != null) {
+            String appName = applicationModel.getApplicationName();
+            if (StringUtils.isNotEmpty(appName)) {
+                return appName;
+            }
+        }
+
+        // Priority 2: URL's application parameter
+        String appName = url.getApplication();
+        if (StringUtils.isNotEmpty(appName)) {
+            return appName;
+        }
+
+        // Priority 3: resolve from URL's ScopeModel
+        ApplicationModel model = ScopeModelUtil.getOrNullApplicationModel(url.getScopeModel());
+        if (model != null) {
+            return model.getApplicationName();
+        }
+
+        return null;
     }
 }

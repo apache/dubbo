@@ -47,7 +47,7 @@ class NacosMetadataReportAppNameTest {
     }
 
     @Test
-    void shouldSetProjectNameWhenEnabled() throws NacosException {
+    void shouldSetProjectNameWhenEnabled() {
         try (MockedStatic<NacosFactory> nacosFactory = Mockito.mockStatic(NacosFactory.class)) {
             ConfigService mockConfig = Mockito.mock(ConfigService.class);
             Mockito.when(mockConfig.getServerStatus()).thenReturn("UP");
