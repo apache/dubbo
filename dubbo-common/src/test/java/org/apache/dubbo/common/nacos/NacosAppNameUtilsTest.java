@@ -115,7 +115,8 @@ class NacosAppNameUtilsTest {
         ApplicationConfig appConfig = new ApplicationConfig(appName);
         applicationModel.getApplicationConfigManager().setApplication(appConfig);
 
-        URL url = URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=url-app-name");
+        URL url =
+                URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=url-app-name");
 
         NacosAppNameUtils.maybeSetProjectName(url, applicationModel, null);
 
@@ -125,8 +126,8 @@ class NacosAppNameUtilsTest {
     @Test
     void testUrlApplicationParameterFallback() {
         // When ApplicationModel has no app name, URL's application parameter should be used
-        URL url = URL.valueOf(
-                "nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=url-app-name");
+        URL url =
+                URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=url-app-name");
 
         // Pass null ApplicationModel to skip priority 1
         NacosAppNameUtils.maybeSetProjectName(url, null, null);
@@ -155,8 +156,8 @@ class NacosAppNameUtilsTest {
     void testEmptyAppNameFromApplicationModel() {
         // When ApplicationModel returns empty app name, should fall back to URL parameter
         // ApplicationModel without ApplicationConfig returns "unknown" by default
-        URL url = URL.valueOf(
-                "nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=fallback-app");
+        URL url =
+                URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=fallback-app");
 
         // Create a new application model without setting ApplicationConfig
         FrameworkModel fm = new FrameworkModel();
@@ -250,8 +251,8 @@ class NacosAppNameUtilsTest {
         ApplicationConfig appConfig = new ApplicationConfig(scopeModelName);
         applicationModel.getApplicationConfigManager().setApplication(appConfig);
 
-        URL url = URL.valueOf(
-                "nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=" + urlAppName);
+        URL url =
+                URL.valueOf("nacos://127.0.0.1:8848?" + NACOS_SET_PROJECT_NAME_KEY + "=true&application=" + urlAppName);
         url = url.setScopeModel(applicationModel);
 
         NacosAppNameUtils.maybeSetProjectName(url, null, null);
@@ -260,4 +261,3 @@ class NacosAppNameUtilsTest {
         assertEquals(urlAppName, System.getProperty(PROJECT_NAME_SYS_PROP_KEY));
     }
 }
-
