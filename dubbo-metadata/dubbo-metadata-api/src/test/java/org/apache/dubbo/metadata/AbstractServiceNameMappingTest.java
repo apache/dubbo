@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,16 +28,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstructionWithAnswer;
-import static org.mockito.Mockito.when;
-import org.mockito.MockedConstruction;
-import org.junit.jupiter.api.AfterAll;
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
+import static org.mockito.Mockito.*;
 
 /**
  * @see AbstractServiceNameMapping
@@ -53,10 +47,15 @@ class AbstractServiceNameMappingTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        org.apache.dubbo.rpc.model.FrameworkModel frameworkModel = org.apache.dubbo.rpc.model.FrameworkModel.defaultModel();
-        frameworkModel.getBeanFactory().getOrRegisterBean(org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository.class);
-        org.apache.dubbo.config.context.ConfigManager configManager = Mockito.mock(org.apache.dubbo.config.context.ConfigManager.class);
-        org.apache.dubbo.config.ApplicationConfig appConfig = Mockito.mock(org.apache.dubbo.config.ApplicationConfig.class);
+        org.apache.dubbo.rpc.model.FrameworkModel frameworkModel =
+                org.apache.dubbo.rpc.model.FrameworkModel.defaultModel();
+        frameworkModel
+                .getBeanFactory()
+                .getOrRegisterBean(org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository.class);
+        org.apache.dubbo.config.context.ConfigManager configManager =
+                Mockito.mock(org.apache.dubbo.config.context.ConfigManager.class);
+        org.apache.dubbo.config.ApplicationConfig appConfig =
+                Mockito.mock(org.apache.dubbo.config.ApplicationConfig.class);
         Mockito.when(applicationModel.getFrameworkModel()).thenReturn(frameworkModel);
         Mockito.when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         Mockito.when(configManager.getApplication()).thenReturn(java.util.Optional.of(appConfig));

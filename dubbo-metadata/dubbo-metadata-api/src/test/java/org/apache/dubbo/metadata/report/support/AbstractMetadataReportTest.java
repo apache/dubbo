@@ -127,9 +127,9 @@ class AbstractMetadataReportTest {
     void testFileExistAfterPut() throws ClassNotFoundException {
         // just for one method
         String filePath = System.getProperty("user.home") + "/dubbo-md-unit.properties";
-        URL singleUrl = URL.valueOf(
-                "redis://" + NetUtils.getLocalAddress().getHostName()
-                        + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest&sync=true&file=" + filePath);
+        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName()
+                + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest&sync=true&file="
+                + filePath);
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl, applicationModel);
 
         assertFalse(singleMetadataReport.file.exists());
@@ -193,8 +193,9 @@ class AbstractMetadataReportTest {
         String version = "1.0.0.retrycancel";
         String group = null;
         String application = "vic.retry";
-        URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName()
-                + ":4444/org.apache.dubbo.TestServiceForRetryCancel?version=1.0.0.retrycancel&application=vic.retry&sync=true");
+        URL storeUrl = URL.valueOf(
+                "retryReport://" + NetUtils.getLocalAddress().getHostName()
+                        + ":4444/org.apache.dubbo.TestServiceForRetryCancel?version=1.0.0.retrycancel&application=vic.retry&sync=true");
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2, applicationModel);
         retryReport.metadataReportRetry.retryPeriod = 150L;
         retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
