@@ -24,7 +24,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -196,6 +198,11 @@ class MetadataInfoTest {
         objectInputStream.close();
 
         Assertions.assertEquals(metadataInfo, metadataInfo2);
+        Field initiatedField = MetadataInfo.class.getDeclaredField("initiated");
+        initiatedField.setAccessible(true);
+        Assertions.assertInstanceOf(AtomicBoolean.class, initiatedField.get(metadataInfo2));
+        Assertions.assertFalse(((AtomicBoolean) initiatedField.get(metadataInfo2)).get());
+
     }
 
     @Test
