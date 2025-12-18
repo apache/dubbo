@@ -202,7 +202,6 @@ class MetadataInfoTest {
         initiatedField.setAccessible(true);
         Assertions.assertInstanceOf(AtomicBoolean.class, initiatedField.get(metadataInfo2));
         Assertions.assertFalse(((AtomicBoolean) initiatedField.get(metadataInfo2)).get());
-
     }
 
     @Test
