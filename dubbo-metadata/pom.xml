@@ -34,5 +34,5 @@
     <module>dubbo-metadata-report-nacos</module>
   </modules>
 
-  <dependencies/>
+ 
 </project>
