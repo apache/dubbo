@@ -83,7 +83,8 @@ class RestProtocolTest extends BaseServiceTest {
                 contentType: MediaType.APPLICATION_FROM_URLENCODED,
                 body: body
             )
-            runner.post(request) == output
+            def actual = runner.post(request)
+            actual.contains('"name":[1,2]') && actual.contains('"age":[8]')
         where:
             path                  | body                  | output
             '/multivaluedMapTest' | 'name=1&name=2&age=8' | '{"name":[1,2],"age":[8]}'

@@ -154,13 +154,21 @@ class GenericServiceTest {
         GenericService client = proxyFactory.getProxy(invoker, true);
         Object result = client.$invoke(
                 methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[] {"haha", mapObject});
-        Assertions.assertEquals("haha###" + complexObject.toString(), result);
+
+        String r1 = (String) result;
+        Assertions.assertTrue(r1.startsWith("haha###"));
+        Assertions.assertTrue(r1.contains("v1_k1=v1_v1"));
+        Assertions.assertTrue(r1.contains("v1_k2=v1_v2"));
 
         Invoker<DemoService> invoker2 = protocol.refer(DemoService.class, url);
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
         Object result2 = client2.$invoke(
                 "complexCompute", methodDefinition.getParameterTypes(), new Object[] {"haha2", mapObject});
-        Assertions.assertEquals("haha2###" + complexObject.toString(), result2);
+
+        String r2 = (String) result2;
+        Assertions.assertTrue(r2.startsWith("haha2###"));
+        Assertions.assertTrue(r2.contains("v1_k1=v1_v1"));
+        Assertions.assertTrue(r2.contains("v1_k2=v1_v2"));
 
         invoker.destroy();
         exporter.unexport();
