@@ -474,9 +474,9 @@ public abstract class AbstractRegistry implements Registry {
             } catch (Throwable t) {
                 logger.warn(
                         INTERNAL_ERROR,
-                        "failed to load local cache",
+                        "failed to load cached URLs",
                         "",
-                        "Failed to load chached registry data for " + url,
+                        "Failed to load cached URLs for " + url,
                         t);
                 throw t;
             }
