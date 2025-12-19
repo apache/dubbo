@@ -1,1 +1,2 @@
 org.apache.dubbo.spring.boot.autoconfigure.DubboTriple3AutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.DubboTripleWebMvcConfiguration
