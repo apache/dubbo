@@ -33,5 +33,4 @@
     <module>dubbo-metadata-report-zookeeper</module>
     <module>dubbo-metadata-report-nacos</module>
   </modules>
-
 </project>
