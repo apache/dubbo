@@ -290,7 +290,13 @@ public class NacosRegistry extends FailbackRegistry {
                         serviceInterface = segments[SERVICE_INTERFACE_INDEX];
                     }
                     URL subscriberURL = url.setPath(serviceInterface)
-                            .addParameters(INTERFACE_KEY, serviceInterface, CHECK_KEY, String.valueOf(false));
+                            .addParameters(
+                                    INTERFACE_KEY,
+                                    serviceInterface,
+                                    CommonConstants.APPLICATION_KEY,
+                                    url.getApplication(),
+                                    CHECK_KEY,
+                                    String.valueOf(false));
                     notifySubscriber(subscriberURL, serviceName, listener, instances);
                     subscribeEventListener(serviceName, subscriberURL, listener);
                 }
