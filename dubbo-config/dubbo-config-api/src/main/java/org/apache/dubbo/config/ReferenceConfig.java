@@ -93,6 +93,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -349,20 +350,30 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 initServiceMetadata(consumer);
 
                 serviceMetadata.setServiceType(getServiceInterfaceClass());
-                // TODO, uncomment this line once service key is unified
+                boolean useIdl = false;
+
+                if (DubboStub.class.isAssignableFrom(interfaceClass) && ServiceNameConfig.useIdl(getScopeModel())) {
+                    try {
+                        ServiceDescriptor idlDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
+                        if (idlDescriptor != null && StringUtils.isNotEmpty(idlDescriptor.getInterfaceName())) {
+                            useIdl = true;
+                            serviceMetadata.setServiceInterfaceName(idlDescriptor.getInterfaceName());
+                        }
+                    } catch (Throwable t) {
+                        logger.warn(INTERNAL_ERROR, "unknown", "", "Failed to resolve IDL service name.", t);
+                    }
+                }
                 serviceMetadata.generateServiceKey();
 
                 Map<String, String> referenceParameters = appendConfig();
 
-                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-                ServiceDescriptor serviceDescriptor;
-                if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
-                    serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
-                    repository.registerService(serviceDescriptor);
-                    setInterface(serviceDescriptor.getInterfaceName());
-                } else {
-                    serviceDescriptor = repository.registerService(interfaceClass);
+                if (useIdl) {
+                    referenceParameters.put(CommonConstants.INTERFACE_KEY, serviceMetadata.getServiceInterfaceName());
                 }
+
+                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+                ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+
                 consumerModel = new ConsumerModel(
                         serviceMetadata.getServiceKey(),
                         proxy,

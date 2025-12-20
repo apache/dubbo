@@ -50,12 +50,14 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.ServerService;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.DubboStub;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.beans.Transient;
 import java.lang.reflect.Method;
@@ -318,6 +320,35 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         initServiceMetadata(provider);
         serviceMetadata.setServiceType(getInterfaceClass());
         serviceMetadata.setTarget(getRef());
+
+        // This handles scenarios where the package differs from the generated Java package.
+        if (DubboStub.class.isAssignableFrom(getInterfaceClass()) && ServiceNameConfig.useIdl(getScopeModel())) {
+            try {
+                ServiceDescriptor sd = StubSuppliers.getServiceDescriptor(interfaceName);
+                if (sd != null && StringUtils.isNotEmpty(sd.getInterfaceName())) {
+
+                    String idlName = sd.getInterfaceName();
+
+                    // Update the Service Metadata to use the IDL service name instead of the Java class name.
+                    serviceMetadata.setServiceInterfaceName(idlName);
+
+                    // Set IDL name into URL parameters so the registry registers this service using the
+                    // IDL-based name
+                    Map<String, String> params = this.getParameters();
+                    if (params == null) {
+                        params = new HashMap<>();
+                    } else {
+                        params = new HashMap<>(params);
+                    }
+                    params.put(CommonConstants.INTERFACE_KEY, idlName);
+                    this.setParameters(params);
+
+                    logger.info("Using IDL service name '" + idlName + "' for registration.");
+                }
+            } catch (Throwable t) {
+                logger.warn(INTERNAL_ERROR, "unknown", "", "Failed to resolve IDL service name", t);
+            }
+        }
         serviceMetadata.generateServiceKey();
     }
 
