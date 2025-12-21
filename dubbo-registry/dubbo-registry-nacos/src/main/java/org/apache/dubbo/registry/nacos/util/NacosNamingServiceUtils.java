@@ -172,13 +172,7 @@ public class NacosNamingServiceUtils {
                     v.wrapper.shutdown();
                 } catch (Exception e) {
                     logger.warn(
-                            REGISTRY_NACOS_EXCEPTION,
-                            "",
-                            "",
-                            "Failed to destroy naming service for key: " + key,
-                            e
-                    );
-
+                            REGISTRY_NACOS_EXCEPTION, "", "", "Failed to destroy naming service for key: " + key, e);
                 }
                 return null;
             }
