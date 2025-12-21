@@ -38,6 +38,7 @@ import com.alibaba.nacos.api.naming.utils.NamingUtils;
 
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 
 /**
  * The utilities class for {@link NamingService}
@@ -170,7 +171,14 @@ public class NacosNamingServiceUtils {
                     logger.info("Destroying shared NacosNamingService for key: {}", key);
                     v.wrapper.shutdown();
                 } catch (Exception e) {
-                    logger.warn("Failed to destroy naming service for key: " + key, e);
+                    logger.warn(
+                            REGISTRY_NACOS_EXCEPTION,
+                            "",
+                            "",
+                            "Failed to destroy naming service for key: " + key,
+                            e
+                    );
+
                 }
                 return null;
             }
