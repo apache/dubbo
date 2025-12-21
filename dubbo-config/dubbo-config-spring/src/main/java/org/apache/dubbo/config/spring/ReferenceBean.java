@@ -217,7 +217,17 @@ public class ReferenceBean<T>
 
     @Override
     public Class<?> getObjectType() {
-        return getInterfaceClass();
+        if (this.interfaceClass != null) {
+            return this.interfaceClass;
+        }
+        if (this.interfaceName != null) {
+            try {
+                return ClassUtils.forName(this.interfaceName, this.beanClassLoader);
+            } catch (ClassNotFoundException ignored) {
+                // ignore
+            }
+        }
+        return Object.class;
     }
 
     @Override
