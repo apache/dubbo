@@ -30,6 +30,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryNotifier;
+import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.RpcException;
@@ -608,9 +609,11 @@ public class NacosRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         try {
-            this.namingService.shutdown();
-        } catch (NacosException e) {
-            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to shutdown nacos naming service", e);
+            // Release the reference to the shared Nacos connection.
+            NacosNamingServiceUtils.releaseNamingService(getUrl());
+        } catch (Exception e) {
+            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "",
+                    "Unable to release nacos naming service", e);
         }
         this.nacosListeners.clear();
     }

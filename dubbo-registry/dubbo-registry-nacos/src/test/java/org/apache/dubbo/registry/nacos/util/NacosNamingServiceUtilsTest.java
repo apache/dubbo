@@ -32,6 +32,7 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -84,7 +85,7 @@ class NacosNamingServiceUtilsTest {
     }
 
     @Test
-    void testRetryCreate() throws NacosException {
+    void testRetryCreate() {
         try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
             AtomicInteger atomicInteger = new AtomicInteger(0);
             NamingService mock = new MockNamingService() {
@@ -102,6 +103,8 @@ class NacosNamingServiceUtilsTest {
                     .addParameter("nacos.retry-wait", 10);
             Assertions.assertThrows(
                     IllegalStateException.class, () -> NacosNamingServiceUtils.createNamingService(url));
+
+            NacosNamingServiceUtils.clearCacheForTest();
 
             try {
                 NacosNamingServiceUtils.createNamingService(url);
@@ -171,5 +174,10 @@ class NacosNamingServiceUtilsTest {
                 Assertions.fail(t);
             }
         }
+    }
+
+    @AfterEach
+    void tearDown() {
+        NacosNamingServiceUtils.clearCacheForTest();
     }
 }
