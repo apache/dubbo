@@ -167,7 +167,7 @@ public class NacosNamingServiceUtils {
 
             if (v.refCount.decrementAndGet() <= 0) {
                 try {
-                    logger.info("Destroying shared NacosNamingService for key: " + key);
+                    logger.info("Destroying shared NacosNamingService for key: {}", key);
                     v.wrapper.shutdown();
                 } catch (Exception e) {
                     logger.warn("Failed to destroy naming service for key: {}", key, e);
