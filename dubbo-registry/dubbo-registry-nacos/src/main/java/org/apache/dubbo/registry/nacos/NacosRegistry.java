@@ -612,8 +612,7 @@ public class NacosRegistry extends FailbackRegistry {
             // Release the reference to the shared Nacos connection.
             NacosNamingServiceUtils.releaseNamingService(getUrl());
         } catch (Exception e) {
-            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "",
-                    "Unable to release nacos naming service", e);
+            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to release nacos naming service", e);
         }
         this.nacosListeners.clear();
     }
