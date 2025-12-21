@@ -615,6 +615,7 @@ public class NacosRegistry extends FailbackRegistry {
             logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to release nacos naming service", e);
         }
         this.nacosListeners.clear();
+        this.originToAggregateListener.clear();
     }
 
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
