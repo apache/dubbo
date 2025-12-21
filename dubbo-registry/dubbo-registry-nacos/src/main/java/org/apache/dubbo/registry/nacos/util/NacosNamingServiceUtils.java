@@ -144,7 +144,7 @@ public class NacosNamingServiceUtils {
         // Create or retrieve the shared service holder.
         NacosNamingServiceHolder holder = SERVICE_CACHE.compute(key, (k, v) -> {
             if (v == null) {
-                logger.info("Creating shared NacosNamingService for key: " + key);
+                logger.info("Creating shared NacosNamingService for key: {}", key);
                 NacosNamingServiceWrapper newWrapper = createWrapperInternal(connectionURL);
                 v = new NacosNamingServiceHolder(newWrapper);
             }
@@ -170,7 +170,7 @@ public class NacosNamingServiceUtils {
                     logger.info("Destroying shared NacosNamingService for key: " + key);
                     v.wrapper.shutdown();
                 } catch (Exception e) {
-                    logger.warn("Failed to destroy naming service for key: " + key, e);
+                    logger.warn("Failed to destroy naming service for key: {}", key, e);
                 }
                 return null;
             }
