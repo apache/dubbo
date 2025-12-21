@@ -170,7 +170,7 @@ public class NacosNamingServiceUtils {
                     logger.info("Destroying shared NacosNamingService for key: {}", key);
                     v.wrapper.shutdown();
                 } catch (Exception e) {
-                    logger.warn("Failed to destroy naming service for key: {}", key, e);
+                    logger.warn("Failed to destroy naming service for key: " + key, e);
                 }
                 return null;
             }
