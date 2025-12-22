@@ -38,6 +38,7 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -195,13 +196,6 @@ public class NacosRegistry extends FailbackRegistry {
                     serviceNames.add(compatibleServiceName);
                 }
 
-                /**
-                 *  namingService.registerInstance with
-                 *  {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
-                 *  default {@link DEFAULT_GROUP}
-                 *
-                 * in https://github.com/apache/dubbo/issues/5978
-                 */
                 for (String service : serviceNames) {
                     namingService.registerInstance(service, getUrl().getGroup(Constants.DEFAULT_GROUP), instance);
                 }
@@ -262,16 +256,6 @@ public class NacosRegistry extends FailbackRegistry {
         try {
             if (isServiceNamesWithCompatibleMode(url)) {
 
-                /**
-                 * Get all instances with serviceNames to avoid instance overwrite and but with empty instance mentioned
-                 * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
-                 *
-                 * namingService.getAllInstances with
-                 * {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
-                 * default {@link DEFAULT_GROUP}
-                 *
-                 * in https://github.com/apache/dubbo/issues/5978
-                 */
                 for (String serviceName : serviceNames) {
                     List<Instance> instances = namingService.getAllInstancesWithoutSubscription(
                             serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
@@ -282,8 +266,7 @@ public class NacosRegistry extends FailbackRegistry {
                 }
             } else {
                 for (String serviceName : serviceNames) {
-                    List<Instance> instances = new LinkedList<>();
-                    instances.addAll(namingService.getAllInstancesWithoutSubscription(
+                    List<Instance> instances = new LinkedList<>(namingService.getAllInstancesWithoutSubscription(
                             serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP)));
                     String serviceInterface = serviceName;
                     String[] segments = serviceName.split(SERVICE_NAME_SEPARATOR, -1);
@@ -312,10 +295,8 @@ public class NacosRegistry extends FailbackRegistry {
 
     /**
      * Since 2.7.6 the legacy service name will be added to serviceNames to fix bug with
-     * https://github.com/apache/dubbo/issues/5442
+     * <a href="https://github.com/apache/dubbo/issues/5442">...</a>
      *
-     * @param url
-     * @return
      */
     private boolean isServiceNamesWithCompatibleMode(final URL url) {
         return !isAdminProtocol(url) && createServiceName(url).isConcrete();
@@ -413,18 +394,15 @@ public class NacosRegistry extends FailbackRegistry {
 
     private Set<String> filterServiceNames(NacosServiceName serviceName) {
         try {
-            Set<String> serviceNames = new LinkedHashSet<>();
-            serviceNames.addAll(
-                    namingService
-                            .getServicesOfServer(1, Integer.MAX_VALUE, getUrl().getGroup(Constants.DEFAULT_GROUP))
-                            .getData()
-                            .stream()
-                            .filter(this::isConformRules)
-                            .map(NacosServiceName::new)
-                            .filter(serviceName::isCompatible)
-                            .map(NacosServiceName::toString)
-                            .collect(Collectors.toList()));
-            return serviceNames;
+            return namingService
+                    .getServicesOfServer(1, Integer.MAX_VALUE, getUrl().getGroup(Constants.DEFAULT_GROUP))
+                    .getData()
+                    .stream()
+                    .filter(this::isConformRules)
+                    .map(NacosServiceName::new)
+                    .filter(serviceName::isCompatible)
+                    .map(NacosServiceName::toString)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         } catch (SkipFailbackWrapperException exception) {
             throw exception;
         } catch (Throwable cause) {
@@ -438,8 +416,6 @@ public class NacosRegistry extends FailbackRegistry {
     /**
      * Verify whether it is a dubbo service
      *
-     * @param serviceName
-     * @return
      * @since 2.7.12
      */
     private boolean isConformRules(String serviceName) {
@@ -511,14 +487,13 @@ public class NacosRegistry extends FailbackRegistry {
 
     private Set<String> getAllServiceNames() {
         try {
-            final Set<String> serviceNames = new LinkedHashSet<>();
             int pageIndex = 1;
             ListView<String> listView = namingService.getServicesOfServer(
                     pageIndex, PAGINATION_SIZE, getUrl().getGroup(Constants.DEFAULT_GROUP));
             // First page data
             List<String> firstPageData = listView.getData();
             // Append first page into list
-            serviceNames.addAll(firstPageData);
+            final Set<String> serviceNames = new LinkedHashSet<>(firstPageData);
             // the total count
             int count = listView.getCount();
             // the number of pages
@@ -622,7 +597,7 @@ public class NacosRegistry extends FailbackRegistry {
         consumerURL = removeParamsFromConsumer(consumerURL);
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
-        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
+        if (urls.isEmpty() && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
             logger.warn(
                     REGISTRY_NACOS_EXCEPTION,
                     "",
@@ -700,7 +675,7 @@ public class NacosRegistry extends FailbackRegistry {
     private void notifySubscriber(
             URL url, String serviceName, NacosAggregateListener listener, Collection<Instance> instances) {
         List<Instance> enabledInstances = new LinkedList<>(instances);
-        if (enabledInstances.size() > 0) {
+        if (!enabledInstances.isEmpty()) {
             //  Instances
             filterEnabledInstances(enabledInstances);
         }
@@ -716,7 +691,9 @@ public class NacosRegistry extends FailbackRegistry {
      * @return non-null array
      */
     private List<String> getCategories(URL url) {
-        return ANY_VALUE.equals(url.getServiceInterface()) ? ALL_SUPPORTED_CATEGORIES : Arrays.asList(DEFAULT_CATEGORY);
+        return ANY_VALUE.equals(url.getServiceInterface())
+                ? ALL_SUPPORTED_CATEGORIES
+                : Collections.singletonList(DEFAULT_CATEGORY);
     }
 
     private URL buildURL(URL consumerURL, Instance instance) {
@@ -773,7 +750,7 @@ public class NacosRegistry extends FailbackRegistry {
     private interface NacosDataFilter<T> {
 
         /**
-         * Tests whether or not the specified data should be accepted.
+         * Tests whether the specified data should be accepted.
          *
          * @param data The data to be tested
          * @return <code>true</code> if and only if <code>data</code>
