@@ -159,7 +159,7 @@
     <!-- Test libs -->
     <junit_jupiter_version>5.14.1</junit_jupiter_version>
     <junit_platform_version>1.13.1</junit_platform_version>
-    <junit_jupiter_version>5.12.2</junit_jupiter_version>
+    <junit_jupiter_version>5.14.1</junit_jupiter_version>
     <junit_platform_version>1.14.1</junit_platform_version>
     <awaitility_version>4.3.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
