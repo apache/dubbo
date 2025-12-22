@@ -198,10 +198,9 @@ public class NacosNamingServiceUtils {
                         REGISTRY_NACOS_EXCEPTION,
                         "",
                         "",
-                        "releaseNamingService called more times than createNamingService for key: {} (refCount={}). "
-                                + "This indicates a bug in caller lifecycle management.",
-                        key,
-                        left);
+                        "releaseNamingService called more times than createNamingService for key: "
+                                + key + " (refCount=" + left + "). "
+                                + "This indicates a bug in caller lifecycle management.");
                 try {
                     v.wrapper.shutdown();
                 } catch (Exception e) {
