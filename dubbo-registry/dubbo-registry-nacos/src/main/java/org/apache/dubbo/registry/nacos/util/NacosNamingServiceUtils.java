@@ -62,10 +62,11 @@ public class NacosNamingServiceUtils {
         final NacosNamingServiceWrapper wrapper;
 
         // Atomic counter to track usage.
-        final AtomicInteger refCount = new AtomicInteger(0);
+        final AtomicInteger refCount;
 
         NacosNamingServiceHolder(NacosNamingServiceWrapper wrapper) {
             this.wrapper = wrapper;
+            this.refCount = new AtomicInteger(1);
         }
     }
 
@@ -147,7 +148,7 @@ public class NacosNamingServiceUtils {
             if (v == null) {
                 logger.info("Creating shared NacosNamingService for key: {}", key);
                 NacosNamingServiceWrapper newWrapper = createWrapperInternal(connectionURL);
-                v = new NacosNamingServiceHolder(newWrapper);
+                return new NacosNamingServiceHolder(newWrapper);
             }
             v.refCount.incrementAndGet();
             return v;
@@ -156,17 +157,31 @@ public class NacosNamingServiceUtils {
         return holder.wrapper;
     }
 
-    // Release a previously acquired naming service reference.
+    /**
+     * Release a previously acquired {@link NacosNamingServiceWrapper} reference.
+     *
+     * <p>This method decrements the reference count associated with the normalized
+     * Nacos connection key. When the reference count reaches zero, the underlying
+     * {@link NacosNamingServiceWrapper} is shut down and removed from the cache.</p>
+     *
+     * <p>If the reference count becomes negative, it indicates a lifecycle bug
+     * (i.e. {@code releaseNamingService} was called more times than
+     * {@code createNamingService}).</p>
+     *
+     * @param connectionURL the registry connection URL used to identify the shared naming service
+     */
     public static void releaseNamingService(URL connectionURL) {
         String key = createNamingServiceCacheKey(connectionURL);
 
-        // Decrement the reference count and close the connection if it reaches zero.
         SERVICE_CACHE.compute(key, (k, v) -> {
             if (v == null) {
                 return null;
             }
 
-            if (v.refCount.decrementAndGet() <= 0) {
+            int left = v.refCount.decrementAndGet();
+
+            // If the count hits zero, this is the last user so we close the physical connection.
+            if (left == 0) {
                 try {
                     logger.info("Destroying shared NacosNamingService for key: {}", key);
                     v.wrapper.shutdown();
@@ -176,6 +191,24 @@ public class NacosNamingServiceUtils {
                 }
                 return null;
             }
+
+            // Error case: more releases than creates (unbalanced lifecycle)
+            if (left < 0) {
+                logger.warn(
+                        "releaseNamingService called more times than createNamingService for key: {} (refCount={})."
+                                + " This indicates a bug in caller lifecycle management.",
+                        key,
+                        left);
+                try {
+                    v.wrapper.shutdown();
+                } catch (Exception e) {
+                    logger.warn(
+                            REGISTRY_NACOS_EXCEPTION, "", "", "Failed to destroy naming service for key: " + key, e);
+                }
+                v.refCount.set(0);
+                return null;
+            }
+
             return v;
         });
     }
@@ -185,8 +218,13 @@ public class NacosNamingServiceUtils {
      * connection URL and configured retry options.
      */
     private static NacosNamingServiceWrapper createWrapperInternal(URL connectionURL) {
+
+        // Use of normalized URL for connection identity / cache key. This ensures
+        // registry.group differences don't create separate physical connections.
         URL normalized = normalizeConnectionURL(connectionURL);
 
+        // We do NOT embed them into the cache key because they represent per-creation behavior,
+        // not part of the identity of the physical Nacos server/namespace.
         boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
         int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 10);
@@ -201,14 +239,26 @@ public class NacosNamingServiceUtils {
     }
 
     /**
-     * Normalizes the URL by removing group parameters and sorting the server address list.
-     * This method removes grouping parameters and standardizes the server address list
+     * Normalize a Nacos registry connection URL for connection reuse.
+     *
+     * <p>This method produces a standard form of the connection URL that is
+     * suitable for use as a cache key. It performs the following normalization steps:</p>
+     *
+     * <p>Removes group-related parameters, since grouping affects only service
+     * registration semantics and not the underlying physical Nacos connection.</p>
+     *
+     * <p>Standardizes the server address list by trimming, sorting, and rejoining
+     * addresses, ensuring that different address orders map to the same connection.</p>
+     *
+     * @param connectionURL the original registry connection URL
+     * @return a normalized URL representing the unique physical Nacos connection
      */
     private static URL normalizeConnectionURL(URL connectionURL) {
-        URL normalized = URL.valueOf(connectionURL.toServiceStringWithoutResolving())
-                .removeParameter(GROUP_KEY)
-                .removeParameter(NACOS_GROUP_KEY);
 
+        // Start from the original URL to preserve all parameters
+        URL normalized = connectionURL.removeParameter(GROUP_KEY).removeParameter(NACOS_GROUP_KEY);
+
+        // Standardize server addresses for stable cache keys
         String serverAddr = normalized.getParameter("serverAddr", normalized.getAddress());
         if (serverAddr != null) {
             String canonical = Arrays.stream(serverAddr.split(","))
@@ -223,5 +273,9 @@ public class NacosNamingServiceUtils {
 
     static void clearCacheForTest() {
         SERVICE_CACHE.clear();
+    }
+
+    static int getCacheSizeForTest() {
+        return SERVICE_CACHE.size();
     }
 }
