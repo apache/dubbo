@@ -196,6 +196,13 @@ public class NacosRegistry extends FailbackRegistry {
                     serviceNames.add(compatibleServiceName);
                 }
 
+                /**
+                 *  namingService.registerInstance with
+                 *  {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
+                 *  default {@link DEFAULT_GROUP}
+                 *
+                 * in https://github.com/apache/dubbo/issues/5978
+                 */
                 for (String service : serviceNames) {
                     namingService.registerInstance(service, getUrl().getGroup(Constants.DEFAULT_GROUP), instance);
                 }
@@ -256,6 +263,16 @@ public class NacosRegistry extends FailbackRegistry {
         try {
             if (isServiceNamesWithCompatibleMode(url)) {
 
+                /**
+                 * Get all instances with serviceNames to avoid instance overwrite and but with empty instance mentioned
+                 * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                 *
+                 * namingService.getAllInstances with
+                 * {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
+                 * default {@link DEFAULT_GROUP}
+                 *
+                 * in https://github.com/apache/dubbo/issues/5978
+                 */
                 for (String serviceName : serviceNames) {
                     List<Instance> instances = namingService.getAllInstancesWithoutSubscription(
                             serviceName, getUrl().getGroup(Constants.DEFAULT_GROUP));
