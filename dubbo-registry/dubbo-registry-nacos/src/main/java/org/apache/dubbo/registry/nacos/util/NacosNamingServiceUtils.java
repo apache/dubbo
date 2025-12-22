@@ -195,8 +195,7 @@ public class NacosNamingServiceUtils {
             // Error case: more releases than creates (unbalanced lifecycle)
             if (left < 0) {
                 logger.warn(
-                        "releaseNamingService called more times than createNamingService for key: {} (refCount={})."
-                                + " This indicates a bug in caller lifecycle management.",
+                        "releaseNamingService called more times than createNamingService for key: {} (refCount={}). This indicates a bug in caller lifecycle management.",
                         key,
                         left);
                 try {
