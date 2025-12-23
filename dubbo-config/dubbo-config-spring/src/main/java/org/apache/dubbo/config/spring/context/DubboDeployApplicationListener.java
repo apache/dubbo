@@ -77,7 +77,8 @@ public class DubboDeployApplicationListener implements SmartLifecycle, Applicati
                 shutdownPhase = Math.max(Integer.MIN_VALUE + 1, Integer.parseInt(configured.trim()));
             }
         } catch (Exception e) {
-            logger.warn("Invalid value for {}: {}", DUBBO_SHUTDOWN_PHASE_KEY, e.getMessage());
+            logger.warn(
+                    CONFIG_FAILED_START_MODEL, "", "", "Invalid value for property: " + DUBBO_SHUTDOWN_PHASE_KEY, e);
         }
 
         // listen deploy events and publish DubboApplicationStateEvent
@@ -214,7 +215,8 @@ public class DubboDeployApplicationListener implements SmartLifecycle, Applicati
             try {
                 callback.run();
             } catch (Throwable t) {
-                logger.warn("Exception while executing SmartLifecycle stop callback: " + t.getMessage(), t);
+                logger.warn(
+                        CONFIG_STOP_DUBBO_ERROR, "", "", "Exception while executing SmartLifecycle stop callback", t);
             }
         }
     }
@@ -245,7 +247,7 @@ public class DubboDeployApplicationListener implements SmartLifecycle, Applicati
                 try {
                     DubboSpringInitializer.remove(applicationContext);
                 } catch (Throwable t) {
-                    logger.warn("Failed to remove DubboSpringInitializer binding: " + t.getMessage(), t);
+                    logger.warn(CONFIG_STOP_DUBBO_ERROR, "", "", "Failed to remove DubboSpringInitializer binding", t);
                 }
             }
         } else {
@@ -253,7 +255,12 @@ public class DubboDeployApplicationListener implements SmartLifecycle, Applicati
             try {
                 DubboSpringInitializer.remove(applicationContext);
             } catch (Throwable t) {
-                logger.warn("Failed to remove DubboSpringInitializer binding on second stop: " + t.getMessage(), t);
+                logger.warn(
+                        CONFIG_STOP_DUBBO_ERROR,
+                        "",
+                        "",
+                        "Failed to remove DubboSpringInitializer binding on repeated stop",
+                        t);
             }
         }
     }
