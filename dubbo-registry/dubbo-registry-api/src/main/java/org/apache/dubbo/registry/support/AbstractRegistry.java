@@ -463,21 +463,17 @@ public abstract class AbstractRegistry implements Registry {
         Set<NotifyListener> listeners =
                 ConcurrentHashMapUtils.computeIfAbsent(subscribed, url, n -> new ConcurrentHashSet<>());
         listeners.add(listener);
-        if(localCacheEnabled && !isAvailable()){
-            try{
-                List<URL> cached=getCacheUrls(url);
-                if(CollectionUtils.isNotEmpty(cached)){
+        if (localCacheEnabled && !isAvailable()) {
+            try {
+                List<URL> cached = getCacheUrls(url);
+                if (CollectionUtils.isNotEmpty(cached)) {
                     listener.notify(cached);
                     logger.info("Registry unavailable or not yet ready. Loaded cached URLs for " + url.getServiceKey()
                             + " : " + cached.size());
                 }
             } catch (Throwable t) {
                 logger.warn(
-                        INTERNAL_ERROR,
-                        "failed to load cached URLs",
-                        "",
-                        "Failed to load cached URLs for " + url,
-                        t);
+                        INTERNAL_ERROR, "failed to load cached URLs", "", "Failed to load cached URLs for " + url, t);
                 throw t;
             }
         }
