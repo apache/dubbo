@@ -154,7 +154,7 @@
     <log4j2_version>2.25.3</log4j2_version>
     <commons_io_version>2.21.0</commons_io_version>
     <commons-codec_version>1.20.0</commons-codec_version>
-    <groovy_version>4.0.27</groovy_version>
+    <groovy_version>4.0.29</groovy_version>
 
     <!-- Test libs -->
     <junit_jupiter_version>5.14.1</junit_jupiter_version>
