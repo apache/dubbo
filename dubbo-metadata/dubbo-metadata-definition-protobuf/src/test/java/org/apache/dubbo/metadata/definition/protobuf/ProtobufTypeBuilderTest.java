@@ -27,11 +27,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * 2019-07-01
@@ -54,36 +51,34 @@ class ProtobufTypeBuilderTest {
             }
         }
         Map<String, String> propertiesMap = typeDefinition.getProperties();
-        assertThat(propertiesMap.size(), is(11));
-        assertThat(propertiesMap.containsKey("money"), is(true));
-        assertThat(getTypeName(propertiesMap.get("money"), types), equalTo("double"));
-        assertThat(propertiesMap.containsKey("cash"), is(true));
-        assertThat(getTypeName(propertiesMap.get("cash"), types), equalTo("float"));
-        assertThat(propertiesMap.containsKey("age"), is(true));
-        assertThat(getTypeName(propertiesMap.get("age"), types), equalTo("int"));
-        assertThat(propertiesMap.containsKey("num"), is(true));
-        assertThat(getTypeName(propertiesMap.get("num"), types), equalTo("long"));
-        assertThat(propertiesMap.containsKey("sex"), is(true));
-        assertThat(getTypeName(propertiesMap.get("sex"), types), equalTo("boolean"));
-        assertThat(propertiesMap.containsKey("name"), is(true));
-        assertThat(getTypeName(propertiesMap.get("name"), types), equalTo("java.lang.String"));
-        assertThat(propertiesMap.containsKey("msg"), is(true));
-        assertThat(getTypeName(propertiesMap.get("msg"), types), equalTo("com.google.protobuf.ByteString"));
-        assertThat(propertiesMap.containsKey("phone"), is(true));
-        assertThat(
-                getTypeName(propertiesMap.get("phone"), types),
-                equalTo("java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>"));
-        assertThat(propertiesMap.containsKey("doubleMap"), is(true));
-        assertThat(
-                getTypeName(propertiesMap.get("doubleMap"), types),
-                equalTo(
-                        "java.util.Map<java.lang.String,org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>"));
-        assertThat(
-                getTypeName(propertiesMap.get("bytesList"), types),
-                equalTo("java.util.List<com.google.protobuf.ByteString>"));
-        assertThat(
-                getTypeName(propertiesMap.get("bytesMap"), types),
-                equalTo("java.util.Map<java.lang.String,com.google.protobuf.ByteString>"));
+        Assertions.assertEquals(11, propertiesMap.size());
+        Assertions.assertTrue(propertiesMap.containsKey("money"));
+        Assertions.assertEquals("double", getTypeName(propertiesMap.get("money"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("cash"));
+        Assertions.assertEquals("float", getTypeName(propertiesMap.get("cash"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("age"));
+        Assertions.assertEquals("int", getTypeName(propertiesMap.get("age"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("num"));
+        Assertions.assertEquals("long", getTypeName(propertiesMap.get("num"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("sex"));
+        Assertions.assertEquals("boolean", getTypeName(propertiesMap.get("sex"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("name"));
+        Assertions.assertEquals("java.lang.String", getTypeName(propertiesMap.get("name"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("msg"));
+        Assertions.assertEquals("com.google.protobuf.ByteString", getTypeName(propertiesMap.get("msg"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("phone"));
+        Assertions.assertEquals(
+                "java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>",
+                getTypeName(propertiesMap.get("phone"), types));
+        Assertions.assertTrue(propertiesMap.containsKey("doubleMap"));
+        Assertions.assertEquals(
+                "java.util.Map<java.lang.String,org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>",
+                getTypeName(propertiesMap.get("doubleMap"), types));
+        Assertions.assertEquals(
+                "java.util.List<com.google.protobuf.ByteString>", getTypeName(propertiesMap.get("bytesList"), types));
+        Assertions.assertEquals(
+                "java.util.Map<java.lang.String,com.google.protobuf.ByteString>",
+                getTypeName(propertiesMap.get("bytesMap"), types));
     }
 
     private static String getTypeName(String type, List<TypeDefinition> types) {
