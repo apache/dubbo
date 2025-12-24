@@ -45,7 +45,12 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 
 /**
- * An ApplicationListener to control Dubbo application.
+ * Integrates Dubbo lifecycle management with Spring.
+ *
+ * <p>Uses {@link SmartLifecycle} to ensure Dubbo starts automatically with the
+ * Spring context and shuts down last to support graceful shutdown.
+ * The legacy name {@code DubboDeployApplicationListener} is retained for
+ * backward compatibility.</p>
  */
 public class DubboDeployApplicationListener implements SmartLifecycle, ApplicationContextAware, Ordered {
 
@@ -68,17 +73,25 @@ public class DubboDeployApplicationListener implements SmartLifecycle, Applicati
         this.applicationModel = DubboBeanUtils.getApplicationModel(applicationContext);
         this.moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
 
+        String configuredValue = null;
         try {
             // Parse the user-configured shutdown phase.
             // Spring stops SmartLifecycle beans in descending phase order.
             // To ensure Dubbo shuts down LAST, we use a very LOW phase value by default.
-            String configured = ConfigurationUtils.getProperty(moduleModel, DUBBO_SHUTDOWN_PHASE_KEY);
-            if (configured != null) {
-                shutdownPhase = Math.max(Integer.MIN_VALUE + 1, Integer.parseInt(configured.trim()));
+            configuredValue = ConfigurationUtils.getProperty(moduleModel, DUBBO_SHUTDOWN_PHASE_KEY);
+            if (configuredValue != null) {
+                int parsed = Integer.parseInt(configuredValue.trim());
+                shutdownPhase = Math.max(Integer.MIN_VALUE + 1, parsed);
             }
+        } catch (NumberFormatException nfe) {
+            String msg = "Invalid integer value for property: " + DUBBO_SHUTDOWN_PHASE_KEY
+                    + " = '" + configuredValue + "'. "
+                    + "Expected an integer between " + (Integer.MIN_VALUE + 1) + " and " + Integer.MAX_VALUE + ".";
+            logger.warn(CONFIG_FAILED_START_MODEL, "", "", msg, nfe);
         } catch (Exception e) {
-            logger.warn(
-                    CONFIG_FAILED_START_MODEL, "", "", "Invalid value for property: " + DUBBO_SHUTDOWN_PHASE_KEY, e);
+            String msg = "Failed to read property: " + DUBBO_SHUTDOWN_PHASE_KEY + ". Using default shutdown phase = "
+                    + shutdownPhase + ".";
+            logger.warn(CONFIG_FAILED_START_MODEL, "", "", msg, e);
         }
 
         // listen deploy events and publish DubboApplicationStateEvent
@@ -193,6 +206,7 @@ public class DubboDeployApplicationListener implements SmartLifecycle, Applicati
                             "",
                             "",
                             "Interrupted while waiting for dubbo module start: " + e.getMessage());
+                    running.set(false);
                 } catch (Exception e) {
                     logger.warn(CONFIG_FAILED_START_MODEL, "", "", "Error starting dubbo module: " + e.getMessage(), e);
                     // If start fails, reset the running state to allow proper shutdown
