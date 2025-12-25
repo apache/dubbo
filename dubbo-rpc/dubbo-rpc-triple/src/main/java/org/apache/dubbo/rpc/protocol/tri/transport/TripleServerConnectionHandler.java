@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.api.GoAwayEvent;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -97,7 +98,13 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        super.userEventTriggered(ctx, evt);
+        if (evt instanceof GoAwayEvent) {
+            // Handle GoAwayEvent by initiating graceful shutdown
+            // This will send HTTP/2 GOAWAY frame to notify clients
+            close(ctx, ctx.newPromise());
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
     }
 
     @Override

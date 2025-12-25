@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.GracefulShutdown;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -93,6 +94,8 @@ public class DubboShutdownHook extends Thread {
         for (GracefulShutdown gracefulShutdown : gracefulShutdowns) {
             gracefulShutdown.readonly();
         }
+        // close all exchangers to reject new requests
+        PortUnificationExchanger.goaway();
 
         boolean hasModuleBindSpring = false;
         // check if any modules are bound to Spring

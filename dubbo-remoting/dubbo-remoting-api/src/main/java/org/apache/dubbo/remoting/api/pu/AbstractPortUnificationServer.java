@@ -103,4 +103,6 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         // this getter is just used by implementation of this class
         return supportedHandlers;
     }
+
+    public abstract void goaway();
 }

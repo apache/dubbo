@@ -37,7 +37,8 @@ public class PortUnificationExchanger {
 
     private static final ErrorTypeAwareLogger log =
             LoggerFactory.getErrorTypeAwareLogger(PortUnificationExchanger.class);
-    private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
+
+    private static final ConcurrentMap<String, AbstractPortUnificationServer> servers = new ConcurrentHashMap<>();
 
     public static RemotingServer bind(URL url, ChannelHandler handler) {
         ConcurrentHashMapUtils.computeIfAbsent(servers, url.getAddress(), addr -> {
@@ -52,7 +53,7 @@ public class PortUnificationExchanger {
         });
 
         servers.computeIfPresent(url.getAddress(), (addr, server) -> {
-            ((AbstractPortUnificationServer) server).addSupportedProtocol(url, handler);
+            server.addSupportedProtocol(url, handler);
             return server;
         });
         return servers.get(url.getAddress());
@@ -69,9 +70,9 @@ public class PortUnificationExchanger {
     }
 
     public static void close() {
-        final ArrayList<RemotingServer> toClose = new ArrayList<>(servers.values());
+        final ArrayList<AbstractPortUnificationServer> toClose = new ArrayList<>(servers.values());
         servers.clear();
-        for (RemotingServer server : toClose) {
+        for (AbstractPortUnificationServer server : toClose) {
             try {
                 server.close();
             } catch (Throwable throwable) {
@@ -80,8 +81,18 @@ public class PortUnificationExchanger {
         }
     }
 
+    public static void goaway() {
+        for (AbstractPortUnificationServer server : servers.values()) {
+            try {
+                server.goaway();
+            } catch (Throwable throwable) {
+                log.error(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Goaway all port unification server failed", throwable);
+            }
+        }
+    }
+
     // for test
-    public static ConcurrentMap<String, RemotingServer> getServers() {
+    public static ConcurrentMap<String, AbstractPortUnificationServer> getServers() {
         return servers;
     }
 

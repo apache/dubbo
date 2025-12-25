@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.GoAwayEvent;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
@@ -84,6 +85,20 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     public void close() {
         if (channel != null) {
             doClose();
+        }
+    }
+
+    @Override
+    public void goaway() {
+        for (Channel channel : getChannels()) {
+            channel.startClose();
+            // Fire GoAwayEvent through Netty pipeline to trigger protocol-specific graceful shutdown
+            // For HTTP/2 (Triple protocol), TripleServerConnectionHandler will handle this event
+            // and send Http2GoAwayFrame to notify clients
+            // For other protocols (e.g., Dubbo), this event will be ignored
+            if (channel instanceof NettyChannel) {
+                ((NettyChannel) channel).getNioChannel().pipeline().fireUserEventTriggered(GoAwayEvent.INSTANCE);
+            }
         }
     }
 
