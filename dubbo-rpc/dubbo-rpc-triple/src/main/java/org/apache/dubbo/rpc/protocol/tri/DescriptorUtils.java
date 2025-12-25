@@ -100,11 +100,6 @@ public final class DescriptorUtils {
                     .get(0);
         } else {
             List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
-            // try lower-case method
-            if (CollectionUtils.isEmpty(methodDescriptors)) {
-                String lowerMethod = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
-                methodDescriptors = serviceDescriptor.getMethods(lowerMethod);
-            }
             if (CollectionUtils.isEmpty(methodDescriptors)) {
                 return null;
             }

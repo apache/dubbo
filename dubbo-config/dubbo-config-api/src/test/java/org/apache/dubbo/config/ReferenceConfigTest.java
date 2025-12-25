@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -141,6 +142,9 @@ class ReferenceConfigTest {
     public void setUp() throws Exception {
         DubboBootstrap.reset();
         FrameworkModel.destroyAll();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
         ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -149,6 +153,7 @@ class ReferenceConfigTest {
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
         FrameworkModel.destroyAll();
+        SysProps.clear();
         Mockito.framework().clearInlineMocks();
     }
 
@@ -940,9 +945,10 @@ class ReferenceConfigTest {
                 .getDefaultModule()
                 .getConfigManager()
                 .getReferences();
-        List<ReferenceConfigBase<?>> results = references.stream()
-                .filter(rc -> rc.equals(references.iterator().next()))
-                .collect(Collectors.toList());
+        Iterator<ReferenceConfigBase<?>> it = references.iterator();
+        ReferenceConfigBase<?> first = it.next();
+        List<ReferenceConfigBase<?>> results =
+                references.stream().filter(first::equals).collect(Collectors.toList());
         long t2 = System.currentTimeMillis();
         long cost = t2 - t1;
         logger.info("Search large references cost: {}ms", cost);

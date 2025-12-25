@@ -52,10 +52,14 @@ class JavaConfigBeanTest {
     @BeforeEach
     public void beforeEach() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterEach
     public void afterEach() {
+        DubboBootstrap.reset();
         SysProps.clear();
     }
 
