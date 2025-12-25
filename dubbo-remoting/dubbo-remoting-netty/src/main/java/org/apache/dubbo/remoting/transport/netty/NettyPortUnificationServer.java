@@ -72,6 +72,16 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     @Override
+    public void goaway() {
+        // Netty 3 does not support HTTP/2 (Triple protocol), so we only need to mark channels as closing.
+        // The actual graceful shutdown for Dubbo protocol is handled by sending READONLY_EVENT
+        // through DubboGracefulShutdown.readonly() before this method is called.
+        for (Channel channel : getChannels()) {
+            channel.startClose();
+        }
+    }
+
+    @Override
     public void close() {
         if (channel != null) {
             doClose();
