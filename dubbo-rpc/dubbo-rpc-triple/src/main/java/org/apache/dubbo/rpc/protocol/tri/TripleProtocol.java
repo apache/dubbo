@@ -194,8 +194,11 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(url.getOrDefaultApplicationModel(), url);
-        AbstractConnectionClient connectionClient = Http3Exchanger.isEnabled(url) ? Http3Exchanger.connect(url) : PortUnificationExchanger.connect(url, new DefaultPuHandler());
-        TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings, connectionClient, invokers, streamExecutor);
+        AbstractConnectionClient connectionClient = Http3Exchanger.isEnabled(url)
+                ? Http3Exchanger.connect(url)
+                : PortUnificationExchanger.connect(url, new DefaultPuHandler());
+        TripleInvoker<T> invoker =
+                new TripleInvoker<>(type, url, acceptEncodings, connectionClient, invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
     }
@@ -203,7 +206,8 @@ public class TripleProtocol extends AbstractProtocol {
     private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
                 .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
-        ExecutorService executor = ExecutorRepository.getInstance(applicationModel).createExecutorIfAbsent(url);
+        ExecutorService executor =
+                ExecutorRepository.getInstance(applicationModel).createExecutorIfAbsent(url);
         Objects.requireNonNull(executor, String.format("No available executor found in %s", url));
         return executor;
     }

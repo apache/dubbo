@@ -296,8 +296,12 @@ public class NettyServer extends AbstractServer {
                     fireChannelEventToChannel(channel, event);
                 }
             } catch (Throwable e) {
-                logger.warn(TRANSPORT_FAILED_CLOSE, "", "",
-                        "Failed to fire channel event to channel: " + channel + ", event: " + event, e);
+                logger.warn(
+                        TRANSPORT_FAILED_CLOSE,
+                        "",
+                        "",
+                        "Failed to fire channel event to channel: " + channel + ", event: " + event,
+                        e);
             }
         }
     }

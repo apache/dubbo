@@ -204,7 +204,11 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     public void fireChannelEvent(ChannelEvent event) {
         // Default implementation does nothing.
         // Subclasses can override this method to implement protocol-specific event handling.
-        logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "",
-                "The fireChannelEvent method is not implemented for " + getClass().getName() + ", event: " + event);
+        logger.warn(
+                INTERNAL_ERROR,
+                "unknown error in remoting module",
+                "",
+                "The fireChannelEvent method is not implemented for "
+                        + getClass().getName() + ", event: " + event);
     }
 }

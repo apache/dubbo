@@ -22,5 +22,4 @@ package org.apache.dubbo.remoting;
  * Different protocols can interpret and handle these events in their own way.
  * This provides a generic mechanism for sending custom events to channels.
  */
-public interface ChannelEvent {
-}
+public interface ChannelEvent {}

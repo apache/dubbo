@@ -31,6 +31,5 @@ public class ReadOnlyEvent implements ChannelEvent {
 
     public static final ReadOnlyEvent INSTANCE = new ReadOnlyEvent();
 
-    private ReadOnlyEvent() {
-    }
+    private ReadOnlyEvent() {}
 }

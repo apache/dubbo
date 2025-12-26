@@ -32,6 +32,5 @@ public class WriteableEvent implements ChannelEvent {
 
     public static final WriteableEvent INSTANCE = new WriteableEvent();
 
-    private WriteableEvent() {
-    }
+    private WriteableEvent() {}
 }

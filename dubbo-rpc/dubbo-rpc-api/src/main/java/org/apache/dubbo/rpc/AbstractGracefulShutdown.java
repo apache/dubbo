@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelEvent;
 
 import java.util.Collection;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
@@ -33,8 +32,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
  */
 public abstract class AbstractGracefulShutdown implements GracefulShutdown {
 
-    protected final ErrorTypeAwareLogger logger =
-            LoggerFactory.getErrorTypeAwareLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     /**
      * Get the collection of protocol servers.
@@ -54,8 +52,8 @@ public abstract class AbstractGracefulShutdown implements GracefulShutdown {
                 server.getRemotingServer().fireChannelEvent(event);
             }
         } catch (Throwable e) {
-            logger.warn(TRANSPORT_FAILED_CLOSE_STREAM, "", "",
-                    "Failed to fire channel event during graceful shutdown.", e);
+            logger.warn(
+                    TRANSPORT_FAILED_CLOSE_STREAM, "", "", "Failed to fire channel event during graceful shutdown.", e);
         }
     }
 }
