@@ -28,7 +28,6 @@ import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -48,14 +47,13 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
     }
 
     private void initialize() {
-        MetricsConfig metricsConfig =
-                applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
-
-        // Resolved TODO: Removed legacy protocol check as the new metrics mechanism is ready.
-        if (metricsConfig != null && metricsService == null) {
-            this.metricsService =
-                    applicationModel.getExtensionLoader(MetricsService.class).getDefaultExtension();
-        }
+        applicationModel.getApplicationConfigManager().getMetrics().ifPresent(metricsConfig -> {
+            if (metricsService == null) {
+                this.metricsService = applicationModel
+                        .getExtensionLoader(MetricsService.class)
+                        .getDefaultExtension();
+            }
+        });
     }
 
     @Override
@@ -67,27 +65,36 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
     public MetricsServiceExporter export() {
         if (metricsService != null) {
             if (!isExported()) {
+                MetricsConfig metricsConfig = applicationModel
+                        .getApplicationConfigManager()
+                        .getMetrics()
+                        .orElse(null);
+
+                if (metricsConfig == null) {
+                    return this;
+                }
+
                 ExecutorService internalServiceExecutor = applicationModel
                         .getFrameworkModel()
                         .getBeanFactory()
                         .getBean(FrameworkExecutorRepository.class)
                         .getInternalServiceExecutor();
-                ServiceConfig<MetricsService> serviceConfig = InternalServiceConfigBuilder.<MetricsService>newBuilder(
+
+                ServiceConfig<MetricsService> sc = InternalServiceConfigBuilder.<MetricsService>newBuilder(
                                 applicationModel)
                         .interfaceClass(MetricsService.class)
-                        .port(getMetricsConfig().getExportServicePort())
+                        .port(metricsConfig.getExportServicePort())
                         .executor(internalServiceExecutor)
                         .ref(metricsService)
-                        .registryId("internal-metrics-registry")
                         .build();
 
                 // export
-                serviceConfig.export();
+                sc.export();
+                this.serviceConfig = sc;
 
                 if (logger.isInfoEnabled()) {
-                    logger.info("The MetricsService exports url : " + serviceConfig.getExportedUrls());
+                    logger.info("The MetricsService exports url : " + sc.getExportedUrls());
                 }
-                this.serviceConfig = serviceConfig;
             } else {
                 if (logger.isWarnEnabled()) {
                     logger.warn(
@@ -99,7 +106,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
             }
         } else {
             if (logger.isInfoEnabled()) {
-                logger.info("The MetricsConfig not exist, will not export metrics service.");
+                logger.info("The MetricsService is not initialized, skip export.");
             }
         }
 
@@ -110,18 +117,9 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
     public MetricsServiceExporter unexport() {
         if (isExported()) {
             serviceConfig.unexport();
+            serviceConfig = null;
         }
         return this;
-    }
-
-    private MetricsConfig getMetricsConfig() {
-        Optional<MetricsConfig> metricsConfig =
-                applicationModel.getApplicationConfigManager().getMetrics();
-        if (metricsConfig.isPresent()) {
-            return metricsConfig.get();
-        } else {
-            throw new IllegalStateException("There's no MetricsConfig specified.");
-        }
     }
 
     private boolean isExported() {
