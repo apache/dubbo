@@ -350,7 +350,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!connectionClient.isConnected()) {
             return false;
         }
-        if (connectionClient.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)){
+        if (connectionClient.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
             return false;
         }
         return true;
