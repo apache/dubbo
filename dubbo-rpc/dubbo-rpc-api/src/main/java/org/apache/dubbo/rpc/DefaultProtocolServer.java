@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.dubbo;
+package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.rpc.ProtocolServer;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DubboProtocolServer implements ProtocolServer {
+public class DefaultProtocolServer implements ProtocolServer {
 
     private final RemotingServer server;
     private String address;
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
-    public DubboProtocolServer(RemotingServer server) {
+    public DefaultProtocolServer(RemotingServer server) {
         this.server = server;
     }
 

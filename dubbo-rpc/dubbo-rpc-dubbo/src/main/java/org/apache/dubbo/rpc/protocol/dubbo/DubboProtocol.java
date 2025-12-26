@@ -35,6 +35,7 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.remoting.utils.UrlUtils;
+import org.apache.dubbo.rpc.DefaultProtocolServer;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -426,7 +427,7 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Unsupported client type: " + transporter);
         }
 
-        DubboProtocolServer protocolServer = new DubboProtocolServer(server);
+        DefaultProtocolServer protocolServer = new DefaultProtocolServer(server);
         loadServerProperties(protocolServer);
         return protocolServer;
     }

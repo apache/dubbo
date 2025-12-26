@@ -14,37 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.dubbo;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.remoting.event.ReadOnlyEvent;
-import org.apache.dubbo.remoting.event.WriteableEvent;
 import org.apache.dubbo.rpc.AbstractGracefulShutdown;
 import org.apache.dubbo.rpc.ProtocolServer;
 
 import java.util.Collection;
 
 /**
- * Dubbo protocol graceful shutdown implementation.
+ * Triple protocol graceful shutdown implementation.
  * <p>
- * For Dubbo protocol, graceful shutdown sends READONLY_EVENT to all connected clients,
- * telling them that the server is going to shut down and they should switch to other providers.
+ * For Triple protocol (HTTP/2), graceful shutdown sends GOAWAY frames to all connected clients,
+ * telling them not to send new requests. Existing streams can continue until completion.
  * </p>
  * <p>
- * Dubbo protocol also supports WRITEABLE_EVENT to resume normal operation if graceful shutdown
- * is cancelled.
+ * Triple protocol does not support writeable event because GOAWAY is a one-way notification
+ * that cannot be reversed. Once a GOAWAY frame is sent, the connection is in graceful shutdown mode.
  * </p>
  */
-public class DubboGracefulShutdown extends AbstractGracefulShutdown {
+public class TripleGracefulShutdown extends AbstractGracefulShutdown {
 
-    private final DubboProtocol dubboProtocol;
+    private final TripleProtocol tripleProtocol;
 
-    public DubboGracefulShutdown(DubboProtocol dubboProtocol) {
-        this.dubboProtocol = dubboProtocol;
+    public TripleGracefulShutdown(TripleProtocol tripleProtocol) {
+        this.tripleProtocol = tripleProtocol;
     }
 
     @Override
     protected Collection<ProtocolServer> getServers() {
-        return dubboProtocol.getServers();
+        return tripleProtocol.getServers();
     }
 
     @Override
@@ -54,6 +53,8 @@ public class DubboGracefulShutdown extends AbstractGracefulShutdown {
 
     @Override
     public void writeable() {
-        fireChannelEvent(WriteableEvent.INSTANCE);
+        // Triple protocol (HTTP/2) doesn't support writeable event
+        // because GOAWAY is a one-way notification that cannot be reversed.
+        // Once a GOAWAY frame is sent, the connection is in graceful shutdown mode.
     }
 }

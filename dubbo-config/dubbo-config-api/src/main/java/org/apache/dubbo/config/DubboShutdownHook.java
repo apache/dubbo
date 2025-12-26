@@ -87,13 +87,6 @@ public class DubboShutdownHook extends Thread {
         int timeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
         ConfigurationUtils.setExpectedShutdownTime(System.currentTimeMillis() + timeout);
 
-        // send readonly for shutdown hook
-        List<GracefulShutdown> gracefulShutdowns =
-                GracefulShutdown.getGracefulShutdowns(applicationModel.getFrameworkModel());
-        for (GracefulShutdown gracefulShutdown : gracefulShutdowns) {
-            gracefulShutdown.readonly();
-        }
-
         boolean hasModuleBindSpring = false;
         // check if any modules are bound to Spring
         for (ModuleModel module : applicationModel.getModuleModels()) {

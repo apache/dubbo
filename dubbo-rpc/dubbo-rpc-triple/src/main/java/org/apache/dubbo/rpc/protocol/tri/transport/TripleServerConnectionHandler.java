@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.event.ReadOnlyEvent;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -97,8 +98,16 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof ReadOnlyEvent) {
+            GracefulShutdown.sendGoAwayFrame(ctx);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Sent GOAWAY frame for graceful shutdown (ReadOnlyEvent) on channel: " + ctx.channel());
+            }
+            return;
+        }
         super.userEventTriggered(ctx, evt);
     }
+
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

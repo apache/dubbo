@@ -20,12 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
+import org.apache.dubbo.rpc.DefaultProtocolServer;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -91,6 +94,8 @@ public class TripleProtocol extends AbstractProtocol {
 
         ServletExchanger.init(globalConf);
         Http3Exchanger.init(globalConf);
+
+        this.frameworkModel.getBeanFactory().registerBean(new TripleGracefulShutdown(this));
     }
 
     @Override
@@ -175,7 +180,11 @@ public class TripleProtocol extends AbstractProtocol {
         }
 
         if (bindPort) {
-            PortUnificationExchanger.bind(url, new DefaultPuHandler());
+            String addr = url.getAddress();
+            ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, k -> {
+                RemotingServer remotingServer = PortUnificationExchanger.bind(url, new DefaultPuHandler());
+                return new DefaultProtocolServer(remotingServer);
+            });
         }
 
         Http3Exchanger.bind(url);
@@ -185,11 +194,8 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(url.getOrDefaultApplicationModel(), url);
-        AbstractConnectionClient connectionClient = Http3Exchanger.isEnabled(url)
-                ? Http3Exchanger.connect(url)
-                : PortUnificationExchanger.connect(url, new DefaultPuHandler());
-        TripleInvoker<T> invoker =
-                new TripleInvoker<>(type, url, acceptEncodings, connectionClient, invokers, streamExecutor);
+        AbstractConnectionClient connectionClient = Http3Exchanger.isEnabled(url) ? Http3Exchanger.connect(url) : PortUnificationExchanger.connect(url, new DefaultPuHandler());
+        TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings, connectionClient, invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
     }
@@ -197,8 +203,7 @@ public class TripleProtocol extends AbstractProtocol {
     private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
                 .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
-        ExecutorService executor =
-                ExecutorRepository.getInstance(applicationModel).createExecutorIfAbsent(url);
+        ExecutorService executor = ExecutorRepository.getInstance(applicationModel).createExecutorIfAbsent(url);
         Objects.requireNonNull(executor, String.format("No available executor found in %s", url));
         return executor;
     }

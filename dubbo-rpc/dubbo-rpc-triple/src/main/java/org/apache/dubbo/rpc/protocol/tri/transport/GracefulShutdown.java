@@ -33,6 +33,7 @@ import io.netty.util.concurrent.Future;
 public class GracefulShutdown {
     static final long GRACEFUL_SHUTDOWN_PING = 0x97ACEF001L;
     private static final long GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(10);
+    private static final String READONLY_GOAWAY_MESSAGE = "server_readonly";
     private final ChannelHandlerContext ctx;
     private final ChannelPromise originPromise;
     private final String goAwayMessage;
@@ -45,11 +46,26 @@ public class GracefulShutdown {
         this.originPromise = originPromise;
     }
 
-    public void gracefulShutdown() {
-        Http2GoAwayFrame goAwayFrame =
-                new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil.writeAscii(ctx.alloc(), goAwayMessage));
+    /**
+     * Send GOAWAY frame to notify the client that the server is going to shutdown.
+     * This method only sends the GOAWAY frame without closing the connection.
+     * <p>
+     * The GOAWAY frame with extraStreamIds set to Integer.MAX_VALUE indicates that
+     * the server will not accept new streams but existing streams can continue.
+     * </p>
+     *
+     * @param ctx the channel handler context
+     */
+    public static void sendGoAwayFrame(ChannelHandlerContext ctx) {
+        Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(
+                Http2Error.NO_ERROR, ByteBufUtil.writeAscii(ctx.alloc(), READONLY_GOAWAY_MESSAGE));
         goAwayFrame.setExtraStreamIds(Integer.MAX_VALUE);
         ctx.writeAndFlush(goAwayFrame);
+    }
+
+    public void gracefulShutdown() {
+        sendGoAwayFrame(ctx);
+
         pingFuture = ctx.executor()
                 .schedule(() -> secondGoAwayAndClose(ctx), GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS, TimeUnit.NANOSECONDS);
 
