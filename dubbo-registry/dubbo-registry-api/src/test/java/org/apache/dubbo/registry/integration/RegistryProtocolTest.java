@@ -28,17 +28,23 @@ import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.client.migration.MigrationRuleListener;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
+import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
 import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -114,7 +120,7 @@ class RegistryProtocolTest {
                 .getApplicationModel()
                 .getApplicationConfigManager()
                 .setApplication(new ApplicationConfig("application1"));
-        ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
+        ExtensionLoader extensionLoaderMock = mock(ExtensionLoader.class);
         Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class))
                 .thenReturn(extensionLoaderMock);
         Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
@@ -127,7 +133,7 @@ class RegistryProtocolTest {
 
         Invoker<?> invoker = registryProtocol.doRefer(cluster, registry, DemoService.class, url, parameters);
 
-        Assertions.assertTrue(invoker instanceof MigrationInvoker);
+        Assertions.assertInstanceOf(MigrationInvoker.class, invoker);
 
         URL consumerUrl = ((MigrationInvoker<?>) invoker).getConsumerUrl();
         Assertions.assertTrue((consumerUrl != null));
@@ -195,7 +201,7 @@ class RegistryProtocolTest {
 
         Invoker<?> invoker = registryProtocol.doRefer(cluster, registry, DemoService.class, url, parameters);
 
-        Assertions.assertTrue(invoker instanceof MigrationInvoker);
+        Assertions.assertInstanceOf(MigrationInvoker.class, invoker);
 
         URL consumerUrl = ((MigrationInvoker<?>) invoker).getConsumerUrl();
         Assertions.assertTrue((consumerUrl != null));
@@ -263,15 +269,15 @@ class RegistryProtocolTest {
 
         Invoker<?> invoker = registryProtocol.refer(DemoService.class, url);
 
-        Assertions.assertTrue(invoker instanceof MigrationInvoker);
-        Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof ScopeClusterWrapper);
-        Assertions.assertTrue(
-                ((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster()
-                        instanceof MockClusterWrapper);
-        Assertions.assertTrue(
+        Assertions.assertInstanceOf(MigrationInvoker.class, invoker);
+        Assertions.assertInstanceOf(ScopeClusterWrapper.class, ((MigrationInvoker<?>) invoker).getCluster());
+        Assertions.assertInstanceOf(
+                MockClusterWrapper.class,
+                ((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster());
+        Assertions.assertInstanceOf(
+                FailoverCluster.class,
                 ((MockClusterWrapper) ((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster())
-                                .getCluster()
-                        instanceof FailoverCluster);
+                        .getCluster());
     }
 
     /**
@@ -330,9 +336,9 @@ class RegistryProtocolTest {
 
         Invoker<?> invoker = registryProtocol.refer(DemoService.class, url);
 
-        Assertions.assertTrue(invoker instanceof MigrationInvoker);
+        Assertions.assertInstanceOf(MigrationInvoker.class, invoker);
 
-        Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof ScopeClusterWrapper);
+        Assertions.assertInstanceOf(ScopeClusterWrapper.class, ((MigrationInvoker<?>) invoker).getCluster());
         //        Assertions.assertTrue(((ScopeClusterWrapper) ((MigrationInvoker<?>)
         // invoker).getCluster()).getCluster() instanceof MockClusterWrapper);
 
@@ -525,7 +531,7 @@ class RegistryProtocolTest {
 
         Invoker<?> invoker = registryProtocol.doRefer(cluster, registry, DemoService.class, url, parameters);
 
-        Assertions.assertTrue(invoker instanceof MigrationInvoker);
+        Assertions.assertInstanceOf(MigrationInvoker.class, invoker);
 
         URL consumerUrl = ((MigrationInvoker<?>) invoker).getConsumerUrl();
         Assertions.assertTrue((consumerUrl != null));
@@ -543,5 +549,105 @@ class RegistryProtocolTest {
                 .setScopeModel(moduleModel);
 
         verify(registry, times(1)).register(registeredConsumerUrl);
+    }
+
+    /**
+     * Verifies that multiple ServiceConfigurationListeners registered for the same
+     * service are preserved and that their configurators are applied cumulatively.
+     */
+    @Test
+    void testServiceConfigurationListenersAggregation() throws Exception {
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("test-app"));
+
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+
+        ModuleModel moduleModel = ApplicationModel.defaultModel().getDefaultModule();
+
+        Map<String, String> params = new HashMap<>();
+        params.put(INTERFACE_KEY, DemoService.class.getName());
+
+        ServiceConfigURL providerUrl =
+                new ServiceConfigURL("dubbo", "127.0.0.1", 20880, DemoService.class.getName(), params);
+
+        URL url = providerUrl.setScopeModel(moduleModel);
+
+        Invoker<?> invoker = mock(Invoker.class);
+        when(invoker.getUrl()).thenReturn(url);
+
+        Class<?> overrideListenerClass = null;
+        for (Class<?> c : RegistryProtocol.class.getDeclaredClasses()) {
+            if ("OverrideListener".equals(c.getSimpleName())) {
+                overrideListenerClass = c;
+                break;
+            }
+        }
+        Assertions.assertNotNull(overrideListenerClass);
+
+        Constructor<?> ctor =
+                overrideListenerClass.getDeclaredConstructor(RegistryProtocol.class, URL.class, Invoker.class);
+        ctor.setAccessible(true);
+
+        Object listener1 = ctor.newInstance(registryProtocol, url, invoker);
+        Object listener2 = ctor.newInstance(registryProtocol, url, invoker);
+
+        Method method =
+                RegistryProtocol.class.getDeclaredMethod("overrideUrlWithConfig", URL.class, overrideListenerClass);
+        method.setAccessible(true);
+
+        method.invoke(registryProtocol, url, listener1);
+        method.invoke(registryProtocol, url, listener2);
+
+        Field field = RegistryProtocol.class.getDeclaredField("serviceConfigurationListeners");
+        field.setAccessible(true);
+
+        @SuppressWarnings("unchecked")
+        Map<String, CopyOnWriteArrayList<?>> map = (Map<String, CopyOnWriteArrayList<?>>) field.get(registryProtocol);
+
+        CopyOnWriteArrayList<?> listeners = map.get(url.getServiceKey());
+        Assertions.assertEquals(2, listeners.size());
+
+        Field cfgField = listeners.get(0).getClass().getSuperclass().getDeclaredField("configurators");
+        cfgField.setAccessible(true);
+
+        Configurator c1 = new Configurator() {
+            public URL configure(URL u) {
+                return u.addParameter("a", "1");
+            }
+
+            public URL getUrl() {
+                return URL.valueOf("override://0.0.0.0");
+            }
+        };
+        Configurator c2 = new Configurator() {
+            public URL configure(URL u) {
+                return u.addParameter("b", "2");
+            }
+
+            public URL getUrl() {
+                return URL.valueOf("override://0.0.0.0");
+            }
+        };
+
+        List<Configurator> l1 = new ArrayList<>();
+        l1.add(c1);
+
+        List<Configurator> l2 = new ArrayList<>();
+        l2.add(c2);
+
+        cfgField.set(listeners.get(0), l1);
+        cfgField.set(listeners.get(1), l2);
+
+        Method agg = RegistryProtocol.class.getDeclaredMethod("getConfiguredInvokerUrl", List.class, URL.class);
+        agg.setAccessible(true);
+
+        URL result = url;
+        for (Object l : listeners) {
+            @SuppressWarnings("unchecked")
+            List<Configurator> cs = (List<Configurator>) cfgField.get(l);
+            result = (URL) agg.invoke(null, cs, result);
+        }
+
+        Assertions.assertEquals("1", result.getParameter("a"));
+        Assertions.assertEquals("2", result.getParameter("b"));
     }
 }
