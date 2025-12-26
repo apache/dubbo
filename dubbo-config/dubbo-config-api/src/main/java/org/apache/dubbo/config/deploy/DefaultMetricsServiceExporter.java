@@ -31,10 +31,6 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
-
 /**
  * Export metrics service
  */
@@ -54,21 +50,11 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
     private void initialize() {
         MetricsConfig metricsConfig =
                 applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
-        // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
+
+        // Resolved TODO: Removed legacy protocol check as the new metrics mechanism is ready.
         if (metricsConfig != null && metricsService == null) {
-            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
-            if (PROTOCOL_DEFAULT.equals(protocol) || PROTOCOL_PROMETHEUS.equals(protocol)) {
-                this.metricsService = applicationModel
-                        .getExtensionLoader(MetricsService.class)
-                        .getDefaultExtension();
-            } else {
-                logger.warn(
-                        COMMON_METRICS_COLLECTOR_EXCEPTION,
-                        "",
-                        "",
-                        "Protocol " + protocol + " not support for new metrics mechanism. "
-                                + "Using old metrics mechanism instead.");
-            }
+            this.metricsService =
+                    applicationModel.getExtensionLoader(MetricsService.class).getDefaultExtension();
         }
     }
 
@@ -100,7 +86,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
                 serviceConfig.export();
 
                 if (logger.isInfoEnabled()) {
-                    logger.info("The MetricsService exports urls : " + serviceConfig.getExportedUrls());
+                    logger.info("The MetricsService exports url : " + serviceConfig.getExportedUrls());
                 }
                 this.serviceConfig = serviceConfig;
             } else {
