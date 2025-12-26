@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -75,7 +75,6 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
                 ServiceConfig<MetricsService> serviceConfig = InternalServiceConfigBuilder.<MetricsService>newBuilder(
                                 applicationModel)
                         .interfaceClass(MetricsService.class)
-                        .protocol(getMetricsConfig().getExportServiceProtocol())
                         .port(getMetricsConfig().getExportServicePort())
                         .executor(internalServiceExecutor)
                         .ref(metricsService)
@@ -89,43 +88,4 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
                     logger.info("The MetricsService exports url : " + serviceConfig.getExportedUrls());
                 }
                 this.serviceConfig = serviceConfig;
-            } else {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(
-                            LoggerCodeConstants.INTERNAL_ERROR,
-                            "",
-                            "",
-                            "The MetricsService has been exported : " + serviceConfig.getExportedUrls());
-                }
             }
-        } else {
-            if (logger.isInfoEnabled()) {
-                logger.info("The MetricsConfig not exist, will not export metrics service.");
-            }
-        }
-
-        return this;
-    }
-
-    @Override
-    public MetricsServiceExporter unexport() {
-        if (isExported()) {
-            serviceConfig.unexport();
-        }
-        return this;
-    }
-
-    private MetricsConfig getMetricsConfig() {
-        Optional<MetricsConfig> metricsConfig =
-                applicationModel.getApplicationConfigManager().getMetrics();
-        if (metricsConfig.isPresent()) {
-            return metricsConfig.get();
-        } else {
-            throw new IllegalStateException("There's no MetricsConfig specified.");
-        }
-    }
-
-    private boolean isExported() {
-        return serviceConfig != null && serviceConfig.isExported() && !serviceConfig.isUnexported();
-    }
-}
