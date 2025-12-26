@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.deploy;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,22 +32,17 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Export metrics service
+ * Default implementation for MetricsServiceExporter.
  */
 public class DefaultMetricsServiceExporter implements MetricsServiceExporter, ScopeModelAware {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
-
     private ApplicationModel applicationModel;
     private MetricsService metricsService;
     private volatile ServiceConfig<MetricsService> serviceConfig;
 
     @Override
     public void init() {
-        initialize();
-    }
-
-    private void initialize() {
         applicationModel.getApplicationConfigManager().getMetrics().ifPresent(metricsConfig -> {
             if (metricsService == null) {
                 this.metricsService = applicationModel
@@ -63,66 +59,67 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
 
     @Override
     public MetricsServiceExporter export() {
-        if (metricsService != null) {
-            if (!isExported()) {
-                MetricsConfig metricsConfig = applicationModel
-                        .getApplicationConfigManager()
-                        .getMetrics()
-                        .orElse(null);
+        if (metricsService != null && !isExported()) {
+            MetricsConfig metricsConfig =
+                    applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
 
-                if (metricsConfig == null) {
-                    return this;
-                }
+            if (metricsConfig == null || metricsConfig.getExportServicePort() == null) {
+                return this;
+            }
 
+            try {
                 ExecutorService internalServiceExecutor = applicationModel
                         .getFrameworkModel()
                         .getBeanFactory()
                         .getBean(FrameworkExecutorRepository.class)
                         .getInternalServiceExecutor();
 
-                ServiceConfig<MetricsService> sc = InternalServiceConfigBuilder.<MetricsService>newBuilder(
-                                applicationModel)
-                        .interfaceClass(MetricsService.class)
-                        .port(metricsConfig.getExportServicePort())
-                        .executor(internalServiceExecutor)
-                        .ref(metricsService)
-                        .build();
+                // Explicitly use the builder with the interface class to ensure type safety
+                InternalServiceConfigBuilder<MetricsService> builder =
+                        InternalServiceConfigBuilder.newBuilder(applicationModel);
 
-                // export
+                builder.interfaceClass(MetricsService.class)
+                        .ref(metricsService)
+                        .protocol(CommonConstants.DUBBO_PROTOCOL)
+                        .port(metricsConfig.getExportServicePort())
+                        .executor(internalServiceExecutor);
+
+                // In 3.3.x, if we want to disable registration, we often just don't provide registry configs
+                // but some environments require setting registryIds to null or empty.
+                // If .registryIds(Collections.emptyList()) failed, try removing it or using null.
+
+                ServiceConfig<MetricsService> sc = builder.build();
+
                 sc.export();
                 this.serviceConfig = sc;
 
                 if (logger.isInfoEnabled()) {
                     logger.info("The MetricsService exports url : " + sc.getExportedUrls());
                 }
-            } else {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(
-                            LoggerCodeConstants.INTERNAL_ERROR,
-                            "",
-                            "",
-                            "The MetricsService has been exported : " + serviceConfig.getExportedUrls());
-                }
-            }
-        } else {
-            if (logger.isInfoEnabled()) {
-                logger.info("The MetricsService is not initialized, skip export.");
+            } catch (Exception e) {
+                logger.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Failed to export MetricsService", e);
             }
         }
-
         return this;
     }
 
     @Override
     public MetricsServiceExporter unexport() {
         if (isExported()) {
-            serviceConfig.unexport();
-            serviceConfig = null;
+            try {
+                ServiceConfig<MetricsService> sc = this.serviceConfig;
+                if (sc != null) {
+                    sc.unexport();
+                }
+            } finally {
+                serviceConfig = null;
+            }
         }
         return this;
     }
 
     private boolean isExported() {
-        return serviceConfig != null && serviceConfig.isExported() && !serviceConfig.isUnexported();
+        ServiceConfig<MetricsService> sc = this.serviceConfig;
+        return sc != null && sc.isExported() && !sc.isUnexported();
     }
 }
