@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.junit.jupiter.api.AfterEach;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
@@ -53,5 +50,4 @@ class ServiceBeanTest {
     }
 
     abstract class TestService implements Service {}
-
 }
