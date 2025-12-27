@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import io.netty.util.internal.UnstableApi;
+
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+
 import org.apache.dubbo.remoting.http12.h2.H2FlowController;
 
 import io.netty.handler.codec.http2.DefaultHttp2LocalFlowController;
@@ -25,8 +28,9 @@ import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2Stream;
 
+@UnstableApi
 public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController implements H2FlowController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TriHttp2LocalFlowController.class);
+    private static final InternalLogger LOGGER = InternalLoggerFactory.getInstance(TriHttp2RemoteFlowController.class);
     private final Http2Connection connection;
     private final Http2Connection.PropertyKey autoFlowControlKey;
     private final Http2Connection.PropertyKey pendingBytesKey;
