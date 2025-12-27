@@ -36,4 +36,3 @@ public interface H2FlowController {
      */
     void enableAutoFlowControl(int streamId);
 }
-

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
@@ -36,6 +38,9 @@ import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
 public class NettyH2StreamChannel implements H2StreamChannel {
+
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(NettyH2StreamChannel.class);
 
     private final Http2StreamChannel http2StreamChannel;
 
@@ -116,7 +121,13 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     public void requestInboundData(int numBytes) {
         H2FlowController flowController = getFlowController();
         if (flowController != null) {
+            LOGGER.info("Stream {} requestInboundData({}), calling flowController.consumeBytes", streamId(), numBytes);
             flowController.consumeBytes(streamId(), numBytes);
+        } else {
+            LOGGER.warn(
+                    "Stream {} requestInboundData({}) failed: H2FlowController not found on parent channel",
+                    streamId(),
+                    numBytes);
         }
     }
 
@@ -124,7 +135,14 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     public void disableAutoInboundFlowControl() {
         H2FlowController flowController = getFlowController();
         if (flowController != null) {
+            LOGGER.info(
+                    "Stream {} disableAutoInboundFlowControl, calling flowController.disableAutoFlowControl",
+                    streamId());
             flowController.disableAutoFlowControl(streamId());
+        } else {
+            LOGGER.warn(
+                    "Stream {} disableAutoInboundFlowControl failed: H2FlowController not found on parent channel",
+                    streamId());
         }
     }
 

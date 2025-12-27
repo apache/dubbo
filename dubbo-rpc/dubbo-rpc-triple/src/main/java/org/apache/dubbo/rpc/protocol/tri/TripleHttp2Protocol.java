@@ -230,7 +230,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
     }
 
-    private Http2FrameCodec buildHttp2FrameCodec(TripleConfig tripleConfig, TriHttp2LocalFlowController[] localFlowControllerHolder) {
+    private Http2FrameCodec buildHttp2FrameCodec(
+            TripleConfig tripleConfig, TriHttp2LocalFlowController[] localFlowControllerHolder) {
         return TripleHttp2FrameCodecBuilder.forServer()
                 .customizeConnection((connection) -> {
                     connection.remote().flowController(new TriHttp2RemoteFlowController(connection, tripleConfig));
