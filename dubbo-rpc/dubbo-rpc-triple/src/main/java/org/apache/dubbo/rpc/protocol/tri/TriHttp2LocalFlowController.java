@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.h2.H2FlowController;
 
 import io.netty.handler.codec.http2.DefaultHttp2LocalFlowController;
@@ -49,6 +47,7 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
         stream.setProperty(autoFlowControlKey, Boolean.FALSE);
         // Initialize pending bytes counter
         stream.setProperty(pendingBytesKey, 0);
+        LOGGER.info("Disabled auto flow control for stream {}", stream.id());
     }
 
     /**
@@ -99,6 +98,8 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
             // - Track the consumed bytes but don't send WINDOW_UPDATE
             // - Application will call consumeBytes(streamId, numBytes) to send WINDOW_UPDATE
             addPendingBytes(stream, numBytes);
+            LOGGER.info("Stream {} auto flow control disabled, accumulated {} bytes, total pending: {}",
+                    stream.id(), numBytes, getPendingBytes(stream));
             return false;
         }
         // Default behavior: send WINDOW_UPDATE when appropriate
@@ -110,6 +111,7 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
         try {
             Http2Stream stream = connection.stream(streamId);
             if (stream == null) {
+                LOGGER.info("Stream {} not found, skip consumeBytes", streamId);
                 return;
             }
 
@@ -122,10 +124,12 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
 
             // Send WINDOW_UPDATE via parent implementation
             if (bytesToSend > 0) {
+                LOGGER.info("Stream {} sending WINDOW_UPDATE for {} bytes (pending: {}, requested: {})",
+                        streamId, bytesToSend, pendingBytes, numBytes);
                 super.consumeBytes(stream, bytesToSend);
             }
         } catch (Http2Exception e) {
-            LOGGER.warn("", "", "", "Failed to consume bytes for stream " + streamId, e);
+            LOGGER.warn("Failed to consume bytes for stream " + streamId, e);
         }
     }
 
