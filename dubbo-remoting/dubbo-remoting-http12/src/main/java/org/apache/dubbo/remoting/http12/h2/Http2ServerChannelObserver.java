@@ -88,11 +88,19 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     @Override
     public void request(int count) {
         streamingDecoder.request(count);
+
+        // If manual flow control is enabled, trigger HTTP/2 WINDOW_UPDATE
+        // The actual bytes to send is tracked by TriHttp2LocalFlowController
+        if (!autoRequestN) {
+            getHttpChannel().requestInboundData(0); // 0 means use accumulated pending bytes
+        }
     }
 
     @Override
     public void disableAutoFlowControl() {
         autoRequestN = false;
+        // Also disable auto flow control at the HTTP/2 level
+        getHttpChannel().disableAutoInboundFlowControl();
     }
 
     @Override

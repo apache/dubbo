@@ -30,4 +30,24 @@ public interface H2StreamChannel extends HttpChannel {
     }
 
     Http2OutputMessage newOutputMessage(boolean endStream);
+
+    default void requestInboundData(int numBytes) {
+        throw new UnsupportedOperationException("requestInboundData Not implemented");
+    }
+
+    default void disableAutoInboundFlowControl() {
+        throw new UnsupportedOperationException("disableAutoInboundFlowControl Not implemented");
+    }
+
+    default void enableAutoInboundFlowControl() {
+        throw new UnsupportedOperationException("enableAutoInboundFlowControl Not implemented");
+    }
+
+    default boolean isWritable() {
+        return true;
+    }
+
+    default void setOnWritableHandler(Runnable handler) {
+        throw new UnsupportedOperationException("setOnWritableHandler Not implemented");
+    }
 }

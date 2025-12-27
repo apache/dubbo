@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 import org.apache.dubbo.remoting.http12.HttpVersion;
+import org.apache.dubbo.remoting.http12.h2.H2FlowController;
 import org.apache.dubbo.remoting.http12.netty4.HttpWriteQueueHandler;
 import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1Codec;
 import org.apache.dubbo.remoting.http12.netty4.h1.NettyHttp1ConnectionHandler;
@@ -157,8 +158,10 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 protocol -> {
                     if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
                         NettyHttp2SettingsHandler nettyHttp2SettingsHandler = new NettyHttp2SettingsHandler();
+                        TriHttp2LocalFlowController[] localFlowControllerHolder = new TriHttp2LocalFlowController[1];
                         return new Http2ServerUpgradeCodec(
-                                buildHttp2FrameCodec(tripleConfig),
+                                buildHttp2FrameCodec(tripleConfig, localFlowControllerHolder),
+                                new TripleFlowControlAttributeHandler(localFlowControllerHolder),
                                 nettyHttp2SettingsHandler,
                                 new HttpWriteQueueHandler(),
                                 new FlushConsolidationHandler(64, true),
@@ -210,10 +213,16 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private void configurerHttp2Handlers(URL url, List<ChannelHandler> handlers) {
         NettyHttp2SettingsHandler nettyHttp2SettingsHandler = new NettyHttp2SettingsHandler();
         TripleConfig tripleConfig = ConfigManager.getProtocolOrDefault(url).getTripleOrDefault();
-        Http2FrameCodec codec = buildHttp2FrameCodec(tripleConfig);
+
+        // Create local flow controller for backpressure support
+        TriHttp2LocalFlowController[] localFlowControllerHolder = new TriHttp2LocalFlowController[1];
+        Http2FrameCodec codec = buildHttp2FrameCodec(tripleConfig, localFlowControllerHolder);
         Http2MultiplexHandler handler = buildHttp2MultiplexHandler(nettyHttp2SettingsHandler, url, tripleConfig);
+
         handlers.add(new ChannelHandlerPretender(new HttpWriteQueueHandler()));
         handlers.add(new ChannelHandlerPretender(codec));
+        // Add handler to set flow controller attribute on the channel
+        handlers.add(new ChannelHandlerPretender(new TripleFlowControlAttributeHandler(localFlowControllerHolder)));
         handlers.add(new ChannelHandlerPretender(nettyHttp2SettingsHandler));
         handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
         handlers.add(new ChannelHandlerPretender(new TripleServerConnectionHandler()));
@@ -221,10 +230,18 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
     }
 
-    private Http2FrameCodec buildHttp2FrameCodec(TripleConfig tripleConfig) {
+    private Http2FrameCodec buildHttp2FrameCodec(TripleConfig tripleConfig, TriHttp2LocalFlowController[] localFlowControllerHolder) {
         return TripleHttp2FrameCodecBuilder.forServer()
-                .customizeConnection((connection) ->
-                        connection.remote().flowController(new TriHttp2RemoteFlowController(connection, tripleConfig)))
+                .customizeConnection((connection) -> {
+                    connection.remote().flowController(new TriHttp2RemoteFlowController(connection, tripleConfig));
+                    // Set custom local flow controller for inbound flow control (backpressure support)
+                    TriHttp2LocalFlowController localFlowController = new TriHttp2LocalFlowController(connection);
+                    connection.local().flowController(localFlowController);
+                    // Store reference for later use
+                    if (localFlowControllerHolder != null) {
+                        localFlowControllerHolder[0] = localFlowController;
+                    }
+                })
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
                         .headerTableSize(tripleConfig.getHeaderTableSizeOrDefault())
@@ -235,6 +252,25 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 .frameLogger(SERVER_LOGGER)
                 .validateHeaders(false)
                 .build();
+    }
+
+    /**
+     * Handler to set the flow controller attribute on the channel.
+     */
+    private static class TripleFlowControlAttributeHandler extends io.netty.channel.ChannelInboundHandlerAdapter {
+        private final TriHttp2LocalFlowController[] localFlowControllerHolder;
+
+        TripleFlowControlAttributeHandler(TriHttp2LocalFlowController[] localFlowControllerHolder) {
+            this.localFlowControllerHolder = localFlowControllerHolder;
+        }
+
+        @Override
+        public void handlerAdded(io.netty.channel.ChannelHandlerContext ctx) throws Exception {
+            if (localFlowControllerHolder != null && localFlowControllerHolder[0] != null) {
+                ctx.channel().attr(H2FlowController.KEY).set(localFlowControllerHolder[0]);
+            }
+            super.handlerAdded(ctx);
+        }
     }
 
     private WebSocketServerProtocolHandler buildWebSocketServerProtocolHandler(TripleConfig tripleConfig) {

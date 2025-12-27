@@ -20,6 +20,7 @@ import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.LimitedByteBufOutputStream;
+import org.apache.dubbo.remoting.http12.h2.H2FlowController;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessageFrame;
@@ -30,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
@@ -39,9 +41,29 @@ public class NettyH2StreamChannel implements H2StreamChannel {
 
     private final TripleConfig tripleConfig;
 
+    private volatile Runnable onWritableHandler;
+
     public NettyH2StreamChannel(Http2StreamChannel http2StreamChannel, TripleConfig tripleConfig) {
         this.http2StreamChannel = http2StreamChannel;
         this.tripleConfig = tripleConfig;
+    }
+
+    /**
+     * Get the stream ID of this HTTP/2 stream.
+     */
+    public int streamId() {
+        return http2StreamChannel.stream().id();
+    }
+
+    /**
+     * Get the H2FlowController from the parent channel.
+     */
+    private H2FlowController getFlowController() {
+        Channel parent = http2StreamChannel.parent();
+        if (parent != null) {
+            return parent.attr(H2FlowController.KEY).get();
+        }
+        return null;
     }
 
     @Override
@@ -88,5 +110,50 @@ public class NettyH2StreamChannel implements H2StreamChannel {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
         http2StreamChannel.write(resetFrame).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    @Override
+    public void requestInboundData(int numBytes) {
+        H2FlowController flowController = getFlowController();
+        if (flowController != null) {
+            flowController.consumeBytes(streamId(), numBytes);
+        }
+    }
+
+    @Override
+    public void disableAutoInboundFlowControl() {
+        H2FlowController flowController = getFlowController();
+        if (flowController != null) {
+            flowController.disableAutoFlowControl(streamId());
+        }
+    }
+
+    @Override
+    public void enableAutoInboundFlowControl() {
+        H2FlowController flowController = getFlowController();
+        if (flowController != null) {
+            flowController.enableAutoFlowControl(streamId());
+        }
+    }
+
+    @Override
+    public boolean isWritable() {
+        return http2StreamChannel.isWritable();
+    }
+
+    @Override
+    public void setOnWritableHandler(Runnable handler) {
+        this.onWritableHandler = handler;
+        // Register channel listener
+        http2StreamChannel.pipeline().addLast(new io.netty.channel.ChannelInboundHandlerAdapter() {
+            @Override
+            public void channelWritabilityChanged(io.netty.channel.ChannelHandlerContext ctx) throws Exception {
+                Runnable currentHandler = onWritableHandler;
+                if (currentHandler != null && ctx.channel().isWritable()) {
+                    currentHandler.run();
+                }
+                super.channelWritabilityChanged(ctx);
+            }
+        });
     }
 }
