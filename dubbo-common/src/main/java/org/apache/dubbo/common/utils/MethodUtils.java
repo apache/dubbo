@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -138,10 +138,10 @@ public interface MethodUtils {
     /**
      * Get all {@link Method methods} of the declared class
      *
-     * @param declaringClass        the declared class
+     * @param declaringClass         the declared class
      * @param includeInheritedTypes include the inherited types, e,g. super classes or interfaces
-     * @param publicOnly            only public method
-     * @param methodsToFilter       (optional) the methods to be filtered
+     * @param publicOnly             only public method
+     * @param methodsToFilter        (optional) the methods to be filtered
      * @return non-null read-only {@link List}
      * @since 2.7.6
      */
@@ -230,14 +230,8 @@ public interface MethodUtils {
         return getMethods(declaringClass, true, true, methodsToFilter);
     }
 
-    //    static List<Method> getOverriderMethods(Class<?> implementationClass, Class<?>... superTypes) {
-
-    //
-
-    //    }
-
     /**
-     * Find the {@link Method} by the the specified type and method name without the parameter types
+     * Find the {@link Method} by the specified type and method name without the parameter types
      *
      * @param type       the target type
      * @param methodName the specified method name
@@ -249,7 +243,7 @@ public interface MethodUtils {
     }
 
     /**
-     * Find the {@link Method} by the the specified type, method name and parameter types
+     * Find the {@link Method} by the specified type, method name and parameter types
      *
      * @param type           the target type
      * @param methodName     the method name
@@ -274,7 +268,7 @@ public interface MethodUtils {
      * @param object           the target object
      * @param methodName       the method name
      * @param methodParameters the method parameters
-     * @param <T>              the return type
+     * @param <T>               the return type
      * @return the target method's execution result
      * @since 2.7.6
      */

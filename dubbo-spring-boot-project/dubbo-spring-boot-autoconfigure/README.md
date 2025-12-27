@@ -1,6 +1,6 @@
 # Dubbo Spring Boot Auto-Configure
 
-`dubbo-spring-boot-autoconfigure` uses Spring Boot's `@EnableAutoConfiguration` which helps core Dubbo's components to be auto-configured by `DubboAutoConfiguration`. It reduces code, eliminates XML configuration. 
+`dubbo-spring-boot-autoconfigure` uses Spring Boot's `@EnableAutoConfiguration` which helps core Dubbo's components to be auto-configured by `DubboAutoConfiguration`. It reduces code, eliminates XML configuration.
 
 
 
@@ -54,7 +54,7 @@ Since  `2.5.7`  , Dubbo totally supports Annotation-Driven , core Dubbo's compon
 
 
 
-`dubbo-spring-boot-autoconfigure` uses Spring Boot's `@EnableAutoConfiguration` which helps core Dubbo's components to be auto-configured by `DubboAutoConfiguration`. It reduces code, eliminates XML configuration. 
+`dubbo-spring-boot-autoconfigure` uses Spring Boot's `@EnableAutoConfiguration` which helps core Dubbo's components to be auto-configured by `DubboAutoConfiguration`. It reduces code, eliminates XML configuration.
 
 
 
@@ -85,7 +85,7 @@ There are two Spring Beans will be initialized when Spring `ApplicationContext` 
  If application requires current `ApplicationConfig` Bean in somewhere , you can get it from Spring `BeanFactory` as those code :
 
 ```java
-BeanFactory beanFactory = .... 
+BeanFactory beanFactory = ....
 ApplicationConfig applicationConfig = beanFactory.getBean(ApplicationConfig.class)
 ```
 
@@ -181,9 +181,9 @@ The whole Properties Mapping of "Multiple Dubbo Config Bean Bindings" lists belo
 
 There is a  different way to identify Multiple Dubbo Config Bean , the configuration pattern is like this :
 
-`${config-property-prefix}.${config-bean-id}.${property-name} = some value` , let's explain those placeholders : 
+`${config-property-prefix}.${config-bean-id}.${property-name} = some value` , let's explain those placeholders :
 
-- `${config-property-prefix}` : The The prefix of property name for Multiple Bindings , e.g. `dubbo.protocols`, `dubbo.applications` and so on.
+- `${config-property-prefix}` : The  prefix of property name for Multiple Bindings , e.g. `dubbo.protocols`, `dubbo.applications` and so on.
 - `${config-bean-id}` : The bean id of Dubbo's `*Config`
 - `${property-name}`: The property name of  `*Config`
 
@@ -207,7 +207,7 @@ dubbo.consumers.consumer1.client = netty
 
 
 
-If you used advanced IDE tools , for instance [Jetbrains IDEA Ultimate](https://www.jetbrains.com/idea/) develops Dubbo Spring Boot application, it will popup the tips of Dubbo Configuration Bindings in `application.properties` : 
+If you used advanced IDE tools , for instance [Jetbrains IDEA Ultimate](https://www.jetbrains.com/idea/) develops Dubbo Spring Boot application, it will popup the tips of Dubbo Configuration Bindings in `application.properties` :
 
 
 

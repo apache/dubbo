@@ -201,7 +201,7 @@ public interface AnnotationUtils {
     }
 
     /**
-     * Get all directly declared annotations of the the annotated element, not including
+     * Get all directly declared annotations of  the annotated element, not including
      * meta annotations.
      *
      * @param annotatedElement    the annotated element
@@ -321,7 +321,7 @@ public interface AnnotationUtils {
     }
 
     /**
-     * Find the meta annotations from the the {@link Annotation annotation} type by meta annotation type
+     * Find the meta annotations from  the {@link Annotation annotation} type by meta annotation type
      *
      * @param annotationType     the {@link Annotation annotation} type
      * @param metaAnnotationType the meta annotation type
@@ -335,7 +335,7 @@ public interface AnnotationUtils {
     }
 
     /**
-     * Find the meta annotations from the the the annotated element by meta annotation type
+     * Find the meta annotations from  the annotated element by meta annotation type
      *
      * @param annotatedElement   the annotated element
      * @param metaAnnotationType the meta annotation type
