@@ -89,11 +89,11 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     public void request(int count) {
         streamingDecoder.request(count);
 
-        // If manual flow control is enabled, trigger HTTP/2 WINDOW_UPDATE
-        // The actual bytes to send is tracked by TriHttp2LocalFlowController
-        if (!autoRequestN) {
-            getHttpChannel().requestInboundData(0); // 0 means use accumulated pending bytes
-        }
+        // Always trigger HTTP/2 WINDOW_UPDATE check when request() is called
+        // If autoRequestN=true, this is a no-op (Netty handles it automatically)
+        // If autoRequestN=false, this sends accumulated pending bytes as WINDOW_UPDATE
+        // This ensures request(n) always reaches the flow controller
+        getHttpChannel().requestInboundData(count);
     }
 
     @Override

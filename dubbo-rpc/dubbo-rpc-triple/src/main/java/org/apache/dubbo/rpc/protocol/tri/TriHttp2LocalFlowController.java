@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http12.h2.H2FlowController;
 
 import io.netty.handler.codec.http2.DefaultHttp2LocalFlowController;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2Stream;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
 
 public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController implements H2FlowController {
-    private static final InternalLogger LOGGER = InternalLoggerFactory.getInstance(TriHttp2LocalFlowController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TriHttp2LocalFlowController.class);
     private final Http2Connection connection;
     private final Http2Connection.PropertyKey autoFlowControlKey;
     private final Http2Connection.PropertyKey pendingBytesKey;
@@ -46,7 +46,9 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
         stream.setProperty(autoFlowControlKey, Boolean.FALSE);
         // Initialize pending bytes counter
         stream.setProperty(pendingBytesKey, 0);
-        LOGGER.info("Disabled auto flow control for stream {}", stream.id());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Disabled auto flow control for stream {}", stream.id());
+        }
     }
 
     /**
@@ -60,7 +62,7 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
             try {
                 super.consumeBytes(stream, pendingBytes);
             } catch (Http2Exception e) {
-                LOGGER.warn("", "", "", "Failed to flush pending bytes for stream " + stream.id(), e);
+                LOGGER.warn("Failed to flush pending bytes for stream " + stream.id(), e);
             }
             stream.setProperty(pendingBytesKey, 0);
         }
@@ -97,11 +99,13 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
             // - Track the consumed bytes but don't send WINDOW_UPDATE
             // - Application will call consumeBytes(streamId, numBytes) to send WINDOW_UPDATE
             addPendingBytes(stream, numBytes);
-            LOGGER.info(
-                    "Stream {} auto flow control disabled, accumulated {} bytes, total pending: {}",
-                    stream.id(),
-                    numBytes,
-                    getPendingBytes(stream));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                        "Stream {} auto flow control disabled, accumulated {} bytes, total pending: {}",
+                        stream.id(),
+                        numBytes,
+                        getPendingBytes(stream));
+            }
             return false;
         }
         // Default behavior: send WINDOW_UPDATE when appropriate
@@ -113,27 +117,32 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
         try {
             Http2Stream stream = connection.stream(streamId);
             if (stream == null) {
-                LOGGER.info("Stream {} not found, skip consumeBytes", streamId);
                 return;
             }
 
-            // Calculate actual bytes to send
+            // Get current pending bytes
             int pendingBytes = getPendingBytes(stream);
-            int bytesToSend = pendingBytes > 0 ? pendingBytes : numBytes;
 
-            // Clear pending bytes
+            // If auto flow control is enabled and no pending bytes,
+            // Netty is already handling WINDOW_UPDATE automatically
+            if (isAutoFlowControlEnabled(stream) && pendingBytes == 0) {
+                return;
+            }
+
+            // No pending bytes to send
+            if (pendingBytes <= 0) {
+                return;
+            }
+
+            // Send all pending bytes as WINDOW_UPDATE
+            // Note: numBytes parameter is the message count from request(n), not byte count
+            // We always send all accumulated bytes to ensure the sender has enough window
             stream.setProperty(pendingBytesKey, 0);
 
-            // Send WINDOW_UPDATE via parent implementation
-            if (bytesToSend > 0) {
-                LOGGER.info(
-                        "Stream {} sending WINDOW_UPDATE for {} bytes (pending: {}, requested: {})",
-                        streamId,
-                        bytesToSend,
-                        pendingBytes,
-                        numBytes);
-                super.consumeBytes(stream, bytesToSend);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stream {} sending WINDOW_UPDATE for {} bytes", streamId, pendingBytes);
             }
+            super.consumeBytes(stream, pendingBytes);
         } catch (Http2Exception e) {
             LOGGER.warn("Failed to consume bytes for stream " + streamId, e);
         }

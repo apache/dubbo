@@ -70,6 +70,31 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     }
 
     @Override
+    public void requestInboundData(int numBytes) {
+        h2StreamChannel.requestInboundData(numBytes);
+    }
+
+    @Override
+    public void disableAutoInboundFlowControl() {
+        h2StreamChannel.disableAutoInboundFlowControl();
+    }
+
+    @Override
+    public void enableAutoInboundFlowControl() {
+        h2StreamChannel.enableAutoInboundFlowControl();
+    }
+
+    @Override
+    public boolean isWritable() {
+        return h2StreamChannel.isWritable();
+    }
+
+    @Override
+    public void setOnWritableHandler(Runnable handler) {
+        h2StreamChannel.setOnWritableHandler(handler);
+    }
+
+    @Override
     public String toString() {
         return "Http2ChannelDelegate{" + "h2StreamChannel=" + h2StreamChannel + '}';
     }
