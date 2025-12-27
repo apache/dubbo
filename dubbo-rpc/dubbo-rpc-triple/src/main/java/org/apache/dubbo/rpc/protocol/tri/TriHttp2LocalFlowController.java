@@ -16,21 +16,23 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.util.internal.UnstableApi;
-
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
-
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.remoting.http12.h2.H2FlowController;
 
 import io.netty.handler.codec.http2.DefaultHttp2LocalFlowController;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2Stream;
+import io.netty.util.internal.UnstableApi;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
 @UnstableApi
 public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController implements H2FlowController {
-    private static final InternalLogger LOGGER = InternalLoggerFactory.getInstance(TriHttp2RemoteFlowController.class);
+    protected static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(AbortPolicyWithReport.class);
     private final Http2Connection connection;
     private final Http2Connection.PropertyKey autoFlowControlKey;
     private final Http2Connection.PropertyKey pendingBytesKey;
@@ -66,7 +68,8 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
             try {
                 super.consumeBytes(stream, pendingBytes);
             } catch (Http2Exception e) {
-                LOGGER.warn("Failed to flush pending bytes for stream " + stream.id(), e);
+                LOGGER.warn(
+                        PROTOCOL_FAILED_RESPONSE, "", "", "Failed to flush pending bytes for stream " + stream.id(), e);
             }
             stream.setProperty(pendingBytesKey, 0);
         }
@@ -148,7 +151,7 @@ public class TriHttp2LocalFlowController extends DefaultHttp2LocalFlowController
             }
             super.consumeBytes(stream, pendingBytes);
         } catch (Http2Exception e) {
-            LOGGER.warn("Failed to consume bytes for stream " + streamId, e);
+            LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consume bytes for stream " + streamId, e);
         }
     }
 
