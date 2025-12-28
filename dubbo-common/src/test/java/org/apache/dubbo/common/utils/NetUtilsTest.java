@@ -409,4 +409,17 @@ class NetUtilsTest {
                     CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, "");
         }
     }
+
+    @Test
+    void testIsValidV4Address_String() {
+        // Test valid IP
+        assertTrue(NetUtils.isValidV4Address("192.168.0.1"));
+
+        // Test invalid "Edge Cases" for Issue #15935
+        assertFalse(NetUtils.isValidV4Address("256.256.256.256"));
+        assertFalse(NetUtils.isValidV4Address("1.2.3"));
+        assertFalse(NetUtils.isValidV4Address("a.b.c.d"));
+        assertFalse(NetUtils.isValidV4Address((String) null));
+        assertFalse(NetUtils.isValidV4Address(""));
+    }
 }

@@ -90,7 +90,8 @@ public final class NetUtils {
 
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
-    private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
+    private static final Pattern IP_PATTERN =
+            Pattern.compile("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
 
     private static final Map<String, String> HOST_NAME_CACHE = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
@@ -230,6 +231,18 @@ public final class NetUtils {
                 && IP_PATTERN.matcher(name).matches()
                 && !ANYHOST_VALUE.equals(name)
                 && !LOCALHOST_VALUE.equals(name));
+    }
+
+    /**
+     * Check if the given implementation is a valid V4 address.
+     * @param address the string address
+     * @return true if it's a valid V4 address
+     */
+    public static boolean isValidV4Address(String address) {
+        if (StringUtils.isEmpty(address)) {
+            return false;
+        }
+        return IP_PATTERN.matcher(address).matches();
     }
 
     /**
