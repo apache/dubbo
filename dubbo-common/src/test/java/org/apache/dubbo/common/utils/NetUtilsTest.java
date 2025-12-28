@@ -412,14 +412,19 @@ class NetUtilsTest {
 
     @Test
     void testIsValidV4Address_String() {
-        // Test valid IP
+        // 1. Test valid IP (Covers the 'matches' line)
         assertTrue(NetUtils.isValidV4Address("192.168.0.1"));
 
-        // Test invalid "Edge Cases" for Issue #15935
+        // 2. Test Null (Covers the 'isEmpty' line)
+        assertFalse(NetUtils.isValidV4Address((String) null));
+
+        // 3. Test Empty String (Covers the 'isEmpty' line)
+        assertFalse(NetUtils.isValidV4Address(""));
+
+        // 4. Test various invalid formats (Covers the regex logic)
         assertFalse(NetUtils.isValidV4Address("256.256.256.256"));
         assertFalse(NetUtils.isValidV4Address("1.2.3"));
         assertFalse(NetUtils.isValidV4Address("a.b.c.d"));
-        assertFalse(NetUtils.isValidV4Address((String) null));
-        assertFalse(NetUtils.isValidV4Address(""));
+        assertFalse(NetUtils.isValidV4Address("1.2.3.4.5"));
     }
 }
