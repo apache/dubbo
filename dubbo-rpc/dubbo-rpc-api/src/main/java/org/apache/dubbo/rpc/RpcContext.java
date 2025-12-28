@@ -574,6 +574,9 @@ public class RpcContext {
     public RpcContext setObjectAttachment(String key, Object value) {
         // TODO compatible with previous
         CLIENT_ATTACHMENT.get().setObjectAttachment(key, value);
+        if (value != null && !(value instanceof String)) {
+            CLIENT_ATTACHMENT.get().setAttachment(key, String.valueOf(value));
+        }
         return this;
     }
 
