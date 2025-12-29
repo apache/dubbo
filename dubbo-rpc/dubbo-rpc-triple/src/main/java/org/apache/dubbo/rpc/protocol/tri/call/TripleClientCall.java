@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
 
 public class TripleClientCall implements ClientCall, ClientStream.Listener {
+
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
     private final AbstractConnectionClient connectionClient;
     private final Executor executor;
@@ -53,7 +54,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean canceled;
     private boolean headerSent;
     private boolean autoRequest = true;
+    private int initialRequest = 1;
     private boolean done;
+    private boolean streamingResponse;
     private StreamException streamException;
 
     public TripleClientCall(
@@ -71,32 +74,19 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     @Override
     public void onMessage(byte[] message, boolean isReturnTriException) {
         if (done) {
-            LOGGER.warn(
-                    PROTOCOL_STREAM_LISTENER,
-                    "",
-                    "",
+            LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "",
                     "Received message from closed stream,connection=" + connectionClient + " service="
-                            + requestMetadata.service + " method="
-                            + requestMetadata.method.getMethodName());
+                            + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
             return;
         }
         try {
             Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
             listener.onMessage(unpacked, message.length);
         } catch (Throwable t) {
-            TriRpcStatus status = TriRpcStatus.INTERNAL
-                    .withDescription("Deserialize response failed")
-                    .withCause(t);
+            TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Deserialize response failed").withCause(t);
             cancelByLocal(status.asException());
             listener.onClose(status, null, false);
-            LOGGER.error(
-                    PROTOCOL_FAILED_RESPONSE,
-                    "",
-                    "",
-                    String.format(
-                            "Failed to deserialize triple response, service=%s, method=%s,connection=%s",
-                            requestMetadata.service, requestMetadata.service, requestMetadata.method.getMethodName()),
-                    t);
+            LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s", requestMetadata.service, requestMetadata.service, requestMetadata.method.getMethodName()), t);
         }
     }
 
@@ -125,10 +115,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         try {
             listener.onClose(status, StreamUtils.toAttachments(attachments), isReturnTriException);
         } catch (Throwable t) {
-            cancelByLocal(TriRpcStatus.INTERNAL
-                    .withDescription("Close stream error")
-                    .withCause(t)
-                    .asException());
+            cancelByLocal(TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t).asException());
         }
         if (requestMetadata.cancellationContext != null) {
             requestMetadata.cancellationContext.cancel(null);
@@ -145,6 +132,11 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void onStart() {
+        if (streamingResponse) {
+            request(initialRequest);
+        } else {
+            request(2);
+        }
         listener.onStart(this);
     }
 
@@ -162,8 +154,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         if (t instanceof StreamException && ((StreamException) t).error().equals(FLOW_CONTROL_ERROR)) {
-            TriRpcStatus status = TriRpcStatus.CANCELLED
-                    .withCause(t)
+            TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t)
                     .withDescription("Due flowcontrol over pendingbytes, Cancelled by client");
             stream.cancelByLocal(status);
             streamException = (StreamException) t;
@@ -205,21 +196,10 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                 }
             });
         } catch (Throwable t) {
-            LOGGER.error(
-                    PROTOCOL_FAILED_SERIALIZE_TRIPLE,
-                    "",
-                    "",
-                    String.format(
-                            "Serialize triple request failed, service=%s method=%s",
-                            requestMetadata.service, requestMetadata.method.getMethodName()),
-                    t);
+            LOGGER.error(PROTOCOL_FAILED_SERIALIZE_TRIPLE, "", "", String.format("Serialize triple request failed, service=%s method=%s", requestMetadata.service, requestMetadata.method.getMethodName()), t);
             cancelByLocal(t);
-            listener.onClose(
-                    TriRpcStatus.INTERNAL
-                            .withDescription("Serialize request failed")
-                            .withCause(t),
-                    null,
-                    false);
+            listener.onClose(TriRpcStatus.INTERNAL.withDescription("Serialize request failed")
+                    .withCause(t), null, false);
         }
     }
     // stream listener end
@@ -253,7 +233,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                 this.requestMetadata = metadata;
                 this.listener = responseListener;
                 this.stream = stream;
-                return new ClientCallToObserverAdapter<>(this);
+                this.streamingResponse = responseListener.streamingResponse();
+                return new ClientCallToObserverAdapter<>(this, responseListener.streamingResponse());
             }
         }
         throw new IllegalStateException("No available ClientStreamFactory");
@@ -262,6 +243,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     @Override
     public boolean isAutoRequest() {
         return autoRequest;
+    }
+
+    @Override
+    public void setAutoRequestWithInitial(int initialRequest) {
+        setAutoRequest(false);
+        this.initialRequest = initialRequest;
     }
 
     @Override
