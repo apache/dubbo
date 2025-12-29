@@ -147,7 +147,7 @@
 
     <!-- Maven plugins -->
     <maven_jar_version>3.4.2</maven_jar_version>
-    <maven_surefire_version>3.5.3</maven_surefire_version>
+    <maven_surefire_version>3.5.4</maven_surefire_version>
     <maven_deploy_version>3.1.4</maven_deploy_version>
     <maven_shade_version>3.6.1</maven_shade_version>
     <maven_compiler_version>3.14.1</maven_compiler_version>
