@@ -20,13 +20,17 @@ import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 
+import java.sql.Timestamp;
+
 public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ClientStreamObserver<T> {
 
     private final ClientCall call;
+    private final boolean streamingResponse;
     private boolean terminated;
 
-    public ClientCallToObserverAdapter(ClientCall call) {
+    public ClientCallToObserverAdapter(ClientCall call, boolean streamingResponse) {
         this.call = call;
+        this.streamingResponse = streamingResponse;
     }
 
     public boolean isAutoRequestEnabled() {
@@ -75,5 +79,10 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void disableAutoFlowControl() {
         call.setAutoRequest(false);
+    }
+
+    @Override
+    public void disableAutoRequestWithInitial(int request) {
+        call.setAutoRequestWithInitial(request);
     }
 }

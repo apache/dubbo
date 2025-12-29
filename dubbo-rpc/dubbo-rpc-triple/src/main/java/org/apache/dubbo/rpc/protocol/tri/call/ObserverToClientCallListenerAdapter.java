@@ -54,12 +54,13 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
+    public boolean streamingResponse() {
+        return true;
+    }
+
+    @Override
     public void onStart(ClientCall call) {
         this.call = call;
-        if (call.isAutoRequest()) {
-            call.request(1);
-        }
-
         onStartConsumer.accept(call);
     }
 }

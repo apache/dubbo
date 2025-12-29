@@ -30,4 +30,6 @@ public interface ClientStreamObserver<T> extends CallStreamObserver<T> {
     default void disableAutoRequest() {
         disableAutoFlowControl();
     }
+
+    void disableAutoRequestWithInitial(int request);
 }

@@ -48,4 +48,11 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      * specified.
      */
     void disableAutoFlowControl();
+
+    /**
+     * compatible method for gRPC
+     */
+    default void disableAutoInboundFlowControl() {
+        disableAutoFlowControl();
+    }
 }

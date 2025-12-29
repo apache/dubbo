@@ -33,6 +33,13 @@ public interface ClientCall {
     interface Listener {
 
         /**
+         * Whether the response is streaming response.
+         *
+         * @return
+         */
+        boolean streamingResponse();
+
+        /**
          * Called when the call is started, user can use this to set some configurations.
          *
          * @param call call implementation
@@ -42,7 +49,7 @@ public interface ClientCall {
         /**
          * Callback when message received.
          *
-         * @param message message received
+         * @param message             message received
          * @param actualContentLength actual content length from body
          */
         void onMessage(Object message, int actualContentLength);
@@ -88,6 +95,9 @@ public interface ClientCall {
      * @return true if this call is auto request
      */
     boolean isAutoRequest();
+
+
+    void setAutoRequestWithInitial(int initialRequest);
 
     /**
      * Set auto request for this call
