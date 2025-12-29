@@ -186,7 +186,7 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
+    <jakarta.xml.bind-api.version>4.0.4</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
     <byte-buddy.version>1.15.1</byte-buddy.version>
