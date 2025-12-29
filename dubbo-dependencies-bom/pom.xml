@@ -130,7 +130,7 @@
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
     <reactor.version>3.8.1</reactor.version>
-    <mutiny.version>2.9.0</mutiny.version>
+    <mutiny.version>2.9.5</mutiny.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>4.12.0</okhttp_version>
 
