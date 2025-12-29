@@ -67,7 +67,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -257,9 +256,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         ConcurrentHashMap<URL, Set<NotifyListener>> overrideListeners =
                 getProviderConfigurationListener(overrideSubscribeUrl).getOverrideListeners();
-        Objects.requireNonNull(ConcurrentHashMapUtils.computeIfAbsent(
-                        overrideListeners, overrideSubscribeUrl, k -> new ConcurrentHashSet<>()))
-                .add(overrideSubscribeListener);
+        ConcurrentHashMapUtils.computeIfAbsent(overrideListeners, overrideSubscribeUrl, k -> new ConcurrentHashSet<>());
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         // export invoker

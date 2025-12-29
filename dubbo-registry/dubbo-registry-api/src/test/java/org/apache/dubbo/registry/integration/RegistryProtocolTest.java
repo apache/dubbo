@@ -609,20 +609,25 @@ class RegistryProtocolTest {
         Field cfgField = listeners.get(0).getClass().getSuperclass().getDeclaredField("configurators");
         cfgField.setAccessible(true);
 
+        // Mock Configurators to simulate distinct override rules from different registries
         Configurator c1 = new Configurator() {
+            @Override
             public URL configure(URL u) {
                 return u.addParameter("a", "1");
             }
 
+            @Override
             public URL getUrl() {
                 return URL.valueOf("override://0.0.0.0");
             }
         };
         Configurator c2 = new Configurator() {
+            @Override
             public URL configure(URL u) {
                 return u.addParameter("b", "2");
             }
 
+            @Override
             public URL getUrl() {
                 return URL.valueOf("override://0.0.0.0");
             }
@@ -637,6 +642,7 @@ class RegistryProtocolTest {
         cfgField.set(listeners.get(0), l1);
         cfgField.set(listeners.get(1), l2);
 
+        // Uses reflection to validate internal aggregation behavior without exposing test-only APIs
         Method agg = RegistryProtocol.class.getDeclaredMethod("getConfiguredInvokerUrl", List.class, URL.class);
         agg.setAccessible(true);
 
