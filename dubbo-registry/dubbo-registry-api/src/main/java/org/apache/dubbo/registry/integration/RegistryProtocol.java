@@ -254,14 +254,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
 
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
-        providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
 
-        // url to registry
+        URL overriddenUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         final Registry registry = getRegistry(registryUrl);
-        final URL registeredProviderUrl = customizeURL(providerUrl, registryUrl);
+        final URL registeredProviderUrl = customizeURL(overriddenUrl, registryUrl);
 
-        // decide if we need to delay publish (provider itself and registry should both need to register)
-        boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
+        boolean register =
+                overriddenUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
 
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
