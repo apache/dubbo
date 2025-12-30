@@ -281,6 +281,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             if (!registry.isServiceDiscovery()) {
                 // Deprecated! Subscribe to override rules in 2.6.x or before.
                 registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+                overrideSubscribeListener.doOverrideIfNecessary();
             }
         }
 
