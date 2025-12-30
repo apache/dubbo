@@ -355,53 +355,40 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     public <T> void reExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
         String providerUrlKey = getProviderUrlKey(originInvoker);
         String registryUrlKey = getRegistryUrlKey(originInvoker);
+        URL registryUrl = getRegistryUrl(originInvoker);
         URL retryKey = newInvokerUrl;
         Map<String, ExporterChangeableWrapper<?>> registryMap = bounds.get(providerUrlKey);
         if (registryMap == null) {
-            ReExportTask oldTask = reExportFailedTasks.get(retryKey);
-            if (oldTask != null) {
-                return;
-            }
-            ReExportTask task = new ReExportTask(() -> reExport(originInvoker, newInvokerUrl), retryKey, null);
-            oldTask = reExportFailedTasks.putIfAbsent(retryKey, task);
-            if (oldTask == null) {
-                retryTimer.newTimeout(
-                        task,
-                        getRegistryUrl(originInvoker)
-                                .getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD),
-                        TimeUnit.MILLISECONDS);
-            }
-            logger.info("[reExport] exporterMap missing for providerKey=" + providerUrlKey + ", scheduled retry");
+            scheduleReExportRetry(
+                    originInvoker,
+                    newInvokerUrl,
+                    retryKey,
+                    registryUrl,
+                    "ExporterMap missing for providerKey=" + providerUrlKey);
             return;
         }
         ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) registryMap.get(registryUrlKey);
         if (exporter == null) {
-            ReExportTask oldTask = reExportFailedTasks.get(retryKey);
-            if (oldTask != null) {
-                return;
-            }
-            ReExportTask task = new ReExportTask(() -> reExport(originInvoker, newInvokerUrl), retryKey, null);
-            oldTask = reExportFailedTasks.putIfAbsent(retryKey, task);
-            if (oldTask == null) {
-                retryTimer.newTimeout(
-                        task,
-                        getRegistryUrl(originInvoker)
-                                .getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD),
-                        TimeUnit.MILLISECONDS);
-            }
-            logger.info("Exporter missing for providerKey=" + providerUrlKey + " registryKey=" + registryUrlKey
-                    + ", scheduled retry");
+            scheduleReExportRetry(
+                    originInvoker,
+                    newInvokerUrl,
+                    retryKey,
+                    registryUrl,
+                    "Exporter missing for providerKey=" + providerUrlKey + " registryKey=" + registryUrlKey);
             return;
         }
 
         if (!exporter.isRegistered()) {
-            logger.info("Skipping reExport registry operations to avoid race with initial export.");
+            scheduleReExportRetry(
+                    originInvoker,
+                    newInvokerUrl,
+                    retryKey,
+                    registryUrl,
+                    "Exporter exists but not registered yet for providerKey=" + providerUrlKey);
             return;
         }
 
         URL registeredUrl = exporter.getRegisterUrl();
-
-        URL registryUrl = getRegistryUrl(originInvoker);
         URL newProviderUrl = customizeURL(newInvokerUrl, registryUrl);
 
         // update local exporter
@@ -413,23 +400,30 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             try {
                 doReExport(originInvoker, exporter, registryUrl, registeredUrl, newProviderUrl);
             } catch (Exception e) {
-                ReExportTask oldTask = reExportFailedTasks.get(retryKey);
-                if (oldTask != null) {
-                    return;
-                }
-                ReExportTask task = new ReExportTask(
-                        () -> doReExport(originInvoker, exporter, registryUrl, registeredUrl, newProviderUrl),
+                scheduleReExportRetry(
+                        originInvoker,
+                        newInvokerUrl,
                         retryKey,
-                        null);
-                oldTask = reExportFailedTasks.putIfAbsent(retryKey, task);
-                if (oldTask == null) {
-                    // never has a retry task. then start a new task for retry.
-                    retryTimer.newTimeout(
-                            task,
-                            registryUrl.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD),
-                            TimeUnit.MILLISECONDS);
-                }
+                        registryUrl,
+                        "Failed to doReExport, error: " + e.getMessage());
             }
+        }
+    }
+
+    private <T> void scheduleReExportRetry(
+            Invoker<T> originInvoker, URL newInvokerUrl, URL retryKey, URL registryUrl, String logMessage) {
+        ReExportTask oldTask = reExportFailedTasks.get(retryKey);
+        if (oldTask != null) {
+            return;
+        }
+        ReExportTask task = new ReExportTask(() -> reExport(originInvoker, newInvokerUrl), retryKey, null);
+        ReExportTask prev = reExportFailedTasks.putIfAbsent(retryKey, task);
+        if (prev == null) {
+            retryTimer.newTimeout(
+                    task,
+                    registryUrl.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD),
+                    TimeUnit.MILLISECONDS);
+            logger.info(logMessage + ", scheduled retry");
         }
     }
 
@@ -987,10 +981,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             } finally {
                 deployer.decreaseServiceRefreshCount();
             }
-        }
-
-        public ConcurrentHashMap<URL, Set<NotifyListener>> getOverrideListeners() {
-            return overrideListeners;
         }
     }
 
