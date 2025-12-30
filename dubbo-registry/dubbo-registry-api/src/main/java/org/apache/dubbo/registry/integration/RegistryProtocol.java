@@ -1083,25 +1083,25 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                                 .getExportedServices()
                                                 .isEmpty()) {
 
-                                    // Retrieve the list of configuration listeners for this specific service
-                                    CopyOnWriteArrayList<ServiceConfigurationListener> serviceListeners =
-                                            serviceConfigurationListeners.get(serviceKey);
+                                    GovernanceRuleRepository repository = moduleModel
+                                            .getExtensionLoader(GovernanceRuleRepository.class)
+                                            .getDefaultExtension();
 
-                                    if (serviceListeners != null) {
-
-                                        // Governance repository manages dynamic configuration listeners
-                                        GovernanceRuleRepository repository = moduleModel
-                                                .getExtensionLoader(GovernanceRuleRepository.class)
-                                                .getDefaultExtension();
-
-                                        serviceListeners.removeIf(listener -> {
-                                            if (listener.notifyListener == notifyListener) {
-                                                repository.removeListener(ruleKey, listener);
-                                                return true;
+                                    serviceConfigurationListeners.compute(serviceKey, (k, listeners) -> {
+                                        if (listeners != null) {
+                                            listeners.removeIf(listener -> {
+                                                if (listener.notifyListener == notifyListener) {
+                                                    repository.removeListener(ruleKey, listener);
+                                                    return true;
+                                                }
+                                                return false;
+                                            });
+                                            if (listeners.isEmpty()) {
+                                                return null;
                                             }
-                                            return false;
-                                        });
-                                    }
+                                        }
+                                        return listeners;
+                                    });
                                 }
                             }
                         }
@@ -1114,14 +1114,18 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         @Override
         public synchronized void unexport() {
+            unregister();
             String providerUrlKey = getProviderUrlKey(this.originInvoker);
             String registryUrlKey = getRegistryUrlKey(this.originInvoker);
-            Map<String, ExporterChangeableWrapper<?>> exporterMap = bounds.get(providerUrlKey);
-            if (exporterMap != null) {
-                exporterMap.remove(registryUrlKey);
-            }
-
-            unregister();
+            bounds.compute(providerUrlKey, (k, exporterMap) -> {
+                if (exporterMap != null) {
+                    exporterMap.remove(registryUrlKey);
+                    if (exporterMap.isEmpty()) {
+                        return null;
+                    }
+                }
+                return exporterMap;
+            });
             doUnExport();
         }
 
