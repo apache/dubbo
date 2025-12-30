@@ -1101,10 +1101,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                             }
                                             return false;
                                         });
-
-                                        if (serviceListeners.isEmpty()) {
-                                            serviceConfigurationListeners.remove(serviceKey);
-                                        }
                                     }
                                 }
                             }
