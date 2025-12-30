@@ -35,7 +35,7 @@ public interface ClientCall {
         /**
          * Whether the response is streaming response.
          *
-         * @return
+         * @return true if the response is a streaming response
          */
         boolean streamingResponse();
 
