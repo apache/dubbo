@@ -256,6 +256,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         URL overriddenUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
+        if (!overriddenUrl.equals(providerUrl)) {
+            providerUrl = overriddenUrl;
+            exporter.setExporter(protocol.export(new InvokerDelegate<>(originInvoker, providerUrl)));
+        }
         final Registry registry = getRegistry(registryUrl);
         final URL registeredProviderUrl = customizeURL(overriddenUrl, registryUrl);
 
