@@ -16,11 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http2.DefaultHttp2LocalFlowController;
 import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.Http2Exception;
-import io.netty.handler.codec.http2.Http2Stream;
 
 /**
  * Custom HTTP/2 local flow controller for Triple protocol with manual flow control.
