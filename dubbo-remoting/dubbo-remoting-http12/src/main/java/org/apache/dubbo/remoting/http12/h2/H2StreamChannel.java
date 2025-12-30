@@ -30,4 +30,13 @@ public interface H2StreamChannel extends HttpChannel {
     }
 
     Http2OutputMessage newOutputMessage(boolean endStream);
+
+    /**
+     * Consume bytes from the local flow controller to trigger WINDOW_UPDATE frames.
+     * This method should be called when data has been processed and more data can be received.
+     *
+     * @param numBytes the number of bytes to consume
+     * @throws Exception if an error occurs during consumption
+     */
+    void consumeBytes(int numBytes) throws Exception;
 }

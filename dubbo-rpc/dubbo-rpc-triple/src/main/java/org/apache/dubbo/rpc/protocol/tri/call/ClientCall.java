@@ -96,7 +96,6 @@ public interface ClientCall {
      */
     boolean isAutoRequest();
 
-
     void setAutoRequestWithInitial(int initialRequest);
 
     /**

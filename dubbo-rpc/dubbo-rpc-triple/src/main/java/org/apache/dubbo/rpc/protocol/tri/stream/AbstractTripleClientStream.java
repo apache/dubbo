@@ -113,6 +113,13 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     protected abstract TripleStreamChannelFuture initStreamChannel(Channel parent);
 
+    /**
+     * Get the stream channel future for flow control.
+     */
+    protected TripleStreamChannelFuture getStreamChannelFuture() {
+        return streamChannelFuture;
+    }
+
     public ChannelFuture sendHeader(Http2Headers headers) {
         if (this.writeQueue == null) {
             // already processed at createStream()
@@ -207,6 +214,15 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         return new ClientTransportListener();
     }
 
+    /**
+     * Consume bytes for flow control. This method is called after bytes are read from the stream.
+     * It triggers WINDOW_UPDATE frames to allow more data from the remote peer.
+     * Subclasses can override this method to provide protocol-specific flow control.
+     *
+     * @param numBytes the number of bytes consumed
+     */
+    protected abstract void consumeBytes(int numBytes);
+
     class ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {
 
         private TriRpcStatus transportError;
@@ -292,6 +308,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 }
             }
             TriDecoder.Listener listener = new TriDecoder.Listener() {
+
+                @Override
+                public void bytesRead(int numBytes) {
+                    consumeBytes(numBytes);
+                }
+
                 @Override
                 public void onRawMessage(byte[] data) {
                     AbstractTripleClientStream.this.listener.onMessage(data, isReturnTriException);
