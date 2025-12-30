@@ -35,7 +35,7 @@ public interface ClientCall {
         /**
          * Whether the response is streaming response.
          *
-         * @return
+         * @return true if the response is a streaming response
          */
         boolean streamingResponse();
 
@@ -96,6 +96,16 @@ public interface ClientCall {
      */
     boolean isAutoRequest();
 
+    /**
+     * Enable auto request for this call with an initial number of messages to request.
+     * <p>
+     * This variant of auto request allows specifying how many response messages should be
+     * requested from the server immediately when the call starts or auto request is enabled.
+     * It is similar to {@link #setAutoRequest(boolean)} but also configures the initial
+     * {@link #request(int) request} amount.
+     *
+     * @param initialRequest the initial number of messages to request from the server
+     */
     void setAutoRequestWithInitial(int initialRequest);
 
     /**

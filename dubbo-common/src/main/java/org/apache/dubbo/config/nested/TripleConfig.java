@@ -377,6 +377,9 @@ public class TripleConfig implements Serializable {
     }
 
     public void setWindowUpdateRatio(Float windowUpdateRatio) {
+        if (windowUpdateRatio != null && (windowUpdateRatio <= 0.0f || windowUpdateRatio > 1.0f)) {
+            throw new IllegalArgumentException("windowUpdateRatio must be > 0 and <= 1, but was: " + windowUpdateRatio);
+        }
         this.windowUpdateRatio = windowUpdateRatio;
     }
 

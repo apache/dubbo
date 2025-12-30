@@ -65,10 +65,4 @@ public class TripleHttp2LocalFlowController extends DefaultHttp2LocalFlowControl
     public TripleHttp2LocalFlowController(Http2Connection connection, float windowUpdateRatio) {
         super(connection, windowUpdateRatio, true);
     }
-
-    @Override
-    public void receiveFlowControlledFrame(Http2Stream stream, ByteBuf data, int padding, boolean endOfStream)
-            throws Http2Exception {
-        super.receiveFlowControlledFrame(stream, data, padding, endOfStream);
-    }
 }
