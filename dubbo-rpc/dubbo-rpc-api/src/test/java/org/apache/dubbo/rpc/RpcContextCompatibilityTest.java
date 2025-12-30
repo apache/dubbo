@@ -34,18 +34,19 @@ public class RpcContextCompatibilityTest {
         Assertions.assertEquals(value, context.getObjectAttachment(key));
 
         Object legacyValue = context.getAttachment(key);
-        System.out.println("Legacy getAttachment result: " + legacyValue);
+        Assertions.assertEquals("12345", legacyValue, "Legacy API should return String representation");
 
         Map<String, String> allAttachments = context.getAttachments();
 
-        try {
-            for (Map.Entry<String, String> entry : allAttachments.entrySet()) {
-                String k = entry.getKey();
-                String v = entry.getValue(); // 如果 entry.getValue() 实际是 Long，这里可能会崩
-                System.out.println(k + " = " + v);
-            }
-        } catch (ClassCastException e) {
-            System.err.println("发现不兼容 Bug！由于底层存了非 String 对象，导致老接口遍历崩溃: " + e.getMessage());
-        }
+        Assertions.assertDoesNotThrow(
+                () -> {
+                    for (Map.Entry<String, String> entry : allAttachments.entrySet()) {
+                        String k = entry.getKey();
+
+                        String v = entry.getValue();
+                        Assertions.assertNotNull(v);
+                    }
+                },
+                "Iterating legacy attachments should not throw ClassCastException");
     }
 }
