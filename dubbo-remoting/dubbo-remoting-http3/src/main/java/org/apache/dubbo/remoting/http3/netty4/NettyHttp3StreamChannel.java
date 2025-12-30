@@ -52,6 +52,11 @@ public class NettyHttp3StreamChannel implements H2StreamChannel {
     }
 
     @Override
+    public void consumeBytes(int numBytes) throws Exception {
+        // HTTP/3 flow control is handled by Netty and QUIC implementation.
+    }
+
+    @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
         NettyHttpChannelFutureListener futureListener = new NettyHttpChannelFutureListener();
         http3StreamChannel.write(httpMetadata).addListener(futureListener);
