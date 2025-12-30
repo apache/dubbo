@@ -312,12 +312,21 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         ProviderConfigurationListener providerConfigurationListener = getProviderConfigurationListener(providerUrl);
         providerUrl = providerConfigurationListener.overrideUrl(providerUrl);
 
-        ServiceConfigurationListener serviceConfigurationListener =
-                new ServiceConfigurationListener(providerUrl.getOrDefaultModuleModel(), providerUrl, listener);
-        serviceConfigurationListeners
-                .computeIfAbsent(providerUrl.getServiceKey(), k -> new CopyOnWriteArrayList<>())
-                .add(serviceConfigurationListener);
-        return serviceConfigurationListener.overrideUrl(providerUrl);
+        CopyOnWriteArrayList<ServiceConfigurationListener> listeners = serviceConfigurationListeners.computeIfAbsent(
+                providerUrl.getServiceKey(), k -> new CopyOnWriteArrayList<>());
+
+        synchronized (listeners) {
+            for (ServiceConfigurationListener existing : listeners) {
+                if (existing.notifyListener == listener) {
+                    return existing.overrideUrl(providerUrl);
+                }
+            }
+
+            ServiceConfigurationListener serviceConfigurationListener =
+                    new ServiceConfigurationListener(providerUrl.getOrDefaultModuleModel(), providerUrl, listener);
+            listeners.add(serviceConfigurationListener);
+            return serviceConfigurationListener.overrideUrl(providerUrl);
+        }
     }
 
     @SuppressWarnings("unchecked")
