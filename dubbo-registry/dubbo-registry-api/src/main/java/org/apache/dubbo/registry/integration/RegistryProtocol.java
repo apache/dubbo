@@ -1116,7 +1116,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public synchronized void unexport() {
             String providerUrlKey = getProviderUrlKey(this.originInvoker);
             String registryUrlKey = getRegistryUrlKey(this.originInvoker);
-            Map<String, ExporterChangeableWrapper<?>> exporterMap = bounds.remove(providerUrlKey);
+            Map<String, ExporterChangeableWrapper<?>> exporterMap = bounds.get(providerUrlKey);
             if (exporterMap != null) {
                 exporterMap.remove(registryUrlKey);
             }
