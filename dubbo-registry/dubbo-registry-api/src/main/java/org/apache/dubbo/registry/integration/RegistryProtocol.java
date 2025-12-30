@@ -26,8 +26,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -254,13 +252,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
-        ConcurrentHashMap<URL, Set<NotifyListener>> overrideListeners =
-                getProviderConfigurationListener(overrideSubscribeUrl).getOverrideListeners();
-        ConcurrentHashMapUtils.computeIfAbsent(overrideListeners, overrideSubscribeUrl, k -> new ConcurrentHashSet<>());
 
-        providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-        // export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
+        providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
 
         // url to registry
         final Registry registry = getRegistry(registryUrl);
@@ -268,17 +262,17 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
-        if (register) {
-            register(registry, registeredProviderUrl);
-        }
-
-        // register stated url on provider model
-        registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
         exporter.setNotifyListener(overrideSubscribeListener);
         exporter.setRegistered(register);
+
+        if (register) {
+            register(registry, registeredProviderUrl);
+        }
+
+        registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
         ApplicationModel applicationModel = getApplicationModel(providerUrl.getScopeModel());
         if (applicationModel
