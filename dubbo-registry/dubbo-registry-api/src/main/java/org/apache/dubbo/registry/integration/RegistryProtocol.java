@@ -855,22 +855,65 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             String registryUrlKey = getRegistryUrlKey(originInvoker);
             Map<String, ExporterChangeableWrapper<?>> exporterMap = bounds.get(providerUrlKey);
             if (exporterMap == null) {
-                logger.warn(
-                        INTERNAL_ERROR,
-                        "error state, exporterMap can not be null",
-                        "",
-                        "error state, exporterMap can not be null",
-                        new IllegalStateException("error state, exporterMap can not be null"));
+                try {
+                    URL providerUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
+                    ReExportTask oldTask = reExportFailedTasks.get(providerUrl);
+                    if (oldTask == null) {
+                        ReExportTask task = new ReExportTask(
+                                () -> {
+                                    try {
+                                        doOverrideIfNecessary();
+                                    } catch (Throwable ignore) {
+                                    }
+                                },
+                                providerUrl,
+                                null);
+                        ReExportTask prev = reExportFailedTasks.putIfAbsent(providerUrl, task);
+                        if (prev == null) {
+                            retryTimer.newTimeout(
+                                    task,
+                                    getRegistryUrl(originInvoker)
+                                            .getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD),
+                                    TimeUnit.MILLISECONDS);
+                        }
+                    }
+                } catch (Throwable t) {
+                    logger.warn(INTERNAL_ERROR, "failed to schedule override retry", "", t.getMessage(), t);
+                }
+                logger.info("ExporterMap missing for providerKey={}, scheduled retry", providerUrlKey);
                 return;
             }
             ExporterChangeableWrapper<?> exporter = exporterMap.get(registryUrlKey);
             if (exporter == null) {
-                logger.warn(
-                        INTERNAL_ERROR,
-                        "unknown error in registry module",
-                        "",
-                        "error state, exporter should not be null",
-                        new IllegalStateException("error state, exporter should not be null"));
+                try {
+                    URL providerUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
+                    ReExportTask oldTask = reExportFailedTasks.get(providerUrl);
+                    if (oldTask == null) {
+                        ReExportTask task = new ReExportTask(
+                                () -> {
+                                    try {
+                                        doOverrideIfNecessary();
+                                    } catch (Throwable ignore) {
+                                    }
+                                },
+                                providerUrl,
+                                null);
+                        ReExportTask prev = reExportFailedTasks.putIfAbsent(providerUrl, task);
+                        if (prev == null) {
+                            retryTimer.newTimeout(
+                                    task,
+                                    getRegistryUrl(originInvoker)
+                                            .getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD),
+                                    TimeUnit.MILLISECONDS);
+                        }
+                    }
+                } catch (Throwable t) {
+                    logger.warn(INTERNAL_ERROR, "failed to schedule override retry", "", t.getMessage(), t);
+                }
+                logger.info(
+                        "Exporter missing for providerKey={} registryKey={}, scheduled retry",
+                        providerUrlKey,
+                        registryUrlKey);
                 return;
             }
             // The current, may have been merged many times
