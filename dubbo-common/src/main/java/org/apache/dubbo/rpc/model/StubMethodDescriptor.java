@@ -24,7 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
-public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
+/**
+ * Cleaned up version for Checkstyle compliance
+ */
+public final class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
     private final String methodName;
     private final String javaMethodName;
@@ -40,14 +43,14 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private final UnPack responseUnpack;
 
     public StubMethodDescriptor(
-            String methodName,
-            Class<?> requestClass,
-            Class<?> responseClass,
-            RpcType rpcType,
-            Pack requestPack,
-            Pack responsePack,
-            UnPack requestUnpack,
-            UnPack responseUnpack) {
+            final String methodName,
+            final Class<?> requestClass,
+            final Class<?> responseClass,
+            final RpcType rpcType,
+            final Pack requestPack,
+            final Pack responsePack,
+            final UnPack requestUnpack,
+            final UnPack responseUnpack) {
         this.methodName = methodName;
         this.javaMethodName = toJavaMethodName(methodName);
         this.rpcType = rpcType;
@@ -114,12 +117,12 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     }
 
     @Override
-    public void addAttribute(String key, Object value) {
+    public void addAttribute(final String key, final Object value) {
         this.attributeMap.put(key, value);
     }
 
     @Override
-    public Object getAttribute(String key) {
+    public Object getAttribute(final String key) {
         return this.attributeMap.get(key);
     }
 
@@ -160,7 +163,7 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
                 + "'}";
     }
 
-    private static String toJavaMethodName(String methodName) {
+    private static String toJavaMethodName(final String methodName) {
         char ch = methodName.charAt(0);
         return Character.isUpperCase(ch) ? Character.toLowerCase(ch) + methodName.substring(1) : methodName;
     }

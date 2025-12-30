@@ -16,56 +16,43 @@
  */
 package org.apache.dubbo.rpc.support;
 
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.BaseServiceMetadata;
+import org.apache.dubbo.common.utils.LRUCache;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
-public class GroupServiceKeyCache {
+/**
+ * GroupServiceKeyCache
+ */
+public final class GroupServiceKeyCache {
+
+    private static final int CACHE_SIZE = 512;
 
     private final String serviceGroup;
 
-    // ConcurrentMap<serviceName, ConcurrentMap<serviceVersion, ConcurrentMap<port, String>>>
-    private final ConcurrentMap<String, ConcurrentMap<String, ConcurrentMap<Integer, String>>> serviceKeyMap;
+    /**
+     * Cache for service keys.
+     */
+    private final Map<String, String> cache = new LRUCache<>(CACHE_SIZE);
 
-    public GroupServiceKeyCache(String serviceGroup) {
+    /**
+     * @param serviceGroup serviceGroup
+     */
+    public GroupServiceKeyCache(final String serviceGroup) {
         this.serviceGroup = serviceGroup;
-        this.serviceKeyMap = new ConcurrentHashMap<>(512);
     }
 
-    public String getServiceKey(String serviceName, String serviceVersion, int port) {
-        ConcurrentMap<String, ConcurrentMap<Integer, String>> versionMap = serviceKeyMap.get(serviceName);
-        if (versionMap == null) {
-            serviceKeyMap.putIfAbsent(serviceName, new ConcurrentHashMap<>());
-            versionMap = serviceKeyMap.get(serviceName);
-        }
-
-        serviceVersion = serviceVersion == null ? "" : serviceVersion;
-        ConcurrentMap<Integer, String> portMap = versionMap.get(serviceVersion);
-        if (portMap == null) {
-            versionMap.putIfAbsent(serviceVersion, new ConcurrentHashMap<>());
-            portMap = versionMap.get(serviceVersion);
-        }
-
-        String serviceKey = portMap.get(port);
-        if (serviceKey == null) {
-            serviceKey = createServiceKey(serviceName, serviceVersion, port);
-            portMap.put(port, serviceKey);
-        }
-        return serviceKey;
-    }
-
-    private String createServiceKey(String serviceName, String serviceVersion, int port) {
-        StringBuilder buf = new StringBuilder();
-        if (StringUtils.isNotEmpty(serviceGroup)) {
-            buf.append(serviceGroup).append('/');
-        }
-
-        buf.append(serviceName);
-        if (StringUtils.isNotEmpty(serviceVersion) && !"0.0.0".equals(serviceVersion) && !"*".equals(serviceVersion)) {
-            buf.append(':').append(serviceVersion);
-        }
-        buf.append(':').append(port);
-        return buf.toString();
+    /**
+     * Get service key from cache or build it.
+     *
+     * @param serviceName    serviceName
+     * @param serviceVersion serviceVersion
+     * @param port           port
+     * @return serviceKey
+     */
+    public String getServiceKey(final String serviceName, final String serviceVersion, final int port) {
+        String fullServiceName = serviceName + ":" + serviceVersion + ":" + port;
+        return cache.computeIfAbsent(
+                fullServiceName, k -> BaseServiceMetadata.buildServiceKey(serviceName, serviceGroup, serviceVersion));
     }
 }

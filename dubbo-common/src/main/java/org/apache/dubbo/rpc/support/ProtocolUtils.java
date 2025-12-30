@@ -29,63 +29,109 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZ
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
 
-public class ProtocolUtils {
+/**
+ * ProtocolUtils
+ */
+public final class ProtocolUtils {
 
-    private static final ConcurrentMap<String, GroupServiceKeyCache> groupServiceKeyCacheMap =
+    private static final ConcurrentMap<String, GroupServiceKeyCache> GROUP_SERVICE_KEY_CACHE_MAP =
             new ConcurrentHashMap<>();
 
     private ProtocolUtils() {}
 
-    public static String serviceKey(URL url) {
+    /**
+     * @param url url
+     * @return service key
+     */
+    public static String serviceKey(final URL url) {
         return serviceKey(url.getPort(), url.getPath(), url.getVersion(), url.getGroup());
     }
 
-    public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
-        serviceGroup = serviceGroup == null ? "" : serviceGroup;
-        GroupServiceKeyCache groupServiceKeyCache = groupServiceKeyCacheMap.get(serviceGroup);
+    /**
+     * @param port           port
+     * @param serviceName    serviceName
+     * @param serviceVersion serviceVersion
+     * @param serviceGroup   serviceGroup
+     * @return service key
+     */
+    public static String serviceKey(
+            final int port, final String serviceName, final String serviceVersion, final String serviceGroup) {
+        String group = serviceGroup == null ? "" : serviceGroup;
+        GroupServiceKeyCache groupServiceKeyCache = GROUP_SERVICE_KEY_CACHE_MAP.get(group);
         if (groupServiceKeyCache == null) {
-            groupServiceKeyCacheMap.putIfAbsent(serviceGroup, new GroupServiceKeyCache(serviceGroup));
-            groupServiceKeyCache = groupServiceKeyCacheMap.get(serviceGroup);
+            GROUP_SERVICE_KEY_CACHE_MAP.putIfAbsent(group, new GroupServiceKeyCache(group));
+            groupServiceKeyCache = GROUP_SERVICE_KEY_CACHE_MAP.get(group);
         }
         return groupServiceKeyCache.getServiceKey(serviceName, serviceVersion, port);
     }
 
-    public static boolean isGeneric(String generic) {
+    /**
+     * @param generic generic
+     * @return is generic
+     */
+    public static boolean isGeneric(final String generic) {
         return StringUtils.isNotEmpty(generic)
-                && (GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic) /* Normal generalization cal */
-                        || GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(
-                                generic) /* Streaming generalization call supporting jdk serialization */
+                && (GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic)
+                        || GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic)
                         || GENERIC_SERIALIZATION_BEAN.equalsIgnoreCase(generic)
                         || GENERIC_SERIALIZATION_PROTOBUF.equalsIgnoreCase(generic)
                         || GENERIC_SERIALIZATION_GSON.equalsIgnoreCase(generic)
                         || GENERIC_RAW_RETURN.equalsIgnoreCase(generic));
     }
 
-    public static boolean isValidGenericValue(String generic) {
+    /**
+     * @param generic generic
+     * @return is valid generic value
+     */
+    public static boolean isValidGenericValue(final String generic) {
         return isGeneric(generic) || Boolean.FALSE.toString().equalsIgnoreCase(generic);
     }
 
-    public static boolean isDefaultGenericSerialization(String generic) {
+    /**
+     * @param generic generic
+     * @return is default generic
+     */
+    public static boolean isDefaultGenericSerialization(final String generic) {
         return isGeneric(generic) && GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic);
     }
 
-    public static boolean isJavaGenericSerialization(String generic) {
+    /**
+     * @param generic generic
+     * @return is java generic
+     */
+    public static boolean isJavaGenericSerialization(final String generic) {
         return isGeneric(generic) && GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic);
     }
 
-    public static boolean isGsonGenericSerialization(String generic) {
+    /**
+     * @param generic generic
+     * @return is gson generic
+     */
+    public static boolean isGsonGenericSerialization(final String generic) {
         return isGeneric(generic) && GENERIC_SERIALIZATION_GSON.equalsIgnoreCase(generic);
     }
 
-    public static boolean isBeanGenericSerialization(String generic) {
+    /**
+     * @param generic generic
+     * @return is bean generic
+     */
+    public static boolean isBeanGenericSerialization(final String generic) {
         return isGeneric(generic) && GENERIC_SERIALIZATION_BEAN.equals(generic);
     }
 
-    public static boolean isProtobufGenericSerialization(String generic) {
+    /**
+     * @param generic generic
+     * @return is protobuf generic
+     */
+    public static boolean isProtobufGenericSerialization(final String generic) {
         return isGeneric(generic) && GENERIC_SERIALIZATION_PROTOBUF.equals(generic);
     }
 
-    public static boolean isGenericReturnRawResult(String generic) {
+    /**
+     * @param generic generic
+     * @return is generic return raw result
+     */
+    public static boolean isGenericReturnRawResult(final String generic) {
         return GENERIC_RAW_RETURN.equals(generic);
     }
 }
