@@ -50,7 +50,12 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
     void disableAutoFlowControl();
 
     /**
-     * compatible method for gRPC
+     * Compatibility method to mirror gRPC Java
+     * {@code io.grpc.stub.CallStreamObserver#disableAutoInboundFlowControl()}.
+     * <p>
+     * This allows code written against gRPC's {@code CallStreamObserver} API to be
+     * more easily reused with Dubbo by providing an equivalent entry point that
+     * delegates to {@link #disableAutoFlowControl()}.
      */
     default void disableAutoInboundFlowControl() {
         disableAutoFlowControl();
