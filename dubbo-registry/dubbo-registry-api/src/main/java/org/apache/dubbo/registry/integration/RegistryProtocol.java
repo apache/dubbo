@@ -337,10 +337,17 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         ReferenceCountExporter<?> exporter =
                 exporterFactory.createExporter(providerUrlKey, () -> protocol.export(invokerDelegate));
-        return (ExporterChangeableWrapper<T>) ConcurrentHashMapUtils.computeIfAbsent(
-                ConcurrentHashMapUtils.computeIfAbsent(bounds, providerUrlKey, k -> new ConcurrentHashMap<>()),
-                registryUrlKey,
-                s -> new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker));
+        Map<String, ExporterChangeableWrapper<?>> registryMap = bounds.compute(providerUrlKey, (k, map) -> {
+            if (map == null) {
+                map = new ConcurrentHashMap<>();
+            }
+            map.computeIfAbsent(
+                    registryUrlKey,
+                    s -> new ExporterChangeableWrapper<>((ReferenceCountExporter<T>) exporter, originInvoker));
+            return map;
+        });
+
+        return (ExporterChangeableWrapper<T>) registryMap.get(registryUrlKey);
     }
 
     /**
