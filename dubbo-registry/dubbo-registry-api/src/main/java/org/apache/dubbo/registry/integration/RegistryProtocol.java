@@ -266,12 +266,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
         exporter.setNotifyListener(overrideSubscribeListener);
-        exporter.setRegistered(register);
 
         if (register) {
             register(registry, registeredProviderUrl);
         }
 
+        exporter.setRegistered(register);
         registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
         ApplicationModel applicationModel = getApplicationModel(providerUrl.getScopeModel());
