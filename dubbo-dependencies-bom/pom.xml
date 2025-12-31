@@ -181,7 +181,7 @@
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.7.3</maven_flatten_version>
-    <commons_compress_version>1.27.1</commons_compress_version>
+    <commons_compress_version>1.28.0</commons_compress_version>
     <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
