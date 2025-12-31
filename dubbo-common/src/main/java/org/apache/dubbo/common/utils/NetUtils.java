@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,41 +16,23 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
-import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.BitSet;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
-import static org.apache.dubbo.common.utils.CollectionUtils.first;
 
 /**
  * IP and Port Helper for RPC
