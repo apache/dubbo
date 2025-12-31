@@ -23,12 +23,49 @@ import org.apache.dubbo.remoting.RemotingServer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Default implementation of {@link ProtocolServer}.
+ * <p>
+ * This class wraps a {@link RemotingServer} and provides a simple implementation
+ * of the {@link ProtocolServer} interface. It is used by protocols that don't need
+ * special protocol server implementations, such as Triple protocol when using
+ * port unification.
+ * </p>
+ *
+ * <h3>Features</h3>
+ * <ul>
+ *   <li>Wraps a {@link RemotingServer} instance</li>
+ *   <li>Supports custom address override</li>
+ *   <li>Provides thread-safe attribute storage</li>
+ *   <li>Delegates all operations to the underlying remoting server</li>
+ * </ul>
+ *
+ * @see ProtocolServer
+ * @see RemotingServer
+ * @since 3.3
+ */
 public class DefaultProtocolServer implements ProtocolServer {
 
+    /**
+     * The underlying remoting server.
+     */
     private final RemotingServer server;
+
+    /**
+     * Custom address override. If null, the server's URL address is used.
+     */
     private String address;
+
+    /**
+     * Thread-safe storage for custom attributes.
+     */
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
+    /**
+     * Create a new DefaultProtocolServer wrapping the given remoting server.
+     *
+     * @param server the underlying remoting server, must not be null
+     */
     public DefaultProtocolServer(RemotingServer server) {
         this.server = server;
     }

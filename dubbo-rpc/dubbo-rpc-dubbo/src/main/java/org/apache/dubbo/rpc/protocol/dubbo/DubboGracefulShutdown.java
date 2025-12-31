@@ -36,22 +36,54 @@ import java.util.Collection;
  */
 public class DubboGracefulShutdown extends AbstractGracefulShutdown {
 
+    /**
+     * Reference to the Dubbo protocol instance for accessing servers.
+     */
     private final DubboProtocol dubboProtocol;
 
+    /**
+     * Create a new DubboGracefulShutdown instance.
+     *
+     * @param dubboProtocol the Dubbo protocol instance, must not be null
+     */
     public DubboGracefulShutdown(DubboProtocol dubboProtocol) {
         this.dubboProtocol = dubboProtocol;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return all active Dubbo protocol servers
+     */
     @Override
     protected Collection<ProtocolServer> getServers() {
         return dubboProtocol.getServers();
     }
 
+    /**
+     * Enter read-only mode by sending READONLY_EVENT to all connected clients.
+     * <p>
+     * For Dubbo protocol, this fires a {@link ReadOnlyEvent} which triggers the sending
+     * of READONLY_EVENT requests to all connected clients. Clients receiving this event
+     * will mark this provider as unavailable and prefer other providers for new requests.
+     * </p>
+     */
     @Override
     public void readonly() {
         fireChannelEvent(ReadOnlyEvent.INSTANCE);
     }
 
+    /**
+     * Resume normal operation by sending WRITEABLE_EVENT to all connected clients.
+     * <p>
+     * For Dubbo protocol, this fires a {@link WriteableEvent} which triggers the sending
+     * of WRITEABLE_EVENT requests to all connected clients. Clients receiving this event
+     * will mark this provider as available again and can use it for new requests.
+     * </p>
+     * <p>
+     * This is useful when a graceful shutdown is cancelled before completion.
+     * </p>
+     */
     @Override
     public void writeable() {
         fireChannelEvent(WriteableEvent.INSTANCE);

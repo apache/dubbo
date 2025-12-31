@@ -21,16 +21,38 @@ import org.apache.dubbo.remoting.ChannelEvent;
 /**
  * Writeable event to resume normal operation after graceful shutdown is cancelled.
  * <p>
- * When this event is fired to a channel:
+ * This event indicates that the server is resuming normal operation and can accept
+ * new requests again. It is typically fired when a graceful shutdown is cancelled
+ * before completion.
+ * </p>
+ *
+ * <h3>Protocol-specific Behavior</h3>
+ * <p>When this event is fired to a channel:</p>
  * <ul>
- * <li>Dubbo protocol: sends a WRITEABLE_EVENT request to the client to indicate
- *     that the server is available again and can accept new requests</li>
- * <li>Triple protocol: not supported (GOAWAY cannot be reversed)</li>
+ *   <li><b>Dubbo protocol:</b> Sends a WRITEABLE_EVENT request to the client.
+ *       The client will mark this provider as available again and can use it for new requests.</li>
+ *   <li><b>Triple protocol (HTTP/2):</b> <em>Not supported.</em> HTTP/2 GOAWAY frame is a one-way
+ *       notification that cannot be reversed. Once a GOAWAY frame is sent, the connection
+ *       is in graceful shutdown mode and cannot be resumed.</li>
  * </ul>
+ *
+ * <h3>Usage</h3>
+ * <p>This is a singleton class. Use {@link #INSTANCE} to get the instance.</p>
+ *
+ * @see org.apache.dubbo.remoting.RemotingServer#fireChannelEvent(ChannelEvent)
+ * @see ReadOnlyEvent
+ * @see org.apache.dubbo.rpc.GracefulShutdown#writeable()
+ * @since 3.3
  */
 public class WriteableEvent implements ChannelEvent {
 
+    /**
+     * The singleton instance of WriteableEvent.
+     */
     public static final WriteableEvent INSTANCE = new WriteableEvent();
 
+    /**
+     * Private constructor to enforce singleton pattern.
+     */
     private WriteableEvent() {}
 }

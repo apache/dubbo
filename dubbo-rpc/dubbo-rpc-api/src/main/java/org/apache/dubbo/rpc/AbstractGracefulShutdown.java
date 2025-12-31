@@ -28,23 +28,69 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
  * Abstract base class for graceful shutdown implementations.
  * <p>
  * This class provides common functionality for graceful shutdown across different protocols.
+ * It implements the {@link GracefulShutdown} interface and provides a template for
+ * protocol-specific implementations.
  * </p>
+ *
+ * <h3>Architecture</h3>
+ * <p>The graceful shutdown mechanism works as follows:</p>
+ * <pre>
+ *                     GracefulShutdown
+ *                           │
+ *                           ▼
+ *               AbstractGracefulShutdown
+ *                    /              \
+ *                   /                \
+ *   DubboGracefulShutdown    TripleGracefulShutdown
+ *          │                         │
+ *          ▼                         ▼
+ *    READONLY_EVENT             GOAWAY Frame
+ * </pre>
+ *
+ * <h3>Implementation Guide</h3>
+ * <p>Subclasses must implement:</p>
+ * <ul>
+ *   <li>{@link #getServers()} - Return the collection of protocol servers to notify</li>
+ *   <li>{@link #readonly()} - Fire the appropriate event to enter read-only mode</li>
+ *   <li>{@link #writeable()} - Fire the appropriate event to resume normal operation (if supported)</li>
+ * </ul>
+ *
+ * @see GracefulShutdown
+ * @see org.apache.dubbo.rpc.protocol.dubbo.DubboGracefulShutdown
+ * @see org.apache.dubbo.rpc.protocol.tri.TripleGracefulShutdown
+ * @since 3.3
  */
 public abstract class AbstractGracefulShutdown implements GracefulShutdown {
 
+    /**
+     * Logger for graceful shutdown operations.
+     */
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     /**
-     * Get the collection of protocol servers.
+     * Get the collection of protocol servers that need to be notified during graceful shutdown.
+     * <p>
+     * Subclasses should return all active servers for the specific protocol.
+     * </p>
      *
-     * @return collection of protocol servers
+     * @return collection of protocol servers, never null
      */
     protected abstract Collection<ProtocolServer> getServers();
 
     /**
-     * Fire a channel event to all servers.
+     * Fire a channel event to all servers and their connected channels.
+     * <p>
+     * This method iterates through all protocol servers returned by {@link #getServers()}
+     * and fires the given event to each server's remoting server. The event will be
+     * propagated to all connected channels.
+     * </p>
+     * <p>
+     * Exceptions during event firing are logged but not propagated, ensuring that
+     * failures on individual channels don't affect other channels.
+     * </p>
      *
-     * @param event the channel event to fire
+     * @param event the channel event to fire (e.g., {@link org.apache.dubbo.remoting.event.ReadOnlyEvent}
+     *              or {@link org.apache.dubbo.remoting.event.WriteableEvent})
      */
     protected void fireChannelEvent(ChannelEvent event) {
         try {

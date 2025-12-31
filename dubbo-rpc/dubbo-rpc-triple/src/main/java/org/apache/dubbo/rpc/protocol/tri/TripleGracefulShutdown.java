@@ -35,26 +35,59 @@ import java.util.Collection;
  */
 public class TripleGracefulShutdown extends AbstractGracefulShutdown {
 
+    /**
+     * Reference to the Triple protocol instance for accessing servers.
+     */
     private final TripleProtocol tripleProtocol;
 
+    /**
+     * Create a new TripleGracefulShutdown instance.
+     *
+     * @param tripleProtocol the Triple protocol instance, must not be null
+     */
     public TripleGracefulShutdown(TripleProtocol tripleProtocol) {
         this.tripleProtocol = tripleProtocol;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return all active Triple protocol servers
+     */
     @Override
     protected Collection<ProtocolServer> getServers() {
         return tripleProtocol.getServers();
     }
 
+    /**
+     * Enter read-only mode by sending GOAWAY frames to all connected clients.
+     * <p>
+     * For Triple protocol (HTTP/2), this fires a {@link ReadOnlyEvent} which triggers
+     * the sending of GOAWAY frames. The GOAWAY frame with NO_ERROR code tells clients
+     * that the server will not accept new streams but existing streams can continue.
+     * </p>
+     */
     @Override
     public void readonly() {
         fireChannelEvent(ReadOnlyEvent.INSTANCE);
     }
 
+    /**
+     * Resume normal operation (not supported for Triple protocol).
+     * <p>
+     * Triple protocol (HTTP/2) doesn't support writeable event because GOAWAY is a one-way
+     * notification that cannot be reversed. Once a GOAWAY frame is sent, the connection
+     * is in graceful shutdown mode and the only way to resume is to establish a new connection.
+     * </p>
+     * <p>
+     * This method is intentionally empty and does nothing.
+     * </p>
+     */
     @Override
     public void writeable() {
         // Triple protocol (HTTP/2) doesn't support writeable event
         // because GOAWAY is a one-way notification that cannot be reversed.
         // Once a GOAWAY frame is sent, the connection is in graceful shutdown mode.
+        logger.info("writeable() is not supported for Triple protocol (HTTP/2). GOAWAY cannot be reversed.");
     }
 }
