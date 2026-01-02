@@ -48,4 +48,22 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      * specified.
      */
     void disableAutoFlowControl();
+
+    /**
+     * Returns true if the stream is ready to receive more messages.
+     *
+     * @return ready status
+     */
+    default boolean isReady() {
+        return true;
+    }
+
+    /**
+     * Sets the handler to be called when the stream is ready to receive more messages.
+     *
+     * @param handler the on-ready handler
+     */
+    default void setOnReadyHandler(Runnable handler) {
+        // default no-op
+    }
 }

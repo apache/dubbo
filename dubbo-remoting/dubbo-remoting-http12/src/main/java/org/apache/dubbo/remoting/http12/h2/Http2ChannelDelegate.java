@@ -73,4 +73,9 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     public String toString() {
         return "Http2ChannelDelegate{" + "h2StreamChannel=" + h2StreamChannel + '}';
     }
+
+    @Override
+    public boolean isWritable() {
+        return h2StreamChannel.isWritable();
+    }
 }

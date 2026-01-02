@@ -78,4 +78,9 @@ public class NettyHttp1Channel implements HttpChannel {
 
     @Override
     public void flush() {}
+
+    @Override
+    public boolean isWritable() {
+        return this.channel.isWritable();
+    }
 }

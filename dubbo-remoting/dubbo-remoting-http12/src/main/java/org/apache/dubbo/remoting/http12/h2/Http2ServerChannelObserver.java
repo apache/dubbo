@@ -36,6 +36,8 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     private StreamingDecoder streamingDecoder;
 
+    private Runnable onReadyHandler;
+
     private boolean autoRequestN = true;
 
     public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
@@ -96,6 +98,16 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
+    public boolean isReady() {
+        return getHttpChannel().isWritable();
+    }
+
+    @Override
+    public void setOnReadyHandler(Runnable handler) {
+        this.onReadyHandler = handler;
+    }
+
+    @Override
     public boolean isAutoRequestN() {
         return autoRequestN;
     }
@@ -104,5 +116,12 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     public void close() {
         super.close();
         streamingDecoder.onStreamClosed();
+    }
+
+    @Override
+    public void onWritabilityChanged() {
+        if (isReady() && onReadyHandler != null) {
+            onReadyHandler.run();
+        }
     }
 }

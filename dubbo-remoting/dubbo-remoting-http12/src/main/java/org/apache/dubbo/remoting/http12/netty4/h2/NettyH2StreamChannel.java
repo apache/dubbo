@@ -89,4 +89,9 @@ public class NettyH2StreamChannel implements H2StreamChannel {
         http2StreamChannel.write(resetFrame).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
     }
+
+    @Override
+    public boolean isWritable() {
+        return this.http2StreamChannel.isWritable();
+    }
 }

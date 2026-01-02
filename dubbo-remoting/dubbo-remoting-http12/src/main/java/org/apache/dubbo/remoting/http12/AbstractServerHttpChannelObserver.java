@@ -356,4 +356,8 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     protected final void closed() {
         closed = true;
     }
+
+    public void onWritabilityChanged() {
+        // default no-op
+    }
 }

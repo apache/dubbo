@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
@@ -98,6 +99,16 @@ class TripleProtocolTest {
         // 3. test bidirectionalStream
         MockStreamObserver outboundMessageSubscriber2 = new MockStreamObserver();
         StreamObserver<String> inboundMessageObserver = greeterProxy.bidirectionalStream(outboundMessageSubscriber2);
+
+        // verify isReady and setOnReadyHandler
+        if (inboundMessageObserver instanceof CallStreamObserver) {
+            CallStreamObserver<String> callObserver = (CallStreamObserver<String>) inboundMessageObserver;
+            Assertions.assertTrue(callObserver.isReady());
+            callObserver.setOnReadyHandler(() -> {
+                // logic to be executed when ready
+            });
+        }
+
         inboundMessageObserver.onNext(REQUEST_MSG);
         inboundMessageObserver.onCompleted();
         outboundMessageSubscriber2.getLatch().await(3000, TimeUnit.MILLISECONDS);
