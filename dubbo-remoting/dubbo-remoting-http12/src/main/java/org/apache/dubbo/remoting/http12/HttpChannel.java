@@ -37,5 +37,7 @@ public interface HttpChannel {
      * Determine if the channel is writable.
      * @return true if writable
      */
-    boolean isWritable();
+    default boolean isWritable() {
+        return true;
+    }
 }
