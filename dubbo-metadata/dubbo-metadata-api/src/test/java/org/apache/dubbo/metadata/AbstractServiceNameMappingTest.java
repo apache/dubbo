@@ -28,22 +28,42 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
+import static org.mockito.Mockito.*;
 
 /**
  * @see AbstractServiceNameMapping
  */
 class AbstractServiceNameMappingTest {
 
-    private MockServiceNameMapping mapping = new MockServiceNameMapping(ApplicationModel.defaultModel());
-    private MockServiceNameMapping2 mapping2 = new MockServiceNameMapping2(ApplicationModel.defaultModel());
+    private ApplicationModel applicationModel = Mockito.mock(ApplicationModel.class);
+    private MockServiceNameMapping mapping;
+    private MockServiceNameMapping2 mapping2;
 
     URL url = URL.valueOf("dubbo://127.0.0.1:21880/" + AbstractServiceNameMappingTest.class.getName());
 
     @BeforeEach
-    public void setUp() throws Exception {}
+    public void setUp() throws Exception {
+        org.apache.dubbo.rpc.model.FrameworkModel frameworkModel =
+                org.apache.dubbo.rpc.model.FrameworkModel.defaultModel();
+        frameworkModel
+                .getBeanFactory()
+                .getOrRegisterBean(org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository.class);
+        org.apache.dubbo.config.context.ConfigManager configManager =
+                Mockito.mock(org.apache.dubbo.config.context.ConfigManager.class);
+        org.apache.dubbo.config.ApplicationConfig appConfig =
+                Mockito.mock(org.apache.dubbo.config.ApplicationConfig.class);
+        Mockito.when(applicationModel.getFrameworkModel()).thenReturn(frameworkModel);
+        Mockito.when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
+        Mockito.when(configManager.getApplication()).thenReturn(java.util.Optional.of(appConfig));
+        Mockito.when(appConfig.getEnableFileCache()).thenReturn(Boolean.TRUE);
+        Mockito.when(applicationModel.tryGetApplicationName()).thenReturn("unit-test");
+        mapping = new MockServiceNameMapping(applicationModel);
+        mapping2 = new MockServiceNameMapping2(applicationModel);
+    }
 
     @AfterEach
     public void clearup() {

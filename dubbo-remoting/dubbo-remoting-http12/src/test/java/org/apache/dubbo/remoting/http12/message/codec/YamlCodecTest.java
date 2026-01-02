@@ -35,9 +35,7 @@ class YamlCodecTest {
 
         assertThrows(
                 Exception.class,
-                () -> {
-                    YamlCodec.INSTANCE.decode(is, Object.class, StandardCharsets.UTF_8);
-                },
+                () -> YamlCodec.INSTANCE.decode(is, Object.class, StandardCharsets.UTF_8),
                 "Security Hole: YamlCodec should have rejected the malicious class 'javax.script.ScriptEngineManager'");
     }
 }
