@@ -17,9 +17,10 @@
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.http12.FlowControlStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
-public interface CallStreamObserver<T> extends StreamObserver<T> {
+public interface CallStreamObserver<T> extends StreamObserver<T>, FlowControlStreamObserver {
 
     /**
      * Requests the peer to produce {@code count} more messages to be delivered to the 'inbound'
@@ -54,6 +55,7 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      *
      * @return ready status
      */
+    @Override
     default boolean isReady() {
         return true;
     }
@@ -63,6 +65,7 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      *
      * @param handler the on-ready handler
      */
+    @Override
     default void setOnReadyHandler(Runnable handler) {
         // default no-op
     }
