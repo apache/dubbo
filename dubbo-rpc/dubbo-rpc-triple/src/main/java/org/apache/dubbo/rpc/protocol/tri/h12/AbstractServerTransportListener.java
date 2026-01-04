@@ -345,4 +345,8 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         context.setMethodDescriptor(methodDescriptor);
         exceptionCustomizerWrapper.setMethodDescriptor(methodDescriptor);
     }
+
+    protected Executor getExecutor() {
+        return executor;
+    }
 }
