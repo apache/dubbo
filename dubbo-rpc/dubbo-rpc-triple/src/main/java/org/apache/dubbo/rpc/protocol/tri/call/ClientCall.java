@@ -61,6 +61,26 @@ public interface ClientCall {
          * @param trailers response trailers
          */
         void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException);
+
+        /**
+         * Called when the call becomes ready for writing after previously returning false from
+         * {@link ClientCall#isReady()}. This callback is invoked by the transport layer when
+         * backpressure is relieved and more messages can be sent.
+         *
+         * <p>Implementations should use this method to resume sending messages that were
+         * paused due to backpressure.
+         */
+        default void onReady() {}
+    }
+
+    /**
+     * Returns whether the stream is ready for writing.
+     * If false, the caller should avoid calling sendMessage to prevent blocking or excessive buffering.
+     *
+     * @return true if the stream is ready for writing
+     */
+    default boolean isReady() {
+        return true;
     }
 
     /**

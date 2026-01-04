@@ -223,6 +223,29 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      */
     protected abstract void consumeBytes(int numBytes);
 
+    @Override
+    public boolean isReady() {
+        Channel channel = streamChannelFuture.getNow();
+        if (channel == null) {
+            return false;
+        }
+        return channel.isWritable();
+    }
+
+    /**
+     * Called when the channel writability changes.
+     * This method should be invoked by the transport handler when channelWritabilityChanged is triggered.
+     * It synchronously notifies the listener (TripleClientCall) which is responsible for
+     * asynchronously triggering all necessary callbacks through its executor.
+     */
+    protected void onWritabilityChanged() {
+        Channel channel = streamChannelFuture.getNow();
+        if (channel != null && channel.isWritable()) {
+            // Synchronously call listener.onReady(), which will use executor to run the callback
+            listener.onReady();
+        }
+    }
+
     class ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {
 
         private TriRpcStatus transportError;
@@ -495,6 +518,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         @Override
         public void onClose() {
             executor.execute(listener::onClose);
+        }
+
+        @Override
+        public void onWritabilityChanged() {
+            AbstractTripleClientStream.this.onWritabilityChanged();
         }
     }
 }

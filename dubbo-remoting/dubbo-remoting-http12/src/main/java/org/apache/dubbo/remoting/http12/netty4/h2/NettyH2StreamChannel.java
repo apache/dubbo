@@ -139,4 +139,9 @@ public class NettyH2StreamChannel implements H2StreamChannel {
             });
         }
     }
+
+    @Override
+    public boolean isReady() {
+        return http2StreamChannel.isWritable();
+    }
 }

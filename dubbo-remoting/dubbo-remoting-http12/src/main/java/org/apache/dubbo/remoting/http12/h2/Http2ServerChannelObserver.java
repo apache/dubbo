@@ -38,8 +38,36 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     private boolean autoRequestN = true;
 
+    private Runnable onReadyHandler;
+
     public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
         super(h2StreamChannel);
+    }
+
+    /**
+     * Returns whether the stream is ready for writing.
+     * If false, the caller should avoid calling onNext to prevent blocking or excessive buffering.
+     */
+    public boolean isReady() {
+        return getHttpChannel().isReady();
+    }
+
+    /**
+     * Sets a callback to be invoked when the stream becomes ready for writing.
+     */
+    public void setOnReadyHandler(Runnable onReadyHandler) {
+        this.onReadyHandler = onReadyHandler;
+    }
+
+    /**
+     * Called when the channel writability changes.
+     * Triggers the onReadyHandler if the channel is now writable.
+     */
+    public void onWritabilityChanged() {
+        Runnable handler = this.onReadyHandler;
+        if (handler != null && isReady()) {
+            handler.run();
+        }
     }
 
     public void setStreamingDecoder(StreamingDecoder streamingDecoder) {

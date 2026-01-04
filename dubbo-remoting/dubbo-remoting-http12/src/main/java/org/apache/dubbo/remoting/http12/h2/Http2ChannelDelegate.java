@@ -75,6 +75,11 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     }
 
     @Override
+    public boolean isReady() {
+        return h2StreamChannel.isReady();
+    }
+
+    @Override
     public String toString() {
         return "Http2ChannelDelegate{" + "h2StreamChannel=" + h2StreamChannel + '}';
     }

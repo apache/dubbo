@@ -39,4 +39,16 @@ public interface H2StreamChannel extends HttpChannel {
      * @throws Exception if an error occurs during consumption
      */
     void consumeBytes(int numBytes) throws Exception;
+
+    /**
+     * Returns whether the stream is ready for writing. If false, the caller should avoid
+     * calling {@link #writeMessage(org.apache.dubbo.remoting.http12.HttpOutputMessage)}
+     * to avoid blocking or excessive buffering.
+     *
+     * <p>This method is used for outgoing flow control / backpressure. When the underlying
+     * transport buffer is full, this returns false.
+     *
+     * @return true if the stream is ready for writing
+     */
+    boolean isReady();
 }

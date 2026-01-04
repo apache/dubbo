@@ -231,6 +231,11 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         responseObserver.close();
     }
 
+    @Override
+    public void onWritabilityChanged() {
+        responseObserver.onWritabilityChanged();
+    }
+
     private static final class Http2StreamingDecodeListener implements ListeningDecoder.Listener {
 
         private final ServerCallListener serverCallListener;

@@ -77,6 +77,11 @@ public class MockH2StreamChannel implements H2StreamChannel {
         // no-op for mock
     }
 
+    @Override
+    public boolean isReady() {
+        return true;
+    }
+
     public HttpMetadata getHttpMetadata() {
         return httpMetadata;
     }

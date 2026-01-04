@@ -25,6 +25,7 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     private final ClientCall call;
     private final boolean streamingResponse;
     private boolean terminated;
+    private Runnable onReadyHandler;
 
     public ClientCallToObserverAdapter(ClientCall call, boolean streamingResponse) {
         this.call = call;
@@ -67,6 +68,24 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void setCompression(String compression) {
         call.setCompression(compression);
+    }
+
+    @Override
+    public boolean isReady() {
+        return call.isReady();
+    }
+
+    @Override
+    public void setOnReadyHandler(Runnable onReadyHandler) {
+        // Store locally, to be triggered by ObserverToClientCallListenerAdapter.onReady()
+        this.onReadyHandler = onReadyHandler;
+    }
+
+    /**
+     * Get the onReadyHandler for use by ClientCall.Listener.onReady().
+     */
+    public Runnable getOnReadyHandler() {
+        return onReadyHandler;
     }
 
     @Override

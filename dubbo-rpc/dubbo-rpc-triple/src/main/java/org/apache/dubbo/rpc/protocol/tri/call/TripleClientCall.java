@@ -70,6 +70,17 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         this.writeQueue = writeQueue;
     }
 
+    @Override
+    public boolean isReady() {
+        if (canceled) {
+            return false;
+        }
+        if (done) {
+            return false;
+        }
+        return stream.isReady();
+    }
+
     // stream listener start
     @Override
     public void onMessage(byte[] message, boolean isReturnTriException) {
@@ -135,6 +146,35 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         if (requestMetadata.cancellationContext != null) {
             requestMetadata.cancellationContext.cancel(null);
         }
+    }
+
+    /**
+     * Called when the stream becomes ready for writing.
+     * This method is invoked synchronously from the transport layer (AbstractTripleClientStream.onWritabilityChanged),
+     * and it asynchronously dispatches the callback to the business executor to avoid blocking the Netty EventLoop.
+     *
+     * <p>The call chain is:
+     * <pre>
+     * Netty channelWritabilityChanged
+     *   → AbstractTripleClientStream.onWritabilityChanged() [sync]
+     *   → TripleClientCall.onReady() [this method, schedules async execution]
+     *   → executor.execute(() → listener.onReady())
+     *   → ObserverToClientCallListenerAdapter.onReady() [triggers onReadyHandler]
+     * </pre>
+     */
+    @Override
+    public void onReady() {
+        if (listener == null) {
+            return;
+        }
+        // ObserverToClientCallListenerAdapter.onReady() triggers the onReadyHandler
+        executor.execute(() -> {
+            try {
+                listener.onReady();
+            } catch (Throwable t) {
+                LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "", "Error executing listener.onReady()", t);
+            }
+        });
     }
 
     @Override

@@ -89,4 +89,9 @@ public class NettyWebSocketChannel implements H2StreamChannel {
     public void flush() {
         channel.flush();
     }
+
+    @Override
+    public boolean isReady() {
+        return channel.isWritable();
+    }
 }

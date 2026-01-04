@@ -246,6 +246,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             ClientCall call, RequestMetadata metadata, StreamObserver<Object> responseObserver) {
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
         StreamObserver<Object> streamObserver = call.start(metadata, listener);
+
+        // Set the request adapter on the listener for onReady() to access onReadyHandler
+        if (streamObserver instanceof ClientCallToObserverAdapter) {
+            listener.setRequestAdapter((ClientCallToObserverAdapter<Object>) streamObserver);
+        }
+
         if (responseObserver instanceof CancelableStreamObserver) {
             final CancellationContext context = new CancellationContext();
             CancelableStreamObserver<Object> cancelableStreamObserver =

@@ -262,6 +262,11 @@ final class ServletStreamChannel implements H2StreamChannel {
     @Override
     public void flush() {}
 
+    @Override
+    public boolean isReady() {
+        return writeable.get();
+    }
+
     private static CompletableFuture<Void> completed() {
         return CompletableFuture.completedFuture(null);
     }
