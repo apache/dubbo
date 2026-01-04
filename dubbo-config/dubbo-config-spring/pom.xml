@@ -69,7 +69,7 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
-      <version>1.9.24</version>
+      <version>1.9.25.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
