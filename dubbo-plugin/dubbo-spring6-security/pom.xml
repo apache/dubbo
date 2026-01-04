@@ -29,7 +29,7 @@
 
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
-    <spring.oauth2.server>1.5.1</spring.oauth2.server>
+    <spring.oauth2.server>1.5.5</spring.oauth2.server>
   </properties>
 
   <dependencies>
