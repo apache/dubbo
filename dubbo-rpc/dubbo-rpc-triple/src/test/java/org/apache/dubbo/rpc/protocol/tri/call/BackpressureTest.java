@@ -323,9 +323,8 @@ class BackpressureTest {
         public void sendMessage(Object message) {}
 
         @Override
-        public StreamObserver<Object> start(
-                org.apache.dubbo.rpc.protocol.tri.RequestMetadata metadata, Listener responseListener) {
-            return null;
+        public void start(org.apache.dubbo.rpc.protocol.tri.RequestMetadata metadata, Listener responseListener) {
+            // No-op for mock
         }
 
         @Override

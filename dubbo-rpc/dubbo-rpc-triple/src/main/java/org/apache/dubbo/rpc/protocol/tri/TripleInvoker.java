@@ -242,26 +242,43 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         return result;
     }
 
+    /**
+     * Start a streaming call following gRPC's pattern.
+     * <p>
+     * The call sequence is:
+     * <pre>
+     * 1. Create adapter and listener
+     * 2. Call beforeStart() if observer is CancelableStreamObserver (allows configuring onReadyHandler)
+     * 3. Start the call (creates stream, may trigger initial onReady)
+     * </pre>
+     */
     StreamObserver<Object> streamCall(
             ClientCall call, RequestMetadata metadata, StreamObserver<Object> responseObserver) {
+        // Create adapter (streaming calls always have streamingResponse=true)
+        ClientCallToObserverAdapter<Object> adapter = new ClientCallToObserverAdapter<>(call, true);
+
+        // Create listener and associate with adapter
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
-        StreamObserver<Object> streamObserver = call.start(metadata, listener);
+        listener.setRequestAdapter(adapter);
 
-        // Set the request adapter on the listener for onReady() to access onReadyHandler
-        if (streamObserver instanceof ClientCallToObserverAdapter) {
-            listener.setRequestAdapter((ClientCallToObserverAdapter<Object>) streamObserver);
-        }
-
+        // Configure CancelableStreamObserver before starting the call
         if (responseObserver instanceof CancelableStreamObserver) {
-            final CancellationContext context = new CancellationContext();
-            CancelableStreamObserver<Object> cancelableStreamObserver =
-                    (CancelableStreamObserver<Object>) responseObserver;
-            cancelableStreamObserver.setCancellationContext(context);
-            context.addListener(context1 -> call.cancelByLocal(new IllegalStateException("Canceled by app")));
-            listener.setOnStartConsumer(dummy -> cancelableStreamObserver.startRequest());
-            cancelableStreamObserver.beforeStart((ClientCallToObserverAdapter<Object>) streamObserver);
+            CancelableStreamObserver<Object> cancelableObserver = (CancelableStreamObserver<Object>) responseObserver;
+            // Set up cancellation context
+            CancellationContext context = new CancellationContext();
+            cancelableObserver.setCancellationContext(context);
+            context.addListener(ctx -> call.cancelByLocal(new IllegalStateException("Canceled by app")));
+            listener.setOnStartConsumer(dummy -> cancelableObserver.startRequest());
+
+            // Call beforeStart BEFORE starting the call - this is the gRPC pattern
+            // This allows users to configure onReadyHandler before the stream starts
+            cancelableObserver.beforeStart(adapter);
         }
-        return streamObserver;
+
+        // Start the call - creates stream and may trigger initial onReady
+        call.start(metadata, listener);
+
+        return adapter;
     }
 
     AsyncRpcResult invokeUnary(
@@ -302,7 +319,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         result.setExecutor(callbackExecutor);
         ClientCall.Listener callListener = new UnaryClientCallListener(future);
 
-        final StreamObserver<Object> requestObserver = call.start(request, callListener);
+        // Create adapter for unary call (streamingResponse=false)
+        ClientCallToObserverAdapter<Object> requestObserver = new ClientCallToObserverAdapter<>(call, false);
+        call.start(request, callListener);
         requestObserver.onNext(pureArgument);
         requestObserver.onCompleted();
         return result;

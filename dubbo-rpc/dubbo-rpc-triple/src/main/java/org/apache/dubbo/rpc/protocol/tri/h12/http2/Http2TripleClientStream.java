@@ -73,7 +73,7 @@ public final class Http2TripleClientStream extends AbstractTripleClientStream {
     }
 
     @Override
-    protected TripleStreamChannelFuture initStreamChannel(Channel parent) {
+    protected TripleStreamChannelFuture initStreamChannel0(Channel parent) {
         Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
         // Disable Netty's automatic stream flow control to enable manual flow control
         bootstrap.option(Http2StreamChannelOption.AUTO_STREAM_FLOW_CONTROL, false);
