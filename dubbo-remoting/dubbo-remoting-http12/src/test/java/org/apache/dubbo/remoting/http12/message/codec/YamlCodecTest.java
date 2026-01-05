@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class YamlCodecTest {
 
@@ -33,10 +34,12 @@ class YamlCodecTest {
 
         InputStream is = new ByteArrayInputStream(maliciousYaml.getBytes(StandardCharsets.UTF_8));
 
-        assertThrows(
+        Exception exception = assertThrows(
                 Exception.class,
                 () -> YamlCodec.INSTANCE.decode(is, Object.class, StandardCharsets.UTF_8),
-                "Security Hole: YamlCodec should have rejected the malicious class 'javax.script.ScriptEngineManager'");
+                "YamlCodec should have rejected the malicious class");
+
+        assertTrue(exception.getMessage().toLowerCase().contains("yaml"), "Error message should mention YAML");
     }
 
     @Test
@@ -46,9 +49,12 @@ class YamlCodecTest {
 
         org.yaml.snakeyaml.Yaml rawYaml = new org.yaml.snakeyaml.Yaml();
 
-        assertThrows(
+        Exception exception = assertThrows(
                 Exception.class,
                 () -> rawYaml.load(maliciousYaml),
                 "Raw SnakeYAML should attempt to load the malicious class");
+
+        assertTrue(exception.getClass().getName().contains("yaml")
+                || exception.getMessage().contains("ScriptEngineManager"));
     }
 }
