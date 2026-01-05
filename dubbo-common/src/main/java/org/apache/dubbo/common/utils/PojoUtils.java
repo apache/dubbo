@@ -443,14 +443,14 @@ public class PojoUtils {
                     Class<?> keyClazz = obj == null ? null : obj.getClass();
                     if (keyType instanceof Class) {
                         keyClazz = (Class<?>) keyType;
+                    } else if (keyType instanceof ParameterizedType) {
+                        keyClazz = (Class<?>) ((ParameterizedType) keyType).getRawType();
                     }
-                    else if(keyType instanceof ParameterizedType){
-                        keyClazz=(Class<?>) ( (ParameterizedType) keyType).getRawType();
-                    }
-                     Object value = realize1(obj, keyClazz, keyType, mapGeneric, history);
-                    if(value!=null && !keyClazz.isAssignableFrom(value.getClass())){
-                        throw new IllegalArgumentException(String.format
-                            ("Cannot convert element of %s to %s",value.getClass().getName(),keyClazz.getName()));
+                    Object value = realize1(obj, keyClazz, keyType, mapGeneric, history);
+                    if (value != null && !keyClazz.isAssignableFrom(value.getClass())) {
+                        throw new IllegalArgumentException(String.format(
+                                "Cannot convert element of %s to %s",
+                                value.getClass().getName(), keyClazz.getName()));
                     }
                     dest.add(value);
                 }
