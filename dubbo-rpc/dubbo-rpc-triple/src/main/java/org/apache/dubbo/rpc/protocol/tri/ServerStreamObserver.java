@@ -18,5 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.stream.ServerCallStreamObserver;
 
+/**
+ * @deprecated use {@link ServerCallStreamObserver} instead
+ * @param <T>
+ */
 @Deprecated
 public interface ServerStreamObserver<T> extends ServerCallStreamObserver<T> {}

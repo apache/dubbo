@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.common.stream.CallStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
