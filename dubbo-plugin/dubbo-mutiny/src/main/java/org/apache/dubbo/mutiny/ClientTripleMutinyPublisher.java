@@ -17,7 +17,7 @@
 package org.apache.dubbo.mutiny;
 
 import org.apache.dubbo.common.stream.CallStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.common.stream.ClientCallStreamObserver;
 
 import java.util.function.Consumer;
 
@@ -36,7 +36,7 @@ public class ClientTripleMutinyPublisher<T> extends AbstractTripleMutinyPublishe
     }
 
     @Override
-    public void beforeStart(ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
+    public void beforeStart(ClientCallStreamObserver<T> clientCallToObserverAdapter) {
         super.onSubscribe(clientCallToObserverAdapter);
     }
 }
