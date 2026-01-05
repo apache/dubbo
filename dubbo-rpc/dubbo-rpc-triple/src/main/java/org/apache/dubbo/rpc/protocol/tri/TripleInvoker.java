@@ -243,7 +243,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     /**
-     * Start a streaming call following gRPC's pattern.
+     * Start a streaming call
      * <p>
      * The call sequence is:
      * <pre>
@@ -254,14 +254,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
      */
     StreamObserver<Object> streamCall(
             ClientCall call, RequestMetadata metadata, StreamObserver<Object> responseObserver) {
-        // Create adapter (streaming calls always have streamingResponse=true)
         ClientCallToObserverAdapter<Object> adapter = new ClientCallToObserverAdapter<>(call, true);
 
         // Create listener and associate with adapter
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
         listener.setRequestAdapter(adapter);
 
-        // Configure CancelableStreamObserver before starting the call
         if (responseObserver instanceof CancelableStreamObserver) {
             CancelableStreamObserver<Object> cancelableObserver = (CancelableStreamObserver<Object>) responseObserver;
             // Set up cancellation context
@@ -270,7 +268,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             context.addListener(ctx -> call.cancelByLocal(new IllegalStateException("Canceled by app")));
             listener.setOnStartConsumer(dummy -> cancelableObserver.startRequest());
 
-            // Call beforeStart BEFORE starting the call - this is the gRPC pattern
+            // Call beforeStart BEFORE starting the call
             // This allows users to configure onReadyHandler before the stream starts
             cancelableObserver.beforeStart(adapter);
         }
