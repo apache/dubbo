@@ -113,7 +113,7 @@
     <jetty_version>9.4.58.v20250814</jetty_version>
     <validation_new_version>3.1.1</validation_new_version>
     <validation_version>2.0.1.Final</validation_version>
-    <hibernate_validator_version>6.2.0.Final</hibernate_validator_version>
+    <hibernate_validator_version>6.2.5.Final</hibernate_validator_version>
     <hibernate_validator_new_version>7.0.5.Final</hibernate_validator_new_version>
     <jel_version>3.0.1-b12</jel_version>
     <jcache_version>1.1.1</jcache_version>
