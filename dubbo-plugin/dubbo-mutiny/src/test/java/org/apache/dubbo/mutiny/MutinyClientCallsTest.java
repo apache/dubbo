@@ -114,6 +114,16 @@ public class MutinyClientCallsTest {
                             public void disableAutoFlowControl() {}
 
                             @Override
+                            public boolean isReady() {
+                                return true;
+                            }
+
+                            @Override
+                            public void setOnReadyHandler(Runnable onReadyHandler) {
+                                /* no-op for test */
+                            }
+
+                            @Override
                             public void onNext(String v) {
                                 publisher.onNext(v);
                             }
