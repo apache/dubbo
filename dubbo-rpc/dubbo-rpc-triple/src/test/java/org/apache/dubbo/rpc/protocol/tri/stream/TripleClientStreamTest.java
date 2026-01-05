@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.CreateStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.InitOnReadyQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2TripleClientStream;
@@ -88,6 +89,7 @@ class TripleClientStreamTest {
                 listener,
                 http2StreamChannel);
         verify(writeQueue).enqueue(any(CreateStreamQueueCommand.class));
+        verify(writeQueue).enqueue(any(InitOnReadyQueueCommand.class));
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
