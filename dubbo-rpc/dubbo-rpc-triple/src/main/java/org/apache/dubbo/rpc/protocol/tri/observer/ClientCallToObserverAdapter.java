@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
+import org.apache.dubbo.common.stream.ClientCallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 
-public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ClientStreamObserver<T> {
+public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T>
+        implements ClientStreamObserver<T>, ClientCallStreamObserver<T> {
 
     private final ClientCall call;
     private final boolean streamingResponse;

@@ -17,7 +17,7 @@
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
+import org.apache.dubbo.common.stream.CallStreamObserver;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -27,7 +27,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 /**
- * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Reactive API. <p>
+ * The middle layer between {@link CallStreamObserver} and Reactive API. <p>
  * 1. passing the data received by CallStreamObserver to Reactive consumer <br>
  * 2. passing the request of Reactive API to CallStreamObserver
  */

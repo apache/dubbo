@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.observer;
-
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+package org.apache.dubbo.common.stream;
 
 /**
  * An extension of {@link StreamObserver} that provides additional functionality for flow control
@@ -84,8 +81,6 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      * <p>
      * For stream set compression needs to determine whether the metadata has been sent, and carry
      * on corresponding processing
-     *
-     * @param compression {@link Compressor}
      */
     void setCompression(String compression);
 
