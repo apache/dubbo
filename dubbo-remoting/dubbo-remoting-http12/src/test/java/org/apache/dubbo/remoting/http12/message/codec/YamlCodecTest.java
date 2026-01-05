@@ -38,4 +38,17 @@ class YamlCodecTest {
                 () -> YamlCodec.INSTANCE.decode(is, Object.class, StandardCharsets.UTF_8),
                 "Security Hole: YamlCodec should have rejected the malicious class 'javax.script.ScriptEngineManager'");
     }
+
+    @Test
+    void testRawSnakeYamlVulnerability() {
+        String maliciousYaml =
+                "!!javax.script.ScriptEngineManager [ !!java.net.URLClassLoader [[ !!java.net.URL [\"http://127.0.0.1/\"] ]] ]";
+
+        org.yaml.snakeyaml.Yaml rawYaml = new org.yaml.snakeyaml.Yaml();
+
+        assertThrows(
+                Exception.class,
+                () -> rawYaml.load(maliciousYaml),
+                "Raw SnakeYAML should attempt to load the malicious class");
+    }
 }
