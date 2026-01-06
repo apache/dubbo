@@ -26,6 +26,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -352,7 +353,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
-        return connectionClient.isConnected();
+        if (!connectionClient.isConnected()) {
+            return false;
+        }
+        if (connectionClient.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
