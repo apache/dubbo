@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.concurrent.Future;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -50,7 +51,7 @@ import static org.springframework.util.ObjectUtils.nullSafeEquals;
  * An ApplicationListener to control Dubbo application.
  */
 public class DubboDeployApplicationListener
-        implements ApplicationListener<ApplicationContextEvent>, ApplicationContextAware, Ordered {
+        implements ApplicationListener<ApplicationContextEvent>, ApplicationContextAware, DisposableBean, Ordered {
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(DubboDeployApplicationListener.class);
@@ -189,6 +190,12 @@ public class DubboDeployApplicationListener
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
+        // remove context bind cache
+        DubboSpringInitializer.remove(event.getApplicationContext());
+    }
+
+    @Override
+    public void destroy() throws Exception {
         try {
             Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
             if (value == null) {
@@ -206,8 +213,6 @@ public class DubboDeployApplicationListener
                     "Unexpected error occurred when stop dubbo module: " + e.getMessage(),
                     e);
         }
-        // remove context bind cache
-        DubboSpringInitializer.remove(event.getApplicationContext());
     }
 
     @Override
