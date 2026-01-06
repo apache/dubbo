@@ -20,12 +20,18 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.springframework.boot.WebApplicationType;
 
 /**
  * {@link AwaitingNonWebApplicationListener} Test
  */
-@Disabled
+
 class AwaitingNonWebApplicationListenerTest {
 
     @BeforeEach
@@ -58,14 +64,14 @@ class AwaitingNonWebApplicationListenerTest {
     //        });
     //    }
     //
-    //    @Test
-    //    void testMultipleContextNonWebApplication() {
-    //        new SpringApplicationBuilder(Object.class)
-    //                .parent(Object.class)
-    //                .web(false)
-    //                .run().close();
-    //        AtomicBoolean awaited = AwaitingNonWebApplicationListener.getAwaited();
-    //        assertFalse(awaited.get());
-    //    }
-
+    @Test
+    void testMultipleContextNonWebApplication() {
+        new SpringApplicationBuilder(Object.class)
+                .parent(Object.class)
+                .properties("spring.main.web-application-type=none")
+                .run().close();
+        AwaitingNonWebApplicationListener listener=new AwaitingNonWebApplicationListener();
+        AtomicBoolean awaited = listener.getAwaited();
+        assertFalse(awaited.get());
+    }
 }
