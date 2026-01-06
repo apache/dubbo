@@ -77,4 +77,9 @@ package org.apache.dubbo.common.stream;
  * @see CallStreamObserver
  * @see StreamObserver
  */
-public interface ServerCallStreamObserver<RespT> extends CallStreamObserver<RespT> {}
+public interface ServerCallStreamObserver<RespT> extends CallStreamObserver<RespT> {
+
+    default void disableAutoRequest() {
+        disableAutoFlowControl();
+    }
+}
