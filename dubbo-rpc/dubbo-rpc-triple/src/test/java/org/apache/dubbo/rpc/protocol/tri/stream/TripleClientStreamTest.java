@@ -102,11 +102,13 @@ class TripleClientStreamTest {
         requestMetadata.version = url.getVersion();
         stream.sendHeader(requestMetadata.toHeaders());
         verify(writeQueue).enqueueFuture(any(HeaderQueueCommand.class), any(Executor.class));
-        // no other commands
-        verify(writeQueue).enqueue(any(QueuedCommand.class));
+        // enqueue should have been called twice: CreateStreamQueueCommand and InitOnReadyQueueCommand
+        verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class));
         stream.sendMessage(new byte[0], 0);
         verify(writeQueue).enqueueFuture(any(DataQueueCommand.class), any(Executor.class));
         verify(writeQueue, times(2)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
+        // After sendHeader and sendMessage, enqueue should have been called twice:
+        // once for CreateStreamQueueCommand and once for InitOnReadyQueueCommand
         stream.halfClose();
         verify(writeQueue).enqueueFuture(any(EndStreamQueueCommand.class), any(Executor.class));
         verify(writeQueue, times(3)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
