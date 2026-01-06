@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.stream.ClientResponseObserver;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
@@ -248,10 +249,19 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
      * The call sequence is:
      * <pre>
      * 1. Create adapter and listener
-     * 2. Call beforeStart() if observer is CancelableStreamObserver (allows configuring onReadyHandler)
+     * 2. Call beforeStart() if observer is ClientResponseObserver or CancelableStreamObserver
+     *   (allows configuring onReadyHandler before stream starts)
      * 3. Start the call (creates stream, may trigger initial onReady)
      * </pre>
+     *
+     * <p>The two interfaces serve different purposes:
+     * <ul>
+     *   <li>{@link ClientResponseObserver} - gRPC-compatible interface with just beforeStart()
+     *   <li>{@link CancelableStreamObserver} - Dubbo's extended interface with cancellation and startRequest()
+     * </ul>
+     * An observer can implement both interfaces (e.g., ClientTripleReactorPublisher).
      */
+    @SuppressWarnings("unchecked")
     StreamObserver<Object> streamCall(
             ClientCall call, RequestMetadata metadata, StreamObserver<Object> responseObserver) {
         ClientCallToObserverAdapter<Object> adapter = new ClientCallToObserverAdapter<>(call, true);
@@ -260,16 +270,28 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
         listener.setRequestAdapter(adapter);
 
+        // Handle CancelableStreamObserver first (for cancellation context and startRequest)
+        // This must be done regardless of whether it also implements ClientResponseObserver
         if (responseObserver instanceof CancelableStreamObserver) {
             CancelableStreamObserver<Object> cancelableObserver = (CancelableStreamObserver<Object>) responseObserver;
             // Set up cancellation context
             CancellationContext context = new CancellationContext();
             cancelableObserver.setCancellationContext(context);
             context.addListener(ctx -> call.cancelByLocal(new IllegalStateException("Canceled by app")));
+            // Set up startRequest to be called when stream is established (onStart)
             listener.setOnStartConsumer(dummy -> cancelableObserver.startRequest());
+        }
 
-            // Call beforeStart BEFORE starting the call
-            // This allows users to configure onReadyHandler before the stream starts
+        // Now call beforeStart() - use ClientResponseObserver if available (gRPC-compatible),
+        // otherwise fall back to CancelableStreamObserver.beforeStart()
+        if (responseObserver instanceof ClientResponseObserver) {
+            // gRPC-compatible interface - beforeStart takes ClientCallStreamObserver
+            ClientResponseObserver<Object, Object> clientResponseObserver =
+                    (ClientResponseObserver<Object, Object>) responseObserver;
+            clientResponseObserver.beforeStart(adapter);
+        } else if (responseObserver instanceof CancelableStreamObserver) {
+            // Legacy Dubbo interface - beforeStart takes ClientCallToObserverAdapter
+            CancelableStreamObserver<Object> cancelableObserver = (CancelableStreamObserver<Object>) responseObserver;
             cancelableObserver.beforeStart(adapter);
         }
 

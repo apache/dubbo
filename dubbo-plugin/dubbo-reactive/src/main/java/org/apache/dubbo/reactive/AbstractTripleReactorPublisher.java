@@ -71,8 +71,20 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
         if (subscription != null && this.subscription == null && HAS_SUBSCRIPTION.compareAndSet(false, true)) {
             this.subscription = subscription;
             subscription.disableAutoFlowControl();
+
+            // Set up onReadyHandler to trigger onSubscribe callback when stream becomes ready.
+            // This is called AFTER call.start() via InitOnReadyQueueCommand, ensuring the stream
+            // is created before any data is sent
+            // is triggered by onReady, not by onStart (which requires server headers).
             if (onSubscribe != null) {
-                onSubscribe.accept(subscription);
+                subscription.setOnReadyHandler(() -> {
+                    // Only execute the callback once (on first onReady)
+                    Consumer<CallStreamObserver<?>> callback = onSubscribe;
+                    if (callback != null && subscription.isReady()) {
+                        onSubscribe = null; // Clear to prevent re-execution
+                        callback.accept(subscription);
+                    }
+                });
             }
             return;
         }
@@ -148,6 +160,9 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
         synchronized (this) {
             if (!canRequest) {
                 canRequest = true;
+                // Request buffered messages from the server.
+                // Note: onSubscribe callback is now triggered by onReadyHandler (set in onSubscribe()),
+                // not here, because onReady is triggered earlier than onStart.
                 long count = requested;
                 subscription.request(count >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
             }
