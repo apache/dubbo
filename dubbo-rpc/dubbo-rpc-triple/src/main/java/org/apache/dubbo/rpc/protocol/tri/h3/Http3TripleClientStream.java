@@ -74,4 +74,10 @@ public final class Http3TripleClientStream extends AbstractTripleClientStream {
         writeQueue.enqueue(Http3CreateStreamQueueCommand.create(initializer, future));
         return future;
     }
+
+    @Override
+    protected void consumeBytes(int numBytes) {
+        // HTTP/3 flow control is handled differently by QUIC layer
+        // No explicit flow control needed here
+    }
 }

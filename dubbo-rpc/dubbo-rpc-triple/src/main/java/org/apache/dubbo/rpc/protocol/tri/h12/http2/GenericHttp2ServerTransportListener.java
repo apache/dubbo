@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri.h12.http2;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
@@ -30,6 +32,7 @@ import org.apache.dubbo.remoting.http12.message.DefaultStreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.ListeningDecoder;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.remoting.http12.message.StreamingDecoder.FragmentListener;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -47,8 +50,13 @@ import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
 import java.io.InputStream;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
+
 public class GenericHttp2ServerTransportListener extends AbstractServerTransportListener<Http2Header, Http2InputMessage>
         implements Http2TransportListener {
+
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(GenericHttp2ServerTransportListener.class);
 
     private final H2StreamChannel h2StreamChannel;
     private final StreamingDecoder streamingDecoder;
@@ -97,8 +105,43 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         DefaultListeningDecoder listeningDecoder = new DefaultListeningDecoder(
                 context.getHttpMessageDecoder(), context.getMethodMetadata().getActualRequestTypes());
         listeningDecoder.setListener(new Http2StreamingDecodeListener(serverCallListener));
-        streamingDecoder.setFragmentListener(new StreamingDecoder.DefaultFragmentListener(listeningDecoder));
+        streamingDecoder.setFragmentListener(new DefaultFragmentListener(listeningDecoder));
         return new StreamingHttpMessageListener(streamingDecoder);
+    }
+
+    final class DefaultFragmentListener implements FragmentListener {
+
+        private final ListeningDecoder listeningDecoder;
+
+        public DefaultFragmentListener(ListeningDecoder listeningDecoder) {
+            this.listeningDecoder = listeningDecoder;
+        }
+
+        @Override
+        public void bytesRead(int numBytes) {
+            try {
+                getH2StreamChannel().consumeBytes(numBytes);
+            } catch (Exception e) {
+                LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consume bytes for flow control", e);
+            }
+        }
+
+        @Override
+        public void onFragmentMessage(InputStream rawMessage) {
+            listeningDecoder.decode(rawMessage);
+        }
+
+        @Override
+        public void onClose() {
+            listeningDecoder.close();
+        }
+    }
+
+    /**
+     * Get the H2StreamChannel for flow control.
+     */
+    protected H2StreamChannel getH2StreamChannel() {
+        return h2StreamChannel;
     }
 
     private ServerCallListener startListener(
@@ -186,6 +229,15 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     public void close() {
         responseObserver.close();
+    }
+
+    @Override
+    public void onWritabilityChanged() {
+        if (getExecutor() == null) {
+            responseObserver.onWritabilityChanged();
+        } else {
+            getExecutor().execute(responseObserver::onWritabilityChanged);
+        }
     }
 
     private static final class Http2StreamingDecodeListener implements ListeningDecoder.Listener {

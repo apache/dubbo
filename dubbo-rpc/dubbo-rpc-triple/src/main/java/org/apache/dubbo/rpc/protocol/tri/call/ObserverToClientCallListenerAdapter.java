@@ -18,15 +18,24 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Adapts a response StreamObserver to a ClientCall.Listener.
+ *
+ * <p>This follows gRPC's StreamObserverToCallListenerAdapter pattern where
+ * the listener holds a reference to the request adapter (ClientCallToObserverAdapter)
+ * to access the onReadyHandler.
+ */
 public class ObserverToClientCallListenerAdapter implements ClientCall.Listener {
 
     private final StreamObserver<Object> delegate;
     private ClientCall call;
     private Consumer<ClientCall> onStartConsumer = clientCall -> {};
+    private ClientCallToObserverAdapter<?> requestAdapter;
 
     public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;
@@ -34,6 +43,13 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
 
     public void setOnStartConsumer(Consumer<ClientCall> onStartConsumer) {
         this.onStartConsumer = onStartConsumer;
+    }
+
+    /**
+     * Set the request adapter to access onReadyHandler.
+     */
+    public void setRequestAdapter(ClientCallToObserverAdapter<?> requestAdapter) {
+        this.requestAdapter = requestAdapter;
     }
 
     @Override
@@ -54,12 +70,28 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
+    public boolean streamingResponse() {
+        return true;
+    }
+
+    @Override
     public void onStart(ClientCall call) {
         this.call = call;
-        if (call.isAutoRequest()) {
-            call.request(1);
-        }
-
         onStartConsumer.accept(call);
+    }
+
+    /**
+     * Called when the stream becomes ready for writing.
+     */
+    @Override
+    public void onReady() {
+        if (requestAdapter == null) {
+            return;
+        }
+        Runnable handler = requestAdapter.getOnReadyHandler();
+        if (handler == null) {
+            return;
+        }
+        handler.run();
     }
 }

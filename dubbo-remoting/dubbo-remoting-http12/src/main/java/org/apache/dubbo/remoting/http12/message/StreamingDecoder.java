@@ -35,6 +35,13 @@ public interface StreamingDecoder {
     interface FragmentListener {
 
         /**
+         * Called when the given number of bytes has been read from the input source of the deframer.
+         * This is typically used to indicate to the underlying transport that more data can be
+         * accepted.
+         */
+        void bytesRead(int numBytes);
+
+        /**
          * @param rawMessage raw message
          */
         void onFragmentMessage(InputStream rawMessage);
@@ -42,30 +49,14 @@ public interface StreamingDecoder {
         default void onClose() {}
     }
 
-    final class DefaultFragmentListener implements FragmentListener {
-
-        private final ListeningDecoder listeningDecoder;
-
-        public DefaultFragmentListener(ListeningDecoder listeningDecoder) {
-            this.listeningDecoder = listeningDecoder;
-        }
-
-        @Override
-        public void onFragmentMessage(InputStream rawMessage) {
-            listeningDecoder.decode(rawMessage);
-        }
-
-        @Override
-        public void onClose() {
-            listeningDecoder.close();
-        }
-    }
-
     final class NoopFragmentListener implements FragmentListener {
 
         static final FragmentListener NOOP = new NoopFragmentListener();
 
         private NoopFragmentListener() {}
+
+        @Override
+        public void bytesRead(int numBytes) {}
 
         @Override
         public void onFragmentMessage(InputStream rawMessage) {}
