@@ -24,13 +24,11 @@ import javax.lang.model.element.VariableElement;
 
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.PrimitiveTypeDefinitionBuilderTest.buildAndAssertTypeDefinition;
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link SimpleTypeDefinitionBuilder} Test
@@ -93,39 +91,39 @@ class SimpleTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
         dtField = findField(testType, "dt");
         invalidField = findField(testType, "invalid");
 
-        assertEquals("java.lang.Void", vField.asType().toString());
-        assertEquals("java.lang.Boolean", zField.asType().toString());
-        assertEquals("java.lang.Character", cField.asType().toString());
-        assertEquals("java.lang.Byte", bField.asType().toString());
-        assertEquals("java.lang.Short", sField.asType().toString());
-        assertEquals("java.lang.Integer", iField.asType().toString());
-        assertEquals("java.lang.Long", lField.asType().toString());
-        assertEquals("java.lang.Float", fField.asType().toString());
-        assertEquals("java.lang.Double", dField.asType().toString());
-        assertEquals("java.lang.String", strField.asType().toString());
-        assertEquals("java.math.BigDecimal", bdField.asType().toString());
-        assertEquals("java.math.BigInteger", biField.asType().toString());
-        assertEquals("java.util.Date", dtField.asType().toString());
-        assertEquals("int", invalidField.asType().toString());
+        Assertions.assertEquals("java.lang.Void", vField.asType().toString());
+        Assertions.assertEquals("java.lang.Boolean", zField.asType().toString());
+        Assertions.assertEquals("java.lang.Character", cField.asType().toString());
+        Assertions.assertEquals("java.lang.Byte", bField.asType().toString());
+        Assertions.assertEquals("java.lang.Short", sField.asType().toString());
+        Assertions.assertEquals("java.lang.Integer", iField.asType().toString());
+        Assertions.assertEquals("java.lang.Long", lField.asType().toString());
+        Assertions.assertEquals("java.lang.Float", fField.asType().toString());
+        Assertions.assertEquals("java.lang.Double", dField.asType().toString());
+        Assertions.assertEquals("java.lang.String", strField.asType().toString());
+        Assertions.assertEquals("java.math.BigDecimal", bdField.asType().toString());
+        Assertions.assertEquals("java.math.BigInteger", biField.asType().toString());
+        Assertions.assertEquals("java.util.Date", dtField.asType().toString());
+        Assertions.assertEquals("int", invalidField.asType().toString());
     }
 
     @Test
     void testAccept() {
-        assertTrue(builder.accept(processingEnv, vField.asType()));
-        assertTrue(builder.accept(processingEnv, zField.asType()));
-        assertTrue(builder.accept(processingEnv, cField.asType()));
-        assertTrue(builder.accept(processingEnv, bField.asType()));
-        assertTrue(builder.accept(processingEnv, sField.asType()));
-        assertTrue(builder.accept(processingEnv, iField.asType()));
-        assertTrue(builder.accept(processingEnv, lField.asType()));
-        assertTrue(builder.accept(processingEnv, fField.asType()));
-        assertTrue(builder.accept(processingEnv, dField.asType()));
-        assertTrue(builder.accept(processingEnv, strField.asType()));
-        assertTrue(builder.accept(processingEnv, bdField.asType()));
-        assertTrue(builder.accept(processingEnv, biField.asType()));
-        assertTrue(builder.accept(processingEnv, dtField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, vField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, zField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, cField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, bField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, sField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, iField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, lField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, fField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, dField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, strField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, bdField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, biField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, dtField.asType()));
         // false condition
-        assertFalse(builder.accept(processingEnv, invalidField.asType()));
+        Assertions.assertFalse(builder.accept(processingEnv, invalidField.asType()));
     }
 
     @Test

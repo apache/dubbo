@@ -26,11 +26,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link EnumTypeDefinitionBuilder} Test
@@ -54,7 +53,7 @@ class EnumTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
     @Test
     void testAccept() {
         TypeElement typeElement = getType(Color.class);
-        assertTrue(builder.accept(processingEnv, typeElement.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, typeElement.asType()));
     }
 
     @Test
@@ -62,8 +61,8 @@ class EnumTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
         TypeElement typeElement = getType(Color.class);
         Map<String, TypeDefinition> typeCache = new HashMap<>();
         TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, typeElement, typeCache);
-        assertEquals(Color.class.getName(), typeDefinition.getType());
-        assertEquals(asList("RED", "YELLOW", "BLUE"), typeDefinition.getEnums());
-        //        assertEquals(typeDefinition.getTypeBuilderName(), builder.getClass().getName());
+        Assertions.assertEquals(Color.class.getName(), typeDefinition.getType());
+        Assertions.assertEquals(asList("RED", "YELLOW", "BLUE"), typeDefinition.getEnums());
+        //        Assertions.assertEquals(typeDefinition.getTypeBuilderName(), builder.getClass().getName());
     }
 }

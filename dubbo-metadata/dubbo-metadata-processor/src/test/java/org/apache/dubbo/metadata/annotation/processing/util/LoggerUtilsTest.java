@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.util;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.LoggerUtils.info;
 import static org.apache.dubbo.metadata.annotation.processing.util.LoggerUtils.warn;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * {@link LoggerUtils} Test
@@ -31,7 +31,7 @@ class LoggerUtilsTest {
 
     @Test
     void testLogger() {
-        assertNotNull(LoggerUtils.LOGGER);
+        Assertions.assertNotNull(LoggerUtils.LOGGER);
     }
 
     @Test

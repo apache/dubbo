@@ -28,6 +28,7 @@ import javax.lang.model.type.TypeMirror;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
@@ -38,10 +39,6 @@ import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.g
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getOverrideMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getPublicNonStaticMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getReturnType;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link MethodUtils} Test
@@ -64,14 +61,14 @@ class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     void testDeclaredMethods() {
         TypeElement type = getType(Model.class);
         List<ExecutableElement> methods = getDeclaredMethods(type);
-        assertEquals(12, methods.size());
+        Assertions.assertEquals(12, methods.size());
 
         methods = getAllDeclaredMethods(type);
         // registerNatives() no provided in JDK 17
-        assertTrue(methods.size() >= 33);
+        Assertions.assertTrue(methods.size() >= 33);
 
-        assertTrue(getAllDeclaredMethods((TypeElement) null).isEmpty());
-        assertTrue(getAllDeclaredMethods((TypeMirror) null).isEmpty());
+        Assertions.assertTrue(getAllDeclaredMethods((TypeElement) null).isEmpty());
+        Assertions.assertTrue(getAllDeclaredMethods((TypeMirror) null).isEmpty());
     }
 
     private List<? extends ExecutableElement> doGetAllDeclaredMethods() {
@@ -81,28 +78,28 @@ class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     void testGetAllDeclaredMethods() {
         List<? extends ExecutableElement> methods = doGetAllDeclaredMethods();
-        assertEquals(14, methods.size());
+        Assertions.assertEquals(14, methods.size());
     }
 
     @Test
     void testGetPublicNonStaticMethods() {
         List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
-        assertEquals(14, methods.size());
+        Assertions.assertEquals(14, methods.size());
 
         methods = getPublicNonStaticMethods(testType.asType(), Object.class);
-        assertEquals(14, methods.size());
+        Assertions.assertEquals(14, methods.size());
     }
 
     @Test
     void testIsMethod() {
         List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
-        assertEquals(14, methods.stream().map(MethodUtils::isMethod).count());
+        Assertions.assertEquals(14, methods.stream().map(MethodUtils::isMethod).count());
     }
 
     @Test
     void testIsPublicNonStaticMethod() {
         List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
-        assertEquals(
+        Assertions.assertEquals(
                 14, methods.stream().map(MethodUtils::isPublicNonStaticMethod).count());
     }
 
@@ -113,52 +110,52 @@ class MethodUtilsTest extends AbstractAnnotationProcessingTest {
         // Object#toString()
         String methodName = "toString";
         ExecutableElement method = findMethod(type.asType(), methodName);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#hashCode()
         methodName = "hashCode";
         method = findMethod(type.asType(), methodName);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#getClass()
         methodName = "getClass";
         method = findMethod(type.asType(), methodName);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#finalize()
         methodName = "finalize";
         method = findMethod(type.asType(), methodName);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#clone()
         methodName = "clone";
         method = findMethod(type.asType(), methodName);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#notify()
         methodName = "notify";
         method = findMethod(type.asType(), methodName);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#notifyAll()
         methodName = "notifyAll";
         method = findMethod(type.asType(), methodName);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#wait(long)
         methodName = "wait";
         method = findMethod(type.asType(), methodName, long.class);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#wait(long,int)
         methodName = "wait";
         method = findMethod(type.asType(), methodName, long.class, int.class);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
 
         // Object#equals(Object)
         methodName = "equals";
         method = findMethod(type.asType(), methodName, Object.class);
-        assertEquals(method.getSimpleName().toString(), methodName);
+        Assertions.assertEquals(method.getSimpleName().toString(), methodName);
     }
 
     @Test
@@ -166,32 +163,32 @@ class MethodUtilsTest extends AbstractAnnotationProcessingTest {
         List<? extends ExecutableElement> methods = doGetAllDeclaredMethods();
 
         ExecutableElement overrideMethod = getOverrideMethod(processingEnv, testType, methods.get(0));
-        assertNull(overrideMethod);
+        Assertions.assertNull(overrideMethod);
 
         ExecutableElement declaringMethod = findMethod(getType(TestService.class), "echo", "java.lang.String");
 
         overrideMethod = getOverrideMethod(processingEnv, testType, declaringMethod);
-        assertEquals(methods.get(0), overrideMethod);
+        Assertions.assertEquals(methods.get(0), overrideMethod);
     }
 
     @Test
     void testGetMethodName() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
-        assertEquals("echo", getMethodName(method));
-        assertNull(getMethodName(null));
+        Assertions.assertEquals("echo", getMethodName(method));
+        Assertions.assertNull(getMethodName(null));
     }
 
     @Test
     void testReturnType() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
-        assertEquals("java.lang.String", getReturnType(method));
-        assertNull(getReturnType(null));
+        Assertions.assertEquals("java.lang.String", getReturnType(method));
+        Assertions.assertNull(getReturnType(null));
     }
 
     @Test
     void testMatchParameterTypes() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
-        assertArrayEquals(new String[] {"java.lang.String"}, getMethodParameterTypes(method));
-        assertTrue(getMethodParameterTypes(null).length == 0);
+        Assertions.assertArrayEquals(new String[] {"java.lang.String"}, getMethodParameterTypes(method));
+        Assertions.assertTrue(getMethodParameterTypes(null).length == 0);
     }
 }

@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findAnnotation;
@@ -43,9 +44,6 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.isAnnotationPresent;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The {@link AnnotationUtils} Test
@@ -67,21 +65,22 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     void testGetAnnotation() {
         AnnotationMirror serviceAnnotation = getAnnotation(testType, Service.class);
-        assertEquals("3.0.0", getAttribute(serviceAnnotation, "version"));
-        assertEquals("test", getAttribute(serviceAnnotation, "group"));
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", getAttribute(serviceAnnotation, "interfaceName"));
+        Assertions.assertEquals("3.0.0", getAttribute(serviceAnnotation, "version"));
+        Assertions.assertEquals("test", getAttribute(serviceAnnotation, "group"));
+        Assertions.assertEquals(
+                "org.apache.dubbo.metadata.tools.TestService", getAttribute(serviceAnnotation, "interfaceName"));
 
-        assertNull(getAnnotation(testType, (Class) null));
-        assertNull(getAnnotation(testType, (String) null));
+        Assertions.assertNull(getAnnotation(testType, (Class) null));
+        Assertions.assertNull(getAnnotation(testType, (String) null));
 
-        assertNull(getAnnotation(testType.asType(), (Class) null));
-        assertNull(getAnnotation(testType.asType(), (String) null));
+        Assertions.assertNull(getAnnotation(testType.asType(), (Class) null));
+        Assertions.assertNull(getAnnotation(testType.asType(), (String) null));
 
-        assertNull(getAnnotation((Element) null, (Class) null));
-        assertNull(getAnnotation((Element) null, (String) null));
+        Assertions.assertNull(getAnnotation((Element) null, (Class) null));
+        Assertions.assertNull(getAnnotation((Element) null, (String) null));
 
-        assertNull(getAnnotation((TypeElement) null, (Class) null));
-        assertNull(getAnnotation((TypeElement) null, (String) null));
+        Assertions.assertNull(getAnnotation((TypeElement) null, (Class) null));
+        Assertions.assertNull(getAnnotation((TypeElement) null, (String) null));
     }
 
     @Test
@@ -89,130 +88,133 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         List<AnnotationMirror> annotations = getAnnotations(testType);
         Iterator<AnnotationMirror> iterator = annotations.iterator();
 
-        assertEquals(1, annotations.size());
+        Assertions.assertEquals(1, annotations.size());
         //        assertEquals("com.alibaba.dubbo.config.annotation.Service",
         // iterator.next().getAnnotationType().toString());
-        assertEquals(
+        Assertions.assertEquals(
                 "org.apache.dubbo.config.annotation.Service",
                 iterator.next().getAnnotationType().toString());
 
         annotations = getAnnotations(testType, Service.class);
         iterator = annotations.iterator();
-        assertEquals(1, annotations.size());
-        assertEquals(
+        Assertions.assertEquals(1, annotations.size());
+        Assertions.assertEquals(
                 "org.apache.dubbo.config.annotation.Service",
                 iterator.next().getAnnotationType().toString());
 
         annotations = getAnnotations(testType.asType(), Service.class);
         iterator = annotations.iterator();
-        assertEquals(1, annotations.size());
-        assertEquals(
+        Assertions.assertEquals(1, annotations.size());
+        Assertions.assertEquals(
                 "org.apache.dubbo.config.annotation.Service",
                 iterator.next().getAnnotationType().toString());
 
         annotations = getAnnotations(testType.asType(), Service.class.getTypeName());
         iterator = annotations.iterator();
-        assertEquals(1, annotations.size());
-        assertEquals(
+        Assertions.assertEquals(1, annotations.size());
+        Assertions.assertEquals(
                 "org.apache.dubbo.config.annotation.Service",
                 iterator.next().getAnnotationType().toString());
 
         annotations = getAnnotations(testType, Override.class);
-        assertEquals(0, annotations.size());
+        Assertions.assertEquals(0, annotations.size());
 
         //        annotations = getAnnotations(testType, com.alibaba.dubbo.config.annotation.Service.class);
         //        assertEquals(1, annotations.size());
 
-        assertTrue(getAnnotations(null, (Class) null).isEmpty());
-        assertTrue(getAnnotations(null, (String) null).isEmpty());
-        assertTrue(getAnnotations(testType, (Class) null).isEmpty());
-        assertTrue(getAnnotations(testType, (String) null).isEmpty());
+        Assertions.assertTrue(getAnnotations(null, (Class) null).isEmpty());
+        Assertions.assertTrue(getAnnotations(null, (String) null).isEmpty());
+        Assertions.assertTrue(getAnnotations(testType, (Class) null).isEmpty());
+        Assertions.assertTrue(getAnnotations(testType, (String) null).isEmpty());
 
-        assertTrue(getAnnotations(null, Service.class).isEmpty());
-        assertTrue(getAnnotations(null, Service.class.getTypeName()).isEmpty());
+        Assertions.assertTrue(getAnnotations(null, Service.class).isEmpty());
+        Assertions.assertTrue(getAnnotations(null, Service.class.getTypeName()).isEmpty());
     }
 
     @Test
     void testGetAllAnnotations() {
 
         List<AnnotationMirror> annotations = getAllAnnotations(testType);
-        assertEquals(4, annotations.size());
+        Assertions.assertEquals(4, annotations.size());
 
         annotations = getAllAnnotations(testType.asType(), annotation -> true);
-        assertEquals(4, annotations.size());
+        Assertions.assertEquals(4, annotations.size());
 
         annotations = getAllAnnotations(processingEnv, TestServiceImpl.class);
-        assertEquals(4, annotations.size());
+        Assertions.assertEquals(4, annotations.size());
 
         annotations = getAllAnnotations(testType.asType(), Service.class);
-        assertEquals(3, annotations.size());
+        Assertions.assertEquals(3, annotations.size());
 
         annotations = getAllAnnotations(testType, Override.class);
-        assertEquals(0, annotations.size());
+        Assertions.assertEquals(0, annotations.size());
 
         //        annotations = getAllAnnotations(testType.asType(), com.alibaba.dubbo.config.annotation.Service.class);
         //        assertEquals(2, annotations.size());
 
-        assertTrue(getAllAnnotations((Element) null, (Class) null).isEmpty());
-        assertTrue(getAllAnnotations((TypeMirror) null, (String) null).isEmpty());
-        assertTrue(getAllAnnotations((ProcessingEnvironment) null, (Class) null).isEmpty());
-        assertTrue(
+        Assertions.assertTrue(getAllAnnotations((Element) null, (Class) null).isEmpty());
+        Assertions.assertTrue(
+                getAllAnnotations((TypeMirror) null, (String) null).isEmpty());
+        Assertions.assertTrue(
+                getAllAnnotations((ProcessingEnvironment) null, (Class) null).isEmpty());
+        Assertions.assertTrue(
                 getAllAnnotations((ProcessingEnvironment) null, (String) null).isEmpty());
 
-        assertTrue(getAllAnnotations((Element) null).isEmpty());
-        assertTrue(getAllAnnotations((TypeMirror) null).isEmpty());
-        assertTrue(getAllAnnotations(processingEnv, (Class) null).isEmpty());
-        assertTrue(getAllAnnotations(processingEnv, (String) null).isEmpty());
+        Assertions.assertTrue(getAllAnnotations((Element) null).isEmpty());
+        Assertions.assertTrue(getAllAnnotations((TypeMirror) null).isEmpty());
+        Assertions.assertTrue(getAllAnnotations(processingEnv, (Class) null).isEmpty());
+        Assertions.assertTrue(getAllAnnotations(processingEnv, (String) null).isEmpty());
 
-        assertTrue(getAllAnnotations(testType, (Class) null).isEmpty());
-        assertTrue(getAllAnnotations(testType.asType(), (Class) null).isEmpty());
+        Assertions.assertTrue(getAllAnnotations(testType, (Class) null).isEmpty());
+        Assertions.assertTrue(getAllAnnotations(testType.asType(), (Class) null).isEmpty());
 
-        assertTrue(getAllAnnotations(testType, (String) null).isEmpty());
-        assertTrue(getAllAnnotations(testType.asType(), (String) null).isEmpty());
+        Assertions.assertTrue(getAllAnnotations(testType, (String) null).isEmpty());
+        Assertions.assertTrue(
+                getAllAnnotations(testType.asType(), (String) null).isEmpty());
 
-        assertTrue(getAllAnnotations((Element) null, Service.class).isEmpty());
-        assertTrue(getAllAnnotations((TypeMirror) null, Service.class.getTypeName())
+        Assertions.assertTrue(getAllAnnotations((Element) null, Service.class).isEmpty());
+        Assertions.assertTrue(getAllAnnotations((TypeMirror) null, Service.class.getTypeName())
                 .isEmpty());
     }
 
     @Test
     void testFindAnnotation() {
 
-        assertEquals(
+        Assertions.assertEquals(
                 "org.apache.dubbo.config.annotation.Service",
                 findAnnotation(testType, Service.class).getAnnotationType().toString());
         //        assertEquals("com.alibaba.dubbo.config.annotation.Service", findAnnotation(testType,
         // com.alibaba.dubbo.config.annotation.Service.class).getAnnotationType().toString());
-        assertEquals(
+        Assertions.assertEquals(
                 "javax.ws.rs.Path",
                 findAnnotation(testType, Path.class).getAnnotationType().toString());
-        assertEquals(
+        Assertions.assertEquals(
                 "javax.ws.rs.Path",
                 findAnnotation(testType.asType(), Path.class)
                         .getAnnotationType()
                         .toString());
-        assertEquals(
+        Assertions.assertEquals(
                 "javax.ws.rs.Path",
                 findAnnotation(testType.asType(), Path.class.getTypeName())
                         .getAnnotationType()
                         .toString());
-        assertNull(findAnnotation(testType, Override.class));
+        Assertions.assertNull(findAnnotation(testType, Override.class));
 
-        assertNull(findAnnotation((Element) null, (Class) null));
-        assertNull(findAnnotation((Element) null, (String) null));
-        assertNull(findAnnotation((TypeMirror) null, (Class) null));
-        assertNull(findAnnotation((TypeMirror) null, (String) null));
+        Assertions.assertNull(findAnnotation((Element) null, (Class) null));
+        Assertions.assertNull(findAnnotation((Element) null, (String) null));
+        Assertions.assertNull(findAnnotation((TypeMirror) null, (Class) null));
+        Assertions.assertNull(findAnnotation((TypeMirror) null, (String) null));
 
-        assertNull(findAnnotation(testType, (Class) null));
-        assertNull(findAnnotation(testType, (String) null));
-        assertNull(findAnnotation(testType.asType(), (Class) null));
-        assertNull(findAnnotation(testType.asType(), (String) null));
+        Assertions.assertNull(findAnnotation(testType, (Class) null));
+        Assertions.assertNull(findAnnotation(testType, (String) null));
+        Assertions.assertNull(findAnnotation(testType.asType(), (Class) null));
+        Assertions.assertNull(findAnnotation(testType.asType(), (String) null));
     }
 
     @Test
     void testFindMetaAnnotation() {
         getAllDeclaredMethods(getType(TestService.class)).forEach(method -> {
-            assertEquals(
+            Assertions.assertEquals(
                     "javax.ws.rs.HttpMethod",
                     findMetaAnnotation(method, "javax.ws.rs.HttpMethod")
                             .getAnnotationType()
@@ -222,28 +224,28 @@ class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
 
     @Test
     void testGetAttribute() {
-        assertEquals(
+        Assertions.assertEquals(
                 "org.apache.dubbo.metadata.tools.TestService",
                 getAttribute(findAnnotation(testType, Service.class), "interfaceName"));
-        assertEquals(
+        Assertions.assertEquals(
                 "org.apache.dubbo.metadata.tools.TestService",
                 getAttribute(findAnnotation(testType, Service.class).getElementValues(), "interfaceName"));
-        assertEquals("/echo", getAttribute(findAnnotation(testType, Path.class), "value"));
+        Assertions.assertEquals("/echo", getAttribute(findAnnotation(testType, Path.class), "value"));
 
-        assertNull(getAttribute(findAnnotation(testType, Path.class), null));
-        assertNull(getAttribute(findAnnotation(testType, (Class) null), null));
+        Assertions.assertNull(getAttribute(findAnnotation(testType, Path.class), null));
+        Assertions.assertNull(getAttribute(findAnnotation(testType, (Class) null), null));
     }
 
     @Test
     void testGetValue() {
         AnnotationMirror pathAnnotation = getAnnotation(getType(TestService.class), Path.class);
-        assertEquals("/echo", getValue(pathAnnotation));
+        Assertions.assertEquals("/echo", getValue(pathAnnotation));
     }
 
     @Test
     void testIsAnnotationPresent() {
-        assertTrue(isAnnotationPresent(testType, "org.apache.dubbo.config.annotation.Service"));
+        Assertions.assertTrue(isAnnotationPresent(testType, "org.apache.dubbo.config.annotation.Service"));
         //        assertTrue(isAnnotationPresent(testType, "com.alibaba.dubbo.config.annotation.Service"));
-        assertTrue(isAnnotationPresent(testType, "javax.ws.rs.Path"));
+        Assertions.assertTrue(isAnnotationPresent(testType, "javax.ws.rs.Path"));
     }
 }

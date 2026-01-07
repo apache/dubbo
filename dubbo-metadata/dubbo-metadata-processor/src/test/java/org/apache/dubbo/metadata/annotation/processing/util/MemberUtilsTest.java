@@ -28,6 +28,7 @@ import javax.lang.model.element.VariableElement;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static javax.lang.model.element.Modifier.PRIVATE;
@@ -39,9 +40,6 @@ import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.h
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.isPublicNonStatic;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.matchParameterTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link MemberUtils} Test
@@ -62,16 +60,17 @@ class MemberUtilsTest extends AbstractAnnotationProcessingTest {
 
     @Test
     void testIsPublicNonStatic() {
-        assertFalse(isPublicNonStatic(null));
-        methodsIn(getDeclaredMembers(testType.asType())).forEach(method -> assertTrue(isPublicNonStatic(method)));
+        Assertions.assertFalse(isPublicNonStatic(null));
+        methodsIn(getDeclaredMembers(testType.asType()))
+                .forEach(method -> Assertions.assertTrue(isPublicNonStatic(method)));
     }
 
     @Test
     void testHasModifiers() {
-        assertFalse(hasModifiers(null));
+        Assertions.assertFalse(hasModifiers(null));
         List<? extends Element> members = getAllDeclaredMembers(testType.asType());
         List<VariableElement> fields = fieldsIn(members);
-        assertTrue(hasModifiers(fields.get(0), PRIVATE));
+        Assertions.assertTrue(hasModifiers(fields.get(0), PRIVATE));
     }
 
     @Test
@@ -79,35 +78,35 @@ class MemberUtilsTest extends AbstractAnnotationProcessingTest {
         TypeElement type = getType(Model.class);
         List<? extends Element> members = getDeclaredMembers(type.asType());
         List<VariableElement> fields = fieldsIn(members);
-        assertEquals(19, members.size());
-        assertEquals(6, fields.size());
-        assertEquals("f", fields.get(0).getSimpleName().toString());
-        assertEquals("d", fields.get(1).getSimpleName().toString());
-        assertEquals("tu", fields.get(2).getSimpleName().toString());
-        assertEquals("str", fields.get(3).getSimpleName().toString());
-        assertEquals("bi", fields.get(4).getSimpleName().toString());
-        assertEquals("bd", fields.get(5).getSimpleName().toString());
+        Assertions.assertEquals(19, members.size());
+        Assertions.assertEquals(6, fields.size());
+        Assertions.assertEquals("f", fields.get(0).getSimpleName().toString());
+        Assertions.assertEquals("d", fields.get(1).getSimpleName().toString());
+        Assertions.assertEquals("tu", fields.get(2).getSimpleName().toString());
+        Assertions.assertEquals("str", fields.get(3).getSimpleName().toString());
+        Assertions.assertEquals("bi", fields.get(4).getSimpleName().toString());
+        Assertions.assertEquals("bd", fields.get(5).getSimpleName().toString());
 
         members = getAllDeclaredMembers(type.asType());
         fields = fieldsIn(members);
-        assertEquals(11, fields.size());
-        assertEquals("f", fields.get(0).getSimpleName().toString());
-        assertEquals("d", fields.get(1).getSimpleName().toString());
-        assertEquals("tu", fields.get(2).getSimpleName().toString());
-        assertEquals("str", fields.get(3).getSimpleName().toString());
-        assertEquals("bi", fields.get(4).getSimpleName().toString());
-        assertEquals("bd", fields.get(5).getSimpleName().toString());
-        assertEquals("b", fields.get(6).getSimpleName().toString());
-        assertEquals("s", fields.get(7).getSimpleName().toString());
-        assertEquals("i", fields.get(8).getSimpleName().toString());
-        assertEquals("l", fields.get(9).getSimpleName().toString());
-        assertEquals("z", fields.get(10).getSimpleName().toString());
+        Assertions.assertEquals(11, fields.size());
+        Assertions.assertEquals("f", fields.get(0).getSimpleName().toString());
+        Assertions.assertEquals("d", fields.get(1).getSimpleName().toString());
+        Assertions.assertEquals("tu", fields.get(2).getSimpleName().toString());
+        Assertions.assertEquals("str", fields.get(3).getSimpleName().toString());
+        Assertions.assertEquals("bi", fields.get(4).getSimpleName().toString());
+        Assertions.assertEquals("bd", fields.get(5).getSimpleName().toString());
+        Assertions.assertEquals("b", fields.get(6).getSimpleName().toString());
+        Assertions.assertEquals("s", fields.get(7).getSimpleName().toString());
+        Assertions.assertEquals("i", fields.get(8).getSimpleName().toString());
+        Assertions.assertEquals("l", fields.get(9).getSimpleName().toString());
+        Assertions.assertEquals("z", fields.get(10).getSimpleName().toString());
     }
 
     @Test
     void testMatchParameterTypes() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
-        assertTrue(matchParameterTypes(method.getParameters(), "java.lang.String"));
-        assertFalse(matchParameterTypes(method.getParameters(), "java.lang.Object"));
+        Assertions.assertTrue(matchParameterTypes(method.getParameters(), "java.lang.String"));
+        Assertions.assertFalse(matchParameterTypes(method.getParameters(), "java.lang.Object"));
     }
 }

@@ -28,11 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link PrimitiveTypeDefinitionBuilder} Test
@@ -80,26 +79,26 @@ class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTes
         fField = findField(testType, "f");
         dField = findField(testType, "d");
 
-        assertEquals("boolean", zField.asType().toString());
-        assertEquals("byte", bField.asType().toString());
-        assertEquals("char", cField.asType().toString());
-        assertEquals("short", sField.asType().toString());
-        assertEquals("int", iField.asType().toString());
-        assertEquals("long", lField.asType().toString());
-        assertEquals("float", fField.asType().toString());
-        assertEquals("double", dField.asType().toString());
+        Assertions.assertEquals("boolean", zField.asType().toString());
+        Assertions.assertEquals("byte", bField.asType().toString());
+        Assertions.assertEquals("char", cField.asType().toString());
+        Assertions.assertEquals("short", sField.asType().toString());
+        Assertions.assertEquals("int", iField.asType().toString());
+        Assertions.assertEquals("long", lField.asType().toString());
+        Assertions.assertEquals("float", fField.asType().toString());
+        Assertions.assertEquals("double", dField.asType().toString());
     }
 
     @Test
     void testAccept() {
-        assertTrue(builder.accept(processingEnv, zField.asType()));
-        assertTrue(builder.accept(processingEnv, bField.asType()));
-        assertTrue(builder.accept(processingEnv, cField.asType()));
-        assertTrue(builder.accept(processingEnv, sField.asType()));
-        assertTrue(builder.accept(processingEnv, iField.asType()));
-        assertTrue(builder.accept(processingEnv, lField.asType()));
-        assertTrue(builder.accept(processingEnv, fField.asType()));
-        assertTrue(builder.accept(processingEnv, dField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, zField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, bField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, cField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, sField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, iField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, lField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, fField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, dField.asType()));
     }
 
     @Test
@@ -120,14 +119,14 @@ class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTes
         Map<String, TypeDefinition> typeCache = new HashMap<>();
         TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
         assertBasicTypeDefinition(typeDefinition, field.asType().toString(), builder);
-        //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
+        //        Assertions.assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
     }
 
     static void assertBasicTypeDefinition(TypeDefinition typeDefinition, String type, TypeBuilder builder) {
-        assertEquals(type, typeDefinition.getType());
-        //        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
-        assertTrue(typeDefinition.getProperties().isEmpty());
-        assertTrue(typeDefinition.getItems().isEmpty());
-        assertTrue(typeDefinition.getEnums().isEmpty());
+        Assertions.assertEquals(type, typeDefinition.getType());
+        //        Assertions.assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
+        Assertions.assertTrue(typeDefinition.getProperties().isEmpty());
+        Assertions.assertTrue(typeDefinition.getItems().isEmpty());
+        Assertions.assertTrue(typeDefinition.getEnums().isEmpty());
     }
 }

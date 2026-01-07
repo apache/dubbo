@@ -31,11 +31,10 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link ArrayTypeDefinitionBuilder} Test
@@ -76,11 +75,11 @@ class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     @Test
     void testAccept() {
-        assertTrue(builder.accept(processingEnv, integersField.asType()));
-        assertTrue(builder.accept(processingEnv, stringsField.asType()));
-        assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
-        assertTrue(builder.accept(processingEnv, modelsField.asType()));
-        assertTrue(builder.accept(processingEnv, colorsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, integersField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, stringsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, modelsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, colorsField.asType()));
     }
 
     @Test
@@ -105,7 +104,7 @@ class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
                 builder,
                 (def, subDef) -> {
                     TypeElement subType = elements.getTypeElement(subDef.getType());
-                    assertEquals(ElementKind.CLASS, subType.getKind());
+                    Assertions.assertEquals(ElementKind.CLASS, subType.getKind());
                 });
 
         buildAndAssertTypeDefinition(
@@ -116,7 +115,7 @@ class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
                 builder,
                 (def, subDef) -> {
                     TypeElement subType = elements.getTypeElement(subDef.getType());
-                    assertEquals(ElementKind.ENUM, subType.getKind());
+                    Assertions.assertEquals(ElementKind.ENUM, subType.getKind());
                 });
     }
 
@@ -131,10 +130,10 @@ class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
         TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
         String subTypeName = typeDefinition.getItems().get(0);
         TypeDefinition subTypeDefinition = typeCache.get(subTypeName);
-        assertEquals(expectedType, typeDefinition.getType());
-        //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
-        assertEquals(compositeType, subTypeDefinition.getType());
-        //        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
+        Assertions.assertEquals(expectedType, typeDefinition.getType());
+        //        Assertions.assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
+        Assertions.assertEquals(compositeType, subTypeDefinition.getType());
+        //        Assertions.assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
         Stream.of(assertions).forEach(assertion -> assertion.accept(typeDefinition, subTypeDefinition));
     }
 }

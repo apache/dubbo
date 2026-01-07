@@ -26,10 +26,8 @@ import org.apache.dubbo.metadata.annotation.processing.model.SimpleTypeModel;
 
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link GeneralTypeDefinitionBuilder} Test
@@ -52,14 +50,17 @@ class GeneralTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest 
 
     @Test
     void testAccept() {
-        assertTrue(builder.accept(processingEnv, getType(Model.class).asType()));
-        assertTrue(
+        Assertions.assertTrue(builder.accept(processingEnv, getType(Model.class).asType()));
+        Assertions.assertTrue(
                 builder.accept(processingEnv, getType(PrimitiveTypeModel.class).asType()));
-        assertTrue(builder.accept(processingEnv, getType(SimpleTypeModel.class).asType()));
-        assertTrue(builder.accept(processingEnv, getType(ArrayTypeModel.class).asType()));
-        assertTrue(
+        Assertions.assertTrue(
+                builder.accept(processingEnv, getType(SimpleTypeModel.class).asType()));
+        Assertions.assertTrue(
+                builder.accept(processingEnv, getType(ArrayTypeModel.class).asType()));
+        Assertions.assertTrue(
                 builder.accept(processingEnv, getType(CollectionTypeModel.class).asType()));
-        assertFalse(builder.accept(processingEnv, getType(Color.class).asType()));
+        Assertions.assertFalse(
+                builder.accept(processingEnv, getType(Color.class).asType()));
     }
 
     @Test

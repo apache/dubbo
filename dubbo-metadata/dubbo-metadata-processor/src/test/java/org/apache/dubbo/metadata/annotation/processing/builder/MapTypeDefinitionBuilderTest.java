@@ -30,11 +30,10 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link MapTypeDefinitionBuilder} Test
@@ -70,21 +69,21 @@ class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
         modelsField = findField(testType, "models");
         modelArraysField = findField(testType, "modelArrays");
 
-        assertEquals("strings", stringsField.getSimpleName().toString());
-        assertEquals("colors", colorsField.getSimpleName().toString());
-        assertEquals(
+        Assertions.assertEquals("strings", stringsField.getSimpleName().toString());
+        Assertions.assertEquals("colors", colorsField.getSimpleName().toString());
+        Assertions.assertEquals(
                 "primitiveTypeModels", primitiveTypeModelsField.getSimpleName().toString());
-        assertEquals("models", modelsField.getSimpleName().toString());
-        assertEquals("modelArrays", modelArraysField.getSimpleName().toString());
+        Assertions.assertEquals("models", modelsField.getSimpleName().toString());
+        Assertions.assertEquals("modelArrays", modelArraysField.getSimpleName().toString());
     }
 
     @Test
     void testAccept() {
-        assertTrue(builder.accept(processingEnv, stringsField.asType()));
-        assertTrue(builder.accept(processingEnv, colorsField.asType()));
-        assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
-        assertTrue(builder.accept(processingEnv, modelsField.asType()));
-        assertTrue(builder.accept(processingEnv, modelArraysField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, stringsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, colorsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, modelsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, modelArraysField.asType()));
     }
 
     @Test
@@ -145,11 +144,11 @@ class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
         TypeDefinition keyTypeDefinition = typeCache.get(keyTypeName);
         String valueTypeName = typeDefinition.getItems().get(1);
         TypeDefinition valueTypeDefinition = typeCache.get(valueTypeName);
-        assertEquals(expectedType, typeDefinition.getType());
-        //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
-        assertEquals(keyType, keyTypeDefinition.getType());
-        assertEquals(valueType, valueTypeDefinition.getType());
-        //        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
+        Assertions.assertEquals(expectedType, typeDefinition.getType());
+        //        Assertions.assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
+        Assertions.assertEquals(keyType, keyTypeDefinition.getType());
+        Assertions.assertEquals(valueType, valueTypeDefinition.getType());
+        //        Assertions.assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
         Stream.of(assertions).forEach(assertion -> assertion.accept(typeDefinition, keyTypeDefinition));
     }
 }

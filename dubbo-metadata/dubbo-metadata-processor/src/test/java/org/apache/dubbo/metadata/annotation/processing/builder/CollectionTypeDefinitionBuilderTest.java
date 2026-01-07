@@ -24,12 +24,11 @@ import javax.lang.model.element.VariableElement;
 
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.ArrayTypeDefinitionBuilderTest.buildAndAssertTypeDefinition;
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link CollectionTypeDefinitionBuilder} Test
@@ -65,21 +64,21 @@ class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
         modelsField = findField(testType, "models");
         modelArraysField = findField(testType, "modelArrays");
 
-        assertEquals("strings", stringsField.getSimpleName().toString());
-        assertEquals("colors", colorsField.getSimpleName().toString());
-        assertEquals(
+        Assertions.assertEquals("strings", stringsField.getSimpleName().toString());
+        Assertions.assertEquals("colors", colorsField.getSimpleName().toString());
+        Assertions.assertEquals(
                 "primitiveTypeModels", primitiveTypeModelsField.getSimpleName().toString());
-        assertEquals("models", modelsField.getSimpleName().toString());
-        assertEquals("modelArrays", modelArraysField.getSimpleName().toString());
+        Assertions.assertEquals("models", modelsField.getSimpleName().toString());
+        Assertions.assertEquals("modelArrays", modelArraysField.getSimpleName().toString());
     }
 
     @Test
     void testAccept() {
-        assertTrue(builder.accept(processingEnv, stringsField.asType()));
-        assertTrue(builder.accept(processingEnv, colorsField.asType()));
-        assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
-        assertTrue(builder.accept(processingEnv, modelsField.asType()));
-        assertTrue(builder.accept(processingEnv, modelArraysField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, stringsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, colorsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, modelsField.asType()));
+        Assertions.assertTrue(builder.accept(processingEnv, modelArraysField.asType()));
     }
 
     @Test
