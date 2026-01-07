@@ -25,10 +25,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.ServiceDefinitionBuilder.build;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link ServiceDefinitionBuilder} Test
@@ -48,8 +48,9 @@ class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
     @Test
     void testBuild() {
         ServiceDefinition serviceDefinition = build(processingEnv, getType(TestServiceImpl.class));
-        assertEquals(TestServiceImpl.class.getTypeName(), serviceDefinition.getCanonicalName());
-        assertEquals("org/apache/dubbo/metadata/tools/TestServiceImpl.class", serviceDefinition.getCodeSource());
+        Assertions.assertEquals(TestServiceImpl.class.getTypeName(), serviceDefinition.getCanonicalName());
+        Assertions.assertEquals(
+                "org/apache/dubbo/metadata/tools/TestServiceImpl.class", serviceDefinition.getCodeSource());
 
         // types
         List<String> typeNames = Arrays.asList(
@@ -62,11 +63,11 @@ class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
                 "java.util.EventListener");
         for (String typeName : typeNames) {
             String gotTypeName = getTypeName(typeName, serviceDefinition.getTypes());
-            assertEquals(typeName, gotTypeName);
+            Assertions.assertEquals(typeName, gotTypeName);
         }
 
         // methods
-        assertEquals(14, serviceDefinition.getMethods().size());
+        Assertions.assertEquals(14, serviceDefinition.getMethods().size());
     }
 
     private static String getTypeName(String type, List<TypeDefinition> types) {
