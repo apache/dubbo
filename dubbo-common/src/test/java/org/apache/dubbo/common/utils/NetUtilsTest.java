@@ -32,6 +32,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -222,6 +223,61 @@ class NetUtilsTest {
         when(address.getScopeId()).thenReturn(5);
         InetAddress normalized = NetUtils.normalizeV6Address(address);
         assertThat(normalized.getHostAddress(), equalTo("fe80:0:0:0:894:aeec:f37d:23e1%5"));
+    }
+
+    // ================================
+    // IPv6 normalization and testcases
+    // ================================
+
+    @Test
+    void testNormalizeIpv6WithoutScope() throws UnknownHostException {
+        Inet6Address input = (Inet6Address) InetAddress.getByName("2001:db8::1");
+
+        InetAddress result = NetUtils.normalizeV6Address(input);
+
+        assertEquals(input.getHostAddress(), result.getHostAddress());
+    }
+    // NOTE:
+    // Scope-name normalization logic is covered by testNormalizeV6Address,
+    // which is currently @Disabled due to Mockito final-class limitations.
+    // These tests focus on CI-safe behavior over hacky way around.
+
+    @Test
+    void testMatchIpExpressionWithIpv6Pattern() throws UnknownHostException {
+        String pattern = "2001:db8::/64";
+        String host = "2001:db8::1";
+        assertTrue(NetUtils.matchIpExpression(pattern, host, 90));
+    }
+
+    @Test
+    void testMatchIPv6WildcardUnsupported() throws UnknownHostException {
+        String pattern = "2001:db8::*";
+        String host = "2001:db8::1";
+        assertThrows(IllegalArgumentException.class, () -> NetUtils.matchIpExpression(pattern, host, 90));
+    }
+
+    @Test
+    void testMatchIPv4PatternIPv6Host() throws IllegalArgumentException {
+        String pattern = "127.0.0.1";
+        String host = "::1";
+
+        assertThrows(IllegalArgumentException.class, () -> NetUtils.matchIpExpression(pattern, host, 90));
+    }
+
+    @Test
+    void testValidIpv6EdgeCases() {
+        assertDoesNotThrow(() -> InetAddress.getByName("::"));
+        assertDoesNotThrow(() -> InetAddress.getByName("::1"));
+        assertDoesNotThrow(() -> InetAddress.getByName("2001:db8::"));
+    }
+
+    @Test
+    void testInvalidIpv6EdgeCases() {
+        assertThrows(UnknownHostException.class, () -> InetAddress.getByName("1:2:3:4:5:6:7:8:9"));
+
+        assertThrows(UnknownHostException.class, () -> InetAddress.getByName("2001:db8::zzzz"));
+
+        assertThrows(UnknownHostException.class, () -> InetAddress.getByName("2001:db8::192.168.1"));
     }
 
     @Test

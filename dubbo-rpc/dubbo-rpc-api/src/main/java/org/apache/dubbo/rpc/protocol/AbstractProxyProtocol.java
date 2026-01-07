@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -273,6 +274,11 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         @Override
         public boolean isClosed() {
             return false;
+        }
+
+        @Override
+        public void fireChannelEvent(ChannelEvent event) {
+            // Default implementation does nothing for proxy protocols
         }
     }
 }

@@ -145,11 +145,23 @@ public class TriDecoder implements Deframer {
      * Processes the GRPC message body, which depending on frame header flags may be compressed.
      */
     private void processBody() {
-        // There is no reliable way to get the uncompressed size per message when it's compressed,
-        // because the uncompressed bytes are provided through an InputStream whose total size is
-        // unknown until all bytes are read, and we don't know when it happens.
-        byte[] stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
+        // Calculate total bytes read: header + payload (before decompression)
+        int totalBytesRead = HEADER_LENGTH + requiredLength;
 
+        byte[] stream;
+        try {
+            // There is no reliable way to get the uncompressed size per message when it's compressed,
+            // because the uncompressed bytes are provided through an InputStream whose total size is
+            // unknown until all bytes are read, and we don't know when it happens.
+            stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
+        } finally {
+            // Notify listener about bytes read for flow control immediately after reading bytes
+            // This must be in finally block to ensure flow control works even if reading fails
+            // Following gRPC's pattern: bytesRead is called as soon as bytes are consumed from input
+            listener.bytesRead(totalBytesRead);
+        }
+
+        // Process the message after notifying about bytes read
         listener.onRawMessage(stream);
 
         // Done with this frame, begin processing the next header.
@@ -175,6 +187,8 @@ public class TriDecoder implements Deframer {
     }
 
     public interface Listener {
+
+        void bytesRead(int numBytes);
 
         void onRawMessage(byte[] data);
 
