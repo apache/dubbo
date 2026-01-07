@@ -54,6 +54,7 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,6 +92,10 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(ServiceDiscoveryRegistryDirectory.class);
+    private static final String WEIGHT_KEY = "weight";
+
+    private static final Set<String> INVOCATION_KEYS = new HashSet<>(Arrays.asList(
+            CommonConstants.TIMEOUT_KEY, CommonConstants.RETRIES_KEY, CommonConstants.LOADBALANCE_KEY, WEIGHT_KEY));
 
     /**
      * instance address to invoker mapping.
@@ -568,6 +573,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                         .equals(((OverrideInstanceAddressURL) newURL).getOverrideParams())) {
                     return true;
                 }
+            }
+        }
+
+        for (String key : INVOCATION_KEYS) {
+            String oldVal = oldURL.getParameter(key);
+            String newVal = newURL.getParameter(key);
+            if (!Objects.equals(oldVal, newVal)) {
+                return true;
             }
         }
 
