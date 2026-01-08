@@ -84,6 +84,11 @@ public class WebSocketStreamChannel implements H2StreamChannel {
     }
 
     @Override
+    public void consumeBytes(int numBytes) throws Exception {
+        // do nothing
+    }
+
+    @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
         Http2Header http2Header = (Http2Header) httpMetadata;
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
@@ -123,6 +128,11 @@ public class WebSocketStreamChannel implements H2StreamChannel {
 
     @Override
     public void flush() {}
+
+    @Override
+    public boolean isReady() {
+        return session.isOpen();
+    }
 
     private CloseReason encodeCloseReason(Http2Header http2Header) {
         HttpHeaders headers = http2Header.headers();

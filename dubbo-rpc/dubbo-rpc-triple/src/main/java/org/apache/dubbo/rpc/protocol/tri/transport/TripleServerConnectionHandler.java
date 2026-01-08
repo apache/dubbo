@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.event.ReadOnlyEvent;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -95,8 +96,35 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
         return QUIET_EXCEPTIONS.contains(t.getClass().getSimpleName());
     }
 
+    /**
+     * Handle user events triggered on the channel.
+     * <p>
+     * This method specifically handles {@link ReadOnlyEvent} for graceful shutdown:
+     * </p>
+     * <ul>
+     *   <li>When a {@link ReadOnlyEvent} is received, send a GOAWAY frame to the client
+     *       indicating that the server is entering read-only mode and will not accept new streams.</li>
+     *   <li>Other events are delegated to the superclass handler.</li>
+     * </ul>
+     * <p>
+     * Note: Unlike the full graceful shutdown process (triggered by {@code close()}),
+     * the ReadOnlyEvent only sends a GOAWAY frame without closing the connection.
+     * This allows existing streams to complete while preventing new streams.
+     * </p>
+     *
+     * @param ctx the channel handler context
+     * @param evt the user event
+     * @throws Exception if an error occurs during event handling
+     */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof ReadOnlyEvent) {
+            GracefulShutdown.sendGoAwayFrame(ctx);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Sent GOAWAY frame for graceful shutdown (ReadOnlyEvent) on channel: " + ctx.channel());
+            }
+            return;
+        }
         super.userEventTriggered(ctx, evt);
     }
 
