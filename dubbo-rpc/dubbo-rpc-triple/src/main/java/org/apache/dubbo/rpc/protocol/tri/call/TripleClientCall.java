@@ -18,14 +18,12 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
@@ -76,6 +74,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return false;
         }
         if (done) {
+            return false;
+        }
+        if (stream == null) {
             return false;
         }
         return stream.isReady();
@@ -292,16 +293,18 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     }
 
     @Override
-    public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
+    public void start(RequestMetadata metadata, ClientCall.Listener responseListener) {
+        // Set listener BEFORE creating stream, so onReady() can access it
+        this.requestMetadata = metadata;
+        this.listener = responseListener;
+        this.streamingResponse = responseListener.streamingResponse();
+
         ClientStream stream;
         for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
             stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
             if (stream != null) {
-                this.requestMetadata = metadata;
-                this.listener = responseListener;
                 this.stream = stream;
-                this.streamingResponse = responseListener.streamingResponse();
-                return new ClientCallToObserverAdapter<>(this, responseListener.streamingResponse());
+                return;
             }
         }
         throw new IllegalStateException("No available ClientStreamFactory");

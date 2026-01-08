@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 
@@ -105,11 +104,12 @@ public interface ClientCall {
     void sendMessage(Object message);
 
     /**
+     * Start the call with the given metadata and response listener.
+     *
      * @param metadata         request metadata
      * @param responseListener the listener to receive response
-     * @return the stream observer representing the request sink
      */
-    StreamObserver<Object> start(RequestMetadata metadata, Listener responseListener);
+    void start(RequestMetadata metadata, Listener responseListener);
 
     /**
      * @return true if this call is auto request

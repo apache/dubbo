@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
+import org.apache.dubbo.common.stream.ServerCallStreamObserver;
 import org.apache.dubbo.remoting.http12.AbstractServerHttpChannelObserver;
 import org.apache.dubbo.remoting.http12.ErrorCodeHolder;
 import org.apache.dubbo.remoting.http12.FlowControlStreamObserver;
@@ -29,8 +30,14 @@ import org.apache.dubbo.rpc.CancellationContext;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
+/**
+ * HTTP/2 server-side stream observer with flow control and backpressure support.
+ * Implements {@link ServerCallStreamObserver} following gRPC's pattern for backpressure.
+ */
 public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver<H2StreamChannel>
-        implements FlowControlStreamObserver<Object>, Http2CancelableStreamObserver<Object> {
+        implements FlowControlStreamObserver<Object>,
+                Http2CancelableStreamObserver<Object>,
+                ServerCallStreamObserver<Object> {
 
     private CancellationContext cancellationContext;
 
@@ -116,6 +123,11 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     @Override
     public void request(int count) {
         streamingDecoder.request(count);
+    }
+
+    @Override
+    public void setCompression(String compression) {
+        // not supported yet
     }
 
     @Override

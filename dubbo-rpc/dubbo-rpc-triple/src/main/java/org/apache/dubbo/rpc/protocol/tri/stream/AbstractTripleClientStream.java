@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.InitOnReadyQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
@@ -111,7 +112,21 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.streamChannelFuture = initStreamChannel(parent);
     }
 
-    protected abstract TripleStreamChannelFuture initStreamChannel(Channel parent);
+    private TripleStreamChannelFuture initStreamChannel(Channel parent) {
+        TripleStreamChannelFuture tripleStreamChannelFuture = initStreamChannel0(parent);
+        /**
+         * Enqueue InitOnReadyQueueCommand after the stream creation command.
+         * Since WriteQueue executes commands in order within the EventLoop,
+         * this command will run after the stream channel has been created by CreateStreamQueueCommand.
+         *
+         * This is necessary because onReady is only triggered by channelWritabilityChanged,
+         * which won't fire if the channel is always writable from creation.
+         */
+        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, listener));
+        return tripleStreamChannelFuture;
+    }
+
+    protected abstract TripleStreamChannelFuture initStreamChannel0(Channel parent);
 
     /**
      * Get the stream channel future for flow control.

@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.mutiny;
 
+import org.apache.dubbo.common.stream.CallStreamObserver;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.mutiny.calls.MutinyServerCalls;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

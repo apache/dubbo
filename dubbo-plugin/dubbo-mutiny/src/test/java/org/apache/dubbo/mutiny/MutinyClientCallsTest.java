@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.mutiny;
 
+import org.apache.dubbo.common.stream.CallStreamObserver;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.mutiny.calls.MutinyClientCalls;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.stub.StubInvocationUtil;
 
 import java.time.Duration;

@@ -14,24 +14,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.observer;
-
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+package org.apache.dubbo.common.stream;
 
 /**
  * An extension of {@link StreamObserver} that provides additional functionality for flow control
- * and backpressure. This interface mirrors gRPC's {@code CallStreamObserver} for compatibility.
+ * and backpressure. This interface mirrors gRPC's {@code io.grpc.stub.CallStreamObserver} for compatibility.
  *
- * <p>Key features:
+ * <p>This is the base interface for both client-side ({@link ClientCallStreamObserver}) and
+ * server-side ({@link ServerCallStreamObserver}) flow control observers. It provides two types
+ * of flow control:
+ *
+ * <h3>Send-Side Backpressure (Outbound Flow Control)</h3>
+ * <p>Controls the rate at which data is sent to avoid overwhelming the receiver:
  * <ul>
- *   <li>{@link #isReady()} - Check if the stream is ready to accept more messages</li>
- *   <li>{@link #setOnReadyHandler(Runnable)} - Set a callback for when the stream becomes ready</li>
- *   <li>{@link #request(int)} - Request more messages from the peer (for inbound flow control)</li>
- *   <li>{@link #disableAutoFlowControl()} - Switch to manual flow control mode</li>
+ *   <li>{@link #isReady()} - Check if the stream can accept more data without blocking</li>
+ *   <li>{@link #setOnReadyHandler(Runnable)} - Register a callback for when the stream becomes writable</li>
  * </ul>
  *
+ * <h3>Receive-Side Backpressure (Inbound Flow Control)</h3>
+ * <p>Controls the rate at which data is received to avoid being overwhelmed:
+ * <ul>
+ *   <li>{@link #disableAutoFlowControl()} - Switch from automatic to manual message requesting</li>
+ *   <li>{@link #request(int)} - Explicitly request a specific number of messages from the sender</li>
+ * </ul>
+ *
+ * <h3>Typical Usage Pattern</h3>
+ * <pre>{@code
+ * // Send-side backpressure example
+ * callStreamObserver.setOnReadyHandler(() -> {
+ *     while (callStreamObserver.isReady() && hasMoreData()) {
+ *         callStreamObserver.onNext(getNextData());
+ *     }
+ *     if (!hasMoreData()) {
+ *         callStreamObserver.onCompleted();
+ *     }
+ * });
+ *
+ * // Receive-side backpressure example (in beforeStart or similar)
+ * callStreamObserver.disableAutoFlowControl();
+ * callStreamObserver.request(10); // Request initial batch
+ *
+ * // Then in onNext()
+ * public void onNext(T value) {
+ *     process(value);
+ *     callStreamObserver.request(1); // Request next message after processing
+ * }
+ * }</pre>
+ *
  * @param <T> the type of value passed to the stream
+ * @see ClientCallStreamObserver
+ * @see ServerCallStreamObserver
+ * @see ClientResponseObserver
  */
 public interface CallStreamObserver<T> extends StreamObserver<T> {
 
@@ -84,8 +117,6 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      * <p>
      * For stream set compression needs to determine whether the metadata has been sent, and carry
      * on corresponding processing
-     *
-     * @param compression {@link Compressor}
      */
     void setCompression(String compression);
 

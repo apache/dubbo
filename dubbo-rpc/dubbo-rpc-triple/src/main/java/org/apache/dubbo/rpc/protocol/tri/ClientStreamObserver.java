@@ -16,10 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.stream.ClientCallStreamObserver;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
-public interface ClientStreamObserver<T> extends CallStreamObserver<T> {
+/**
+ * @param <T>
+ * @deprecated use {@link ClientCallStreamObserver}
+ */
+@Deprecated
+public interface ClientStreamObserver<T> extends ClientCallStreamObserver<T> {
 
     /**
      * Swaps to manual flow control where no message will be delivered to {@link

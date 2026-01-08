@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.CreateStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.InitOnReadyQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.Http2TripleClientStream;
@@ -88,6 +89,7 @@ class TripleClientStreamTest {
                 listener,
                 http2StreamChannel);
         verify(writeQueue).enqueue(any(CreateStreamQueueCommand.class));
+        verify(writeQueue).enqueue(any(InitOnReadyQueueCommand.class));
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
@@ -100,11 +102,13 @@ class TripleClientStreamTest {
         requestMetadata.version = url.getVersion();
         stream.sendHeader(requestMetadata.toHeaders());
         verify(writeQueue).enqueueFuture(any(HeaderQueueCommand.class), any(Executor.class));
-        // no other commands
-        verify(writeQueue).enqueue(any(QueuedCommand.class));
+        // enqueue should have been called twice: CreateStreamQueueCommand and InitOnReadyQueueCommand
+        verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class));
         stream.sendMessage(new byte[0], 0);
         verify(writeQueue).enqueueFuture(any(DataQueueCommand.class), any(Executor.class));
         verify(writeQueue, times(2)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
+        // After sendHeader and sendMessage, enqueue should have been called twice:
+        // once for CreateStreamQueueCommand and once for InitOnReadyQueueCommand
         stream.halfClose();
         verify(writeQueue).enqueueFuture(any(EndStreamQueueCommand.class), any(Executor.class));
         verify(writeQueue, times(3)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
