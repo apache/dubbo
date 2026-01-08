@@ -70,15 +70,32 @@ public class StartZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
                     .toString());
             context.getExecutorService().submit(() -> executor.execute(cmdLine));
         }
-        try {
-            // TODO: Help me to optimize the ugly sleep.
-            // sleep to wait all of zookeeper instances are started successfully.
-            // The best way is to check the output log with the specified keywords,
-            // however, there maybe keep waiting for check when any exception occurred,
-            // because the output stream will be blocked to wait for continuous data without any break
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            // ignored
+
+        // optimized the sleep by pulling the ports untill they are ready.
+        // This avoids waiting the full 3 seconds if the instances start quickly,
+        // and provide a safer timeout mechanism than blocking on log output streams
+        for (int clientPort : context.getClientPorts()) {
+            boolean started = false;
+            long timeout = System.currentTimeMillis() + 10000; // 10 seconds max wait
+
+            while (System.currentTimeMillis() < timeout) {
+                try (java.net.Socket socket = new java.net.Socket("127.0.0.1", clientPort)) {
+                    started = true;
+                    break;
+                } catch (Exception e) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(500);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+            if (started) {
+                logger.info("Zookeeper on port {} is successfully started.", clientPort);
+            } else {
+                logger.info("Zookeeper on port {} did not start within the timeout period.", clientPort);
+            }
         }
     }
 }
