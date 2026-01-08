@@ -18,20 +18,18 @@ package org.apache.dubbo.spring.boot.context.event;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.springframework.boot.WebApplicationType;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * {@link AwaitingNonWebApplicationListener} Test
  */
-
 class AwaitingNonWebApplicationListenerTest {
 
     @BeforeEach
@@ -69,8 +67,9 @@ class AwaitingNonWebApplicationListenerTest {
         new SpringApplicationBuilder(Object.class)
                 .parent(Object.class)
                 .properties("spring.main.web-application-type=none")
-                .run().close();
-        AwaitingNonWebApplicationListener listener=new AwaitingNonWebApplicationListener();
+                .run()
+                .close();
+        AwaitingNonWebApplicationListener listener = new AwaitingNonWebApplicationListener();
         AtomicBoolean awaited = listener.getAwaited();
         assertFalse(awaited.get());
     }
