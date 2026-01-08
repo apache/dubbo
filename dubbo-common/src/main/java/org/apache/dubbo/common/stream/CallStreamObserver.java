@@ -118,7 +118,7 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      * For stream set compression needs to determine whether the metadata has been sent, and carry
      * on corresponding processing
      */
-    default void setCompression(String compression) {}
+    void setCompression(String compression);
 
     /**
      * Swaps to manual flow control where no message will be delivered to {@link

@@ -126,6 +126,11 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     @Override
+    public void setCompression(String compression) {
+        // not supported yet
+    }
+
+    @Override
     public void disableAutoFlowControl() {
         autoRequestN = false;
     }
