@@ -100,7 +100,7 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      *
      * @param onReadyHandler the handler to invoke when the stream becomes ready
      */
-    default void setOnReadyHandler(Runnable onReadyHandler) {}
+    void setOnReadyHandler(Runnable onReadyHandler);
 
     /**
      * Requests the peer to produce {@code count} more messages to be delivered to the 'inbound'
