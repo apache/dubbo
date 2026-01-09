@@ -42,6 +42,7 @@ public class TripleConfig implements Serializable {
     public static final int DEFAULT_MAX_FRAME_SIZE = 8_388_608;
     public static final int DEFAULT_MAX_HEADER_LIST_SIZE = 32_768;
     public static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024 * 1024;
+    public static final float DEFAULT_WINDOW_UPDATE_RATIO = 0.5f;
 
     public static final String H2_SETTINGS_MAX_MESSAGE_SIZE_KEY = "dubbo.protocol.triple.max-message-size";
 
@@ -150,6 +151,17 @@ public class TripleConfig implements Serializable {
      * Maximum message size.
      */
     private Integer maxMessageSize;
+
+    /**
+     * Window update ratio for HTTP/2 flow control.
+     * Determines when to send WINDOW_UPDATE frames based on the ratio of consumed bytes
+     * to the initial window size. For example, 0.5 means WINDOW_UPDATE is sent when
+     * 50% of the initial window has been consumed.
+     * <p>Valid range: 0.0 to 1.0 (exclusive of 0, as 0 would disable window updates)
+     * <p>The default value is 0.5.
+     * <p>For HTTP/2
+     */
+    private Float windowUpdateRatio;
 
     @Nested
     private RestConfig rest;
@@ -353,6 +365,22 @@ public class TripleConfig implements Serializable {
 
     public void setMaxMessageSize(Integer maxMessageSize) {
         this.maxMessageSize = maxMessageSize;
+    }
+
+    public Float getWindowUpdateRatio() {
+        return windowUpdateRatio;
+    }
+
+    @Parameter(excluded = true)
+    public float getWindowUpdateRatioOrDefault() {
+        return windowUpdateRatio == null ? DEFAULT_WINDOW_UPDATE_RATIO : windowUpdateRatio;
+    }
+
+    public void setWindowUpdateRatio(Float windowUpdateRatio) {
+        if (windowUpdateRatio != null && (windowUpdateRatio <= 0.0f || windowUpdateRatio > 1.0f)) {
+            throw new IllegalArgumentException("windowUpdateRatio must be > 0 and <= 1, but was: " + windowUpdateRatio);
+        }
+        this.windowUpdateRatio = windowUpdateRatio;
     }
 
     public RestConfig getRest() {

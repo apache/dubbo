@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
@@ -31,17 +33,29 @@ import java.util.concurrent.CompletableFuture;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2LocalFlowController;
+import io.netty.handler.codec.http2.Http2Stream;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
+
 public class NettyH2StreamChannel implements H2StreamChannel {
+
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(NettyH2StreamChannel.class);
 
     private final Http2StreamChannel http2StreamChannel;
 
     private final TripleConfig tripleConfig;
 
-    public NettyH2StreamChannel(Http2StreamChannel http2StreamChannel, TripleConfig tripleConfig) {
+    private final Http2Connection http2Connection;
+
+    public NettyH2StreamChannel(
+            Http2StreamChannel http2StreamChannel, TripleConfig tripleConfig, Http2Connection http2Connection) {
         this.http2StreamChannel = http2StreamChannel;
         this.tripleConfig = tripleConfig;
+        this.http2Connection = http2Connection;
     }
 
     @Override
@@ -88,5 +102,46 @@ public class NettyH2StreamChannel implements H2StreamChannel {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
         http2StreamChannel.write(resetFrame).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    @Override
+    public void consumeBytes(int numBytes) throws Exception {
+        if (numBytes <= 0) {
+            return;
+        }
+
+        if (http2Connection == null) {
+            LOGGER.debug("Http2Connection not available, skip consumeBytes");
+            return;
+        }
+
+        Http2LocalFlowController localFlowController = http2Connection.local().flowController();
+
+        // Get the stream from connection using stream id
+        int streamId = http2StreamChannel.stream().id();
+        Http2Stream stream = http2Connection.stream(streamId);
+        if (stream == null) {
+            LOGGER.debug("Stream {} not found in connection, skip consumeBytes", streamId);
+            return;
+        }
+
+        // Consume bytes to trigger WINDOW_UPDATE frame
+        // This must be executed in the event loop thread
+        if (http2StreamChannel.eventLoop().inEventLoop()) {
+            localFlowController.consumeBytes(stream, numBytes);
+        } else {
+            http2StreamChannel.eventLoop().execute(() -> {
+                try {
+                    localFlowController.consumeBytes(stream, numBytes);
+                } catch (Exception e) {
+                    LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes for stream " + streamId, e);
+                }
+            });
+        }
+    }
+
+    @Override
+    public boolean isReady() {
+        return http2StreamChannel.isWritable();
     }
 }

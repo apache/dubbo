@@ -58,7 +58,7 @@ public final class Http3TripleClientStream extends AbstractTripleClientStream {
     }
 
     @Override
-    protected TripleStreamChannelFuture initStreamChannel(Channel parent) {
+    protected TripleStreamChannelFuture initStreamChannel0(Channel parent) {
         Http3RequestStreamInitializer initializer = new Http3RequestStreamInitializer() {
             @Override
             protected void initRequestStream(QuicStreamChannel ch) {
@@ -73,5 +73,11 @@ public final class Http3TripleClientStream extends AbstractTripleClientStream {
         TripleStreamChannelFuture future = new TripleStreamChannelFuture(parent);
         writeQueue.enqueue(Http3CreateStreamQueueCommand.create(initializer, future));
         return future;
+    }
+
+    @Override
+    protected void consumeBytes(int numBytes) {
+        // HTTP/3 flow control is handled differently by QUIC layer
+        // No explicit flow control needed here
     }
 }

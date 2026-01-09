@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
+import org.apache.dubbo.common.stream.CallStreamObserver;
 
 /**
  * Used in ManyToOne and ManyToMany in server. <br>

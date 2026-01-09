@@ -58,6 +58,13 @@ public interface ClientStream extends Stream {
         }
 
         void onClose();
+
+        /**
+         * Called when the stream becomes ready for writing after previously returning false from
+         * {@link Stream#isReady()}. This callback is invoked by the transport layer when
+         * backpressure is relieved and more messages can be sent.
+         */
+        default void onReady() {}
     }
 
     /**
