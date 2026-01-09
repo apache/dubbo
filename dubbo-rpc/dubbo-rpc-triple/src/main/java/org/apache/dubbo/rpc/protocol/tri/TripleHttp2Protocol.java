@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.protocol.tri.h12.http1.DefaultHttp11ServerTransportL
 import org.apache.dubbo.rpc.protocol.tri.h12.http2.GenericHttp2ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2LocalFlowController;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2RemoteFlowController;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 import org.apache.dubbo.rpc.protocol.tri.websocket.DefaultWebSocketServerTransportListenerFactory;
@@ -127,7 +128,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private Http2Connection createHttp2ClientConnection(TripleConfig tripleConfig) {
         Http2Connection connection = new DefaultHttp2Connection(false);
         float windowUpdateRatio = tripleConfig.getWindowUpdateRatioOrDefault();
-        connection.local().flowController(new TripleHttp2LocalFlowController(connection, windowUpdateRatio));
+        connection.local().flowController(TripleHttp2LocalFlowController.newController(connection, windowUpdateRatio));
+        connection.remote().flowController(TripleHttp2RemoteFlowController.newController(connection));
         return connection;
     }
 
@@ -264,7 +266,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private Http2Connection createHttp2ServerConnection(TripleConfig tripleConfig) {
         Http2Connection connection = new DefaultHttp2Connection(true);
         float windowUpdateRatio = tripleConfig.getWindowUpdateRatioOrDefault();
-        connection.local().flowController(new TripleHttp2LocalFlowController(connection, windowUpdateRatio));
+        connection.local().flowController(TripleHttp2LocalFlowController.newController(connection, windowUpdateRatio));
+        connection.remote().flowController(TripleHttp2RemoteFlowController.newController(connection));
         return connection;
     }
 

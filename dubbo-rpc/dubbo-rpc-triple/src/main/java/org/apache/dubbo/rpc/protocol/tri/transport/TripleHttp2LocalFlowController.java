@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import io.netty.handler.codec.http2.DefaultHttp2LocalFlowController;
 import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2LocalFlowController;
 
 /**
  * Custom HTTP/2 local flow controller for Triple protocol with manual flow control.
@@ -61,5 +62,9 @@ public class TripleHttp2LocalFlowController extends DefaultHttp2LocalFlowControl
      */
     public TripleHttp2LocalFlowController(Http2Connection connection, float windowUpdateRatio) {
         super(connection, windowUpdateRatio, true);
+    }
+
+    public static Http2LocalFlowController newController(Http2Connection connection, float windowUpdateRatio) {
+        return new TripleHttp2LocalFlowController(connection, windowUpdateRatio);
     }
 }
