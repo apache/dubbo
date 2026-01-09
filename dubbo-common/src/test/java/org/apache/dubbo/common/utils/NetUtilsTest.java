@@ -18,10 +18,12 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 
+import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.regex.Pattern;
 
@@ -64,6 +66,11 @@ class NetUtilsTest {
         assertTrue(NetUtils.isValidAddress("10.20.130.230:20880"));
         assertFalse(NetUtils.isValidAddress("10.20.130.230"));
         assertFalse(NetUtils.isValidAddress("10.20.130.230:666666"));
+        assertFalse(NetUtils.isValidAddress("127.0.1:8080"));
+        assertFalse(NetUtils.isValidAddress("127.0.0.0.1:8080"));
+        assertFalse(NetUtils.isValidAddress("127.a.0.1:8080"));
+        assertFalse(NetUtils.isValidAddress("127.0.0.1:80a"));
+        assertFalse(NetUtils.isValidAddress("127.0.0.-1:8080"));
     }
 
     @Test
@@ -118,6 +125,9 @@ class NetUtilsTest {
         assertFalse(NetUtils.isValidV4Address((InetAddress) null));
         InetAddress address = mock(InetAddress.class);
         when(address.isLoopbackAddress()).thenReturn(true);
+        assertFalse(NetUtils.isValidV4Address(address));
+        address = mock(InetAddress.class);
+        when(address.isLinkLocalAddress()).thenReturn(true);
         assertFalse(NetUtils.isValidV4Address(address));
         address = mock(InetAddress.class);
         when(address.getHostAddress()).thenReturn("localhost");
@@ -186,6 +196,9 @@ class NetUtilsTest {
         address = NetUtils.toAddress("localhost");
         assertThat(address.getHostName(), equalTo("localhost"));
         assertThat(address.getPort(), equalTo(0));
+        assertThrows(NumberFormatException.class, () -> {
+            NetUtils.toAddress("127.0.0.1:abc");
+        });
     }
 
     @Test
@@ -379,7 +392,13 @@ class NetUtilsTest {
     @Test
     void testIsMulticastAddress() {
         assertTrue(NetUtils.isMulticastAddress("224.0.0.1"));
+        assertTrue(NetUtils.isMulticastAddress("224.0.0.0"));
+        assertTrue(NetUtils.isMulticastAddress("239.255.255.255"));
+        assertFalse(NetUtils.isMulticastAddress("223.255.255.255"));
+        assertFalse(NetUtils.isMulticastAddress("240.0.0.0"));
         assertFalse(NetUtils.isMulticastAddress("127.0.0.1"));
+        assertFalse(NetUtils.isMulticastAddress("abc.0.0.1"));
+        assertFalse(NetUtils.isMulticastAddress("localhost"));
     }
 
     @Test
@@ -464,5 +483,71 @@ class NetUtilsTest {
             SystemPropertyConfigUtils.setSystemProperty(
                     CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE, "");
         }
+    }
+
+    @Test
+    void testIsIPV6URLStdFormat() {
+        assertTrue(NetUtils.isIPV6URLStdFormat("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
+        assertTrue(NetUtils.isIPV6URLStdFormat("2001:db8::1"));
+        assertTrue(NetUtils.isIPV6URLStdFormat("[2001:db8::1]"));
+        assertTrue(NetUtils.isIPV6URLStdFormat("[2001:db8::1]:8080"));
+        assertFalse(NetUtils.isIPV6URLStdFormat("192.168.1.1"));
+        assertFalse(NetUtils.isIPV6URLStdFormat("localhost"));
+        assertFalse(NetUtils.isIPV6URLStdFormat("[]"));
+        assertFalse(NetUtils.isIPV6URLStdFormat("127.0.0.1:8080"));
+    }
+
+    @Test
+    void testGetLegalIP() {
+        assertThat(NetUtils.getLegalIP("[2001:db8::1]"), equalTo("2001:db8::1"));
+        assertThat(NetUtils.getLegalIP("[2001:db8::1]:8080"), equalTo("2001:db8::1"));
+        assertThat(NetUtils.getLegalIP("2001:db8::1"), equalTo("2001:db8::1"));
+        assertThat(NetUtils.getLegalIP("192.168.1.1"), equalTo("192.168.1.1"));
+        assertThat(NetUtils.getLegalIP("[::]"), equalTo("::"));
+        assertThat(NetUtils.getLegalIP("[]"), equalTo("[]"));
+    }
+
+    @Test
+    void testGetLocalHostName() {
+        assertNotNull(NetUtils.getLocalHostName());
+    }
+
+    @Test
+    void testGetLocalHostV6() {
+        String v6 = NetUtils.getLocalHostV6();
+        if (v6 != null) {
+            assertTrue(v6.contains(":"));
+        }
+    }
+
+    @Test
+    void testIsReuseAddressSupported() {
+        boolean supported = NetUtils.isReuseAddressSupported();
+        assertTrue(supported || !supported);
+    }
+
+    @Test
+    void testMatchIpRange_NullInputs() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            NetUtils.matchIpRange(null, "127.0.0.1", 80);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            NetUtils.matchIpRange("127.0.0.1", null, 80);
+        });
+    }
+
+    @Test
+    void testMatchIpRange_ZeroPadding() throws UnknownHostException {
+        assertTrue(NetUtils.matchIpRange("10.00.1.1", "10.0.1.1", 0));
+        assertTrue(NetUtils.matchIpRange("10.000.1.1", "10.0.1.1", 0));
+    }
+
+    @Test
+    void testIsPortInUsed_True() throws IOException {
+        int port = NetUtils.getAvailablePort();
+        try (ServerSocket socket = new ServerSocket(port)) {
+            assertTrue(NetUtils.isPortInUsed(port));
+        }
+        assertFalse(NetUtils.isPortInUsed(port));
     }
 }
