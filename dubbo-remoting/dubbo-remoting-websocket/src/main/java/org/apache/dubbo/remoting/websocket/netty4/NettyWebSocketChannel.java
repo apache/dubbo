@@ -57,6 +57,11 @@ public class NettyWebSocketChannel implements H2StreamChannel {
     }
 
     @Override
+    public void consumeBytes(int numBytes) throws Exception {
+        // do nothing
+    }
+
+    @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
         NettyHttpChannelFutureListener futureListener = new NettyHttpChannelFutureListener();
         channel.write(httpMetadata).addListener(futureListener);
@@ -83,5 +88,10 @@ public class NettyWebSocketChannel implements H2StreamChannel {
     @Override
     public void flush() {
         channel.flush();
+    }
+
+    @Override
+    public boolean isReady() {
+        return channel.isWritable();
     }
 }

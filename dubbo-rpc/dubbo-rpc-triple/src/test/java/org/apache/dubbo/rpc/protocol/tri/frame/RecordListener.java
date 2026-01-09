@@ -22,6 +22,9 @@ public class RecordListener implements TriDecoder.Listener {
     boolean close;
 
     @Override
+    public void bytesRead(int numBytes) {}
+
+    @Override
     public void onRawMessage(byte[] data) {
         dataCount += 1;
         lastData = data;

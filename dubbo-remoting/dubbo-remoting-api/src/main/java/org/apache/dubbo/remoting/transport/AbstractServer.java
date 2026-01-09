@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -197,5 +198,17 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
                     "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
+    }
+
+    @Override
+    public void fireChannelEvent(ChannelEvent event) {
+        // Default implementation does nothing.
+        // Subclasses can override this method to implement protocol-specific event handling.
+        logger.warn(
+                INTERNAL_ERROR,
+                "unknown error in remoting module",
+                "",
+                "The fireChannelEvent method is not implemented for "
+                        + getClass().getName() + ", event: " + event);
     }
 }
