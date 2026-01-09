@@ -70,5 +70,4 @@ public class TripleHttp2RemoteFlowController extends DefaultHttp2RemoteFlowContr
         dist.allocationQuantum(16 * 1024);
         return new TripleHttp2RemoteFlowController(connection, dist);
     }
-
 }
