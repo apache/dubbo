@@ -71,10 +71,8 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier imp
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof ServiceMetadataIdentifier))
-            return false;
-        if (!super.equals(o))
-            return false;
+        if (!(o instanceof ServiceMetadataIdentifier)) return false;
+        if (!super.equals(o)) return false;
         ServiceMetadataIdentifier that = (ServiceMetadataIdentifier) o;
         return Objects.equals(revision, that.revision) && Objects.equals(protocol, that.protocol);
     }

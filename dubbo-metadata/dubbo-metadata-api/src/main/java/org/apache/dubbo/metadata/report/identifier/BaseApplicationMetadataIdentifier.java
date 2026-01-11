@@ -50,8 +50,7 @@ public class BaseApplicationMetadataIdentifier {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof BaseApplicationMetadataIdentifier))
-            return false;
+        if (!(o instanceof BaseApplicationMetadataIdentifier)) return false;
         BaseApplicationMetadataIdentifier that = (BaseApplicationMetadataIdentifier) o;
         return Objects.equals(application, that.application);
     }

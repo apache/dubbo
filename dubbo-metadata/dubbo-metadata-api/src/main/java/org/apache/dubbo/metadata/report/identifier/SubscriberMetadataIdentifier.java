@@ -67,10 +67,8 @@ public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentif
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof SubscriberMetadataIdentifier))
-            return false;
-        if (!super.equals(o))
-            return false;
+        if (!(o instanceof SubscriberMetadataIdentifier)) return false;
+        if (!super.equals(o)) return false;
         SubscriberMetadataIdentifier that = (SubscriberMetadataIdentifier) o;
         return Objects.equals(revision, that.revision);
     }

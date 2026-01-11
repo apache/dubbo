@@ -64,11 +64,12 @@ public class BaseServiceMetadataIdentifier {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof BaseServiceMetadataIdentifier))
-            return false;
+        if (!(o instanceof BaseServiceMetadataIdentifier)) return false;
         BaseServiceMetadataIdentifier that = (BaseServiceMetadataIdentifier) o;
-        return Objects.equals(serviceInterface, that.serviceInterface) && Objects.equals(version, that.version)
-                && Objects.equals(group, that.group) && Objects.equals(side, that.side);
+        return Objects.equals(serviceInterface, that.serviceInterface)
+                && Objects.equals(version, that.version)
+                && Objects.equals(group, that.group)
+                && Objects.equals(side, that.side);
     }
 
     @Override

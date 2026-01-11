@@ -103,10 +103,8 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof MetadataIdentifier))
-            return false;
-        if (!super.equals(o))
-            return false;
+        if (!(o instanceof MetadataIdentifier)) return false;
+        if (!super.equals(o)) return false;
         MetadataIdentifier that = (MetadataIdentifier) o;
         return Objects.equals(application, that.application);
     }
