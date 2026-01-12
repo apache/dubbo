@@ -165,7 +165,7 @@
     <hamcrest_version>2.2</hamcrest_version>
     <cglib_version>2.2.2</cglib_version>
     <mockito_version>4.11.0</mockito_version>
-    <spock_version>2.3-groovy-4.0</spock_version>
+    <spock_version>2.4-groovy-4.0</spock_version>
 
     <jaxb_version>2.2.7</jaxb_version>
     <activation_version>1.2.0</activation_version>
