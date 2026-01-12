@@ -61,9 +61,9 @@ class MetadataIdentifierTest {
     @Test
     void testPutDuplicateIdentifier() {
         ConcurrentHashMap<MetadataIdentifier, Object> map = new ConcurrentHashMap<>();
-        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), null);
-        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), null);
-        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), null);
+        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), new Object());
+        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), new Object());
+        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), new Object());
         Assertions.assertEquals(map.size(), 1);
     }
 }

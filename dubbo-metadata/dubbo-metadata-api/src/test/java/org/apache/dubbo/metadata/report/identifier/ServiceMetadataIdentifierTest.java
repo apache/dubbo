@@ -28,13 +28,13 @@ public class ServiceMetadataIdentifierTest {
         ConcurrentHashMap<ServiceMetadataIdentifier, Object> map = new ConcurrentHashMap<>();
         map.put(
                 new ServiceMetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp", "dubbo"),
-                null);
+                new Object());
         map.put(
                 new ServiceMetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp", "dubbo"),
-                null);
+                new Object());
         map.put(
                 new ServiceMetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp", "dubbo"),
-                null);
+                new Object());
         Assertions.assertEquals(map.size(), 1);
     }
 }

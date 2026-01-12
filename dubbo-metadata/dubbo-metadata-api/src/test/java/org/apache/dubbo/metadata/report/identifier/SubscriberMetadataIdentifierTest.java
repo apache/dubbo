@@ -26,9 +26,9 @@ public class SubscriberMetadataIdentifierTest {
     @Test
     void testPutDuplicateIdentifier() {
         ConcurrentHashMap<SubscriberMetadataIdentifier, Object> map = new ConcurrentHashMap<>();
-        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), null);
-        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), null);
-        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), null);
+        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), new Object());
+        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), new Object());
+        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), new Object());
         Assertions.assertEquals(map.size(), 1);
     }
 }
