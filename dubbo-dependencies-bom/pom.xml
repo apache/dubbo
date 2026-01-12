@@ -139,7 +139,7 @@
     <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
     <tomcat_embed_version>8.5.100</tomcat_embed_version>
     <nacos_version>2.5.2</nacos_version>
-    <sentinel.version>1.8.8</sentinel.version>
+    <sentinel.version>1.8.9</sentinel.version>
     <seata.version>1.8.0</seata.version>
     <grpc.version>1.78.0</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
