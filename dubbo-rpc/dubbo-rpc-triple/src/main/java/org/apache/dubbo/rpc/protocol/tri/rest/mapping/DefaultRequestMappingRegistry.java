@@ -139,9 +139,11 @@ public final class DefaultRequestMappingRegistry implements RequestMappingRegist
                         if (len > 0 && StreamObserver.class.isAssignableFrom(paramTypes[len - 1])) {
                             md = sd.getMethod(method.getName(), Arrays.copyOf(paramTypes, len - 1));
                         }
-                        if(md==null){
-                            String altname=Character.toUpperCase(method.getName().charAt(0))+method.getName().substring(1);
-                            md=sd.getMethod(altname,paramTypes);
+                        if (md == null) {
+                            String altname =
+                                    Character.toUpperCase(method.getName().charAt(0))
+                                            + method.getName().substring(1);
+                            md = sd.getMethod(altname, paramTypes);
                         }
                     }
                     MethodMeta methodMeta = new MethodMeta(methods, md, serviceMeta);
