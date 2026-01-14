@@ -30,6 +30,10 @@ class PathUtilsTest {
     void testNormalize() {
         Assertions.assertEquals("/path", PathUtils.normalize("//path"));
         Assertions.assertEquals("/api/v1", PathUtils.normalize("/api/v1?name=dubbo"));
+        // Empty and Null handling (The "Edge Cases")
         Assertions.assertEquals("/", PathUtils.normalize(""));
+        Assertions.assertEquals("/", PathUtils.normalize(null));
+        // Multiple slashes
+        Assertions.assertEquals("/a/b/c", PathUtils.normalize("/a//b///c"));
     }
 }
