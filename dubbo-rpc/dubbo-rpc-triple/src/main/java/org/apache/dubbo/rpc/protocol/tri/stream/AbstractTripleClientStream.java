@@ -86,6 +86,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     private boolean isReturnTriException = false;
 
+    /**
+     * Tracks the last known ready state for detecting state transitions.
+     * when the state changes from "not ready" to "ready".
+     */
+    private volatile boolean lastReadyState = false;
+
     protected AbstractTripleClientStream(
             FrameworkModel frameworkModel,
             Executor executor,
@@ -192,6 +198,10 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                         .withDescription("Client write message failed")
                         .withCause(future.cause()));
                 transportException(future.cause());
+            } else {
+                // After successful write, check if we need to trigger onReady
+                // This provides an additional trigger mechanism similar to gRPC's onSentBytes()
+                onWriteCompleted();
             }
         });
     }
@@ -256,7 +266,31 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     protected void onWritabilityChanged() {
         Channel channel = streamChannelFuture.getNow();
         if (channel != null && channel.isWritable()) {
-            // Synchronously call listener.onReady(), which will use executor to run the callback
+            // Update last ready state and trigger onReady
+            lastReadyState = true;
+            listener.onReady();
+        } else {
+            lastReadyState = false;
+        }
+    }
+
+    /**
+     * Called after a write operation completes successfully.
+     * This provides an additional trigger mechanism for onReady,
+     * It only triggers onReady when the state changes from "not ready" to "ready",
+     */
+    private void onWriteCompleted() {
+        Channel channel = streamChannelFuture.getNow();
+        if (channel == null) {
+            return;
+        }
+
+        boolean wasReady = lastReadyState;
+        boolean isNowReady = channel.isWritable();
+        lastReadyState = isNowReady;
+
+        // Only trigger onReady when state changes from "not ready" to "ready"
+        if (!wasReady && isNowReady) {
             listener.onReady();
         }
     }
