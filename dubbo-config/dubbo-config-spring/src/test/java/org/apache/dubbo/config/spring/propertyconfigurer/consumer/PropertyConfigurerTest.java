@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.propertyconfigurer.consumer;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
@@ -38,11 +39,15 @@ class PropertyConfigurerTest {
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
     }
 
     @Test
@@ -61,7 +66,6 @@ class PropertyConfigurerTest {
 
             HelloService service = (HelloService) context.getBean("demoService");
             String result = service.sayHello("world");
-            System.out.println("result: " + result);
             Assertions.assertEquals(
                     "Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0),
                     result);

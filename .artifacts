@@ -41,6 +41,7 @@ dubbo-filter-cache
 dubbo-filter-validation
 dubbo-kubernetes
 dubbo-maven-plugin
+dubbo-mcp
 dubbo-metadata
 dubbo-metadata-api
 dubbo-metadata-definition-protobuf
@@ -56,6 +57,7 @@ dubbo-metrics-registry
 dubbo-metrics-config-center
 dubbo-metrics-netty
 dubbo-metrics-event
+dubbo-mutiny
 dubbo-native
 dubbo-parent
 dubbo-plugin
@@ -107,6 +109,7 @@ dubbo-zookeeper-curator5-spring-boot-starter
 dubbo-sentinel-spring-boot-starter
 dubbo-seata-spring-boot-starter
 dubbo-spring-security
+dubbo-spring6-security
 dubbo-tracing
 dubbo-xds
 dubbo-plugin-loom

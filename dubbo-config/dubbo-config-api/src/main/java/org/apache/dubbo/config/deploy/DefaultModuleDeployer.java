@@ -652,6 +652,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         return referenceCache;
     }
 
+    @Override
+    public void registerServiceInstance() {
+        applicationDeployer.registerServiceInstance();
+    }
+
     /**
      * Prepare for export/refer service, trigger initializing application and module
      */

@@ -38,39 +38,51 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     /**
      * extension name -> activate WireProtocol
      */
-    private final Map<String, WireProtocol> protocols;
+    private volatile Map<String, WireProtocol> protocols;
 
     /*
     protocol name --> URL object
     wire protocol will get url object to config server pipeline for channel
      */
-    private final Map<String, URL> supportedUrls = new ConcurrentHashMap<>();
+    private Map<String, URL> supportedUrls;
 
     /*
     protocol name --> ChannelHandler object
     wire protocol will get handler to config server pipeline for channel
     (for triple protocol, it's a default handler that do nothing)
      */
-    private final Map<String, ChannelHandler> supportedHandlers = new ConcurrentHashMap<>();
+    private Map<String, ChannelHandler> supportedHandlers;
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        ExtensionLoader<WireProtocol> loader = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
-        Map<String, WireProtocol> protocols = loader.getActivateExtension(url, new String[0]).stream()
+    }
+
+    public Map<String, WireProtocol> getProtocols() {
+        return protocols;
+    }
+
+    @Override
+    protected final void doOpen() {
+        // initialize supportedUrls and supportedHandlers before potential usage to avoid NPE.
+        supportedUrls = new ConcurrentHashMap<>();
+        supportedHandlers = new ConcurrentHashMap<>();
+
+        ExtensionLoader<WireProtocol> loader =
+                getUrl().getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class);
+        Map<String, WireProtocol> protocols = loader.getActivateExtension(getUrl(), new String[0]).stream()
                 .collect(Collectors.toConcurrentMap(loader::getExtensionName, Function.identity()));
         // load extra protocols
-        String extraProtocols = url.getParameter(EXT_PROTOCOL);
+        String extraProtocols = getUrl().getParameter(EXT_PROTOCOL);
         if (StringUtils.isNotEmpty(extraProtocols)) {
             Arrays.stream(extraProtocols.split(COMMA_SEPARATOR)).forEach(p -> {
                 protocols.put(p, loader.getExtension(p));
             });
         }
         this.protocols = protocols;
+        doOpen0();
     }
 
-    public Map<String, WireProtocol> getProtocols() {
-        return protocols;
-    }
+    protected abstract void doOpen0();
 
     /*
     This method registers URL object and corresponding channel handler to pu server.

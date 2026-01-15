@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -79,7 +80,7 @@ public class Curator5ZookeeperClient
                     .sessionTimeoutMs(sessionExpireMs);
             String userInformation = url.getUserInformation();
             if (userInformation != null && userInformation.length() > 0) {
-                builder = builder.authorization("digest", userInformation.getBytes());
+                builder = builder.authorization("digest", userInformation.getBytes(StandardCharsets.UTF_8));
                 builder.aclProvider(new ACLProvider() {
                     @Override
                     public List<ACL> getDefaultAcl() {
@@ -96,8 +97,10 @@ public class Curator5ZookeeperClient
             client.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(url));
             client.start();
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
-
-            if (!connected) {
+            boolean check = UrlUtils.isCheck(url);
+            if (check && !connected) {
+                // close CuratorFramework to stop re-connection.
+                client.close();
                 IllegalStateException illegalStateException =
                         new IllegalStateException("zookeeper not connected, the address is: " + url);
 

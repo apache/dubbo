@@ -17,10 +17,13 @@
 package org.apache.dubbo.common.bytecode;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MixinTest {
+    private static final Logger logger = LoggerFactory.getLogger(MixinTest.class);
 
     @Test
     void testMain() {
@@ -48,25 +51,25 @@ class MixinTest {
 
     public class C1 implements Mixin.MixinAware {
         public void m1() {
-            System.out.println("c1.m1();");
+            logger.info("c1.m1();");
         }
 
         public void m2() {
-            System.out.println("c1.m2();");
+            logger.info("c1.m2();");
         }
 
         public void setMixinInstance(Object mi) {
-            System.out.println("setMixinInstance:" + mi);
+            logger.info("c1.setMixinInstance:{}", mi);
         }
     }
 
     public class C2 implements Mixin.MixinAware {
         public void m3() {
-            System.out.println("c2.m3();");
+            logger.info("c2.m3();");
         }
 
         public void setMixinInstance(Object mi) {
-            System.out.println("setMixinInstance:" + mi);
+            logger.info("c2.setMixinInstance:{}", mi);
         }
     }
 }

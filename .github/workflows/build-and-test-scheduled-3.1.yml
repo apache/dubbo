@@ -22,7 +22,7 @@ env:
 
 jobs:
   license:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,7 +32,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build-source:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
@@ -83,7 +83,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-22.04, windows-latest ]
     env:
       ZOOKEEPER_VERSION: 3.7.2
     steps:
@@ -104,12 +104,11 @@ jobs:
         if: ${{ startsWith( matrix.os, 'ubuntu') && steps.cache-zookeeper.outputs.cache-hit != 'true' }}
         run: |
           mkdir -p ${{ github.workspace }}/.tmp/zookeeper
-          wget -c https://archive.apache.org/dist/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c https://apache.website-solution.net/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://apache.stu.edu.tw/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          wget -t 1 -T 120 -c https://archive.apache.org/dist/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c https://apache.website-solution.net/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
           echo "list the downloaded zookeeper binary archive"
           ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
       - name: "Download zookeeper binary archive in Windows OS"
@@ -117,12 +116,11 @@ jobs:
         shell: msys2 {0}
         run: |
           mkdir -p ${{ github.workspace }}/.tmp/zookeeper
-          wget -c https://archive.apache.org/dist/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c https://apache.website-solution.net/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://apache.stu.edu.tw/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
-          wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          wget -t 1 -T 120 -c https://archive.apache.org/dist/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c https://apache.website-solution.net/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -t 1 -T 120 -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
           echo "list the downloaded zookeeper binary archive"
           ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
 
@@ -133,7 +131,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-22.04, windows-latest ]
         jdk: [ 8, 11, 17, 21 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
@@ -177,7 +175,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-22.04, windows-latest ]
         jdk: [ 8, 11, 17, 21 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
@@ -217,14 +215,14 @@ jobs:
       - name: "Test with Maven with Integration Tests"
         timeout-minutes: 70
         if: ${{ startsWith( matrix.os, 'ubuntu') && matrix.jdk != '8' }}
-        run: ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge' -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+        run: ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Pjacoco,'!jdk15ge' -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Test with Maven without Integration Tests"
         timeout-minutes: 90
         if: ${{ startsWith( matrix.os, 'windows') && matrix.jdk != '8' }}
-        run: ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -P"jacoco,jdk15ge-simple,'!jdk15ge'" -D"http.keepAlive=false" -D"maven.wagon.http.pool=false" -D"maven.wagon.httpconnectionManager.ttlSeconds=120" -D"maven.wagon.http.retryHandler.count=5" -DskipTests=false -DskipIntegrationTests=true -D"checkstyle.skip=false" -D"checkstyle_unix.skip=true" -D"rat.skip=false" -D"maven.javadoc.skip=true" -D"embeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper"
+        run: ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -P"jacoco,'!jdk15ge'" -D"http.keepAlive=false" -D"maven.wagon.http.pool=false" -D"maven.wagon.httpconnectionManager.ttlSeconds=120" -D"maven.wagon.http.retryHandler.count=5" -DskipTests=false -DskipIntegrationTests=true -D"checkstyle.skip=false" -D"checkstyle_unix.skip=true" -D"rat.skip=false" -D"maven.javadoc.skip=true" -D"embeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper"
 
   samples-test-prepare:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JOB_COUNT: 5
     steps:
@@ -242,8 +240,8 @@ jobs:
           path: test/jobs
   samples-test-job:
     needs: [build-source, samples-test-prepare]
-    name: "Samples Test on ubuntu-latest (JobId: ${{matrix.job_id}} JavaVer: ${{matrix.jdk}})"
-    runs-on: ubuntu-latest
+    name: "Samples Test on ubuntu-22.04 (JobId: ${{matrix.job_id}} JavaVer: ${{matrix.jdk}})"
+    runs-on: ubuntu-22.04
     timeout-minutes: 90
     env:
       JAVA_VER: ${{matrix.jdk}}
@@ -290,9 +288,15 @@ jobs:
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
         run: |
-          cd test && bash ./build-test-image.sh
+          cd test && bash -c ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
+      - name: "Upload test logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: samples-test-logs-${{matrix.jdk}}-${{matrix.job_id}}
+          path: test/logs/*
       - name: "Upload test result"
         if: always()
         uses: actions/upload-artifact@v4
@@ -302,7 +306,7 @@ jobs:
   samples-test-result:
     needs: [samples-test-job]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
@@ -319,11 +323,12 @@ jobs:
           pattern: samples-test-result-${{matrix.jdk}}-*
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
+          merge-multiple: true
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
 
   integration-test-prepare:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JOB_COUNT: 5
     steps:
@@ -341,8 +346,8 @@ jobs:
           path: test/jobs
   integration-test-job:
     needs: [build-source, integration-test-prepare]
-    name: "Integration Test on ubuntu-latest (JobId: ${{matrix.job_id}} JavaVer: ${{matrix.jdk}})"
-    runs-on: ubuntu-latest
+    name: "Integration Test on ubuntu-22.04 (JobId: ${{matrix.job_id}} JavaVer: ${{matrix.jdk}})"
+    runs-on: ubuntu-22.04
     timeout-minutes: 90
     env:
       JAVA_VER: ${{matrix.jdk}}
@@ -389,9 +394,15 @@ jobs:
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
         run: |
-          cd test && bash ./build-test-image.sh
+          cd test && bash -c ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
+      - name: "Upload test logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-logs-${{matrix.jdk}}-${{matrix.job_id}}
+          path: test/logs/*
       - name: "Upload test result"
         if: always()
         uses: actions/upload-artifact@v4
@@ -401,7 +412,7 @@ jobs:
   integration-test-result:
     needs: [integration-test-job]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       JAVA_VER: ${{matrix.jdk}}
     strategy:
@@ -418,11 +429,12 @@ jobs:
           pattern: integration-test-result-${{matrix.jdk}}-*
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test/jobs/
+          merge-multiple: true
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
 
   error-code-inspecting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -461,7 +473,7 @@ jobs:
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
 
   native-image-inspecting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -479,7 +491,7 @@ jobs:
 
       - name: "Setup Zookeeper environment"
         run: |
-          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
+          wget -t 1 -T 120 https://archive.apache.org/dist/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
           tar -zxvf apache-zookeeper-3.8.4-bin.tar.gz
           mv apache-zookeeper-3.8.4-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.4-bin/conf/zoo.cfg
           apache-zookeeper-3.8.4-bin/bin/zkServer.sh start

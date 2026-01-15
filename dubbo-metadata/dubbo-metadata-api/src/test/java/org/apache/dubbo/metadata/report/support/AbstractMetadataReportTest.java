@@ -43,6 +43,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -54,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AbstractMetadataReportTest {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMetadataReportTest.class);
 
     private NewMetadataReport abstractMetadataReport;
     private ApplicationModel applicationModel;
@@ -68,7 +71,7 @@ class AbstractMetadataReportTest {
                 .setApplication(new ApplicationConfig(getClass().getSimpleName()));
 
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName()
-                + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+                + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&sync=true");
         abstractMetadataReport = new NewMetadataReport(url, applicationModel);
     }
 
@@ -123,9 +126,10 @@ class AbstractMetadataReportTest {
     @Test
     void testFileExistAfterPut() throws ClassNotFoundException {
         // just for one method
-        URL singleUrl = URL.valueOf(
-                "redis://" + NetUtils.getLocalAddress().getHostName()
-                        + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
+        String filePath = System.getProperty("user.home") + "/dubbo-md-unit.properties";
+        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName()
+                + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest&sync=true&file="
+                + filePath);
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl, applicationModel);
 
         assertFalse(singleMetadataReport.file.exists());
@@ -153,11 +157,11 @@ class AbstractMetadataReportTest {
         String group = null;
         String application = "vic.retry";
         URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName()
-                + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
+                + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry&sync=true");
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2, applicationModel);
         retryReport.metadataReportRetry.retryPeriod = 400L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName()
-                + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+                + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&sync=true");
         Assertions.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
         assertEquals(0, retryReport.metadataReportRetry.retryCounter.get());
         assertTrue(retryReport.store.isEmpty());
@@ -189,8 +193,9 @@ class AbstractMetadataReportTest {
         String version = "1.0.0.retrycancel";
         String group = null;
         String application = "vic.retry";
-        URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName()
-                + ":4444/org.apache.dubbo.TestServiceForRetryCancel?version=1.0.0.retrycancel&application=vic.retry");
+        URL storeUrl = URL.valueOf(
+                "retryReport://" + NetUtils.getLocalAddress().getHostName()
+                        + ":4444/org.apache.dubbo.TestServiceForRetryCancel?version=1.0.0.retrycancel&application=vic.retry&sync=true");
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2, applicationModel);
         retryReport.metadataReportRetry.retryPeriod = 150L;
         retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
@@ -416,7 +421,7 @@ class AbstractMetadataReportTest {
         protected void doStoreProviderMetadata(
                 MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
             ++executeTimes;
-            System.out.println("***" + executeTimes + ";" + System.currentTimeMillis());
+            logger.info("***" + executeTimes + ";" + System.currentTimeMillis());
             semaphore.acquireUninterruptibly();
             if (executeTimes <= needRetryTimes) {
                 throw new RuntimeException("must retry:" + executeTimes);

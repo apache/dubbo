@@ -22,9 +22,6 @@ import org.apache.dubbo.config.spring.api.DemoService;
 
 import org.springframework.stereotype.Controller;
 
-/**
- * AnnotationAction
- */
 @Controller("annotationAction")
 public class AnnotationAction {
 

@@ -33,10 +33,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 
-/**
- * AdaptiveLoadBalance
- * </p>
- */
 public class AdaptiveLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "adaptive";

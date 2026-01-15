@@ -20,12 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
+import org.apache.dubbo.rpc.DefaultProtocolServer;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -63,7 +66,7 @@ public class TripleProtocol extends AbstractProtocol {
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
 
-    public static boolean CONVERT_NO_LOWER_HEADER = false;
+    public static boolean CONVERT_NO_LOWER_HEADER = true;
     public static boolean IGNORE_1_0_0_VERSION = false;
     public static boolean RESOLVE_FALLBACK_TO_DEFAULT = true;
     public static boolean VERBOSE_ENABLED = false;
@@ -91,6 +94,8 @@ public class TripleProtocol extends AbstractProtocol {
 
         ServletExchanger.init(globalConf);
         Http3Exchanger.init(globalConf);
+
+        this.frameworkModel.getBeanFactory().registerBean(new TripleGracefulShutdown(this));
     }
 
     @Override
@@ -175,7 +180,11 @@ public class TripleProtocol extends AbstractProtocol {
         }
 
         if (bindPort) {
-            PortUnificationExchanger.bind(url, new DefaultPuHandler());
+            String addr = url.getAddress();
+            ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, k -> {
+                RemotingServer remotingServer = PortUnificationExchanger.bind(url, new DefaultPuHandler());
+                return new DefaultProtocolServer(remotingServer);
+            });
         }
 
         Http3Exchanger.bind(url);

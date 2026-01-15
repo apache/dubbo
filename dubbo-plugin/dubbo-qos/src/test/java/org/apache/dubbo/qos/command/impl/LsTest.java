@@ -36,8 +36,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class LsTest {
+    private static final Logger logger = LoggerFactory.getLogger(LsTest.class);
     private FrameworkModel frameworkModel;
     private ModuleServiceRepository repository;
 
@@ -58,7 +61,7 @@ class LsTest {
     void testExecute() {
         Ls ls = new Ls(frameworkModel);
         String result = ls.execute(Mockito.mock(CommandContext.class), new String[0]);
-        System.out.println(result);
+        logger.info(result);
         /**
          * As Provider side:
          * +--------------------------------+---+

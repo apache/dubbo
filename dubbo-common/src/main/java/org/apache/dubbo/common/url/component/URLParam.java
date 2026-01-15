@@ -837,12 +837,9 @@ public class URLParam {
      * @return raw string like parameters
      */
     public String getRawParam() {
-        if (StringUtils.isNotEmpty(rawParam)) {
-            return rawParam;
-        } else {
-            // empty if parameters have been modified or init by Map
-            return toString();
-        }
+        // If rawParam is not null, return it directly
+        // If rawParam is null, it means that the parameters have been modified
+        return toString();
     }
 
     protected Map<String, Map<String, String>> getMethodParameters() {
@@ -893,15 +890,17 @@ public class URLParam {
     @Override
     public int hashCode() {
         if (hashCodeCache == -1) {
+            int result = 1;
             for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
                 if (!TIMESTAMP_KEY.equals(entry.getKey())) {
-                    hashCodeCache = hashCodeCache * 31 + Objects.hashCode(entry);
+                    result += entry.hashCode();
                 }
             }
-            for (Integer value : VALUE) {
-                hashCodeCache = hashCodeCache * 31 + value;
-            }
-            hashCodeCache = hashCodeCache * 31 + ((KEY == null) ? 0 : KEY.hashCode());
+
+            result = 31 * result + Arrays.hashCode(VALUE);
+            result = 31 * result + ((KEY == null) ? 0 : KEY.hashCode());
+
+            hashCodeCache = result;
         }
         return hashCodeCache;
     }

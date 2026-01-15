@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.handler.codec.quic.QuicStreamChannel;
 
 public class NettyHttp3StreamChannel implements H2StreamChannel {
 
@@ -49,6 +49,11 @@ public class NettyHttp3StreamChannel implements H2StreamChannel {
     public Http2OutputMessage newOutputMessage(boolean endStream) {
         ByteBuf buffer = http3StreamChannel.alloc().buffer();
         return new Http2OutputMessageFrame(new ByteBufOutputStream(buffer), endStream);
+    }
+
+    @Override
+    public void consumeBytes(int numBytes) throws Exception {
+        // HTTP/3 flow control is handled by Netty and QUIC implementation.
     }
 
     @Override
@@ -78,5 +83,10 @@ public class NettyHttp3StreamChannel implements H2StreamChannel {
     @Override
     public void flush() {
         http3StreamChannel.flush();
+    }
+
+    @Override
+    public boolean isReady() {
+        return http3StreamChannel.isWritable();
     }
 }

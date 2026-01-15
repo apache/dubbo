@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Objects;
+
 /**
  * The MetadataIdentifier is used to store method descriptor.
  * <p>
@@ -97,6 +99,19 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
 
     public String getUniqueServiceName() {
         return serviceInterface != null ? URL.buildKey(serviceInterface, getGroup(), getVersion()) : null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof MetadataIdentifier)) return false;
+        if (!super.equals(o)) return false;
+        MetadataIdentifier that = (MetadataIdentifier) o;
+        return Objects.equals(application, that.application);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), application);
     }
 
     @Override

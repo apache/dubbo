@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -57,7 +58,7 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  */
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
-    private final int serverShutdownTimeoutMills;
+    private int serverShutdownTimeoutMills;
     /**
      * netty server bootstrap.
      */
@@ -69,16 +70,10 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private final Map<String, Channel> dubboChannels = new ConcurrentHashMap<>();
+    private Map<String, Channel> dubboChannels;
 
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
-
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in
-        // CommonConstants.
-        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-        // read config before destroy
-        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
     @Override
@@ -100,8 +95,17 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     @Override
-    public void doOpen() throws Throwable {
+    public void doOpen0() {
         bootstrap = new ServerBootstrap();
+
+        // initialize dubboChannels and serverShutdownTimeoutMills before potential usage to avoid NPE.
+        dubboChannels = new ConcurrentHashMap<>();
+
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in
+        // CommonConstants.
+        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
+        // read config before destroy
+        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
 
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
         workerGroup = NettyEventLoopFactory.eventLoopGroup(
@@ -230,5 +234,44 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     @Override
     public boolean canHandleIdle() {
         return true;
+    }
+
+    @Override
+    public void fireChannelEvent(ChannelEvent event) {
+        Collection<Channel> channels = getChannels();
+        if (CollectionUtils.isEmpty(channels)) {
+            return;
+        }
+        for (Channel channel : channels) {
+            try {
+                if (channel.isConnected()) {
+                    fireChannelEventToChannel(channel, event);
+                }
+            } catch (Throwable e) {
+                logger.warn(
+                        TRANSPORT_FAILED_CLOSE,
+                        "",
+                        "",
+                        "Failed to fire channel event to channel: " + channel + ", event: " + event,
+                        e);
+            }
+        }
+    }
+
+    /**
+     * Fire ChannelEvent to the channel.
+     * The event will be handled by protocol-specific handlers (e.g., TripleServerConnectionHandler).
+     *
+     * @param channel the Dubbo channel
+     * @param event the channel event to fire
+     */
+    private void fireChannelEventToChannel(Channel channel, ChannelEvent event) {
+        // Get the underlying netty channel and fire the user event
+        if (channel instanceof NettyChannel) {
+            io.netty.channel.Channel nettyChannel = ((NettyChannel) channel).getNioChannel();
+            if (nettyChannel != null && nettyChannel.isActive()) {
+                nettyChannel.pipeline().fireUserEventTriggered(event);
+            }
+        }
     }
 }

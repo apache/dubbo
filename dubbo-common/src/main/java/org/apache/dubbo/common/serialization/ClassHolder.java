@@ -16,18 +16,17 @@
  */
 package org.apache.dubbo.common.serialization;
 
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ClassHolder {
-    private final Map<String, Set<Class<?>>> classCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Set<Class<?>>> classCache = new ConcurrentHashMap<>();
 
     public void storeClass(Class<?> clazz) {
-        classCache
-                .computeIfAbsent(clazz.getName(), k -> new ConcurrentHashSet<>())
+        ConcurrentHashMapUtils.computeIfAbsent(classCache, clazz.getName(), k -> new ConcurrentHashSet<>())
                 .add(clazz);
     }
 

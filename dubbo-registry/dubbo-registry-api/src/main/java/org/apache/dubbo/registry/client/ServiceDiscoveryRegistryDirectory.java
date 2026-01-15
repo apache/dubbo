@@ -65,6 +65,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -341,6 +342,17 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                         String.format(
                                 "Received empty url list from registry %s, will ignore for protection purpose.", this));
                 return;
+            }
+
+            int originSize = invokerUrls.size();
+            invokerUrls = invokerUrls.stream().distinct().collect(Collectors.toList());
+            if (invokerUrls.size() != originSize) {
+                logger.info("Received duplicated invoker urls changed event from registry. "
+                        + "Registry type: instance. "
+                        + "Service Key: "
+                        + getConsumerUrl().getServiceKey() + ". "
+                        + "Notify Urls Size : " + originSize + ". "
+                        + "Distinct Urls Size: " + invokerUrls.size() + ".");
             }
 
             // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
@@ -700,7 +712,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
-        private final List<ServiceDiscoveryRegistryDirectory<?>> listeners = new ArrayList<>();
+        private final List<ServiceDiscoveryRegistryDirectory<?>> listeners = new CopyOnWriteArrayList<>();
 
         ConsumerConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);

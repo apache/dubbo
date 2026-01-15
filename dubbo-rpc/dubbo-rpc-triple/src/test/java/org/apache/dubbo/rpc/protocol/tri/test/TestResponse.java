@@ -30,6 +30,8 @@ import java.util.List;
 
 import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @SuppressWarnings("unchecked")
 public class TestResponse {
 
@@ -84,10 +86,15 @@ public class TestResponse {
             bodies = new ArrayList<>(oss.size());
             boolean isTextEvent = MediaType.TEXT_EVENT_STREAM.getName().equals(getContentType());
             for (int i = 0, size = oss.size(); i < size; i++) {
-                if (isTextEvent && i % 3 != 1) {
+                ByteArrayOutputStream bos = (ByteArrayOutputStream) oss.get(i);
+                if (isTextEvent) {
+                    String data = new String(bos.toByteArray(), UTF_8);
+                    if (data.startsWith("data:")) {
+                        String body = data.substring(5, data.length() - 2);
+                        bodies.add((T) decoder.decode(new ByteArrayInputStream(body.getBytes(UTF_8)), type));
+                    }
                     continue;
                 }
-                ByteArrayOutputStream bos = (ByteArrayOutputStream) oss.get(i);
                 if (bos.size() == 0) {
                     bodies.add(null);
                 } else {

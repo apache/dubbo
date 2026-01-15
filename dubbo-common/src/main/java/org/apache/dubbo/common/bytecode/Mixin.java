@@ -25,9 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Mixin
- */
 public abstract class Mixin {
     private static final String PACKAGE_NAME = Mixin.class.getPackage().getName();
     private static final AtomicLong MIXIN_CLASS_COUNTER = new AtomicLong(0);

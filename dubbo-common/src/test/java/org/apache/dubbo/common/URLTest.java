@@ -724,8 +724,6 @@ class URLTest {
         final String osProperty = SystemPropertyConfigUtils.getSystemProperty(SYSTEM_OS_NAME);
         if (!osProperty.toLowerCase().contains(OS_WIN_PREFIX)) return;
 
-        System.out.println("Test Windows valid path string.");
-
         File f0 = new File("C:/Windows");
         File f1 = new File("/C:/Windows");
 

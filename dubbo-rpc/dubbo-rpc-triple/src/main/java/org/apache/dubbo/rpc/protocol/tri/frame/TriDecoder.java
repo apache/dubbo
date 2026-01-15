@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 import io.netty.buffer.ByteBuf;
@@ -31,6 +35,7 @@ public class TriDecoder implements Deframer {
     private final CompositeByteBuf accumulate = Unpooled.compositeBuffer();
     private final Listener listener;
     private final DeCompressor decompressor;
+    private final Integer maxMessageSize;
     private boolean compressedFlag;
     private long pendingDeliveries;
     private boolean inDelivery = false;
@@ -42,6 +47,8 @@ public class TriDecoder implements Deframer {
     private GrpcDecodeState state = GrpcDecodeState.HEADER;
 
     public TriDecoder(DeCompressor decompressor, Listener listener) {
+        Configuration conf = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        maxMessageSize = conf.getInteger(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, 50 * 1024 * 1024);
         this.decompressor = decompressor;
         this.listener = listener;
     }
@@ -123,6 +130,13 @@ public class TriDecoder implements Deframer {
 
         requiredLength = accumulate.readInt();
 
+        if (requiredLength < 0) {
+            throw new RpcException("Invalid message length: " + requiredLength);
+        }
+        if (requiredLength > maxMessageSize) {
+            throw new RpcException(String.format("Message size %d exceeds limit %d", requiredLength, maxMessageSize));
+        }
+
         // Continue reading the frame body.
         state = GrpcDecodeState.PAYLOAD;
     }
@@ -131,11 +145,23 @@ public class TriDecoder implements Deframer {
      * Processes the GRPC message body, which depending on frame header flags may be compressed.
      */
     private void processBody() {
-        // There is no reliable way to get the uncompressed size per message when it's compressed,
-        // because the uncompressed bytes are provided through an InputStream whose total size is
-        // unknown until all bytes are read, and we don't know when it happens.
-        byte[] stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
+        // Calculate total bytes read: header + payload (before decompression)
+        int totalBytesRead = HEADER_LENGTH + requiredLength;
 
+        byte[] stream;
+        try {
+            // There is no reliable way to get the uncompressed size per message when it's compressed,
+            // because the uncompressed bytes are provided through an InputStream whose total size is
+            // unknown until all bytes are read, and we don't know when it happens.
+            stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
+        } finally {
+            // Notify listener about bytes read for flow control immediately after reading bytes
+            // This must be in finally block to ensure flow control works even if reading fails
+            // Following gRPC's pattern: bytesRead is called as soon as bytes are consumed from input
+            listener.bytesRead(totalBytesRead);
+        }
+
+        // Process the message after notifying about bytes read
         listener.onRawMessage(stream);
 
         // Done with this frame, begin processing the next header.
@@ -161,6 +187,8 @@ public class TriDecoder implements Deframer {
     }
 
     public interface Listener {
+
+        void bytesRead(int numBytes);
 
         void onRawMessage(byte[] data);
 

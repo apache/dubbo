@@ -77,9 +77,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/**
- * ConfigTest
- */
 class ConfigTest {
 
     private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
@@ -88,6 +85,8 @@ class ConfigTest {
     public void setUp() {
         SysProps.clear();
         DubboBootstrap.reset();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterEach

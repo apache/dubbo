@@ -18,6 +18,8 @@ package org.apache.dubbo.config.spring.samples;
 
 import org.apache.dubbo.config.spring.api.DemoService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -26,6 +28,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @since 2.7.8
  */
 public class ZookeeperDubboSpringConsumerXmlBootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperDubboSpringConsumerXmlBootstrap.class);
 
     public static void main(String[] args) throws Exception {
         String location = "classpath:/META-INF/service-introspection/zookeeper-dubbo-consumer.xml";
@@ -34,7 +37,7 @@ public class ZookeeperDubboSpringConsumerXmlBootstrap {
         DemoService demoService = context.getBean("demoService", DemoService.class);
 
         for (int i = 0; i < 100; i++) {
-            System.out.println(demoService.sayName("Hello"));
+            logger.info(demoService.sayName("Hello"));
         }
 
         context.close();

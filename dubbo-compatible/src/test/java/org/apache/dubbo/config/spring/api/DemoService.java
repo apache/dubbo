@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.config.spring.api;
 
-/**
- * DemoService
- */
 public interface DemoService {
 
     String sayName(String name);

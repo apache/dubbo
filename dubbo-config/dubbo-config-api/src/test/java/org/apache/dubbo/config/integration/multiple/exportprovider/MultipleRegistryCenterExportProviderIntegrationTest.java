@@ -106,7 +106,7 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
         serviceConfig.setRef(new MultipleRegistryCenterExportProviderServiceImpl());
         serviceConfig.setAsync(false);
 
-        // initailize bootstrap
+        // initialize bootstrap
         DubboBootstrap.getInstance()
                 .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
                 .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))

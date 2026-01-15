@@ -64,7 +64,6 @@
       <scope>test</scope>
       <optional>true</optional>
     </dependency>
-
     <!-- spring security -->
 
     <!-- jackson -->
@@ -84,12 +83,6 @@
     </dependency>
     <!-- jackson -->
 
-    <dependency>
-      <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-test-check</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>

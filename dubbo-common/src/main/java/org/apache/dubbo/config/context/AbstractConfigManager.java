@@ -25,6 +25,7 @@ import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -73,9 +74,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             LoggerFactory.getErrorTypeAwareLogger(AbstractConfigManager.class);
     private static final Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
 
-    final Map<String, Map<String, AbstractConfig>> configsCache = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<String, Map<String, AbstractConfig>> configsCache = new ConcurrentHashMap<>();
 
-    private final Map<String, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
 
     protected Set<AbstractConfig> duplicatedConfigs = new ConcurrentHashSet<>();
 
@@ -163,8 +164,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         Class<? extends AbstractConfig> targetConfigType = getTargetConfigType(config.getClass());
 
-        Map<String, AbstractConfig> configsMap =
-                configsCache.computeIfAbsent(getTagName(targetConfigType), type -> new ConcurrentHashMap<>());
+        Map<String, AbstractConfig> configsMap = ConcurrentHashMapUtils.computeIfAbsent(
+                configsCache, getTagName(targetConfigType), type -> new ConcurrentHashMap<>());
 
         // fast check duplicated equivalent config before write lock
         if (!(config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase)) {
@@ -408,8 +409,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     protected <C extends AbstractConfig> String generateConfigId(C config) {
         String tagName = getTagName(config.getClass());
-        int idx = configIdIndexes
-                .computeIfAbsent(tagName, clazz -> new AtomicInteger(0))
+        int idx = ConcurrentHashMapUtils.computeIfAbsent(configIdIndexes, tagName, clazz -> new AtomicInteger(0))
                 .incrementAndGet();
         return tagName + "#" + idx;
     }

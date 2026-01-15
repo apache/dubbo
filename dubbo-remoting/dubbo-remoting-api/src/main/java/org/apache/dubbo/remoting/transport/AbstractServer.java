@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -39,9 +40,6 @@ import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
-/**
- * AbstractServer
- */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
 
     private Set<ExecutorService> executors = new ConcurrentHashSet<>();
@@ -66,8 +64,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
-                logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export "
-                        + getLocalAddress());
+                logger.info("[SERVICE_PUBLISH][METADATA_REGISTER] Start "
+                        + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
             }
         } catch (Throwable t) {
             throw new RemotingException(
@@ -196,12 +194,21 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     @Override
     public void disconnected(Channel ch) throws RemotingException {
         if (getChannelsSize() == 0) {
-            logger.warn(
-                    INTERNAL_ERROR,
-                    "unknown error in remoting module",
-                    "",
+            logger.info(
                     "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
+    }
+
+    @Override
+    public void fireChannelEvent(ChannelEvent event) {
+        // Default implementation does nothing.
+        // Subclasses can override this method to implement protocol-specific event handling.
+        logger.warn(
+                INTERNAL_ERROR,
+                "unknown error in remoting module",
+                "",
+                "The fireChannelEvent method is not implemented for "
+                        + getClass().getName() + ", event: " + event);
     }
 }

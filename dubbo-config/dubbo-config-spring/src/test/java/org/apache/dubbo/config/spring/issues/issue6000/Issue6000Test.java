@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.issues.issue6000;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.issues.issue6000.adubbo.HelloDubbo;
 
@@ -24,6 +25,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -38,15 +41,20 @@ import org.springframework.context.annotation.PropertySource;
 @ComponentScan
 @PropertySource("classpath:/META-INF/issues/issue6000/config.properties")
 class Issue6000Test {
+    private static final Logger logger = LoggerFactory.getLogger(Issue6000Test.class);
 
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
     }
 
     @Test
@@ -56,7 +64,7 @@ class Issue6000Test {
 
             HelloDubbo helloDubbo = context.getBean(HelloDubbo.class);
             String result = helloDubbo.sayHello("dubbo");
-            System.out.println(result);
+            logger.info(result);
 
         } catch (Exception e) {
             String s = e.toString();

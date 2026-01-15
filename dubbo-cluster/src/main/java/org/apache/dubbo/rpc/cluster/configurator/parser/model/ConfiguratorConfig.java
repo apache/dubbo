@@ -20,9 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- *
- */
 public class ConfiguratorConfig {
     public static final String MATCH_CONDITION = "MATCH_CONDITION";
     public static final String SCOPE_SERVICE = "service";

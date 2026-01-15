@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.config.spring.isolation.spring.annotation;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.isolation.spring.BaseTest;
 import org.apache.dubbo.config.spring.isolation.spring.support.DemoServiceExecutor;
@@ -40,6 +42,9 @@ public class AnnotationIsolationTest extends BaseTest {
 
     @Test
     public void test() throws Exception {
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
         // start provider app
         AnnotationConfigApplicationContext providerContext =
                 new AnnotationConfigApplicationContext(ProviderConfiguration.class);
@@ -113,14 +118,14 @@ public class AnnotationIsolationTest extends BaseTest {
         // expose services with dubbo protocol
         @Bean
         public ProtocolConfig dubbo() {
-            ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
+            ProtocolConfig protocolConfig = new ProtocolConfig("dubbo", NetUtils.getAvailablePort());
             return protocolConfig;
         }
 
         // expose services with tri protocol
         @Bean
         public ProtocolConfig tri() {
-            ProtocolConfig protocolConfig = new ProtocolConfig("tri");
+            ProtocolConfig protocolConfig = new ProtocolConfig("tri", NetUtils.getAvailablePort());
             return protocolConfig;
         }
 

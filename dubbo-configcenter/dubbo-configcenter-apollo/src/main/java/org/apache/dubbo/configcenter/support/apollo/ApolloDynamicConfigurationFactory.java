@@ -21,9 +21,6 @@ import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationF
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-/**
- *
- */
 public class ApolloDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
     private ApplicationModel applicationModel;

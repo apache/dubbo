@@ -18,8 +18,6 @@ package org.apache.dubbo.maven.plugin.aot;
 
 /**
  * A model for a dependency to exclude.
- *
- * @author Stephane Nicoll
  */
 public class Exclude extends FilterableDependency {
 

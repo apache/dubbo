@@ -88,7 +88,7 @@ public class HashedWheelTimer implements Timer {
     /**
      * may be in spi?
      */
-    public static final String NAME = "hased";
+    public static final String NAME = "hashed";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(HashedWheelTimer.class);
 
@@ -306,11 +306,11 @@ public class HashedWheelTimer implements Timer {
     }
 
     /**
-     * Starts the background thread explicitly.  The background thread will
+     * Starts the background thread explicitly. The background thread will
      * start automatically on demand even if you did not call this method.
      *
      * @throws IllegalStateException if this timer has been
-     *                               {@linkplain #stop() stopped} already
+     * {@linkplain #stop() stopped} already
      */
     public void start() {
         switch (WORKER_STATE_UPDATER.get(this)) {
@@ -698,7 +698,7 @@ public class HashedWheelTimer implements Timer {
     private static final class HashedWheelBucket {
 
         /**
-         * Used for the linked-list datastructure
+         * Used for the linked-list data structure
          */
         private HashedWheelTimeout head;
         private HashedWheelTimeout tail;

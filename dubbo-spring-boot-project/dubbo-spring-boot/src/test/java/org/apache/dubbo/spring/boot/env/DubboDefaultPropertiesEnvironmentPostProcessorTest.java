@@ -95,5 +95,15 @@ class DubboDefaultPropertiesEnvironmentPostProcessorTest {
         instance.postProcessEnvironment(environment, springApplication);
         assertEquals("false", environment.getProperty("dubbo.config.multiple"));
         assertEquals("false", environment.getProperty("dubbo.application.qos-enable"));
+
+        // Case 6 : Test virtual thread property when spring.threads.virtual.enabled=true
+        environment = new MockEnvironment();
+        propertySources = environment.getPropertySources();
+        propertySources.addLast(new MapPropertySource("defaultProperties", new HashMap<String, Object>()));
+        environment.setProperty("spring.threads.virtual.enabled", "true");
+        instance.postProcessEnvironment(environment, springApplication);
+        defaultPropertySource = propertySources.get("defaultProperties");
+        assertNotNull(defaultPropertySource);
+        assertEquals("virtual", defaultPropertySource.getProperty("dubbo.protocol.threadpool"));
     }
 }

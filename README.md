@@ -1,133 +1,140 @@
+
 # Apache Dubbo Project
 
 [![Build and Test For PR](https://github.com/apache/dubbo/actions/workflows/build-and-test-pr.yml/badge.svg)](https://github.com/apache/dubbo/actions/workflows/build-and-test-pr.yml)
 [![Codecov](https://codecov.io/gh/apache/dubbo/branch/3.3/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
-![Maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
-![License](https://img.shields.io/github/license/alibaba/dubbo.svg)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo "Percentage of issues still open")
+[![Maven](https://img.shields.io/github/v/release/apache/dubbo.svg?sort=semver)](https://github.com/apache/dubbo/releases)
+[![License](https://img.shields.io/github/license/apache/dubbo.svg)](https://github.com/apache/dubbo/blob/3.3/LICENSE)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo)
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo)
 
-Apache Dubbo is an easy-to-use Web and RPC framework that provides multiple
-language implementations(Java, [Go](https://github.com/apache/dubbo-go), [Python](https://github.com/dubbo/py-client-for-apache-dubbo), [PHP](https://github.com/apache/dubbo-php-framework), [Erlang](https://github.com/apache/dubbo-erlang), [Rust](https://github.com/apache/dubbo-rust), [Node.js](https://github.com/apache/dubbo-js), [Web](https://github.com/apache/dubbo-js)) for communication, service discovery, traffic management,
-observability, security, tools, and best practices for building enterprise-ready microservices.
+Apache Dubbo is a powerful and user-friendly Web and RPC framework. It supports multiple language implementations such as Java, [Go](https://github.com/apache/dubbo-go), [Python](https://github.com/dubbo/py-client-for-apache-dubbo), [PHP](https://github.com/apache/dubbo-php-framework), [Erlang](https://github.com/apache/dubbo-erlang), [Rust](https://github.com/apache/dubbo-rust), and [Node.js/Web](https://github.com/apache/dubbo-js).
 
-We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [Wanted: who's using dubbo](https://github.com/apache/dubbo/discussions/13842), thanks :)
+Dubbo provides solutions for communication, service discovery, traffic management, observability, security, tooling, and best practices for building enterprise-grade microservices.
 
-## Architecture
+> 🚀 We're collecting user info to improve Dubbo. Help us out here: [Who's using Dubbo](https://github.com/apache/dubbo/discussions/13842)
+
+---
+
+## 🧱 Architecture
+
 ![Architecture](https://dubbo.apache.org/imgs/architecture.png)
 
-* Consumer and provider communicate with each other using RPC protocol like triple, tcp, rest, etc.
-* Consumers automatically trace provider instances registered in registries(Zookeeper, Nacos) and distribute traffic among them by following traffic strategies.
-* Rich features for monitoring and managing the cluster with dynamic configuration, metrics, tracing, security, and visualized console.
+- Communication between consumers and providers is done via RPC protocols like Triple, TCP, REST, etc.
+- Consumers dynamically discover provider instances from registries (e.g., Zookeeper, Nacos) and manage traffic using defined strategies.
+- Built-in support for dynamic config, metrics, tracing, security, and a visualized console.
 
-## Getting started
-Follow the instructions below to learn how to:
+---
 
-### Programming with lightweight RPC API
-[5 minutes step-by-step guide](https://cn.dubbo.apache.org/zh-cn/overview/mannual/java-sdk/tasks/framework/lightweight-rpc/)
+## 🚀 Getting Started
 
-Dubbo supports building RPC services with only a few lines of code while depending only on a lightweight SDK. The protocol on the wire can be [Triple](https://dubbo.apache.org/zh-cn/overview/reference/protocols/triple/)(fully gRPC compatible and HTTP-friendly), Dubbo2(TCP), REST, or any protocol of your choice.
+### 📦 Lightweight RPC API
 
+Start quickly with our [5-minute guide](https://cn.dubbo.apache.org/zh-cn/overview/mannual/java-sdk/tasks/framework/lightweight-rpc/)
 
-### Building a microservice application with Spring Boot
-[5 minutes step-by-step guide](https://cn.dubbo.apache.org/zh-cn/overview/mannual/java-sdk/tasks/develop/springboot/)
+Dubbo allows you to build RPC services using a minimal codebase and a lightweight SDK. It supports protocols like:
 
-It's highly recommended to start your microservice application with the Spring Boot Starter `dubbo-spring-boot-starter` provided by Dubbo. With only a single dependency and yaml file, and optionally a bunch of other useful spring boot starters, you can enable all of the Dubo features like service discovery, observability, tracing, etc.
+- [Triple (gRPC-compatible)](https://dubbo.apache.org/zh-cn/overview/reference/protocols/triple/)
+- Dubbo2 (TCP)
+- REST
+- Custom protocols
 
-Next, learn how to [deploy](https://dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage the traffic](https://dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) of your Dubbo application and cluster.
+### 🌱 Microservices with Spring Boot
 
-## More Features
-Get more details by visiting the links below to get your hands dirty with some well-designed tasks on our website.
+Kickstart your project using [Spring Boot Starter](https://cn.dubbo.apache.org/zh-cn/overview/mannual/java-sdk/tasks/develop/springboot/).
 
-* [Launch a Dubbo project](https://dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
-* [RPC protocols](https://dubbo.apache.org/zh-cn/overview/core-features/protocols/)
-* [Traffic management](https://dubbo.apache.org/zh-cn/overview/core-features/traffic/)
-* [Service discovery](https://dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
-* [Observability](https://dubbo.apache.org/zh-cn/overview/core-features/observability/)
-* [Extensibility](https://dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
-* [Security](https://dubbo.apache.org/zh-cn/overview/core-features/security/)
-* [Visualized console and control plane](https://dubbo.apache.org/zh-cn/overview/reference/admin/)
-* [Kubernetes and Service mesh](https://dubbo.apache.org/zh-cn/overview/core-features/service-mesh/)
+Using just a dependency and a YAML config, you can unlock the full power of Dubbo: service discovery, observability, tracing, etc.
 
-## Which Dubbo version should I use?
-| **Dubbo3** | **JDK**  | **Dependencies**                                                                                        | **Description**                                                                                                                                                                                                            |
-|------------|----------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.2      | 1.8 ～ 21 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.3.2/dubbo-dependencies-bom/pom.xml#L92)  | **- Stable version (active)** <br/> **- Features** <br/> &nbsp;&nbsp;  - Triple - gRPC and cURL compatible.<br/>  &nbsp;&nbsp;  - Rest-style programming support.<br/>  &nbsp;&nbsp;  - Spring Boot Starters.              |
-| 3.2.16     | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94)  | **- Stable version (active)** <br/> **- Features** <br/> &nbsp;&nbsp;- Out-of-box metrics and tracing support.<br/> &nbsp;&nbsp;- Threadpool Isolation<br/> &nbsp;&nbsp;- 30% performance<br/> &nbsp;&nbsp;- Native Image  |
-| 3.1.11     | 1.8 ～ 17 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L90) | **Stable version (not active)**                                                                                                                                                                                            |
+➡️ Learn how to [deploy](https://dubbo.apache.org/zh-cn/overview/tasks/deploy/), [monitor](https://dubbo.apache.org/zh-cn/overview/tasks/observability/), and [manage traffic](https://dubbo.apache.org/zh-cn/overview/tasks/traffic-management/) for Dubbo services.
 
-| **Dubbo2** | **JDK** | **Dependencies** | **Description** |
-| --- | --- | --- | --- |
-| 2.7.23 | 1.8 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) | EOL |
-| 2.6.x, 2.5.x | 1.6 ～ 1.7 |  | EOL |
+---
 
-## Contributing
-See [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
+## 🛠️ More Features
 
-### How does the Dubbo Community collaborate?
+Explore more through our hands-on tasks:
 
-The Dubbo Community primarily communicates on GitHub through issues, discussions, and pull requests.
+- [Launch a Dubbo project](https://dubbo.apache.org/zh-cn/overview/tasks/develop/template/)
+- [RPC protocols](https://dubbo.apache.org/zh-cn/overview/core-features/protocols/)
+- [Traffic management](https://dubbo.apache.org/zh-cn/overview/core-features/traffic/)
+- [Service discovery](https://dubbo.apache.org/zh-cn/overview/core-features/service-discovery/)
+- [Observability](https://dubbo.apache.org/zh-cn/overview/core-features/observability/)
+- [Extensibility](https://dubbo.apache.org/zh-cn/overview/core-features/extensibility/)
+- [Security](https://dubbo.apache.org/zh-cn/overview/core-features/security/)
+- [Visualized Console](https://dubbo.apache.org/zh-cn/overview/reference/admin/)
+- [Kubernetes & Service Mesh](https://dubbo.apache.org/zh-cn/overview/core-features/service-mesh/)
 
-- Issues: We use issues to track bugs and tasks. Any **work-related** item is associated with an issue.
-- Discussions: We use discussions for questions, early proposals, and announcements. Any **idea-related** item is associated with a discussion.
-- Pull Requests: We use pull requests to merge a set of changes from contributors into Dubbo.
+---
 
-We have also implemented [a project board](https://github.com/orgs/apache/projects/337) to monitor all the items.
+## 📦 Which Dubbo Version Should I Use?
 
-Any essential changes should be discussed on the mailing list before they happen.
+### Dubbo3
 
-### Seeking help
+## 📦 Version Compatibility
 
-If you have questions such as:
+| Version            | JDK Support | Dependencies                                                                                              | Highlights                                                                                                     |
+|--------------------|-------------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| **3.3.7-SNAPSHOT** | 1.8 – 25    | Coming Soon                                                                                               | ✅ JDK 25 Support
+| **3.3.6**          | 1.8 – 21    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.3.6/dubbo-dependencies-bom/pom.xml#L92)  | ✅ Mutiny Reactive Support <br> ✅ Affinity Router <br> ✅ Method-level TPS Limiting <br> ✅ Spring 6 Security Plugin <br> ✅ Enhanced Environment Variable Config |
+| **3.3.5**          | 1.8 – 21    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.3.5/dubbo-dependencies-bom/pom.xml#L92)  | ✅ Actively Maintained <br> ✅ Triple Protocol (gRPC/cURL) <br> ✅ REST Support <br> ✅ Spring Boot Starters      |
+| **3.2.16**         | 1.8 – 17    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.2.5/dubbo-dependencies-bom/pom.xml#L94)  | ✅ Actively Maintained <br> ✅ Metrics & Tracing <br> ✅ Thread Pool Isolation <br> ✅ +30% Performance <br> ✅ Native Image Support |
+| **3.1.11**         | 1.8 – 17    | [View Dependencies](https://github.com/apache/dubbo/blob/dubbo-3.2.11/dubbo-dependencies-bom/pom.xml#L90) | ⚠️ Stable, but Not Actively Maintained                                                                         |
 
-- What is Dubbo?
-- How do I use Dubbo?
-- Why did an unexpected result occur?
+### Dubbo2
 
-Please start a discussion at https://github.com/apache/dubbo/discussions.
+| Version     | JDK       | Dependencies                                                                                          | Description |
+|-------------|-----------|--------------------------------------------------------------------------------------------------------|-------------|
+| 2.7.23      | 1.8       | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.7.23/dubbo-dependencies-bom/pom.xml#L92) | ❌ EOL       |
+| 2.6.x, 2.5.x| 1.6 - 1.7 | [dependency list](https://github.com/apache/dubbo/blob/dubbo-2.6.12/dependencies-bom/pom.xml#L90)       | ❌ EOL       |
 
-However, if you encounter the following situations:
+---
 
-- You're certain there's a bug that Dubbo needs to fix,
-- You believe a feature could be enhanced,
-- You have a detailed proposal for improving Dubbo,
+## 🤝 Contributing
 
-Please open an issue at https://github.com/apache/dubbo/issues.
+See our [CONTRIBUTING](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) guide to get started!
 
-To ask effective questions, we recommend reading **[How To Ask Questions The Smart Way](https://github.com/selfteaching/How-To-Ask-Questions-The-Smart-Way/blob/master/How-To-Ask-Questions-The-Smart-Way.md)** first.
+### 🔁 Community Collaboration
 
-### Make a Contribution
+- **Issues**: For bugs or tasks – [GitHub Issues](https://github.com/apache/dubbo/issues)
+- **Discussions**: For questions, ideas – [GitHub Discussions](https://github.com/apache/dubbo/discussions)
+- **PRs**: For merging your contributions – [GitHub Pull Requests](https://github.com/apache/dubbo/pulls)
+- **Project Board**: [Dubbo Project Board](https://github.com/orgs/apache/projects/337)
 
-- Browse the "help wanted" tasks in the [Dubbo project board](https://github.com/orgs/apache/projects/337).
-- Participate in discussions on the mailing list. See the subscription [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide).
-- Respond to queries in the [discussions](https://github.com/apache/dubbo/issues).
-- Resolve bugs reported in [issues](https://github.com/apache/dubbo/issues) and send us a pull request.
-- Review existing [pull requests](https://github.com/apache/dubbo/pulls).
-- Enhance the [website](https://github.com/apache/dubbo-website). We typically need:
-    - Blog posts
-    - Translations for documentation
-    - Use cases showcasing Dubbo integration in enterprise systems.
-- Improve the [dubbo-admin](https://github.com/apache/dubbo-admin).
-- Contribute to the projects listed in the [ecosystem](https://github.com/apache/?q=dubbo&type=all&language=&sort=).
-- Any other forms of contribution not listed above are also welcome.
-- If you're interested in contributing, please send an email to [dev@dubbo.apache.org](mailto:dev@dubbo.apache.org) to let us know!
+### 💡 How You Can Help
 
-For more details, please take a look at our [guide](https://github.com/apache/dubbo/blob/master/CONTRIBUTING.md) about how to contribute to Dubbo.
+- Check out "help wanted" issues: [Project Board](https://github.com/orgs/apache/projects/337)
+- Join [mailing list discussions](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide)
+- Engage in [discussions](https://github.com/apache/dubbo/discussions)
+- Fix [bugs](https://github.com/apache/dubbo/issues) or review [pull requests](https://github.com/apache/dubbo/pulls)
+- Enhance the [website](https://github.com/apache/dubbo-website)
+- Improve [dubbo-admin](https://github.com/apache/dubbo-admin)
+- Contribute to the [ecosystem](https://github.com/apache/?q=dubbo&type=all&language=&sort=)
 
-## Reporting bugs
+If you're interested in contributing, email us at [dev@dubbo.apache.org](mailto:dev@dubbo.apache.org).
 
-Please follow the [template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
+---
 
-## Reporting a security vulnerability
+## 🐞 Reporting Issues
 
-Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org) privately.
+Please use our [issue template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) when reporting bugs.
 
-## Contact
-* WeChat: apachedubbo
-* DingTalk group: 37290003945
-* Mailing list: [guide](https://dubbo.apache.org/zh-cn/contact/)
-* Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
-* Security issues: please mail to [us](mailto:security@dubbo.apache.org) privately.
+---
 
-## License
-Apache Dubbo is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/apache/dubbo/blob/3.3/LICENSE) file for details.
+## 🔐 Reporting Security Vulnerabilities
+
+Please report vulnerabilities **privately** to [security@dubbo.apache.org](mailto:security@dubbo.apache.org).
+
+---
+
+## 📬 Contact
+
+- **WeChat**: `apachedubbo`
+- **DingTalk**: Group ID `37290003945`
+- **Mailing List**: [Contact Guide](https://dubbo.apache.org/zh-cn/contact/)
+- **Twitter**: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
+- **Security**: [security@dubbo.apache.org](mailto:security@dubbo.apache.org)
+
+---
+
+## 📄 License
+
+Apache Dubbo is licensed under the [Apache License 2.0](https://github.com/apache/dubbo/blob/3.3/LICENSE).

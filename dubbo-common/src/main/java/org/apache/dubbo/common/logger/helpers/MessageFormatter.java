@@ -28,9 +28,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-// contributors: lizongbo: proposed special treatment of array parameter values
-// Joern Huxhorn: pointed out double[] omission, suggested deep array copy
-
 /**
  * This is a copy of org.slf4j.helpers.MessageFormatter from slf4j-api.
  * Formats messages according to very simple substitution rules. Substitutions
@@ -94,8 +91,6 @@ import java.util.Map;
  * {@link #format(String, Object, Object)} and
  * {@link #arrayFormat(String, Object[])} methods for more details.
  *
- * @author Ceki G&uuml;lc&uuml;
- * @author Joern Huxhorn
  */
 final public class MessageFormatter {
     static final char DELIM_START = '{';

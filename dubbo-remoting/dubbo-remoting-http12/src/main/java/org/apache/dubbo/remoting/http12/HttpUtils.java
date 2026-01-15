@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.exception.DecodeException;
@@ -75,10 +76,34 @@ public final class HttpUtils {
 
     public static List<HttpCookie> decodeCookies(String value) {
         List<HttpCookie> cookies = new ArrayList<>();
+        if (StringUtils.isEmpty(value)) {
+            return cookies;
+        }
         for (Cookie c : ServerCookieDecoder.LAX.decodeAll(value)) {
             cookies.add(new HttpCookie(c.name(), c.value()));
         }
         return cookies;
+    }
+
+    public static String parseCharset(String contentType) {
+        String charset = null;
+        if (contentType == null) {
+            charset = StringUtils.EMPTY_STRING;
+        } else {
+            int index = contentType.lastIndexOf(CHARSET_PREFIX);
+            if (index == -1) {
+                charset = StringUtils.EMPTY_STRING;
+            } else {
+                charset = contentType.substring(index + CHARSET_PREFIX.length()).trim();
+                int splits = charset.indexOf(CommonConstants.SEMICOLON_SEPARATOR);
+                if (splits == -1) {
+                    return charset;
+                } else {
+                    return charset.substring(0, splits).trim();
+                }
+            }
+        }
+        return charset;
     }
 
     public static String encodeCookie(HttpCookie cookie) {

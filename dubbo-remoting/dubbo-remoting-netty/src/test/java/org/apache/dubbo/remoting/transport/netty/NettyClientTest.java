@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,7 @@ class NettyClientTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
+        FrameworkModel.destroyAll();
         URL url = URL.valueOf("exchange://localhost:" + port + "?server=netty3&codec=exchange");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");

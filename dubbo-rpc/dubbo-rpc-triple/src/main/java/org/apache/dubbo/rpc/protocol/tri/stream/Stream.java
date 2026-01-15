@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
 
+import javax.net.ssl.SSLSession;
+
 import java.net.SocketAddress;
 
 import io.netty.handler.codec.http2.Http2Headers;
@@ -52,6 +54,14 @@ public interface Stream {
     }
 
     /**
+     * Returns whether the stream is ready for writing.
+     * If false, the caller should avoid calling sendMessage to prevent blocking or excessive buffering.
+     *
+     * @return true if the stream is ready for writing
+     */
+    boolean isReady();
+
+    /**
      * Send headers to remote peer.
      *
      * @param headers headers to send to remote peer
@@ -73,6 +83,13 @@ public interface Stream {
      * @return socket address of remote peer
      */
     SocketAddress remoteAddress();
+
+    /**
+     * Get ssl session.
+     *
+     * @return ssl session
+     */
+    SSLSession getSslSession();
 
     /**
      * Request n message from remote peer.

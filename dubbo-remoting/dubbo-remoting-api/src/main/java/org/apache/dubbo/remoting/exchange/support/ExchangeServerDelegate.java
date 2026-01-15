@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.exchange.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -26,9 +27,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
-/**
- * ExchangeServerDelegate
- */
 public class ExchangeServerDelegate implements ExchangeServer {
 
     private transient ExchangeServer server;
@@ -66,6 +64,11 @@ public class ExchangeServerDelegate implements ExchangeServer {
     @Override
     public Collection<Channel> getChannels() {
         return server.getChannels();
+    }
+
+    @Override
+    public void fireChannelEvent(ChannelEvent event) {
+        server.fireChannelEvent(event);
     }
 
     @Override

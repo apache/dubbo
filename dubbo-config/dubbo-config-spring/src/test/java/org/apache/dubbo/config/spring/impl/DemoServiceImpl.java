@@ -19,9 +19,6 @@ package org.apache.dubbo.config.spring.impl;
 import org.apache.dubbo.config.spring.api.Box;
 import org.apache.dubbo.config.spring.api.DemoService;
 
-/**
- * DemoServiceImpl
- */
 public class DemoServiceImpl implements DemoService {
 
     private String prefix = "say:";

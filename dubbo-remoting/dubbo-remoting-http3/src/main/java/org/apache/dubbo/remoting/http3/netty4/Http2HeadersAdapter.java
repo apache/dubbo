@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 import io.netty.handler.codec.Headers;
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.incubator.codec.http3.Http3Headers;
+import io.netty.handler.codec.http3.Http3Headers;
 
 public final class Http2HeadersAdapter implements Http2Headers {
 

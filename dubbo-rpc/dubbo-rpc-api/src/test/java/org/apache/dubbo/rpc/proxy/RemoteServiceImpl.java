@@ -20,10 +20,16 @@ import org.apache.dubbo.rpc.RpcContext;
 
 import java.rmi.RemoteException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RemoteServiceImpl implements RemoteService {
+    private static final Logger logger = LoggerFactory.getLogger(RemoteServiceImpl.class);
+
     public String getThreadName() throws RemoteException {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()="
-                + RpcContext.getServiceContext().getRemoteHost());
+        logger.debug(
+                "RpcContext.getServerAttachment().getRemoteHost()={}",
+                RpcContext.getServiceContext().getRemoteHost());
         return Thread.currentThread().getName();
     }
 

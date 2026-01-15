@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -144,6 +145,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
+        if (moduleModel
+                .modelEnvironment()
+                .getConfiguration()
+                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            consumerConfigurationListener.addNotifyListener(this);
+            referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
+        }
         String registryClusterName = registry.getUrl()
                 .getParameter(
                         RegistryConstants.REGISTRY_CLUSTER_KEY,
@@ -152,13 +160,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             super.subscribe(url);
             return null;
         });
-        if (moduleModel
-                .modelEnvironment()
-                .getConfiguration()
-                .convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-            consumerConfigurationListener.addNotifyListener(this);
-            referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
-        }
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
@@ -308,6 +309,17 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
             if (invokerUrls.isEmpty()) {
                 return;
+            }
+
+            int originSize = invokerUrls.size();
+            invokerUrls = invokerUrls.stream().distinct().collect(Collectors.toList());
+            if (invokerUrls.size() != originSize) {
+                logger.info("Received duplicated invoker urls changed event from registry. "
+                        + "Registry type: interface. "
+                        + "Service Key: "
+                        + getConsumerUrl().getServiceKey() + ". "
+                        + "Notify Urls Size : " + originSize + ". "
+                        + "Distinct Urls Size: " + invokerUrls.size() + ".");
             }
 
             // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
@@ -815,7 +827,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
-        List<RegistryDirectory> listeners = new ArrayList<>();
+        List<RegistryDirectory> listeners = new CopyOnWriteArrayList<>();
 
         ConsumerConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);

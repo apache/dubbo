@@ -763,7 +763,7 @@ public class PojoUtils {
 
         if (result != null) {
             ConcurrentMap<String, Field> fields =
-                    CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
+                    ConcurrentHashMapUtils.computeIfAbsent(CLASS_FIELD_CACHE, cls, k -> new ConcurrentHashMap<>());
             fields.putIfAbsent(fieldName, result);
         }
         return result;

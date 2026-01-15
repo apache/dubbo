@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
+import org.apache.dubbo.remoting.Constants;
 
 import javax.net.ssl.SSLSession;
 
@@ -34,6 +35,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
+import io.netty.util.AttributeKey;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
@@ -43,6 +45,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
     private final URL url;
 
     private final boolean sslDetected;
+    private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
 
     public SslServerTlsHandler(URL url) {
         this.url = url;
@@ -74,6 +77,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
                 logger.info("TLS negotiation succeed with: " + session.getPeerHost());
                 // Remove after handshake success.
                 ctx.pipeline().remove(this);
+                ctx.channel().attr(SSL_SESSION_KEY).set(session);
             } else {
                 logger.error(
                         INTERNAL_ERROR,

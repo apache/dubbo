@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.concurrent.Executor;
 
-@Activate(order = -100, onClass = "io.netty.incubator.codec.quic.QuicChannel")
+@Activate(order = -100, onClass = "io.netty.handler.codec.quic.QuicChannel")
 public class Http3ClientStreamFactory implements ClientStreamFactory {
 
     @Override
