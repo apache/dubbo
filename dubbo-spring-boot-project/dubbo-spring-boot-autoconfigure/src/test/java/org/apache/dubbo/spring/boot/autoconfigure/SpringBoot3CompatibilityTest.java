@@ -112,12 +112,14 @@ class SpringBoot3CompatibilityTest {
                 isSpringBoot3 != isSpringBoot12,
                 "SpringBoot3Condition and SpringBoot12Condition should be mutually exclusive");
 
-        // Verify consistency with actual version
-        // Safe to access charAt(0) since we already verified version is not null/empty above
-        if (version.length() > 0 && version.charAt(0) >= '3') {
-            assertTrue(isSpringBoot3, "Should detect Spring Boot 3.x correctly");
-        } else {
-            assertTrue(isSpringBoot12, "Should detect Spring Boot 2.x or earlier correctly");
+        // Verify consistency with actual version (guard against null/empty)
+        if (version != null && !version.isEmpty()) {
+            char majorVersion = version.charAt(0);
+            if (majorVersion >= '3') {
+                assertTrue(isSpringBoot3, "Should detect Spring Boot 3.x correctly");
+            } else {
+                assertTrue(isSpringBoot12, "Should detect Spring Boot 2.x or earlier correctly");
+            }
         }
     }
 
