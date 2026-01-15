@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.command;
 
-import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
+import org.apache.dubbo.rpc.protocol.tri.stream.AbstractTripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 import io.netty.channel.Channel;
@@ -36,18 +36,19 @@ public class InitOnReadyQueueCommand extends QueuedCommand {
 
     private final TripleStreamChannelFuture streamChannelFuture;
 
-    private final ClientStream.Listener listener;
+    private final AbstractTripleClientStream stream;
 
-    private InitOnReadyQueueCommand(TripleStreamChannelFuture streamChannelFuture, ClientStream.Listener listener) {
+    private InitOnReadyQueueCommand(
+            TripleStreamChannelFuture streamChannelFuture, AbstractTripleClientStream stream) {
         this.streamChannelFuture = streamChannelFuture;
-        this.listener = listener;
+        this.stream = stream;
         this.promise(streamChannelFuture.getParentChannel().newPromise());
         this.channel(streamChannelFuture.getParentChannel());
     }
 
     public static InitOnReadyQueueCommand create(
-            TripleStreamChannelFuture streamChannelFuture, ClientStream.Listener listener) {
-        return new InitOnReadyQueueCommand(streamChannelFuture, listener);
+            TripleStreamChannelFuture streamChannelFuture, AbstractTripleClientStream stream) {
+        return new InitOnReadyQueueCommand(streamChannelFuture, stream);
     }
 
     @Override
@@ -60,11 +61,9 @@ public class InitOnReadyQueueCommand extends QueuedCommand {
         // Work in I/O thread, after CreateStreamQueueCommand has completed
         Channel streamChannel = streamChannelFuture.getNow();
         if (streamChannel != null) {
-            // Trigger initial onReady unconditionally. The handler will check isReady()
-            // internally and handle the case when the stream is not yet ready.
-            // This approach avoids race conditions between the EventLoop check and
-            // the asynchronous handler execution in the business thread.
-            listener.onReady();
+            // Trigger initial onReady through the stream, which will correctly
+            // update lastReadyState and notify the listener
+            stream.triggerInitialOnReady();
         }
     }
 }

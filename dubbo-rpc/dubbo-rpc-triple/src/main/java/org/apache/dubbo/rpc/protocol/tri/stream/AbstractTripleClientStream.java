@@ -128,7 +128,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
          * This is necessary because onReady is only triggered by channelWritabilityChanged,
          * which won't fire if the channel is always writable from creation.
          */
-        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, listener));
+        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, this));
         return tripleStreamChannelFuture;
     }
 
@@ -201,7 +201,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             } else {
                 // After successful write, check if we need to trigger onReady
                 // This provides an additional trigger mechanism similar to gRPC's onSentBytes()
-                onWriteCompleted();
+                notifyOnReady(false);
             }
         });
     }
@@ -259,27 +259,25 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     /**
      * Called when the channel writability changes.
-     * This method should be invoked by the transport handler when channelWritabilityChanged is triggered.
-     * It synchronously notifies the listener (TripleClientCall) which is responsible for
-     * asynchronously triggering all necessary callbacks through its executor.
      */
     protected void onWritabilityChanged() {
-        Channel channel = streamChannelFuture.getNow();
-        if (channel != null && channel.isWritable()) {
-            // Update last ready state and trigger onReady
-            lastReadyState = true;
-            listener.onReady();
-        } else {
-            lastReadyState = false;
-        }
+        notifyOnReady(false);
     }
 
     /**
-     * Called after a write operation completes successfully.
-     * This provides an additional trigger mechanism for onReady,
-     * It only triggers onReady when the state changes from "not ready" to "ready",
+     * Called by InitOnReadyQueueCommand to trigger the initial onReady notification.
      */
-    private void onWriteCompleted() {
+    public void triggerInitialOnReady() {
+        notifyOnReady(true);
+    }
+
+    /**
+     * notify listener when stream becomes ready
+     *
+     * @param forceNotify if true, always trigger onReady (for initial notification);
+     *                    if false, only trigger when state changes from "not ready" to "ready"
+     */
+    private void notifyOnReady(boolean forceNotify) {
         Channel channel = streamChannelFuture.getNow();
         if (channel == null) {
             return;
@@ -289,8 +287,10 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         boolean isNowReady = channel.isWritable();
         lastReadyState = isNowReady;
 
-        // Only trigger onReady when state changes from "not ready" to "ready"
-        if (!wasReady && isNowReady) {
+        // Trigger onReady if:
+        // 1. forceNotify is true (initial notification, spurious is OK), or
+        // 2. state changes from "not ready" to "ready"
+        if (forceNotify || (!wasReady && isNowReady)) {
             listener.onReady();
         }
     }
