@@ -21,9 +21,44 @@ import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
+/**
+ * Condition that matches when running on Spring Boot 3.x or higher.
+ *
+ * <p>This condition is used to enable Spring Boot 3.x specific auto-configuration
+ * that requires Jakarta EE APIs (jakarta.servlet.*) instead of Java EE APIs (javax.servlet.*).
+ *
+ * <p>Compatible with Spring Boot 3.5.x and Spring Cloud 2025.0.0.
+ *
+ * @since 3.2.0
+ */
 public class SpringBoot3Condition implements Condition {
 
-    public static boolean IS_SPRING_BOOT_3 = SpringBootVersion.getVersion().charAt(0) >= '3';
+    /**
+     * Cached result indicating if we're running on Spring Boot 3.x or higher.
+     * Uses safe version parsing to handle edge cases.
+     */
+    public static final boolean IS_SPRING_BOOT_3 = isSpringBoot3OrHigher();
+
+    private static boolean isSpringBoot3OrHigher() {
+        try {
+            String version = SpringBootVersion.getVersion();
+            if (version == null || version.isEmpty()) {
+                // Fallback: check for Jakarta Servlet API presence (Spring Boot 3 indicator)
+                try {
+                    Class.forName("jakarta.servlet.Servlet");
+                    return true;
+                } catch (ClassNotFoundException e) {
+                    return false;
+                }
+            }
+            // Parse major version from version string (e.g., "3.5.9" -> '3')
+            char majorVersion = version.charAt(0);
+            return majorVersion >= '3';
+        } catch (Exception e) {
+            // If version detection fails, assume older Spring Boot
+            return false;
+        }
+    }
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {

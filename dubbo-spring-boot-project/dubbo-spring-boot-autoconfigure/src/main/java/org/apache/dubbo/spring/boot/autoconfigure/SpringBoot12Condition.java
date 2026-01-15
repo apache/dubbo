@@ -16,14 +16,28 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
-import org.springframework.boot.SpringBootVersion;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
+/**
+ * Condition that matches when running on Spring Boot 1.x or 2.x (pre-Spring Boot 3).
+ *
+ * <p>This condition is used to enable Spring Boot 2.x specific auto-configuration
+ * that uses Java EE APIs (javax.servlet.*) instead of Jakarta EE APIs (jakarta.servlet.*).
+ *
+ * <p>This is the inverse of {@link SpringBoot3Condition}.
+ *
+ * @since 3.2.0
+ * @see SpringBoot3Condition
+ */
 public class SpringBoot12Condition implements Condition {
 
-    public static boolean IS_SPRING_BOOT_12 = SpringBootVersion.getVersion().charAt(0) < '3';
+    /**
+     * Cached result indicating if we're running on Spring Boot 1.x or 2.x.
+     * This is simply the inverse of {@link SpringBoot3Condition#IS_SPRING_BOOT_3}.
+     */
+    public static final boolean IS_SPRING_BOOT_12 = !SpringBoot3Condition.IS_SPRING_BOOT_3;
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
