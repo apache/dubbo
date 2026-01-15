@@ -38,8 +38,7 @@ public class InitOnReadyQueueCommand extends QueuedCommand {
 
     private final AbstractTripleClientStream stream;
 
-    private InitOnReadyQueueCommand(
-            TripleStreamChannelFuture streamChannelFuture, AbstractTripleClientStream stream) {
+    private InitOnReadyQueueCommand(TripleStreamChannelFuture streamChannelFuture, AbstractTripleClientStream stream) {
         this.streamChannelFuture = streamChannelFuture;
         this.stream = stream;
         this.promise(streamChannelFuture.getParentChannel().newPromise());
