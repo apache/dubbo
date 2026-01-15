@@ -87,8 +87,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     private boolean isReturnTriException = false;
 
     /**
-     * Tracks the last known ready state for detecting state transitions.
-     * when the state changes from "not ready" to "ready".
+     * Tracks the last known ready state to detect when the state changes from "not ready" to "ready".
      */
     private volatile boolean lastReadyState = false;
 
