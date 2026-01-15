@@ -200,7 +200,6 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 transportException(future.cause());
             } else {
                 // After successful write, check if we need to trigger onReady
-                // This provides an additional trigger mechanism similar to gRPC's onSentBytes()
                 notifyOnReady(false);
             }
         });
@@ -259,6 +258,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     /**
      * Called when the channel writability changes.
+     * This method should be invoked by the transport handler when channelWritabilityChanged is triggered.
+     * It synchronously notifies the listener (TripleClientCall) which is responsible for
+     * asynchronously triggering all necessary callbacks through its executor.
      */
     protected void onWritabilityChanged() {
         notifyOnReady(false);
