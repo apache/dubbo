@@ -279,7 +279,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      * @param forceNotify if true, always trigger onReady (for initial notification);
      *                    if false, only trigger when state changes from "not ready" to "ready"
      */
-    private void notifyOnReady(boolean forceNotify) {
+    private synchronized void notifyOnReady(boolean forceNotify) {
         boolean wasReady = lastReadyState;
         boolean isNowReady = isReady();
         lastReadyState = isNowReady;
