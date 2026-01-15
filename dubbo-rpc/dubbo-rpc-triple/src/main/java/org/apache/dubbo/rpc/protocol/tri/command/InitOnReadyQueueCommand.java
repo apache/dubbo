@@ -59,8 +59,11 @@ public class InitOnReadyQueueCommand extends QueuedCommand {
     public void run(Channel channel) {
         // Work in I/O thread, after CreateStreamQueueCommand has completed
         Channel streamChannel = streamChannelFuture.getNow();
-        if (streamChannel != null && streamChannel.isWritable()) {
-            // Trigger initial onReady to allow application to start sending.
+        if (streamChannel != null) {
+            // Trigger initial onReady unconditionally. The handler will check isReady()
+            // internally and handle the case when the stream is not yet ready.
+            // This approach avoids race conditions between the EventLoop check and
+            // the asynchronous handler execution in the business thread.
             listener.onReady();
         }
     }
