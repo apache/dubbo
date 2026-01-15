@@ -60,7 +60,7 @@ public class InitOnReadyQueueCommand extends QueuedCommand {
         // Work in I/O thread, after CreateStreamQueueCommand has completed
         Channel streamChannel = streamChannelFuture.getNow();
         if (streamChannel != null) {
-            // Trigger initial onReady through the stream, which will correctly
+            // Trigger initial onReady through the stream
             // update lastReadyState and notify the listener
             stream.triggerInitialOnReady();
         }

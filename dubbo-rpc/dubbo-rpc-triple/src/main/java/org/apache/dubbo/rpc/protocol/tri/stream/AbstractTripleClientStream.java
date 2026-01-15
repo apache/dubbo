@@ -280,13 +280,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      *                    if false, only trigger when state changes from "not ready" to "ready"
      */
     private void notifyOnReady(boolean forceNotify) {
-        Channel channel = streamChannelFuture.getNow();
-        if (channel == null) {
-            return;
-        }
-
         boolean wasReady = lastReadyState;
-        boolean isNowReady = channel.isWritable();
+        boolean isNowReady = isReady();
         lastReadyState = isNowReady;
 
         // Trigger onReady if:
