@@ -268,7 +268,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     /**
      * Called by InitOnReadyQueueCommand to trigger the initial onReady notification.
      */
-    void triggerInitialOnReady() {
+    public void triggerInitialOnReady() {
         notifyOnReady(true);
     }
 
