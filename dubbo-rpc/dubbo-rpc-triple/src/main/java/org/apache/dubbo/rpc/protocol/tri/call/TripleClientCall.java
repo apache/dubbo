@@ -171,6 +171,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         // ObserverToClientCallListenerAdapter.onReady() triggers the onReadyHandler
         executor.execute(() -> {
             try {
+                if (!isReady()) {
+                    return;
+                }
                 listener.onReady();
             } catch (Throwable t) {
                 LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "", "Error executing listener.onReady()", t);
