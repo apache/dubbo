@@ -19,7 +19,9 @@ package org.apache.dubbo.config.spring.issues.issue9172;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ModuleConfigManager;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
@@ -28,7 +30,9 @@ import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +42,20 @@ import org.springframework.context.annotation.PropertySource;
  * Test for issue 9172
  */
 class MultipleConsumerAndProviderTest {
+
+    @BeforeEach
+    void setUp() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
+    }
+
+    @AfterEach
+    void tearDown() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+    }
 
     @Test
     void test() {

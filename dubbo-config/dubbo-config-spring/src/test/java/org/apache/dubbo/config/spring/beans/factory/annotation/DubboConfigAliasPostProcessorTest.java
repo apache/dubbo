@@ -17,9 +17,13 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +33,20 @@ class DubboConfigAliasPostProcessorTest {
 
     private static final String APP_NAME = "APP_NAME";
     private static final String APP_ID = "APP_ID";
+
+    @BeforeEach
+    void setUp() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
+    }
+
+    @AfterEach
+    void tearDown() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+    }
 
     @Test
     void test() {

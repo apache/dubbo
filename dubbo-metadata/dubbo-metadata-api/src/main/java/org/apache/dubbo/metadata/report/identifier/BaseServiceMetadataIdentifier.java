@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Objects;
+
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
 
@@ -58,5 +60,26 @@ public class BaseServiceMetadataIdentifier {
             return "";
         }
         return URL.encode(serviceInterface);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BaseServiceMetadataIdentifier)) return false;
+        BaseServiceMetadataIdentifier that = (BaseServiceMetadataIdentifier) o;
+        return Objects.equals(serviceInterface, that.serviceInterface)
+                && Objects.equals(version, that.version)
+                && Objects.equals(group, that.group)
+                && Objects.equals(side, that.side);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serviceInterface, version, group, side);
+    }
+
+    @Override
+    public String toString() {
+        return "BaseServiceMetadataIdentifier{" + "serviceInterface='" + serviceInterface + '\'' + ", version='"
+                + version + '\'' + ", group='" + group + '\'' + ", side='" + side + '\'' + '}';
     }
 }

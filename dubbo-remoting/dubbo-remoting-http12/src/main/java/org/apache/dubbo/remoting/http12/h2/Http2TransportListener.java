@@ -19,4 +19,10 @@ package org.apache.dubbo.remoting.http12.h2;
 public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2InputMessage> {
 
     void close();
+
+    /**
+     * Called when the channel writability changes.
+     * This is used for backpressure support via isReady/setOnReadyHandler.
+     */
+    default void onWritabilityChanged() {}
 }

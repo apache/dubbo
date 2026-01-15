@@ -77,6 +77,8 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
         properties = {
             "consumer.version = ${demo.service.version}",
             "consumer.url = dubbo://127.0.0.1:12345?version=2.5.7",
+            "dubbo.metrics.enabled = false",
+            "dubbo.metrics.protocol = disabled"
         })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 class ReferenceAnnotationBeanPostProcessorTest {

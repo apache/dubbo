@@ -51,7 +51,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
             DubboConfigBeanInitializerTest.class,
             DubboConfigBeanInitializerTest.AppConfiguration.class,
         })
-@TestPropertySource(properties = {"dubbo.protocol.port=-1", "dubbo.registry.address=${zookeeper.connection.address}"})
+@TestPropertySource(
+        properties = {
+            "dubbo.protocol.port=-1",
+            "dubbo.registry.address=${zookeeper.connection.address}",
+            "dubbo.metrics.enabled = false",
+            "dubbo.metrics.protocol = disabled"
+        })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class DubboConfigBeanInitializerTest {
