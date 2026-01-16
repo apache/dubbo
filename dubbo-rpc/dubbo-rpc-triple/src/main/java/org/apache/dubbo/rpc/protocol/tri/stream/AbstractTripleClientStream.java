@@ -86,6 +86,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     private boolean isReturnTriException = false;
 
+    /**
+     * Tracks the last known ready state to detect when the state changes from "not ready" to "ready".
+     */
+    private volatile boolean lastReadyState = false;
+
     protected AbstractTripleClientStream(
             FrameworkModel frameworkModel,
             Executor executor,
@@ -122,7 +127,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
          * This is necessary because onReady is only triggered by channelWritabilityChanged,
          * which won't fire if the channel is always writable from creation.
          */
-        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, listener));
+        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, this));
         return tripleStreamChannelFuture;
     }
 
@@ -192,6 +197,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                         .withDescription("Client write message failed")
                         .withCause(future.cause()));
                 transportException(future.cause());
+            } else {
+                // After successful write, check if we need to trigger onReady
+                notifyOnReady(false);
             }
         });
     }
@@ -254,9 +262,31 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      * asynchronously triggering all necessary callbacks through its executor.
      */
     protected void onWritabilityChanged() {
-        Channel channel = streamChannelFuture.getNow();
-        if (channel != null && channel.isWritable()) {
-            // Synchronously call listener.onReady(), which will use executor to run the callback
+        notifyOnReady(false);
+    }
+
+    /**
+     * Called by InitOnReadyQueueCommand to trigger the initial onReady notification.
+     */
+    public void triggerInitialOnReady() {
+        notifyOnReady(true);
+    }
+
+    /**
+     * notify listener when stream becomes ready
+     *
+     * @param forceNotify if true, always trigger onReady (for initial notification);
+     *                    if false, only trigger when state changes from "not ready" to "ready"
+     */
+    private synchronized void notifyOnReady(boolean forceNotify) {
+        boolean wasReady = lastReadyState;
+        boolean isNowReady = isReady();
+        lastReadyState = isNowReady;
+
+        // Trigger onReady if:
+        // 1. forceNotify is true (initial notification, spurious is OK), or
+        // 2. state changes from "not ready" to "ready"
+        if (forceNotify || (!wasReady && isNowReady)) {
             listener.onReady();
         }
     }

@@ -168,7 +168,11 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         if (listener == null) {
             return;
         }
-        // ObserverToClientCallListenerAdapter.onReady() triggers the onReadyHandler
+        // ObserverToClientCallListenerAdapter.onReady() triggers the onReadyHandler.
+        // Note: We do NOT check isReady() here because of the async dispatch model.
+        // The handler is always called (following gRPC's "spurious notifications" semantics),
+        // and it should check isReady() internally via while(isReady()) { send(); }.
+        // Subsequent channelWritabilityChanged events will trigger onReady() again if needed.
         executor.execute(() -> {
             try {
                 listener.onReady();
