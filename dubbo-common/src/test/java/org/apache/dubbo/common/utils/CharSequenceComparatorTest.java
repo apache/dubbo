@@ -16,23 +16,28 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-class CharSequenceComparatorTest {
+public class CharSequenceComparatorTest {
 
     @Test
     public void testCompare() {
         CharSequenceComparator comparator = CharSequenceComparator.INSTANCE;
 
-        // Simple identity
-        assertEquals(0, comparator.compare("abc", "abc"));
+        // 1. Identity test
+        Assertions.assertEquals(0, comparator.compare("dubbo", "dubbo"));
 
-        // Alphabetical
-        assertTrue(comparator.compare("a", "b") < 0);
+        // 2. Simple alphabetical test
+        Assertions.assertTrue(comparator.compare("apple", "banana") < 0);
+        Assertions.assertTrue(comparator.compare("banana", "apple") > 0);
 
-        // Mixed Types
-        assertEquals(0, comparator.compare("123", new StringBuilder("123")));
+        // 3. Mixed types (String vs StringBuilder)
+        StringBuilder sb = new StringBuilder("abc");
+        String s = "abc";
+        Assertions.assertEquals(0, comparator.compare(s, sb));
+
+        // 4. Case sensitivity
+        Assertions.assertTrue(comparator.compare("Apple", "apple") < 0);
     }
 }
