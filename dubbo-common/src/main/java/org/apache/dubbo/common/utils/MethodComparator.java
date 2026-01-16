@@ -22,10 +22,10 @@ import java.util.Comparator;
 /**
  * The Comparator class for {@link Method}, the comparison rule :
  * <ol>
- *     <li>Comparing to two {@link Method#getName() method names} {@link String#compareTo(String) lexicographically}.
- *     If equals, go to step 2</li>
- *     <li>Comparing to the count of two method parameters. If equals, go to step 3</li>
- *     <li>Comparing to the type names of methods parameter {@link String#compareTo(String) lexicographically}</li>
+ * <li>Comparing to two {@link Method#getName() method names} {@link String#compareTo(String) lexicographically}.
+ * If equals, go to step 2</li>
+ * <li>Comparing to the count of two method parameters. If equals, go to step 3</li>
+ * <li>Comparing to the type names of methods parameter {@link String#compareTo(String) lexicographically}</li>
  * </ol>
  *
  * @since 2.7.6
@@ -34,28 +34,25 @@ public class MethodComparator implements Comparator<Method> {
 
     public static final MethodComparator INSTANCE = new MethodComparator();
 
-    private MethodComparator() {}
+    public MethodComparator() {}
 
     @Override
     public int compare(Method m1, Method m2) {
-
         if (m1.equals(m2)) {
             return 0;
         }
 
-        // Step 1
+        // Step 1: Compare method names
         String n1 = m1.getName();
         String n2 = m2.getName();
         int value = n1.compareTo(n2);
 
-        if (value == 0) { // Step 2
-
+        if (value == 0) { // Step2: Compare parameter counts
             Class[] types1 = m1.getParameterTypes();
             Class[] types2 = m2.getParameterTypes();
 
             value = types1.length - types2.length;
-
-            if (value == 0) { // Step 3
+            if (value == 0) { // Step 3: Compare parameter types name
                 for (int i = 0; i < types1.length; i++) {
                     value = types1[i].getName().compareTo(types2[i].getName());
                     if (value != 0) {
@@ -64,7 +61,6 @@ public class MethodComparator implements Comparator<Method> {
                 }
             }
         }
-
         return Integer.compare(value, 0);
     }
 }
