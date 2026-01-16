@@ -11,3 +11,8 @@ This directory contains basic Dubbo usages to help Dubbo developers with debuggi
 3. **`dubbo-demo-springboot-idl`**
    This demo focuses on showcasing how to use Dubbo with Spring Boot when IDL (Interface Definition Language) files such as Proto files are available. It illustrates how developers can work with Dubbo services defined through IDL, integrating them into a Spring Boot application.
 
+## Guides and Documentation
+
+- **[Best Practices for Using Dubbo Stream](DUBBO_STREAM_BEST_PRACTICES.md)**
+  A comprehensive guide covering best practices for implementing streaming services in Dubbo, including real-world examples, error handling strategies, idempotency implementation, checkpoint mechanisms, and production configurations.
+
