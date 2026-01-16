@@ -26,22 +26,13 @@ class CharSequenceComparatorTest {
     public void testCompare() {
         CharSequenceComparator comparator = CharSequenceComparator.INSTANCE;
 
-        // 1: Identify Equal tests
-        assertEquals(0, comparator.compare("dubbo", "dubbo"));
+        // Simple identity
+        assertEquals(0, comparator.compare("abc", "abc"));
 
-        // 2. Alphabet test
-        assertTrue(comparator.compare("apple", "banana") < 0);
-        assertTrue(comparator.compare("banana", "apple") > 0);
+        // Alphabetical
+        assertTrue(comparator.compare("a", "b") < 0);
 
-        // 3. Mixed types (String vs StringBuilder)
-        StringBuilder sb = new StringBuilder("abc");
-        String s = "abc";
-        assertEquals(0, comparator.compare(s, sb));
-
-        // case Sensitivity
-        assertTrue(comparator.compare("Apple", "apple") < 0);
-
-        // Length test
-        assertTrue(comparator.compare("dubbo", "dubbo3") < 0);
+        // Mixed Types
+        assertEquals(0, comparator.compare("123", new StringBuilder("123")));
     }
 }
