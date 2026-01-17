@@ -17,10 +17,8 @@
 package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
@@ -29,7 +27,6 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.locks.Lock;
@@ -39,8 +36,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_T
 import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
@@ -76,8 +71,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             doOpen();
         } catch (Throwable t) {
             close();
-            throw new RemotingException(url.toInetSocketAddress(), null,
-                    "Failed to start client, cause: " + t.getMessage(), t);
+            throw new RemotingException(
+                    url.toInetSocketAddress(), null, "Failed to start client, cause: " + t.getMessage(), t);
         }
 
         try {
@@ -97,8 +92,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
-        ExecutorRepository executorRepository =
-                ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
+        ExecutorRepository executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
 
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
                 .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
@@ -157,8 +151,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         }
         Channel channel = getChannel();
         if (channel == null || !channel.isConnected()) {
-            throw new RemotingException(this,
-                    "message can not send, because channel is closed . url:" + getUrl());
+            throw new RemotingException(this, "message can not send, because channel is closed . url:" + getUrl());
         }
         channel.send(message, sent);
     }
@@ -192,9 +185,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private long getReconnectDuration(URL url) {
         int idleTimeout = getIdleTimeout(url);
         long tick = Math.max(LEAST_HEARTBEAT_DURATION, idleTimeout / HEARTBEAT_CHECK_TICK);
-        return Math.max(
-                url.getParameter(LEAST_RECONNECT_DURATION_KEY, LEAST_RECONNECT_DURATION),
-                tick);
+        return Math.max(url.getParameter(LEAST_RECONNECT_DURATION_KEY, LEAST_RECONNECT_DURATION), tick);
     }
 
     @Override
