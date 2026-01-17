@@ -16,14 +16,11 @@
  */
 package org.apache.dubbo.spring.boot.context.event;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -31,16 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * {@link AwaitingNonWebApplicationListener} Test
  */
 class AwaitingNonWebApplicationListenerTest {
-
-    @BeforeEach
-    void before() {
-        DubboBootstrap.reset();
-    }
-
-    @AfterEach
-    void after() {
-        DubboBootstrap.reset();
-    }
 
     //    @Test
     //    void init() {
@@ -64,13 +51,14 @@ class AwaitingNonWebApplicationListenerTest {
     //
     @Test
     void testMultipleContextNonWebApplication() {
-        new SpringApplicationBuilder(Object.class)
+        ConfigurableApplicationContext context = new SpringApplicationBuilder(Object.class)
                 .parent(Object.class)
                 .properties("spring.main.web-application-type=none")
-                .run()
-                .close();
+                .run();
+
         AwaitingNonWebApplicationListener listener = new AwaitingNonWebApplicationListener();
         AtomicBoolean awaited = listener.getAwaited();
         assertFalse(awaited.get());
+        context.close();
     }
 }
