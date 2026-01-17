@@ -51,15 +51,18 @@ class MultipleRegistry2S2RTest {
 
     @BeforeAll
     public static void beforeAll() {
-        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
-        zookeeperConnectionAddress2 = System.getProperty("zookeeper.connection.address.2");
+        String zkAddress1 = System.getProperty("zookeeper.connection.address.1", "127.0.0.1:2181");
+        String zkAddress2 = System.getProperty("zookeeper.connection.address.2", "127.0.0.1:2182");
 
-        URL url = URL.valueOf("multiple://127.0.0.1?application=vic&enable-empty-protection=false&"
-                + MultipleRegistry.REGISTRY_FOR_SERVICE
-                + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2 + "&"
-                + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperConnectionAddress1 + ","
-                + zookeeperConnectionAddress2);
-        multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(url);
+        zookeeperConnectionAddress1 = "zookeeper://" + zkAddress1;
+        zookeeperConnectionAddress2 = "zookeeper://" + zkAddress2;
+        String multipleUrlStr = String.format(
+                "multiple://127.0.0.1?application=vic&check=true&enable-empty-protection=false&%s=%s,%s&%s=%s,%s",
+                MultipleRegistry.REGISTRY_FOR_SERVICE, zookeeperConnectionAddress1, zookeeperConnectionAddress2,
+                MultipleRegistry.REGISTRY_FOR_REFERENCE,zookeeperConnectionAddress1, zookeeperConnectionAddress2
+        );
+        URL multipleUrl = URL.valueOf(multipleUrlStr);
+        multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(multipleUrl);
 
         // for test validation
         zookeeperClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1));
@@ -72,7 +75,6 @@ class MultipleRegistry2S2RTest {
 
     @Test
     void testParamConfig() {
-
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress2));
@@ -122,7 +124,7 @@ class MultipleRegistry2S2RTest {
     @Test
     void testRegistryAndUnRegistry() throws InterruptedException {
         URL serviceUrl = URL.valueOf(
-                "http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
+                "http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers&application=vic");
         //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME +
         // "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
@@ -153,7 +155,7 @@ class MultipleRegistry2S2RTest {
     @Test
     void testSubscription() throws InterruptedException {
         URL serviceUrl = URL.valueOf(
-                "http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers");
+                "http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers&application=vic");
         //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME +
         // "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
