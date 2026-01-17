@@ -57,10 +57,13 @@ class MultipleRegistry2S2RTest {
         zookeeperConnectionAddress1 = "zookeeper://" + zkAddress1;
         zookeeperConnectionAddress2 = "zookeeper://" + zkAddress2;
         String multipleUrlStr = String.format(
-                "multiple://127.0.0.1?application=vic&check=true&enable-empty-protection=false&%s=%s,%s&%s=%s,%s",
-                MultipleRegistry.REGISTRY_FOR_SERVICE, zookeeperConnectionAddress1, zookeeperConnectionAddress2,
-                MultipleRegistry.REGISTRY_FOR_REFERENCE,zookeeperConnectionAddress1, zookeeperConnectionAddress2
-        );
+                "multiple://127.0.0.1?application=vic&check=false&enable-empty-protection=false&%s=%s,%s&%s=%s,%s",
+                MultipleRegistry.REGISTRY_FOR_SERVICE,
+                zookeeperConnectionAddress1,
+                zookeeperConnectionAddress2,
+                MultipleRegistry.REGISTRY_FOR_REFERENCE,
+                zookeeperConnectionAddress1,
+                zookeeperConnectionAddress2);
         URL multipleUrl = URL.valueOf(multipleUrlStr);
         multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(multipleUrl);
 
@@ -123,8 +126,8 @@ class MultipleRegistry2S2RTest {
 
     @Test
     void testRegistryAndUnRegistry() throws InterruptedException {
-        URL serviceUrl = URL.valueOf(
-                "http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers&application=vic");
+        URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE_NAME
+                + "?notify=false&methods=test1,test2&category=providers&application=vic");
         //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME +
         // "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
@@ -154,8 +157,8 @@ class MultipleRegistry2S2RTest {
 
     @Test
     void testSubscription() throws InterruptedException {
-        URL serviceUrl = URL.valueOf(
-                "http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers&application=vic");
+        URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE2_NAME
+                + "?notify=false&methods=test1,test2&category=providers&application=vic");
         //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME +
         // "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
