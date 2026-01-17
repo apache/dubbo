@@ -24,12 +24,16 @@ import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * 2019-04-30
@@ -51,27 +55,38 @@ class MultipleRegistry2S2RTest {
 
     @BeforeAll
     public static void beforeAll() {
-        String zkAddress1 = System.getProperty("zookeeper.connection.address.1", "127.0.0.1:2181");
-        String zkAddress2 = System.getProperty("zookeeper.connection.address.2", "127.0.0.1:2182");
+        zookeeperConnectionAddress1 = "zookeeper://127.0.0.1:2181";
+        zookeeperConnectionAddress2 = "zookeeper://127.0.0.1:2182";
 
-        zookeeperConnectionAddress1 = "zookeeper://" + zkAddress1;
-        zookeeperConnectionAddress2 = "zookeeper://" + zkAddress2;
-        String multipleUrlStr = String.format(
-                "multiple://127.0.0.1?application=vic&check=false&enable-empty-protection=false&%s=%s,%s&%s=%s,%s",
-                MultipleRegistry.REGISTRY_FOR_SERVICE,
-                zookeeperConnectionAddress1,
-                zookeeperConnectionAddress2,
-                MultipleRegistry.REGISTRY_FOR_REFERENCE,
-                zookeeperConnectionAddress1,
-                zookeeperConnectionAddress2);
-        URL multipleUrl = URL.valueOf(multipleUrlStr);
-        multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(multipleUrl);
+        zookeeperClient = mock(Curator5ZookeeperClient.class);
+        zookeeperClient2 = mock(Curator5ZookeeperClient.class);
+
+        when(zookeeperClient.getChildren("/dubbo/" + SERVICE_NAME + "/providers"))
+                .thenReturn(Collections.singletonList("mock-provider-1"));
+        when(zookeeperClient.getChildren("/dubbo/" + SERVICE2_NAME + "/providers"))
+                .thenReturn(Collections.singletonList("mock-provider-2"));
+        when(zookeeperClient2.getChildren("/dubbo/" + SERVICE_NAME + "/providers"))
+                .thenReturn(Collections.singletonList("mock-provider-3"));
+        when(zookeeperClient2.getChildren("/dubbo/" + SERVICE2_NAME + "/providers"))
+                .thenReturn(Collections.singletonList("mock-provider-4"));
+
+        URL url = URL.valueOf("multiple://127.0.0.1?application=vic&enable-empty-protection=false&"
+                + MultipleRegistry.REGISTRY_FOR_SERVICE
+                + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2 + "&"
+                + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperConnectionAddress1 + ","
+                + zookeeperConnectionAddress2);
+        multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(url);
+
+        zookeeperRegistry = mock(ZookeeperRegistry.class);
+        when(zookeeperRegistry.getUrl()).thenReturn(URL.valueOf(zookeeperConnectionAddress1));
+        zookeeperRegistry2 = mock(ZookeeperRegistry.class);
+        when(zookeeperRegistry2.getUrl()).thenReturn(URL.valueOf(zookeeperConnectionAddress2));
 
         // for test validation
-        zookeeperClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1));
+        zookeeperClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "?check=false"));
         zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(
                 multipleRegistry.getServiceRegistries().values());
-        zookeeperClient2 = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress2));
+        zookeeperClient2 = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress2 + "?check=false"));
         zookeeperRegistry2 = MultipleRegistryTestUtil.getZookeeperRegistry(
                 multipleRegistry.getServiceRegistries().values());
     }
