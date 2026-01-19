@@ -307,6 +307,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
             stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
             if (stream != null) {
+                stream.initStream();
                 this.stream = stream;
                 return;
             }

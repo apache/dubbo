@@ -68,6 +68,11 @@ public interface ClientStream extends Stream {
     }
 
     /**
+     * Initialize the stream
+     */
+    void initStream();
+
+    /**
      * Send message to remote peer.
      *
      * @param message message to send to remote peer
