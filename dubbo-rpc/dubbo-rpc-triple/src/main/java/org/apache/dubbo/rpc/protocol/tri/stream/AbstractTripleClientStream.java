@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -90,8 +91,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      * Number of bytes currently queued, waiting to be sent.
      * When this falls below ON_READY_THRESHOLD, onReady will be triggered.
      */
-    private final java.util.concurrent.atomic.AtomicLong numSentBytesQueued =
-            new java.util.concurrent.atomic.AtomicLong(0);
+    private final AtomicLong numSentBytesQueued = new AtomicLong(0);
 
     /**
      * The threshold below which isReady() returns true (32KB).

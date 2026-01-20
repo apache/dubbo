@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.CancellationContext;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
@@ -46,8 +47,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
      * Number of bytes currently queued, waiting to be sent.
      * When this falls below ON_READY_THRESHOLD, onReady will be triggered.
      */
-    private final java.util.concurrent.atomic.AtomicLong numSentBytesQueued =
-            new java.util.concurrent.atomic.AtomicLong(0);
+    private final AtomicLong numSentBytesQueued = new AtomicLong(0);
 
     /**
      * The threshold below which isReady() returns true (32KB).
