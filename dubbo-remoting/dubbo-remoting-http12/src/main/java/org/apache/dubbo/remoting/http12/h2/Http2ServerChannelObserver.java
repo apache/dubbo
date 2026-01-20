@@ -120,12 +120,11 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
         CompletableFuture<Void> future = super.sendMessage(message);
 
-        final int size = messageSize;
         future.whenComplete((v, t) -> {
             if (t == null) {
-                onSentBytes(size);
+                onSentBytes(messageSize);
             } else {
-                rollbackSendingBytes(size);
+                rollbackSendingBytes(messageSize);
             }
         });
 
