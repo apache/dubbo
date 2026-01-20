@@ -62,7 +62,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     private Runnable onReadyHandler;
 
-    private Executor executor = Runnable::run;
+    private volatile Executor executor = Runnable::run;
 
     public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
         super(h2StreamChannel);
