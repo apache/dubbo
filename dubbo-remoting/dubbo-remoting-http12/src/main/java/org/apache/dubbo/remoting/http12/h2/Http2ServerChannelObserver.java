@@ -52,7 +52,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     /**
      * The threshold below which isReady() returns true (32KB).
      */
-    private static final long ON_READY_THRESHOLD = 32 * 1024;
+    protected static final long ON_READY_THRESHOLD = 32 * 1024;
 
     private CancellationContext cancellationContext;
 
@@ -134,35 +134,41 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     /**
      * Called before bytes are sent to track pending bytes.
      */
-    private void onSendingBytes(int numBytes) {
+    protected void onSendingBytes(int numBytes) {
         numSentBytesQueued.addAndGet(numBytes);
     }
 
     /**
      * Called when sending fails to rollback the pending bytes count.
      */
-    private void rollbackSendingBytes(int numBytes) {
+    protected void rollbackSendingBytes(int numBytes) {
         numSentBytesQueued.addAndGet(-numBytes);
     }
 
     /**
      * Called when bytes have been successfully sent to the remote endpoint.
      */
-    private void onSentBytes(int numBytes) {
-        boolean wasBelowThreshold = numSentBytesQueued.get() < ON_READY_THRESHOLD;
-        long newValue = numSentBytesQueued.addAndGet(-numBytes);
-        boolean nowBelowThreshold = newValue < ON_READY_THRESHOLD;
-
+    protected void onSentBytes(int numBytes) {
+        long oldValue = numSentBytesQueued.getAndAdd(-numBytes);
+        long newValue = oldValue - numBytes;
         // Trigger onReady when transitioning from "not ready" to "ready"
-        if (!wasBelowThreshold && nowBelowThreshold) {
+        if (oldValue >= ON_READY_THRESHOLD && newValue < ON_READY_THRESHOLD) {
             notifyOnReady();
         }
     }
 
     /**
+     * Returns the number of bytes currently queued for sending.
+     * Visible for testing.
+     */
+    protected long getNumSentBytesQueued() {
+        return numSentBytesQueued.get();
+    }
+
+    /**
      * Notify the onReadyHandler that the stream is ready for writing.
      */
-    private void notifyOnReady() {
+    protected void notifyOnReady() {
         Runnable handler = this.onReadyHandler;
         if (handler == null) {
             return;
