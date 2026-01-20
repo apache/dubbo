@@ -87,9 +87,16 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     private boolean isReturnTriException = false;
 
     /**
-     * Tracks the last known ready state to detect when the state changes from "not ready" to "ready".
+     * Number of bytes currently queued, waiting to be sent.
+     * When this falls below ON_READY_THRESHOLD, onReady will be triggered.
      */
-    private volatile boolean lastReadyState = false;
+    private final java.util.concurrent.atomic.AtomicLong numSentBytesQueued =
+            new java.util.concurrent.atomic.AtomicLong(0);
+
+    /**
+     * The threshold below which isReady() returns true (32KB).
+     */
+    private static final long ON_READY_THRESHOLD = 32 * 1024;
 
     protected AbstractTripleClientStream(
             FrameworkModel frameworkModel,
@@ -194,18 +201,56 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
+
+        final int messageSize = message.length;
+        onSendingBytes(messageSize);
+
         final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressFlag);
         return this.writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
             if (!future.isSuccess()) {
+                rollbackSendingBytes(messageSize);
                 cancelByLocal(TriRpcStatus.INTERNAL
                         .withDescription("Client write message failed")
                         .withCause(future.cause()));
                 transportException(future.cause());
             } else {
-                // After successful write, check if we need to trigger onReady
-                notifyOnReady(false);
+                onSentBytes(messageSize);
             }
         });
+    }
+
+    /**
+     * Called before bytes are sent to track pending bytes.
+     *
+     * @param numBytes the number of bytes about to be sent
+     */
+    private void onSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(numBytes);
+    }
+
+    /**
+     * Called when sending fails to rollback the pending bytes count.
+     *
+     * @param numBytes the number of bytes to rollback
+     */
+    private void rollbackSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(-numBytes);
+    }
+
+    /**
+     * Called when bytes have been successfully sent to the remote endpoint.
+     *
+     * @param numBytes the number of bytes that were sent
+     */
+    private void onSentBytes(int numBytes) {
+        boolean wasBelowThreshold = numSentBytesQueued.get() < ON_READY_THRESHOLD;
+        long newValue = numSentBytesQueued.addAndGet(-numBytes);
+        boolean nowBelowThreshold = newValue < ON_READY_THRESHOLD;
+
+        // Trigger onReady when transitioning from "not ready" to "ready"
+        if (!wasBelowThreshold && nowBelowThreshold) {
+            listener.onReady();
+        }
     }
 
     @Override
@@ -256,43 +301,23 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         if (channel == null) {
             return false;
         }
-        return channel.isWritable();
+        return numSentBytesQueued.get() < ON_READY_THRESHOLD;
     }
 
     /**
      * Called when the channel writability changes.
-     * This method should be invoked by the transport handler when channelWritabilityChanged is triggered.
-     * It synchronously notifies the listener (TripleClientCall) which is responsible for
-     * asynchronously triggering all necessary callbacks through its executor.
      */
     protected void onWritabilityChanged() {
-        notifyOnReady(false);
+        if (isReady()) {
+            listener.onReady();
+        }
     }
 
     /**
      * Called by InitOnReadyQueueCommand to trigger the initial onReady notification.
      */
     public void triggerInitialOnReady() {
-        notifyOnReady(true);
-    }
-
-    /**
-     * notify listener when stream becomes ready
-     *
-     * @param forceNotify if true, always trigger onReady (for initial notification);
-     *                    if false, only trigger when state changes from "not ready" to "ready"
-     */
-    private synchronized void notifyOnReady(boolean forceNotify) {
-        boolean wasReady = lastReadyState;
-        boolean isNowReady = isReady();
-        lastReadyState = isNowReady;
-
-        // Trigger onReady if:
-        // 1. forceNotify is true (initial notification, spurious is OK), or
-        // 2. state changes from "not ready" to "ready"
-        if (forceNotify || (!wasReady && isNowReady)) {
-            listener.onReady();
-        }
+        listener.onReady();
     }
 
     class ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {

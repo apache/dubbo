@@ -24,20 +24,35 @@ import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 import org.apache.dubbo.rpc.CancellationContext;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
 /**
  * HTTP/2 server-side stream observer with flow control and backpressure support.
- * Implements {@link ServerCallStreamObserver} following gRPC's pattern for backpressure.
  */
 public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver<H2StreamChannel>
         implements FlowControlStreamObserver<Object>,
                 Http2CancelableStreamObserver<Object>,
                 ServerCallStreamObserver<Object> {
+
+    /**
+     * Number of bytes currently queued, waiting to be sent.
+     * When this falls below ON_READY_THRESHOLD, onReady will be triggered.
+     */
+    private final java.util.concurrent.atomic.AtomicLong numSentBytesQueued =
+            new java.util.concurrent.atomic.AtomicLong(0);
+
+    /**
+     * The threshold below which isReady() returns true (32KB).
+     */
+    private static final long ON_READY_THRESHOLD = 32 * 1024;
 
     private CancellationContext cancellationContext;
 
@@ -47,16 +62,28 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     private Runnable onReadyHandler;
 
+    private Executor executor = Runnable::run;
+
     public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
         super(h2StreamChannel);
     }
 
     /**
+     * Sets the executor for async dispatch of callbacks.
+     */
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    /**
      * Returns whether the stream is ready for writing.
-     * If false, the caller should avoid calling onNext to prevent blocking or excessive buffering.
      */
     public boolean isReady() {
-        return getHttpChannel().isReady();
+        H2StreamChannel channel = getHttpChannel();
+        if (channel == null) {
+            return false;
+        }
+        return numSentBytesQueued.get() < ON_READY_THRESHOLD;
     }
 
     /**
@@ -68,17 +95,80 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     /**
      * Called when the channel writability changes.
-     * Triggers the onReadyHandler if the channel is now writable.
      */
     public void onWritabilityChanged() {
-        Runnable handler = this.onReadyHandler;
-        if (handler != null && isReady()) {
-            handler.run();
+        if (isReady()) {
+            notifyOnReady();
         }
     }
 
     public void setStreamingDecoder(StreamingDecoder streamingDecoder) {
         this.streamingDecoder = streamingDecoder;
+    }
+
+    /**
+     * Override to add byte counting for backpressure support.
+     */
+    @Override
+    protected CompletableFuture<Void> sendMessage(HttpOutputMessage message) throws Throwable {
+        if (message == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        int messageSize = message.messageSize();
+        onSendingBytes(messageSize);
+
+        CompletableFuture<Void> future = super.sendMessage(message);
+
+        final int size = messageSize;
+        future.whenComplete((v, t) -> {
+            if (t == null) {
+                onSentBytes(size);
+            } else {
+                rollbackSendingBytes(size);
+            }
+        });
+
+        return future;
+    }
+
+    /**
+     * Called before bytes are sent to track pending bytes.
+     */
+    private void onSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(numBytes);
+    }
+
+    /**
+     * Called when sending fails to rollback the pending bytes count.
+     */
+    private void rollbackSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(-numBytes);
+    }
+
+    /**
+     * Called when bytes have been successfully sent to the remote endpoint.
+     */
+    private void onSentBytes(int numBytes) {
+        boolean wasBelowThreshold = numSentBytesQueued.get() < ON_READY_THRESHOLD;
+        long newValue = numSentBytesQueued.addAndGet(-numBytes);
+        boolean nowBelowThreshold = newValue < ON_READY_THRESHOLD;
+
+        // Trigger onReady when transitioning from "not ready" to "ready"
+        if (!wasBelowThreshold && nowBelowThreshold) {
+            notifyOnReady();
+        }
+    }
+
+    /**
+     * Notify the onReadyHandler that the stream is ready for writing.
+     */
+    private void notifyOnReady() {
+        Runnable handler = this.onReadyHandler;
+        if (handler == null) {
+            return;
+        }
+        executor.execute(handler);
     }
 
     @Override

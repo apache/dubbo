@@ -49,4 +49,12 @@ public final class Http2OutputMessageFrame implements Http2OutputMessage {
     public boolean isEndStream() {
         return endStream;
     }
+
+    @Override
+    public int messageSize() {
+        if (body instanceof ByteBufOutputStream) {
+            return ((ByteBufOutputStream) body).buffer().readableBytes();
+        }
+        return 0;
+    }
 }

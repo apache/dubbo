@@ -179,6 +179,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void onMetadataCompletion(Http2Header metadata) {
         responseObserver.setResponseEncoder(getContext().getHttpMessageEncoder());
+        responseObserver.setExecutor(getExecutor());
         responseObserver.request(1);
         if (metadata.isEndStream()) {
             getStreamingDecoder().close();
@@ -233,11 +234,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     public void onWritabilityChanged() {
-        if (getExecutor() == null) {
-            responseObserver.onWritabilityChanged();
-        } else {
-            getExecutor().execute(responseObserver::onWritabilityChanged);
-        }
+        responseObserver.onWritabilityChanged();
     }
 
     private static final class Http2StreamingDecodeListener implements ListeningDecoder.Listener {

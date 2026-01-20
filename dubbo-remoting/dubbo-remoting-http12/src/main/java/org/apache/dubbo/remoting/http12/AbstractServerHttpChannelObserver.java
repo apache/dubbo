@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -241,12 +242,13 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         return getHttpChannel().newOutputMessage();
     }
 
-    protected final void sendMessage(HttpOutputMessage message) throws Throwable {
+    protected CompletableFuture<Void> sendMessage(HttpOutputMessage message) throws Throwable {
         if (message == null) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
-        getHttpChannel().writeMessage(message);
+        CompletableFuture<Void> future = getHttpChannel().writeMessage(message);
         postOutputMessage(message);
+        return future;
     }
 
     protected void preOutputMessage(HttpOutputMessage message) throws Throwable {}
