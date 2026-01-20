@@ -37,6 +37,17 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
 /**
  * HTTP/2 server-side stream observer with flow control and backpressure support.
+ * <p>
+ * Backpressure is implemented using a byte-counting strategy. Outbound messages are
+ * tracked in {@code numSentBytesQueued}, which represents the approximate number of
+ * bytes that have been queued but not yet acknowledged as sent.
+ * <p>
+ * The {@code ON_READY_THRESHOLD} (32KB) defines when this observer is considered "ready":
+ * <ul>
+ *     <li>{@link #isReady()} returns {@code true} when {@code numSentBytesQueued < ON_READY_THRESHOLD}</li>
+ *     <li>When the queued byte count drops from at or above the threshold to below it,
+ *         the registered {@code onReadyHandler} is invoked to signal that more data can be sent</li>
+ * </ul>
  */
 public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver<H2StreamChannel>
         implements FlowControlStreamObserver<Object>,
@@ -60,7 +71,7 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     private boolean autoRequestN = true;
 
-    private Runnable onReadyHandler;
+    private volatile Runnable onReadyHandler;
 
     private volatile Executor executor = Runnable::run;
 
@@ -77,6 +88,12 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     /**
      * Returns whether the stream is ready for writing.
+     * <p>
+     * Ready state is determined by byte counting: returns {@code true} when the number
+     * of queued bytes is below the threshold (32KB). If {@code false}, the caller should
+     * avoid calling {@code onNext} to prevent excessive buffering.
+     *
+     * @return {@code true} if the stream is ready for more data, {@code false} otherwise
      */
     public boolean isReady() {
         H2StreamChannel channel = getHttpChannel();
@@ -94,7 +111,11 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     /**
-     * Called when the channel writability changes.
+     * Called by the transport layer when the underlying channel's writability changes.
+     * <p>
+     * This serves as an additional trigger point for notifying the {@code onReadyHandler}
+     * when the channel becomes writable again. The actual ready state is still determined
+     * by the byte counting mechanism in {@link #isReady()}.
      */
     public void onWritabilityChanged() {
         if (isReady()) {

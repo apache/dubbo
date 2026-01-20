@@ -147,7 +147,11 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (!headerSent) {
             sendMetadata(buildMetadata(statusCode, data, null, HttpOutputMessage.EMPTY_MESSAGE));
         }
-        sendMessage(buildMessage(statusCode, data));
+        sendMessage(buildMessage(statusCode, data)).whenComplete((unused, throwable) -> {
+            if (throwable != null) {
+                LOGGER.error(INTERNAL_ERROR, "", "", "Failed to send message on channel " + httpChannel, throwable);
+            }
+        });
     }
 
     protected final int resolveStatusCode(Object data) {
@@ -276,7 +280,11 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (!headerSent) {
             sendMetadata(buildMetadata(statusCode, data, throwable, HttpOutputMessage.EMPTY_MESSAGE));
         }
-        sendMessage(buildMessage(statusCode, data));
+        sendMessage(buildMessage(statusCode, data)).whenComplete((unused, t) -> {
+            if (t != null) {
+                LOGGER.error(INTERNAL_ERROR, "", "", "Failed to send error message on channel " + httpChannel, t);
+            }
+        });
     }
 
     protected final int resolveErrorStatusCode(Throwable throwable) {
