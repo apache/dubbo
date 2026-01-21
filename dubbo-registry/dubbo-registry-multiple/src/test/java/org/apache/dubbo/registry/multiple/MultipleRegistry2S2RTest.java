@@ -31,12 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -50,13 +52,13 @@ class MultipleRegistry2S2RTest {
     private static final String MOCK_ZK_ADDR1 = "zookeeper://mock-zk-1:2181?check=false";
     private static final String MOCK_ZK_ADDR2 = "zookeeper://mock-zk-2:2182?check=false";
 
-    private static MultipleRegistry multipleRegistry;
-    private static ZookeeperClient zookeeperClient;
-    private static ZookeeperClient zookeeperClient2;
-    private static ZookeeperRegistry zookeeperRegistry;
-    private static ZookeeperRegistry zookeeperRegistry2;
-    private static String zookeeperConnectionAddress1;
-    private static String zookeeperConnectionAddress2;
+    private MultipleRegistry multipleRegistry;
+    private ZookeeperClient zookeeperClient;
+    private ZookeeperClient zookeeperClient2;
+    private ZookeeperRegistry zookeeperRegistry;
+    private ZookeeperRegistry zookeeperRegistry2;
+    private String zookeeperConnectionAddress1;
+    private String zookeeperConnectionAddress2;
 
     private static ZookeeperRegistry getZookeeperRegistry(Collection<Registry> registries) {
         for (Registry registry : registries) {
@@ -78,12 +80,9 @@ class MultipleRegistry2S2RTest {
     }
 
     @BeforeEach
-    void initMockito() {
+    void init() {
         MockitoAnnotations.openMocks(this);
-    }
 
-    @BeforeAll
-    public static void beforeAll() {
         zookeeperConnectionAddress1 = MOCK_ZK_ADDR1;
         zookeeperConnectionAddress2 = MOCK_ZK_ADDR2;
 
@@ -121,6 +120,32 @@ class MultipleRegistry2S2RTest {
         zookeeperClient2 = mock(Curator5ZookeeperClient.class);
         when(zookeeperClient.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
         when(zookeeperClient2.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
+        doAnswer(new Answer<Void>() {
+                    @Override
+                    public Void answer(InvocationOnMock invocation) {
+                        return null;
+                    }
+                })
+                .when(multipleRegistry)
+                .register(any(URL.class));
+        doAnswer(new Answer<Void>() {
+                    @Override
+                    public Void answer(InvocationOnMock invocation) {
+                        return null;
+                    }
+                })
+                .when(multipleRegistry)
+                .unregister(any(URL.class));
+    }
+
+    @AfterEach
+    void cleanup() {
+        if (multipleRegistry != null) {
+            try {
+                multipleRegistry.destroy();
+            } catch (Exception e) {
+            }
+        }
     }
 
     @Test
