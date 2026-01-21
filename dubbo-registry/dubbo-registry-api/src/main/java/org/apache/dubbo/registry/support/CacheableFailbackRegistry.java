@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -323,29 +324,76 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             return rawProvider;
         }
 
+        int encodedIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
+        int plainIdx = rawProvider.indexOf('?');
+        boolean encoded;
+        int questionIdx;
+        if (encodedIdx >= 0 && (plainIdx < 0 || encodedIdx < plainIdx)) {
+            encoded = true;
+            questionIdx = encodedIdx;
+        } else if (plainIdx >= 0) {
+            encoded = false;
+            questionIdx = plainIdx;
+        } else {
+            return rawProvider;
+        }
+
+        String prefix = rawProvider.substring(0, questionIdx);
+        String params = rawProvider.substring(questionIdx + (encoded ? ENCODED_QUESTION_MARK.length() : 1));
+        if (params.isEmpty()) {
+            return rawProvider;
+        }
+
+        String andMark = encoded ? ENCODED_AND_MARK : "&";
+        String eqMark = encoded ? "%3D" : "=";
+
+        HashSet<String> variableNames = new HashSet<>(keys.length);
         for (String key : keys) {
-            int idxStart = rawProvider.indexOf(key);
-            if (idxStart == -1) {
+            if (key != null) {
+                variableNames.add(normalizeVariableName(key));
+            }
+        }
+
+        List<String> remaining = new ArrayList<>();
+        boolean removed = false;
+        for (String param : params.split(andMark)) {
+            if (param.isEmpty()) {
                 continue;
             }
-            int idxEnd = rawProvider.indexOf(ENCODED_AND_MARK, idxStart);
-            String part1 = rawProvider.substring(0, idxStart);
-            if (idxEnd == -1) {
-                rawProvider = part1;
-            } else {
-                String part2 = rawProvider.substring(idxEnd + ENCODED_AND_MARK.length());
-                rawProvider = part1 + part2;
+            int eqIdx = param.indexOf(eqMark);
+            if (eqIdx < 0) {
+                remaining.add(param);
+                continue;
             }
+            String name = param.substring(0, eqIdx);
+            if (variableNames.contains(normalizeVariableName(name))) {
+                removed = true;
+                continue;
+            }
+            remaining.add(param);
         }
 
-        if (rawProvider.endsWith(ENCODED_AND_MARK)) {
-            rawProvider = rawProvider.substring(0, rawProvider.length() - ENCODED_AND_MARK.length());
+        if (!removed) {
+            return rawProvider;
         }
-        if (rawProvider.endsWith(ENCODED_QUESTION_MARK)) {
-            rawProvider = rawProvider.substring(0, rawProvider.length() - ENCODED_QUESTION_MARK.length());
+        if (remaining.isEmpty()) {
+            return prefix;
         }
 
-        return rawProvider;
+        return prefix + (encoded ? ENCODED_QUESTION_MARK : "?") + String.join(andMark, remaining);
+    }
+
+    private String normalizeVariableName(String key) {
+        if (key == null) {
+            return null;
+        }
+        if (key.endsWith("%3D")) {
+            return key.substring(0, key.length() - 3);
+        }
+        if (key.endsWith("=")) {
+            return key.substring(0, key.length() - 1);
+        }
+        return key;
     }
 
     private List<URL> toConfiguratorsWithoutEmpty(URL consumer, Collection<String> configurators) {
