@@ -80,7 +80,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     protected final TripleWriteQueue writeQueue;
     private Deframer deframer;
     private final Channel parent;
-    private final TripleStreamChannelFuture streamChannelFuture;
+    private TripleStreamChannelFuture streamChannelFuture;
     private boolean halfClosed;
     private boolean rst;
 
@@ -101,7 +101,6 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = http2StreamChannel.parent();
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(http2StreamChannel);
     }
 
     protected AbstractTripleClientStream(
@@ -114,11 +113,16 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = parent;
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(parent);
+    }
+
+    @Override
+    public void initStream() {
+        initStreamChannel(this.parent);
     }
 
     private TripleStreamChannelFuture initStreamChannel(Channel parent) {
         TripleStreamChannelFuture tripleStreamChannelFuture = initStreamChannel0(parent);
+        this.streamChannelFuture = tripleStreamChannelFuture;
         /**
          * Enqueue InitOnReadyQueueCommand after the stream creation command.
          * Since WriteQueue executes commands in order within the EventLoop,
