@@ -177,6 +177,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
 
         // create new urls
+        // The key of newURLs is the normalized rawProvider (variable keys removed for deduplication),
+        // but the cached ServiceAddressURL is built from the original rawProvider (with all parameters preserved).
         Map<String, ServiceAddressURL> newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
 
         // remove 'release', 'dubbo', 'methods', timestamp, 'dubbo.tag' parameter
@@ -185,28 +187,41 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         if (oldURLs == null) {
             for (String rawProvider : providers) {
-                // remove VARIABLE_KEYS(timestamp,pid..) in provider url.
-                rawProvider = stripOffVariableKeys(rawProvider);
+                // Normalize the rawProvider by removing VARIABLE_KEYS(timestamp, pid..) for deduplication purposes.
+                // The normalized key is used to avoid duplicate instances of the same provider.
+                String normalizedKey = stripOffVariableKeys(rawProvider);
 
-                // create DubboServiceAddress object using provider url, consumer url, and extra parameters.
+                // Create DubboServiceAddress object using the ORIGINAL rawProvider (with all parameters intact),
+                // so that timestamp and other parameters are preserved for correct parameter parsing.
+                // This ensures that when multiple providers normalize to the same key (e.g., different timestamps),
+                // the latest one's timestamp will be used.
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
                     continue;
                 }
-                newURLs.put(rawProvider, cachedURL);
+
+                // Use normalized key for deduplication: if multiple providers normalize to the same key,
+                // the last one (with the latest timestamp) will be kept.
+                newURLs.put(normalizedKey, cachedURL);
             }
         } else {
-            // maybe only default, or "env" + default
+            // Reuse or create URLs based on both normalized key and original rawProvider.
+            // The normalized key is used to find potential cache entries for reuse (deduplication),
+            // but we always create a new ServiceAddressURL from the original rawProvider to ensure
+            // the timestamp and other parameters are up-to-date.
             for (String rawProvider : providers) {
-                rawProvider = stripOffVariableKeys(rawProvider);
-                ServiceAddressURL cachedURL = oldURLs.remove(rawProvider);
+                // Normalize the rawProvider for cache key matching and deduplication.
+                String normalizedKey = stripOffVariableKeys(rawProvider);
+
+                // Create new URL using the original rawProvider (all parameters preserved including timestamp).
+                ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
-                    cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
-                    if (cachedURL == null) {
-                        continue;
-                    }
+                    continue;
                 }
-                newURLs.put(rawProvider, cachedURL);
+
+                // Use normalized key for storage: if multiple providers normalize to the same key,
+                // the last one will be kept, ensuring no duplicate instances with outdated timestamps.
+                newURLs.put(normalizedKey, cachedURL);
             }
         }
 
@@ -347,6 +362,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         String andMark = encoded ? ENCODED_AND_MARK : "&";
         String eqMark = encoded ? "%3D" : "=";
 
+        // Build a set of normalized variable names for efficient matching.
         HashSet<String> variableNames = new HashSet<>(keys.length);
         for (String key : keys) {
             if (key != null) {
@@ -366,7 +382,20 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 continue;
             }
             String name = param.substring(0, eqIdx);
-            if (variableNames.contains(normalizeVariableName(name))) {
+            String normalizedName = normalizeVariableName(name);
+
+            // Check if this parameter name is a variable key that should be removed.
+            // Support both exact match (e.g., "timestamp") and suffix match with dot separator (e.g.,
+            // "remote.timestamp").
+            boolean isVariable = false;
+            for (String var : variableNames) {
+                if (var != null && (normalizedName.equals(var) || normalizedName.endsWith("." + var))) {
+                    isVariable = true;
+                    break;
+                }
+            }
+
+            if (isVariable) {
                 removed = true;
                 continue;
             }
