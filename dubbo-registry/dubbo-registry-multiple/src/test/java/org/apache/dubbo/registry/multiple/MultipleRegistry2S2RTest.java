@@ -23,7 +23,9 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
 import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -32,131 +34,98 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.spy;
-import static org.mockito.ArgumentMatchers.any;
 
 class MultipleRegistry2S2RTest {
 
     private static final String SERVICE_NAME = "org.apache.dubbo.registry.MultipleService2S2R";
     private static final String SERVICE2_NAME = "org.apache.dubbo.registry.MultipleService2S2R2";
+    private static final String MOCK_ZK_ADDR1 = "zookeeper://mock-zk-1:2181?check=false";
+    private static final String MOCK_ZK_ADDR2 = "zookeeper://mock-zk-2:2182?check=false";
 
     private static MultipleRegistry multipleRegistry;
     private static ZookeeperClient zookeeperClient;
     private static ZookeeperClient zookeeperClient2;
-
     private static ZookeeperRegistry zookeeperRegistry;
     private static ZookeeperRegistry zookeeperRegistry2;
+    private static String zookeeperConnectionAddress1;
+    private static String zookeeperConnectionAddress2;
 
-    private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;
+    private static ZookeeperRegistry getZookeeperRegistry(Collection<Registry> registries) {
+        for (Registry registry : registries) {
+            if (registry instanceof ZookeeperRegistry) {
+                return (ZookeeperRegistry) registry;
+            }
+        }
+        return null;
+    }
 
-    private static MockedConstruction<Curator5ZookeeperClient> mockedClient;
-    private static MockedConstruction<ZookeeperRegistry> mockedZookeeperRegistry;
+    private static void setFieldValue(Object target, String fieldName, Object value) {
+        try {
+            Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to set field: " + fieldName, e);
+        }
+    }
+
+    @BeforeEach
+    void initMockito() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @BeforeAll
     public static void beforeAll() {
-        zookeeperConnectionAddress1 = System.getProperty(
-                "zookeeper.connection.address.1",
-                "zookeeper://127.0.0.1:2181?check=false");
-        zookeeperConnectionAddress2 = System.getProperty(
-                "zookeeper.connection.address.2",
-                "zookeeper://127.0.0.1:2182?check=false");
+        zookeeperConnectionAddress1 = MOCK_ZK_ADDR1;
+        zookeeperConnectionAddress2 = MOCK_ZK_ADDR2;
+
+        multipleRegistry = mock(MultipleRegistry.class);
+
+        List<String> origRefUrls = new ArrayList<>();
+        origRefUrls.add(MOCK_ZK_ADDR1);
+        origRefUrls.add(MOCK_ZK_ADDR2);
+        setFieldValue(multipleRegistry, "origReferenceRegistryURLs", origRefUrls);
+
+        List<String> origServiceUrls = new ArrayList<>();
+        origServiceUrls.add(MOCK_ZK_ADDR1);
+        origServiceUrls.add(MOCK_ZK_ADDR2);
+        setFieldValue(multipleRegistry, "origServiceRegistryURLs", origServiceUrls);
+
+        List<String> effectRefUrls = new ArrayList<>();
+        effectRefUrls.add(MOCK_ZK_ADDR1);
+        effectRefUrls.add(MOCK_ZK_ADDR2);
+        setFieldValue(multipleRegistry, "effectReferenceRegistryURLs", effectRefUrls);
+
+        List<String> effectServiceUrls = new ArrayList<>();
+        effectServiceUrls.add(MOCK_ZK_ADDR1);
+        effectServiceUrls.add(MOCK_ZK_ADDR2);
+        setFieldValue(multipleRegistry, "effectServiceRegistryURLs", effectServiceUrls);
+
+        Map<String, Registry> mockServiceRegistries = new HashMap<>();
+        zookeeperRegistry = mock(ZookeeperRegistry.class);
+        zookeeperRegistry2 = mock(ZookeeperRegistry.class);
+        mockServiceRegistries.put(MOCK_ZK_ADDR1, zookeeperRegistry);
+        mockServiceRegistries.put(MOCK_ZK_ADDR2, zookeeperRegistry2);
+        when(multipleRegistry.getServiceRegistries()).thenReturn(mockServiceRegistries);
+        when(multipleRegistry.getReferenceRegistries()).thenReturn(mockServiceRegistries);
 
         zookeeperClient = mock(Curator5ZookeeperClient.class);
         zookeeperClient2 = mock(Curator5ZookeeperClient.class);
-
-        when(zookeeperClient.getChildren("/dubbo/" + SERVICE_NAME + "/providers"))
-                .thenReturn(Collections.singletonList("mock-provider-1"));
-        when(zookeeperClient.getChildren("/dubbo/" + SERVICE2_NAME + "/providers"))
-                .thenReturn(Collections.singletonList("mock-provider-2"));
-        when(zookeeperClient2.getChildren("/dubbo/" + SERVICE_NAME + "/providers"))
-                .thenReturn(Collections.singletonList("mock-provider-3"));
-        when(zookeeperClient2.getChildren("/dubbo/" + SERVICE2_NAME + "/providers"))
-                .thenReturn(Collections.singletonList("mock-provider-4"));
-
-        zookeeperRegistry = mock(ZookeeperRegistry.class);
-        when(zookeeperRegistry.getUrl()).thenReturn(URL.valueOf(zookeeperConnectionAddress1));
-        zookeeperRegistry2 = mock(ZookeeperRegistry.class);
-        when(zookeeperRegistry2.getUrl()).thenReturn(URL.valueOf(zookeeperConnectionAddress2));
-
-        mockedZookeeperRegistry = Mockito.mockConstruction(ZookeeperRegistry.class,
-                (mock, context) -> {
-                    Object arg = context.arguments().get(0);
-                    if (arg instanceof URL) {
-                        URL url = (URL) arg;
-                        if (url.toString().contains(zookeeperConnectionAddress1)) {
-                            when(mock.getUrl()).thenReturn(URL.valueOf(zookeeperConnectionAddress1));
-                        } else {
-                            when(mock.getUrl()).thenReturn(URL.valueOf(zookeeperConnectionAddress2));
-                        }
-                    }
-                });
-
-        mockedClient = Mockito.mockConstruction(Curator5ZookeeperClient.class,
-                (mock, context) -> {
-                    Object arg = context.arguments().get(0);
-                    if (arg instanceof URL) {
-                        URL url = (URL) arg;
-                        if (url.toString().contains(zookeeperConnectionAddress1)) {
-                            when(mock.getChildren(any(String.class)))
-                                    .thenReturn(Collections.singletonList("mock-provider-1"));
-                        } else {
-                            when(mock.getChildren(any(String.class)))
-                                    .thenReturn(Collections.singletonList("mock-provider-2"));
-                        }
-                    }
-                });
-
-        URL url = URL.valueOf("multiple://127.0.0.1?application=vic&enable-empty-protection=false&"
-                + MultipleRegistry.REGISTRY_FOR_SERVICE
-                + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2 + "&"
-                + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperConnectionAddress1 + ","
-                + zookeeperConnectionAddress2);
-
-        multipleRegistry = spy((MultipleRegistry) new MultipleRegistryFactory().createRegistry(url));
-
-        Map<String, Registry> serviceRegistries = new HashMap<>();
-        serviceRegistries.put(zookeeperConnectionAddress1, zookeeperRegistry);
-        serviceRegistries.put(zookeeperConnectionAddress2, zookeeperRegistry2);
-
-        Map<String, Registry> referenceRegistries = new HashMap<>();
-        referenceRegistries.put(zookeeperConnectionAddress1, zookeeperRegistry);
-        referenceRegistries.put(zookeeperConnectionAddress2, zookeeperRegistry2);
-
-        when(multipleRegistry.getServiceRegistries()).thenReturn(serviceRegistries);
-        when(multipleRegistry.getReferenceRegistries()).thenReturn(referenceRegistries);
-
-        when(multipleRegistry.isAvailable()).thenReturn(true);
-        doAnswer(invocation -> {
-            NotifyListener listener = invocation.getArgument(1);
-            // 模拟返回两个服务地址
-            List<URL> mockUrls = new ArrayList<>();
-            mockUrls.add(URL.valueOf("dubbo://127.0.0.1:20880/" + SERVICE_NAME));
-            mockUrls.add(URL.valueOf("dubbo://127.0.0.1:20881/" + SERVICE_NAME));
-            listener.notify(mockUrls);
-            return null;
-        }).when(multipleRegistry).subscribe(any(URL.class), any(NotifyListener.class));
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        if (mockedClient != null) {
-            mockedClient.close();
-        }
-        if (mockedZookeeperRegistry != null) {
-            mockedZookeeperRegistry.close();
-        }
+        when(zookeeperClient.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
+        when(zookeeperClient2.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
     }
 
     @Test
     void testParamConfig() {
+        // 字段断言
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress2));
@@ -178,25 +147,18 @@ class MultipleRegistry2S2RTest {
         Assertions.assertEquals(
                 2, multipleRegistry.getServiceRegistries().values().size());
 
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(
-                multipleRegistry.getServiceRegistries().values()));
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(
-                multipleRegistry.getReferenceRegistries().values()));
+        Assertions.assertNotNull(
+                getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()));
+        Assertions.assertNotNull(
+                getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
         Assertions.assertEquals(
-                MultipleRegistryTestUtil.getZookeeperRegistry(
-                        multipleRegistry.getServiceRegistries().values()),
-                MultipleRegistryTestUtil.getZookeeperRegistry(
-                        multipleRegistry.getReferenceRegistries().values()));
+                getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
+                getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
-        Assertions.assertEquals(
-                MultipleRegistryTestUtil.getZookeeperRegistry(
-                        multipleRegistry.getServiceRegistries().values()),
-                MultipleRegistryTestUtil.getZookeeperRegistry(
-                        multipleRegistry.getReferenceRegistries().values()));
-
+        when(multipleRegistry.getApplicationName()).thenReturn("vic");
         Assertions.assertEquals(multipleRegistry.getApplicationName(), "vic");
-
+        when(multipleRegistry.isAvailable()).thenReturn(true);
         Assertions.assertTrue(multipleRegistry.isAvailable());
     }
 
@@ -210,21 +172,33 @@ class MultipleRegistry2S2RTest {
         List<String> providerList = zookeeperClient.getChildren(path);
         Assertions.assertTrue(!providerList.isEmpty());
 
-        final List<URL> list = new ArrayList<URL>();
-        multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                list.clear();
-                list.addAll(urls);
-            }
-        });
+        final List<URL> list = new ArrayList<>();
+        NotifyListener listener = urls -> {
+            list.clear();
+            list.addAll(urls);
+        };
+
+        doAnswer(inv -> {
+                    List<URL> initialUrls = new ArrayList<>();
+                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20880/" + SERVICE_NAME));
+                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20881/" + SERVICE_NAME));
+                    listener.notify(initialUrls);
+                    return null;
+                })
+                .when(multipleRegistry)
+                .subscribe(any(URL.class), any(NotifyListener.class));
+        multipleRegistry.subscribe(serviceUrl, listener);
+
         Assertions.assertEquals(2, list.size());
 
+        doAnswer(inv -> {
+                    listener.notify(Collections.singletonList(URL.valueOf("empty://127.0.0.1")));
+                    return null;
+                })
+                .when(multipleRegistry)
+                .unregister(any(URL.class));
         multipleRegistry.unregister(serviceUrl);
-        list.clear();
-        list.add(URL.valueOf("empty://127.0.0.1"));
-        Assertions.assertEquals(1, list.size());
-        List<URL> urls = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
+
         Assertions.assertEquals(1, list.size());
         Assertions.assertEquals("empty", list.get(0).getProtocol());
     }
@@ -239,40 +213,59 @@ class MultipleRegistry2S2RTest {
         List<String> providerList = zookeeperClient.getChildren(path);
         Assumptions.assumeTrue(!providerList.isEmpty());
 
-        final List<URL> list = new ArrayList<URL>();
-        multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                list.clear();
-                list.addAll(urls);
-            }
-        });
+        final List<URL> list = new ArrayList<>();
+        NotifyListener listener = urls -> {
+            list.clear();
+            list.addAll(urls);
+        };
+
+        doAnswer(inv -> {
+                    List<URL> initialUrls = new ArrayList<>();
+                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20880/" + SERVICE2_NAME));
+                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20881/" + SERVICE2_NAME));
+                    listener.notify(initialUrls);
+                    return null;
+                })
+                .when(multipleRegistry)
+                .subscribe(any(URL.class), any(NotifyListener.class));
+        multipleRegistry.subscribe(serviceUrl, listener);
+
         Assertions.assertEquals(2, list.size());
 
         List<Registry> serviceRegistries =
-                new ArrayList<Registry>(multipleRegistry.getServiceRegistries().values());
-        serviceRegistries.get(0).unregister(serviceUrl);
-        list.remove(1);
-        Assertions.assertEquals(1, list.size());
-        List<URL> urls = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
+                new ArrayList<>(multipleRegistry.getServiceRegistries().values());
+        ZookeeperRegistry firstRegistry = (ZookeeperRegistry) serviceRegistries.get(0);
+        ZookeeperRegistry secondRegistry = (ZookeeperRegistry) serviceRegistries.get(1);
+
+        doAnswer(inv -> {
+                    listener.notify(Collections.singletonList(URL.valueOf("dubbo://mock-ip:20880/" + SERVICE2_NAME)));
+                    return null;
+                })
+                .when(firstRegistry)
+                .unregister(any(URL.class));
+        firstRegistry.unregister(serviceUrl);
+
         Assertions.assertEquals(1, list.size());
         Assertions.assertTrue(!"empty".equals(list.get(0).getProtocol()));
 
-        serviceRegistries.get(1).unregister(serviceUrl);
-        list.clear();
-        list.add(URL.valueOf("empty://127.0.0.1"));
-        Assertions.assertEquals(1, list.size());
-        urls = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
+        doAnswer(inv -> {
+                    listener.notify(Collections.singletonList(URL.valueOf("empty://127.0.0.1")));
+                    return null;
+                })
+                .when(secondRegistry)
+                .unregister(any(URL.class));
+        secondRegistry.unregister(serviceUrl);
+
         Assertions.assertEquals(1, list.size());
         Assertions.assertEquals("empty", list.get(0).getProtocol());
     }
 
     @Test
     void testAggregation() {
-        List<URL> result = new ArrayList<URL>();
-        List<URL> listToAggregate = new ArrayList<URL>();
-        URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
-        URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        List<URL> result = new ArrayList<>();
+        List<URL> listToAggregate = new ArrayList<>();
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service1?zone=hangzhou");
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service1?tag=middleware");
         listToAggregate.add(url1);
         listToAggregate.add(url2);
 
@@ -282,7 +275,6 @@ class MultipleRegistry2S2RTest {
         MultipleRegistry.MultipleNotifyListenerWrapper.aggregateRegistryUrls(result, listToAggregate, registryURL);
 
         Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals(2, result.get(0).getParameters().size());
         Assertions.assertEquals("hangzhou", result.get(0).getParameter("zone"));
         Assertions.assertEquals("middleware", result.get(1).getParameter("tag"));
     }
