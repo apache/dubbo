@@ -68,10 +68,8 @@ class NettyBackedChannelBufferTest {
         ByteBuf srcDirect = Unpooled.directBuffer(4);
         ByteBuf dstDirect = Unpooled.directBuffer(4);
 
-        ChannelBuffer source =
-                new NettyBackedChannelBuffer(srcDirect);
-        ChannelBuffer target =
-                new NettyBackedChannelBuffer(dstDirect);
+        ChannelBuffer source = new NettyBackedChannelBuffer(srcDirect);
+        ChannelBuffer target = new NettyBackedChannelBuffer(dstDirect);
 
         byte[] data = {10, 20, 30, 40};
         source.writeBytes(data);
@@ -82,8 +80,7 @@ class NettyBackedChannelBufferTest {
         target.getBytes(0, actual);
 
         assertArrayEquals(data, actual);
-        assertEquals(0, target.readerIndex(),
-                "setBytes should not move readerIndex");
+        assertEquals(0, target.readerIndex(), "setBytes should not move readerIndex");
     }
 
     @Test
@@ -100,7 +97,7 @@ class NettyBackedChannelBufferTest {
 
     @Test
     void testGetBytes_directBuffer_shouldNotMoveIndex() {
-        buffer.writeBytes(new byte[]{5, 6, 7, 8});
+        buffer.writeBytes(new byte[] {5, 6, 7, 8});
 
         int before = buffer.readerIndex();
 
@@ -108,6 +105,6 @@ class NettyBackedChannelBufferTest {
         buffer.getBytes(1, actual);
 
         assertEquals(before, buffer.readerIndex());
-        assertArrayEquals(new byte[]{6, 7}, actual);
+        assertArrayEquals(new byte[] {6, 7}, actual);
     }
 }
