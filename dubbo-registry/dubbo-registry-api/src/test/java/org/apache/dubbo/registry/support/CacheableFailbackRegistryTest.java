@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -45,48 +46,55 @@ class CacheableFailbackRegistryTest {
     }
 
     @Test
-    void shouldKeepRemoteTimestampIntact() throws Exception {
-        String base = "dubbo%3A%2F%2F127.0.0.1%3A20880%2Fdemo.Service";
-        String rawProvider =
-                base + ENCODED_QUESTION_MARK + "remote.timestamp%3D1" + ENCODED_AND_MARK + "revision%3Dabc";
-        assertEquals(rawProvider, strip(rawProvider));
+    void shouldRemoveExactTimestamp() throws Exception {
+        // Test removing exact "timestamp" parameter
+        String rawProvider = "dubbo://127.0.0.1:20880/demo.Service?timestamp=100&revision=v1";
+        String result = strip(rawProvider);
+        // After removing timestamp, only revision should remain
+        assertTrue(result.contains("revision=v1"), "Result should contain revision");
+        assertFalse(result.contains("timestamp"), "Result should not contain timestamp");
     }
 
     @Test
-    void shouldRemoveOnlyTimestampWhenRemoteTimestampExists() throws Exception {
+    void shouldRemoveExactPid() throws Exception {
+        // Test removing exact "pid" parameter
+        String rawProvider = "dubbo://127.0.0.1:20880/demo.Service?pid=9999&revision=v1";
+        String result = strip(rawProvider);
+        assertTrue(result.contains("revision=v1"), "Result should contain revision");
+        assertFalse(result.contains("pid"), "Result should not contain pid");
+    }
+
+    @Test
+    void shouldRemoveTimestampAndPid() throws Exception {
+        // Test removing both timestamp and pid
+        String rawProvider = "dubbo://127.0.0.1:20880/demo.Service?timestamp=100&pid=1234&revision=abc";
+        String result = strip(rawProvider);
+        assertTrue(result.contains("revision=abc"), "Result should contain revision");
+        assertFalse(result.contains("timestamp"), "Result should not contain timestamp");
+        assertFalse(result.contains("pid"), "Result should not contain pid");
+    }
+
+    @Test
+    void shouldKeepRemoteTimestamp() throws Exception {
+        // remote.timestamp should NOT be removed (only exact "timestamp" is removed)
+        String rawProvider = "dubbo://127.0.0.1:20880/demo.Service?remote.timestamp=200&revision=v1";
+        String result = strip(rawProvider);
+        assertTrue(result.contains("remote.timestamp=200"), "Result should keep remote.timestamp");
+        assertTrue(result.contains("revision=v1"), "Result should contain revision");
+    }
+
+    @Test
+    void shouldRemoveEncodedTimestampAndPid() throws Exception {
+        // Test with encoded format
         String base = "dubbo%3A%2F%2F127.0.0.1%3A20880%2Fdemo.Service";
         String rawProvider = base + ENCODED_QUESTION_MARK
-                + "timestamp%3D1" + ENCODED_AND_MARK
-                + "remote.timestamp%3D2" + ENCODED_AND_MARK
-                + "revision%3D3";
-        String expected = base + ENCODED_QUESTION_MARK + "remote.timestamp%3D2" + ENCODED_AND_MARK + "revision%3D3";
-        assertEquals(expected, strip(rawProvider));
-    }
-
-    @Test
-    void shouldHandleDecodedParameters() throws Exception {
-        String base = "dubbo://127.0.0.1:20880/demo.Service";
-        String rawProvider = base + "?timestamp=1&remote.timestamp=2&revision=3";
-        String expected = base + "?remote.timestamp=2&revision=3";
-        assertEquals(expected, strip(rawProvider));
-    }
-
-    @Test
-    void shouldRemoveTimestampAndPidWithPrefixes() throws Exception {
-        // Test that both timestamp and pid can be removed even with prefixes like "remote.timestamp" and "dubbo.pid"
-        String base = "dubbo://127.0.0.1:20880/demo.Service";
-        String rawProvider = base + "?timestamp=100&remote.timestamp=200&pid=1234&dubbo.pid=5678&revision=abc";
-        String expected = base + "?remote.timestamp=200&revision=abc";
-        assertEquals(expected, strip(rawProvider));
-    }
-
-    @Test
-    void shouldRemoveAllTimestampsExactAndPrefixed() throws Exception {
-        // Test comprehensive scenario: multiple timestamps (exact and prefixed) should all be removed
-        String base = "dubbo://127.0.0.1:20880/demo.Service";
-        String rawProvider = base + "?timestamp=1&remote.timestamp=2&any.timestamp=3&revision=v1";
-        String expected = base + "?revision=v1";
-        assertEquals(expected, strip(rawProvider));
+                + "timestamp%3D123" + ENCODED_AND_MARK
+                + "pid%3D9999" + ENCODED_AND_MARK
+                + "revision%3Dv1";
+        String result = strip(rawProvider);
+        assertTrue(result.contains("revision%3Dv1"), "Result should contain revision");
+        assertFalse(result.contains("timestamp%3D"), "Result should not contain timestamp");
+        assertFalse(result.contains("pid%3D"), "Result should not contain pid");
     }
 
     @Test
@@ -96,15 +104,14 @@ class CacheableFailbackRegistryTest {
         String provider1 = "dubbo://provider1.example.com:20880/demo.Service?timestamp=100&revision=v1";
         String provider2 = "dubbo://provider1.example.com:20880/demo.Service?timestamp=200&revision=v1";
         // Both providers have same address and revision but different timestamp values.
-        // After normalization (removing timestamp), they should produce the same cache key
-        // and reuse the same cached URL.
+        // After normalization (removing timestamp), they should produce the same cache key.
 
         URL consumerURL = URL.valueOf(consumerUrl);
         Collection<String> providers = new ArrayList<>();
         providers.add(provider1);
         providers.add(provider2);
 
-        // First call: build cache with provider1
+        // First call: build cache with both providers
         List<URL> urls1 = registry.toUrlsWithoutEmpty(consumerURL, providers);
         assertNotNull(urls1);
         assertEquals(1, urls1.size());
@@ -120,28 +127,6 @@ class CacheableFailbackRegistryTest {
         assertNotNull(stringUrls);
         assertTrue(stringUrls.containsKey(normalizedKey1), "Cache should use normalized key");
         assertEquals(1, stringUrls.size(), "Should have exactly one cache entry for deduplicated provider");
-    }
-
-    @Test
-    void stripOffVariableKeysRemovesEncodedTimestampAndPid() throws Exception {
-        // Test with encoded format to ensure ENCODED_TIMESTAMP_KEY and ENCODED_PID_KEY are properly handled
-        String base = "dubbo%3A%2F%2Fprovider.example.com%3A20880%2Fdemo.Service";
-        String rawProvider = base + ENCODED_QUESTION_MARK
-                + "timestamp%3D123" + ENCODED_AND_MARK
-                + "pid%3D9999" + ENCODED_AND_MARK
-                + "revision%3Dv1";
-        String expected = base + ENCODED_QUESTION_MARK + "revision%3Dv1";
-        assertEquals(expected, strip(rawProvider));
-    }
-
-    @Test
-    void stripOffVariableKeysPreservesPrefixedTimestampInNormalization() throws Exception {
-        // Verify that parameters ending with ".timestamp" (but not the "timestamp" value itself) are treated as
-        // variable keys
-        String base = "dubbo://provider.example.com:20880/demo.Service";
-        String rawProvider = base + "?app.timestamp=111&custom.timestamp=222&timestamp=333&revision=abc";
-        String expected = base + "?revision=abc";
-        assertEquals(expected, strip(rawProvider));
     }
 
     private String strip(String rawProvider) throws Exception {

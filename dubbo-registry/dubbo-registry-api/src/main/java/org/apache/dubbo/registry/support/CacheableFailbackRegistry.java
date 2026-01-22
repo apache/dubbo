@@ -384,18 +384,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             String name = param.substring(0, eqIdx);
             String normalizedName = normalizeVariableName(name);
 
-            // Check if this parameter name is a variable key that should be removed.
-            // Support both exact match (e.g., "timestamp") and suffix match with dot separator (e.g.,
-            // "remote.timestamp").
-            boolean isVariable = false;
-            for (String var : variableNames) {
-                if (var != null && (normalizedName.equals(var) || normalizedName.endsWith("." + var))) {
-                    isVariable = true;
-                    break;
-                }
-            }
-
-            if (isVariable) {
+            // Check if this parameter name exactly matches a variable key that should be removed.
+            // Only exact match is performed (e.g., "timestamp" matches "timestamp", but not "remote.timestamp").
+            if (variableNames.contains(normalizedName)) {
                 removed = true;
                 continue;
             }
